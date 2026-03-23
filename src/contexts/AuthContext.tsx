@@ -38,36 +38,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLocalAuthState(state);
   }, []);
 
+  const syncSupabaseSession = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    setSupabaseSession(session);
+
+    if (session) {
+      authLogout();
+    }
+
+    refreshAuthState();
+  }, [refreshAuthState]);
+
   useEffect(() => {
     let mounted = true;
+    let authSubscription: { unsubscribe: () => void } | null = null;
+
+    const safelySyncSession = async () => {
+      try {
+        await syncSupabaseSession();
+      } catch (error) {
+        console.error("Errore sincronizzazione Auth:", error);
+      }
+    };
 
     async function initAuth() {
       try {
-        // 1. Controlla subito la sessione esistente (importante al ritorno da Google)
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (mounted) {
-          if (session) {
-            console.log("Sessione Google trovata:", session.user.email);
-            setSupabaseSession(session);
-            authLogout(); // Pulisce sessioni legacy se entra con Google
-          }
-          refreshAuthState();
-        }
-
-        // 2. Resta in ascolto di cambi di stato
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
           console.log("Evento Auth rilevato:", event);
           if (mounted) {
             setSupabaseSession(session);
             if (session) {
               authLogout();
-              refreshAuthState();
             }
+            refreshAuthState();
           }
         });
 
-        return () => subscription.unsubscribe();
+        authSubscription = subscription;
+
+        await safelySyncSession();
       } catch (error) {
         console.error("Errore inizializzazione Auth:", error);
       } finally {
@@ -79,8 +89,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     initAuth();
-    return () => { mounted = false; };
-  }, [refreshAuthState]);
+
+    const handleAppResume = () => {
+      if (document.visibilityState === "visible") {
+        void safelySyncSession();
+      }
+    };
+
+    window.addEventListener("focus", handleAppResume);
+    document.addEventListener("visibilitychange", handleAppResume);
+
+    return () => {
+      mounted = false;
+      authSubscription?.unsubscribe();
+      window.removeEventListener("focus", handleAppResume);
+      document.removeEventListener("visibilitychange", handleAppResume);
+    };
+  }, [refreshAuthState, syncSupabaseSession]);
 
   // Logica Ibrida
   const isAuthenticated = !!supabaseSession || localAuthState.isAuthenticated;
