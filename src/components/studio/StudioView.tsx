@@ -103,20 +103,41 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const handleGenerateLessons = async () => {
     if (!currentUser) return;
     setIsGenerating(true);
+    setGenerationStep("analyzing");
+    setGenerationLessonCount(0);
+    setGenerationTotalLessons(0);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const contextId = selectedContextId || activeContextId;
+
+      // Step 1: analyzing
+      await new Promise(r => setTimeout(r, 800));
+      setGenerationStep("creating-index");
+
+      // Step 2: creating index + generating
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
           body: JSON.stringify({ userId: currentUser, ...(contextId ? { contextId } : {}) }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Errore nella generazione");
+
+      setGenerationStep("generating-lessons");
+      setGenerationTotalLessons(data.lessonsCount || 0);
+
+      // Simulate incremental progress briefly
+      for (let i = 0; i <= (data.lessonsCount || 0); i++) {
+        setGenerationLessonCount(i);
+        await new Promise(r => setTimeout(r, 150));
+      }
+
+      setGenerationStep("complete");
       toast({ title: "Percorso creato!", description: `Creato un percorso con ${data.lessonsCount} mini-lezioni.` });
+      await new Promise(r => setTimeout(r, 1000));
       await fetchLessons();
     } catch (error) { console.error("Error generating lessons:", error);
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella generazione", variant: "destructive" });
-    } finally { setIsGenerating(false); }
+    } finally { setIsGenerating(false); setGenerationStep("analyzing"); }
   };
 
   const generateLessonContent = async (lessonIndex: number) => {
