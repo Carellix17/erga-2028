@@ -1,49 +1,70 @@
 import { useState, useEffect } from "react";
-import { Loader2, Sparkles, Check, BookOpen } from "lucide-react";
+import { Sparkles, BookOpen, Brain, Check, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface GenerationProgressProps {
   isGenerating: boolean;
+  currentStep: "analyzing" | "creating-index" | "generating-lessons" | "complete";
   totalLessons: number;
   generatedCount: number;
-  currentStep: "analyzing" | "creating-index" | "generating-lessons" | "complete";
   fileName?: string;
 }
 
-const steps = [
-  { id: "analyzing", label: "Analisi contenuti", icon: Sparkles },
-  { id: "creating-index", label: "Creazione indice", icon: BookOpen },
-  { id: "generating-lessons", label: "Generazione lezioni", icon: Loader2 },
-  { id: "complete", label: "Completato!", icon: Check },
+const tips = [
+  "L'AI sta leggendo i tuoi appunti… 📖",
+  "Stiamo trovando i concetti chiave… 🔍",
+  "Creiamo esercizi su misura per te… 🎯",
+  "Quasi pronto, un attimo di pazienza… ⏳",
+  "Il tuo percorso sta prendendo forma… ✨",
 ];
+
+const steps = [
+  { id: "analyzing", label: "Analisi contenuti", sublabel: "Lettura e comprensione", icon: Brain },
+  { id: "creating-index", label: "Struttura percorso", sublabel: "Organizzazione argomenti", icon: BookOpen },
+  { id: "generating-lessons", label: "Creazione lezioni", sublabel: "Esercizi e spiegazioni", icon: Zap },
+  { id: "complete", label: "Tutto pronto!", sublabel: "Buono studio", icon: Check },
+] as const;
 
 export function GenerationProgress({
   isGenerating,
+  currentStep,
   totalLessons,
   generatedCount,
-  currentStep,
   fileName,
 }: GenerationProgressProps) {
+  const [tipIndex, setTipIndex] = useState(0);
   const [animatedProgress, setAnimatedProgress] = useState(0);
+  const [dots, setDots] = useState("");
 
-  const stepProgress = {
-    "analyzing": 10,
-    "creating-index": 25,
-    "generating-lessons": 25 + ((generatedCount / Math.max(totalLessons, 1)) * 70),
-    "complete": 100,
-  };
+  // Rotate tips
+  useEffect(() => {
+    if (!isGenerating) return;
+    const interval = setInterval(() => setTipIndex((i) => (i + 1) % tips.length), 3500);
+    return () => clearInterval(interval);
+  }, [isGenerating]);
 
-  const targetProgress = stepProgress[currentStep] || 0;
+  // Animated dots
+  useEffect(() => {
+    if (!isGenerating) return;
+    const interval = setInterval(() => setDots((d) => (d.length >= 3 ? "" : d + ".")), 500);
+    return () => clearInterval(interval);
+  }, [isGenerating]);
+
+  // Progress animation
+  const targetProgress =
+    currentStep === "analyzing" ? 15 :
+    currentStep === "creating-index" ? 35 :
+    currentStep === "generating-lessons" ? 35 + ((generatedCount / Math.max(totalLessons, 1)) * 60) :
+    100;
 
   useEffect(() => {
     const timer = setInterval(() => {
       setAnimatedProgress((prev) => {
         const diff = targetProgress - prev;
-        if (Math.abs(diff) < 0.5) return targetProgress;
-        return prev + diff * 0.1;
+        if (Math.abs(diff) < 0.3) return targetProgress;
+        return prev + diff * 0.08;
       });
-    }, 50);
-
+    }, 40);
     return () => clearInterval(timer);
   }, [targetProgress]);
 
@@ -52,43 +73,47 @@ export function GenerationProgress({
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
 
   return (
-    <div className="m3-card-elevated rounded-xl p-6 animate-fade-up">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-level-2">
-          <Sparkles className="w-6 h-6 text-primary-foreground" />
+    <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 animate-fade-up">
+      {/* Animated orb */}
+      <div className="relative mb-8">
+        <div className="w-28 h-28 rounded-[2rem] gradient-primary flex items-center justify-center shadow-level-3 animate-float">
+          <Sparkles className="w-12 h-12 text-primary-foreground" />
         </div>
-        <div>
-          <h3 className="title-medium font-display">
-            {currentStep === "complete" ? "Percorso pronto!" : "Generazione in corso"}
-          </h3>
-          {fileName && (
-            <p className="body-small text-muted-foreground truncate max-w-[200px]">
-              {fileName}
-            </p>
-          )}
+        {/* Orbiting dots */}
+        <div className="absolute inset-0 animate-spin" style={{ animationDuration: "6s" }}>
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-secondary opacity-70" />
         </div>
+        <div className="absolute inset-0 animate-spin" style={{ animationDuration: "8s", animationDirection: "reverse" }}>
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-tertiary opacity-60" />
+        </div>
+        {/* Progress ring */}
+        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="56" fill="none" stroke="hsl(var(--outline-variant))" strokeWidth="3" opacity="0.3" />
+          <circle
+            cx="60" cy="60" r="56" fill="none"
+            stroke="hsl(var(--primary))" strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeDasharray={`${2 * Math.PI * 56}`}
+            strokeDashoffset={`${2 * Math.PI * 56 * (1 - animatedProgress / 100)}`}
+            className="transition-all duration-300"
+          />
+        </svg>
       </div>
 
-      {/* Progress bar */}
-      <div className="mb-6">
-        <div className="flex justify-between label-medium mb-2">
-          <span className="text-muted-foreground">Progresso</span>
-          <span className="text-primary">{Math.round(animatedProgress)}%</span>
-        </div>
-        <div className="h-1 m3-progress-track">
-          <div
-            className={cn(
-              "h-full rounded-full transition-all duration-300",
-              currentStep === "complete" ? "bg-success" : "m3-progress-indicator"
-            )}
-            style={{ width: `${animatedProgress}%` }}
-          />
-        </div>
+      {/* Percentage */}
+      <div className="text-center mb-6">
+        <span className="text-4xl font-display font-bold text-foreground">
+          {Math.round(animatedProgress)}%
+        </span>
+        {fileName && (
+          <p className="body-small text-primary font-medium mt-1 bg-primary-container px-3 py-1 rounded-full inline-block">
+            {fileName}
+          </p>
+        )}
       </div>
 
       {/* Steps */}
-      <div className="space-y-2">
+      <div className="w-full max-w-xs space-y-1.5 mb-8">
         {steps.map((step, index) => {
           const Icon = step.icon;
           const isActive = step.id === currentStep;
@@ -99,41 +124,36 @@ export function GenerationProgress({
             <div
               key={step.id}
               className={cn(
-                "flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ease-m3-standard",
-                isActive && "bg-primary-container",
-                isComplete && step.id !== "complete" && "bg-success-container",
-                isPending && "opacity-38"
+                "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-500",
+                isActive && "bg-primary-container scale-[1.02]",
+                isComplete && "opacity-60",
+                isPending && "opacity-30"
               )}
             >
-              <div
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
-                  isActive && "bg-primary text-primary-foreground",
-                  isComplete && step.id !== "complete" && "bg-success text-success-foreground",
-                  currentStep === "complete" && step.id === "complete" && "bg-success text-success-foreground",
-                  isPending && "bg-surface-container-highest text-muted-foreground"
-                )}
-              >
-                {isComplete && step.id !== "complete" ? (
+              <div className={cn(
+                "w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-500 flex-shrink-0",
+                isActive && "bg-primary text-primary-foreground shadow-level-1",
+                isComplete && "bg-success text-success-foreground",
+                isPending && "bg-surface-container-highest text-muted-foreground"
+              )}>
+                {isComplete ? (
                   <Check className="w-4 h-4" />
                 ) : (
-                  <Icon className={cn("w-4 h-4", isActive && step.id === "generating-lessons" && "animate-spin")} />
+                  <Icon className={cn("w-4 h-4", isActive && "animate-pulse")} />
                 )}
               </div>
-              <div className="flex-1">
-                <p
-                  className={cn(
-                    "label-large transition-colors duration-300",
-                    isActive && "text-primary",
-                    isComplete && step.id !== "complete" && "text-success",
-                    currentStep === "complete" && step.id === "complete" && "text-success"
-                  )}
-                >
+              <div className="flex-1 min-w-0">
+                <p className={cn(
+                  "label-large leading-tight",
+                  isActive && "text-primary font-semibold",
+                  isComplete && "text-success"
+                )}>
                   {step.label}
+                  {isActive && currentStep !== "complete" && dots}
                 </p>
                 {isActive && step.id === "generating-lessons" && totalLessons > 0 && (
                   <p className="body-small text-muted-foreground">
-                    {generatedCount} / {totalLessons} lezioni create
+                    {generatedCount}/{totalLessons} lezioni
                   </p>
                 )}
               </div>
@@ -142,10 +162,13 @@ export function GenerationProgress({
         })}
       </div>
 
-      {/* Fun message */}
+      {/* Rotating tip */}
       {currentStep !== "complete" && (
-        <p className="text-center body-small text-muted-foreground mt-6 italic">
-          L'AI sta creando il tuo percorso personalizzato... ✨
+        <p
+          key={tipIndex}
+          className="text-center body-medium text-muted-foreground animate-fade-up max-w-[260px]"
+        >
+          {tips[tipIndex]}
         </p>
       )}
     </div>
