@@ -3,6 +3,7 @@ import { FullscreenLesson } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
 import { LessonsList } from "./LessonsList";
 import { CourseSelector } from "./CourseSelector";
+import { GenerationProgress } from "./GenerationProgress";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
