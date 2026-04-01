@@ -3,6 +3,7 @@ import { FullscreenLesson } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
 import { LessonsList } from "./LessonsList";
 import { CourseSelector } from "./CourseSelector";
+import { GenerationProgress } from "./GenerationProgress";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -37,6 +38,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingLesson, setIsGeneratingLesson] = useState(false);
+  const [generationStep, setGenerationStep] = useState<"analyzing" | "creating-index" | "generating-lessons" | "complete">("analyzing");
+  const [generationLessonCount, setGenerationLessonCount] = useState(0);
+  const [generationTotalLessons, setGenerationTotalLessons] = useState(0);
   const [showList, setShowList] = useState(true);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
   const [contextFileName, setContextFileName] = useState<string | null>(null);
@@ -99,20 +103,41 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const handleGenerateLessons = async () => {
     if (!currentUser) return;
     setIsGenerating(true);
+    setGenerationStep("analyzing");
+    setGenerationLessonCount(0);
+    setGenerationTotalLessons(0);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const contextId = selectedContextId || activeContextId;
+
+      // Step 1: analyzing
+      await new Promise(r => setTimeout(r, 800));
+      setGenerationStep("creating-index");
+
+      // Step 2: creating index + generating
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
           body: JSON.stringify({ userId: currentUser, ...(contextId ? { contextId } : {}) }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Errore nella generazione");
+
+      setGenerationStep("generating-lessons");
+      setGenerationTotalLessons(data.lessonsCount || 0);
+
+      // Simulate incremental progress briefly
+      for (let i = 0; i <= (data.lessonsCount || 0); i++) {
+        setGenerationLessonCount(i);
+        await new Promise(r => setTimeout(r, 150));
+      }
+
+      setGenerationStep("complete");
       toast({ title: "Percorso creato!", description: `Creato un percorso con ${data.lessonsCount} mini-lezioni.` });
+      await new Promise(r => setTimeout(r, 1000));
       await fetchLessons();
     } catch (error) { console.error("Error generating lessons:", error);
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella generazione", variant: "destructive" });
-    } finally { setIsGenerating(false); }
+    } finally { setIsGenerating(false); setGenerationStep("analyzing"); }
   };
 
   const generateLessonContent = async (lessonIndex: number) => {
@@ -186,6 +211,18 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   };
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
+
+  if (isGenerating) {
+    return (
+      <GenerationProgress
+        isGenerating={isGenerating}
+        currentStep={generationStep}
+        totalLessons={generationTotalLessons}
+        generatedCount={generationLessonCount}
+        fileName={contextFileName || undefined}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
