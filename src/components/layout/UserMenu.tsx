@@ -20,12 +20,13 @@ export function UserMenu() {
     navigate("/login");
   };
 
-  const getInitials = (username: string) => {
-    const parts = username.split(".");
+  const getInitials = (email: string) => {
+    const name = email.split("@")[0];
+    const parts = name.split(/[._-]/);
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
-    return username.slice(0, 2).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
   };
 
   return (

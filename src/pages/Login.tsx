@@ -1,21 +1,22 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { User, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { lovable } from "@/integrations/lovable";
+import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -25,21 +26,26 @@ export default function Login() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const result = login(username, password);
 
-    if (result.success) {
-      navigate(result.requiresPasswordChange ? "/cambia-password" : "/");
-    } else {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
       toast({
         title: "Errore di accesso",
-        description: result.error,
+        description: error.message === "Invalid login credentials"
+          ? "Email o password non corretti"
+          : error.message,
         variant: "destructive",
       });
       setIsSubmitting(false);
     }
+    // Navigation handled by auth state change
   };
 
   const handleOAuthSignIn = async (provider: "google" | "apple") => {
@@ -50,7 +56,6 @@ export default function Login() {
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: redirectUrl,
       });
-
       if (result.error) throw result.error;
     } catch (error: unknown) {
       toast({
@@ -67,7 +72,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated glass orb background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="glass-orb glass-orb-primary w-[500px] h-[500px] -top-48 -right-48 animate-float" />
         <div className="glass-orb glass-orb-tertiary w-[400px] h-[400px] top-1/2 -left-40" style={{ animationDelay: '-3s', animationDuration: '14s' }} />
@@ -75,7 +79,6 @@ export default function Login() {
       </div>
 
       <div className="w-full max-w-sm animate-fade-up relative z-10">
-        {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-20 h-20 rounded-[1.75rem] gradient-primary flex items-center justify-center mb-4 shadow-glass-xl animate-glow-pulse">
             <Sparkles className="w-9 h-9 text-white" />
@@ -86,23 +89,24 @@ export default function Login() {
           <p className="text-muted-foreground text-sm mt-1">Il tuo assistente di studio</p>
         </div>
 
-        {/* Login Card */}
         <div className="glass-card rounded-[1.75rem] p-6 shadow-glass-xl">
           <div className="text-center mb-6">
             <h2 className="text-xl font-heading font-semibold">Accedi</h2>
-            <p className="text-sm text-muted-foreground mt-1">Beta Tester, Google o Apple</p>
+            <p className="text-sm text-muted-foreground mt-1">Email, Google o Apple</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Nome utente</Label>
+              <Label className="text-sm font-medium">Email</Label>
               <div className="relative">
-                <User className="absolute left-4 top-3.5 w-4 h-4 text-muted-foreground" />
+                <Mail className="absolute left-4 top-3.5 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="nome.cognome"
+                  type="email"
+                  placeholder="la-tua@email.com"
                   className="pl-11 h-12 rounded-xl glass-subtle border-border/30 focus:border-primary/40 transition-all"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -116,6 +120,7 @@ export default function Login() {
                   className="pl-11 pr-12 h-12 rounded-xl glass-subtle border-border/30 focus:border-primary/40 transition-all"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-muted-foreground hover:text-foreground transition-colors">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -124,8 +129,15 @@ export default function Login() {
             </div>
 
             <Button type="submit" className="w-full h-12 gradient-primary text-white border-0 rounded-xl shadow-glass-md hover:shadow-glass-lg hover:scale-[1.02] transition-all duration-300 font-semibold" disabled={isSubmitting}>
-              Accedi (Beta)
+              Accedi
             </Button>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Non hai un account?{" "}
+              <Link to="/registrati" className="text-primary font-medium hover:underline">
+                Registrati
+              </Link>
+            </p>
 
             <div className="relative my-5">
               <Separator className="bg-border/30" />
