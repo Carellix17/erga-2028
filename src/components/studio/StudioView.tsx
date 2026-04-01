@@ -212,6 +212,18 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
+  if (isGenerating) {
+    return (
+      <GenerationProgress
+        isGenerating={isGenerating}
+        currentStep={generationStep}
+        totalLessons={generationTotalLessons}
+        generatedCount={generationLessonCount}
+        fileName={contextFileName || undefined}
+      />
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 p-4">
