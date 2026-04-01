@@ -38,6 +38,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingLesson, setIsGeneratingLesson] = useState(false);
+  const [generationStep, setGenerationStep] = useState<"analyzing" | "creating-index" | "generating-lessons" | "complete">("analyzing");
+  const [generationLessonCount, setGenerationLessonCount] = useState(0);
+  const [generationTotalLessons, setGenerationTotalLessons] = useState(0);
   const [showList, setShowList] = useState(true);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
   const [contextFileName, setContextFileName] = useState<string | null>(null);
