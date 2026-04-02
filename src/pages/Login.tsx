@@ -102,7 +102,7 @@ export default function Login() {
         <div className="glass-card rounded-[1.75rem] p-6 shadow-glass-xl">
           <div className="text-center mb-6">
             <h2 className="text-xl font-heading font-semibold">Accedi</h2>
-            <p className="text-sm text-muted-foreground mt-1">Email, Google, Apple o Microsoft</p>
+            <p className="text-sm text-muted-foreground mt-1">Email, Google o Apple</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
