@@ -172,15 +172,6 @@ export default function Login() {
                 Continua con Apple
               </Button>
 
-              <Button type="button" variant="outline" className="w-full h-12 rounded-xl glass-subtle border-border/30 hover:shadow-glass transition-all duration-300" onClick={() => handleOAuthSignIn("azure")} disabled={isSubmitting}>
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="2" y="2" width="9" height="9" fill="#F25022" />
-                  <rect x="13" y="2" width="9" height="9" fill="#7FBA00" />
-                  <rect x="2" y="13" width="9" height="9" fill="#00A4EF" />
-                  <rect x="13" y="13" width="9" height="9" fill="#FFB900" />
-                </svg>
-                Continua con Microsoft
-              </Button>
             </div>
           </form>
         </div>
