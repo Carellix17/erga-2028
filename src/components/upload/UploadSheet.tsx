@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { FileUp, X, FileText, Loader2, Sparkles, Check, Globe, Search } from "lucide-react";
+import { FileUp, X, FileText, Loader2, Sparkles, Check, Globe, Search, Camera, ImageIcon } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
