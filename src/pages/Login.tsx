@@ -50,18 +50,23 @@ export default function Login() {
   const handleOAuthSignIn = async (provider: "google" | "apple" | "azure") => {
     setIsSubmitting(true);
     const redirectUrl = import.meta.env.VITE_OAUTH_REDIRECT_URL || `${window.location.origin}/login`;
-
     const providerLabel = provider === "google" ? "Google" : provider === "apple" ? "Apple" : "Microsoft";
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
-        },
-      });
-      if (error) throw error;
+      if (provider === "azure") {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "azure",
+          options: { redirectTo: redirectUrl },
+        });
+        if (error) throw error;
+      } else {
+        const result = await lovable.auth.signInWithOAuth(provider, {
+          redirect_uri: redirectUrl,
+          extraParams: provider === "google" ? { prompt: "select_account" } : undefined,
+        });
+        if (result.error) throw result.error;
+      }
+
     } catch (error: unknown) {
       toast({
         title: `Errore ${providerLabel}`,
