@@ -47,6 +47,147 @@ serve(async (req) => {
       console.log(`Extract PDF for user: ${userId}`);
     }
 
+    // Action: process-images (extract text from photos using AI vision)
+    if (action === "process-images" && contextId) {
+      console.log(`Processing images for context: ${contextId}`);
+      
+      const { data: context, error: fetchError } = await supabase
+        .from("study_contexts")
+        .select("*")
+        .eq("id", contextId)
+        .single();
+
+      if (fetchError || !context) {
+        return errorResponse("Contesto non trovato", 404);
+      }
+
+      if (context.user_id !== userId) {
+        return errorResponse("Non autorizzato", 403);
+      }
+
+      await supabase
+        .from("study_contexts")
+        .update({ processing_status: "processing" })
+        .eq("id", contextId)
+        .eq("user_id", userId);
+
+      try {
+        const imagePaths = (context.file_path || "").split(",").filter(Boolean);
+        if (imagePaths.length === 0) throw new Error("MISSING_IMAGES");
+
+        console.log(`Processing ${imagePaths.length} images`);
+
+        // Download all images and convert to base64
+        const imageContents: { base64: string; mimeType: string }[] = [];
+        for (const imgPath of imagePaths) {
+          const { data: fileData, error: downloadError } = await supabase
+            .storage
+            .from("study-pdfs")
+            .download(imgPath.trim());
+
+          if (downloadError || !fileData) {
+            console.error(`Error downloading image ${imgPath}:`, downloadError);
+            throw new Error("FILE_DOWNLOAD_ERROR");
+          }
+
+          const arrayBuffer = await fileData.arrayBuffer();
+          const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+          const ext = imgPath.split(".").pop()?.toLowerCase() || "jpg";
+          const mimeType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+          imageContents.push({ base64, mimeType });
+        }
+
+        // Use Lovable AI gateway to extract text from images
+        const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+        if (!lovableApiKey) throw new Error("AI_CONFIG_ERROR");
+
+        const aiMessages: unknown[] = [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Sei un assistente specializzato nell'estrarre testo e contenuti didattici dalle immagini. Analizza attentamente tutte le immagini fornite ed estrai TUTTO il testo visibile, formule, diagrammi e concetti. Organizza il contenuto in modo logico e strutturato, come se fosse un capitolo di un libro di testo. Se ci sono formule matematiche, trascrivile. Se ci sono diagrammi, descrivili in dettaglio. Rispondi SOLO con il contenuto estratto, senza commenti aggiuntivi."
+              },
+              ...imageContents.map(img => ({
+                type: "image_url",
+                image_url: {
+                  url: `data:${img.mimeType};base64,${img.base64}`
+                }
+              }))
+            ]
+          }
+        ];
+
+        const aiResponse = await fetch("https://ai.lovable.dev/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${lovableApiKey}`,
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: aiMessages,
+            max_tokens: 16000,
+          }),
+        });
+
+        if (!aiResponse.ok) {
+          console.error("AI response error:", aiResponse.status);
+          throw new Error("AI_PROCESSING_ERROR");
+        }
+
+        const aiData = await aiResponse.json();
+        const extractedText = aiData.choices?.[0]?.message?.content || "";
+
+        if (!extractedText || extractedText.length < 20) {
+          throw new Error("INSUFFICIENT_TEXT");
+        }
+
+        console.log(`AI extracted ${extractedText.length} characters from ${imagePaths.length} images`);
+
+        const { error: updateError } = await supabase
+          .from("study_contexts")
+          .update({
+            content: extractedText.substring(0, 100000),
+            processing_status: "completed",
+            error_message: null
+          })
+          .eq("id", contextId);
+
+        if (updateError) throw new Error("DATABASE_ERROR");
+
+        return successResponse({
+          success: true,
+          contextId,
+          extractedLength: extractedText.length
+        });
+
+      } catch (processError) {
+        console.error("Image processing error:", processError);
+        
+        const userMessage = processError instanceof Error
+          ? processError.message === "FILE_DOWNLOAD_ERROR" ? "Impossibile scaricare le immagini"
+          : processError.message === "INSUFFICIENT_TEXT" ? "Impossibile estrarre contenuto sufficiente dalle immagini. Prova con foto più nitide."
+          : processError.message === "MISSING_IMAGES" ? "Nessuna immagine trovata"
+          : processError.message === "AI_CONFIG_ERROR" ? "Configurazione AI mancante"
+          : processError.message === "AI_PROCESSING_ERROR" ? "Errore nell'analisi delle immagini"
+          : "Errore durante l'elaborazione delle immagini"
+          : "Errore durante l'elaborazione delle immagini";
+
+        await supabase
+          .from("study_contexts")
+          .update({
+            processing_status: "failed",
+            error_message: userMessage
+          })
+          .eq("id", contextId)
+          .eq("user_id", userId);
+
+        return errorResponse(userMessage);
+      }
+    }
+
     // Action: process
     if (action === "process" && contextId) {
       console.log(`Processing PDF for context: ${contextId}`);
