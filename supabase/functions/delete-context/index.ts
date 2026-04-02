@@ -102,6 +102,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Errore nell'operazione. Riprova.");
   }
 });

@@ -101,6 +101,6 @@ serve(async (req) => {
     return errorResponse("Azione non valida", 400);
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Errore sconosciuto");
+    return errorResponse("Errore nel servizio profilo. Riprova.");
   }
 });

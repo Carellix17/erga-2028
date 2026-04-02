@@ -16,10 +16,9 @@ serve(async (req) => {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const userIdFromForm = formData.get("userId") as string | null;
 
-    // Try to get authenticated user from JWT
-    let userId = userIdFromForm;
+    // Authenticate user via JWT
+    let userId: string | null = null;
     const authHeader = req.headers.get("Authorization");
     
     if (authHeader?.startsWith("Bearer ")) {
@@ -32,16 +31,20 @@ serve(async (req) => {
           const { data, error } = await supabaseWithAuth.auth.getUser();
           if (!error && data?.user) {
             userId = data.user.id;
-            console.log(`Authenticated OAuth user for upload: ${data.user.email || data.user.id}`);
+            console.log(`Authenticated user for upload: ${data.user.email || data.user.id}`);
           }
         } catch (authError) {
-          console.log("JWT validation failed, using form userId:", authError);
+          console.log("JWT validation failed:", authError);
         }
       }
     }
 
-    if (!file || !userId) {
-      return errorResponse("Missing required fields: file, userId", 400);
+    if (!userId) {
+      return errorResponse("Autenticazione richiesta", 401);
+    }
+
+    if (!file) {
+      return errorResponse("File mancante", 400);
     }
 
     // Validate file type
@@ -51,7 +54,7 @@ serve(async (req) => {
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      return errorResponse(`File troppo grande. Dimensione massima: 20MB (il tuo: ${(file.size / 1024 / 1024).toFixed(1)}MB)`, 400);
+      return errorResponse(`File troppo grande. Dimensione massima: 20MB`, 400);
     }
 
     console.log(`Uploading PDF: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB) for user: ${userId}`);
@@ -74,7 +77,7 @@ serve(async (req) => {
 
     if (uploadError) {
       console.error("Storage upload error:", uploadError);
-      return errorResponse(`Errore upload: ${uploadError.message}`);
+      return errorResponse("Errore durante il caricamento del file");
     }
 
     console.log(`File uploaded to storage: ${filePath}`);
@@ -94,7 +97,6 @@ serve(async (req) => {
 
     if (dbError) {
       console.error("Database error:", dbError);
-      // Try to clean up the uploaded file
       await supabase.storage.from("study-pdfs").remove([filePath]);
       return errorResponse("Errore nel salvataggio");
     }
@@ -122,6 +124,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Errore sconosciuto");
+    return errorResponse("Errore durante il caricamento");
   }
 });

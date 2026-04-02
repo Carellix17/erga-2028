@@ -214,6 +214,6 @@ ${eventsText}`;
 
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Errore nel servizio chat. Riprova.");
   }
 });

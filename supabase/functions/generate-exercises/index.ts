@@ -124,6 +124,6 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
     }
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Errore nella generazione degli esercizi. Riprova.");
   }
 });

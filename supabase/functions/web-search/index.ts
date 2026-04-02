@@ -92,6 +92,6 @@ Scrivi almeno 3000 parole.`;
 
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Errore sconosciuto");
+    return errorResponse("Errore nella ricerca. Riprova.");
   }
 });

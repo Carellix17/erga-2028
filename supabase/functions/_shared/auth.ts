@@ -15,12 +15,11 @@ export interface AuthResult {
 
 /**
  * Validates the request and returns authenticated user information.
- * For OAuth users (Google/Apple), validates JWT and extracts user ID from token.
- * Falls back to userId from request body for legacy beta users (development only).
+ * Requires a valid JWT token in the Authorization header.
  */
 export async function validateAuth(
   req: Request,
-  requestBody?: { userId?: string }
+  _requestBody?: { userId?: string }
 ): Promise<AuthResult> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -28,53 +27,30 @@ export async function validateAuth(
 
   const authHeader = req.headers.get("Authorization");
 
-  // Try to validate JWT from Authorization header
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.replace("Bearer ", "");
     
     // Skip if it's just the anon key (not a user token)
     if (token !== supabaseAnonKey) {
-      try {
-        // Create client with the user's token
-        const supabaseWithAuth = createClient(supabaseUrl, supabaseAnonKey, {
-          global: { headers: { Authorization: authHeader } },
-        });
+      const supabaseWithAuth = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
 
-        // Validate the JWT and get user claims
-        const { data, error } = await supabaseWithAuth.auth.getUser();
+      const { data, error } = await supabaseWithAuth.auth.getUser();
 
-        if (!error && data?.user) {
-          console.log(`Authenticated OAuth user: ${data.user.email || data.user.id}`);
-          
-          // Return authenticated client with service role for data operations
-          // but we've verified the user identity
-          const supabase = createClient(supabaseUrl, supabaseServiceKey);
-          
-          return {
-            userId: data.user.id,
-            userEmail: data.user.email ?? undefined,
-            isAuthenticated: true,
-            supabase,
-          };
-        }
-      } catch (authError) {
-        console.log("JWT validation failed, falling back to legacy auth:", authError);
+      if (!error && data?.user) {
+        console.log(`Authenticated user: ${data.user.email || data.user.id}`);
+        
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        
+        return {
+          userId: data.user.id,
+          userEmail: data.user.email ?? undefined,
+          isAuthenticated: true,
+          supabase,
+        };
       }
     }
-  }
-
-  // Fallback for legacy beta users (predefined users with localStorage auth)
-  // WARNING: This is insecure and should only be used for development/beta testing
-  if (requestBody?.userId) {
-    console.log(`Legacy auth for beta user: ${requestBody.userId}`);
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
-    return {
-      userId: requestBody.userId,
-      isAuthenticated: false, // Mark as not properly authenticated
-      supabase,
-    };
   }
 
   throw new Error("Missing authentication");
@@ -91,7 +67,7 @@ export function unauthorizedResponse(message = "Unauthorized"): Response {
 }
 
 /**
- * Create error response
+ * Create error response - always returns generic messages to clients
  */
 export function errorResponse(message: string, status = 500): Response {
   return new Response(

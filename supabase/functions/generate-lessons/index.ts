@@ -306,6 +306,23 @@ ${combinedContent}`;
 
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Errore sconosciuto");
+    const safeMessages = [
+      "Lezione non trovata",
+      "Il PDF è ancora in elaborazione. Riprova tra qualche secondo.",
+      "Contenuto vuoto. Caricamento fallito?",
+      "Contesto non trovato",
+      "Nessun contenuto disponibile per questo PDF.",
+      "Nessuna lezione completata per generare il test finale.",
+      "Formato titoli non valido",
+      "Formato test finale non valido",
+      "Non sono riuscito a creare un indice valido. Riprova.",
+      "Impossibile estrarre JSON dalla risposta AI. Riprova.",
+      "Errore durante la pulizia delle vecchie lezioni",
+      "Errore durante il salvataggio delle lezioni",
+    ];
+    const msg = error instanceof Error && safeMessages.includes(error.message)
+      ? error.message
+      : "Errore nella generazione delle lezioni. Riprova.";
+    return errorResponse(msg);
   }
 });

@@ -177,6 +177,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Errore nel caricamento delle lezioni. Riprova.");
   }
 });
