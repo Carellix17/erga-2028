@@ -433,7 +433,72 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
             </div>
           </TabsContent>
 
-          <TabsContent value="web" className="flex-1 overflow-y-auto space-y-5 mt-0 pb-4">
+          <TabsContent value="photos" className="flex-1 overflow-y-auto space-y-4 mt-0 pb-4">
+            <div className="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-500 border-outline-variant hover:border-primary/40 hover:bg-surface-container-low">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={handleImageInput}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={isUploading || selectedImages.length >= MAX_IMAGES}
+              />
+              <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2 animate-float">
+                <Camera className="w-8 h-8 text-primary-foreground" />
+              </div>
+              <p className="font-display font-semibold text-lg mb-1">Carica le tue foto</p>
+              <p className="body-small text-muted-foreground">Appunti, lavagna, libro — max {MAX_IMAGES} foto (JPG, PNG)</p>
+            </div>
+
+            {selectedImages.length > 0 && (
+              <div className="space-y-3 animate-fade-up">
+                <h3 className="label-medium text-muted-foreground">Foto selezionate ({selectedImages.length}/{MAX_IMAGES})</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative rounded-xl overflow-hidden aspect-square animate-scale-in bg-surface-container">
+                      <img src={preview} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 w-7 h-7 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center"
+                        disabled={isUploading}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <div className="absolute bottom-1 left-1 bg-background/80 backdrop-blur-sm rounded-full px-2 py-0.5">
+                        <span className="body-small text-xs">{(selectedImages[index]?.size / 1024 / 1024).toFixed(1)}MB</span>
+                      </div>
+                    </div>
+                  ))}
+                  {selectedImages.length < MAX_IMAGES && (
+                    <label className="relative rounded-xl border-2 border-dashed border-outline-variant aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-primary/40 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        onChange={handleImageInput}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <ImageIcon className="w-6 h-6 text-muted-foreground mb-1" />
+                      <span className="body-small text-muted-foreground text-xs">Aggiungi</span>
+                    </label>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="sticky bottom-0 bg-surface-container-high/95 backdrop-blur-sm pt-3 pb-2 -mx-1 px-1 mt-auto">
+              <Button onClick={handleUploadImages} disabled={selectedImages.length === 0 || isUploading} className="w-full h-14 text-base" size="lg">
+                {isUploading ? (
+                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Elaborazione...</>
+                ) : selectedImages.length > 0 ? (
+                  <><Sparkles className="w-5 h-5 mr-2" />Analizza {selectedImages.length} foto e genera lezioni</>
+                ) : ("Seleziona le foto da analizzare")}
+              </Button>
+              <p className="body-small text-muted-foreground text-center mt-2">📸 L'AI estrarrà il testo e creerà le lezioni</p>
+            </div>
+          </TabsContent>
+
+
             <div className="text-center space-y-3">
               <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto shadow-level-2">
                 <Globe className="w-8 h-8 text-primary-foreground" />
