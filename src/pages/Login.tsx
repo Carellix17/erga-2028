@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { Separator } from "@/components/ui/separator";
 
 export default function Login() {
@@ -47,42 +48,25 @@ export default function Login() {
     // Navigation handled by auth state change
   };
 
-  const handleOAuthSignIn = async (provider: "google" | "apple" | "azure") => {
+  const handleOAuthSignIn = async (provider: "google" | "apple") => {
     setIsSubmitting(true);
-    const configuredRedirect = import.meta.env.VITE_OAUTH_REDIRECT_URL;
-    const redirectUrl = configuredRedirect || `${window.location.origin}/login`;
-    const providerLabel = provider === "google" ? "Google" : provider === "apple" ? "Apple" : "Microsoft";
+    const providerLabel = provider === "google" ? "Google" : "Apple";
 
     try {
-      const oauthAttempt = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: redirectUrl,
-          skipBrowserRedirect: true,
-          queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
-        },
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: window.location.origin,
+        extraParams: provider === "google" ? { prompt: "select_account" } : undefined,
       });
 
-      let data = oauthAttempt.data;
-      let error = oauthAttempt.error;
-
-      // Fallback: if a custom redirect URL is rejected, retry with Supabase default redirect.
-      if (error && configuredRedirect) {
-        const retry = await supabase.auth.signInWithOAuth({
-          provider,
-          options: {
-            skipBrowserRedirect: true,
-            queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
-          },
-        });
-        data = retry.data;
-        error = retry.error;
+      if (result.error) {
+        throw result.error;
       }
 
-      if (error) throw error;
-      if (!data?.url) throw new Error(`URL OAuth non disponibile per ${providerLabel}`);
+      if (result.redirected) {
+        return; // Browser will redirect
+      }
 
-      window.location.assign(data.url);
+      // Session set automatically, navigation handled by auth state
     } catch (error: unknown) {
       toast({
         title: `Errore ${providerLabel}`,
@@ -118,7 +102,7 @@ export default function Login() {
         <div className="glass-card rounded-[1.75rem] p-6 shadow-glass-xl">
           <div className="text-center mb-6">
             <h2 className="text-xl font-heading font-semibold">Accedi</h2>
-            <p className="text-sm text-muted-foreground mt-1">Email, Google, Apple o Microsoft</p>
+            <p className="text-sm text-muted-foreground mt-1">Email, Google o Apple</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -188,15 +172,6 @@ export default function Login() {
                 Continua con Apple
               </Button>
 
-              <Button type="button" variant="outline" className="w-full h-12 rounded-xl glass-subtle border-border/30 hover:shadow-glass transition-all duration-300" onClick={() => handleOAuthSignIn("azure")} disabled={isSubmitting}>
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="2" y="2" width="9" height="9" fill="#F25022" />
-                  <rect x="13" y="2" width="9" height="9" fill="#7FBA00" />
-                  <rect x="2" y="13" width="9" height="9" fill="#00A4EF" />
-                  <rect x="13" y="13" width="9" height="9" fill="#FFB900" />
-                </svg>
-                Continua con Microsoft
-              </Button>
             </div>
           </form>
         </div>
