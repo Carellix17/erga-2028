@@ -59,6 +59,97 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
 
   const removeFile = (index: number) => setSelectedFiles(prev => prev.filter((_, i) => i !== index));
 
+  const handleImageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).filter(f => ALLOWED_IMAGE_TYPES.includes(f.type));
+    if (files.length === 0) return;
+    const total = selectedImages.length + files.length;
+    if (total > MAX_IMAGES) {
+      toast({ title: "Troppi file", description: `Puoi caricare massimo ${MAX_IMAGES} foto alla volta`, variant: "destructive" });
+      return;
+    }
+    setSelectedImages(prev => [...prev, ...files]);
+    // Generate previews
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setImagePreviews(prev => [...prev, ev.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUploadImages = async () => {
+    if (selectedImages.length === 0 || !currentUser) return;
+    setIsUploading(true);
+    setGenerationStep("uploading");
+    setCurrentFileName(`📷 ${selectedImages.length} foto`);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const formData = new FormData();
+      formData.append("uploadType", "images");
+      formData.append("contextName", `📷 ${selectedImages.length} foto`);
+      selectedImages.forEach((img, i) => formData.append(`image_${i}`, img));
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${authToken}` },
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Errore nel caricamento");
+
+      const contextId = data.contextId;
+      setGenerationStep("processing");
+
+      // Wait for image processing
+      const authTokenForLessons = (await supabase.auth.getSession()).data.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const maxAttempts = 30;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authTokenForLessons}` },
+          body: JSON.stringify({ userId: currentUser, action: "listContexts" }),
+        });
+        const statusData = await statusResponse.json();
+        const context = statusData.contexts?.find((c: { id: string }) => c.id === contextId);
+        if (context?.processing_status === "completed") break;
+        if (context?.processing_status === "failed") throw new Error(context.error_message || "Errore nell'elaborazione delle immagini");
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+
+      // Generate lessons
+      setGenerationStep("generating");
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authTokenForLessons}` },
+        body: JSON.stringify({ userId: currentUser, contextId }),
+      });
+
+      setGenerationStep("complete");
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      onUpload([{ name: `📷 ${selectedImages.length} foto`, size: selectedImages.reduce((s, f) => s + f.size, 0) }], contextId);
+      setSelectedImages([]);
+      setImagePreviews([]);
+      setGenerationStep("idle");
+      onOpenChange(false);
+      toast({ title: "Contenuti pronti! 🎉", description: "Le mini-lezioni sono state generate dalle tue foto." });
+    } catch (error) {
+      console.error("Image upload error:", error);
+      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel caricamento", variant: "destructive" });
+      setGenerationStep("idle");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleWebSearch = async () => {
     if (!webTopic.trim() || !currentUser) return;
     setIsSearching(true);
