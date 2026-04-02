@@ -31,7 +31,8 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
   const [isUploading, setIsUploading] = useState(false);
   const [generationStep, setGenerationStep] = useState<GenerationStep>("idle");
   const [currentFileName, setCurrentFileName] = useState("");
-  const [activeTab, setActiveTab] = useState<string>("upload");
+  const [activeTab, setActiveTab] = useState<string>("loading");
+  const [loadingTab, setLoadingTab] = useState<string>("upload");
   const [webTopic, setWebTopic] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const { currentUser } = useAuth();
@@ -360,22 +361,30 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         </SheetHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-4 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl">
-            <TabsTrigger value="upload" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
-              📄 PDF
-            </TabsTrigger>
-            <TabsTrigger value="photos" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
-              📷 Foto
-            </TabsTrigger>
-            <TabsTrigger value="web" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
-              🌐 Web
+          <TabsList className="grid w-full grid-cols-2 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl">
+            <TabsTrigger value="loading" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
+              Caricamento
             </TabsTrigger>
             <TabsTrigger value="manage" className="rounded-lg data-[state=active]:bg-tertiary data-[state=active]:text-tertiary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
               Gestisci
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upload" className="flex-1 overflow-y-auto space-y-4 mt-0 pb-4">
+          <TabsContent value="loading" className="flex-1 mt-0 overflow-hidden">
+            <Tabs value={loadingTab} onValueChange={setLoadingTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <TabsList className="grid w-full grid-cols-3 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl">
+                <TabsTrigger value="upload" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
+                  📄 PDF
+                </TabsTrigger>
+                <TabsTrigger value="photos" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
+                  📷 Foto
+                </TabsTrigger>
+                <TabsTrigger value="web" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
+                  🌐 Web
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="upload" className="flex-1 overflow-y-auto space-y-4 mt-0 pb-4">
             <div
               className={cn(
                 "relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-500",
@@ -431,9 +440,9 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
               </Button>
               <p className="body-small text-muted-foreground text-center mt-2">✨ Ogni PDF creerà un percorso di studio personalizzato</p>
             </div>
-          </TabsContent>
+              </TabsContent>
 
-          <TabsContent value="photos" className="flex-1 overflow-y-auto space-y-4 mt-0 pb-4">
+              <TabsContent value="photos" className="flex-1 overflow-y-auto space-y-4 mt-0 pb-4">
             <div className="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-500 border-outline-variant hover:border-primary/40 hover:bg-surface-container-low">
               <input
                 type="file"
@@ -496,9 +505,9 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
               </Button>
               <p className="body-small text-muted-foreground text-center mt-2">📸 L'AI estrarrà il testo e creerà le lezioni</p>
             </div>
-          </TabsContent>
+              </TabsContent>
 
-          <TabsContent value="web" className="flex-1 overflow-y-auto space-y-5 mt-0 pb-4">
+              <TabsContent value="web" className="flex-1 overflow-y-auto space-y-5 mt-0 pb-4">
             <div className="text-center space-y-3">
               <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto shadow-level-2">
                 <Globe className="w-8 h-8 text-primary-foreground" />
@@ -539,6 +548,8 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 🔍 Powered by ricerca AI avanzata
               </p>
             </div>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           <TabsContent value="manage" className="mt-0">
