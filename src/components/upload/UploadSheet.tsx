@@ -498,7 +498,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
             </div>
           </TabsContent>
 
-
+          <TabsContent value="web" className="flex-1 overflow-y-auto space-y-5 mt-0 pb-4">
             <div className="text-center space-y-3">
               <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto shadow-level-2">
                 <Globe className="w-8 h-8 text-primary-foreground" />
