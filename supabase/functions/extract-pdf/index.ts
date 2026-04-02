@@ -25,7 +25,7 @@ serve(async (req) => {
       console.log("Internal service call for PDF processing");
       supabase = createClient(supabaseUrl, supabaseServiceKey);
       
-      if (action === "process" && contextId) {
+      if ((action === "process" || action === "process-images") && contextId) {
         const { data: context, error: fetchError } = await supabase
           .from("study_contexts")
           .select("user_id")
