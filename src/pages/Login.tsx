@@ -48,42 +48,25 @@ export default function Login() {
     // Navigation handled by auth state change
   };
 
-  const handleOAuthSignIn = async (provider: "google" | "apple" | "azure") => {
+  const handleOAuthSignIn = async (provider: "google" | "apple") => {
     setIsSubmitting(true);
-    const configuredRedirect = import.meta.env.VITE_OAUTH_REDIRECT_URL;
-    const redirectUrl = configuredRedirect || `${window.location.origin}/login`;
-    const providerLabel = provider === "google" ? "Google" : provider === "apple" ? "Apple" : "Microsoft";
+    const providerLabel = provider === "google" ? "Google" : "Apple";
 
     try {
-      const oauthAttempt = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: redirectUrl,
-          skipBrowserRedirect: true,
-          queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
-        },
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: window.location.origin,
+        extraParams: provider === "google" ? { prompt: "select_account" } : undefined,
       });
 
-      let data = oauthAttempt.data;
-      let error = oauthAttempt.error;
-
-      // Fallback: if a custom redirect URL is rejected, retry with Supabase default redirect.
-      if (error && configuredRedirect) {
-        const retry = await supabase.auth.signInWithOAuth({
-          provider,
-          options: {
-            skipBrowserRedirect: true,
-            queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
-          },
-        });
-        data = retry.data;
-        error = retry.error;
+      if (result.error) {
+        throw result.error;
       }
 
-      if (error) throw error;
-      if (!data?.url) throw new Error(`URL OAuth non disponibile per ${providerLabel}`);
+      if (result.redirected) {
+        return; // Browser will redirect
+      }
 
-      window.location.assign(data.url);
+      // Session set automatically, navigation handled by auth state
     } catch (error: unknown) {
       toast({
         title: `Errore ${providerLabel}`,
