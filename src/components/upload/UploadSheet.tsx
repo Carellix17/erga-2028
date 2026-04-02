@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { FileUp, X, FileText, Loader2, Sparkles, Check, Globe, Search, Camera, ImageIcon } from "lucide-react";
+import { FileUp, X, FileText, Loader2, Sparkles, Check, Globe, Search, Camera, ImageIcon, ChevronLeft } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,11 +32,16 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
   const [generationStep, setGenerationStep] = useState<GenerationStep>("idle");
   const [currentFileName, setCurrentFileName] = useState("");
   const [activeTab, setActiveTab] = useState<string>("loading");
-  const [loadingTab, setLoadingTab] = useState<string>("upload");
+  const [loadingTab, setLoadingTab] = useState<string>("menu");
   const [webTopic, setWebTopic] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+
+  const handleMainTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === "loading") setLoadingTab("menu");
+  };
 
   const MAX_IMAGES = 5;
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -360,7 +365,9 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
           <SheetTitle className="font-display text-xl">I tuoi materiali</SheetTitle>
         </SheetHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={handleMainTabChange} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+
+
           <TabsList className="grid w-full grid-cols-2 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl">
             <TabsTrigger value="loading" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
               Caricamento
@@ -372,19 +379,42 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
 
           <TabsContent value="loading" className="flex-1 mt-0 overflow-hidden">
             <Tabs value={loadingTab} onValueChange={setLoadingTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              <TabsList className="grid w-full grid-cols-3 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl">
-                <TabsTrigger value="upload" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
-                  📄 PDF
-                </TabsTrigger>
-                <TabsTrigger value="photos" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
-                  📷 Foto
-                </TabsTrigger>
-                <TabsTrigger value="web" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
-                  🌐 Web
-                </TabsTrigger>
-              </TabsList>
+              <TabsContent value="menu" className="flex-1 overflow-y-auto mt-0 pb-4">
+                <div className="space-y-4">
+                  <p className="body-medium text-muted-foreground text-center">
+                    Scegli come vuoi caricare i tuoi materiali
+                  </p>
+                  <div className="grid gap-3">
+                    <Button type="button" onClick={() => setLoadingTab("upload")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40">
+                      <FileText className="w-5 h-5 text-primary" />
+                      <div className="text-left">
+                        <p className="font-medium">Carica PDF</p>
+                        <p className="body-small text-muted-foreground">Appunti, dispense o documenti</p>
+                      </div>
+                    </Button>
+                    <Button type="button" onClick={() => setLoadingTab("photos")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40">
+                      <Camera className="w-5 h-5 text-primary" />
+                      <div className="text-left">
+                        <p className="font-medium">Carica foto</p>
+                        <p className="body-small text-muted-foreground">Scatta o scegli immagini</p>
+                      </div>
+                    </Button>
+                    <Button type="button" onClick={() => setLoadingTab("web")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40">
+                      <Globe className="w-5 h-5 text-primary" />
+                      <div className="text-left">
+                        <p className="font-medium">Ricerca web</p>
+                        <p className="body-small text-muted-foreground">Genera lezioni da un argomento</p>
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
 
               <TabsContent value="upload" className="flex-1 overflow-y-auto space-y-4 mt-0 pb-4">
+            <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")}>
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Torna a Caricamento
+            </Button>
             <div
               className={cn(
                 "relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-500",
@@ -443,6 +473,11 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
               </TabsContent>
 
               <TabsContent value="photos" className="flex-1 overflow-y-auto space-y-4 mt-0 pb-4">
+            <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")}>
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Torna a Caricamento
+            </Button>
+
             <div className="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-500 border-outline-variant hover:border-primary/40 hover:bg-surface-container-low">
               <input
                 type="file"
@@ -508,6 +543,11 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
               </TabsContent>
 
               <TabsContent value="web" className="flex-1 overflow-y-auto space-y-5 mt-0 pb-4">
+            <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")}>
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Torna a Caricamento
+            </Button>
+
             <div className="text-center space-y-3">
               <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto shadow-level-2">
                 <Globe className="w-8 h-8 text-primary-foreground" />
