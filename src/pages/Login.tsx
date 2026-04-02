@@ -50,6 +50,7 @@ export default function Login() {
   const handleOAuthSignIn = async (provider: "google" | "apple" | "azure") => {
     setIsSubmitting(true);
     const redirectUrl = import.meta.env.VITE_OAUTH_REDIRECT_URL || `${window.location.origin}/login`;
+
     const providerLabel = provider === "google" ? "Google" : provider === "apple" ? "Apple" : "Microsoft";
 
     try {
