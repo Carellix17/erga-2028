@@ -34,11 +34,11 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
   const [activeTab, setActiveTab] = useState<string>("upload");
   const [webTopic, setWebTopic] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const { currentUser } = useAuth();
   const { toast } = useToast();
 
   const MAX_IMAGES = 5;
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-  const { toast } = useToast();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
