@@ -49,24 +49,40 @@ export default function Login() {
 
   const handleOAuthSignIn = async (provider: "google" | "apple" | "azure") => {
     setIsSubmitting(true);
-    const redirectUrl = import.meta.env.VITE_OAUTH_REDIRECT_URL || `${window.location.origin}/login`;
+    const configuredRedirect = import.meta.env.VITE_OAUTH_REDIRECT_URL;
+    const redirectUrl = configuredRedirect || `${window.location.origin}/login`;
     const providerLabel = provider === "google" ? "Google" : provider === "apple" ? "Apple" : "Microsoft";
 
     try {
-      if (provider === "azure") {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "azure",
-          options: { redirectTo: redirectUrl },
+      const oauthAttempt = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+          queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
+        },
+      });
+
+      let data = oauthAttempt.data;
+      let error = oauthAttempt.error;
+
+      // Fallback: if a custom redirect URL is rejected, retry with Supabase default redirect.
+      if (error && configuredRedirect) {
+        const retry = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            skipBrowserRedirect: true,
+            queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
+          },
         });
-        if (error) throw error;
-      } else {
-        const result = await lovable.auth.signInWithOAuth(provider, {
-          redirect_uri: redirectUrl,
-          extraParams: provider === "google" ? { prompt: "select_account" } : undefined,
-        });
-        if (result.error) throw result.error;
+        data = retry.data;
+        error = retry.error;
       }
 
+      if (error) throw error;
+      if (!data?.url) throw new Error(`URL OAuth non disponibile per ${providerLabel}`);
+
+      window.location.assign(data.url);
     } catch (error: unknown) {
       toast({
         title: `Errore ${providerLabel}`,
@@ -76,8 +92,8 @@ export default function Login() {
             : `Impossibile collegarsi a ${providerLabel}`,
         variant: "destructive",
       });
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
 
   return (
