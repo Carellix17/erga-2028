@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 
@@ -67,6 +66,7 @@ export default function Login() {
         });
         if (result.error) throw result.error;
       }
+
     } catch (error: unknown) {
       toast({
         title: `Errore ${providerLabel}`,
