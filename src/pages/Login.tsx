@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 
@@ -48,26 +47,53 @@ export default function Login() {
     // Navigation handled by auth state change
   };
 
-  const handleOAuthSignIn = async (provider: "google" | "apple") => {
+  const handleOAuthSignIn = async (provider: "google" | "apple" | "azure") => {
     setIsSubmitting(true);
-    const redirectUrl = `${window.location.origin}/login`;
+    const configuredRedirect = import.meta.env.VITE_OAUTH_REDIRECT_URL;
+    const redirectUrl = configuredRedirect || `${window.location.origin}/login`;
+    const providerLabel = provider === "google" ? "Google" : provider === "apple" ? "Apple" : "Microsoft";
 
     try {
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: redirectUrl,
+      const oauthAttempt = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+          queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
+        },
       });
-      if (result.error) throw result.error;
+
+      let data = oauthAttempt.data;
+      let error = oauthAttempt.error;
+
+      // Fallback: if a custom redirect URL is rejected, retry with Supabase default redirect.
+      if (error && configuredRedirect) {
+        const retry = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            skipBrowserRedirect: true,
+            queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
+          },
+        });
+        data = retry.data;
+        error = retry.error;
+      }
+
+      if (error) throw error;
+      if (!data?.url) throw new Error(`URL OAuth non disponibile per ${providerLabel}`);
+
+      window.location.assign(data.url);
     } catch (error: unknown) {
       toast({
-        title: `Errore ${provider === "google" ? "Google" : "Apple"}`,
+        title: `Errore ${providerLabel}`,
         description:
           error instanceof Error
             ? error.message
-            : `Impossibile collegarsi a ${provider === "google" ? "Google" : "Apple"}`,
+            : `Impossibile collegarsi a ${providerLabel}`,
         variant: "destructive",
       });
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -92,7 +118,7 @@ export default function Login() {
         <div className="glass-card rounded-[1.75rem] p-6 shadow-glass-xl">
           <div className="text-center mb-6">
             <h2 className="text-xl font-heading font-semibold">Accedi</h2>
-            <p className="text-sm text-muted-foreground mt-1">Email, Google o Apple</p>
+            <p className="text-sm text-muted-foreground mt-1">Email, Google, Apple o Microsoft</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -160,6 +186,16 @@ export default function Login() {
                   <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                 </svg>
                 Continua con Apple
+              </Button>
+
+              <Button type="button" variant="outline" className="w-full h-12 rounded-xl glass-subtle border-border/30 hover:shadow-glass transition-all duration-300" onClick={() => handleOAuthSignIn("azure")} disabled={isSubmitting}>
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="2" y="2" width="9" height="9" fill="#F25022" />
+                  <rect x="13" y="2" width="9" height="9" fill="#7FBA00" />
+                  <rect x="2" y="13" width="9" height="9" fill="#00A4EF" />
+                  <rect x="13" y="13" width="9" height="9" fill="#FFB900" />
+                </svg>
+                Continua con Microsoft
               </Button>
             </div>
           </form>
