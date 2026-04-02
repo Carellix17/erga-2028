@@ -366,8 +366,6 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         </SheetHeader>
 
         <Tabs value={activeTab} onValueChange={handleMainTabChange} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-
-
           <TabsList className="grid w-full grid-cols-2 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl">
             <TabsTrigger value="loading" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
               Caricamento
@@ -477,7 +475,6 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
               <ChevronLeft className="w-4 h-4 mr-1" />
               Torna a Caricamento
             </Button>
-
             <div className="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-500 border-outline-variant hover:border-primary/40 hover:bg-surface-container-low">
               <input
                 type="file"
@@ -547,7 +544,6 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
               <ChevronLeft className="w-4 h-4 mr-1" />
               Torna a Caricamento
             </Button>
-
             <div className="text-center space-y-3">
               <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto shadow-level-2">
                 <Globe className="w-8 h-8 text-primary-foreground" />
