@@ -360,14 +360,17 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         </SheetHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-3 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl">
-            <TabsTrigger value="upload" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300">
+          <TabsList className="grid w-full grid-cols-4 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl">
+            <TabsTrigger value="upload" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
               📄 PDF
             </TabsTrigger>
-            <TabsTrigger value="web" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300">
+            <TabsTrigger value="photos" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
+              📷 Foto
+            </TabsTrigger>
+            <TabsTrigger value="web" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
               🌐 Web
             </TabsTrigger>
-            <TabsTrigger value="manage" className="rounded-lg data-[state=active]:bg-tertiary data-[state=active]:text-tertiary-foreground data-[state=active]:shadow-level-1 transition-all duration-300">
+            <TabsTrigger value="manage" className="rounded-lg data-[state=active]:bg-tertiary data-[state=active]:text-tertiary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
               Gestisci
             </TabsTrigger>
           </TabsList>
