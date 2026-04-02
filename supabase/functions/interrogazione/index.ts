@@ -146,6 +146,6 @@ Rispondi in formato JSON (SOLO JSON):
     return errorResponse("Azione non valida", 400);
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Errore nel servizio interrogazione. Riprova.");
   }
 });

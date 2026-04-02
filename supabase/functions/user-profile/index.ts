@@ -90,9 +90,9 @@ serve(async (req) => {
         .from("avatars")
         .upload(filePath, binaryData, { contentType, upsert: true });
 
-      if (uploadError) {
+    if (uploadError) {
         console.error("Avatar upload error:", uploadError);
-        return errorResponse(`Upload fallito: ${uploadError.message}`);
+        return errorResponse("Errore nel caricamento dell'immagine");
       }
 
       return successResponse({ success: true });
@@ -101,6 +101,6 @@ serve(async (req) => {
     return errorResponse("Azione non valida", 400);
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Errore sconosciuto");
+    return errorResponse("Errore nel servizio profilo. Riprova.");
   }
 });

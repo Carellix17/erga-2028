@@ -115,6 +115,6 @@ ${contextSummary}`;
 
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Errore nella generazione del piano. Riprova.");
   }
 });

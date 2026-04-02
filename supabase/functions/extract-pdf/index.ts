@@ -22,11 +22,9 @@ serve(async (req) => {
     let supabase;
 
     if (isInternalServiceCall) {
-      // Internal call from upload-pdf - trust the service role
       console.log("Internal service call for PDF processing");
       supabase = createClient(supabaseUrl, supabaseServiceKey);
       
-      // For internal calls processing a context, we get userId from the context record
       if (action === "process" && contextId) {
         const { data: context, error: fetchError } = await supabase
           .from("study_contexts")
@@ -40,21 +38,19 @@ serve(async (req) => {
         }
         userId = context.user_id;
       } else {
-        return errorResponse("Invalid internal service call", 400);
+        return errorResponse("Richiesta non valida", 400);
       }
     } else {
-      // External call - validate user authentication
       const auth = await validateAuth(req, body);
       userId = auth.userId;
       supabase = auth.supabase;
-      console.log(`Extract PDF for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
+      console.log(`Extract PDF for user: ${userId}`);
     }
 
-    // Action: process - Process an existing context record
+    // Action: process
     if (action === "process" && contextId) {
       console.log(`Processing PDF for context: ${contextId}`);
       
-      // Get the context record and verify ownership
       const { data: context, error: fetchError } = await supabase
         .from("study_contexts")
         .select("*")
@@ -66,37 +62,33 @@ serve(async (req) => {
         return errorResponse("Contesto non trovato", 404);
       }
 
-      // SECURITY: Verify the user owns this context
       if (context.user_id !== userId) {
-        console.error(`Unauthorized access: user ${userId} tried to access context owned by ${context.user_id}`);
+        console.error(`Unauthorized access attempt for context ${contextId}`);
         return errorResponse("Non autorizzato", 403);
       }
 
-      // Update status to processing
       await supabase
         .from("study_contexts")
         .update({ processing_status: "processing" })
         .eq("id", contextId)
-        .eq("user_id", userId); // Additional safety check
+        .eq("user_id", userId);
 
       try {
-        // Download the PDF from storage
         const { data: fileData, error: downloadError } = await supabase
           .storage
           .from("study-pdfs")
           .download(context.file_path);
 
         if (downloadError || !fileData) {
-          throw new Error("Impossibile scaricare il file: " + downloadError?.message);
+          console.error("File download error:", downloadError);
+          throw new Error("FILE_DOWNLOAD_ERROR");
         }
 
-        // Convert to array buffer
         const arrayBuffer = await fileData.arrayBuffer();
         const pdfBytes = new Uint8Array(arrayBuffer);
         
         console.log(`Downloaded PDF: ${pdfBytes.length} bytes`);
 
-        // Extract text using pdfjs-serverless
         let extractedText = "";
         
         try {
@@ -108,16 +100,13 @@ serve(async (req) => {
           console.log(`Extracted with fallback: ${extractedText.length} characters`);
         }
 
-        // Validate extracted content
         if (!extractedText || extractedText.length < 50) {
-          throw new Error("Impossibile estrarre testo sufficiente dal PDF. Il file potrebbe essere un'immagine o protetto.");
+          throw new Error("INSUFFICIENT_TEXT");
         }
 
-        // Clean the extracted text
         const cleanedText = cleanExtractedText(extractedText);
         console.log(`Cleaned text: ${cleanedText.length} characters`);
 
-        // Update context with extracted content
         const { error: updateError } = await supabase
           .from("study_contexts")
           .update({
@@ -128,7 +117,8 @@ serve(async (req) => {
           .eq("id", contextId);
 
         if (updateError) {
-          throw new Error("Errore nel salvataggio: " + updateError.message);
+          console.error("Database update error:", updateError);
+          throw new Error("DATABASE_ERROR");
         }
 
         return successResponse({ 
@@ -140,28 +130,33 @@ serve(async (req) => {
       } catch (processError) {
         console.error("Processing error:", processError);
         
-        // Mark as failed - include user_id check for safety
+        const userMessage = processError instanceof Error
+          ? processError.message === "FILE_DOWNLOAD_ERROR" ? "Impossibile scaricare il file"
+          : processError.message === "INSUFFICIENT_TEXT" ? "Impossibile estrarre testo sufficiente dal PDF. Il file potrebbe essere un'immagine o protetto."
+          : processError.message === "DATABASE_ERROR" ? "Errore nel salvataggio"
+          : "Errore durante l'elaborazione del PDF"
+          : "Errore durante l'elaborazione del PDF";
+
         await supabase
           .from("study_contexts")
           .update({
             processing_status: "failed",
-            error_message: processError instanceof Error ? processError.message : "Errore sconosciuto"
+            error_message: userMessage
           })
           .eq("id", contextId)
-          .eq("user_id", userId); // Safety check
+          .eq("user_id", userId);
 
-        return errorResponse(processError instanceof Error ? processError.message : "Errore durante l'elaborazione");
+        return errorResponse(userMessage);
       }
     }
 
-    // Action: register - Register a new upload
+    // Action: register
     if (!userId || !fileName || !filePath) {
-      return errorResponse("Missing required fields: userId, fileName, filePath", 400);
+      return errorResponse("Dati mancanti", 400);
     }
 
     console.log(`Registering PDF upload: ${fileName} for user: ${userId}`);
 
-    // Create study_contexts record with pending status
     const { data, error } = await supabase
       .from("study_contexts")
       .insert({
@@ -179,7 +174,6 @@ serve(async (req) => {
       return errorResponse("Errore nel salvataggio");
     }
 
-    // Start async processing
     const processUrl = `${supabaseUrl}/functions/v1/extract-pdf`;
     fetch(processUrl, {
       method: "POST",
@@ -198,7 +192,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Errore sconosciuto");
+    return errorResponse("Errore durante l'elaborazione");
   }
 });
 
