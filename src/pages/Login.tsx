@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 
@@ -50,14 +49,19 @@ export default function Login() {
 
   const handleOAuthSignIn = async (provider: "google" | "apple" | "azure") => {
     setIsSubmitting(true);
-    const redirectUrl = `${window.location.origin}/login`;
+    const redirectUrl = import.meta.env.VITE_OAUTH_REDIRECT_URL || `${window.location.origin}/login`;
+
     const providerLabel = provider === "google" ? "Google" : provider === "apple" ? "Apple" : "Microsoft";
 
     try {
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: redirectUrl,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
+        },
       });
-      if (result.error) throw result.error;
+      if (error) throw error;
     } catch (error: unknown) {
       toast({
         title: `Errore ${providerLabel}`,
@@ -164,8 +168,11 @@ export default function Login() {
               </Button>
 
               <Button type="button" variant="outline" className="w-full h-12 rounded-xl glass-subtle border-border/30 hover:shadow-glass transition-all duration-300" onClick={() => handleOAuthSignIn("azure")} disabled={isSubmitting}>
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M1.5 3h10.2v8.9H1.5V3Zm10.8 0h10.2v8.9H12.3V3ZM1.5 12.7h10.2V21H1.5v-8.3Zm10.8 0h10.2V21H12.3v-8.3Z" />
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="2" y="2" width="9" height="9" fill="#F25022" />
+                  <rect x="13" y="2" width="9" height="9" fill="#7FBA00" />
+                  <rect x="2" y="13" width="9" height="9" fill="#00A4EF" />
+                  <rect x="13" y="13" width="9" height="9" fill="#FFB900" />
                 </svg>
                 Continua con Microsoft
               </Button>
