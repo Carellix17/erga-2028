@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { FileUp, X, FileText, Loader2, Sparkles, Check, Globe, Search } from "lucide-react";
+import { FileUp, X, FileText, Loader2, Sparkles, Check, Globe, Search, Camera, ImageIcon } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,6 +26,8 @@ type GenerationStep = "idle" | "uploading" | "processing" | "generating" | "comp
 export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSelectFile, onFileDeleted }: UploadSheetProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [generationStep, setGenerationStep] = useState<GenerationStep>("idle");
   const [currentFileName, setCurrentFileName] = useState("");
@@ -34,6 +36,9 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
   const [isSearching, setIsSearching] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+
+  const MAX_IMAGES = 5;
+  const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -53,6 +58,97 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
   };
 
   const removeFile = (index: number) => setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+
+  const handleImageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).filter(f => ALLOWED_IMAGE_TYPES.includes(f.type));
+    if (files.length === 0) return;
+    const total = selectedImages.length + files.length;
+    if (total > MAX_IMAGES) {
+      toast({ title: "Troppi file", description: `Puoi caricare massimo ${MAX_IMAGES} foto alla volta`, variant: "destructive" });
+      return;
+    }
+    setSelectedImages(prev => [...prev, ...files]);
+    // Generate previews
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setImagePreviews(prev => [...prev, ev.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUploadImages = async () => {
+    if (selectedImages.length === 0 || !currentUser) return;
+    setIsUploading(true);
+    setGenerationStep("uploading");
+    setCurrentFileName(`📷 ${selectedImages.length} foto`);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const formData = new FormData();
+      formData.append("uploadType", "images");
+      formData.append("contextName", `📷 ${selectedImages.length} foto`);
+      selectedImages.forEach((img, i) => formData.append(`image_${i}`, img));
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${authToken}` },
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Errore nel caricamento");
+
+      const contextId = data.contextId;
+      setGenerationStep("processing");
+
+      // Wait for image processing
+      const authTokenForLessons = (await supabase.auth.getSession()).data.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const maxAttempts = 30;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authTokenForLessons}` },
+          body: JSON.stringify({ userId: currentUser, action: "listContexts" }),
+        });
+        const statusData = await statusResponse.json();
+        const context = statusData.contexts?.find((c: { id: string }) => c.id === contextId);
+        if (context?.processing_status === "completed") break;
+        if (context?.processing_status === "failed") throw new Error(context.error_message || "Errore nell'elaborazione delle immagini");
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+
+      // Generate lessons
+      setGenerationStep("generating");
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authTokenForLessons}` },
+        body: JSON.stringify({ userId: currentUser, contextId }),
+      });
+
+      setGenerationStep("complete");
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      onUpload([{ name: `📷 ${selectedImages.length} foto`, size: selectedImages.reduce((s, f) => s + f.size, 0) }], contextId);
+      setSelectedImages([]);
+      setImagePreviews([]);
+      setGenerationStep("idle");
+      onOpenChange(false);
+      toast({ title: "Contenuti pronti! 🎉", description: "Le mini-lezioni sono state generate dalle tue foto." });
+    } catch (error) {
+      console.error("Image upload error:", error);
+      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel caricamento", variant: "destructive" });
+      setGenerationStep("idle");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleWebSearch = async () => {
     if (!webTopic.trim() || !currentUser) return;
@@ -264,14 +360,17 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         </SheetHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-3 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl">
-            <TabsTrigger value="upload" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300">
+          <TabsList className="grid w-full grid-cols-4 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl">
+            <TabsTrigger value="upload" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
               📄 PDF
             </TabsTrigger>
-            <TabsTrigger value="web" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300">
+            <TabsTrigger value="photos" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
+              📷 Foto
+            </TabsTrigger>
+            <TabsTrigger value="web" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
               🌐 Web
             </TabsTrigger>
-            <TabsTrigger value="manage" className="rounded-lg data-[state=active]:bg-tertiary data-[state=active]:text-tertiary-foreground data-[state=active]:shadow-level-1 transition-all duration-300">
+            <TabsTrigger value="manage" className="rounded-lg data-[state=active]:bg-tertiary data-[state=active]:text-tertiary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
               Gestisci
             </TabsTrigger>
           </TabsList>
@@ -331,6 +430,71 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 ) : ("Seleziona file da caricare")}
               </Button>
               <p className="body-small text-muted-foreground text-center mt-2">✨ Ogni PDF creerà un percorso di studio personalizzato</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="photos" className="flex-1 overflow-y-auto space-y-4 mt-0 pb-4">
+            <div className="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-500 border-outline-variant hover:border-primary/40 hover:bg-surface-container-low">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={handleImageInput}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={isUploading || selectedImages.length >= MAX_IMAGES}
+              />
+              <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2 animate-float">
+                <Camera className="w-8 h-8 text-primary-foreground" />
+              </div>
+              <p className="font-display font-semibold text-lg mb-1">Carica le tue foto</p>
+              <p className="body-small text-muted-foreground">Appunti, lavagna, libro — max {MAX_IMAGES} foto (JPG, PNG)</p>
+            </div>
+
+            {selectedImages.length > 0 && (
+              <div className="space-y-3 animate-fade-up">
+                <h3 className="label-medium text-muted-foreground">Foto selezionate ({selectedImages.length}/{MAX_IMAGES})</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative rounded-xl overflow-hidden aspect-square animate-scale-in bg-surface-container">
+                      <img src={preview} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 w-7 h-7 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center"
+                        disabled={isUploading}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <div className="absolute bottom-1 left-1 bg-background/80 backdrop-blur-sm rounded-full px-2 py-0.5">
+                        <span className="body-small text-xs">{(selectedImages[index]?.size / 1024 / 1024).toFixed(1)}MB</span>
+                      </div>
+                    </div>
+                  ))}
+                  {selectedImages.length < MAX_IMAGES && (
+                    <label className="relative rounded-xl border-2 border-dashed border-outline-variant aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-primary/40 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        onChange={handleImageInput}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <ImageIcon className="w-6 h-6 text-muted-foreground mb-1" />
+                      <span className="body-small text-muted-foreground text-xs">Aggiungi</span>
+                    </label>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="sticky bottom-0 bg-surface-container-high/95 backdrop-blur-sm pt-3 pb-2 -mx-1 px-1 mt-auto">
+              <Button onClick={handleUploadImages} disabled={selectedImages.length === 0 || isUploading} className="w-full h-14 text-base" size="lg">
+                {isUploading ? (
+                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Elaborazione...</>
+                ) : selectedImages.length > 0 ? (
+                  <><Sparkles className="w-5 h-5 mr-2" />Analizza {selectedImages.length} foto e genera lezioni</>
+                ) : ("Seleziona le foto da analizzare")}
+              </Button>
+              <p className="body-small text-muted-foreground text-center mt-2">📸 L'AI estrarrà il testo e creerà le lezioni</p>
             </div>
           </TabsContent>
 
