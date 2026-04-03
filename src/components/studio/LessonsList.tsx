@@ -1,8 +1,8 @@
-import { ChevronLeft, CheckCircle2, Circle, Lock, Loader2, Sparkles, RefreshCw, Target } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Lock, Loader2, Sparkles, RefreshCw, Target, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Exercise } from "./exercises/ExerciseRenderer";
-import { getStableSubjectColor, type SubjectColor } from "@/lib/subjectColors";
+import { getStableSubjectColor } from "@/lib/subjectColors";
 
 interface Lesson {
   id: string;
@@ -44,171 +44,220 @@ export function LessonsList({
   isLoadingFinalTest,
   contextFileName,
 }: LessonsListProps) {
-  const progress = Math.round((lessons.filter(l => l.is_generated).length / lessons.length) * 100);
+  const completedCount = lessons.filter(l => l.is_generated).length;
+  const progress = Math.round((completedCount / lessons.length) * 100);
   const color = getStableSubjectColor(contextFileName || "");
 
-  return (
-    <div className="p-4 pb-24 animate-fade-up">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        {showBackButton && (
-          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full">
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-        )}
-        <div className="flex-1">
-          <h2 className="title-large font-display">Percorso di studio</h2>
-          <p className="body-small text-muted-foreground">
-            {lessons.filter(l => l.is_generated).length} di {lessons.length} lezioni generate
-          </p>
-        </div>
-        {onRegenerate && (
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={onRegenerate}
-            disabled={isRegenerating}
-          >
-            {isRegenerating ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4" />
-            )}
-          </Button>
-        )}
-      </div>
+  // Path zigzag positions: nodes alternate left-center-right
+  const getNodePosition = (index: number): "left" | "center" | "right" => {
+    const cycle = index % 4;
+    if (cycle === 0) return "center";
+    if (cycle === 1) return "right";
+    if (cycle === 2) return "center";
+    return "left";
+  };
 
-      {/* Progress overview — subject-colored gradient card */}
-      <div className={cn(
-        "rounded-3xl p-5 mb-5 shadow-level-2 text-white relative overflow-hidden bg-gradient-to-r",
-        color.gradient
-      )}>
-        <div className="absolute inset-0 bg-black/5" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <p className="title-small text-white">Progresso totale</p>
-              <p className="body-small text-white/75">{progress}% completato</p>
-            </div>
-            <span className="text-2xl font-display font-bold text-white/90">{progress}%</span>
+  return (
+    <div className="pb-28 animate-fade-up">
+      {/* Header */}
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl px-4 pt-4 pb-3">
+        <div className="flex items-center gap-3 mb-3">
+          {showBackButton && (
+            <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full -ml-2">
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+          )}
+          <div className="flex-1 min-w-0">
+            <h2 className="title-large font-display truncate">{contextFileName || "Percorso di studio"}</h2>
+            <p className="body-small text-muted-foreground">
+              {completedCount}/{lessons.length} lezioni completate
+            </p>
           </div>
-          <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-white rounded-full transition-all duration-500 ease-m3-emphasized"
+          {onRegenerate && (
+            <Button variant="outline" size="icon-sm" onClick={onRegenerate} disabled={isRegenerating} className="rounded-full">
+              {isRegenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            </Button>
+          )}
+        </div>
+
+        {/* Progress bar */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
+            <div
+              className={cn("h-full rounded-full transition-all duration-700 ease-m3-emphasized bg-gradient-to-r", color.gradient)}
               style={{ width: `${progress}%` }}
             />
           </div>
+          <div className="flex items-center gap-1">
+            <Star className="w-4 h-4 text-warning fill-warning" />
+            <span className="label-large text-foreground">{progress}%</span>
+          </div>
         </div>
       </div>
 
-      {/* Lessons List */}
-      <div className="space-y-2.5">
-        {lessons.map((lesson, index) => {
-          const isCompleted = index < currentIndex;
-          const isCurrent = index === currentIndex;
-          const isLocked = !lesson.is_generated && index > currentIndex;
+      {/* Path */}
+      <div className="relative px-4 pt-6">
+        {/* Vertical connector line */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+          {lessons.map((_, index) => {
+            if (index === lessons.length - 1) return null;
+            const fromPos = getNodePosition(index);
+            const toPos = getNodePosition(index + 1);
 
-          return (
+            const fromX = fromPos === "left" ? 30 : fromPos === "right" ? 70 : 50;
+            const toX = toPos === "left" ? 30 : toPos === "right" ? 70 : 50;
+
+            const yStart = 60 + index * 120;
+            const yEnd = 60 + (index + 1) * 120;
+            const midY = (yStart + yEnd) / 2;
+
+            const isCompleted = index < currentIndex;
+
+            return (
+              <path
+                key={`line-${index}`}
+                d={`M ${fromX}% ${yStart} C ${fromX}% ${midY}, ${toX}% ${midY}, ${toX}% ${yEnd}`}
+                fill="none"
+                stroke={isCompleted ? "hsl(var(--success))" : "hsl(var(--outline-variant))"}
+                strokeWidth="3"
+                strokeDasharray={isCompleted ? "none" : "8 6"}
+                opacity={isCompleted ? 0.6 : 0.3}
+                className="transition-all duration-500"
+              />
+            );
+          })}
+        </svg>
+
+        {/* Lesson nodes */}
+        <div className="relative" style={{ zIndex: 1 }}>
+          {lessons.map((lesson, index) => {
+            const isCompleted = index < currentIndex;
+            const isCurrent = index === currentIndex;
+            const isLocked = !lesson.is_generated && index > currentIndex;
+            const position = getNodePosition(index);
+
+            return (
+              <div
+                key={lesson.id}
+                className="flex items-center"
+                style={{
+                  height: 120,
+                  justifyContent: position === "left" ? "flex-start" : position === "right" ? "flex-end" : "center",
+                  paddingLeft: position === "left" ? "8%" : 0,
+                  paddingRight: position === "right" ? "8%" : 0,
+                }}
+              >
+                <button
+                  onClick={() => !isGenerating && onSelectLesson(index)}
+                  disabled={isGenerating}
+                  className={cn(
+                    "relative group flex flex-col items-center transition-all duration-400 ease-m3-emphasized",
+                    !isGenerating && "active:scale-90",
+                    isCurrent && "scale-110",
+                  )}
+                  style={{ animationDelay: `${index * 60}ms` }}
+                >
+                  {/* Glow ring for current */}
+                  {isCurrent && (
+                    <div className={cn(
+                      "absolute inset-0 -m-3 rounded-full animate-pulse opacity-30 bg-gradient-to-r",
+                      color.gradient
+                    )} />
+                  )}
+
+                  {/* Node circle */}
+                  <div className={cn(
+                    "relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-400 ease-m3-emphasized shadow-level-1",
+                    isCompleted && "bg-success text-white shadow-level-2",
+                    isCurrent && cn("text-white shadow-level-3 bg-gradient-to-br", color.gradient),
+                    !isCurrent && !isCompleted && !isLocked && "bg-surface-container-high text-muted-foreground",
+                    isLocked && "bg-surface-container text-muted-foreground opacity-50",
+                    !isGenerating && !isLocked && "group-hover:shadow-level-2 group-hover:scale-105"
+                  )}>
+                    {isGenerating && isCurrent ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    ) : isCompleted ? (
+                      <CheckCircle2 className="w-7 h-7" />
+                    ) : isLocked ? (
+                      <Lock className="w-5 h-5" />
+                    ) : (
+                      <span className="text-lg font-display font-bold">{index + 1}</span>
+                    )}
+
+                    {/* Crown/star for current */}
+                    {isCurrent && !isGenerating && (
+                      <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-warning flex items-center justify-center shadow-level-2 animate-bounce-gentle">
+                        <Sparkles className="w-3.5 h-3.5 text-warning-foreground" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Label */}
+                  <div className={cn(
+                    "mt-2 max-w-[140px] text-center transition-all duration-300",
+                    isCurrent && "scale-105"
+                  )}>
+                    <p className={cn(
+                      "label-medium leading-tight line-clamp-2",
+                      isCurrent && cn(color.text, "font-semibold"),
+                      isCompleted && "text-success font-medium",
+                      isLocked && "text-muted-foreground/50",
+                      !isCurrent && !isCompleted && !isLocked && "text-foreground"
+                    )}>
+                      {lesson.title}
+                    </p>
+                    {isCompleted && (
+                      <p className="body-small text-success/70 mt-0.5">✓ Completata</p>
+                    )}
+                    {isCurrent && lesson.is_generated && (
+                      <p className={cn("body-small mt-0.5", color.text, "opacity-70")}>
+                        {lesson.exercises?.length || 0} esercizi
+                      </p>
+                    )}
+                  </div>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Final Test Node */}
+        {showFinalTest && onStartFinalTest && (
+          <div className="flex justify-center" style={{ height: 120, paddingTop: 10 }}>
             <button
-              key={lesson.id}
-              onClick={() => !isGenerating && onSelectLesson(index)}
-              disabled={isGenerating}
-              className={cn(
-                "w-full p-4 rounded-3xl text-left transition-all duration-400 ease-m3-emphasized",
-                "flex items-center gap-3.5 state-layer active:scale-[0.97]",
-                isCurrent && `${color.bg} shadow-level-1 border ${color.border}`,
-                isCompleted && !isCurrent && "bg-surface-container-low",
-                !isCurrent && !isCompleted && "bg-surface-container-low",
-                isLocked && "opacity-38",
-                !isGenerating && "hover:shadow-level-1 hover:scale-[1.01]"
-              )}
+              onClick={onStartFinalTest}
+              disabled={isLoadingFinalTest}
+              className="relative group flex flex-col items-center transition-all duration-400 ease-m3-emphasized active:scale-90"
             >
-              {/* Status Icon */}
+              {/* Glow */}
               <div className={cn(
-                "w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all duration-400 ease-m3-emphasized",
-                isCompleted && "bg-success text-white",
-                isCurrent && `${color.bgActive} ${color.textActive}`,
-                !isCurrent && !isCompleted && "bg-surface-container-highest"
+                "absolute inset-0 -m-4 rounded-full animate-pulse opacity-20 bg-gradient-to-r",
+                color.gradient
+              )} />
+
+              {/* Node */}
+              <div className={cn(
+                "relative w-20 h-20 rounded-full flex items-center justify-center shadow-level-3 text-white bg-gradient-to-br",
+                color.gradient,
+                "group-hover:shadow-level-4 group-hover:scale-105"
               )}>
-                {isGenerating && isCurrent ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : isCompleted ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : isCurrent ? (
-                  <span className="label-large">{index + 1}</span>
-                ) : isLocked ? (
-                  <Lock className="w-4 h-4 text-muted-foreground" />
+                {isLoadingFinalTest ? (
+                  <Loader2 className="w-7 h-7 animate-spin" />
                 ) : (
-                  <Circle className="w-4 h-4 text-muted-foreground" />
+                  <Target className="w-8 h-8" />
                 )}
               </div>
 
-              {/* Lesson Info */}
-              <div className="flex-1 min-w-0">
-                <p className={cn(
-                  "title-small truncate",
-                  isCurrent && `${color.text} font-semibold`,
-                  isCompleted && "text-foreground",
-                  isLocked && "text-muted-foreground"
-                )}>
-                  {lesson.title}
-                </p>
+              <div className="mt-2 text-center">
+                <p className={cn("label-large font-semibold", color.text)}>Test Finale</p>
                 <p className="body-small text-muted-foreground">
-                  {lesson.is_generated 
-                    ? `${(lesson.exercises?.length || 0)} esercizi`
-                    : "Da generare"}
+                  {isLoadingFinalTest ? "Generazione..." : "Mettiti alla prova!"}
                 </p>
               </div>
-
-              {/* Generated badge */}
-              {lesson.is_generated && (
-                <span className={cn(
-                  "label-small px-3 py-1.5 rounded-full font-semibold",
-                  color.badge, color.badgeText
-                )}>
-                  ✓ Pronta
-                </span>
-              )}
             </button>
-          );
-        })}
+          </div>
+        )}
       </div>
-
-      {/* Final Test Button — subject-colored */}
-      {showFinalTest && onStartFinalTest && (
-        <div className="mt-6">
-          <button
-            onClick={onStartFinalTest}
-            disabled={isLoadingFinalTest}
-            className={cn(
-              "w-full p-4 rounded-3xl text-left transition-all duration-400 ease-m3-emphasized",
-              "flex items-center gap-3.5 text-white shadow-level-2 hover:shadow-level-3 hover:scale-[1.01] active:scale-[0.97]",
-              "relative overflow-hidden bg-gradient-to-r",
-              color.gradient
-            )}
-          >
-            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-              {isLoadingFinalTest ? (
-                <Loader2 className="w-5 h-5 text-white animate-spin" />
-              ) : (
-                <Target className="w-5 h-5 text-white" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="title-small text-white font-semibold">Test Finale</p>
-              <p className="body-small text-white/75">
-                {isLoadingFinalTest ? "Generazione in corso..." : "Metti alla prova le tue conoscenze"}
-              </p>
-            </div>
-            <span className="label-small px-3 py-1.5 rounded-full bg-white/20 text-white font-semibold">
-              🎯 Quiz
-            </span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }

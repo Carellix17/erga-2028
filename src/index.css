@@ -513,6 +513,13 @@
   .animate-float {
     animation: m3-float 3s ease-in-out infinite;
   }
+  .animate-bounce-gentle {
+    animation: bounce-gentle 2s ease-in-out infinite;
+  }
+  @keyframes bounce-gentle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
   .animate-stagger-1 { animation-delay: 50ms; animation-fill-mode: both; }
   .animate-stagger-2 { animation-delay: 100ms; animation-fill-mode: both; }
   .animate-stagger-3 { animation-delay: 150ms; animation-fill-mode: both; }
