@@ -176,7 +176,7 @@ export function LessonsList({
 
               {/* Path + Nodes */}
               <div className="relative" style={{ height: totalH }}>
-                {/* Single continuous SVG path */}
+                {/* Single continuous SVG path — behind everything */}
                 {pathD && (
                   <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${SVG_WIDTH} ${totalH}`} preserveAspectRatio="none" style={{ zIndex: 0 }}>
                     {/* Background track (future) */}
@@ -187,7 +187,7 @@ export function LessonsList({
                       strokeWidth={4}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      opacity={0.4}
+                      opacity={0.35}
                     />
                     {/* Progress overlay (completed) */}
                     {progressRatio > 0 && (
