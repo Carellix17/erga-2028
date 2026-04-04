@@ -176,7 +176,7 @@ export function LessonsList({
 
               {/* Path + Nodes */}
               <div className="relative" style={{ height: totalH }}>
-                {/* Single continuous SVG path */}
+                {/* Single continuous SVG path — behind everything */}
                 {pathD && (
                   <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${SVG_WIDTH} ${totalH}`} preserveAspectRatio="none" style={{ zIndex: 0 }}>
                     {/* Background track (future) */}
@@ -187,7 +187,7 @@ export function LessonsList({
                       strokeWidth={4}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      opacity={0.4}
+                      opacity={0.35}
                     />
                     {/* Progress overlay (completed) */}
                     {progressRatio > 0 && (
@@ -225,7 +225,7 @@ export function LessonsList({
                         left: `${x}%`,
                         top: y,
                         transform: "translate(-50%, -50%)",
-                        zIndex: isCurrent ? 10 : 1,
+                        zIndex: isCurrent ? 10 : 2,
                       }}
                     >
                       <button
@@ -289,7 +289,7 @@ export function LessonsList({
 
                       {/* Label */}
                       <span className={cn(
-                        "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300",
+                        "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 px-1.5 py-0.5 rounded-md bg-background/90",
                         isCompleted && "text-success",
                         isCurrent && cn(color.text, "font-semibold text-xs"),
                         isLocked && "text-muted-foreground/40",
