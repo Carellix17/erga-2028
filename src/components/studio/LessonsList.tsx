@@ -80,20 +80,21 @@ export function LessonsList({
 
   const getY = (indexInModule: number): number => NODE_SPACING * indexInModule + NODE_SPACING / 2;
 
-  // Build a single continuous SVG path for the whole module
+  // Build a single continuous SVG path using a fixed width reference (390px mobile)
+  const SVG_WIDTH = 390;
   const buildModulePath = (lessonCount: number): string => {
     if (lessonCount < 2) return "";
     const points: string[] = [];
     for (let i = 0; i < lessonCount; i++) {
-      const x = getX(i);
+      const x = (getX(i) / 100) * SVG_WIDTH;
       const y = getY(i);
       if (i === 0) {
-        points.push(`M ${x}% ${y}`);
+        points.push(`M ${x} ${y}`);
       } else {
+        const prevX = (getX(i - 1) / 100) * SVG_WIDTH;
         const prevY = getY(i - 1);
         const midY = (prevY + y) / 2;
-        const prevX = getX(i - 1);
-        points.push(`C ${prevX}% ${midY}, ${x}% ${midY}, ${x}% ${y}`);
+        points.push(`C ${prevX} ${midY}, ${x} ${midY}, ${x} ${y}`);
       }
     }
     return points.join(" ");
@@ -177,7 +178,7 @@ export function LessonsList({
               <div className="relative" style={{ height: totalH }}>
                 {/* Single continuous SVG path */}
                 {pathD && (
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${SVG_WIDTH} ${totalH}`} preserveAspectRatio="none" style={{ zIndex: 0 }}>
                     {/* Background track (future) */}
                     <path
                       d={pathD}
