@@ -225,7 +225,7 @@ export function LessonsList({
                         left: `${x}%`,
                         top: y,
                         transform: "translate(-50%, -50%)",
-                        zIndex: isCurrent ? 10 : 1,
+                        zIndex: isCurrent ? 10 : 2,
                       }}
                     >
                       <button
