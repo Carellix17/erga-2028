@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { getStableSubjectColor } from "@/lib/subjectColors";
+import { useMemo } from "react";
 
 interface Lesson {
   id: string;
@@ -31,6 +32,11 @@ interface LessonsListProps {
 }
 
 const MODULE_SIZE = 4;
+const NODE_SPACING = 120;
+const NODE_SIZE = 56;
+const NODE_SIZE_CURRENT = 64;
+const BORDER_RADIUS = 16;
+const BORDER_RADIUS_CURRENT = 20;
 
 export function LessonsList({
   lessons,
@@ -51,16 +57,19 @@ export function LessonsList({
   const color = getStableSubjectColor(contextFileName || "");
 
   // Group lessons into modules
-  const modules: { title: string; lessons: { lesson: Lesson; globalIndex: number }[] }[] = [];
-  for (let i = 0; i < lessons.length; i += MODULE_SIZE) {
-    const chunk = lessons.slice(i, i + MODULE_SIZE);
-    modules.push({
-      title: `Modulo ${modules.length + 1}`,
-      lessons: chunk.map((l, j) => ({ lesson: l, globalIndex: i + j })),
-    });
-  }
+  const modules = useMemo(() => {
+    const result: { title: string; lessons: { lesson: Lesson; globalIndex: number }[] }[] = [];
+    for (let i = 0; i < lessons.length; i += MODULE_SIZE) {
+      const chunk = lessons.slice(i, i + MODULE_SIZE);
+      result.push({
+        title: `Modulo ${result.length + 1}`,
+        lessons: chunk.map((l, j) => ({ lesson: l, globalIndex: i + j })),
+      });
+    }
+    return result;
+  }, [lessons]);
 
-  // Zigzag: nodes alternate left → center → right → center
+  // Zigzag X positions (percentage)
   const getX = (indexInModule: number): number => {
     const cycle = indexInModule % 4;
     if (cycle === 0) return 50;
@@ -69,9 +78,39 @@ export function LessonsList({
     return 25;
   };
 
-  const NODE_SPACING = 110;
-  const NODE_R_NORMAL = 30;
-  const NODE_R_CURRENT = 38;
+  const getY = (indexInModule: number): number => NODE_SPACING * indexInModule + NODE_SPACING / 2;
+
+  // Build a single continuous SVG path for the whole module
+  const buildModulePath = (lessonCount: number): string => {
+    if (lessonCount < 2) return "";
+    const points: string[] = [];
+    for (let i = 0; i < lessonCount; i++) {
+      const x = getX(i);
+      const y = getY(i);
+      if (i === 0) {
+        points.push(`M ${x}% ${y}`);
+      } else {
+        const prevY = getY(i - 1);
+        const midY = (prevY + y) / 2;
+        const prevX = getX(i - 1);
+        points.push(`C ${prevX}% ${midY}, ${x}% ${midY}, ${x}% ${y}`);
+      }
+    }
+    return points.join(" ");
+  };
+
+  // Calculate path length ratio for progress split
+  const getProgressRatio = (modLessons: { globalIndex: number }[]): number => {
+    if (modLessons.length < 2) return 0;
+    // How many segments are completed in this module
+    let completedSegments = 0;
+    for (let i = 0; i < modLessons.length - 1; i++) {
+      if (modLessons[i].globalIndex < currentIndex) {
+        completedSegments++;
+      }
+    }
+    return completedSegments / (modLessons.length - 1);
+  };
 
   return (
     <div className="pb-32 animate-fade-in">
@@ -98,7 +137,7 @@ export function LessonsList({
           )}
         </div>
 
-        {/* Progress */}
+        {/* Progress bar */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
             <div
@@ -117,13 +156,15 @@ export function LessonsList({
       <div className="px-4 pt-4">
         {modules.map((mod, modIndex) => {
           const totalH = mod.lessons.length * NODE_SPACING;
+          const pathD = buildModulePath(mod.lessons.length);
+          const progressRatio = getProgressRatio(mod.lessons);
 
           return (
             <div key={modIndex} className="mb-8">
               {/* Module header */}
               <div className="flex items-center gap-2 mb-4 px-2">
                 <div className={cn(
-                  "h-8 px-3 rounded-full flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r shadow-level-1",
+                  "h-8 px-3 rounded-xl flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r shadow-level-1",
                   color.gradient
                 )}>
                   <Crown className="w-3.5 h-3.5" />
@@ -132,34 +173,37 @@ export function LessonsList({
                 <div className="flex-1 h-px bg-outline-variant/30" />
               </div>
 
-              {/* Path SVG + Nodes */}
+              {/* Path + Nodes */}
               <div className="relative" style={{ height: totalH }}>
-                {/* SVG connectors */}
-                <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
-                  {mod.lessons.map((item, i) => {
-                    if (i >= mod.lessons.length - 1) return null;
-                    const x1 = getX(i);
-                    const x2 = getX(i + 1);
-                    const y1 = NODE_SPACING * i + NODE_SPACING / 2;
-                    const y2 = NODE_SPACING * (i + 1) + NODE_SPACING / 2;
-                    const midY = (y1 + y2) / 2;
-
-                    const isSegmentDone = item.globalIndex < currentIndex;
-
-                    return (
+                {/* Single continuous SVG path */}
+                {pathD && (
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+                    {/* Background track (future) */}
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke="hsl(var(--outline-variant))"
+                      strokeWidth={4}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity={0.4}
+                    />
+                    {/* Progress overlay (completed) */}
+                    {progressRatio > 0 && (
                       <path
-                        key={i}
-                        d={`M ${x1}% ${y1} C ${x1}% ${midY}, ${x2}% ${midY}, ${x2}% ${y2}`}
+                        d={pathD}
                         fill="none"
-                        stroke={isSegmentDone ? "hsl(160 70% 40%)" : "hsl(245 12% 82%)"}
-                        strokeWidth={isSegmentDone ? 4 : 3}
+                        stroke="hsl(var(--success))"
+                        strokeWidth={4}
                         strokeLinecap="round"
-                        strokeDasharray={isSegmentDone ? "none" : "0"}
-                        className="transition-all duration-500"
+                        strokeLinejoin="round"
+                        strokeDasharray="10000"
+                        strokeDashoffset={10000 - 10000 * progressRatio}
+                        className="transition-all duration-700 ease-m3-emphasized"
                       />
-                    );
-                  })}
-                </svg>
+                    )}
+                  </svg>
+                )}
 
                 {/* Nodes */}
                 {mod.lessons.map((item, i) => {
@@ -168,8 +212,9 @@ export function LessonsList({
                   const isCurrent = globalIndex === currentIndex;
                   const isLocked = !lesson.is_generated && globalIndex > currentIndex;
                   const x = getX(i);
-                  const y = NODE_SPACING * i + NODE_SPACING / 2;
-                  const r = isCurrent ? NODE_R_CURRENT : NODE_R_NORMAL;
+                  const y = getY(i);
+                  const size = isCurrent ? NODE_SIZE_CURRENT : NODE_SIZE;
+                  const radius = isCurrent ? BORDER_RADIUS_CURRENT : BORDER_RADIUS;
 
                   return (
                     <div
@@ -186,27 +231,37 @@ export function LessonsList({
                         onClick={() => !isGenerating && onSelectLesson(globalIndex)}
                         disabled={isGenerating || isLocked}
                         className={cn(
-                          "relative flex items-center justify-center rounded-full transition-all duration-300 ease-m3-emphasized",
+                          "relative flex items-center justify-center transition-all duration-300 ease-m3-emphasized",
                           !isGenerating && !isLocked && "active:scale-90 hover:scale-105",
-                          isCurrent && "lesson-node-current",
                         )}
-                        style={{ width: r * 2, height: r * 2 }}
+                        style={{
+                          width: size,
+                          height: size,
+                          borderRadius: radius,
+                        }}
                       >
                         {/* Pulse ring for current */}
                         {isCurrent && (
                           <span
-                            className={cn("absolute inset-[-6px] rounded-full animate-pulse opacity-25 bg-gradient-to-br", color.gradient)}
+                            className={cn("absolute animate-pulse opacity-20 bg-gradient-to-br", color.gradient)}
+                            style={{
+                              inset: -6,
+                              borderRadius: radius + 4,
+                            }}
                           />
                         )}
 
-                        {/* Circle */}
-                        <span className={cn(
-                          "absolute inset-0 rounded-full flex items-center justify-center transition-all duration-300",
-                          isCompleted && "bg-success shadow-level-2",
-                          isCurrent && cn("bg-gradient-to-br shadow-level-3", color.gradient),
-                          !isCurrent && !isCompleted && !isLocked && "bg-surface-container-high shadow-level-1 border-2 border-outline-variant/50",
-                          isLocked && "bg-surface-container shadow-level-0 opacity-50",
-                        )}>
+                        {/* Node shape */}
+                        <span
+                          className={cn(
+                            "absolute inset-0 flex items-center justify-center transition-all duration-300",
+                            isCompleted && "bg-success shadow-level-2",
+                            isCurrent && cn("bg-gradient-to-br shadow-level-3", color.gradient),
+                            !isCurrent && !isCompleted && !isLocked && "bg-surface-container-low shadow-level-1 border-2 border-outline-variant/40",
+                            isLocked && "bg-surface-container shadow-level-0 opacity-45",
+                          )}
+                          style={{ borderRadius: radius }}
+                        >
                           {isGenerating && isCurrent ? (
                             <Loader2 className="w-5 h-5 text-white animate-spin" />
                           ) : isCompleted ? (
@@ -222,7 +277,10 @@ export function LessonsList({
 
                         {/* Badge for current */}
                         {isCurrent && !isGenerating && (
-                          <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-warning flex items-center justify-center shadow-level-2 animate-bounce-gentle">
+                          <span
+                            className="absolute w-6 h-6 bg-warning flex items-center justify-center shadow-level-2 animate-bounce-gentle"
+                            style={{ top: -4, right: -4, borderRadius: 8 }}
+                          >
                             <Star className="w-3 h-3 text-warning-foreground fill-warning-foreground" />
                           </span>
                         )}
@@ -230,7 +288,7 @@ export function LessonsList({
 
                       {/* Label */}
                       <span className={cn(
-                        "mt-1.5 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300",
+                        "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300",
                         isCompleted && "text-success",
                         isCurrent && cn(color.text, "font-semibold text-xs"),
                         isLocked && "text-muted-foreground/40",
@@ -254,11 +312,17 @@ export function LessonsList({
               disabled={isLoadingFinalTest}
               className="relative group flex flex-col items-center transition-all duration-300 ease-m3-emphasized active:scale-90"
             >
-              <span className={cn("absolute inset-[-8px] rounded-full animate-pulse opacity-15 bg-gradient-to-br", color.gradient)} />
-              <span className={cn(
-                "w-20 h-20 rounded-full flex items-center justify-center shadow-level-3 text-white bg-gradient-to-br group-hover:shadow-level-4 group-hover:scale-105 transition-all",
-                color.gradient,
-              )}>
+              <span
+                className={cn("absolute animate-pulse opacity-15 bg-gradient-to-br", color.gradient)}
+                style={{ inset: -8, borderRadius: 24 }}
+              />
+              <span
+                className={cn(
+                  "w-20 h-20 flex items-center justify-center shadow-level-3 text-white bg-gradient-to-br group-hover:shadow-level-4 group-hover:scale-105 transition-all",
+                  color.gradient,
+                )}
+                style={{ borderRadius: 24 }}
+              >
                 {isLoadingFinalTest ? <Loader2 className="w-7 h-7 animate-spin" /> : <Target className="w-8 h-8" />}
               </span>
               <span className={cn("mt-2 text-sm font-display font-bold", color.text)}>Test Finale</span>
