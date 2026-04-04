@@ -178,7 +178,7 @@ export function LessonsList({
               <div className="relative" style={{ height: totalH }}>
                 {/* Single continuous SVG path */}
                 {pathD && (
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${SVG_WIDTH} ${totalH}`} preserveAspectRatio="none" style={{ zIndex: 0 }}>
                     {/* Background track (future) */}
                     <path
                       d={pathD}
