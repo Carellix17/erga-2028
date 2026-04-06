@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
+import { callAIStream } from "../_shared/ai.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -136,40 +137,13 @@ ${eventsText}`;
       ...trimmedHistory,
     ];
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
-
     // Check if any message has image content - use vision model
     const hasImages = trimmedHistory.some((m: any) => 
       Array.isArray(m.content) && m.content.some((p: any) => p.type === "image_url")
     );
+    console.log(`Calling AI${hasImages ? " (vision mode)" : ""}`);
 
-    const model = "google/gemini-2.5-flash";
-    console.log(`Calling Lovable AI with ${model}${hasImages ? " (vision mode)" : ""}`);
-
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: apiMessages,
-        temperature: 0.7,
-        max_tokens: 1024,
-        stream: true,
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI Gateway response status:", aiResponse.status);
-      console.error("AI Gateway error:", errorText);
-      throw new Error("Errore nella risposta AI");
-    }
+    const aiResponse = await callAIStream(apiMessages, 0.7, 1024);
 
     // Stream response
     const reader = aiResponse.body?.getReader();
