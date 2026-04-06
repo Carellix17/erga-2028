@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { callAIText } from "../_shared/ai.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -44,26 +45,8 @@ serve(async (req) => {
       return errorResponse("Nessun contenuto di studio trovato", 400);
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
-
     const callAI = async (messages: any[], temperature = 0.7) => {
-      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages,
-          temperature,
-          max_tokens: 1024,
-        }),
-      });
-      if (!resp.ok) throw new Error("AI error");
-      const data = await resp.json();
-      return data.choices?.[0]?.message?.content || "";
+      return callAIText(messages, temperature, 1024);
     };
 
     if (action === "ask") {

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { callAIText } from "../_shared/ai.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -39,9 +40,6 @@ serve(async (req) => {
     if (!studyContent) return errorResponse("Nessun contenuto trovato", 400);
 
     const trimmed = studyContent.slice(0, 15000);
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const prompt = `Genera 8 esercizi variegati basati ESCLUSIVAMENTE su questi materiali di studio. Usa TUTTI questi tipi di esercizio (almeno uno per tipo):
 
@@ -93,23 +91,7 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
   }
 ]`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.5,
-        max_tokens: 4096,
-      }),
-    });
-
-    if (!resp.ok) throw new Error("AI error");
-    const data = await resp.json();
-    const content = data.choices?.[0]?.message?.content || "";
+    const content = await callAIText([{ role: "user", content: prompt }], 0.5, 4096);
 
     // Extract JSON array
     const arrayMatch = content.match(/\[[\s\S]*\]/);

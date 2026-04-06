@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { callAIText } from "../_shared/ai.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -19,9 +20,6 @@ serve(async (req) => {
 
     console.log(`Web search for user: ${userId}, topic: "${topic}"`);
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY mancante");
-
     const searchPrompt = `Fornisci una spiegazione completa e dettagliata sull'argomento: "${topic}".
      
 Includi:
@@ -35,31 +33,11 @@ Scrivi in italiano. Sii esaustivo ma chiaro, come un manuale di studio universit
 Obiettivo: il testo deve essere sufficientemente ricco da poterci generare 8-15 mini-lezioni.
 Scrivi almeno 3000 parole.`;
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: "Sei un esperto accademico e docente universitario. Fornisci contenuti dettagliati, accurati e ben strutturati per lo studio. Rispondi sempre in italiano. Usa titoli, sottotitoli e punti elenco per organizzare il contenuto." },
-          { role: "user", content: searchPrompt },
-        ],
-        temperature: 0.4,
-        max_tokens: 8000,
-      }),
-    });
+    const content = await callAIText([
+      { role: "system", content: "Sei un esperto accademico e docente universitario. Fornisci contenuti dettagliati, accurati e ben strutturati per lo studio. Rispondi sempre in italiano. Usa titoli, sottotitoli e punti elenco per organizzare il contenuto." },
+      { role: "user", content: searchPrompt },
+    ], 0.4, 8000);
 
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error("OpenRouter error:", aiResponse.status, errText);
-      throw new Error("Errore nella generazione dei contenuti");
-    }
-
-    const aiData = await aiResponse.json();
-    const content = aiData.choices?.[0]?.message?.content;
     if (!content) throw new Error("Nessun contenuto generato per questo argomento.");
 
     console.log(`Generated content length: ${content.length} chars`);
