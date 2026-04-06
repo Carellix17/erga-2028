@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { callAIText } from "../_shared/ai.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -45,9 +46,6 @@ serve(async (req) => {
       ? events.map((e: { event_type: string; title: string; subject: string; event_date: string }) => `- ${e.event_type}: ${e.title} (${e.subject}) - ${e.event_date}`).join("\n")
       : "Nessun evento programmato";
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY mancante");
-
     const prompt = `Sei un tutor esperto che crea piani di studio personalizzati.
 ${profileInfo}
 
@@ -69,30 +67,9 @@ ${eventsText}
 Contenuti di studio:
 ${contextSummary}`;
 
-    console.log("Calling Lovable AI for plan generation");
+    console.log("Calling AI for plan generation");
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-        max_tokens: 2048,
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI Gateway error:", errorText);
-      throw new Error("Errore nella generazione del piano");
-    }
-
-    const aiData = await aiResponse.json();
-    const responseContent = aiData.choices?.[0]?.message?.content;
+    const responseContent = await callAIText([{ role: "user", content: prompt }], 0.7, 2048);
     if (!responseContent) throw new Error("Risposta AI vuota");
 
     console.log("AI response:", responseContent.substring(0, 500));
