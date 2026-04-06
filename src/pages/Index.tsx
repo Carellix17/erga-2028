@@ -101,9 +101,19 @@ const Index = () => {
     size: f.size,
   }));
 
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-level-3 animate-pulse">
+          <Loader2 className="w-8 h-8 text-primary-foreground animate-spin" />
+        </div>
+        <p className="text-muted-foreground font-medium text-sm">Caricamento...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader
         onUploadClick={() => setShowUpload(true)}
         hasFiles={hasFiles}
       />
