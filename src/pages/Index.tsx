@@ -26,6 +26,7 @@ const Index = () => {
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const { currentUser } = useAuth();
   
   const { data: uploadedFiles, updateData: setUploadedFiles } = useUserData<UploadedFile[]>(
@@ -34,7 +35,10 @@ const Index = () => {
   );
 
   const checkCloudContent = useCallback(async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setInitialLoading(false);
+      return;
+    }
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -56,6 +60,8 @@ const Index = () => {
       }
     } catch (error) {
       console.error("Error checking cloud content:", error);
+    } finally {
+      setInitialLoading(false);
     }
   }, [currentUser]);
 
