@@ -9,6 +9,7 @@ import { UploadSheet } from "@/components/upload/UploadSheet";
 import { useUserData } from "@/hooks/useUserData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 type Tab = "studio" | "piano" | "pratica" | "profilo";
 
@@ -25,6 +26,7 @@ const Index = () => {
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const { currentUser } = useAuth();
   
   const { data: uploadedFiles, updateData: setUploadedFiles } = useUserData<UploadedFile[]>(
@@ -33,7 +35,10 @@ const Index = () => {
   );
 
   const checkCloudContent = useCallback(async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setInitialLoading(false);
+      return;
+    }
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -55,6 +60,8 @@ const Index = () => {
       }
     } catch (error) {
       console.error("Error checking cloud content:", error);
+    } finally {
+      setInitialLoading(false);
     }
   }, [currentUser]);
 
@@ -93,6 +100,17 @@ const Index = () => {
     name: f.name,
     size: f.size,
   }));
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-level-3 animate-pulse">
+          <Loader2 className="w-8 h-8 text-primary-foreground animate-spin" />
+        </div>
+        <p className="text-muted-foreground font-medium text-sm">Caricamento...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
