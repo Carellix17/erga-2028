@@ -1,19 +1,50 @@
 /**
- * Shared AI caller with primary (Gemini direct) / fallback (Lovable AI Gateway).
+ * Shared AI caller with 4-tier fallback chain:
  *
- * Primary: ERGA_GEMINI_KEY_APRIL → Google Gemini 2.5 Flash (direct)
- * Fallback: LOVABLE_API_KEY → Lovable AI Gateway (gemini-2.5-flash)
+ * 1. ERGA_GEMINI_KEY_APRIL  → Google Gemini 2.5 Flash (direct)
+ * 2. ERGA_OPENAI_KEY_APRIL  → OpenAI API
+ * 3. ERGA_GROQ_KEY_APRIL    → Groq API
+ * 4. LOVABLE_API_KEY         → Lovable AI Gateway (final fallback)
  *
- * Retry policy:
+ * Retry policy per provider:
  *  - Transient errors (timeout, 500, 502, 503, 429): retry up to 2 times
- *  - Quota/billing errors (402, 403 with quota msg): immediate fallback, no retry
- *  - After retries exhausted: fallback
+ *  - Quota/billing errors (402, 403 with quota msg): immediate next provider
+ *  - After retries exhausted: next provider
  */
 
-const GEMINI_DIRECT_URL =
-  "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const LOVABLE_GATEWAY_URL =
-  "https://ai.gateway.lovable.dev/v1/chat/completions";
+interface ProviderConfig {
+  label: string;
+  url: string;
+  keyEnv: string;
+  modelMapper: (model: string) => string;
+}
+
+const PROVIDERS: ProviderConfig[] = [
+  {
+    label: "gemini",
+    url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+    keyEnv: "ERGA_GEMINI_KEY_APRIL",
+    modelMapper: (m) => m.replace(/^google\//, ""),
+  },
+  {
+    label: "openai",
+    url: "https://api.openai.com/v1/chat/completions",
+    keyEnv: "ERGA_OPENAI_KEY_APRIL",
+    modelMapper: (_) => "gpt-4o-mini",
+  },
+  {
+    label: "groq",
+    url: "https://api.groq.com/openai/v1/chat/completions",
+    keyEnv: "ERGA_GROQ_KEY_APRIL",
+    modelMapper: (_) => "llama-3.1-70b-versatile",
+  },
+  {
+    label: "lovable-gateway",
+    url: "https://ai.gateway.lovable.dev/v1/chat/completions",
+    keyEnv: "LOVABLE_API_KEY",
+    modelMapper: (m) => m ? `google/${m.replace(/^google\//, "")}` : "google/gemini-2.5-flash",
+  },
+];
 
 interface AiCallOptions {
   messages: { role: string; content: unknown }[];
@@ -38,10 +69,11 @@ async function tryFetch(
   url: string,
   apiKey: string,
   opts: AiCallOptions,
+  model: string,
   label: string,
 ): Promise<Response> {
   const body: Record<string, unknown> = {
-    model: opts.model || "gemini-2.5-flash",
+    model,
     messages: opts.messages,
     temperature: opts.temperature ?? 0.7,
     max_tokens: opts.max_tokens ?? 2048,
@@ -62,80 +94,65 @@ async function tryFetch(
 }
 
 /**
- * Call AI with automatic fallback.
+ * Call AI with automatic 4-tier fallback.
  * Returns the raw Response so callers can handle streaming or JSON.
  */
 export async function callAIWithFallback(
   opts: AiCallOptions,
 ): Promise<Response> {
-  const primaryKey = Deno.env.get("ERGA_GEMINI_KEY_APRIL");
-  const fallbackKey = Deno.env.get("LOVABLE_API_KEY");
+  const baseModel = opts.model || "gemini-2.5-flash";
 
-  if (!fallbackKey) throw new Error("LOVABLE_API_KEY mancante");
+  for (let i = 0; i < PROVIDERS.length; i++) {
+    const provider = PROVIDERS[i];
+    const apiKey = Deno.env.get(provider.keyEnv);
 
-  // ── Try primary ──
-  if (primaryKey) {
+    if (!apiKey) {
+      console.log(`[AI] No key for ${provider.label}, skipping`);
+      continue;
+    }
+
+    const model = provider.modelMapper(baseModel);
     const maxRetries = 2;
+
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const resp = await tryFetch(GEMINI_DIRECT_URL, primaryKey, opts, "primary");
+        const resp = await tryFetch(provider.url, apiKey, opts, model, provider.label);
 
         if (resp.ok) {
-          console.log(`[AI] Using PRIMARY (attempt ${attempt + 1})`);
+          console.log(`[AI] Using ${provider.label.toUpperCase()} (attempt ${attempt + 1})`);
           return resp;
         }
 
         const errBody = await resp.text();
 
-        // Quota/billing → immediate fallback
         if (isQuotaError(resp.status, errBody)) {
-          console.warn(`[AI] PRIMARY quota/billing error (${resp.status}), switching to FALLBACK`);
+          console.warn(`[AI] ${provider.label} quota/billing error (${resp.status}), next provider`);
           break;
         }
 
-        // Transient → retry
         if (isTransientError(resp.status) && attempt < maxRetries) {
           const delay = 1000 * (attempt + 1);
-          console.warn(`[AI] PRIMARY transient error (${resp.status}), retry ${attempt + 1}/${maxRetries} in ${delay}ms`);
+          console.warn(`[AI] ${provider.label} transient error (${resp.status}), retry ${attempt + 1}/${maxRetries} in ${delay}ms`);
           await new Promise((r) => setTimeout(r, delay));
           continue;
         }
 
-        // Non-retryable non-quota error → fallback
-        console.warn(`[AI] PRIMARY error (${resp.status}), switching to FALLBACK`);
+        console.warn(`[AI] ${provider.label} error (${resp.status}), next provider`);
         break;
       } catch (err) {
-        // Network / timeout
         if (attempt < maxRetries) {
           const delay = 1000 * (attempt + 1);
-          console.warn(`[AI] PRIMARY network error, retry ${attempt + 1}/${maxRetries} in ${delay}ms:`, err);
+          console.warn(`[AI] ${provider.label} network error, retry ${attempt + 1}/${maxRetries}:`, err);
           await new Promise((r) => setTimeout(r, delay));
           continue;
         }
-        console.warn("[AI] PRIMARY network error after retries, switching to FALLBACK:", err);
+        console.warn(`[AI] ${provider.label} network error after retries, next provider:`, err);
         break;
       }
     }
-  } else {
-    console.log("[AI] No PRIMARY key, using FALLBACK directly");
   }
 
-  // ── Fallback ──
-  // For Lovable gateway the model must be prefixed
-  const fallbackOpts = {
-    ...opts,
-    model: opts.model ? `google/${opts.model.replace(/^google\//, "")}` : "google/gemini-2.5-flash",
-  };
-  const resp = await tryFetch(LOVABLE_GATEWAY_URL, fallbackKey, fallbackOpts, "fallback");
-
-  if (!resp.ok) {
-    const errBody = await resp.text();
-    console.error(`[AI] FALLBACK error (${resp.status}):`, errBody);
-    throw new Error("Errore nella risposta AI");
-  }
-
-  console.log("[AI] Using FALLBACK");
-  return resp;
+  throw new Error("Tutti i provider AI non disponibili");
 }
 
 /**
