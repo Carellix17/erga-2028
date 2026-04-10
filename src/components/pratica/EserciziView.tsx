@@ -202,7 +202,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   // Lesson picker view
   if (showLessonPicker && selectedCourse) {
     return (
-      <div className="flex flex-col h-[calc(100vh-7.5rem)]">
+      <div className="flex flex-col h-full">
         <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-5">
           <div className="flex items-center gap-2">
             <button
