@@ -78,9 +78,48 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     loadCourses();
   }, [currentUser]);
 
-  const generateExercises = useCallback(async (courseId: string) => {
-    setIsLoading(true);
+  // Load lessons for a course
+  const loadLessonsForCourse = useCallback(async (courseId: string) => {
+    setLoadingLessons(true);
     setSelectedCourse(courseId);
+    setShowLessonPicker(true);
+    setSelectedLessonIds([]);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ userId: currentUser, action: "get", contextId: courseId }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLessons((data.lessons || []).sort((a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order));
+      }
+    } catch {
+      toast({ title: "Errore", description: "Non riesco a caricare le lezioni", variant: "destructive" });
+    } finally {
+      setLoadingLessons(false);
+    }
+  }, [currentUser, toast]);
+
+  const toggleLessonSelection = (lessonId: string) => {
+    setSelectedLessonIds(prev =>
+      prev.includes(lessonId) ? prev.filter(id => id !== lessonId) : [...prev, lessonId]
+    );
+  };
+
+  const selectAllLessons = () => {
+    if (selectedLessonIds.length === lessons.length) {
+      setSelectedLessonIds([]);
+    } else {
+      setSelectedLessonIds(lessons.map(l => l.id));
+    }
+  };
+
+  const generateExercises = useCallback(async (courseId: string, lessonIds?: string[]) => {
+    setIsLoading(true);
+    setShowLessonPicker(false);
     setExercises([]);
     setCurrentIndex(0);
     setResults([]);
@@ -90,10 +129,14 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const body: Record<string, unknown> = { userId: currentUser, contextId: courseId };
+      if (lessonIds && lessonIds.length > 0 && lessonIds.length < lessons.length) {
+        body.lessonIds = lessonIds;
+      }
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-exercises`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ userId: currentUser, contextId: courseId }),
+        body: JSON.stringify(body),
       });
       if (!response.ok) throw new Error("Errore nella generazione");
       const data = await response.json();
@@ -103,7 +146,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser, toast]);
+  }, [currentUser, toast, lessons.length]);
 
   const currentExercise = exercises[currentIndex];
 
