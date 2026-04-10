@@ -193,10 +193,92 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   // Exit exercises
   const exitExercises = () => {
     setSelectedCourse(null);
+    setShowLessonPicker(false);
     setExercises([]);
     setIsFinished(false);
     onFullscreenChange?.(false);
   };
+
+  // Lesson picker view
+  if (showLessonPicker && selectedCourse) {
+    return (
+      <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setShowLessonPicker(false); setSelectedCourse(null); }}
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5 text-foreground" />
+          </button>
+          <h2 className="font-display text-lg font-bold text-foreground">Scegli le lezioni</h2>
+        </div>
+
+        {loadingLessons ? (
+          <div className="flex flex-col items-center gap-3 py-8">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <p className="body-medium text-muted-foreground">Carico le lezioni...</p>
+          </div>
+        ) : lessons.length === 0 ? (
+          <p className="text-center text-muted-foreground body-medium">Nessuna lezione disponibile per questo corso.</p>
+        ) : (
+          <>
+            <button
+              onClick={selectAllLessons}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-foreground/[0.05] transition-colors self-start"
+            >
+              <div className={cn(
+                "w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
+                selectedLessonIds.length === lessons.length
+                  ? "bg-primary border-primary"
+                  : "border-muted-foreground/40"
+              )}>
+                {selectedLessonIds.length === lessons.length && <Check className="w-3 h-3 text-primary-foreground" />}
+              </div>
+              <span className="label-medium text-muted-foreground">
+                {selectedLessonIds.length === lessons.length ? "Deseleziona tutto" : "Seleziona tutto"}
+              </span>
+            </button>
+
+            <div className="space-y-2">
+              {lessons.map((lesson, i) => (
+                <button
+                  key={lesson.id}
+                  onClick={() => toggleLessonSelection(lesson.id)}
+                  className={cn(
+                    "w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98]",
+                    selectedLessonIds.includes(lesson.id)
+                      ? "bg-primary-container border-primary/30 shadow-level-1"
+                      : "bg-surface-container border-outline-variant/30 hover:bg-surface-container-high"
+                  )}
+                >
+                  <div className={cn(
+                    "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors",
+                    selectedLessonIds.includes(lesson.id)
+                      ? "bg-primary border-primary"
+                      : "border-muted-foreground/40"
+                  )}>
+                    {selectedLessonIds.includes(lesson.id) && <Check className="w-3 h-3 text-primary-foreground" />}
+                  </div>
+                  <span className="label-large text-foreground text-left truncate">
+                    {i + 1}. {lesson.title}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <Button
+              onClick={() => generateExercises(selectedCourse, selectedLessonIds)}
+              disabled={selectedLessonIds.length === 0}
+              className="w-full h-12 rounded-full bg-primary text-primary-foreground mt-2"
+            >
+              Genera esercizi {selectedLessonIds.length > 0 && `(${selectedLessonIds.length} ${selectedLessonIds.length === 1 ? "lezione" : "lezioni"})`}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </>
+        )}
+      </div>
+    );
+  }
 
   // Course selection
   if (!selectedCourse || exercises.length === 0) {
@@ -223,7 +305,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
             {courses.map(course => (
               <button
                 key={course.id}
-                onClick={() => generateExercises(course.id)}
+                onClick={() => loadLessonsForCourse(course.id)}
                 className="w-full flex items-center gap-3 p-4 rounded-2xl border bg-surface-container border-outline-variant/30 hover:bg-surface-container-high transition-all active:scale-[0.98]"
               >
                 <BookOpen className="w-5 h-5 text-primary flex-shrink-0" />
