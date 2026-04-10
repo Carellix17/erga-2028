@@ -114,7 +114,7 @@ ISTRUZIONI:
 1. Concept: 1-2 frasi massimo che introducono l'argomento.
 2. Explanation_parts: Un array di 3-5 parti. Ogni parte è un blocco autonomo con titolo e contenuto breve (2-3 frasi max per parte). Le parti devono coprire l'argomento in modo progressivo.
 3. Example: 1 esempio concreto e breve (2-3 frasi).
-4. Exercises: 2-3 esercizi brevi e variegati. Per "short_answer", almeno 6 keywords.
+4. Exercises: 5-6 esercizi. Usa SOLO "multiple_choice" e "true_false" (NO short_answer, NO fill_blank). Alterna i due tipi.
 
 JSON richiesto:
 {
@@ -126,9 +126,11 @@ JSON richiesto:
   ],
   "example": "...",
   "exercises": [
-     { "type": "multiple_choice", "question": "...", "options": ["..."], "correct_index": 0 },
+     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 0 },
      { "type": "true_false", "statement": "...", "correct": true },
-     { "type": "short_answer", "question": "...", "expected_keywords": ["k1","k2","k3","k4","k5","k6"] }
+     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 },
+     { "type": "true_false", "statement": "...", "correct": false },
+     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 1 }
   ]
 }
 
@@ -192,15 +194,12 @@ REGOLE:
 1. Esattamente ${Math.min(allLessons.length * 2, 10)} domande.
 2. Copri TUTTI gli argomenti.
 3. Domande DIVERSE da quelle delle lezioni.
-4. Mescola: multiple_choice, true_false, fill_blank, short_answer.
-5. Per "short_answer", almeno 6 keywords.
+4. Usa SOLO "multiple_choice" e "true_false" (NO short_answer, NO fill_blank). Alterna i due tipi.
 
 JSON richiesto:
 [
   { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 0 },
-  { "type": "true_false", "statement": "...", "correct": true },
-  { "type": "fill_blank", "sentence_with_blank": "La ___ è...", "correct_answer": "risposta" },
-  { "type": "short_answer", "question": "...", "expected_keywords": ["k1","k2","k3","k4","k5","k6"] }
+  { "type": "true_false", "statement": "...", "correct": true }
 ]
 
 MATERIALE:
