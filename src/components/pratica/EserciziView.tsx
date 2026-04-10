@@ -346,7 +346,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           <Button variant="outline" onClick={exitExercises} className="rounded-full">
             Cambia corso
           </Button>
-          <Button onClick={() => generateExercises(selectedCourse!)} className="rounded-full bg-primary text-primary-foreground">
+          <Button onClick={() => generateExercises(selectedCourse!, selectedLessonIds)} className="rounded-full bg-primary text-primary-foreground">
             <RefreshCw className="w-4 h-4 mr-2" /> Nuovi esercizi
           </Button>
         </div>
