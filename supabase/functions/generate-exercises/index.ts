@@ -73,14 +73,15 @@ serve(async (req) => {
 
     const trimmed = studyContent.slice(0, 15000);
 
-    const prompt = `Genera 8 esercizi variegati basati ESCLUSIVAMENTE su questi materiali di studio. Usa TUTTI questi tipi di esercizio (almeno uno per tipo):
+    const prompt = `Genera 10 esercizi variegati basati ESCLUSIVAMENTE su questi materiali di studio. Usa questi tipi di esercizio, alternandoli:
 
 1. "multiple_choice" - Scelta multipla con 4 opzioni
 2. "true_false" - Vero o Falso con options ["Vero", "Falso"]
 3. "fill_blank" - Completa la frase (la risposta è una parola/frase breve)
-4. "short_answer" - Risposta breve (1-2 parole)
-5. "matching" - Abbinamento di coppie (pairs con left/right)
-6. "ordering" - Metti in ordine (items da ordinare, correctAnswer è l'ordine giusto)
+4. "matching" - Abbinamento di coppie (pairs con left/right)
+5. "ordering" - Metti in ordine (items da ordinare, correctAnswer è l'ordine giusto)
+
+IMPORTANTE: Genera ESATTAMENTE 10 esercizi. NON usare "short_answer".
 
 MATERIALI:
 ${trimmed}
