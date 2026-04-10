@@ -43,6 +43,10 @@ interface EserciziViewProps {
 export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
+  const [showLessonPicker, setShowLessonPicker] = useState(false);
+  const [loadingLessons, setLoadingLessons] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState<string>("");
