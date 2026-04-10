@@ -9,31 +9,63 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { contextId } = body;
+    const { contextId, lessonIds } = body;
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
 
     if (!contextId) return errorResponse("Missing contextId", 400);
 
-    // Fetch study content
-    const { data: ctx } = await supabase
-      .from("study_contexts")
-      .select("content, file_name")
-      .eq("id", contextId)
-      .eq("user_id", userId)
-      .single();
+    let studyContent = "";
 
-    let studyContent = ctx?.content;
-    if (!studyContent) {
-      const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
-      if (legacyUserId) {
-        const { data: legacyCtx } = await supabase
-          .from("study_contexts")
-          .select("content, file_name")
-          .eq("id", contextId)
-          .eq("user_id", legacyUserId)
-          .single();
-        studyContent = legacyCtx?.content;
+    // If specific lessons are requested, use their content
+    if (lessonIds && Array.isArray(lessonIds) && lessonIds.length > 0) {
+      const { data: lessons } = await supabase
+        .from("mini_lessons")
+        .select("title, concept, explanation, example")
+        .in("id", lessonIds)
+        .eq("user_id", userId);
+
+      let allLessons = lessons || [];
+
+      // Try legacy user
+      if (allLessons.length === 0) {
+        const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
+        if (legacyUserId) {
+          const { data: legacyLessons } = await supabase
+            .from("mini_lessons")
+            .select("title, concept, explanation, example")
+            .in("id", lessonIds)
+            .eq("user_id", legacyUserId);
+          allLessons = legacyLessons || [];
+        }
+      }
+
+      if (allLessons.length === 0) return errorResponse("Nessuna lezione trovata", 400);
+
+      studyContent = allLessons.map((l: { title: string; concept: string; explanation: string; example: string | null }) =>
+        `## ${l.title}\nConcetto: ${l.concept}\nSpiegazione: ${l.explanation}${l.example ? `\nEsempio: ${l.example}` : ""}`
+      ).join("\n\n");
+    } else {
+      // Use full context content (original behavior)
+      const { data: ctx } = await supabase
+        .from("study_contexts")
+        .select("content, file_name")
+        .eq("id", contextId)
+        .eq("user_id", userId)
+        .single();
+
+      studyContent = ctx?.content || "";
+      if (!studyContent) {
+        const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
+        if (legacyUserId) {
+          const { data: legacyCtx } = await supabase
+            .from("study_contexts")
+            .select("content, file_name")
+            .eq("id", contextId)
+            .eq("user_id", legacyUserId)
+            .single();
+          studyContent = legacyCtx?.content || "";
+        }
       }
     }
 

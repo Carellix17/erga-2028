@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X } from "lucide-react";
+import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,12 @@ import ReactMarkdown from "react-markdown";
 interface Course {
   id: string;
   file_name: string;
+}
+
+interface Lesson {
+  id: string;
+  title: string;
+  lesson_order: number;
 }
 
 type ExerciseType = "multiple_choice" | "true_false" | "fill_blank" | "short_answer" | "matching" | "ordering";
@@ -37,6 +43,10 @@ interface EserciziViewProps {
 export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
+  const [showLessonPicker, setShowLessonPicker] = useState(false);
+  const [loadingLessons, setLoadingLessons] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState<string>("");
@@ -68,9 +78,48 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     loadCourses();
   }, [currentUser]);
 
-  const generateExercises = useCallback(async (courseId: string) => {
-    setIsLoading(true);
+  // Load lessons for a course
+  const loadLessonsForCourse = useCallback(async (courseId: string) => {
+    setLoadingLessons(true);
     setSelectedCourse(courseId);
+    setShowLessonPicker(true);
+    setSelectedLessonIds([]);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ userId: currentUser, action: "get", contextId: courseId }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLessons((data.lessons || []).sort((a: Lesson, b: Lesson) => a.lesson_order - b.lesson_order));
+      }
+    } catch {
+      toast({ title: "Errore", description: "Non riesco a caricare le lezioni", variant: "destructive" });
+    } finally {
+      setLoadingLessons(false);
+    }
+  }, [currentUser, toast]);
+
+  const toggleLessonSelection = (lessonId: string) => {
+    setSelectedLessonIds(prev =>
+      prev.includes(lessonId) ? prev.filter(id => id !== lessonId) : [...prev, lessonId]
+    );
+  };
+
+  const selectAllLessons = () => {
+    if (selectedLessonIds.length === lessons.length) {
+      setSelectedLessonIds([]);
+    } else {
+      setSelectedLessonIds(lessons.map(l => l.id));
+    }
+  };
+
+  const generateExercises = useCallback(async (courseId: string, lessonIds?: string[]) => {
+    setIsLoading(true);
+    setShowLessonPicker(false);
     setExercises([]);
     setCurrentIndex(0);
     setResults([]);
@@ -80,10 +129,14 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const body: Record<string, unknown> = { userId: currentUser, contextId: courseId };
+      if (lessonIds && lessonIds.length > 0 && lessonIds.length < lessons.length) {
+        body.lessonIds = lessonIds;
+      }
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-exercises`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ userId: currentUser, contextId: courseId }),
+        body: JSON.stringify(body),
       });
       if (!response.ok) throw new Error("Errore nella generazione");
       const data = await response.json();
@@ -93,7 +146,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser, toast]);
+  }, [currentUser, toast, lessons.length]);
 
   const currentExercise = exercises[currentIndex];
 
@@ -140,10 +193,92 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   // Exit exercises
   const exitExercises = () => {
     setSelectedCourse(null);
+    setShowLessonPicker(false);
     setExercises([]);
     setIsFinished(false);
     onFullscreenChange?.(false);
   };
+
+  // Lesson picker view
+  if (showLessonPicker && selectedCourse) {
+    return (
+      <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setShowLessonPicker(false); setSelectedCourse(null); }}
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5 text-foreground" />
+          </button>
+          <h2 className="font-display text-lg font-bold text-foreground">Scegli le lezioni</h2>
+        </div>
+
+        {loadingLessons ? (
+          <div className="flex flex-col items-center gap-3 py-8">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <p className="body-medium text-muted-foreground">Carico le lezioni...</p>
+          </div>
+        ) : lessons.length === 0 ? (
+          <p className="text-center text-muted-foreground body-medium">Nessuna lezione disponibile per questo corso.</p>
+        ) : (
+          <>
+            <button
+              onClick={selectAllLessons}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-foreground/[0.05] transition-colors self-start"
+            >
+              <div className={cn(
+                "w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
+                selectedLessonIds.length === lessons.length
+                  ? "bg-primary border-primary"
+                  : "border-muted-foreground/40"
+              )}>
+                {selectedLessonIds.length === lessons.length && <Check className="w-3 h-3 text-primary-foreground" />}
+              </div>
+              <span className="label-medium text-muted-foreground">
+                {selectedLessonIds.length === lessons.length ? "Deseleziona tutto" : "Seleziona tutto"}
+              </span>
+            </button>
+
+            <div className="space-y-2">
+              {lessons.map((lesson, i) => (
+                <button
+                  key={lesson.id}
+                  onClick={() => toggleLessonSelection(lesson.id)}
+                  className={cn(
+                    "w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98]",
+                    selectedLessonIds.includes(lesson.id)
+                      ? "bg-primary-container border-primary/30 shadow-level-1"
+                      : "bg-surface-container border-outline-variant/30 hover:bg-surface-container-high"
+                  )}
+                >
+                  <div className={cn(
+                    "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors",
+                    selectedLessonIds.includes(lesson.id)
+                      ? "bg-primary border-primary"
+                      : "border-muted-foreground/40"
+                  )}>
+                    {selectedLessonIds.includes(lesson.id) && <Check className="w-3 h-3 text-primary-foreground" />}
+                  </div>
+                  <span className="label-large text-foreground text-left truncate">
+                    {i + 1}. {lesson.title}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <Button
+              onClick={() => generateExercises(selectedCourse, selectedLessonIds)}
+              disabled={selectedLessonIds.length === 0}
+              className="w-full h-12 rounded-full bg-primary text-primary-foreground mt-2"
+            >
+              Genera esercizi {selectedLessonIds.length > 0 && `(${selectedLessonIds.length} ${selectedLessonIds.length === 1 ? "lezione" : "lezioni"})`}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </>
+        )}
+      </div>
+    );
+  }
 
   // Course selection
   if (!selectedCourse || exercises.length === 0) {
@@ -170,7 +305,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
             {courses.map(course => (
               <button
                 key={course.id}
-                onClick={() => generateExercises(course.id)}
+                onClick={() => loadLessonsForCourse(course.id)}
                 className="w-full flex items-center gap-3 p-4 rounded-2xl border bg-surface-container border-outline-variant/30 hover:bg-surface-container-high transition-all active:scale-[0.98]"
               >
                 <BookOpen className="w-5 h-5 text-primary flex-shrink-0" />
@@ -211,7 +346,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           <Button variant="outline" onClick={exitExercises} className="rounded-full">
             Cambia corso
           </Button>
-          <Button onClick={() => generateExercises(selectedCourse!)} className="rounded-full bg-primary text-primary-foreground">
+          <Button onClick={() => generateExercises(selectedCourse!, selectedLessonIds)} className="rounded-full bg-primary text-primary-foreground">
             <RefreshCw className="w-4 h-4 mr-2" /> Nuovi esercizi
           </Button>
         </div>
