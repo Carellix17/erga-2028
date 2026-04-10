@@ -73,15 +73,14 @@ serve(async (req) => {
 
     const trimmed = studyContent.slice(0, 15000);
 
-    const prompt = `Genera 10 esercizi variegati basati ESCLUSIVAMENTE su questi materiali di studio. Usa questi tipi di esercizio, alternandoli:
+    const prompt = `Genera 10 esercizi basati ESCLUSIVAMENTE su questi materiali di studio. Usa SOLO questi tipi di esercizio, alternandoli:
 
 1. "multiple_choice" - Scelta multipla con 4 opzioni
 2. "true_false" - Vero o Falso con options ["Vero", "Falso"]
-3. "fill_blank" - Completa la frase (la risposta è una parola/frase breve)
-4. "matching" - Abbinamento di coppie (pairs con left/right)
-5. "ordering" - Metti in ordine (items da ordinare, correctAnswer è l'ordine giusto)
+3. "matching" - Abbinamento di coppie (pairs con left/right)
+4. "ordering" - Metti in ordine (items da ordinare, correctAnswer è l'ordine giusto)
 
-IMPORTANTE: Genera ESATTAMENTE 10 esercizi. NON usare "short_answer".
+IMPORTANTE: Genera ESATTAMENTE 10 esercizi. NON usare "short_answer" né "fill_blank". La maggior parte devono essere "multiple_choice" e "true_false".
 
 MATERIALI:
 ${trimmed}
@@ -101,12 +100,6 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
     "options": ["Vero", "Falso"],
     "correctAnswer": "Vero",
     "explanation": "Perché è vero"
-  },
-  {
-    "type": "fill_blank",
-    "question": "La capitale dell'Italia è ___",
-    "correctAnswer": "Roma",
-    "explanation": "Roma è la capitale"
   },
   {
     "type": "matching",
