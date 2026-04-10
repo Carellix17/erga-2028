@@ -202,8 +202,8 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   // Lesson picker view
   if (showLessonPicker && selectedCourse) {
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+      <div className="flex flex-col h-[calc(100vh-7.5rem)]">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-5">
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setShowLessonPicker(false); setSelectedCourse(null); }}
@@ -329,20 +329,22 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
 
   // Finished summary
   if (isFinished) {
+    const grade = Math.round((correctCount / results.length) * 10 * 10) / 10;
     const pct = Math.round((correctCount / results.length) * 100);
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col h-full px-4 py-6 items-center justify-center space-y-6 pt-safe pb-safe">
         <div className={cn(
-          "w-24 h-24 rounded-full flex items-center justify-center",
-          pct >= 70 ? "bg-success-container" : pct >= 50 ? "bg-warning/10" : "bg-error-container"
+          "w-28 h-28 rounded-full flex flex-col items-center justify-center",
+          grade >= 7 ? "bg-success-container" : grade >= 5 ? "bg-warning/10" : "bg-error-container"
         )}>
-          <span className="font-display text-3xl font-bold">
-            {pct}%
+          <span className="font-display text-4xl font-bold">
+            {grade}
           </span>
+          <span className="label-small text-muted-foreground">/10</span>
         </div>
         <div className="text-center space-y-1">
           <h3 className="font-display text-xl font-bold text-foreground">
-            {pct >= 70 ? "Ottimo lavoro! 🎉" : pct >= 50 ? "Buon inizio! 💪" : "Continua a studiare! 📚"}
+            {grade >= 8 ? "Ottimo lavoro! 🎉" : grade >= 6 ? "Buon inizio! 💪" : "Continua a studiare! 📚"}
           </h3>
           <p className="body-medium text-muted-foreground">
             {correctCount}/{results.length} risposte corrette
