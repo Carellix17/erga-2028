@@ -12,6 +12,12 @@ interface Course {
   file_name: string;
 }
 
+interface Lesson {
+  id: string;
+  title: string;
+  lesson_order: number;
+}
+
 type ExerciseType = "multiple_choice" | "true_false" | "fill_blank" | "short_answer" | "matching" | "ordering";
 
 interface Exercise {
