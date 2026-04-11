@@ -81,7 +81,8 @@ serve(async (req) => {
       }
 
       if (!lessons) throw new Error("Lezione non trovata");
-      if (lessons.is_generated) return successResponse({ success: true, lesson: lessons });
+      const existingExplanation = typeof lessons.explanation === "string" ? lessons.explanation : "";
+      const existingHasImageUrl = existingExplanation.includes('"image_url"');
 
       let studyContent = "";
       if (lessons.context_id) {
@@ -226,6 +227,10 @@ ${studyContent}`;
               : "Figura presente nel materiale di studio",
           };
         }
+      }
+
+      if (lessons.is_generated && (!imageUrls.length || existingHasImageUrl)) {
+        return successResponse({ success: true, lesson: lessons });
       }
 
       if (explanationParts.length > 0) {
