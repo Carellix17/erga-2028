@@ -112,10 +112,13 @@ serve(async (req) => {
         studyContent = studyContent.substring(0, markerIndex).trim();
         const lines = imageSection.trim().split("\n").filter((l: string) => l.trim());
         imageUrls = lines.map((line: string, idx: number) => {
-          const path = line.replace(/^image_\d+:\s*/, "").trim();
-          return { index: idx, url: `${supabaseUrl}/storage/v1/object/public/study-images/${path}` };
+          const afterPrefix = line.replace(/^image_\d+:\s*/, "").trim();
+          const pipeIndex = afterPrefix.indexOf(" | ");
+          const path = pipeIndex >= 0 ? afterPrefix.substring(0, pipeIndex).trim() : afterPrefix;
+          const description = pipeIndex >= 0 ? afterPrefix.substring(pipeIndex + 3).trim() : "Figura dal materiale";
+          return { index: idx, url: `${supabaseUrl}/storage/v1/object/public/study-images/${path}`, description };
         });
-        console.log(`Found ${imageUrls.length} extracted images for lesson`);
+        console.log(`Found ${imageUrls.length} extracted figures for lesson`);
       }
 
       const imageInstructions = imageUrls.length > 0
