@@ -403,6 +403,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
       <Sheet open={open} onOpenChange={() => {}}>
         <SheetContent side="bottom" className="rounded-t-xl pb-safe h-auto bg-surface-container-high border-t border-outline-variant">
           <SheetDescription className="sr-only">Stato di avanzamento del caricamento e della generazione delle mini-lezioni</SheetDescription>
+          <div className="py-8 px-4">
             <div className="flex flex-col items-center text-center mb-8">
               <div className={cn(
                 "w-20 h-20 rounded-xl flex items-center justify-center mb-4 transition-all duration-500 shadow-level-3",
@@ -428,8 +429,10 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 <span className="text-primary label-large">{getStepProgress()}%</span>
               </div>
               <div className="h-3 m3-progress-track">
-                <div className={cn("h-full m3-progress-indicator transition-all duration-700", generationStep === "complete" && "bg-success")}
-                  style={{ width: `${getStepProgress()}%`, backgroundColor: generationStep === "complete" ? `hsl(var(--success))` : undefined }} />
+                <div
+                  className={cn("h-full m3-progress-indicator transition-all duration-700", generationStep === "complete" && "bg-success")}
+                  style={{ width: `${getStepProgress()}%`, backgroundColor: generationStep === "complete" ? `hsl(var(--success))` : undefined }}
+                />
               </div>
             </div>
 
