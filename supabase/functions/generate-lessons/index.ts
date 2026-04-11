@@ -112,16 +112,19 @@ serve(async (req) => {
         studyContent = studyContent.substring(0, markerIndex).trim();
         const lines = imageSection.trim().split("\n").filter((l: string) => l.trim());
         imageUrls = lines.map((line: string, idx: number) => {
-          const path = line.replace(/^image_\d+:\s*/, "").trim();
-          return { index: idx, url: `${supabaseUrl}/storage/v1/object/public/study-images/${path}` };
+          const afterPrefix = line.replace(/^image_\d+:\s*/, "").trim();
+          const pipeIndex = afterPrefix.indexOf(" | ");
+          const path = pipeIndex >= 0 ? afterPrefix.substring(0, pipeIndex).trim() : afterPrefix;
+          const description = pipeIndex >= 0 ? afterPrefix.substring(pipeIndex + 3).trim() : "Figura dal materiale";
+          return { index: idx, url: `${supabaseUrl}/storage/v1/object/public/study-images/${path}`, description };
         });
-        console.log(`Found ${imageUrls.length} extracted images for lesson`);
+        console.log(`Found ${imageUrls.length} extracted figures for lesson`);
       }
 
       const imageInstructions = imageUrls.length > 0
-        ? `\n\nIMMAGINI ESTRATTE DAL MATERIALE (PDF):
-Le seguenti immagini sono state estratte dal materiale originale. Se sono disponibili immagini, DEVI usarne almeno una nella lezione.
-${imageUrls.map(img => `[IMG_${img.index}]: ${img.url}`).join("\n")}
+        ? `\n\nFIGURE ESTRATTE DAL MATERIALE (ritagliate dal PDF):
+Le seguenti figure sono state ritagliate direttamente dal materiale originale. Sono figure specifiche, NON pagine intere.
+${imageUrls.map(img => `[IMG_${img.index}]: ${img.url} — "${img.description}"`).join("\n")}
 
 REGOLE OBBLIGATORIE SULLE IMMAGINI:
 - Almeno una explanation_part DEVE contenere "image_url" con uno degli URL esatti dell'elenco.

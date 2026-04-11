@@ -208,45 +208,137 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     }
   };
 
-  const renderAndUploadPageImages = async (file: File, contextId: string, authUserId: string): Promise<string[]> => {
+  const cropFigure = async (
+    sourceBlob: Blob,
+    x: number, y: number, width: number, height: number
+  ): Promise<Blob> => {
+    const img = await createImageBitmap(sourceBlob);
+    const sx = Math.round(img.width * x / 100);
+    const sy = Math.round(img.height * y / 100);
+    const sw = Math.round(img.width * width / 100);
+    const sh = Math.round(img.height * height / 100);
+    
+    const canvas = document.createElement("canvas");
+    canvas.width = sw;
+    canvas.height = sh;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+    img.close();
+    
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (b) => {
+          canvas.width = 0;
+          canvas.height = 0;
+          b ? resolve(b) : reject(new Error("Crop failed"));
+        },
+        "image/jpeg",
+        0.9
+      );
+    });
+  };
+
+  const renderAndUploadPageImages = async (file: File, contextId: string, authUserId: string): Promise<{ path: string; description: string }[]> => {
     try {
       console.log("Rendering PDF pages as images...");
       const pages = await renderPdfPages(file);
       console.log(`Rendered ${pages.length} pages`);
 
-      if (pages.length === 0) {
-        throw new Error("RENDER_NO_PAGES");
-      }
+      if (pages.length === 0) return [];
 
-      const uploadedPaths: string[] = [];
+      // Step 1: Upload full pages temporarily for AI analysis
+      const uploadedPages: { pageNum: number; path: string; blob: Blob }[] = [];
       for (const { pageNum, blob } of pages) {
         const path = `${authUserId}/pages/${contextId}/page_${pageNum}.jpg`;
         const { error } = await supabase.storage
           .from("study-images")
-          .upload(path, blob, { contentType: "image/jpeg", upsert: false });
+          .upload(path, blob, { contentType: "image/jpeg", upsert: true });
 
         if (error) {
           console.warn(`Failed to upload page ${pageNum}:`, error);
         } else {
-          uploadedPaths.push(path);
+          uploadedPages.push({ pageNum, path, blob });
         }
       }
 
-      console.log(`Uploaded ${uploadedPaths.length} page images`);
+      if (uploadedPages.length === 0) return [];
+      console.log(`Uploaded ${uploadedPages.length} pages for analysis`);
 
-      if (uploadedPaths.length === 0) {
-        throw new Error("UPLOAD_NO_IMAGES");
+      // Step 2: Call AI to identify figures with bounding boxes
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const analyzeResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-pdf-figures`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            imagePaths: uploadedPages.map((p) => p.path),
+          }),
+        }
+      );
+
+      if (!analyzeResponse.ok) {
+        console.error("Analyze failed:", analyzeResponse.status);
+        // Fallback: return full pages
+        return uploadedPages.map((p) => ({ path: p.path, description: `Pagina ${p.pageNum}` }));
       }
 
-      return uploadedPaths;
+      const analyzeData = await analyzeResponse.json();
+      const results = analyzeData.results || [];
+
+      // Step 3: Crop individual figures and upload
+      const figurePaths: { path: string; description: string }[] = [];
+
+      for (const pageResult of results) {
+        if (!pageResult.figures || pageResult.figures.length === 0) continue;
+
+        const pageInfo = uploadedPages.find((p) => p.path === pageResult.storagePath);
+        if (!pageInfo) continue;
+
+        for (let fi = 0; fi < pageResult.figures.length; fi++) {
+          const fig = pageResult.figures[fi];
+          try {
+            const croppedBlob = await cropFigure(
+              pageInfo.blob,
+              fig.x, fig.y, fig.width, fig.height
+            );
+
+            const figurePath = `${authUserId}/figures/${contextId}/fig_p${pageResult.pageNum}_${fi}.jpg`;
+            const { error } = await supabase.storage
+              .from("study-images")
+              .upload(figurePath, croppedBlob, { contentType: "image/jpeg", upsert: true });
+
+            if (error) {
+              console.warn(`Failed to upload figure:`, error);
+            } else {
+              figurePaths.push({
+                path: figurePath,
+                description: fig.description || "Figura dal materiale",
+              });
+            }
+          } catch (cropErr) {
+            console.warn(`Failed to crop figure ${fi} from page ${pageResult.pageNum}:`, cropErr);
+          }
+        }
+      }
+
+      console.log(`Extracted and uploaded ${figurePaths.length} cropped figures`);
+
+      // If no figures found, return empty (no point showing full pages)
+      return figurePaths;
     } catch (err) {
-      console.error("Page rendering error:", err);
+      console.error("Page rendering/analysis error:", err);
       return [];
     }
   };
 
-  const attachImagesToContext = async (contextId: string, imagePaths: string[]) => {
-    if (imagePaths.length === 0) return;
+  const attachImagesToContext = async (contextId: string, figures: { path: string; description: string }[]) => {
+    if (figures.length === 0) return;
 
     const { data: ctx } = await supabase
       .from("study_contexts")
@@ -257,14 +349,14 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     if (!ctx) return;
 
     const baseContent = ctx.content.split("\n\n[EXTRACTED_IMAGES]\n")[0];
-    const imageMetadata = "\n\n[EXTRACTED_IMAGES]\n" + imagePaths.map((p, i) => `image_${i}: ${p}`).join("\n");
+    const imageMetadata = "\n\n[EXTRACTED_IMAGES]\n" + figures.map((f, i) => `image_${i}: ${f.path} | ${f.description}`).join("\n");
 
     await supabase
       .from("study_contexts")
       .update({ content: `${baseContent}${imageMetadata}` })
       .eq("id", contextId);
 
-    console.log(`Attached ${imagePaths.length} image paths to context ${contextId}`);
+    console.log(`Attached ${figures.length} figure paths to context ${contextId}`);
   };
 
   const handleUpload = async () => {
@@ -339,12 +431,14 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
             continue;
           }
 
-          const imagePaths = await imagePromise;
-          if (imagePaths.length === 0) {
-            throw new Error("Impossibile preparare le immagini del PDF per le mini-lezioni");
+          const figures = await imagePromise;
+          if (figures.length > 0) {
+            await attachImagesToContext(contextId, figures);
+          } else {
+            console.log("No figures found in PDF - proceeding without images");
           }
 
-          await attachImagesToContext(contextId, imagePaths);
+          
 
           setGenerationStep("generating");
           await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
