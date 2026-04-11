@@ -9,6 +9,8 @@ import { fireCelebration, fireStarBurst } from "@/lib/confetti";
 interface ExplanationPart {
   part_title: string;
   content: string;
+  image_description?: string;
+  image_url?: string;
 }
 
 interface FullscreenLessonProps {
