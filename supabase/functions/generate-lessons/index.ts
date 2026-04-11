@@ -81,7 +81,8 @@ serve(async (req) => {
       }
 
       if (!lessons) throw new Error("Lezione non trovata");
-      if (lessons.is_generated) return successResponse({ success: true, lesson: lessons });
+      const existingExplanation = typeof lessons.explanation === "string" ? lessons.explanation : "";
+      const existingHasImageUrl = existingExplanation.includes('"image_url"');
 
       let studyContent = "";
       if (lessons.context_id) {
@@ -119,14 +120,15 @@ serve(async (req) => {
 
       const imageInstructions = imageUrls.length > 0
         ? `\n\nIMMAGINI ESTRATTE DAL MATERIALE (PDF):
-Le seguenti immagini sono state estratte dal PDF originale. Se un concetto è collegato a una di queste immagini, DEVI inserirla nella parte corrispondente.
+Le seguenti immagini sono state estratte dal materiale originale. Se sono disponibili immagini, DEVI usarne almeno una nella lezione.
 ${imageUrls.map(img => `[IMG_${img.index}]: ${img.url}`).join("\n")}
 
-Per inserire un'immagine in una parte, aggiungi:
-- "image_url": "URL_ESATTO_DALL_ELENCO_SOPRA" (copia l'URL esattamente)
-- "image_description": "Breve didascalia che spiega cosa mostra l'immagine"
-
-IMPORTANTE: Usa le immagini dove sono PERTINENTI al concetto spiegato. Non metterle tutte in una sola parte.`
+REGOLE OBBLIGATORIE SULLE IMMAGINI:
+- Almeno una explanation_part DEVE contenere "image_url" con uno degli URL esatti dell'elenco.
+- NON restituire mai solo "image_description" senza "image_url" quando hai immagini disponibili.
+- Se una parte contiene un'immagine, aggiungi anche "image_description" come breve didascalia.
+- Usa SOLO gli URL dell'elenco sopra, copiati esattamente.
+- Distribuisci le immagini nelle parti pertinenti, non tutte alla fine.`
         : "";
 
       const prompt = `Sei un tutor universitario esperto e coinvolgente. Crea una lezione basata ESCLUSIVAMENTE sul materiale fornito.
@@ -180,17 +182,59 @@ MATERIALE DI STUDIO:
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera almeno 8-10 explanation_parts con contenuto rielaborato e ricco di esempi pratici. Se ci sono immagini disponibili, usale nelle parti pertinenti con image_url e image_description." },
+        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera almeno 8-10 explanation_parts con contenuto rielaborato e ricco di esempi pratici. Se ci sono immagini disponibili, almeno una parte deve avere image_url reale e image_description." },
         { role: "user", content: prompt }
       ], 0.15, 8000);
 
       console.log("AI lesson response (first 300 chars):", content.substring(0, 300));
       const lessonData = extractJson(content) as Record<string, unknown>;
 
-      // Build explanation from parts if available, fallback to legacy
       let explanation = lessonData.explanation || "";
-      if (Array.isArray(lessonData.explanation_parts) && lessonData.explanation_parts.length > 0) {
-        explanation = JSON.stringify(lessonData.explanation_parts);
+      let explanationParts = Array.isArray(lessonData.explanation_parts)
+        ? lessonData.explanation_parts.map((part) => ({ ...(part as Record<string, unknown>) }))
+        : [];
+
+      if (imageUrls.length > 0 && explanationParts.length > 0) {
+        const availableUrls = new Set(imageUrls.map((img) => img.url));
+        let hasImage = false;
+
+        explanationParts = explanationParts.map((part) => {
+          const imageUrl = typeof part.image_url === "string" && availableUrls.has(part.image_url)
+            ? part.image_url
+            : undefined;
+
+          if (imageUrl) {
+            hasImage = true;
+            return {
+              ...part,
+              image_url: imageUrl,
+              ...(typeof part.image_description === "string" ? { image_description: part.image_description } : {}),
+            };
+          }
+
+          const { image_url: _ignoredImageUrl, ...rest } = part;
+          return rest;
+        });
+
+        if (!hasImage) {
+          const targetIndex = explanationParts.findIndex((part) => typeof part.part_title === "string" && (part.part_title.startsWith("📌") || part.part_title.startsWith("🔍")));
+          const fallbackIndex = targetIndex >= 0 ? targetIndex : 0;
+          explanationParts[fallbackIndex] = {
+            ...explanationParts[fallbackIndex],
+            image_url: imageUrls[0].url,
+            image_description: typeof explanationParts[fallbackIndex].image_description === "string"
+              ? explanationParts[fallbackIndex].image_description
+              : "Figura presente nel materiale di studio",
+          };
+        }
+      }
+
+      if (lessons.is_generated && (!imageUrls.length || existingHasImageUrl)) {
+        return successResponse({ success: true, lesson: lessons });
+      }
+
+      if (explanationParts.length > 0) {
+        explanation = JSON.stringify(explanationParts);
       }
 
       await supabase.from("mini_lessons").update({

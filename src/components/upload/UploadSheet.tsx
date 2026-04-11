@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { FileUp, X, FileText, Loader2, Sparkles, Check, Globe, Search, Camera, ImageIcon, ChevronLeft } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -208,25 +208,36 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     }
   };
 
-  const renderAndUploadPageImages = async (file: File, contextId: string, userId: string): Promise<string[]> => {
+  const renderAndUploadPageImages = async (file: File, contextId: string, authUserId: string): Promise<string[]> => {
     try {
       console.log("Rendering PDF pages as images...");
       const pages = await renderPdfPages(file);
       console.log(`Rendered ${pages.length} pages`);
-      
+
+      if (pages.length === 0) {
+        throw new Error("RENDER_NO_PAGES");
+      }
+
       const uploadedPaths: string[] = [];
       for (const { pageNum, blob } of pages) {
-        const path = `${userId}/pages/${contextId}/page_${pageNum}.jpg`;
+        const path = `${authUserId}/pages/${contextId}/page_${pageNum}.jpg`;
         const { error } = await supabase.storage
           .from("study-images")
-          .upload(path, blob, { contentType: "image/jpeg", upsert: true });
-        if (!error) {
-          uploadedPaths.push(path);
-        } else {
+          .upload(path, blob, { contentType: "image/jpeg", upsert: false });
+
+        if (error) {
           console.warn(`Failed to upload page ${pageNum}:`, error);
+        } else {
+          uploadedPaths.push(path);
         }
       }
+
       console.log(`Uploaded ${uploadedPaths.length} page images`);
+
+      if (uploadedPaths.length === 0) {
+        throw new Error("UPLOAD_NO_IMAGES");
+      }
+
       return uploadedPaths;
     } catch (err) {
       console.error("Page rendering error:", err);
@@ -236,22 +247,23 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
 
   const attachImagesToContext = async (contextId: string, imagePaths: string[]) => {
     if (imagePaths.length === 0) return;
-    // Fetch current content and append image metadata
+
     const { data: ctx } = await supabase
       .from("study_contexts")
       .select("content")
       .eq("id", contextId)
       .single();
+
     if (!ctx) return;
 
-    const imageMetadata = "\n\n[EXTRACTED_IMAGES]\n" + 
-      imagePaths.map((p, i) => `image_${i}: ${p}`).join("\n");
-    
+    const baseContent = ctx.content.split("\n\n[EXTRACTED_IMAGES]\n")[0];
+    const imageMetadata = "\n\n[EXTRACTED_IMAGES]\n" + imagePaths.map((p, i) => `image_${i}: ${p}`).join("\n");
+
     await supabase
       .from("study_contexts")
-      .update({ content: ctx.content + imageMetadata })
+      .update({ content: `${baseContent}${imageMetadata}` })
       .eq("id", contextId);
-    
+
     console.log(`Attached ${imagePaths.length} image paths to context ${contextId}`);
   };
 
@@ -260,19 +272,31 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     setIsUploading(true); setGenerationStep("uploading");
     const uploadedFileInfos: { name: string; size: number }[] = [];
     const uploadedContextIds: string[] = [];
-    // Store file references for page rendering
     const fileContextMap: { file: File; contextId: string }[] = [];
+
     try {
       for (const file of selectedFiles) {
         setCurrentFileName(file.name);
-        if (file.size > MAX_FILE_SIZE) { toast({ title: "File troppo grande", description: `${file.name} supera il limite di 100MB`, variant: "destructive" }); continue; }
+        if (file.size > MAX_FILE_SIZE) {
+          toast({ title: "File troppo grande", description: `${file.name} supera il limite di 100MB`, variant: "destructive" });
+          continue;
+        }
+
         setGenerationStep("uploading");
-        const formData = new FormData(); formData.append("file", file); formData.append("userId", currentUser);
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("userId", currentUser);
+
         const { data: { session } } = await supabase.auth.getSession();
         const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, { method: "POST", headers: { Authorization: `Bearer ${authToken}` }, body: formData });
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${authToken}` },
+          body: formData,
+        });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Errore nel caricamento");
+
         uploadedFileInfos.push({ name: file.name, size: file.size });
         if (data.contextId) {
           uploadedContextIds.push(data.contextId as string);
@@ -280,9 +304,16 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         }
         setGenerationStep("processing");
       }
+
       if (uploadedFileInfos.length > 0 && uploadedContextIds.length > 0) {
         const { data: { session: sessionForLessons } } = await supabase.auth.getSession();
         const authTokenForLessons = sessionForLessons?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const authenticatedUserId = sessionForLessons?.user?.id;
+
+        if (!authenticatedUserId) {
+          throw new Error("Sessione utente non valida");
+        }
+
         const waitForContextProcessing = async (contextId: string) => {
           const maxAttempts = 60; const delayMs = 3000;
           for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
@@ -297,33 +328,43 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
           }
           return { ok: false, error: "Timeout durante l'elaborazione del PDF." };
         };
+
         for (const { file, contextId } of fileContextMap) {
           setGenerationStep("processing");
-          
-          // Start page rendering in parallel with text extraction
-          const imagePromise = renderAndUploadPageImages(file, contextId, currentUser);
-          
+
+          const imagePromise = renderAndUploadPageImages(file, contextId, authenticatedUserId);
           const processingResult = await waitForContextProcessing(contextId);
-          if (!processingResult.ok) { toast({ title: "Elaborazione incompleta", description: processingResult.error, variant: "destructive" }); continue; }
-          
-          // Wait for page images and attach them to context
+          if (!processingResult.ok) {
+            toast({ title: "Elaborazione incompleta", description: processingResult.error, variant: "destructive" });
+            continue;
+          }
+
           const imagePaths = await imagePromise;
+          if (imagePaths.length === 0) {
+            throw new Error("Impossibile preparare le immagini del PDF per le mini-lezioni");
+          }
+
           await attachImagesToContext(contextId, imagePaths);
-          
+
           setGenerationStep("generating");
           await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
             { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authTokenForLessons}` },
               body: JSON.stringify({ userId: currentUser, contextId }) });
         }
+
         setGenerationStep("complete");
         await new Promise(resolve => setTimeout(resolve, 1500));
         const latestContextId = uploadedContextIds.at(-1);
         onUpload(uploadedFileInfos, latestContextId); setSelectedFiles([]); setGenerationStep("idle"); onOpenChange(false);
         toast({ title: "Contenuti pronti! 🎉", description: "Le mini-lezioni sono state generate. Buono studio!" });
       }
-    } catch (error) { console.error("Upload error:", error);
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel caricamento", variant: "destructive" }); setGenerationStep("idle");
-    } finally { setIsUploading(false); }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel caricamento", variant: "destructive" });
+      setGenerationStep("idle");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleFileSelect = (contextId: string) => { onSelectFile?.(contextId); onOpenChange(false); };
@@ -361,6 +402,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     return (
       <Sheet open={open} onOpenChange={() => {}}>
         <SheetContent side="bottom" className="rounded-t-xl pb-safe h-auto bg-surface-container-high border-t border-outline-variant">
+          <SheetDescription className="sr-only">Stato di avanzamento del caricamento e della generazione delle mini-lezioni</SheetDescription>
           <div className="py-8 px-4">
             <div className="flex flex-col items-center text-center mb-8">
               <div className={cn(
@@ -387,8 +429,10 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 <span className="text-primary label-large">{getStepProgress()}%</span>
               </div>
               <div className="h-3 m3-progress-track">
-                <div className={cn("h-full m3-progress-indicator transition-all duration-700", generationStep === "complete" && "bg-success")}
-                  style={{ width: `${getStepProgress()}%`, backgroundColor: generationStep === "complete" ? `hsl(var(--success))` : undefined }} />
+                <div
+                  className={cn("h-full m3-progress-indicator transition-all duration-700", generationStep === "complete" && "bg-success")}
+                  style={{ width: `${getStepProgress()}%`, backgroundColor: generationStep === "complete" ? `hsl(var(--success))` : undefined }}
+                />
               </div>
             </div>
 
@@ -424,6 +468,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
       <SheetContent side="bottom" className="rounded-t-xl pb-safe max-h-[85vh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden">
         <SheetHeader className="mb-4">
           <SheetTitle className="font-display text-xl">I tuoi materiali</SheetTitle>
+          <SheetDescription className="sr-only">Carica PDF, immagini o contenuti web per generare mini-lezioni</SheetDescription>
         </SheetHeader>
 
         <Tabs value={activeTab} onValueChange={handleMainTabChange} className="flex-1 flex flex-col min-h-0 overflow-hidden">
