@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { FileUp, X, FileText, Loader2, Sparkles, Check, Globe, Search, Camera, ImageIcon, ChevronLeft } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -402,7 +402,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     return (
       <Sheet open={open} onOpenChange={() => {}}>
         <SheetContent side="bottom" className="rounded-t-xl pb-safe h-auto bg-surface-container-high border-t border-outline-variant">
-          <div className="py-8 px-4">
+          <SheetDescription className="sr-only">Stato di avanzamento del caricamento e della generazione delle mini-lezioni</SheetDescription>
             <div className="flex flex-col items-center text-center mb-8">
               <div className={cn(
                 "w-20 h-20 rounded-xl flex items-center justify-center mb-4 transition-all duration-500 shadow-level-3",
@@ -465,6 +465,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
       <SheetContent side="bottom" className="rounded-t-xl pb-safe max-h-[85vh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden">
         <SheetHeader className="mb-4">
           <SheetTitle className="font-display text-xl">I tuoi materiali</SheetTitle>
+          <SheetDescription className="sr-only">Carica PDF, immagini o contenuti web per generare mini-lezioni</SheetDescription>
         </SheetHeader>
 
         <Tabs value={activeTab} onValueChange={handleMainTabChange} className="flex-1 flex flex-col min-h-0 overflow-hidden">
