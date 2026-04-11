@@ -9,6 +9,8 @@ import { fireCelebration, fireStarBurst } from "@/lib/confetti";
 interface ExplanationPart {
   part_title: string;
   content: string;
+  image_description?: string;
+  image_url?: string;
 }
 
 interface FullscreenLessonProps {
@@ -264,31 +266,72 @@ function ConceptStep({ concept }: { concept: string }) {
 }
 
 function ExplanationPartStep({ part, partNumber, totalParts }: { part: ExplanationPart; partNumber: number; totalParts: number }) {
+  const isExample = part.part_title.startsWith("📌") || part.part_title.startsWith("🔍");
+  
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-12 h-12 rounded-2xl bg-secondary-container flex items-center justify-center shadow-level-1">
-          <BookOpen className="w-6 h-6 text-secondary" />
+        <div className={cn(
+          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-level-1",
+          isExample ? "bg-tertiary-container" : "bg-secondary-container"
+        )}>
+          {isExample ? (
+            <span className="text-xl">💡</span>
+          ) : (
+            <BookOpen className={cn("w-6 h-6", isExample ? "text-tertiary" : "text-secondary")} />
+          )}
         </div>
         <div className="flex-1">
           <span className="label-large text-foreground">{part.part_title}</span>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex items-center gap-1 mt-0.5">
             {Array.from({ length: totalParts }).map((_, i) => (
               <div
                 key={i}
                 className={cn(
                   "h-1 rounded-full flex-1 transition-all duration-300",
-                  i < partNumber ? "bg-secondary" : "bg-surface-container-highest"
+                  i < partNumber ? (isExample ? "bg-tertiary" : "bg-secondary") : "bg-surface-container-highest"
                 )}
               />
             ))}
           </div>
         </div>
       </div>
-      <div className="p-5 rounded-2xl bg-surface-container-low shadow-level-1">
+      <div className={cn(
+        "p-5 rounded-2xl shadow-level-1",
+        isExample ? "bg-tertiary-container/50 border-l-4 border-tertiary" : "bg-surface-container-low"
+      )}>
         <div className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90">
           <ReactMarkdown>{part.content}</ReactMarkdown>
         </div>
+        
+        {/* Image from source material */}
+        {part.image_url && (
+          <div className="mt-4">
+            <img 
+              src={part.image_url} 
+              alt={part.image_description || "Immagine dal materiale"} 
+              className="w-full rounded-2xl shadow-level-2 object-contain max-h-64"
+            />
+            {part.image_description && (
+              <p className="text-center body-small text-muted-foreground mt-2 italic">
+                {part.image_description}
+              </p>
+            )}
+          </div>
+        )}
+        
+        {/* AI-described image/diagram placeholder */}
+        {!part.image_url && part.image_description && (
+          <div className="mt-4 p-4 rounded-2xl bg-surface-container border border-outline-variant/30 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center flex-shrink-0">
+              <span className="text-lg">🖼️</span>
+            </div>
+            <div>
+              <p className="label-medium text-foreground mb-1">Figura dal materiale</p>
+              <p className="body-small text-muted-foreground italic">{part.image_description}</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

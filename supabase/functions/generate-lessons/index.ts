@@ -101,28 +101,42 @@ serve(async (req) => {
       }
       if (!studyContent) throw new Error("Contenuto vuoto. Caricamento fallito?");
 
-      const prompt = `Sei un tutor universitario esperto. Crea una lezione basata ESCLUSIVAMENTE sul materiale fornito.
+      const prompt = `Sei un tutor universitario esperto e coinvolgente. Crea una lezione basata ESCLUSIVAMENTE sul materiale fornito.
 ${profileContext}
 
 IMPORTANTE: Rispondi SOLO con un oggetto JSON valido. NON aggiungere testo prima o dopo il JSON. SOLO JSON puro.
 
-OBIETTIVO: Creare una mini-lezione modulare stile Duolingo. Ogni parte della spiegazione sarà mostrata come uno step separato.
+OBIETTIVO: Creare una mini-lezione modulare stile Duolingo, molto DILUITA e facile da seguire. Ogni parte sarà mostrata come uno step separato a schermo intero.
 
 TITOLO LEZIONE: "${lessons.title}"
 
-ISTRUZIONI:
-1. Concept: 1-2 frasi massimo che introducono l'argomento.
-2. Explanation_parts: Un array di 3-5 parti. Ogni parte è un blocco autonomo con titolo e contenuto breve (2-3 frasi max per parte). Le parti devono coprire l'argomento in modo progressivo.
-3. Example: 1 esempio concreto e breve (2-3 frasi).
+ISTRUZIONI PER LA SPIEGAZIONE:
+1. Concept: 1-2 frasi che introducono l'argomento in modo accattivante.
+2. Explanation_parts: Un array di 8-12 parti BREVI. REGOLE FONDAMENTALI:
+   - Ogni parte deve avere un titolo chiaro e 2-4 frasi MASSIMO.
+   - NON copiare il testo del materiale alla lettera. Rielabora e spiega con parole tue.
+   - Alterna tra spiegazione teorica e esempi pratici/concreti.
+   - Usa analogie, metafore e riferimenti alla vita quotidiana per rendere i concetti più comprensibili.
+   - Almeno 3 parti su 10 devono essere ESEMPI PRATICI (con part_title che inizia con "📌 Esempio:" o "🔍 In pratica:").
+   - Se il materiale menziona immagini, figure, diagrammi o schemi, aggiungi un campo "image_description" che descrive cosa l'immagine mostra.
+   - Procedi dal semplice al complesso, costruendo gradualmente la comprensione.
+3. Example: 1 esempio finale concreto e applicativo (3-4 frasi). Diverso dagli esempi nelle parti.
 4. Exercises: 5-6 esercizi. Usa SOLO "multiple_choice" e "true_false" (NO short_answer, NO fill_blank). Alterna i due tipi.
 
 JSON richiesto:
 {
   "concept": "...",
   "explanation_parts": [
-    { "part_title": "Titolo parte 1", "content": "Contenuto breve della parte 1..." },
-    { "part_title": "Titolo parte 2", "content": "Contenuto breve della parte 2..." },
-    { "part_title": "Titolo parte 3", "content": "Contenuto breve della parte 3..." }
+    { "part_title": "Cos'è...", "content": "Spiegazione breve e chiara..." },
+    { "part_title": "📌 Esempio: ...", "content": "Esempio pratico concreto..." },
+    { "part_title": "Come funziona...", "content": "Spiegazione del meccanismo..." },
+    { "part_title": "🔍 In pratica: ...", "content": "Applicazione reale..." },
+    { "part_title": "Aspetto importante", "content": "Dettaglio con analogia..." },
+    { "part_title": "📌 Esempio: ...", "content": "Altro esempio concreto..." },
+    { "part_title": "Perché è rilevante", "content": "Contestualizzazione..." },
+    { "part_title": "🔍 In pratica: ...", "content": "Caso d'uso reale..." },
+    { "part_title": "Collegamento con...", "content": "Connessione ad altro concetto..." },
+    { "part_title": "Ricapitolando", "content": "Sintesi dei punti chiave..." }
   ],
   "example": "...",
   "exercises": [
@@ -138,9 +152,9 @@ MATERIALE DI STUDIO:
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto." },
+        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera almeno 8-10 explanation_parts con contenuto rielaborato e ricco di esempi pratici." },
         { role: "user", content: prompt }
-      ], 0.1);
+      ], 0.15, 8000);
 
       console.log("AI lesson response (first 300 chars):", content.substring(0, 300));
       const lessonData = extractJson(content) as Record<string, unknown>;
