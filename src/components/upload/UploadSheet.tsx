@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { FileManager } from "./FileManager";
 import { supabase } from "@/integrations/supabase/client";
+import { renderPdfPages } from "@/lib/pdfPageRenderer";
 
 interface UploadSheetProps {
   open: boolean;
