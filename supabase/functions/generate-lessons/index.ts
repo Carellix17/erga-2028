@@ -122,9 +122,9 @@ serve(async (req) => {
       }
 
       const imageInstructions = imageUrls.length > 0
-        ? `\n\nIMMAGINI ESTRATTE DAL MATERIALE (PDF):
-Le seguenti immagini sono state estratte dal materiale originale. Se sono disponibili immagini, DEVI usarne almeno una nella lezione.
-${imageUrls.map(img => `[IMG_${img.index}]: ${img.url}`).join("\n")}
+        ? `\n\nFIGURE ESTRATTE DAL MATERIALE (ritagliate dal PDF):
+Le seguenti figure sono state ritagliate direttamente dal materiale originale. Sono figure specifiche, NON pagine intere.
+${imageUrls.map(img => `[IMG_${img.index}]: ${img.url} — "${img.description}"`).join("\n")}
 
 REGOLE OBBLIGATORIE SULLE IMMAGINI:
 - Almeno una explanation_part DEVE contenere "image_url" con uno degli URL esatti dell'elenco.
