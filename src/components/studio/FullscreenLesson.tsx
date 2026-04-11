@@ -320,14 +320,14 @@ function ExplanationPartStep({ part, partNumber, totalParts }: { part: Explanati
           </div>
         )}
         
-        {/* AI-described image/diagram placeholder */}
+        {/* AI-described figure (no image available) */}
         {!part.image_url && part.image_description && (
           <div className="mt-4 p-4 rounded-2xl bg-surface-container border border-outline-variant/30 flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center flex-shrink-0">
-              <span className="text-lg">🖼️</span>
+              <span className="text-lg">📊</span>
             </div>
             <div>
-              <p className="label-medium text-foreground mb-1">Figura dal materiale</p>
+              <p className="label-medium text-foreground mb-1">Descrizione figura</p>
               <p className="body-small text-muted-foreground italic">{part.image_description}</p>
             </div>
           </div>
