@@ -426,7 +426,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 <FileUp className="w-8 h-8 text-primary-foreground" />
               </div>
               <p className="font-display font-semibold text-lg mb-1">Trascina qui i tuoi PDF</p>
-              <p className="body-small text-muted-foreground">oppure tocca per selezionare (max 20MB)</p>
+              <p className="body-small text-muted-foreground">oppure tocca per selezionare (max 100MB)</p>
             </div>
 
             {selectedFiles.length > 0 && (
