@@ -77,79 +77,94 @@ serve(async (req) => {
 
         console.log(`Processing ${imagePaths.length} images`);
 
-        // Download all images and convert to base64
-        const imageContents: { base64: string; mimeType: string }[] = [];
-        for (const imgPath of imagePaths) {
-          const { data: fileData, error: downloadError } = await supabase
-            .storage
-            .from("study-pdfs")
-            .download(imgPath.trim());
-
-          if (downloadError || !fileData) {
-            console.error(`Error downloading image ${imgPath}:`, downloadError);
-            throw new Error("FILE_DOWNLOAD_ERROR");
-          }
-
-          const arrayBuffer = await fileData.arrayBuffer();
-          const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-          const ext = imgPath.split(".").pop()?.toLowerCase() || "jpg";
-          const mimeType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
-          imageContents.push({ base64, mimeType });
-        }
-
-        // Use Lovable AI gateway to extract text from images
         const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
         if (!lovableApiKey) throw new Error("AI_CONFIG_ERROR");
 
-        const aiMessages: unknown[] = [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Sei un assistente specializzato nell'estrarre testo e contenuti didattici dalle immagini. Analizza attentamente tutte le immagini fornite ed estrai TUTTO il testo visibile, formule, diagrammi e concetti. Organizza il contenuto in modo logico e strutturato, come se fosse un capitolo di un libro di testo. Se ci sono formule matematiche, trascrivile. Se ci sono diagrammi, descrivili in dettaglio. Rispondi SOLO con il contenuto estratto, senza commenti aggiuntivi."
-              },
-              ...imageContents.map(img => ({
-                type: "image_url",
-                image_url: {
-                  url: `data:${img.mimeType};base64,${img.base64}`
-                }
-              }))
-            ]
+        // Process images in batches of 5 to avoid token/memory limits
+        const BATCH_SIZE = 5;
+        const allExtractedTexts: string[] = [];
+
+        for (let batchStart = 0; batchStart < imagePaths.length; batchStart += BATCH_SIZE) {
+          const batchPaths = imagePaths.slice(batchStart, batchStart + BATCH_SIZE);
+          const batchNum = Math.floor(batchStart / BATCH_SIZE) + 1;
+          const totalBatches = Math.ceil(imagePaths.length / BATCH_SIZE);
+          console.log(`Processing batch ${batchNum}/${totalBatches} (${batchPaths.length} images)`);
+
+          // Download batch images and convert to base64
+          const imageContents: { base64: string; mimeType: string }[] = [];
+          for (const imgPath of batchPaths) {
+            const { data: fileData, error: downloadError } = await supabase
+              .storage
+              .from("study-pdfs")
+              .download(imgPath.trim());
+
+            if (downloadError || !fileData) {
+              console.error(`Error downloading image ${imgPath}:`, downloadError);
+              throw new Error("FILE_DOWNLOAD_ERROR");
+            }
+
+            const arrayBuffer = await fileData.arrayBuffer();
+            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+            const ext = imgPath.split(".").pop()?.toLowerCase() || "jpg";
+            const mimeType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+            imageContents.push({ base64, mimeType });
           }
-        ];
 
-        const aiResponse = await fetch("https://ai.lovable.dev/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${lovableApiKey}`,
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: aiMessages,
-            max_tokens: 16000,
-          }),
-        });
+          const aiMessages: unknown[] = [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: `Sei un assistente specializzato nell'estrarre testo e contenuti didattici dalle immagini. Analizza attentamente tutte le immagini fornite ed estrai TUTTO il testo visibile, formule, diagrammi e concetti. Organizza il contenuto in modo logico e strutturato. Se ci sono formule matematiche, trascrivile. Se ci sono diagrammi, descrivili in dettaglio. Rispondi SOLO con il contenuto estratto, senza commenti aggiuntivi. (Batch ${batchNum}/${totalBatches})`
+                },
+                ...imageContents.map(img => ({
+                  type: "image_url",
+                  image_url: {
+                    url: `data:${img.mimeType};base64,${img.base64}`
+                  }
+                }))
+              ]
+            }
+          ];
 
-        if (!aiResponse.ok) {
-          console.error("AI response error:", aiResponse.status);
-          throw new Error("AI_PROCESSING_ERROR");
+          const aiResponse = await fetch("https://ai.lovable.dev/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${lovableApiKey}`,
+            },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash",
+              messages: aiMessages,
+              max_tokens: 16000,
+            }),
+          });
+
+          if (!aiResponse.ok) {
+            console.error("AI response error:", aiResponse.status);
+            throw new Error("AI_PROCESSING_ERROR");
+          }
+
+          const aiData = await aiResponse.json();
+          const batchText = aiData.choices?.[0]?.message?.content || "";
+          if (batchText.trim()) {
+            allExtractedTexts.push(batchText);
+          }
         }
 
-        const aiData = await aiResponse.json();
-        const extractedText = aiData.choices?.[0]?.message?.content || "";
+        const extractedText = allExtractedTexts.join("\n\n---\n\n");
 
         if (!extractedText || extractedText.length < 20) {
           throw new Error("INSUFFICIENT_TEXT");
         }
 
-        console.log(`AI extracted ${extractedText.length} characters from ${imagePaths.length} images`);
+        console.log(`AI extracted ${extractedText.length} characters from ${imagePaths.length} images in ${Math.ceil(imagePaths.length / BATCH_SIZE)} batches`);
 
         const { error: updateError } = await supabase
           .from("study_contexts")
           .update({
-            content: extractedText.substring(0, 100000),
+            content: extractedText.substring(0, 200000),
             processing_status: "completed",
             error_message: null
           })
