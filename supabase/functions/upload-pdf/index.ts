@@ -160,7 +160,7 @@ serve(async (req) => {
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      return errorResponse(`File troppo grande. Dimensione massima: 20MB`, 400);
+      return errorResponse(`File troppo grande. Dimensione massima: 100MB`, 400);
     }
 
     console.log(`Uploading PDF: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB) for user: ${userId}`);

@@ -19,7 +19,7 @@ interface UploadSheetProps {
   onFileDeleted?: () => void;
 }
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024;
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
 type GenerationStep = "idle" | "uploading" | "processing" | "generating" | "complete" | "searching";
 
@@ -43,7 +43,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     if (value === "loading") setLoadingTab("menu");
   };
 
-  const MAX_IMAGES = 5;
+  const MAX_IMAGES = 20;
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -215,7 +215,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     try {
       for (const file of selectedFiles) {
         setCurrentFileName(file.name);
-        if (file.size > MAX_FILE_SIZE) { toast({ title: "File troppo grande", description: `${file.name} supera il limite di 20MB`, variant: "destructive" }); continue; }
+        if (file.size > MAX_FILE_SIZE) { toast({ title: "File troppo grande", description: `${file.name} supera il limite di 100MB`, variant: "destructive" }); continue; }
         setGenerationStep("uploading");
         const formData = new FormData(); formData.append("file", file); formData.append("userId", currentUser);
         const { data: { session } } = await supabase.auth.getSession();
