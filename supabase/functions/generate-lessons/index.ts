@@ -139,21 +139,24 @@ ${profileContext}
 
 IMPORTANTE: Rispondi SOLO con un oggetto JSON valido. NON aggiungere testo prima o dopo il JSON. SOLO JSON puro.
 
-OBIETTIVO: Creare una mini-lezione modulare stile Duolingo, molto DILUITA e facile da seguire. Ogni parte sarà mostrata come uno step separato a schermo intero.
+OBIETTIVO: Creare una mini-lezione modulare stile Duolingo su UN SOLO CONCETTO SPECIFICO. La lezione deve essere molto DILUITA e facile da seguire. Ogni parte sarà mostrata come uno step separato a schermo intero.
 
 TITOLO LEZIONE: "${lessons.title}"
 
+REGOLA CRITICA: Questa lezione deve trattare SOLO l'argomento indicato nel titolo. NON aggiungere altri argomenti o concetti non direttamente collegati. Spiega BENE e in PROFONDITÀ questo unico concetto.
+
 ISTRUZIONI PER LA SPIEGAZIONE:
 1. Concept: 1-2 frasi che introducono l'argomento in modo accattivante.
-2. Explanation_parts: Un array di 8-12 parti BREVI. REGOLE FONDAMENTALI:
-   - Ogni parte deve avere un titolo chiaro e 2-4 frasi MASSIMO.
+2. Explanation_parts: Un array di 5-8 parti BREVI. REGOLE FONDAMENTALI:
+   - Ogni parte deve avere un titolo chiaro e 2-3 frasi MASSIMO.
+   - CONCENTRATI SOLO sull'argomento del titolo. Non divagare su altri temi.
    - NON copiare il testo del materiale alla lettera. Rielabora e spiega con parole tue.
    - Alterna tra spiegazione teorica e esempi pratici/concreti.
-   - Usa analogie, metafore e riferimenti alla vita quotidiana per rendere i concetti più comprensibili.
-   - Almeno 3 parti su 10 devono essere ESEMPI PRATICI (con part_title che inizia con "📌 Esempio:" o "🔍 In pratica:").
-   - Procedi dal semplice al complesso, costruendo gradualmente la comprensione.
-3. Example: 1 esempio finale concreto e applicativo (3-4 frasi). Diverso dagli esempi nelle parti.
-4. Exercises: 5-6 esercizi. Usa SOLO "multiple_choice" e "true_false" (NO short_answer, NO fill_blank). Alterna i due tipi.
+   - Usa analogie, metafore e riferimenti alla vita quotidiana.
+   - Almeno 2 parti devono essere ESEMPI PRATICI (con part_title che inizia con "📌 Esempio:" o "🔍 In pratica:").
+   - Procedi dal semplice al complesso.
+3. Example: 1 esempio finale concreto e applicativo (2-3 frasi).
+4. Exercises: 3-4 esercizi SOLO su questo argomento. Usa SOLO "multiple_choice" e "true_false". Alterna i due tipi.
 ${imageInstructions}
 
 JSON richiesto:
@@ -164,20 +167,13 @@ JSON richiesto:
     { "part_title": "📌 Esempio: ...", "content": "Esempio pratico concreto...", "image_url": "https://...", "image_description": "Didascalia immagine" },
     { "part_title": "Come funziona...", "content": "Spiegazione del meccanismo..." },
     { "part_title": "🔍 In pratica: ...", "content": "Applicazione reale..." },
-    { "part_title": "Aspetto importante", "content": "Dettaglio con analogia..." },
-    { "part_title": "📌 Esempio: ...", "content": "Altro esempio concreto..." },
-    { "part_title": "Perché è rilevante", "content": "Contestualizzazione..." },
-    { "part_title": "🔍 In pratica: ...", "content": "Caso d'uso reale..." },
-    { "part_title": "Collegamento con...", "content": "Connessione ad altro concetto..." },
     { "part_title": "Ricapitolando", "content": "Sintesi dei punti chiave..." }
   ],
   "example": "...",
   "exercises": [
      { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 0 },
      { "type": "true_false", "statement": "...", "correct": true },
-     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 },
-     { "type": "true_false", "statement": "...", "correct": false },
-     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 1 }
+     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 }
   ]
 }
 
@@ -185,9 +181,9 @@ MATERIALE DI STUDIO:
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera almeno 8-10 explanation_parts con contenuto rielaborato e ricco di esempi pratici. Se ci sono immagini disponibili, almeno una parte deve avere image_url reale e image_description." },
+        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera 5-8 explanation_parts focalizzate su UN SOLO argomento specifico. Spiega in profondità ma senza divagare. Se ci sono immagini disponibili, almeno una parte deve avere image_url reale e image_description." },
         { role: "user", content: prompt }
-      ], 0.15, 8000);
+      ], 0.15, 6000);
 
       console.log("AI lesson response (first 300 chars):", content.substring(0, 300));
       const lessonData = extractJson(content) as Record<string, unknown>;
@@ -324,13 +320,17 @@ ${studyContent}`;
 IMPORTANTE: Rispondi SOLO con un array JSON valido. SOLO JSON puro.
 
 REGOLE:
-1. NON creare una lezione per ogni piccola definizione. RAGGRUPPA i concetti correlati.
-2. Ogni lezione deve coprire un argomento sostanzioso.
-3. Segui l'ordine logico del documento.
-4. Ignora indici, bibliografie o note a piè di pagina.
+1. Ogni lezione deve coprire UN SOLO concetto o argomento specifico. NON raggruppare più concetti diversi in una lezione.
+2. Preferisci MOLTE lezioni brevi e focalizzate piuttosto che poche lezioni dense.
+3. Se un argomento ha sotto-argomenti importanti, crea una lezione separata per ciascuno.
+4. Segui l'ordine logico del documento.
+5. Ignora indici, bibliografie o note a piè di pagina.
+6. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato.
+
+ESEMPIO: Se il materiale parla di "La cellula", NON creare una lezione "La cellula e le sue parti". Crea invece: "La membrana cellulare", "Il nucleo", "I mitocondri", "Il reticolo endoplasmatico", etc.
 
 Output richiesto:
-[{"title": "Introduzione e contesto storico"}, {"title": "I principi fondamentali"}]
+[{"title": "La membrana cellulare"}, {"title": "Il nucleo e il DNA"}]
 
 TESTO DA ANALIZZARE:
 ${combinedContent}`;
