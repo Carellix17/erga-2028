@@ -167,20 +167,13 @@ JSON richiesto:
     { "part_title": "📌 Esempio: ...", "content": "Esempio pratico concreto...", "image_url": "https://...", "image_description": "Didascalia immagine" },
     { "part_title": "Come funziona...", "content": "Spiegazione del meccanismo..." },
     { "part_title": "🔍 In pratica: ...", "content": "Applicazione reale..." },
-    { "part_title": "Aspetto importante", "content": "Dettaglio con analogia..." },
-    { "part_title": "📌 Esempio: ...", "content": "Altro esempio concreto..." },
-    { "part_title": "Perché è rilevante", "content": "Contestualizzazione..." },
-    { "part_title": "🔍 In pratica: ...", "content": "Caso d'uso reale..." },
-    { "part_title": "Collegamento con...", "content": "Connessione ad altro concetto..." },
     { "part_title": "Ricapitolando", "content": "Sintesi dei punti chiave..." }
   ],
   "example": "...",
   "exercises": [
      { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 0 },
      { "type": "true_false", "statement": "...", "correct": true },
-     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 },
-     { "type": "true_false", "statement": "...", "correct": false },
-     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 1 }
+     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 }
   ]
 }
 
@@ -188,9 +181,9 @@ MATERIALE DI STUDIO:
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera almeno 8-10 explanation_parts con contenuto rielaborato e ricco di esempi pratici. Se ci sono immagini disponibili, almeno una parte deve avere image_url reale e image_description." },
+        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera 5-8 explanation_parts focalizzate su UN SOLO argomento specifico. Spiega in profondità ma senza divagare. Se ci sono immagini disponibili, almeno una parte deve avere image_url reale e image_description." },
         { role: "user", content: prompt }
-      ], 0.15, 8000);
+      ], 0.15, 6000);
 
       console.log("AI lesson response (first 300 chars):", content.substring(0, 300));
       const lessonData = extractJson(content) as Record<string, unknown>;
