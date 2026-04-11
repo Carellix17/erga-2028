@@ -438,7 +438,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
             console.log("No figures found in PDF - proceeding without images");
           }
 
-          await attachImagesToContext(contextId, imagePaths);
+          
 
           setGenerationStep("generating");
           await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
