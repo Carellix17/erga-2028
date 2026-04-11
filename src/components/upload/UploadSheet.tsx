@@ -116,7 +116,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
 
       // Wait for image processing
       const authTokenForLessons = (await supabase.auth.getSession()).data.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const maxAttempts = 30;
+      const maxAttempts = 60;
       for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
           method: "POST",
@@ -232,7 +232,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         const { data: { session: sessionForLessons } } = await supabase.auth.getSession();
         const authTokenForLessons = sessionForLessons?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const waitForContextProcessing = async (contextId: string) => {
-          const maxAttempts = 20; const delayMs = 2000;
+          const maxAttempts = 60; const delayMs = 3000;
           for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
             const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`,
               { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authTokenForLessons}` },

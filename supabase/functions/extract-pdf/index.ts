@@ -266,7 +266,7 @@ serve(async (req) => {
         const { error: updateError } = await supabase
           .from("study_contexts")
           .update({
-            content: cleanedText.substring(0, 100000),
+            content: cleanedText.substring(0, 200000),
             processing_status: "completed",
             error_message: null
           })
