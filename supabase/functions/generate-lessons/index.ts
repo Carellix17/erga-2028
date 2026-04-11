@@ -139,21 +139,24 @@ ${profileContext}
 
 IMPORTANTE: Rispondi SOLO con un oggetto JSON valido. NON aggiungere testo prima o dopo il JSON. SOLO JSON puro.
 
-OBIETTIVO: Creare una mini-lezione modulare stile Duolingo, molto DILUITA e facile da seguire. Ogni parte sarà mostrata come uno step separato a schermo intero.
+OBIETTIVO: Creare una mini-lezione modulare stile Duolingo su UN SOLO CONCETTO SPECIFICO. La lezione deve essere molto DILUITA e facile da seguire. Ogni parte sarà mostrata come uno step separato a schermo intero.
 
 TITOLO LEZIONE: "${lessons.title}"
 
+REGOLA CRITICA: Questa lezione deve trattare SOLO l'argomento indicato nel titolo. NON aggiungere altri argomenti o concetti non direttamente collegati. Spiega BENE e in PROFONDITÀ questo unico concetto.
+
 ISTRUZIONI PER LA SPIEGAZIONE:
 1. Concept: 1-2 frasi che introducono l'argomento in modo accattivante.
-2. Explanation_parts: Un array di 8-12 parti BREVI. REGOLE FONDAMENTALI:
-   - Ogni parte deve avere un titolo chiaro e 2-4 frasi MASSIMO.
+2. Explanation_parts: Un array di 5-8 parti BREVI. REGOLE FONDAMENTALI:
+   - Ogni parte deve avere un titolo chiaro e 2-3 frasi MASSIMO.
+   - CONCENTRATI SOLO sull'argomento del titolo. Non divagare su altri temi.
    - NON copiare il testo del materiale alla lettera. Rielabora e spiega con parole tue.
    - Alterna tra spiegazione teorica e esempi pratici/concreti.
-   - Usa analogie, metafore e riferimenti alla vita quotidiana per rendere i concetti più comprensibili.
-   - Almeno 3 parti su 10 devono essere ESEMPI PRATICI (con part_title che inizia con "📌 Esempio:" o "🔍 In pratica:").
-   - Procedi dal semplice al complesso, costruendo gradualmente la comprensione.
-3. Example: 1 esempio finale concreto e applicativo (3-4 frasi). Diverso dagli esempi nelle parti.
-4. Exercises: 5-6 esercizi. Usa SOLO "multiple_choice" e "true_false" (NO short_answer, NO fill_blank). Alterna i due tipi.
+   - Usa analogie, metafore e riferimenti alla vita quotidiana.
+   - Almeno 2 parti devono essere ESEMPI PRATICI (con part_title che inizia con "📌 Esempio:" o "🔍 In pratica:").
+   - Procedi dal semplice al complesso.
+3. Example: 1 esempio finale concreto e applicativo (2-3 frasi).
+4. Exercises: 3-4 esercizi SOLO su questo argomento. Usa SOLO "multiple_choice" e "true_false". Alterna i due tipi.
 ${imageInstructions}
 
 JSON richiesto:
@@ -324,13 +327,17 @@ ${studyContent}`;
 IMPORTANTE: Rispondi SOLO con un array JSON valido. SOLO JSON puro.
 
 REGOLE:
-1. NON creare una lezione per ogni piccola definizione. RAGGRUPPA i concetti correlati.
-2. Ogni lezione deve coprire un argomento sostanzioso.
-3. Segui l'ordine logico del documento.
-4. Ignora indici, bibliografie o note a piè di pagina.
+1. Ogni lezione deve coprire UN SOLO concetto o argomento specifico. NON raggruppare più concetti diversi in una lezione.
+2. Preferisci MOLTE lezioni brevi e focalizzate piuttosto che poche lezioni dense.
+3. Se un argomento ha sotto-argomenti importanti, crea una lezione separata per ciascuno.
+4. Segui l'ordine logico del documento.
+5. Ignora indici, bibliografie o note a piè di pagina.
+6. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato.
+
+ESEMPIO: Se il materiale parla di "La cellula", NON creare una lezione "La cellula e le sue parti". Crea invece: "La membrana cellulare", "Il nucleo", "I mitocondri", "Il reticolo endoplasmatico", etc.
 
 Output richiesto:
-[{"title": "Introduzione e contesto storico"}, {"title": "I principi fondamentali"}]
+[{"title": "La membrana cellulare"}, {"title": "Il nucleo e il DNA"}]
 
 TESTO DA ANALIZZARE:
 ${combinedContent}`;
