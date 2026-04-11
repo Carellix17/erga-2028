@@ -101,6 +101,34 @@ serve(async (req) => {
       }
       if (!studyContent) throw new Error("Contenuto vuoto. Caricamento fallito?");
 
+      // Extract image metadata from content
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      let imageUrls: { index: number; url: string }[] = [];
+      const imageMarker = "[EXTRACTED_IMAGES]";
+      const markerIndex = studyContent.indexOf(imageMarker);
+      if (markerIndex !== -1) {
+        const imageSection = studyContent.substring(markerIndex + imageMarker.length);
+        studyContent = studyContent.substring(0, markerIndex).trim();
+        const lines = imageSection.trim().split("\n").filter((l: string) => l.trim());
+        imageUrls = lines.map((line: string, idx: number) => {
+          const path = line.replace(/^image_\d+:\s*/, "").trim();
+          return { index: idx, url: `${supabaseUrl}/storage/v1/object/public/study-images/${path}` };
+        });
+        console.log(`Found ${imageUrls.length} extracted images for lesson`);
+      }
+
+      const imageInstructions = imageUrls.length > 0
+        ? `\n\nIMMAGINI ESTRATTE DAL MATERIALE (PDF):
+Le seguenti immagini sono state estratte dal PDF originale. Se un concetto è collegato a una di queste immagini, DEVI inserirla nella parte corrispondente.
+${imageUrls.map(img => `[IMG_${img.index}]: ${img.url}`).join("\n")}
+
+Per inserire un'immagine in una parte, aggiungi:
+- "image_url": "URL_ESATTO_DALL_ELENCO_SOPRA" (copia l'URL esattamente)
+- "image_description": "Breve didascalia che spiega cosa mostra l'immagine"
+
+IMPORTANTE: Usa le immagini dove sono PERTINENTI al concetto spiegato. Non metterle tutte in una sola parte.`
+        : "";
+
       const prompt = `Sei un tutor universitario esperto e coinvolgente. Crea una lezione basata ESCLUSIVAMENTE sul materiale fornito.
 ${profileContext}
 
@@ -118,17 +146,17 @@ ISTRUZIONI PER LA SPIEGAZIONE:
    - Alterna tra spiegazione teorica e esempi pratici/concreti.
    - Usa analogie, metafore e riferimenti alla vita quotidiana per rendere i concetti più comprensibili.
    - Almeno 3 parti su 10 devono essere ESEMPI PRATICI (con part_title che inizia con "📌 Esempio:" o "🔍 In pratica:").
-   - Se il materiale menziona immagini, figure, diagrammi o schemi, aggiungi un campo "image_description" che descrive cosa l'immagine mostra.
    - Procedi dal semplice al complesso, costruendo gradualmente la comprensione.
 3. Example: 1 esempio finale concreto e applicativo (3-4 frasi). Diverso dagli esempi nelle parti.
 4. Exercises: 5-6 esercizi. Usa SOLO "multiple_choice" e "true_false" (NO short_answer, NO fill_blank). Alterna i due tipi.
+${imageInstructions}
 
 JSON richiesto:
 {
   "concept": "...",
   "explanation_parts": [
     { "part_title": "Cos'è...", "content": "Spiegazione breve e chiara..." },
-    { "part_title": "📌 Esempio: ...", "content": "Esempio pratico concreto..." },
+    { "part_title": "📌 Esempio: ...", "content": "Esempio pratico concreto...", "image_url": "https://...", "image_description": "Didascalia immagine" },
     { "part_title": "Come funziona...", "content": "Spiegazione del meccanismo..." },
     { "part_title": "🔍 In pratica: ...", "content": "Applicazione reale..." },
     { "part_title": "Aspetto importante", "content": "Dettaglio con analogia..." },
@@ -152,7 +180,7 @@ MATERIALE DI STUDIO:
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera almeno 8-10 explanation_parts con contenuto rielaborato e ricco di esempi pratici." },
+        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera almeno 8-10 explanation_parts con contenuto rielaborato e ricco di esempi pratici. Se ci sono immagini disponibili, usale nelle parti pertinenti con image_url e image_description." },
         { role: "user", content: prompt }
       ], 0.15, 8000);
 
