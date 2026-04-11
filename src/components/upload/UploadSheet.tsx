@@ -431,9 +431,11 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
             continue;
           }
 
-          const imagePaths = await imagePromise;
-          if (imagePaths.length === 0) {
-            throw new Error("Impossibile preparare le immagini del PDF per le mini-lezioni");
+          const figures = await imagePromise;
+          if (figures.length > 0) {
+            await attachImagesToContext(contextId, figures);
+          } else {
+            console.log("No figures found in PDF - proceeding without images");
           }
 
           await attachImagesToContext(contextId, imagePaths);
