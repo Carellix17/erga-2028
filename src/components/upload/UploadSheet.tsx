@@ -19,7 +19,7 @@ interface UploadSheetProps {
   onFileDeleted?: () => void;
 }
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024;
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
 type GenerationStep = "idle" | "uploading" | "processing" | "generating" | "complete" | "searching";
 
@@ -43,7 +43,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     if (value === "loading") setLoadingTab("menu");
   };
 
-  const MAX_IMAGES = 5;
+  const MAX_IMAGES = 20;
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -116,7 +116,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
 
       // Wait for image processing
       const authTokenForLessons = (await supabase.auth.getSession()).data.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const maxAttempts = 30;
+      const maxAttempts = 60;
       for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
           method: "POST",
@@ -215,7 +215,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     try {
       for (const file of selectedFiles) {
         setCurrentFileName(file.name);
-        if (file.size > MAX_FILE_SIZE) { toast({ title: "File troppo grande", description: `${file.name} supera il limite di 20MB`, variant: "destructive" }); continue; }
+        if (file.size > MAX_FILE_SIZE) { toast({ title: "File troppo grande", description: `${file.name} supera il limite di 100MB`, variant: "destructive" }); continue; }
         setGenerationStep("uploading");
         const formData = new FormData(); formData.append("file", file); formData.append("userId", currentUser);
         const { data: { session } } = await supabase.auth.getSession();
@@ -232,7 +232,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         const { data: { session: sessionForLessons } } = await supabase.auth.getSession();
         const authTokenForLessons = sessionForLessons?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const waitForContextProcessing = async (contextId: string) => {
-          const maxAttempts = 20; const delayMs = 2000;
+          const maxAttempts = 60; const delayMs = 3000;
           for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
             const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`,
               { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authTokenForLessons}` },
@@ -426,7 +426,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 <FileUp className="w-8 h-8 text-primary-foreground" />
               </div>
               <p className="font-display font-semibold text-lg mb-1">Trascina qui i tuoi PDF</p>
-              <p className="body-small text-muted-foreground">oppure tocca per selezionare (max 20MB)</p>
+              <p className="body-small text-muted-foreground">oppure tocca per selezionare (max 100MB)</p>
             </div>
 
             {selectedFiles.length > 0 && (

@@ -2,8 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
-const MAX_IMAGES = 5;
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_IMAGES = 20;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
 serve(async (req) => {
@@ -160,7 +160,7 @@ serve(async (req) => {
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      return errorResponse(`File troppo grande. Dimensione massima: 20MB`, 400);
+      return errorResponse(`File troppo grande. Dimensione massima: 100MB`, 400);
     }
 
     console.log(`Uploading PDF: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB) for user: ${userId}`);
