@@ -263,10 +263,40 @@ serve(async (req) => {
         const cleanedText = cleanExtractedText(extractedText);
         console.log(`Cleaned text: ${cleanedText.length} characters`);
 
+        // Extract and upload embedded images from PDF
+        let imageMetadata = "";
+        try {
+          const extractedImages = extractImagesFromPdfBytes(pdfBytes);
+          if (extractedImages.length > 0) {
+            console.log(`Found ${extractedImages.length} embedded images in PDF`);
+            const imagePaths: string[] = [];
+            for (let imgIdx = 0; imgIdx < extractedImages.length; imgIdx++) {
+              const img = extractedImages[imgIdx];
+              const imgPath = `${userId}/extracted/${contextId}/img_${imgIdx}.${img.ext}`;
+              const { error: uploadError } = await supabase.storage
+                .from("study-images")
+                .upload(imgPath, img.data, { contentType: img.mime, upsert: true });
+              if (!uploadError) {
+                imagePaths.push(imgPath);
+                console.log(`Uploaded image ${imgIdx}: ${imgPath} (${img.data.length} bytes)`);
+              } else {
+                console.error(`Failed to upload image ${imgIdx}:`, uploadError);
+              }
+            }
+            if (imagePaths.length > 0) {
+              imageMetadata = "\n\n[EXTRACTED_IMAGES]\n" + imagePaths.map((p, i) => `image_${i}: ${p}`).join("\n");
+            }
+          }
+        } catch (imgError) {
+          console.error("Image extraction error (non-fatal):", imgError);
+        }
+
+        const finalContent = cleanedText.substring(0, 195000) + imageMetadata;
+
         const { error: updateError } = await supabase
           .from("study_contexts")
           .update({
-            content: cleanedText.substring(0, 200000),
+            content: finalContent,
             processing_status: "completed",
             error_message: null
           })
