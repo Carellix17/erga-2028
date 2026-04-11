@@ -152,9 +152,9 @@ MATERIALE DI STUDIO:
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto." },
+        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera almeno 8-10 explanation_parts con contenuto rielaborato e ricco di esempi pratici." },
         { role: "user", content: prompt }
-      ], 0.1);
+      ], 0.15, 8000);
 
       console.log("AI lesson response (first 300 chars):", content.substring(0, 300));
       const lessonData = extractJson(content) as Record<string, unknown>;
