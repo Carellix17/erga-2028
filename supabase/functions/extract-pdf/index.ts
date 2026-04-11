@@ -527,3 +527,44 @@ function cleanExtractedText(text: string): string {
     .replace(/[^\x20-\x7E\xA0-\xFF\n]/g, " ")
     .trim();
 }
+
+function extractImagesFromPdfBytes(pdfBytes: Uint8Array): { data: Uint8Array; ext: string; mime: string }[] {
+  const images: { data: Uint8Array; ext: string; mime: string }[] = [];
+  const MIN_SIZE = 10000; // Skip images < 10KB (icons, bullets, decorations)
+  const MAX_IMAGES = 20;
+
+  // Scan for JPEG signatures (FF D8 FF)
+  for (let i = 0; i < pdfBytes.length - 3 && images.length < MAX_IMAGES; i++) {
+    if (pdfBytes[i] === 0xFF && pdfBytes[i + 1] === 0xD8 && pdfBytes[i + 2] === 0xFF) {
+      for (let j = i + 3; j < Math.min(i + 10_000_000, pdfBytes.length - 1); j++) {
+        if (pdfBytes[j] === 0xFF && pdfBytes[j + 1] === 0xD9) {
+          const imgData = pdfBytes.slice(i, j + 2);
+          if (imgData.length >= MIN_SIZE) {
+            images.push({ data: imgData, ext: "jpg", mime: "image/jpeg" });
+          }
+          i = j + 1;
+          break;
+        }
+      }
+    }
+  }
+
+  // Scan for PNG signatures (89 50 4E 47)
+  for (let i = 0; i < pdfBytes.length - 8 && images.length < MAX_IMAGES; i++) {
+    if (pdfBytes[i] === 0x89 && pdfBytes[i + 1] === 0x50 && pdfBytes[i + 2] === 0x4E && pdfBytes[i + 3] === 0x47) {
+      for (let j = i + 8; j < Math.min(i + 10_000_000, pdfBytes.length - 7); j++) {
+        if (pdfBytes[j] === 0x49 && pdfBytes[j + 1] === 0x45 && pdfBytes[j + 2] === 0x4E && pdfBytes[j + 3] === 0x44) {
+          const imgData = pdfBytes.slice(i, j + 8);
+          if (imgData.length >= MIN_SIZE) {
+            images.push({ data: imgData, ext: "png", mime: "image/png" });
+          }
+          i = j + 7;
+          break;
+        }
+      }
+    }
+  }
+
+  console.log(`Image extraction: found ${images.length} images (${images.map(i => `${(i.data.length / 1024).toFixed(0)}KB`).join(", ")})`);
+  return images;
+}
