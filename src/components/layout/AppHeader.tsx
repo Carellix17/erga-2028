@@ -13,8 +13,8 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
     <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-2xl border-b border-outline-variant/20 transition-all duration-400 ease-m3-emphasized">
       <div className="flex items-center justify-between h-16 px-4 max-w-lg mx-auto">
         <div className="flex items-center gap-3 animate-fade-up">
-          <div className="w-11 h-11 rounded-[1.25rem] overflow-hidden flex items-center justify-center shadow-level-2 rotate-3 hover:rotate-0 hover:scale-110 active:scale-95 transition-all duration-500 ease-m3-emphasized gradient-primary p-1.5">
-            <img src={ergaLogo} alt="Erga logo" className="w-full h-full object-contain drop-shadow-sm" style={{ filter: "brightness(0) invert(1)" }} />
+          <div className="w-10 h-10 flex items-center justify-center rotate-3 hover:rotate-0 hover:scale-110 active:scale-95 transition-all duration-500 ease-m3-emphasized">
+            <img src={ergaLogo} alt="Erga logo" className="w-10 h-10 object-contain drop-shadow-md" />
           </div>
           <div>
             <span className="font-display font-bold text-xl text-foreground tracking-tight">
