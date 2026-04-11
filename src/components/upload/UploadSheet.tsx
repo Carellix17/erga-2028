@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { FileManager } from "./FileManager";
 import { supabase } from "@/integrations/supabase/client";
+import { renderPdfPages } from "@/lib/pdfPageRenderer";
 
 interface UploadSheetProps {
   open: boolean;
@@ -207,11 +208,60 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     }
   };
 
+  const renderAndUploadPageImages = async (file: File, contextId: string, userId: string): Promise<string[]> => {
+    try {
+      console.log("Rendering PDF pages as images...");
+      const pages = await renderPdfPages(file);
+      console.log(`Rendered ${pages.length} pages`);
+      
+      const uploadedPaths: string[] = [];
+      for (const { pageNum, blob } of pages) {
+        const path = `${userId}/pages/${contextId}/page_${pageNum}.jpg`;
+        const { error } = await supabase.storage
+          .from("study-images")
+          .upload(path, blob, { contentType: "image/jpeg", upsert: true });
+        if (!error) {
+          uploadedPaths.push(path);
+        } else {
+          console.warn(`Failed to upload page ${pageNum}:`, error);
+        }
+      }
+      console.log(`Uploaded ${uploadedPaths.length} page images`);
+      return uploadedPaths;
+    } catch (err) {
+      console.error("Page rendering error:", err);
+      return [];
+    }
+  };
+
+  const attachImagesToContext = async (contextId: string, imagePaths: string[]) => {
+    if (imagePaths.length === 0) return;
+    // Fetch current content and append image metadata
+    const { data: ctx } = await supabase
+      .from("study_contexts")
+      .select("content")
+      .eq("id", contextId)
+      .single();
+    if (!ctx) return;
+
+    const imageMetadata = "\n\n[EXTRACTED_IMAGES]\n" + 
+      imagePaths.map((p, i) => `image_${i}: ${p}`).join("\n");
+    
+    await supabase
+      .from("study_contexts")
+      .update({ content: ctx.content + imageMetadata })
+      .eq("id", contextId);
+    
+    console.log(`Attached ${imagePaths.length} image paths to context ${contextId}`);
+  };
+
   const handleUpload = async () => {
     if (selectedFiles.length === 0 || !currentUser) return;
     setIsUploading(true); setGenerationStep("uploading");
     const uploadedFileInfos: { name: string; size: number }[] = [];
     const uploadedContextIds: string[] = [];
+    // Store file references for page rendering
+    const fileContextMap: { file: File; contextId: string }[] = [];
     try {
       for (const file of selectedFiles) {
         setCurrentFileName(file.name);
@@ -224,11 +274,13 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Errore nel caricamento");
         uploadedFileInfos.push({ name: file.name, size: file.size });
-        if (data.contextId) uploadedContextIds.push(data.contextId as string);
+        if (data.contextId) {
+          uploadedContextIds.push(data.contextId as string);
+          fileContextMap.push({ file, contextId: data.contextId as string });
+        }
         setGenerationStep("processing");
       }
       if (uploadedFileInfos.length > 0 && uploadedContextIds.length > 0) {
-        setGenerationStep("generating");
         const { data: { session: sessionForLessons } } = await supabase.auth.getSession();
         const authTokenForLessons = sessionForLessons?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const waitForContextProcessing = async (contextId: string) => {
@@ -245,10 +297,19 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
           }
           return { ok: false, error: "Timeout durante l'elaborazione del PDF." };
         };
-        for (const contextId of uploadedContextIds) {
+        for (const { file, contextId } of fileContextMap) {
           setGenerationStep("processing");
+          
+          // Start page rendering in parallel with text extraction
+          const imagePromise = renderAndUploadPageImages(file, contextId, currentUser);
+          
           const processingResult = await waitForContextProcessing(contextId);
           if (!processingResult.ok) { toast({ title: "Elaborazione incompleta", description: processingResult.error, variant: "destructive" }); continue; }
+          
+          // Wait for page images and attach them to context
+          const imagePaths = await imagePromise;
+          await attachImagesToContext(contextId, imagePaths);
+          
           setGenerationStep("generating");
           await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
             { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authTokenForLessons}` },

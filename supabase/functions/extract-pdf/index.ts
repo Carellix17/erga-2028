@@ -263,35 +263,8 @@ serve(async (req) => {
         const cleanedText = cleanExtractedText(extractedText);
         console.log(`Cleaned text: ${cleanedText.length} characters`);
 
-        // Extract and upload embedded images from PDF
-        let imageMetadata = "";
-        try {
-          const extractedImages = extractImagesFromPdfBytes(pdfBytes);
-          if (extractedImages.length > 0) {
-            console.log(`Found ${extractedImages.length} embedded images in PDF`);
-            const imagePaths: string[] = [];
-            for (let imgIdx = 0; imgIdx < extractedImages.length; imgIdx++) {
-              const img = extractedImages[imgIdx];
-              const imgPath = `${userId}/extracted/${contextId}/img_${imgIdx}.${img.ext}`;
-              const { error: uploadError } = await supabase.storage
-                .from("study-images")
-                .upload(imgPath, img.data, { contentType: img.mime, upsert: true });
-              if (!uploadError) {
-                imagePaths.push(imgPath);
-                console.log(`Uploaded image ${imgIdx}: ${imgPath} (${img.data.length} bytes)`);
-              } else {
-                console.error(`Failed to upload image ${imgIdx}:`, uploadError);
-              }
-            }
-            if (imagePaths.length > 0) {
-              imageMetadata = "\n\n[EXTRACTED_IMAGES]\n" + imagePaths.map((p, i) => `image_${i}: ${p}`).join("\n");
-            }
-          }
-        } catch (imgError) {
-          console.error("Image extraction error (non-fatal):", imgError);
-        }
-
-        const finalContent = cleanedText.substring(0, 195000) + imageMetadata;
+        // Image extraction is now handled client-side via PDF page rendering
+        const finalContent = cleanedText.substring(0, 200000);
 
         const { error: updateError } = await supabase
           .from("study_contexts")
@@ -528,43 +501,3 @@ function cleanExtractedText(text: string): string {
     .trim();
 }
 
-function extractImagesFromPdfBytes(pdfBytes: Uint8Array): { data: Uint8Array; ext: string; mime: string }[] {
-  const images: { data: Uint8Array; ext: string; mime: string }[] = [];
-  const MIN_SIZE = 10000; // Skip images < 10KB (icons, bullets, decorations)
-  const MAX_IMAGES = 20;
-
-  // Scan for JPEG signatures (FF D8 FF)
-  for (let i = 0; i < pdfBytes.length - 3 && images.length < MAX_IMAGES; i++) {
-    if (pdfBytes[i] === 0xFF && pdfBytes[i + 1] === 0xD8 && pdfBytes[i + 2] === 0xFF) {
-      for (let j = i + 3; j < Math.min(i + 10_000_000, pdfBytes.length - 1); j++) {
-        if (pdfBytes[j] === 0xFF && pdfBytes[j + 1] === 0xD9) {
-          const imgData = pdfBytes.slice(i, j + 2);
-          if (imgData.length >= MIN_SIZE) {
-            images.push({ data: imgData, ext: "jpg", mime: "image/jpeg" });
-          }
-          i = j + 1;
-          break;
-        }
-      }
-    }
-  }
-
-  // Scan for PNG signatures (89 50 4E 47)
-  for (let i = 0; i < pdfBytes.length - 8 && images.length < MAX_IMAGES; i++) {
-    if (pdfBytes[i] === 0x89 && pdfBytes[i + 1] === 0x50 && pdfBytes[i + 2] === 0x4E && pdfBytes[i + 3] === 0x47) {
-      for (let j = i + 8; j < Math.min(i + 10_000_000, pdfBytes.length - 7); j++) {
-        if (pdfBytes[j] === 0x49 && pdfBytes[j + 1] === 0x45 && pdfBytes[j + 2] === 0x4E && pdfBytes[j + 3] === 0x44) {
-          const imgData = pdfBytes.slice(i, j + 8);
-          if (imgData.length >= MIN_SIZE) {
-            images.push({ data: imgData, ext: "png", mime: "image/png" });
-          }
-          i = j + 7;
-          break;
-        }
-      }
-    }
-  }
-
-  console.log(`Image extraction: found ${images.length} images (${images.map(i => `${(i.data.length / 1024).toFixed(0)}KB`).join(", ")})`);
-  return images;
-}
