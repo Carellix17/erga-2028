@@ -207,11 +207,34 @@ ${studyContent}`;
         ? lessonData.explanation_parts.map((part) => ({ ...(part as Record<string, unknown>) }))
         : [];
 
+      // Strip textual image descriptions from content (hallucinated by AI)
+      const imageDescriptionPatterns = [
+        /L['']immagine mostra[^.]*\./gi,
+        /Qui c['']è (un'?|l['']?)immagine di[^.]*\./gi,
+        /Come si vede (nella|dalla) figura[^.]*\./gi,
+        /La (tabella|figura|immagine|schema) (illustra|mostra|rappresenta|seguente)[^.]*\./gi,
+        /Nell['']immagine[^.]*\./gi,
+        /La figura seguente[^.]*\./gi,
+      ];
+      
+      const sanitizeContent = (text: string): string => {
+        let cleaned = text;
+        for (const pattern of imageDescriptionPatterns) {
+          cleaned = cleaned.replace(pattern, "").trim();
+        }
+        return cleaned;
+      };
+
       if (imageUrls.length > 0 && explanationParts.length > 0) {
         const availableUrls = new Set(imageUrls.map((img) => img.url));
         let hasImage = false;
 
         explanationParts = explanationParts.map((part) => {
+          // Sanitize content to remove textual image descriptions
+          if (typeof part.content === "string") {
+            part.content = sanitizeContent(part.content);
+          }
+          
           const imageUrl = typeof part.image_url === "string" && availableUrls.has(part.image_url)
             ? part.image_url
             : undefined;
@@ -240,6 +263,14 @@ ${studyContent}`;
               : "Figura presente nel materiale di studio",
           };
         }
+      } else {
+        // Even without images, sanitize content to remove hallucinated image references
+        explanationParts = explanationParts.map((part) => {
+          if (typeof part.content === "string") {
+            part.content = sanitizeContent(part.content);
+          }
+          return part;
+        });
       }
 
       if (lessons.is_generated && (!imageUrls.length || existingHasImageUrl)) {
