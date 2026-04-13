@@ -35,7 +35,7 @@ export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: Pra
     <div className="flex flex-col h-[calc(100vh-7.5rem)]">
       {/* Sub-tab selector - hidden during exercises fullscreen */}
       {!isExerciseFullscreen && (
-        <div className="px-3 pt-3 pb-1 sticky top-0 z-10 bg-background">
+        <div className="px-3 pt-3 pb-1 flex-shrink-0 z-10 bg-background">
           <div className="flex gap-1.5 p-1 rounded-2xl bg-surface-container">
             {subTabs.map((tab) => {
               const Icon = tab.icon;
@@ -61,7 +61,7 @@ export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: Pra
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
         {activeSubTab === "chat" && (
           <ChatView hasFiles={hasFiles} onUploadClick={onUploadClick} />
         )}
