@@ -132,18 +132,19 @@ serve(async (req) => {
       const imageInstructions = imageUrls.length > 0
         ? `\n\nFIGURE ESTRATTE DAL MATERIALE (ritagliate dal PDF):
 Le seguenti figure sono state ritagliate direttamente dal materiale originale. Sono figure specifiche, NON pagine intere.
-${imageUrls.map(img => `[IMG_${img.index}]: ${img.url} — "${img.description}"`).join("\n")}
+${imageUrls.map(img => `[IMG_${img.index}]: ${img.url} — "${(img as Record<string, unknown>).description}"`).join("\n")}
 
 REGOLE OBBLIGATORIE SULLE IMMAGINI:
 - Almeno una explanation_part DEVE contenere "image_url" con uno degli URL esatti dell'elenco.
 - NON restituire mai solo "image_description" senza "image_url" quando hai immagini disponibili.
 - Se una parte contiene un'immagine, aggiungi anche "image_description" come breve didascalia.
 - Usa SOLO gli URL dell'elenco sopra, copiati esattamente.
-- Distribuisci le immagini nelle parti pertinenti, non tutte alla fine.`
+- Distribuisci le immagini nelle parti pertinenti, non tutte alla fine.
+- NON DESCRIVERE MAI le immagini a parole. MAI scrivere frasi come "L'immagine mostra...", "Qui c'è un'immagine di...", "Come si vede nella figura...". Inserisci SOLO l'URL nell'apposito campo image_url.`
         : "";
 
       const prompt = `Sei un tutor universitario esperto e coinvolgente. Crea una lezione basata ESCLUSIVAMENTE sul materiale fornito.
-${profileContext}
+${profileContext}${pageRangeInfo}
 
 IMPORTANTE: Rispondi SOLO con un oggetto JSON valido. NON aggiungere testo prima o dopo il JSON. SOLO JSON puro.
 
@@ -152,6 +153,11 @@ OBIETTIVO: Creare una mini-lezione modulare stile Duolingo su UN SOLO CONCETTO S
 TITOLO LEZIONE: "${lessons.title}"
 
 REGOLA CRITICA: Questa lezione deve trattare SOLO l'argomento indicato nel titolo. NON aggiungere altri argomenti o concetti non direttamente collegati. Spiega BENE e in PROFONDITÀ questo unico concetto.
+
+DIVIETO ASSOLUTO SULLE IMMAGINI:
+- NON scrivere MAI frasi come "L'immagine mostra...", "Qui c'è un'immagine di...", "Come si vede nella figura...", "La tabella illustra...", "Lo schema rappresenta...".
+- Se vuoi riferire un elemento visivo, usa ESCLUSIVAMENTE il campo "image_url" con l'URL esatto dalla lista fornita.
+- Se non hai immagini disponibili, NON inventare descrizioni testuali di figure o tabelle. Spiega il concetto a parole tue senza riferimenti a elementi grafici inesistenti.
 
 ISTRUZIONI PER LA SPIEGAZIONE:
 1. Concept: 1-2 frasi che introducono l'argomento in modo accattivante.
@@ -189,7 +195,7 @@ MATERIALE DI STUDIO:
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera 5-8 explanation_parts focalizzate su UN SOLO argomento specifico. Spiega in profondità ma senza divagare. Se ci sono immagini disponibili, almeno una parte deve avere image_url reale e image_description." },
+        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera 5-8 explanation_parts focalizzate su UN SOLO argomento specifico. Spiega in profondità ma senza divagare. Se ci sono immagini disponibili, almeno una parte deve avere image_url reale e image_description. DIVIETO ASSOLUTO: NON scrivere mai descrizioni testuali di immagini, figure, tabelle o schemi. Se un elemento grafico è rilevante, usa SOLO il campo image_url con l'URL esatto fornito." },
         { role: "user", content: prompt }
       ], 0.15, 6000);
 
