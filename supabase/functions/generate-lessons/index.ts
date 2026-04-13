@@ -81,6 +81,14 @@ serve(async (req) => {
       }
 
       if (!lessons) throw new Error("Lezione non trovata");
+      
+      // Extract page range from lesson record
+      const pageStart = (lessons as Record<string, unknown>).page_start as number | null;
+      const pageEnd = (lessons as Record<string, unknown>).page_end as number | null;
+      const pageRangeInfo = pageStart != null && pageEnd != null 
+        ? `\nQuesta lezione copre le pagine ${pageStart}-${pageEnd} del PDF originale. Concentrati SOLO sul contenuto di queste pagine.`
+        : "";
+      
       const existingExplanation = typeof lessons.explanation === "string" ? lessons.explanation : "";
       const existingHasImageUrl = existingExplanation.includes('"image_url"');
 
