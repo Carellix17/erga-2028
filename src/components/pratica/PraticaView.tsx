@@ -22,35 +22,43 @@ const subTabs = [
 
 export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: PraticaViewProps) {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("chat");
+  const [isExerciseFullscreen, setIsExerciseFullscreen] = useState(false);
+
+  const handleFullscreenChange = (isFullscreen: boolean) => {
+    setIsExerciseFullscreen(isFullscreen);
+    onFullscreenChange?.(isFullscreen);
+  };
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
   return (
     <div className="flex flex-col h-[calc(100vh-7.5rem)]">
-      {/* Sub-tab selector */}
-      <div className="px-3 pt-3 pb-1">
-        <div className="flex gap-1.5 p-1 rounded-2xl bg-surface-container">
-          {subTabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeSubTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveSubTab(tab.id)}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl transition-all duration-400 ease-m3-emphasized",
-                  isActive
-                    ? "bg-tertiary text-tertiary-foreground shadow-level-1"
-                    : "text-muted-foreground hover:bg-foreground/[0.05]"
-                )}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="label-medium">{tab.label}</span>
-              </button>
-            );
-          })}
+      {/* Sub-tab selector - hidden during exercises fullscreen */}
+      {!isExerciseFullscreen && (
+        <div className="px-3 pt-3 pb-1 sticky top-0 z-10 bg-background">
+          <div className="flex gap-1.5 p-1 rounded-2xl bg-surface-container">
+            {subTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeSubTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveSubTab(tab.id)}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl transition-all duration-400 ease-m3-emphasized",
+                    isActive
+                      ? "bg-tertiary text-tertiary-foreground shadow-level-1"
+                      : "text-muted-foreground hover:bg-foreground/[0.05]"
+                  )}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="label-medium">{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-hidden">
@@ -61,7 +69,7 @@ export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: Pra
           <InterrogazioneView />
         )}
         {activeSubTab === "esercizi" && (
-          <EserciziView onFullscreenChange={onFullscreenChange} />
+          <EserciziView onFullscreenChange={handleFullscreenChange} />
         )}
       </div>
     </div>
