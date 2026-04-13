@@ -30,7 +30,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [generationStep, setGenerationStep] = useState<GenerationStep>("idle");
+  const [generationStep, setGenerationStep] = useState<UploadStep>("idle");
   const [currentFileName, setCurrentFileName] = useState("");
   const [activeTab, setActiveTab] = useState<string>("loading");
   const [loadingTab, setLoadingTab] = useState<string>("menu");
