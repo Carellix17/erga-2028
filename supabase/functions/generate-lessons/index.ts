@@ -326,11 +326,12 @@ REGOLE:
 4. Segui l'ordine logico del documento.
 5. Ignora indici, bibliografie o note a piè di pagina.
 6. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato.
+7. Per ogni lezione indica anche il numero di pagina iniziale e finale del PDF da cui proviene il contenuto. Usa i numeri di pagina presenti nel testo (es. "Pagina 3", "pag. 5", headers/footers con numeri). Se non riesci a identificare le pagine esatte, stima in base alla posizione nel documento.
 
 ESEMPIO: Se il materiale parla di "La cellula", NON creare una lezione "La cellula e le sue parti". Crea invece: "La membrana cellulare", "Il nucleo", "I mitocondri", "Il reticolo endoplasmatico", etc.
 
 Output richiesto:
-[{"title": "La membrana cellulare"}, {"title": "Il nucleo e il DNA"}]
+[{"title": "La membrana cellulare", "page_start": 1, "page_end": 3}, {"title": "Il nucleo e il DNA", "page_start": 4, "page_end": 6}]
 
 TESTO DA ANALIZZARE:
 ${combinedContent}`;
@@ -346,11 +347,14 @@ ${combinedContent}`;
 
     const titles = parsedTitles
       .map((t) => {
-        if (typeof t === "string") return { title: t };
-        if (t && typeof t === "object" && "title" in t && typeof (t as { title?: unknown }).title === "string") return { title: (t as { title: string }).title };
+        if (typeof t === "string") return { title: t, page_start: null, page_end: null };
+        if (t && typeof t === "object" && "title" in t && typeof (t as { title?: unknown }).title === "string") {
+          const obj = t as { title: string; page_start?: number; page_end?: number };
+          return { title: obj.title, page_start: typeof obj.page_start === "number" ? obj.page_start : null, page_end: typeof obj.page_end === "number" ? obj.page_end : null };
+        }
         return null;
       })
-      .filter((t): t is { title: string } => !!t && !!t.title);
+      .filter((t): t is { title: string; page_start: number | null; page_end: number | null } => !!t && !!t.title);
 
     if (titles.length === 0) throw new Error("Non sono riuscito a creare un indice valido. Riprova.");
 
@@ -360,9 +364,10 @@ ${combinedContent}`;
     const { error: deleteError } = await deleteQuery;
     if (deleteError) throw new Error("Errore durante la pulizia delle vecchie lezioni");
 
-    const lessonsToInsert = titles.map((t: { title: string }, i: number) => ({
+    const lessonsToInsert = titles.map((t, i: number) => ({
       user_id: userId, context_id: contextId ?? null, title: t.title,
-      lesson_order: i, is_generated: false, concept: "", explanation: ""
+      lesson_order: i, is_generated: false, concept: "", explanation: "",
+      page_start: t.page_start, page_end: t.page_end,
     }));
 
     const { error: insertError } = await supabase.from("mini_lessons").insert(lessonsToInsert);
