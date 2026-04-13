@@ -81,6 +81,14 @@ serve(async (req) => {
       }
 
       if (!lessons) throw new Error("Lezione non trovata");
+      
+      // Extract page range from lesson record
+      const pageStart = (lessons as Record<string, unknown>).page_start as number | null;
+      const pageEnd = (lessons as Record<string, unknown>).page_end as number | null;
+      const pageRangeInfo = pageStart != null && pageEnd != null 
+        ? `\nQuesta lezione copre le pagine ${pageStart}-${pageEnd} del PDF originale. Concentrati SOLO sul contenuto di queste pagine.`
+        : "";
+      
       const existingExplanation = typeof lessons.explanation === "string" ? lessons.explanation : "";
       const existingHasImageUrl = existingExplanation.includes('"image_url"');
 
@@ -124,18 +132,19 @@ serve(async (req) => {
       const imageInstructions = imageUrls.length > 0
         ? `\n\nFIGURE ESTRATTE DAL MATERIALE (ritagliate dal PDF):
 Le seguenti figure sono state ritagliate direttamente dal materiale originale. Sono figure specifiche, NON pagine intere.
-${imageUrls.map(img => `[IMG_${img.index}]: ${img.url} — "${img.description}"`).join("\n")}
+${imageUrls.map(img => `[IMG_${img.index}]: ${img.url} — "${(img as Record<string, unknown>).description}"`).join("\n")}
 
 REGOLE OBBLIGATORIE SULLE IMMAGINI:
 - Almeno una explanation_part DEVE contenere "image_url" con uno degli URL esatti dell'elenco.
 - NON restituire mai solo "image_description" senza "image_url" quando hai immagini disponibili.
 - Se una parte contiene un'immagine, aggiungi anche "image_description" come breve didascalia.
 - Usa SOLO gli URL dell'elenco sopra, copiati esattamente.
-- Distribuisci le immagini nelle parti pertinenti, non tutte alla fine.`
+- Distribuisci le immagini nelle parti pertinenti, non tutte alla fine.
+- NON DESCRIVERE MAI le immagini a parole. MAI scrivere frasi come "L'immagine mostra...", "Qui c'è un'immagine di...", "Come si vede nella figura...". Inserisci SOLO l'URL nell'apposito campo image_url.`
         : "";
 
       const prompt = `Sei un tutor universitario esperto e coinvolgente. Crea una lezione basata ESCLUSIVAMENTE sul materiale fornito.
-${profileContext}
+${profileContext}${pageRangeInfo}
 
 IMPORTANTE: Rispondi SOLO con un oggetto JSON valido. NON aggiungere testo prima o dopo il JSON. SOLO JSON puro.
 
@@ -144,6 +153,11 @@ OBIETTIVO: Creare una mini-lezione modulare stile Duolingo su UN SOLO CONCETTO S
 TITOLO LEZIONE: "${lessons.title}"
 
 REGOLA CRITICA: Questa lezione deve trattare SOLO l'argomento indicato nel titolo. NON aggiungere altri argomenti o concetti non direttamente collegati. Spiega BENE e in PROFONDITÀ questo unico concetto.
+
+DIVIETO ASSOLUTO SULLE IMMAGINI:
+- NON scrivere MAI frasi come "L'immagine mostra...", "Qui c'è un'immagine di...", "Come si vede nella figura...", "La tabella illustra...", "Lo schema rappresenta...".
+- Se vuoi riferire un elemento visivo, usa ESCLUSIVAMENTE il campo "image_url" con l'URL esatto dalla lista fornita.
+- Se non hai immagini disponibili, NON inventare descrizioni testuali di figure o tabelle. Spiega il concetto a parole tue senza riferimenti a elementi grafici inesistenti.
 
 ISTRUZIONI PER LA SPIEGAZIONE:
 1. Concept: 1-2 frasi che introducono l'argomento in modo accattivante.
@@ -181,7 +195,7 @@ MATERIALE DI STUDIO:
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera 5-8 explanation_parts focalizzate su UN SOLO argomento specifico. Spiega in profondità ma senza divagare. Se ci sono immagini disponibili, almeno una parte deve avere image_url reale e image_description." },
+        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera 5-8 explanation_parts focalizzate su UN SOLO argomento specifico. Spiega in profondità ma senza divagare. Se ci sono immagini disponibili, almeno una parte deve avere image_url reale e image_description. DIVIETO ASSOLUTO: NON scrivere mai descrizioni testuali di immagini, figure, tabelle o schemi. Se un elemento grafico è rilevante, usa SOLO il campo image_url con l'URL esatto fornito." },
         { role: "user", content: prompt }
       ], 0.15, 6000);
 
@@ -193,11 +207,34 @@ ${studyContent}`;
         ? lessonData.explanation_parts.map((part) => ({ ...(part as Record<string, unknown>) }))
         : [];
 
+      // Strip textual image descriptions from content (hallucinated by AI)
+      const imageDescriptionPatterns = [
+        /L['']immagine mostra[^.]*\./gi,
+        /Qui c['']è (un'?|l['']?)immagine di[^.]*\./gi,
+        /Come si vede (nella|dalla) figura[^.]*\./gi,
+        /La (tabella|figura|immagine|schema) (illustra|mostra|rappresenta|seguente)[^.]*\./gi,
+        /Nell['']immagine[^.]*\./gi,
+        /La figura seguente[^.]*\./gi,
+      ];
+      
+      const sanitizeContent = (text: string): string => {
+        let cleaned = text;
+        for (const pattern of imageDescriptionPatterns) {
+          cleaned = cleaned.replace(pattern, "").trim();
+        }
+        return cleaned;
+      };
+
       if (imageUrls.length > 0 && explanationParts.length > 0) {
         const availableUrls = new Set(imageUrls.map((img) => img.url));
         let hasImage = false;
 
         explanationParts = explanationParts.map((part) => {
+          // Sanitize content to remove textual image descriptions
+          if (typeof part.content === "string") {
+            part.content = sanitizeContent(part.content);
+          }
+          
           const imageUrl = typeof part.image_url === "string" && availableUrls.has(part.image_url)
             ? part.image_url
             : undefined;
@@ -226,6 +263,14 @@ ${studyContent}`;
               : "Figura presente nel materiale di studio",
           };
         }
+      } else {
+        // Even without images, sanitize content to remove hallucinated image references
+        explanationParts = explanationParts.map((part) => {
+          if (typeof part.content === "string") {
+            part.content = sanitizeContent(part.content);
+          }
+          return part;
+        });
       }
 
       if (lessons.is_generated && (!imageUrls.length || existingHasImageUrl)) {
@@ -326,11 +371,12 @@ REGOLE:
 4. Segui l'ordine logico del documento.
 5. Ignora indici, bibliografie o note a piè di pagina.
 6. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato.
+7. Per ogni lezione indica anche il numero di pagina iniziale e finale del PDF da cui proviene il contenuto. Usa i numeri di pagina presenti nel testo (es. "Pagina 3", "pag. 5", headers/footers con numeri). Se non riesci a identificare le pagine esatte, stima in base alla posizione nel documento.
 
 ESEMPIO: Se il materiale parla di "La cellula", NON creare una lezione "La cellula e le sue parti". Crea invece: "La membrana cellulare", "Il nucleo", "I mitocondri", "Il reticolo endoplasmatico", etc.
 
 Output richiesto:
-[{"title": "La membrana cellulare"}, {"title": "Il nucleo e il DNA"}]
+[{"title": "La membrana cellulare", "page_start": 1, "page_end": 3}, {"title": "Il nucleo e il DNA", "page_start": 4, "page_end": 6}]
 
 TESTO DA ANALIZZARE:
 ${combinedContent}`;
@@ -346,11 +392,14 @@ ${combinedContent}`;
 
     const titles = parsedTitles
       .map((t) => {
-        if (typeof t === "string") return { title: t };
-        if (t && typeof t === "object" && "title" in t && typeof (t as { title?: unknown }).title === "string") return { title: (t as { title: string }).title };
+        if (typeof t === "string") return { title: t, page_start: null, page_end: null };
+        if (t && typeof t === "object" && "title" in t && typeof (t as { title?: unknown }).title === "string") {
+          const obj = t as { title: string; page_start?: number; page_end?: number };
+          return { title: obj.title, page_start: typeof obj.page_start === "number" ? obj.page_start : null, page_end: typeof obj.page_end === "number" ? obj.page_end : null };
+        }
         return null;
       })
-      .filter((t): t is { title: string } => !!t && !!t.title);
+      .filter((t): t is { title: string; page_start: number | null; page_end: number | null } => !!t && !!t.title);
 
     if (titles.length === 0) throw new Error("Non sono riuscito a creare un indice valido. Riprova.");
 
@@ -360,9 +409,10 @@ ${combinedContent}`;
     const { error: deleteError } = await deleteQuery;
     if (deleteError) throw new Error("Errore durante la pulizia delle vecchie lezioni");
 
-    const lessonsToInsert = titles.map((t: { title: string }, i: number) => ({
+    const lessonsToInsert = titles.map((t, i: number) => ({
       user_id: userId, context_id: contextId ?? null, title: t.title,
-      lesson_order: i, is_generated: false, concept: "", explanation: ""
+      lesson_order: i, is_generated: false, concept: "", explanation: "",
+      page_start: t.page_start, page_end: t.page_end,
     }));
 
     const { error: insertError } = await supabase.from("mini_lessons").insert(lessonsToInsert);
