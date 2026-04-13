@@ -105,6 +105,8 @@ export type Database = {
           id: string
           is_generated: boolean
           lesson_order: number
+          page_end: number | null
+          page_start: number | null
           title: string
           user_id: string
         }
@@ -118,6 +120,8 @@ export type Database = {
           id?: string
           is_generated?: boolean
           lesson_order?: number
+          page_end?: number | null
+          page_start?: number | null
           title: string
           user_id: string
         }
@@ -131,6 +135,8 @@ export type Database = {
           id?: string
           is_generated?: boolean
           lesson_order?: number
+          page_end?: number | null
+          page_start?: number | null
           title?: string
           user_id?: string
         }
