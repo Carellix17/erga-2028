@@ -22,7 +22,7 @@ interface UploadSheetProps {
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
-type GenerationStep = "idle" | "uploading" | "processing" | "generating" | "complete" | "searching";
+type UploadStep = "idle" | "uploading" | "processing";
 
 export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSelectFile, onFileDeleted }: UploadSheetProps) {
   const [dragActive, setDragActive] = useState(false);
