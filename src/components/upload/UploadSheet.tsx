@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { FileManager } from "./FileManager";
 import { supabase } from "@/integrations/supabase/client";
-import { renderPdfPages } from "@/lib/pdfPageRenderer";
+
 
 interface UploadSheetProps {
   open: boolean;
@@ -174,160 +174,17 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     }
   };
 
-  const cropFigure = async (
-    sourceBlob: Blob,
-    x: number, y: number, width: number, height: number
-  ): Promise<Blob> => {
-    const img = await createImageBitmap(sourceBlob);
-    const sx = Math.round(img.width * x / 100);
-    const sy = Math.round(img.height * y / 100);
-    const sw = Math.round(img.width * width / 100);
-    const sh = Math.round(img.height * height / 100);
-    
-    const canvas = document.createElement("canvas");
-    canvas.width = sw;
-    canvas.height = sh;
-    const ctx = canvas.getContext("2d")!;
-    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
-    img.close();
-    
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (b) => {
-          canvas.width = 0;
-          canvas.height = 0;
-          b ? resolve(b) : reject(new Error("Crop failed"));
-        },
-        "image/jpeg",
-        0.9
-      );
-    });
-  };
-
-  const renderAndUploadPageImages = async (file: File, contextId: string, authUserId: string): Promise<{ path: string; description: string }[]> => {
-    try {
-      console.log("Rendering PDF pages as images...");
-      const pages = await renderPdfPages(file);
-      console.log(`Rendered ${pages.length} pages`);
-
-      if (pages.length === 0) return [];
-
-      const uploadedPages: { pageNum: number; path: string; blob: Blob }[] = [];
-      for (const { pageNum, blob } of pages) {
-        const path = `${authUserId}/pages/${contextId}/page_${pageNum}.jpg`;
-        const { error } = await supabase.storage
-          .from("study-images")
-          .upload(path, blob, { contentType: "image/jpeg", upsert: true });
-
-        if (error) {
-          console.warn(`Failed to upload page ${pageNum}:`, error);
-        } else {
-          uploadedPages.push({ pageNum, path, blob });
-        }
-      }
-
-      if (uploadedPages.length === 0) return [];
-      console.log(`Uploaded ${uploadedPages.length} pages for analysis`);
-
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-      const analyzeResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-pdf-figures`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            imagePaths: uploadedPages.map((p) => p.path),
-          }),
-        }
-      );
-
-      if (!analyzeResponse.ok) {
-        console.error("Analyze failed:", analyzeResponse.status);
-        return uploadedPages.map((p) => ({ path: p.path, description: `Pagina ${p.pageNum}` }));
-      }
-
-      const analyzeData = await analyzeResponse.json();
-      const results = analyzeData.results || [];
-
-      const figurePaths: { path: string; description: string }[] = [];
-
-      for (const pageResult of results) {
-        if (!pageResult.figures || pageResult.figures.length === 0) continue;
-
-        const pageInfo = uploadedPages.find((p) => p.path === pageResult.storagePath);
-        if (!pageInfo) continue;
-
-        for (let fi = 0; fi < pageResult.figures.length; fi++) {
-          const fig = pageResult.figures[fi];
-          try {
-            const croppedBlob = await cropFigure(
-              pageInfo.blob,
-              fig.x, fig.y, fig.width, fig.height
-            );
-
-            const figurePath = `${authUserId}/figures/${contextId}/fig_p${pageResult.pageNum}_${fi}.jpg`;
-            const { error } = await supabase.storage
-              .from("study-images")
-              .upload(figurePath, croppedBlob, { contentType: "image/jpeg", upsert: true });
-
-            if (error) {
-              console.warn(`Failed to upload figure:`, error);
-            } else {
-              figurePaths.push({
-                path: figurePath,
-                description: fig.description || "Figura dal materiale",
-              });
-            }
-          } catch (cropErr) {
-            console.warn(`Failed to crop figure ${fi} from page ${pageResult.pageNum}:`, cropErr);
-          }
-        }
-      }
-
-      console.log(`Extracted and uploaded ${figurePaths.length} cropped figures`);
-      return figurePaths;
-    } catch (err) {
-      console.error("Page rendering/analysis error:", err);
-      return [];
-    }
-  };
-
-  const attachImagesToContext = async (contextId: string, figures: { path: string; description: string }[]) => {
-    if (figures.length === 0) return;
-
-    const { data: ctx } = await supabase
-      .from("study_contexts")
-      .select("content")
-      .eq("id", contextId)
-      .single();
-
-    if (!ctx) return;
-
-    const baseContent = ctx.content.split("\n\n[EXTRACTED_IMAGES]\n")[0];
-    const imageMetadata = "\n\n[EXTRACTED_IMAGES]\n" + figures.map((f, i) => `image_${i}: ${f.path} | ${f.description}`).join("\n");
-
-    await supabase
-      .from("study_contexts")
-      .update({ content: `${baseContent}${imageMetadata}` })
-      .eq("id", contextId);
-
-    console.log(`Attached ${figures.length} figure paths to context ${contextId}`);
-  };
-
   const handleUpload = async () => {
     if (selectedFiles.length === 0 || !currentUser) return;
     setIsUploading(true);
     setUploadStatus("Caricamento file...");
     const uploadedFileInfos: { name: string; size: number }[] = [];
-    const uploadedContextIds: string[] = [];
-    const fileContextMap: { file: File; contextId: string }[] = [];
+    let latestContextId: string | undefined;
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
       for (const file of selectedFiles) {
         setUploadStatus(`Caricamento ${file.name}...`);
         if (file.size > MAX_FILE_SIZE) {
@@ -339,8 +196,6 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         formData.append("file", file);
         formData.append("userId", currentUser);
 
-        const { data: { session } } = await supabase.auth.getSession();
-        const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, {
           method: "POST",
           headers: { Authorization: `Bearer ${authToken}` },
@@ -350,55 +205,25 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         if (!response.ok) throw new Error(data.error || "Errore nel caricamento");
 
         uploadedFileInfos.push({ name: file.name, size: file.size });
-        if (data.contextId) {
-          uploadedContextIds.push(data.contextId as string);
-          fileContextMap.push({ file, contextId: data.contextId as string });
-        }
+        if (data.contextId) latestContextId = data.contextId as string;
       }
 
-      if (uploadedFileInfos.length > 0 && uploadedContextIds.length > 0) {
-        const { data: { session: sessionForProcessing } } = await supabase.auth.getSession();
-        const authTokenForProcessing = sessionForProcessing?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const authenticatedUserId = sessionForProcessing?.user?.id;
-
-        if (!authenticatedUserId) {
-          throw new Error("Sessione utente non valida");
+      if (uploadedFileInfos.length > 0 && latestContextId) {
+        setUploadStatus("Elaborazione PDF...");
+        const maxAttempts = 60;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+            body: JSON.stringify({ userId: currentUser, action: "listContexts" }),
+          });
+          const statusData = await statusResponse.json();
+          const context = statusData.contexts?.find((c: { id: string }) => c.id === latestContextId);
+          if (context?.processing_status === "completed") break;
+          if (context?.processing_status === "failed") throw new Error(context.error_message || "Errore durante l'elaborazione del PDF.");
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
 
-        const waitForContextProcessing = async (contextId: string) => {
-          const maxAttempts = 60; const delayMs = 3000;
-          for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-            const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`,
-              { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authTokenForProcessing}` },
-                body: JSON.stringify({ userId: currentUser, action: "listContexts" }) });
-            const statusData = await statusResponse.json();
-            const context = statusData.contexts?.find((c: { id: string }) => c.id === contextId);
-            if (context?.processing_status === "completed") return { ok: true };
-            if (context?.processing_status === "failed") return { ok: false, error: context.error_message || "Errore durante l'elaborazione del PDF." };
-            await new Promise(resolve => setTimeout(resolve, delayMs));
-          }
-          return { ok: false, error: "Timeout durante l'elaborazione del PDF." };
-        };
-
-        for (const { file, contextId } of fileContextMap) {
-          setUploadStatus("Elaborazione PDF...");
-
-          const imagePromise = renderAndUploadPageImages(file, contextId, authenticatedUserId);
-          const processingResult = await waitForContextProcessing(contextId);
-          if (!processingResult.ok) {
-            toast({ title: "Elaborazione incompleta", description: processingResult.error, variant: "destructive" });
-            continue;
-          }
-
-          const figures = await imagePromise;
-          if (figures.length > 0) {
-            await attachImagesToContext(contextId, figures);
-          } else {
-            console.log("No figures found in PDF - proceeding without images");
-          }
-        }
-
-        const latestContextId = uploadedContextIds.at(-1);
         onUpload(uploadedFileInfos, latestContextId);
         setSelectedFiles([]);
         onOpenChange(false);
