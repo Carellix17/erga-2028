@@ -384,7 +384,7 @@ ${combinedContent}`;
     const content = await callAI([
       { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Solo l'array JSON richiesto." },
       { role: "user", content: titlesPrompt }
-    ], 0.1, 3000);
+    ], 0.1, 8000);
 
     console.log("AI titles response (first 300 chars):", content.substring(0, 300));
     const parsedTitles = extractJson(content);
