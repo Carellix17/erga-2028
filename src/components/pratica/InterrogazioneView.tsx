@@ -57,6 +57,24 @@ export function InterrogazioneView() {
   const { currentUser } = useAuth();
   const { toast } = useToast();
 
+  // Preload voices
+  useEffect(() => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+    return () => { stopSpeaking(); };
+  }, []);
+
+  // Track speaking state
+  useEffect(() => {
+    if (!window.speechSynthesis) return;
+    const interval = setInterval(() => {
+      setIsSpeaking(window.speechSynthesis.speaking);
+    }, 200);
+    return () => clearInterval(interval);
+  }, []);
+
   // Load courses
   useEffect(() => {
     const loadCourses = async () => {
