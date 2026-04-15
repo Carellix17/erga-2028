@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2 } from "lucide-react";
+import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +20,25 @@ interface ExchangeItem {
   content: string;
 }
 
+const speakText = (text: string, onEnd?: () => void) => {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "it-IT";
+  utterance.rate = 0.95;
+  utterance.pitch = 1.0;
+  // Try to pick an Italian voice
+  const voices = window.speechSynthesis.getVoices();
+  const italianVoice = voices.find(v => v.lang.startsWith("it"));
+  if (italianVoice) utterance.voice = italianVoice;
+  if (onEnd) utterance.onend = onEnd;
+  window.speechSynthesis.speak(utterance);
+};
+
+const stopSpeaking = () => {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+};
+
 export function InterrogazioneView() {
   const [mode, setMode] = useState<Mode>("select");
   const [phase, setPhase] = useState<Phase>("idle");
@@ -31,10 +50,30 @@ export function InterrogazioneView() {
   const [exchanges, setExchanges] = useState<ExchangeItem[]>([]);
   const [score, setScore] = useState<number | null>(null);
   const [questionCount, setQuestionCount] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(true);
   const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+
+  // Preload voices
+  useEffect(() => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+    return () => { stopSpeaking(); };
+  }, []);
+
+  // Track speaking state
+  useEffect(() => {
+    if (!window.speechSynthesis) return;
+    const interval = setInterval(() => {
+      setIsSpeaking(window.speechSynthesis.speaking);
+    }, 200);
+    return () => clearInterval(interval);
+  }, []);
 
   // Load courses
   useEffect(() => {
@@ -106,6 +145,14 @@ export function InterrogazioneView() {
     return response.json();
   }, [currentUser, selectedCourse]);
 
+  const speakIfEnabled = useCallback((text: string) => {
+    if (ttsEnabled) {
+      // Strip markdown/emoji for cleaner speech
+      const clean = text.replace(/[📖🎓📝🎤]/g, "").replace(/[*_#>\-]/g, "").replace(/\n+/g, ". ").trim();
+      speakText(clean);
+    }
+  }, [ttsEnabled]);
+
   const startInterrogazione = async (courseId: string, selectedMode: "structured" | "free") => {
     setSelectedCourse(courseId);
     setMode(selectedMode);
@@ -121,18 +168,20 @@ export function InterrogazioneView() {
         setExchanges([{ type: "question", content: data.question }]);
         setQuestionCount(1);
         setPhase("question");
+        speakIfEnabled(data.question);
       } catch {
         toast({ title: "Errore", description: "Non riesco a generare la domanda", variant: "destructive" });
         setPhase("idle");
       }
     } else {
-      // Free mode: give topic prompt
       setPhase("evaluating");
       try {
         const data = await callInterrogazione("topic", { contextId: courseId });
         setCurrentQuestion(data.topic);
-        setExchanges([{ type: "question", content: `📖 Argomento: ${data.topic}\n\nEsponi liberamente quello che sai su questo argomento. Quando hai finito, premi il pulsante di stop.` }]);
+        const displayText = `📖 Argomento: ${data.topic}\n\nEsponi liberamente quello che sai su questo argomento. Quando hai finito, premi il pulsante di stop.`;
+        setExchanges([{ type: "question", content: displayText }]);
         setPhase("question");
+        speakIfEnabled(`Argomento: ${data.topic}. Esponi liberamente quello che sai su questo argomento.`);
       } catch {
         toast({ title: "Errore", description: "Non riesco a selezionare l'argomento", variant: "destructive" });
         setPhase("idle");
@@ -145,6 +194,7 @@ export function InterrogazioneView() {
       recognitionRef.current?.stop();
       setIsListening(false);
     }
+    stopSpeaking();
     const answer = transcript.trim();
     if (!answer) {
       toast({ title: "Rispondi prima!", description: "Dì qualcosa prima di inviare", variant: "destructive" });
@@ -165,6 +215,7 @@ export function InterrogazioneView() {
       });
 
       setExchanges(prev => [...prev, { type: "feedback", content: data.feedback }]);
+      speakIfEnabled(data.feedback);
 
       if (data.score !== undefined) setScore(data.score);
 
@@ -174,6 +225,7 @@ export function InterrogazioneView() {
           setExchanges(prev => [...prev, { type: "question", content: data.nextQuestion }]);
           setQuestionCount(prev => prev + 1);
           setPhase("question");
+          speakIfEnabled(data.nextQuestion);
         }, 2000);
       } else if (data.finished) {
         setPhase("idle");
@@ -187,6 +239,7 @@ export function InterrogazioneView() {
   };
 
   const resetInterrogazione = () => {
+    stopSpeaking();
     setMode("select");
     setPhase("idle");
     setExchanges([]);
@@ -285,9 +338,20 @@ export function InterrogazioneView() {
             </span>
           )}
         </div>
-        <Button variant="ghost" size="icon" onClick={resetInterrogazione} className="rounded-full">
-          <RotateCcw className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => { if (isSpeaking) stopSpeaking(); setTtsEnabled(!ttsEnabled); }}
+            className={cn("rounded-full", ttsEnabled ? "text-tertiary" : "text-muted-foreground")}
+            title={ttsEnabled ? "Disattiva voce" : "Attiva voce"}
+          >
+            {ttsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={resetInterrogazione} className="rounded-full">
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Exchanges */}
