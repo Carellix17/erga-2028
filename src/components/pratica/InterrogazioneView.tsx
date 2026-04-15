@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2 } from "lucide-react";
+import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +20,25 @@ interface ExchangeItem {
   content: string;
 }
 
+const speakText = (text: string, onEnd?: () => void) => {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "it-IT";
+  utterance.rate = 0.95;
+  utterance.pitch = 1.0;
+  // Try to pick an Italian voice
+  const voices = window.speechSynthesis.getVoices();
+  const italianVoice = voices.find(v => v.lang.startsWith("it"));
+  if (italianVoice) utterance.voice = italianVoice;
+  if (onEnd) utterance.onend = onEnd;
+  window.speechSynthesis.speak(utterance);
+};
+
+const stopSpeaking = () => {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+};
+
 export function InterrogazioneView() {
   const [mode, setMode] = useState<Mode>("select");
   const [phase, setPhase] = useState<Phase>("idle");
@@ -31,6 +50,8 @@ export function InterrogazioneView() {
   const [exchanges, setExchanges] = useState<ExchangeItem[]>([]);
   const [score, setScore] = useState<number | null>(null);
   const [questionCount, setQuestionCount] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(true);
   const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { currentUser } = useAuth();
