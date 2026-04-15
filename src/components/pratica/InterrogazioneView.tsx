@@ -338,9 +338,20 @@ export function InterrogazioneView() {
             </span>
           )}
         </div>
-        <Button variant="ghost" size="icon" onClick={resetInterrogazione} className="rounded-full">
-          <RotateCcw className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => { if (isSpeaking) stopSpeaking(); setTtsEnabled(!ttsEnabled); }}
+            className={cn("rounded-full", ttsEnabled ? "text-tertiary" : "text-muted-foreground")}
+            title={ttsEnabled ? "Disattiva voce" : "Attiva voce"}
+          >
+            {ttsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={resetInterrogazione} className="rounded-full">
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Exchanges */}
