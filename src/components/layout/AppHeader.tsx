@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { UserMenu } from "./UserMenu";
 import { SubscriptionBadge } from "@/components/subscription/SubscriptionBadge";
 import { SubscriptionSheet } from "@/components/subscription/SubscriptionSheet";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface AppHeaderProps {
   onUploadClick: () => void;
@@ -12,13 +13,14 @@ interface AppHeaderProps {
 
 export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
   const [showSubscription, setShowSubscription] = useState(false);
+  const { tier } = useSubscription();
 
   return (
     <>
       <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-2xl border-b border-outline-variant/20 transition-all duration-400 ease-m3-emphasized">
         <div className="flex items-center justify-between h-16 px-4 sm:px-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto">
           <div className="flex items-center gap-3 animate-fade-up">
-            <SubscriptionBadge tier="beta" onClick={() => setShowSubscription(true)} />
+            <SubscriptionBadge tier={tier} onClick={() => setShowSubscription(true)} />
             <div>
               <span className="font-display font-bold text-xl text-foreground tracking-tight">
                 Erga
@@ -44,7 +46,7 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
       <SubscriptionSheet
         open={showSubscription}
         onOpenChange={setShowSubscription}
-        currentTier="beta"
+        currentTier={tier}
       />
     </>
   );
