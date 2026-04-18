@@ -216,6 +216,54 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          paddle_customer_id: string
+          paddle_subscription_id: string
+          price_id: string
+          product_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          paddle_customer_id: string
+          paddle_subscription_id: string
+          price_id: string
+          product_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          paddle_customer_id?: string
+          paddle_subscription_id?: string
+          price_id?: string
+          product_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_data: {
         Row: {
           id: string
@@ -248,6 +296,7 @@ export type Database = {
           first_name: string | null
           id: string
           institute_type: string
+          is_beta_tester: boolean
           last_name: string | null
           nickname: string | null
           school: string | null
@@ -262,6 +311,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           institute_type?: string
+          is_beta_tester?: boolean
           last_name?: string | null
           nickname?: string | null
           school?: string | null
@@ -276,6 +326,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           institute_type?: string
+          is_beta_tester?: boolean
           last_name?: string | null
           nickname?: string | null
           school?: string | null
@@ -290,7 +341,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_active_subscription: {
+        Args: { check_env?: string; user_text: string }
+        Returns: boolean
+      }
+      is_pro_user: {
+        Args: { check_env?: string; user_text: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
