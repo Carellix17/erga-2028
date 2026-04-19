@@ -392,7 +392,7 @@ function ExerciseStep({
           ))}
         </div>
       </div>
-      <div className="p-5 rounded-2xl bg-surface-container-low shadow-level-1">
+      <div className="p-5 card-3d-tertiary spotlight">
         <ExerciseRenderer exercise={exercise} onComplete={onComplete} isCompleted={isCompleted} />
       </div>
     </div>
