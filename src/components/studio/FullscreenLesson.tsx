@@ -318,10 +318,10 @@ function ExplanationPartStep({ part, partNumber, totalParts }: { part: Explanati
         </div>
       </div>
       <div className={cn(
-        "p-5 rounded-2xl",
-        isExample ? "pastel-amber" : "pastel-blue"
+        "p-5 spotlight",
+        isExample ? "card-3d-warning" : "card-3d-primary"
       )}>
-        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none prose-strong:text-foreground prose-em:text-foreground/90">
+        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none prose-strong:text-foreground prose-em:text-foreground/90 prose-p:text-foreground">
           <ReactMarkdown>{part.content}</ReactMarkdown>
         </div>
 
