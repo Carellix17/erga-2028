@@ -238,23 +238,26 @@ export function FullscreenLesson({
         className="flex-shrink-0 px-5 pt-3 pb-5 bg-background border-t border-border"
         style={{ paddingBottom: "max(env(safe-area-inset-bottom, 20px), 20px)" }}
       >
-        <Button
-          onClick={handleContinue}
-          disabled={!canContinue}
-          variant="duo"
-          size="lg"
-          className={cn(
-            "w-full h-14 text-base",
-            canContinue && step.type !== "exercise" && "animate-pulse-glow"
-          )}
-        >
-          {currentStep === steps.length - 1
-            ? isLastLesson ? "Completa corso" : "Prossima lezione"
-            : step.type === "exercise" && !currentExerciseAnswered
-            ? "Rispondi per continuare"
-            : "Continua"}
-          <ChevronRight className="w-5 h-5 ml-1" />
-        </Button>
+        <div className="relative rounded-full overflow-hidden">
+          <Button
+            onClick={handleContinue}
+            disabled={!canContinue}
+            variant="duo"
+            size="lg"
+            className={cn(
+              "relative w-full h-14 text-base shimmer-button",
+              canContinue && step.type !== "exercise" && "animate-pulse-glow"
+            )}
+          >
+            {currentStep === steps.length - 1
+              ? isLastLesson ? "Completa corso" : "Prossima lezione"
+              : step.type === "exercise" && !currentExerciseAnswered
+              ? "Rispondi per continuare"
+              : "Continua"}
+            <ChevronRight className="w-5 h-5 ml-1" />
+          </Button>
+          {canContinue && <BorderBeam size={140} duration={4} colorFrom="hsl(var(--primary-glow))" colorTo="hsl(var(--tertiary))" />}
+        </div>
       </div>
     </div>
   );
@@ -265,16 +268,24 @@ export function FullscreenLesson({
 function ConceptStep({ concept }: { concept: string }) {
   return (
     <div className="text-center space-y-6 pt-2">
-      <div className="w-20 h-20 rounded-3xl bg-primary flex items-center justify-center mx-auto ring-glow-primary">
-        <Lightbulb className="w-10 h-10 text-primary-foreground" fill="currentColor" strokeWidth={0} />
-      </div>
+      <motion.div
+        initial={{ scale: 0.6, opacity: 0, rotate: -8 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 220, damping: 14 }}
+        className="relative w-24 h-24 rounded-[28px] mx-auto overflow-hidden flex items-center justify-center gradient-animated shadow-[0_12px_36px_hsl(var(--primary)/0.35)]"
+      >
+        <Lightbulb className="relative z-10 w-12 h-12 text-white drop-shadow" fill="currentColor" strokeWidth={0} />
+        <BorderBeam size={120} duration={5} borderWidth={2} />
+      </motion.div>
       <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-4">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-4">
           <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} />
           Concetto chiave
         </div>
-        <div className="text-2xl font-extrabold leading-snug text-foreground prose prose-sm max-w-none mx-auto">
-          <ReactMarkdown>{concept}</ReactMarkdown>
+        <div className="text-2xl font-extrabold leading-snug prose prose-sm max-w-none mx-auto">
+          <span className="animated-gradient-text">
+            <ReactMarkdown>{concept}</ReactMarkdown>
+          </span>
         </div>
       </div>
     </div>
