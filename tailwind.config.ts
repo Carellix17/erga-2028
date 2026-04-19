@@ -115,8 +115,8 @@ export default {
         "level-5": "var(--shadow-level-5)",
       },
       fontFamily: {
-        sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', 'system-ui', 'sans-serif'],
-        display: ['"Inter"', '-apple-system', '"SF Pro Display"', 'system-ui', 'sans-serif'],
+        sans: ['"Geist Variable"', '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', 'system-ui', 'sans-serif'],
+        display: ['"Geist Variable"', '-apple-system', '"SF Pro Display"', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {
