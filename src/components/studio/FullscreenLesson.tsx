@@ -353,8 +353,8 @@ function ExampleStep({ example }: { example: string }) {
         </div>
         <span className="text-sm font-bold text-foreground">Esempio pratico</span>
       </div>
-      <div className="p-5 rounded-2xl pastel-green">
-        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none">
+      <div className="p-5 card-3d-success spotlight">
+        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none prose-strong:text-foreground prose-em:text-foreground prose-p:text-foreground">
           <ReactMarkdown>{example}</ReactMarkdown>
         </div>
       </div>
