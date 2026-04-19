@@ -18,10 +18,10 @@ const tabs = [
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border"
-      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      className="fixed left-1/2 -translate-x-1/2 z-50 w-[calc(100%-1.5rem)] max-w-md"
+      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
     >
-      <div className="flex items-center justify-around h-[68px] max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-3">
+      <div className="flex items-center justify-around h-[64px] px-2 rounded-full bg-background/85 backdrop-blur-xl border border-border shadow-[0_8px_32px_-4px_hsl(var(--foreground)/0.18)]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -54,7 +54,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 {tab.label}
               </span>
               {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-b-full bg-primary shadow-[0_0_12px_hsl(var(--primary)/0.6)]" />
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary)/0.6)]" />
               )}
             </button>
           );
