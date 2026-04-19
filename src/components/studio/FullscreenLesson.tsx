@@ -272,9 +272,9 @@ function ConceptStep({ concept }: { concept: string }) {
         initial={{ scale: 0.6, opacity: 0, rotate: -8 }}
         animate={{ scale: 1, opacity: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 220, damping: 14 }}
-        className="relative w-24 h-24 rounded-[28px] mx-auto overflow-hidden items-center justify-center gradient-animated shadow-[0_12px_36px_hsl(var(--primary)/0.35)] flex flex-col"
+        className="relative w-24 h-24 rounded-[28px] mx-auto overflow-hidden items-center justify-center bg-primary shadow-level-3 flex flex-col"
       >
-        <Lightbulb className="relative z-10 w-12 h-12 text-white drop-shadow" fill="currentColor" strokeWidth={0} />
+        <Lightbulb className="relative z-10 w-12 h-12 text-primary-foreground" fill="currentColor" strokeWidth={0} />
         <BorderBeam size={120} duration={5} borderWidth={2} />
       </motion.div>
       <div>

@@ -48,7 +48,7 @@ export function SubscriptionBadge({ tier, onClick }: SubscriptionBadgeProps) {
         "relative group"
       )}
     >
-      <Icon className={cn("w-5 h-5", config.iconColor, "drop-shadow-sm transition-transform duration-300 group-hover:scale-110")} />
+      <Icon className={cn("w-5 h-5", config.iconColor, "transition-transform duration-300 group-hover:scale-110")} />
       {tier === "beta" && (
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
       )}
