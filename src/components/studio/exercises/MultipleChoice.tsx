@@ -19,64 +19,59 @@ export function MultipleChoice({
   const handleSelect = (index: number) => {
     if (showResult) return;
     setSelectedIndex(index);
-    // Auto-submit on tap like Duolingo
     setTimeout(() => {
       setShowResult(true);
       onComplete(index === correctIndex);
-    }, 300);
+    }, 280);
   };
 
   const isCorrect = selectedIndex === correctIndex;
 
   return (
     <div className="space-y-5">
-      <p className="title-medium text-foreground">{question}</p>
-      
-      <div className="space-y-2.5">
+      <p className="text-lg font-bold text-foreground leading-snug">{question}</p>
+
+      <div className="space-y-3">
         {options.map((option, index) => {
           const isSelected = selectedIndex === index;
           const isCorrectOption = index === correctIndex;
-          
+          const wrongHere = showResult && isSelected && !isCorrectOption;
+          const rightHere = showResult && isCorrectOption;
+
           return (
             <button
               key={index}
               onClick={() => handleSelect(index)}
               disabled={showResult}
               className={cn(
-                "w-full p-4 text-left rounded-2xl border-2 transition-all duration-300 ease-m3-emphasized animate-option-pop",
-                // Default
-                !showResult && !isSelected && "border-outline-variant bg-surface-container-lowest hover:border-primary/50 hover:bg-primary/5 active:scale-[0.97]",
-                // Selected pre-submit
-                !showResult && isSelected && "border-primary bg-primary/10 scale-[1.02] shadow-level-1",
-                // Correct answer revealed
-                showResult && isCorrectOption && "border-success bg-success-container animate-feedback-correct",
-                // Wrong answer selected
-                showResult && isSelected && !isCorrectOption && "border-destructive bg-destructive/10 animate-feedback-wrong",
-                // Other options after submit
-                showResult && !isSelected && !isCorrectOption && "border-outline-variant opacity-40"
+                "w-full p-4 text-left rounded-2xl border-2 bg-card transition-all duration-200",
+                !showResult && !isSelected && "border-border hover:border-primary/60 active:scale-[0.98]",
+                !showResult && isSelected && "border-primary ring-glow-primary scale-[1.01]",
+                rightHere && "border-success ring-glow-success",
+                wrongHere && "border-destructive ring-glow-error animate-shake",
+                showResult && !isSelected && !isCorrectOption && "border-border opacity-40"
               )}
-              style={{ animationDelay: `${index * 60}ms` }}
             >
               <div className="flex items-center gap-3">
                 <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all",
-                  !showResult && !isSelected && "bg-surface-container-highest text-muted-foreground",
-                  !showResult && isSelected && "bg-primary text-primary-foreground",
-                  showResult && isCorrectOption && "bg-success text-white",
-                  showResult && isSelected && !isCorrectOption && "bg-destructive text-white",
+                  "w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 border-2 transition-all",
+                  !showResult && !isSelected && "border-border text-muted-foreground bg-background",
+                  !showResult && isSelected && "border-primary bg-primary text-primary-foreground",
+                  rightHere && "border-success bg-success text-white",
+                  wrongHere && "border-destructive bg-destructive text-white",
                 )}>
-                  {showResult && isCorrectOption ? (
-                    <CheckCircle2 className="w-5 h-5" />
-                  ) : showResult && isSelected && !isCorrectOption ? (
-                    <XCircle className="w-5 h-5" />
+                  {rightHere ? (
+                    <CheckCircle2 className="w-5 h-5" strokeWidth={2.5} />
+                  ) : wrongHere ? (
+                    <XCircle className="w-5 h-5" strokeWidth={2.5} />
                   ) : (
                     String.fromCharCode(65 + index)
                   )}
                 </div>
                 <span className={cn(
-                  "body-large flex-1",
-                  showResult && isCorrectOption && "text-success font-medium",
-                  showResult && isSelected && !isCorrectOption && "text-destructive",
+                  "text-base flex-1 font-medium",
+                  rightHere && "text-success font-bold",
+                  wrongHere && "text-destructive font-bold",
                 )}>
                   {option}
                 </span>
@@ -88,8 +83,8 @@ export function MultipleChoice({
 
       {showResult && (
         <div className={cn(
-          "p-4 rounded-2xl text-center font-medium flex items-center justify-center gap-2 animate-fade-up",
-          isCorrect ? "bg-success-container text-success" : "bg-destructive/10 text-destructive"
+          "p-4 rounded-2xl text-center font-semibold animate-fade-up",
+          isCorrect ? "pastel-green text-success" : "pastel-red text-destructive"
         )}>
           {isCorrect ? "Perfetto! 🎉" : "La risposta corretta è evidenziata sopra."}
         </div>

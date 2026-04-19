@@ -21,50 +21,53 @@ export function TrueFalse({
     setTimeout(() => {
       setShowResult(true);
       onComplete(value === correct);
-    }, 300);
+    }, 280);
   };
 
   const isCorrect = selected === correct;
 
   return (
     <div className="space-y-5">
-      <p className="title-medium text-foreground leading-relaxed">{statement}</p>
-      
+      <p className="text-lg font-bold text-foreground leading-snug">{statement}</p>
+
       <div className="grid grid-cols-2 gap-3">
         {[true, false].map((value) => {
           const isSelected = selected === value;
           const isCorrectOption = value === correct;
-          
+          const wrongHere = showResult && isSelected && !isCorrectOption;
+          const rightHere = showResult && isCorrectOption;
+
           return (
             <button
               key={String(value)}
               onClick={() => handleSelect(value)}
               disabled={showResult}
               className={cn(
-                "p-5 rounded-2xl border-2 font-semibold transition-all duration-300 ease-m3-emphasized flex flex-col items-center gap-2",
-                !showResult && !isSelected && "border-outline-variant bg-surface-container-lowest hover:border-primary/50 active:scale-[0.95]",
-                !showResult && isSelected && "border-primary bg-primary/10 scale-[1.03] shadow-level-1",
-                showResult && isCorrectOption && "border-success bg-success-container animate-feedback-correct",
-                showResult && isSelected && !isCorrectOption && "border-destructive bg-destructive/10 animate-feedback-wrong",
+                "relative p-5 min-h-[120px] rounded-2xl border-2 bg-card font-bold transition-all duration-200 flex flex-col items-center justify-center gap-3",
+                !showResult && !isSelected && "border-border hover:border-primary/60 active:scale-[0.97]",
+                !showResult && isSelected && "border-primary ring-glow-primary scale-[1.02]",
+                rightHere && "border-success ring-glow-success",
+                wrongHere && "border-destructive ring-glow-error animate-shake",
                 showResult && !isSelected && !isCorrectOption && "opacity-40",
               )}
             >
               <div className={cn(
-                "w-12 h-12 rounded-full flex items-center justify-center transition-all",
-                !showResult && "bg-surface-container-highest",
-                showResult && isCorrectOption && "bg-success",
-                showResult && isSelected && !isCorrectOption && "bg-destructive",
+                "w-14 h-14 rounded-full flex items-center justify-center transition-all",
+                !showResult && "bg-muted",
+                rightHere && "bg-success",
+                wrongHere && "bg-destructive",
+                !showResult && isSelected && "bg-primary",
               )}>
                 {value ? (
-                  <Check className={cn("w-6 h-6", showResult && isCorrectOption ? "text-white" : showResult && isSelected && !isCorrectOption ? "text-white" : "text-success")} />
+                  <Check className={cn("w-8 h-8", (rightHere || wrongHere || (!showResult && isSelected)) ? "text-white" : "text-success")} strokeWidth={3} />
                 ) : (
-                  <X className={cn("w-6 h-6", showResult && isCorrectOption ? "text-white" : showResult && isSelected && !isCorrectOption ? "text-white" : "text-destructive")} />
+                  <X className={cn("w-8 h-8", (rightHere || wrongHere || (!showResult && isSelected)) ? "text-white" : "text-destructive")} strokeWidth={3} />
                 )}
               </div>
               <span className={cn(
-                "title-medium",
-                showResult && isCorrectOption && "text-success",
-                showResult && isSelected && !isCorrectOption && "text-destructive",
+                "text-base",
+                rightHere && "text-success",
+                wrongHere && "text-destructive",
               )}>
                 {value ? "Vero" : "Falso"}
               </span>
@@ -75,8 +78,8 @@ export function TrueFalse({
 
       {showResult && (
         <div className={cn(
-          "p-4 rounded-2xl text-center font-medium animate-fade-up",
-          isCorrect ? "bg-success-container text-success" : "bg-destructive/10 text-destructive"
+          "p-4 rounded-2xl text-center font-semibold animate-fade-up",
+          isCorrect ? "pastel-green text-success" : "pastel-red text-destructive"
         )}>
           {isCorrect ? "Esatto! 🎉" : `L'affermazione è ${correct ? "vera" : "falsa"}.`}
         </div>
