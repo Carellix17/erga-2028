@@ -149,95 +149,110 @@ export function FullscreenLesson({
   const segments = steps.length;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
-      {/* Top bar */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
-        <div className="flex items-center gap-3 mb-2">
-          <Button variant="ghost" size="icon-sm" onClick={onClose} className="rounded-full -ml-1">
-            <X className="w-5 h-5" />
-          </Button>
-          
-          {/* Segmented progress bar */}
-          <div className="flex-1 flex gap-0.5 h-2">
-            {Array.from({ length: segments }).map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "flex-1 rounded-full transition-all duration-500 ease-m3-emphasized",
-                  i < currentStep
-                    ? "bg-primary"
-                    : i === currentStep
-                    ? "bg-primary animate-progress-glow"
-                    : "bg-surface-container-highest"
-                )}
-              />
-            ))}
+    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+      {/* Top bar — Duolingo iOS-clean */}
+      <div className="flex-shrink-0 px-4 pt-3 pb-3" style={{ paddingTop: "max(env(safe-area-inset-top, 12px), 12px)" }}>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            aria-label="Chiudi lezione"
+            className="w-9 h-9 -ml-1.5 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted active:scale-90 transition"
+          >
+            <X className="w-6 h-6" strokeWidth={2.4} />
+          </button>
+
+          {/* Fluid framer-motion progress bar */}
+          <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-primary"
+              initial={false}
+              animate={{ width: `${progress}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 20 }}
+              style={{
+                boxShadow: "inset 0 -3px 0 0 hsl(var(--primary) / 0.45)",
+              }}
+            />
           </div>
 
-          {/* XP counter */}
-          <div className="relative flex items-center gap-1 label-medium text-warning bg-warning/10 px-2.5 py-1 rounded-full">
-            <Zap className="w-3.5 h-3.5" />
+          {/* Energy / XP counter */}
+          <div className="flex items-center gap-1 px-2.5 h-8 rounded-full bg-warning/10 text-warning font-bold text-sm">
+            <Zap className="w-4 h-4" fill="currentColor" strokeWidth={0} />
             <span>{xpGained}</span>
-            {showXpFloat && (
-              <span className="absolute -top-2 right-0 text-xs font-bold text-warning animate-xp-float">
-                +10
-              </span>
-            )}
-          </div>
-        </div>
-        <p className="body-small text-muted-foreground text-center">
-          Lezione {lessonNumber} di {totalLessons} · <span className="text-foreground title-small">{lesson.title}</span>
-        </p>
-      </div>
-
-      {/* Content area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col" ref={contentRef}>
-        <div className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full">
-          <div key={currentStep} className={cn("animate-lesson-in", isAnimating && "animate-lesson-out")}>
-            {step.type === "concept" && <ConceptStep concept={lesson.concept} />}
-            {step.type === "explanation_part" && step.explanationPartIndex !== undefined && (
-              <ExplanationPartStep
-                part={explanationParts[step.explanationPartIndex]}
-                partNumber={step.explanationPartIndex + 1}
-                totalParts={explanationParts.length}
-              />
-            )}
-            {step.type === "example" && lesson.example && <ExampleStep example={lesson.example} />}
-            {step.type === "exercise" && step.exerciseIndex !== undefined && exercises[step.exerciseIndex] && (
-              <ExerciseStep
-                exercise={exercises[step.exerciseIndex]}
-                exerciseNumber={step.exerciseIndex + 1}
-                totalExercises={exercises.length}
-                onComplete={handleExerciseComplete}
-                isCompleted={currentExerciseAnswered}
-              />
-            )}
-            {step.type === "summary" && (
-              <SummaryStep correctCount={correctCount} totalExercises={exercises.length} isLastLesson={isLastLesson} xpGained={xpGained} />
-            )}
+            <AnimatePresence>
+              {showXpFloat && (
+                <motion.span
+                  initial={{ opacity: 1, y: 0 }}
+                  animate={{ opacity: 0, y: -32 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.7 }}
+                  className="absolute mt-[-32px] text-xs font-extrabold text-warning pointer-events-none"
+                >
+                  +10
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
 
-      {/* Bottom action */}
-      <div className="flex-shrink-0 p-4 pb-8 safe-area-bottom">
+      {/* Content area with Duolingo slide transitions */}
+      <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col" ref={contentRef}>
+        <div className="flex-1 flex flex-col justify-start max-w-lg mx-auto w-full">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 60 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -60 }}
+              transition={{ type: "spring", stiffness: 260, damping: 28 }}
+            >
+              {step.type === "concept" && <ConceptStep concept={lesson.concept} />}
+              {step.type === "explanation_part" && step.explanationPartIndex !== undefined && (
+                <ExplanationPartStep
+                  part={explanationParts[step.explanationPartIndex]}
+                  partNumber={step.explanationPartIndex + 1}
+                  totalParts={explanationParts.length}
+                />
+              )}
+              {step.type === "example" && lesson.example && <ExampleStep example={lesson.example} />}
+              {step.type === "exercise" && step.exerciseIndex !== undefined && exercises[step.exerciseIndex] && (
+                <ExerciseStep
+                  exercise={exercises[step.exerciseIndex]}
+                  exerciseNumber={step.exerciseIndex + 1}
+                  totalExercises={exercises.length}
+                  onComplete={handleExerciseComplete}
+                  isCompleted={currentExerciseAnswered}
+                />
+              )}
+              {step.type === "summary" && (
+                <SummaryStep correctCount={correctCount} totalExercises={exercises.length} isLastLesson={isLastLesson} xpGained={xpGained} />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Sticky bottom pill CTA — Duolingo style */}
+      <div
+        className="flex-shrink-0 px-5 pt-3 pb-5 bg-background border-t border-border"
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom, 20px), 20px)" }}
+      >
         <Button
           onClick={handleContinue}
           disabled={!canContinue}
-          className={cn(
-            "w-full h-14 rounded-2xl text-base font-semibold transition-all duration-300 ease-m3-emphasized",
-            canContinue
-              ? "shadow-level-2 hover:shadow-level-3 active:scale-[0.97]"
-              : "bg-surface-container-highest text-muted-foreground shadow-level-0"
-          )}
+          variant="duo"
           size="lg"
+          className={cn(
+            "w-full h-14 text-base",
+            canContinue && step.type !== "exercise" && "animate-pulse-glow"
+          )}
         >
           {currentStep === steps.length - 1
-            ? isLastLesson ? "Completa corso 🎓" : "Prossima lezione"
+            ? isLastLesson ? "Completa corso" : "Prossima lezione"
             : step.type === "exercise" && !currentExerciseAnswered
             ? "Rispondi per continuare"
             : "Continua"}
-          {(canContinue || step.type !== "exercise") && <ChevronRight className="w-5 h-5 ml-1" />}
+          <ChevronRight className="w-5 h-5 ml-1" />
         </Button>
       </div>
     </div>
