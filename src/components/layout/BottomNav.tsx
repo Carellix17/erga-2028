@@ -54,7 +54,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 {tab.label}
               </span>
               {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-primary" />
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-b-full bg-primary shadow-[0_0_12px_hsl(var(--primary)/0.6)]" />
               )}
             </button>
           );

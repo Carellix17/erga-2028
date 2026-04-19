@@ -11,83 +11,83 @@
 
 @layer base {
   :root {
-    /* ─── Duolingo + Apple — Light Premium ─── */
+    /* ─── Premium Modern — Deep & Vivid ─── */
 
-    /* Primary — Duolingo Sky Blue */
-    --primary: 199 89% 54%;
+    /* Primary — Deep Electric Blue */
+    --primary: 220 95% 52%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 199 89% 64%;
-    --primary-container: 199 100% 95%;
-    --on-primary-container: 199 90% 22%;
+    --primary-glow: 220 100% 64%;
+    --primary-container: 220 100% 96%;
+    --on-primary-container: 220 95% 22%;
 
-    /* Secondary — Duolingo Grass Green */
-    --secondary: 88 70% 47%;
+    /* Secondary — Vivid Emerald */
+    --secondary: 152 78% 38%;
     --secondary-foreground: 0 0% 100%;
-    --secondary-container: 88 70% 93%;
-    --on-secondary-container: 88 70% 18%;
+    --secondary-container: 152 70% 94%;
+    --on-secondary-container: 152 80% 16%;
 
-    /* Tertiary — Soft Violet (kept for variety) */
-    --tertiary: 260 80% 60%;
+    /* Tertiary — Deep Violet */
+    --tertiary: 268 85% 56%;
     --tertiary-foreground: 0 0% 100%;
-    --tertiary-container: 260 100% 96%;
-    --on-tertiary-container: 260 80% 22%;
+    --tertiary-container: 268 100% 96%;
+    --on-tertiary-container: 268 85% 22%;
 
-    /* Error — Duolingo Red */
-    --destructive: 0 100% 65%;
+    /* Error — Deep Crimson */
+    --destructive: 354 85% 54%;
     --destructive-foreground: 0 0% 100%;
-    --error-container: 0 100% 96%;
-    --on-error-container: 0 70% 22%;
+    --error-container: 354 100% 96%;
+    --on-error-container: 354 80% 22%;
 
-    /* Success — Duolingo Green */
-    --success: 88 70% 47%;
+    /* Success — Vivid Emerald */
+    --success: 152 78% 38%;
     --success-foreground: 0 0% 100%;
-    --success-container: 88 70% 93%;
+    --success-container: 152 70% 94%;
 
-    /* Warning — Duolingo Gold */
-    --warning: 42 100% 55%;
+    /* Warning — Deep Amber */
+    --warning: 36 100% 50%;
     --warning-foreground: 32 100% 14%;
 
-    /* Surface — Pure white iOS-clean */
+    /* Surface */
     --background: 0 0% 100%;
-    --foreground: 0 0% 12%;
+    --foreground: 222 22% 10%;
 
-    --surface-dim: 0 0% 96%;
+    --surface-dim: 220 25% 96%;
     --surface-bright: 0 0% 100%;
     --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 0 0% 98%;
-    --surface-container: 0 0% 96%;
-    --surface-container-high: 0 0% 94%;
-    --surface-container-highest: 0 0% 92%;
+    --surface-container-low: 220 30% 98%;
+    --surface-container: 220 25% 96%;
+    --surface-container-high: 220 22% 94%;
+    --surface-container-highest: 220 20% 92%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 12%;
+    --card-foreground: 222 22% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 12%;
+    --popover-foreground: 222 22% 10%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 47%;
+    --muted: 220 25% 96%;
+    --muted-foreground: 222 12% 42%;
 
-    --accent: 199 100% 95%;
-    --accent-foreground: 199 90% 22%;
+    --accent: 220 100% 96%;
+    --accent-foreground: 220 95% 22%;
 
-    --outline: 0 0% 70%;
-    --outline-variant: 0 0% 90%;
+    --outline: 220 12% 62%;
+    --outline-variant: 220 18% 88%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 88%;
-    --ring: 199 89% 54%;
+    --border: 220 18% 88%;
+    --input: 220 18% 86%;
+    --ring: 220 95% 52%;
 
-    --inverse-surface: 240 15% 16%;
-    --inverse-on-surface: 240 12% 92%;
-    --inverse-primary: 250 80% 78%;
+    --inverse-surface: 222 22% 14%;
+    --inverse-on-surface: 220 12% 92%;
+    --inverse-primary: 220 100% 72%;
 
-    /* ─── M3 Expressive Shape Scale ─── */
-    --radius-xs: 0.5rem;
-    --radius-sm: 0.75rem;
-    --radius-md: 1rem;
-    --radius-lg: 1.5rem;
-    --radius-xl: 2rem;
+    /* ─── Modern Shape Scale (more rounded) ─── */
+    --radius-xs: 0.625rem;
+    --radius-sm: 1rem;
+    --radius-md: 1.25rem;
+    --radius-lg: 1.75rem;
+    --radius-xl: 2.25rem;
     --radius-2xl: 1.75rem;
     --radius-full: 9999px;
     --radius: 1rem;
@@ -746,3 +746,135 @@
   40%, 80% { transform: translateX(6px); }
 }
 .animate-shake { animation: shake 380ms cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+/* ═══════════════════════════════════════════════════════
+   MAGIC UI ANIMATIONS — border-beam, shine, shimmer, gradient
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes border-beam {
+  100% { offset-distance: 100%; }
+}
+@keyframes shine {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes shimmer-slide {
+  to { transform: translate(calc(100cqw - 100%), 0); }
+}
+@keyframes spin-around {
+  0%   { transform: translateZ(0) rotate(0); }
+  15%, 35% { transform: translateZ(0) rotate(90deg); }
+  65%, 85% { transform: translateZ(0) rotate(270deg); }
+  100% { transform: translateZ(0) rotate(360deg); }
+}
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+@keyframes meteor {
+  0%   { transform: rotate(215deg) translateX(0); opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: rotate(215deg) translateX(-500px); opacity: 0; }
+}
+@keyframes ripple {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -50%) scale(0.9); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(0.8); opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@layer utilities {
+  /* Animated gradient text (Magic UI) */
+  .animated-gradient-text {
+    background: linear-gradient(90deg,
+      hsl(var(--primary)),
+      hsl(var(--tertiary)),
+      hsl(var(--secondary)),
+      hsl(var(--primary)));
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-x 6s ease infinite;
+  }
+
+  /* Shimmer button background sweep */
+  .shimmer-button {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .shimmer-button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg,
+      transparent 30%,
+      hsl(var(--primary-foreground) / 0.35) 50%,
+      transparent 70%);
+    transform: translateX(-100%);
+    animation: shine 3.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /* Animated background gradient */
+  .gradient-animated {
+    background: linear-gradient(120deg,
+      hsl(var(--primary)),
+      hsl(var(--tertiary)),
+      hsl(var(--secondary)),
+      hsl(var(--primary)));
+    background-size: 300% 300%;
+    animation: gradient-x 8s ease infinite;
+  }
+
+  /* Border-beam wrapper utility — paired with <BorderBeam /> SVG */
+  .border-beam-host {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* Soft glass card */
+  .glass-card {
+    background: hsl(var(--card) / 0.72);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid hsl(var(--border) / 0.7);
+  }
+
+  /* Spotlight hover */
+  .spotlight {
+    position: relative;
+    overflow: hidden;
+  }
+  .spotlight::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: radial-gradient(
+      400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      hsl(var(--primary) / 0.18),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 300ms ease;
+    pointer-events: none;
+  }
+  .spotlight:hover::before { opacity: 1; }
+
+  /* Pulse ring (around CTAs/icons) */
+  .pulse-ring::before {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 100%; height: 100%;
+    border-radius: inherit;
+    background: hsl(var(--primary) / 0.45);
+    transform: translate(-50%, -50%);
+    animation: pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    z-index: -1;
+  }
+}
