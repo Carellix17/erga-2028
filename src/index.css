@@ -746,3 +746,135 @@
   40%, 80% { transform: translateX(6px); }
 }
 .animate-shake { animation: shake 380ms cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+/* ═══════════════════════════════════════════════════════
+   MAGIC UI ANIMATIONS — border-beam, shine, shimmer, gradient
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes border-beam {
+  100% { offset-distance: 100%; }
+}
+@keyframes shine {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes shimmer-slide {
+  to { transform: translate(calc(100cqw - 100%), 0); }
+}
+@keyframes spin-around {
+  0%   { transform: translateZ(0) rotate(0); }
+  15%, 35% { transform: translateZ(0) rotate(90deg); }
+  65%, 85% { transform: translateZ(0) rotate(270deg); }
+  100% { transform: translateZ(0) rotate(360deg); }
+}
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+@keyframes meteor {
+  0%   { transform: rotate(215deg) translateX(0); opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: rotate(215deg) translateX(-500px); opacity: 0; }
+}
+@keyframes ripple {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -50%) scale(0.9); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(0.8); opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@layer utilities {
+  /* Animated gradient text (Magic UI) */
+  .animated-gradient-text {
+    background: linear-gradient(90deg,
+      hsl(var(--primary)),
+      hsl(var(--tertiary)),
+      hsl(var(--secondary)),
+      hsl(var(--primary)));
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-x 6s ease infinite;
+  }
+
+  /* Shimmer button background sweep */
+  .shimmer-button {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .shimmer-button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg,
+      transparent 30%,
+      hsl(var(--primary-foreground) / 0.35) 50%,
+      transparent 70%);
+    transform: translateX(-100%);
+    animation: shine 3.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /* Animated background gradient */
+  .gradient-animated {
+    background: linear-gradient(120deg,
+      hsl(var(--primary)),
+      hsl(var(--tertiary)),
+      hsl(var(--secondary)),
+      hsl(var(--primary)));
+    background-size: 300% 300%;
+    animation: gradient-x 8s ease infinite;
+  }
+
+  /* Border-beam wrapper utility — paired with <BorderBeam /> SVG */
+  .border-beam-host {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* Soft glass card */
+  .glass-card {
+    background: hsl(var(--card) / 0.72);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid hsl(var(--border) / 0.7);
+  }
+
+  /* Spotlight hover */
+  .spotlight {
+    position: relative;
+    overflow: hidden;
+  }
+  .spotlight::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: radial-gradient(
+      400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      hsl(var(--primary) / 0.18),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 300ms ease;
+    pointer-events: none;
+  }
+  .spotlight:hover::before { opacity: 1; }
+
+  /* Pulse ring (around CTAs/icons) */
+  .pulse-ring::before {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 100%; height: 100%;
+    border-radius: inherit;
+    background: hsl(var(--primary) / 0.45);
+    transform: translate(-50%, -50%);
+    animation: pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    z-index: -1;
+  }
+}
