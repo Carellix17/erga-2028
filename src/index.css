@@ -7,92 +7,92 @@
    Design System — Vibrant & Bouncy
    ═══════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import '@fontsource-variable/geist';
 
 @layer base {
   :root {
-    /* ─── Premium Modern — Deep & Vivid ─── */
+    /* ─── shadcn preset bcivVeJm — Radix Nova / zinc neutral ─── */
 
-    /* Primary — Deep Electric Blue */
-    --primary: 220 95% 52%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 220 100% 64%;
-    --primary-container: 220 100% 96%;
-    --on-primary-container: 220 95% 22%;
+    /* Primary — Deep zinc (near-black) */
+    --primary: 240 6% 15%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 240 6% 25%;
+    --primary-container: 240 5% 96%;
+    --on-primary-container: 240 6% 15%;
 
-    /* Secondary — Vivid Emerald */
-    --secondary: 152 78% 38%;
-    --secondary-foreground: 0 0% 100%;
-    --secondary-container: 152 70% 94%;
-    --on-secondary-container: 152 80% 16%;
+    /* Secondary — Light zinc */
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 15%;
+    --secondary-container: 240 5% 96%;
+    --on-secondary-container: 240 6% 15%;
 
-    /* Tertiary — Deep Violet */
-    --tertiary: 268 85% 56%;
-    --tertiary-foreground: 0 0% 100%;
-    --tertiary-container: 268 100% 96%;
-    --on-tertiary-container: 268 85% 22%;
+    /* Tertiary — Mid zinc */
+    --tertiary: 240 4% 46%;
+    --tertiary-foreground: 0 0% 98%;
+    --tertiary-container: 240 5% 96%;
+    --on-tertiary-container: 240 6% 15%;
 
-    /* Error — Deep Crimson */
-    --destructive: 354 85% 54%;
-    --destructive-foreground: 0 0% 100%;
-    --error-container: 354 100% 96%;
-    --on-error-container: 354 80% 22%;
+    /* Error — Vivid red */
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --error-container: 0 90% 96%;
+    --on-error-container: 0 80% 30%;
 
-    /* Success — Vivid Emerald */
-    --success: 152 78% 38%;
-    --success-foreground: 0 0% 100%;
-    --success-container: 152 70% 94%;
+    /* Success — Kept green for semantics */
+    --success: 152 60% 36%;
+    --success-foreground: 0 0% 98%;
+    --success-container: 152 50% 94%;
 
-    /* Warning — Deep Amber */
-    --warning: 36 100% 50%;
+    /* Warning */
+    --warning: 36 95% 50%;
     --warning-foreground: 32 100% 14%;
 
     /* Surface */
     --background: 0 0% 100%;
-    --foreground: 222 22% 10%;
+    --foreground: 240 6% 10%;
 
-    --surface-dim: 220 25% 96%;
+    --surface-dim: 240 5% 96%;
     --surface-bright: 0 0% 100%;
     --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 220 30% 98%;
-    --surface-container: 220 25% 96%;
-    --surface-container-high: 220 22% 94%;
-    --surface-container-highest: 220 20% 92%;
+    --surface-container-low: 240 5% 98%;
+    --surface-container: 240 5% 96%;
+    --surface-container-high: 240 5% 94%;
+    --surface-container-highest: 240 6% 90%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 22% 10%;
+    --card-foreground: 240 6% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 22% 10%;
+    --popover-foreground: 240 6% 10%;
 
-    --muted: 220 25% 96%;
-    --muted-foreground: 222 12% 42%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
 
-    --accent: 220 100% 96%;
-    --accent-foreground: 220 95% 22%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 6% 15%;
 
-    --outline: 220 12% 62%;
-    --outline-variant: 220 18% 88%;
+    --outline: 240 5% 65%;
+    --outline-variant: 240 6% 90%;
 
-    --border: 220 18% 88%;
-    --input: 220 18% 86%;
-    --ring: 220 95% 52%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 240 5% 65%;
 
-    --inverse-surface: 222 22% 14%;
-    --inverse-on-surface: 220 12% 92%;
-    --inverse-primary: 220 100% 72%;
+    --inverse-surface: 240 6% 15%;
+    --inverse-on-surface: 0 0% 98%;
+    --inverse-primary: 240 6% 90%;
 
-    /* ─── Modern Shape Scale (more rounded) ─── */
-    --radius-xs: 0.625rem;
-    --radius-sm: 1rem;
-    --radius-md: 1.25rem;
-    --radius-lg: 1.75rem;
-    --radius-xl: 2.25rem;
-    --radius-2xl: 1.75rem;
+    /* ─── Shape Scale (preset radius 14px = 0.875rem) ─── */
+    --radius: 0.875rem;
+    --radius-xs: calc(var(--radius) * 0.5);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
     --radius-full: 9999px;
-    --radius: 1rem;
 
-    /* ─── Premium soft shadows + glow ─── */
+    /* ─── Soft shadows ─── */
     --shadow-level-0: none;
     --shadow-level-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
     --shadow-level-2: 0 2px 6px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
@@ -100,88 +100,87 @@
     --shadow-level-4: 0 8px 24px rgba(15, 23, 42, 0.10), 0 16px 40px rgba(15, 23, 42, 0.06);
     --shadow-level-5: 0 12px 36px rgba(15, 23, 42, 0.12), 0 24px 56px rgba(15, 23, 42, 0.08);
 
-    /* Glow shadows (border-beam style accent halos) */
     --glow-primary: 0 0 0 1px hsl(var(--primary) / 0.20), 0 6px 20px hsl(var(--primary) / 0.18);
     --glow-success: 0 0 0 1px hsl(var(--success) / 0.25), 0 6px 20px hsl(var(--success) / 0.20);
     --glow-error:   0 0 0 1px hsl(var(--destructive) / 0.25), 0 6px 20px hsl(var(--destructive) / 0.20);
 
-    /* ─── State Layer Opacities ─── */
     --state-hover: 0.06;
     --state-focus: 0.10;
     --state-pressed: 0.10;
 
     /* Sidebar */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 12%;
-    --sidebar-primary: 199 89% 54%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 12%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 199 89% 54%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 6% 10%;
+    --sidebar-primary: 240 6% 15%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 6% 15%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 240 5% 65%;
   }
 
   .dark {
-    --primary: 250 80% 78%;
-    --primary-foreground: 252 90% 14%;
-    --primary-container: 252 55% 28%;
-    --on-primary-container: 250 100% 93%;
+    --background: 240 6% 10%;
+    --foreground: 0 0% 98%;
 
-    --secondary: 340 80% 76%;
-    --secondary-foreground: 340 70% 14%;
-    --secondary-container: 340 55% 30%;
-    --on-secondary-container: 340 100% 93%;
+    --primary: 240 6% 90%;
+    --primary-foreground: 240 6% 15%;
+    --primary-glow: 240 6% 80%;
+    --primary-container: 240 5% 21%;
+    --on-primary-container: 0 0% 98%;
 
-    --tertiary: 185 70% 68%;
-    --tertiary-foreground: 185 85% 10%;
-    --tertiary-container: 185 50% 25%;
-    --on-tertiary-container: 185 80% 90%;
+    --secondary: 240 5% 21%;
+    --secondary-foreground: 0 0% 98%;
+    --secondary-container: 240 5% 21%;
+    --on-secondary-container: 0 0% 98%;
 
-    --destructive: 4 80% 72%;
-    --destructive-foreground: 4 60% 12%;
-    --error-container: 4 50% 22%;
-    --on-error-container: 4 90% 94%;
+    --tertiary: 240 5% 65%;
+    --tertiary-foreground: 240 6% 15%;
+    --tertiary-container: 240 5% 21%;
+    --on-tertiary-container: 0 0% 98%;
 
-    --success: 160 55% 62%;
-    --success-foreground: 160 70% 10%;
-    --success-container: 160 45% 20%;
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --error-container: 0 50% 22%;
+    --on-error-container: 0 90% 94%;
+
+    --success: 152 50% 55%;
+    --success-foreground: 0 0% 98%;
+    --success-container: 152 30% 20%;
 
     --warning: 32 80% 62%;
     --warning-foreground: 32 100% 10%;
 
-    --background: 250 15% 8%;
-    --foreground: 245 12% 92%;
+    --surface-dim: 240 6% 10%;
+    --surface-bright: 240 5% 25%;
+    --surface-container-lowest: 240 6% 6%;
+    --surface-container-low: 240 6% 12%;
+    --surface-container: 240 5% 15%;
+    --surface-container-high: 240 5% 18%;
+    --surface-container-highest: 240 5% 21%;
 
-    --surface-dim: 250 15% 8%;
-    --surface-bright: 250 12% 22%;
-    --surface-container-lowest: 250 18% 5%;
-    --surface-container-low: 250 14% 12%;
-    --surface-container: 250 12% 14%;
-    --surface-container-high: 250 10% 19%;
-    --surface-container-highest: 250 10% 24%;
+    --card: 240 5% 15%;
+    --card-foreground: 0 0% 98%;
 
-    --card: 250 12% 14%;
-    --card-foreground: 245 12% 92%;
+    --popover: 240 5% 15%;
+    --popover-foreground: 0 0% 98%;
 
-    --popover: 250 12% 14%;
-    --popover-foreground: 245 12% 92%;
+    --muted: 240 5% 21%;
+    --muted-foreground: 240 5% 65%;
 
-    --muted: 250 10% 24%;
-    --muted-foreground: 245 10% 58%;
+    --accent: 240 5% 21%;
+    --accent-foreground: 0 0% 98%;
 
-    --accent: 252 55% 28%;
-    --accent-foreground: 250 100% 93%;
+    --outline: 240 5% 55%;
+    --outline-variant: 240 5% 25%;
 
-    --outline: 245 10% 55%;
-    --outline-variant: 250 10% 30%;
+    --border: 240 5% 25%;
+    --input: 240 5% 30%;
+    --ring: 240 4% 46%;
 
-    --border: 250 10% 28%;
-    --input: 245 10% 55%;
-    --ring: 250 80% 78%;
-
-    --inverse-surface: 245 12% 92%;
-    --inverse-on-surface: 250 15% 16%;
-    --inverse-primary: 252 85% 60%;
+    --inverse-surface: 0 0% 98%;
+    --inverse-on-surface: 240 6% 15%;
+    --inverse-primary: 240 6% 25%;
 
     --shadow-level-1: 0 1px 3px 1px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.6);
     --shadow-level-2: 0 2px 6px 2px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.6);
@@ -189,14 +188,14 @@
     --shadow-level-4: 0 6px 10px 4px rgba(0,0,0,0.4), 0 2px 3px rgba(0,0,0,0.6);
     --shadow-level-5: 0 8px 12px 6px rgba(0,0,0,0.4), 0 4px 4px rgba(0,0,0,0.6);
 
-    --sidebar-background: 250 14% 12%;
-    --sidebar-foreground: 245 12% 92%;
-    --sidebar-primary: 250 80% 78%;
-    --sidebar-primary-foreground: 252 90% 14%;
-    --sidebar-accent: 250 10% 19%;
-    --sidebar-accent-foreground: 245 12% 92%;
-    --sidebar-border: 250 10% 28%;
-    --sidebar-ring: 250 80% 78%;
+    --sidebar-background: 240 5% 15%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 240 6% 90%;
+    --sidebar-primary-foreground: 240 6% 15%;
+    --sidebar-accent: 240 5% 21%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 5% 25%;
+    --sidebar-ring: 240 4% 46%;
   }
 }
 
@@ -207,10 +206,9 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    font-family: 'Geist Variable', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: "cv11", "ss01", "ss03";
   }
 
   /* Type Scale */
