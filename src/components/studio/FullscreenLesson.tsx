@@ -282,10 +282,8 @@ function ConceptStep({ concept }: { concept: string }) {
           <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} />
           Concetto chiave
         </div>
-        <div className="text-2xl font-extrabold leading-snug prose prose-sm max-w-none mx-auto">
-          <span className="animated-gradient-text">
-            <ReactMarkdown>{concept}</ReactMarkdown>
-          </span>
+        <div className="text-2xl font-extrabold leading-snug prose prose-sm max-w-none mx-auto text-foreground prose-strong:text-foreground prose-em:text-foreground prose-p:text-foreground">
+          <ReactMarkdown>{concept}</ReactMarkdown>
         </div>
       </div>
     </div>
@@ -320,10 +318,10 @@ function ExplanationPartStep({ part, partNumber, totalParts }: { part: Explanati
         </div>
       </div>
       <div className={cn(
-        "p-5 rounded-2xl",
-        isExample ? "pastel-amber" : "pastel-blue"
+        "p-5 spotlight",
+        isExample ? "card-3d-warning" : "card-3d-primary"
       )}>
-        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none prose-strong:text-foreground prose-em:text-foreground/90">
+        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none prose-strong:text-foreground prose-em:text-foreground/90 prose-p:text-foreground">
           <ReactMarkdown>{part.content}</ReactMarkdown>
         </div>
 
@@ -355,8 +353,8 @@ function ExampleStep({ example }: { example: string }) {
         </div>
         <span className="text-sm font-bold text-foreground">Esempio pratico</span>
       </div>
-      <div className="p-5 rounded-2xl pastel-green">
-        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none">
+      <div className="p-5 card-3d-success spotlight">
+        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none prose-strong:text-foreground prose-em:text-foreground prose-p:text-foreground">
           <ReactMarkdown>{example}</ReactMarkdown>
         </div>
       </div>
@@ -394,7 +392,7 @@ function ExerciseStep({
           ))}
         </div>
       </div>
-      <div className="p-5 rounded-2xl bg-surface-container-low shadow-level-1">
+      <div className="p-5 card-3d-tertiary spotlight">
         <ExerciseRenderer exercise={exercise} onComplete={onComplete} isCompleted={isCompleted} />
       </div>
     </div>
