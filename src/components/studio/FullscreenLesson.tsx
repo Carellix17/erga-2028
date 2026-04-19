@@ -115,17 +115,16 @@ export function FullscreenLesson({
   const handleContinue = useCallback(() => {
     if (isAnimating) return;
     setIsAnimating(true);
-    
+
     if (currentStep < steps.length - 1) {
       const nextStep = steps[currentStep + 1];
       if (nextStep.type === "summary") fireStarBurst();
-      
-      // Animate out, then in
+
       setTimeout(() => {
         setCurrentStep(s => s + 1);
         setCurrentExerciseAnswered(false);
         setIsAnimating(false);
-      }, 250);
+      }, 200);
     } else {
       fireCelebration();
       onComplete();
