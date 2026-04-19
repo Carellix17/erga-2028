@@ -9,58 +9,56 @@ interface BottomNavProps {
 }
 
 const tabs = [
-  { id: "studio" as Tab, label: "Studio", icon: BookOpen, color: "bg-primary-container text-primary" },
-  { id: "piano" as Tab, label: "Piano", icon: CalendarDays, color: "bg-secondary-container text-secondary" },
-  { id: "pratica" as Tab, label: "Pratica", icon: GraduationCap, color: "bg-tertiary-container text-tertiary" },
-  { id: "profilo" as Tab, label: "Profilo", icon: User, color: "bg-surface-container-highest text-foreground" },
+  { id: "studio" as Tab, label: "Studio", icon: BookOpen },
+  { id: "piano" as Tab, label: "Piano", icon: CalendarDays },
+  { id: "pratica" as Tab, label: "Pratica", icon: GraduationCap },
+  { id: "profilo" as Tab, label: "Profilo", icon: User },
 ];
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
-      <div className="bg-surface-container-lowest/95 shadow-level-2 backdrop-blur-2xl rounded-t-[2rem] border-t border-outline-variant/15">
-        <div className="flex items-center justify-around h-[5.5rem] max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-3 sm:px-6">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
+      <div className="flex items-center justify-around h-[68px] max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-3">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
 
-            return (
-              <button
-                key={tab.id}
-                onClick={() => onTabChange(tab.id)}
-                className="flex flex-col items-center justify-center flex-1 py-1 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id)}
+              className="relative flex flex-col items-center justify-center flex-1 h-full gap-1 group focus:outline-none transition-transform active:scale-[0.92]"
+            >
+              <div
+                className={cn(
+                  "flex items-center justify-center transition-all duration-200",
+                  isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                )}
               >
-                <div
-                  className={cn(
-                    "flex items-center justify-center rounded-full transition-all duration-600",
-                    isActive
-                      ? `${tab.color} w-16 h-9 shadow-level-1`
-                      : "w-12 h-9 bg-transparent group-hover:bg-foreground/[0.08]"
-                  )}
-                  style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
-                >
-                  <Icon
-                    className={cn(
-                      "w-[22px] h-[22px] transition-all duration-400",
-                      isActive ? "" : "text-muted-foreground"
-                    )}
-                    fill={isActive ? "currentColor" : "none"}
-                    strokeWidth={isActive ? 2.2 : 1.8}
-                  />
-                </div>
-                <span
-                  className={cn(
-                    "label-small mt-1.5 transition-all duration-400",
-                    isActive ? "text-foreground font-bold" : "text-muted-foreground"
-                  )}
-                  style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
-                >
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                <Icon
+                  className="w-[26px] h-[26px] transition-all"
+                  strokeWidth={isActive ? 2.4 : 1.9}
+                  fill={isActive ? "currentColor" : "none"}
+                  fillOpacity={isActive ? 0.15 : 0}
+                />
+              </div>
+              <span
+                className={cn(
+                  "text-[11px] leading-none tracking-tight transition-all duration-200",
+                  isActive ? "text-primary font-bold" : "text-muted-foreground font-medium"
+                )}
+              >
+                {tab.label}
+              </span>
+              {isActive && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-primary" />
+              )}
+            </button>
+          );
+        })}
       </div>
     </nav>
   );
