@@ -787,7 +787,8 @@
 
 @layer utilities {
   /* Animated gradient text (Magic UI) */
-  .animated-gradient-text {
+  .animated-gradient-text,
+  .animated-gradient-text * {
     background: linear-gradient(90deg,
       hsl(var(--primary)),
       hsl(var(--tertiary)),
