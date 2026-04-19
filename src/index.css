@@ -92,29 +92,33 @@
     --radius-full: 9999px;
     --radius: 1rem;
 
-    /* ─── M3 Elevation Shadows ─── */
+    /* ─── Premium soft shadows + glow ─── */
     --shadow-level-0: none;
-    --shadow-level-1: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
-    --shadow-level-2: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
-    --shadow-level-3: 0 4px 8px 3px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.3);
-    --shadow-level-4: 0 6px 10px 4px rgba(0,0,0,0.15), 0 2px 3px rgba(0,0,0,0.3);
-    --shadow-level-5: 0 8px 12px 6px rgba(0,0,0,0.15), 0 4px 4px rgba(0,0,0,0.3);
+    --shadow-level-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    --shadow-level-2: 0 2px 6px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
+    --shadow-level-3: 0 4px 16px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.05);
+    --shadow-level-4: 0 8px 24px rgba(15, 23, 42, 0.10), 0 16px 40px rgba(15, 23, 42, 0.06);
+    --shadow-level-5: 0 12px 36px rgba(15, 23, 42, 0.12), 0 24px 56px rgba(15, 23, 42, 0.08);
 
-    /* ─── M3 State Layer Opacities ─── */
-    --state-hover: 0.08;
+    /* Glow shadows (border-beam style accent halos) */
+    --glow-primary: 0 0 0 1px hsl(var(--primary) / 0.20), 0 6px 20px hsl(var(--primary) / 0.18);
+    --glow-success: 0 0 0 1px hsl(var(--success) / 0.25), 0 6px 20px hsl(var(--success) / 0.20);
+    --glow-error:   0 0 0 1px hsl(var(--destructive) / 0.25), 0 6px 20px hsl(var(--destructive) / 0.20);
+
+    /* ─── State Layer Opacities ─── */
+    --state-hover: 0.06;
     --state-focus: 0.10;
     --state-pressed: 0.10;
-    --state-dragged: 0.16;
 
     /* Sidebar */
-    --sidebar-background: 245 18% 96%;
-    --sidebar-foreground: 240 15% 12%;
-    --sidebar-primary: 252 85% 60%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 12%;
+    --sidebar-primary: 199 89% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 245 14% 92%;
-    --sidebar-accent-foreground: 240 15% 12%;
-    --sidebar-border: 245 15% 84%;
-    --sidebar-ring: 252 85% 60%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 12%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 199 89% 54%;
   }
 
   .dark {
@@ -203,14 +207,15 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Google Sans Text', 'Google Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv11", "ss01", "ss03";
   }
 
-  /* M3 Type Scale */
+  /* Type Scale */
   h1, .display-large {
-    font-family: 'Google Sans', system-ui, sans-serif;
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
     font-size: 3.5625rem;
     line-height: 4rem;
     letter-spacing: -0.25px;
