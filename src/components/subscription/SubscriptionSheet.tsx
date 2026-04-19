@@ -86,7 +86,7 @@ export function SubscriptionSheet({ open, onOpenChange, currentTier }: Subscript
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-level-1">
-                  <currentPlan.icon className="w-6 h-6 text-white drop-shadow-sm" />
+                  <currentPlan.icon className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
