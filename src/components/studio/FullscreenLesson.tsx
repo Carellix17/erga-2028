@@ -263,16 +263,16 @@ export function FullscreenLesson({
 
 function ConceptStep({ concept }: { concept: string }) {
   return (
-    <div className="text-center space-y-6">
-      <div className="w-20 h-20 rounded-3xl bg-primary flex items-center justify-center mx-auto shadow-level-3 animate-bounce-in">
-        <Lightbulb className="w-10 h-10 text-primary-foreground" />
+    <div className="text-center space-y-6 pt-2">
+      <div className="w-20 h-20 rounded-3xl bg-primary flex items-center justify-center mx-auto ring-glow-primary">
+        <Lightbulb className="w-10 h-10 text-primary-foreground" fill="currentColor" strokeWidth={0} />
       </div>
       <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary label-medium mb-4">
-          <Star className="w-3.5 h-3.5" />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-4">
+          <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} />
           Concetto chiave
         </div>
-        <div className="title-large font-display leading-relaxed prose prose-sm max-w-none mx-auto">
+        <div className="text-2xl font-extrabold leading-snug text-foreground prose prose-sm max-w-none mx-auto">
           <ReactMarkdown>{concept}</ReactMarkdown>
         </div>
       </div>
@@ -282,29 +282,25 @@ function ConceptStep({ concept }: { concept: string }) {
 
 function ExplanationPartStep({ part, partNumber, totalParts }: { part: ExplanationPart; partNumber: number; totalParts: number }) {
   const isExample = part.part_title.startsWith("📌") || part.part_title.startsWith("🔍");
-  
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3 mb-2">
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 mb-1">
         <div className={cn(
-          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-level-1",
-          isExample ? "bg-tertiary-container" : "bg-secondary-container"
+          "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0",
+          isExample ? "bg-tertiary-container text-tertiary" : "bg-primary-container text-primary"
         )}>
-          {isExample ? (
-            <span className="text-xl">💡</span>
-          ) : (
-            <BookOpen className={cn("w-6 h-6", isExample ? "text-tertiary" : "text-secondary")} />
-          )}
+          {isExample ? <span className="text-xl">💡</span> : <BookOpen className="w-6 h-6" strokeWidth={2.2} />}
         </div>
-        <div className="flex-1">
-          <span className="label-large text-foreground">{part.part_title}</span>
-          <div className="flex items-center gap-1 mt-0.5">
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-bold text-foreground block truncate">{part.part_title}</span>
+          <div className="flex items-center gap-1 mt-1.5">
             {Array.from({ length: totalParts }).map((_, i) => (
               <div
                 key={i}
                 className={cn(
                   "h-1 rounded-full flex-1 transition-all duration-300",
-                  i < partNumber ? (isExample ? "bg-tertiary" : "bg-secondary") : "bg-surface-container-highest"
+                  i < partNumber ? (isExample ? "bg-tertiary" : "bg-primary") : "bg-muted"
                 )}
               />
             ))}
@@ -312,23 +308,22 @@ function ExplanationPartStep({ part, partNumber, totalParts }: { part: Explanati
         </div>
       </div>
       <div className={cn(
-        "p-5 rounded-2xl shadow-level-1",
-        isExample ? "bg-tertiary-container/50 border-l-4 border-tertiary" : "bg-surface-container-low"
+        "p-5 rounded-2xl",
+        isExample ? "pastel-amber" : "pastel-blue"
       )}>
-        <div className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90">
+        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none prose-strong:text-foreground prose-em:text-foreground/90">
           <ReactMarkdown>{part.content}</ReactMarkdown>
         </div>
-        
-        {/* Image from source material */}
+
         {part.image_url && (
           <div className="mt-4">
-            <img 
-              src={part.image_url} 
-              alt={part.image_description || "Immagine dal materiale"} 
-              className="w-full rounded-2xl shadow-level-2 object-contain max-h-64"
+            <img
+              src={part.image_url}
+              alt={part.image_description || "Immagine dal materiale"}
+              className="w-full rounded-xl border border-border object-contain max-h-64"
             />
             {part.image_description && (
-              <p className="text-center body-small text-muted-foreground mt-2 italic">
+              <p className="text-center text-xs text-muted-foreground mt-2 italic">
                 {part.image_description}
               </p>
             )}
@@ -343,13 +338,13 @@ function ExampleStep({ example }: { example: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-tertiary-container flex items-center justify-center shadow-level-1">
-          <span className="text-2xl">💡</span>
+        <div className="w-12 h-12 rounded-2xl bg-success-container flex items-center justify-center text-success">
+          <span className="text-2xl">📖</span>
         </div>
-        <span className="label-large text-foreground">Esempio pratico</span>
+        <span className="text-sm font-bold text-foreground">Esempio pratico</span>
       </div>
-      <div className="p-5 rounded-2xl bg-tertiary-container/50 border-l-4 border-tertiary shadow-level-1">
-        <div className="body-large text-foreground leading-relaxed prose prose-sm max-w-none">
+      <div className="p-5 rounded-2xl pastel-green">
+        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none">
           <ReactMarkdown>{example}</ReactMarkdown>
         </div>
       </div>
