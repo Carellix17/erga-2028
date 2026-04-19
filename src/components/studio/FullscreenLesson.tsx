@@ -282,10 +282,8 @@ function ConceptStep({ concept }: { concept: string }) {
           <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} />
           Concetto chiave
         </div>
-        <div className="text-2xl font-extrabold leading-snug prose prose-sm max-w-none mx-auto">
-          <span className="animated-gradient-text">
-            <ReactMarkdown>{concept}</ReactMarkdown>
-          </span>
+        <div className="text-2xl font-extrabold leading-snug prose prose-sm max-w-none mx-auto text-foreground prose-strong:text-foreground prose-em:text-foreground prose-p:text-foreground">
+          <ReactMarkdown>{concept}</ReactMarkdown>
         </div>
       </div>
     </div>
