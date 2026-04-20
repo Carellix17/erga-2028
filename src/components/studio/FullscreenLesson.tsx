@@ -5,6 +5,8 @@ import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { fireCelebration, fireStarBurst } from "@/lib/confetti";
+import { PdfCrop } from "./PdfCrop";
+import { useLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
 
 interface ExplanationPart {
   part_title: string;
