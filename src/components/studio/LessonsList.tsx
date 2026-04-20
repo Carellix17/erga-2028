@@ -262,7 +262,7 @@ export function LessonsList({
                         <span
                           className={cn(
                             "absolute inset-0 flex items-center justify-center transition-all duration-300",
-                            isCompleted && "bg-success shadow-level-2",
+                            isCompleted && cn("bg-gradient-to-br shadow-level-2 opacity-90", color.gradient),
                             isCurrent && cn("bg-gradient-to-br shadow-level-3", color.gradient),
                             !isCurrent && !isCompleted && !isLocked && "bg-surface-container-low shadow-level-1 border-2 border-outline-variant/40",
                             isLocked && "bg-surface-container shadow-level-0 opacity-45",
