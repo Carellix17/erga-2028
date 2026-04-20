@@ -146,37 +146,23 @@ serve(async (req) => {
       }
       if (!studyContent) throw new Error("Contenuto vuoto. Caricamento fallito?");
 
-      // Extract image metadata from content
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      let imageUrls: { index: number; url: string }[] = [];
-      const imageMarker = "[EXTRACTED_IMAGES]";
-      const markerIndex = studyContent.indexOf(imageMarker);
-      if (markerIndex !== -1) {
-        const imageSection = studyContent.substring(markerIndex + imageMarker.length);
-        studyContent = studyContent.substring(0, markerIndex).trim();
-        const lines = imageSection.trim().split("\n").filter((l: string) => l.trim());
-        imageUrls = lines.map((line: string, idx: number) => {
-          const afterPrefix = line.replace(/^image_\d+:\s*/, "").trim();
-          const pipeIndex = afterPrefix.indexOf(" | ");
-          const path = pipeIndex >= 0 ? afterPrefix.substring(0, pipeIndex).trim() : afterPrefix;
-          const description = pipeIndex >= 0 ? afterPrefix.substring(pipeIndex + 3).trim() : "Figura dal materiale";
-          return { index: idx, url: `${supabaseUrl}/storage/v1/object/public/study-images/${path}`, description };
-        });
-        console.log(`Found ${imageUrls.length} extracted figures for lesson`);
-      }
+      // ── NEW: figures are extracted on-demand by extract-lesson-figures, not embedded here ──
+      // The lesson is generated with [FIG:n] tokens that the client replaces with <PdfCrop /> after
+      // calling extract-lesson-figures(lessonId).
+      const pagesCovered = pageStart != null && pageEnd != null ? (pageEnd - pageStart + 1) : 0;
+      const expectedFigures = Math.min(3, Math.max(0, pagesCovered));
 
-      const imageInstructions = imageUrls.length > 0
-        ? `\n\nFIGURE ESTRATTE DAL MATERIALE (ritagliate dal PDF):
-Le seguenti figure sono state ritagliate direttamente dal materiale originale. Sono figure specifiche, NON pagine intere.
-${imageUrls.map(img => `[IMG_${img.index}]: ${img.url} — "${(img as Record<string, unknown>).description}"`).join("\n")}
+      const figureInstructions = expectedFigures > 0
+        ? `\n\nFIGURE DAL PDF (token speciali):
+Il sistema estrarrà automaticamente le figure reali dalle pagine ${pageStart}-${pageEnd} del PDF.
+Quando vuoi riferirti a una figura, inserisci ESATTAMENTE il token [FIG:0], [FIG:1], ecc. nel campo "content" di una explanation_part — NON descrivere mai a parole l'immagine.
 
-REGOLE OBBLIGATORIE SULLE IMMAGINI:
-- Almeno una explanation_part DEVE contenere "image_url" con uno degli URL esatti dell'elenco.
-- NON restituire mai solo "image_description" senza "image_url" quando hai immagini disponibili.
-- Se una parte contiene un'immagine, aggiungi anche "image_description" come breve didascalia.
-- Usa SOLO gli URL dell'elenco sopra, copiati esattamente.
-- Distribuisci le immagini nelle parti pertinenti, non tutte alla fine.
-- NON DESCRIVERE MAI le immagini a parole. MAI scrivere frasi come "L'immagine mostra...", "Qui c'è un'immagine di...", "Come si vede nella figura...". Inserisci SOLO l'URL nell'apposito campo image_url.`
+REGOLE OBBLIGATORIE:
+- Puoi inserire da 0 a ${expectedFigures} token [FIG:n] in totale, distribuiti nelle parti pertinenti.
+- I token vengono numerati a partire da 0 nell'ordine in cui appaiono nel testo.
+- NON usare mai "image_url" o descrizioni testuali tipo "L'immagine mostra…".
+- Se non sei sicuro che ci siano figure visive nelle pagine, NON inserire nessun [FIG:n].
+- Inserisci il token su una riga a sé, non in mezzo a una frase.`
         : "";
 
       const prompt = `Sei un tutor universitario esperto e coinvolgente. Crea una lezione basata ESCLUSIVAMENTE sul materiale fornito.
@@ -184,37 +170,30 @@ ${profileContext}${pageRangeInfo}
 
 IMPORTANTE: Rispondi SOLO con un oggetto JSON valido. NON aggiungere testo prima o dopo il JSON. SOLO JSON puro.
 
-OBIETTIVO: Creare una mini-lezione modulare stile Duolingo su UN SOLO CONCETTO SPECIFICO. La lezione deve essere molto DILUITA e facile da seguire. Ogni parte sarà mostrata come uno step separato a schermo intero.
+OBIETTIVO: Creare una mini-lezione modulare stile Duolingo su UN SOLO CONCETTO SPECIFICO. Ogni parte sarà mostrata come uno step separato a schermo intero.
 
 TITOLO LEZIONE: "${lessons.title}"
 
-REGOLA CRITICA: Questa lezione deve trattare SOLO l'argomento indicato nel titolo. NON aggiungere altri argomenti o concetti non direttamente collegati. Spiega BENE e in PROFONDITÀ questo unico concetto.
+REGOLA CRITICA: Questa lezione deve trattare SOLO l'argomento indicato nel titolo. Spiega BENE e in PROFONDITÀ questo unico concetto.
 
 DIVIETO ASSOLUTO SULLE IMMAGINI:
-- NON scrivere MAI frasi come "L'immagine mostra...", "Qui c'è un'immagine di...", "Come si vede nella figura...", "La tabella illustra...", "Lo schema rappresenta...".
-- Se vuoi riferire un elemento visivo, usa ESCLUSIVAMENTE il campo "image_url" con l'URL esatto dalla lista fornita.
-- Se non hai immagini disponibili, NON inventare descrizioni testuali di figure o tabelle. Spiega il concetto a parole tue senza riferimenti a elementi grafici inesistenti.
+- NON scrivere MAI frasi come "L'immagine mostra...", "Come si vede nella figura...", "La tabella illustra...".
+- Per riferirti a un elemento visivo del PDF, usa SOLO il token [FIG:n] come specificato sotto.
+- NON inventare descrizioni di figure inesistenti.
 
-ISTRUZIONI PER LA SPIEGAZIONE:
-1. Concept: 1-2 frasi che introducono l'argomento in modo accattivante.
-2. Explanation_parts: Un array di 5-8 parti BREVI. REGOLE FONDAMENTALI:
-   - Ogni parte deve avere un titolo chiaro e 2-3 frasi MASSIMO.
-   - CONCENTRATI SOLO sull'argomento del titolo. Non divagare su altri temi.
-   - NON copiare il testo del materiale alla lettera. Rielabora e spiega con parole tue.
-   - Alterna tra spiegazione teorica e esempi pratici/concreti.
-   - Usa analogie, metafore e riferimenti alla vita quotidiana.
-   - Almeno 2 parti devono essere ESEMPI PRATICI (con part_title che inizia con "📌 Esempio:" o "🔍 In pratica:").
-   - Procedi dal semplice al complesso.
-3. Example: 1 esempio finale concreto e applicativo (2-3 frasi).
-4. Exercises: 3-4 esercizi SOLO su questo argomento. Usa SOLO "multiple_choice" e "true_false". Alterna i due tipi.
-${imageInstructions}
+ISTRUZIONI:
+1. Concept: 1-2 frasi accattivanti.
+2. Explanation_parts: 5-8 parti BREVI con titolo chiaro e 2-3 frasi MASSIMO ciascuna. Almeno 2 parti devono essere ESEMPI PRATICI (part_title che inizia con "📌 Esempio:" o "🔍 In pratica:"). Procedi dal semplice al complesso.
+3. Example: 1 esempio finale concreto (2-3 frasi).
+4. Exercises: 3-4 esercizi SOLO "multiple_choice" e "true_false". Alterna i due tipi.
+${figureInstructions}
 
 JSON richiesto:
 {
   "concept": "...",
   "explanation_parts": [
     { "part_title": "Cos'è...", "content": "Spiegazione breve e chiara..." },
-    { "part_title": "📌 Esempio: ...", "content": "Esempio pratico concreto...", "image_url": "https://...", "image_description": "Didascalia immagine" },
+    { "part_title": "📌 Esempio: ...", "content": "Esempio pratico concreto.\\n[FIG:0]" },
     { "part_title": "Come funziona...", "content": "Spiegazione del meccanismo..." },
     { "part_title": "🔍 In pratica: ...", "content": "Applicazione reale..." },
     { "part_title": "Ricapitolando", "content": "Sintesi dei punti chiave..." }
