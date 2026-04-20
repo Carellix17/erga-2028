@@ -10,6 +10,40 @@ function extractJson(raw: string): unknown {
   if (objMatch) { try { return JSON.parse(objMatch[0]); } catch { /* continue */ } }
   const arrMatch = cleaned.match(/\[[\s\S]*\]/);
   if (arrMatch) { try { return JSON.parse(arrMatch[0]); } catch { /* continue */ } }
+
+  // Recover truncated array: find array start, walk through complete top-level objects, close array
+  const arrStart = cleaned.indexOf("[");
+  if (arrStart !== -1) {
+    const items: string[] = [];
+    let i = arrStart + 1;
+    while (i < cleaned.length) {
+      while (i < cleaned.length && /[\s,]/.test(cleaned[i])) i++;
+      if (i >= cleaned.length || cleaned[i] === "]") break;
+      if (cleaned[i] !== "{") { i++; continue; }
+      const objStart = i;
+      let depth = 0, inStr = false, esc = false;
+      for (; i < cleaned.length; i++) {
+        const ch = cleaned[i];
+        if (esc) { esc = false; continue; }
+        if (ch === "\\") { esc = true; continue; }
+        if (ch === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (ch === "{") depth++;
+        else if (ch === "}") { depth--; if (depth === 0) { i++; break; } }
+      }
+      if (depth === 0) {
+        items.push(cleaned.slice(objStart, i));
+      } else {
+        // truncated mid-object → discard
+        break;
+      }
+    }
+    if (items.length > 0) {
+      try { return JSON.parse("[" + items.join(",") + "]"); } catch { /* continue */ }
+    }
+  }
+
+  // Last resort: bracket balancing
   const candidate = (objMatch?.[0] || arrMatch?.[0] || cleaned)
     .replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, "");
   let braces = 0, brackets = 0;
@@ -18,6 +52,8 @@ function extractJson(raw: string): unknown {
   while (brackets > 0) { repaired += "]"; brackets--; }
   while (braces > 0) { repaired += "}"; braces--; }
   try { return JSON.parse(repaired); } catch { /* continue */ }
+  console.error("extractJson failed. Raw (first 500):", raw.substring(0, 500));
+  console.error("Raw (last 500):", raw.substring(Math.max(0, raw.length - 500)));
   throw new Error("Impossibile estrarre JSON dalla risposta AI. Riprova.");
 }
 
