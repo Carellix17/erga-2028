@@ -194,7 +194,7 @@ export function LessonsList({
                       <path
                         d={pathD}
                         fill="none"
-                        stroke="hsl(var(--success))"
+                        stroke={`url(#grad-${modIndex})`}
                         strokeWidth={4}
                         strokeLinecap="round"
                         strokeLinejoin="round"
