@@ -52,3 +52,37 @@ export async function renderPdfPages(
 
   return results;
 }
+
+/**
+ * Renders a specific range of pages from a PDF (downloaded as bytes).
+ * Returns base64-encoded JPEGs (without data: prefix) ready for AI vision.
+ */
+export async function renderPdfPagesRangeAsBase64(
+  pdfBytes: ArrayBuffer | Uint8Array,
+  startPage: number,
+  endPage: number,
+  scale = 1.4,
+): Promise<{ pageNum: number; b64: string }[]> {
+  const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+  const results: { pageNum: number; b64: string }[] = [];
+  const last = Math.min(endPage, pdf.numPages);
+  for (let i = startPage; i <= last; i++) {
+    try {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext("2d")!;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+      const b64 = dataUrl.split(",")[1] || "";
+      results.push({ pageNum: i, b64 });
+      canvas.width = 0;
+      canvas.height = 0;
+    } catch (err) {
+      console.warn(`Failed to render page ${i}:`, err);
+    }
+  }
+  return results;
+}
