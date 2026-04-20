@@ -83,6 +83,7 @@ const Index = () => {
       setSelectedContextId(contextId);
     }
     setRefreshKey(prev => prev + 1);
+    setActiveTab("studio");
   };
 
   const handleSelectFile = (contextId: string) => {
