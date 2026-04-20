@@ -242,7 +242,7 @@ serve(async (req) => {
           id: inserted.id,
           page: det.pageNum,
           bbox: fig,
-          url: `${supabaseUrl}/storage/v1/object/public/study-pdfs/${storagePath}`,
+          url: `${supabaseUrl}/storage/v1/object/public/study-images/${storagePath}`,
           description: fig.description,
         });
       }
