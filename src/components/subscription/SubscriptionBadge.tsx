@@ -12,9 +12,9 @@ const tierConfig = {
   free: {
     icon: Zap,
     label: "Free",
-    gradient: "from-muted to-muted-foreground/20",
-    iconColor: "text-muted-foreground",
-    ring: "ring-outline-variant/30",
+    gradient: "from-primary via-secondary to-tertiary",
+    iconColor: "text-white",
+    ring: "ring-primary/30",
   },
   beta: {
     icon: Sparkles,
