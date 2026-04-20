@@ -209,25 +209,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
       }
 
       if (uploadedFileInfos.length > 0 && latestContextId) {
-        setUploadStatus("Elaborazione PDF...");
-        const maxAttempts = 60;
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-          const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-            body: JSON.stringify({ userId: currentUser, action: "listContexts" }),
-          });
-          const statusData = await statusResponse.json();
-          const context = statusData.contexts?.find((c: { id: string }) => c.id === latestContextId);
-          if (context?.processing_status === "completed") break;
-          if (context?.processing_status === "failed") throw new Error(context.error_message || "Errore durante l'elaborazione del PDF.");
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
-
+        // Skip processing polling — go straight to Studio. Lesson generation
+        // will handle the processing state with its own immersive loader.
         onUpload(uploadedFileInfos, latestContextId);
         setSelectedFiles([]);
         onOpenChange(false);
-        toast({ title: "File caricato! 📄", description: "Ora puoi generare le lezioni dal tab Studio." });
+        toast({ title: "File caricato! 📄", description: "Vai su Studio per generare le lezioni." });
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -298,57 +285,59 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 </div>
               </TabsContent>
 
-              <TabsContent value="upload" className="flex-1 overflow-y-auto space-y-4 mt-0 pb-4">
-                <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")} disabled={isUploading}>
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  Torna a Caricamento
-                </Button>
-                <div
-                  className={cn(
-                    "relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-500",
-                    dragActive ? "border-primary bg-primary-container scale-[1.02] shadow-level-2" : "border-outline-variant hover:border-primary/40 hover:bg-surface-container-low",
-                    isUploading && "pointer-events-none opacity-50"
-                  )}
-                  onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
-                >
-                  <input type="file" accept=".pdf" multiple onChange={handleFileInput} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploading} />
-                  <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2 animate-float">
-                    <FileUp className="w-8 h-8 text-primary-foreground" />
+              <TabsContent value="upload" className="flex-1 flex flex-col min-h-0 mt-0">
+                <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
+                  <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")} disabled={isUploading}>
+                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    Torna a Caricamento
+                  </Button>
+                  <div
+                    className={cn(
+                      "relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-500",
+                      dragActive ? "border-primary bg-primary-container scale-[1.02] shadow-level-2" : "border-outline-variant hover:border-primary/40 hover:bg-surface-container-low",
+                      isUploading && "pointer-events-none opacity-50"
+                    )}
+                    onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
+                  >
+                    <input type="file" accept=".pdf" multiple onChange={handleFileInput} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploading} />
+                    <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2 animate-float">
+                      <FileUp className="w-8 h-8 text-primary-foreground" />
+                    </div>
+                    <p className="font-display font-semibold text-lg mb-1">Trascina qui i tuoi PDF</p>
+                    <p className="body-small text-muted-foreground">oppure tocca per selezionare (max 100MB)</p>
                   </div>
-                  <p className="font-display font-semibold text-lg mb-1">Trascina qui i tuoi PDF</p>
-                  <p className="body-small text-muted-foreground">oppure tocca per selezionare (max 100MB)</p>
+
+                  {selectedFiles.length > 0 && (
+                    <div className="space-y-2 animate-fade-up">
+                      <h3 className="label-medium text-muted-foreground">File selezionati ({selectedFiles.length})</h3>
+                      <div className="space-y-2">
+                        {selectedFiles.map((file, index) => (
+                          <div key={index} className={cn(
+                            "flex items-center gap-3 p-4 rounded-xl transition-all duration-300 animate-scale-in",
+                            file.size > MAX_FILE_SIZE ? "bg-error-container border border-destructive/30" : "bg-secondary-container"
+                          )}>
+                            <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center",
+                              file.size > MAX_FILE_SIZE ? "bg-destructive/20" : "bg-primary-container"
+                            )}>
+                              <FileText className={cn("w-5 h-5", file.size > MAX_FILE_SIZE ? "text-destructive" : "text-primary")} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="body-medium font-medium truncate block">{file.name}</span>
+                              <span className={cn("body-small", file.size > MAX_FILE_SIZE ? "text-destructive" : "text-muted-foreground")}>
+                                {formatFileSize(file.size)}{file.size > MAX_FILE_SIZE && " — Troppo grande!"}
+                              </span>
+                            </div>
+                            <button onClick={() => removeFile(index)} className="p-2 hover:bg-surface-container-highest rounded-lg transition-colors" disabled={isUploading}>
+                              <X className="w-4 h-4 text-muted-foreground" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {selectedFiles.length > 0 && (
-                  <div className="space-y-2 animate-fade-up">
-                    <h3 className="label-medium text-muted-foreground">File selezionati ({selectedFiles.length})</h3>
-                    <div className="space-y-2 max-h-32 overflow-y-auto">
-                      {selectedFiles.map((file, index) => (
-                        <div key={index} className={cn(
-                          "flex items-center gap-3 p-4 rounded-xl transition-all duration-300 animate-scale-in",
-                          file.size > MAX_FILE_SIZE ? "bg-error-container border border-destructive/30" : "bg-secondary-container"
-                        )}>
-                          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center",
-                            file.size > MAX_FILE_SIZE ? "bg-destructive/20" : "bg-primary-container"
-                          )}>
-                            <FileText className={cn("w-5 h-5", file.size > MAX_FILE_SIZE ? "text-destructive" : "text-primary")} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="body-medium font-medium truncate block">{file.name}</span>
-                            <span className={cn("body-small", file.size > MAX_FILE_SIZE ? "text-destructive" : "text-muted-foreground")}>
-                              {formatFileSize(file.size)}{file.size > MAX_FILE_SIZE && " — Troppo grande!"}
-                            </span>
-                          </div>
-                          <button onClick={() => removeFile(index)} className="p-2 hover:bg-surface-container-highest rounded-lg transition-colors" disabled={isUploading}>
-                            <X className="w-4 h-4 text-muted-foreground" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="sticky bottom-0 bg-surface-container-high/95 backdrop-blur-sm pt-3 pb-2 -mx-1 px-1 mt-auto">
+                <div className="shrink-0 bg-surface-container-high pt-3 pb-2 border-t border-outline-variant/40">
                   <Button onClick={handleUpload} disabled={selectedFiles.length === 0 || isUploading} className="w-full h-14 text-base" size="lg">
                     {isUploading ? (
                       <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{uploadStatus || "Caricamento..."}</>
@@ -356,7 +345,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                       <><FileUp className="w-5 h-5 mr-2" />Carica {selectedFiles.length > 1 ? `${selectedFiles.length} file` : "file"}</>
                     ) : ("Seleziona file da caricare")}
                   </Button>
-                  <p className="body-small text-muted-foreground text-center mt-2">📄 Dopo il caricamento potrai generare le lezioni</p>
+                  <p className="body-small text-muted-foreground text-center mt-2">📄 Vai su Studio per generare le lezioni</p>
                 </div>
               </TabsContent>
 
