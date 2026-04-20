@@ -273,7 +273,7 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
           )}
           <div ref={messagesEndRef} />
         </div>
-        <div className="px-3 pb-0 pt-1 space-y-1 flex-shrink-0 -mb-2">
+        <div className="px-3 pb-2 pt-1 space-y-1 flex-shrink-0">
           <QuickActions onAction={(action) => handleSend(action)} />
           <ChatInput onSend={handleSend} disabled={isLoading} />
         </div>
