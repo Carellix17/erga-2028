@@ -163,7 +163,7 @@ serve(async (req) => {
         id: c.id,
         page: c.page_number,
         bbox: c.bbox,
-        url: `${supabaseUrl}/storage/v1/object/public/study-pdfs/${c.storage_path}`,
+        url: `${supabaseUrl}/storage/v1/object/public/study-images/${c.storage_path}`,
         description: c.description || "Figura dal materiale",
       }));
       return successResponse({ figures, cached: true });
@@ -211,7 +211,7 @@ serve(async (req) => {
       const storagePath = `lesson-figures/${lessonId}/page_${det.pageNum}.jpg`;
       const bytes = base64ToBytes(pageBundle.b64);
       const { error: upErr } = await supabase.storage
-        .from("study-pdfs")
+        .from("study-images")
         .upload(storagePath, bytes, { contentType: "image/jpeg", upsert: true });
       if (upErr) {
         console.error(`Upload failed for ${storagePath}:`, upErr);
@@ -242,7 +242,7 @@ serve(async (req) => {
           id: inserted.id,
           page: det.pageNum,
           bbox: fig,
-          url: `${supabaseUrl}/storage/v1/object/public/study-pdfs/${storagePath}`,
+          url: `${supabaseUrl}/storage/v1/object/public/study-images/${storagePath}`,
           description: fig.description,
         });
       }
