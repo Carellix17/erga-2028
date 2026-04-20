@@ -163,7 +163,7 @@ serve(async (req) => {
         id: c.id,
         page: c.page_number,
         bbox: c.bbox,
-        url: `${supabaseUrl}/storage/v1/object/public/study-pdfs/${c.storage_path}`,
+        url: `${supabaseUrl}/storage/v1/object/public/study-images/${c.storage_path}`,
         description: c.description || "Figura dal materiale",
       }));
       return successResponse({ figures, cached: true });
