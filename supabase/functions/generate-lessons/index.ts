@@ -210,7 +210,7 @@ MATERIALE DI STUDIO:
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Nessun testo aggiuntivo. Solo l'oggetto JSON richiesto. Genera 5-8 explanation_parts focalizzate su UN SOLO argomento specifico. Spiega in profondità ma senza divagare. Se ci sono immagini disponibili, almeno una parte deve avere image_url reale e image_description. DIVIETO ASSOLUTO: NON scrivere mai descrizioni testuali di immagini, figure, tabelle o schemi. Se un elemento grafico è rilevante, usa SOLO il campo image_url con l'URL esatto fornito." },
+        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Per riferirti a figure visive del PDF usa SOLO i token [FIG:n]. DIVIETO ASSOLUTO: NON scrivere mai descrizioni testuali di immagini/figure/tabelle. NON usare mai il campo image_url." },
         { role: "user", content: prompt }
       ], 0.15, 6000);
 
@@ -222,7 +222,6 @@ ${studyContent}`;
         ? lessonData.explanation_parts.map((part) => ({ ...(part as Record<string, unknown>) }))
         : [];
 
-      // Strip textual image descriptions from content (hallucinated by AI)
       const imageDescriptionPatterns = [
         /L['']immagine mostra[^.]*\./gi,
         /Qui c['']è (un'?|l['']?)immagine di[^.]*\./gi,
@@ -231,66 +230,17 @@ ${studyContent}`;
         /Nell['']immagine[^.]*\./gi,
         /La figura seguente[^.]*\./gi,
       ];
-      
       const sanitizeContent = (text: string): string => {
         let cleaned = text;
-        for (const pattern of imageDescriptionPatterns) {
-          cleaned = cleaned.replace(pattern, "").trim();
-        }
+        for (const pattern of imageDescriptionPatterns) cleaned = cleaned.replace(pattern, "").trim();
         return cleaned;
       };
 
-      if (imageUrls.length > 0 && explanationParts.length > 0) {
-        const availableUrls = new Set(imageUrls.map((img) => img.url));
-        let hasImage = false;
-
-        explanationParts = explanationParts.map((part) => {
-          // Sanitize content to remove textual image descriptions
-          if (typeof part.content === "string") {
-            part.content = sanitizeContent(part.content);
-          }
-          
-          const imageUrl = typeof part.image_url === "string" && availableUrls.has(part.image_url)
-            ? part.image_url
-            : undefined;
-
-          if (imageUrl) {
-            hasImage = true;
-            return {
-              ...part,
-              image_url: imageUrl,
-              ...(typeof part.image_description === "string" ? { image_description: part.image_description } : {}),
-            };
-          }
-
-          const { image_url: _ignoredImageUrl, ...rest } = part;
-          return rest;
-        });
-
-        if (!hasImage) {
-          const targetIndex = explanationParts.findIndex((part) => typeof part.part_title === "string" && (part.part_title.startsWith("📌") || part.part_title.startsWith("🔍")));
-          const fallbackIndex = targetIndex >= 0 ? targetIndex : 0;
-          explanationParts[fallbackIndex] = {
-            ...explanationParts[fallbackIndex],
-            image_url: imageUrls[0].url,
-            image_description: typeof explanationParts[fallbackIndex].image_description === "string"
-              ? explanationParts[fallbackIndex].image_description
-              : "Figura presente nel materiale di studio",
-          };
-        }
-      } else {
-        // Even without images, sanitize content to remove hallucinated image references
-        explanationParts = explanationParts.map((part) => {
-          if (typeof part.content === "string") {
-            part.content = sanitizeContent(part.content);
-          }
-          return part;
-        });
-      }
-
-      if (lessons.is_generated && (!imageUrls.length || existingHasImageUrl)) {
-        return successResponse({ success: true, lesson: lessons });
-      }
+      explanationParts = explanationParts.map((part) => {
+        if (typeof part.content === "string") part.content = sanitizeContent(part.content);
+        const { image_url: _u, image_description: _d, ...rest } = part as Record<string, unknown>;
+        return rest;
+      });
 
       if (explanationParts.length > 0) {
         explanation = JSON.stringify(explanationParts);
