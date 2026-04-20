@@ -179,6 +179,12 @@ export function LessonsList({
                 {/* Single continuous SVG path — behind everything */}
                 {pathD && (
                   <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${SVG_WIDTH} ${totalH}`} preserveAspectRatio="none" style={{ zIndex: 0 }}>
+                    <defs>
+                      <linearGradient id={`grad-${modIndex}`} x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" className={cn("[stop-color:currentColor]", color.text)} />
+                        <stop offset="100%" className={cn("[stop-color:currentColor]", color.text)} />
+                      </linearGradient>
+                    </defs>
                     {/* Background track (future) */}
                     <path
                       d={pathD}
