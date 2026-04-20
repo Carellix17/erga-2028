@@ -296,7 +296,7 @@ export function LessonsList({
                       {/* Label */}
                       <span className={cn(
                         "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 px-1.5 py-0.5 rounded-md bg-background/90",
-                        isCompleted && "text-success",
+                        isCompleted && cn(color.text, "font-semibold"),
                         isCurrent && cn(color.text, "font-semibold text-xs"),
                         isLocked && "text-muted-foreground/40",
                         !isCurrent && !isCompleted && !isLocked && "text-foreground/70",
