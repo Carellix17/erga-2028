@@ -209,25 +209,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
       }
 
       if (uploadedFileInfos.length > 0 && latestContextId) {
-        setUploadStatus("Elaborazione PDF...");
-        const maxAttempts = 60;
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-          const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-            body: JSON.stringify({ userId: currentUser, action: "listContexts" }),
-          });
-          const statusData = await statusResponse.json();
-          const context = statusData.contexts?.find((c: { id: string }) => c.id === latestContextId);
-          if (context?.processing_status === "completed") break;
-          if (context?.processing_status === "failed") throw new Error(context.error_message || "Errore durante l'elaborazione del PDF.");
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
-
+        // Skip processing polling — go straight to Studio. Lesson generation
+        // will handle the processing state with its own immersive loader.
         onUpload(uploadedFileInfos, latestContextId);
         setSelectedFiles([]);
         onOpenChange(false);
-        toast({ title: "File caricato! 📄", description: "Ora puoi generare le lezioni dal tab Studio." });
+        toast({ title: "File caricato! 📄", description: "Vai su Studio per generare le lezioni." });
       }
     } catch (error) {
       console.error("Upload error:", error);
