@@ -10,29 +10,27 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground duo-pressable rounded-full font-semibold hover:scale-[1.01] active:scale-[1]",
+          "bg-primary text-primary-foreground shadow-level-1 hover:shadow-level-2 hover:scale-[1.03] rounded-full state-layer",
         destructive:
-          "bg-destructive text-destructive-foreground rounded-full font-semibold shadow-level-1 hover:shadow-level-2",
+          "bg-destructive text-destructive-foreground shadow-level-1 hover:shadow-level-2 hover:scale-[1.03] rounded-full state-layer",
         outline:
-          "border-2 border-border bg-background text-foreground hover:bg-muted rounded-full font-semibold",
+          "border border-outline bg-transparent text-primary hover:bg-primary/[0.08] rounded-full",
         secondary:
-          "bg-secondary text-secondary-foreground duo-pressable-success rounded-full font-semibold",
+          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:shadow-level-1 hover:scale-[1.03] rounded-full state-layer",
         ghost:
-          "text-foreground hover:bg-muted rounded-full",
+          "text-foreground hover:bg-foreground/[0.08] rounded-full",
         link:
           "text-primary underline-offset-4 hover:underline",
         tonal:
-          "bg-primary-container text-primary rounded-full font-semibold hover:shadow-level-1",
+          "bg-secondary-container text-secondary-foreground hover:shadow-level-1 hover:scale-[1.03] rounded-full state-layer",
         fab:
-          "bg-primary text-primary-foreground shadow-level-3 hover:shadow-level-4 hover:scale-[1.04] rounded-2xl",
+          "bg-primary-container text-primary shadow-level-3 hover:shadow-level-4 hover:scale-[1.06] rounded-2xl state-layer",
         "fab-secondary":
-          "bg-secondary-container text-secondary shadow-level-3 hover:shadow-level-4 hover:scale-[1.04] rounded-2xl",
+          "bg-secondary-container text-secondary shadow-level-3 hover:shadow-level-4 hover:scale-[1.06] rounded-2xl state-layer",
         "fab-tertiary":
-          "bg-tertiary-container text-tertiary shadow-level-3 hover:shadow-level-4 hover:scale-[1.04] rounded-2xl",
+          "bg-tertiary-container text-tertiary shadow-level-3 hover:shadow-level-4 hover:scale-[1.06] rounded-2xl state-layer",
         elevated:
-          "bg-card text-primary shadow-level-1 hover:shadow-level-2 rounded-full font-semibold",
-        duo:
-          "bg-primary text-primary-foreground duo-pressable rounded-full font-bold tracking-wide uppercase text-sm",
+          "bg-surface-container-low text-primary shadow-level-1 hover:shadow-level-2 hover:scale-[1.03] rounded-full state-layer",
       },
       size: {
         default: "h-11 px-6 rounded-full",

@@ -90,10 +90,10 @@ export default function Login() {
 
       <div className="w-full max-w-sm animate-fade-up relative z-10">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 rounded-[1.75rem] bg-primary flex items-center justify-center mb-4 shadow-level-3">
-            <Sparkles className="w-9 h-9 text-primary-foreground" />
+          <div className="w-20 h-20 rounded-[1.75rem] gradient-primary flex items-center justify-center mb-4 shadow-glass-xl animate-glow-pulse">
+            <Sparkles className="w-9 h-9 text-white" />
           </div>
-          <h1 className="text-3xl font-heading font-bold text-foreground">
+          <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent">
             Erga
           </h1>
           <p className="text-muted-foreground text-sm mt-1">Il tuo assistente di studio</p>

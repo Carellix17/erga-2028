@@ -1,8 +1,6 @@
 import { useState, useCallback, useMemo, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BorderBeam } from "@/components/ui/border-beam";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
@@ -116,16 +114,17 @@ export function FullscreenLesson({
   const handleContinue = useCallback(() => {
     if (isAnimating) return;
     setIsAnimating(true);
-
+    
     if (currentStep < steps.length - 1) {
       const nextStep = steps[currentStep + 1];
       if (nextStep.type === "summary") fireStarBurst();
-
+      
+      // Animate out, then in
       setTimeout(() => {
         setCurrentStep(s => s + 1);
         setCurrentExerciseAnswered(false);
         setIsAnimating(false);
-      }, 200);
+      }, 250);
     } else {
       fireCelebration();
       onComplete();
@@ -150,114 +149,96 @@ export function FullscreenLesson({
   const segments = steps.length;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col">
-      {/* Top bar — Duolingo iOS-clean */}
-      <div className="flex-shrink-0 px-4 pt-3 pb-3" style={{ paddingTop: "max(env(safe-area-inset-top, 12px), 12px)" }}>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onClose}
-            aria-label="Chiudi lezione"
-            className="w-9 h-9 -ml-1.5 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted active:scale-90 transition"
-          >
-            <X className="w-6 h-6" strokeWidth={2.4} />
-          </button>
-
-          {/* Fluid framer-motion progress bar */}
-          <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-primary"
-              initial={false}
-              animate={{ width: `${progress}%` }}
-              transition={{ type: "spring", stiffness: 120, damping: 20 }}
-              style={{
-                boxShadow: "inset 0 -3px 0 0 hsl(var(--primary) / 0.45)",
-              }}
-            />
-          </div>
-
-          {/* Energy / XP counter */}
-          <div className="flex items-center gap-1 px-2.5 h-8 rounded-full bg-warning/10 text-warning font-bold text-sm">
-            <Zap className="w-4 h-4" fill="currentColor" strokeWidth={0} />
-            <span>{xpGained}</span>
-            <AnimatePresence>
-              {showXpFloat && (
-                <motion.span
-                  initial={{ opacity: 1, y: 0 }}
-                  animate={{ opacity: 0, y: -32 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.7 }}
-                  className="absolute mt-[-32px] text-xs font-extrabold text-warning pointer-events-none"
-                >
-                  +10
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </div>
-
-      {/* Content area with Duolingo slide transitions */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col" ref={contentRef}>
-        <div className="flex-1 flex flex-col justify-start max-w-lg mx-auto w-full">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 60 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -60 }}
-              transition={{ type: "spring", stiffness: 260, damping: 28 }}
-            >
-              {step.type === "concept" && <ConceptStep concept={lesson.concept} />}
-              {step.type === "explanation_part" && step.explanationPartIndex !== undefined && (
-                <ExplanationPartStep
-                  part={explanationParts[step.explanationPartIndex]}
-                  partNumber={step.explanationPartIndex + 1}
-                  totalParts={explanationParts.length}
-                />
-              )}
-              {step.type === "example" && lesson.example && <ExampleStep example={lesson.example} />}
-              {step.type === "exercise" && step.exerciseIndex !== undefined && exercises[step.exerciseIndex] && (
-                <ExerciseStep
-                  exercise={exercises[step.exerciseIndex]}
-                  exerciseNumber={step.exerciseIndex + 1}
-                  totalExercises={exercises.length}
-                  onComplete={handleExerciseComplete}
-                  isCompleted={currentExerciseAnswered}
-                />
-              )}
-              {step.type === "summary" && (
-                <SummaryStep correctCount={correctCount} totalExercises={exercises.length} isLastLesson={isLastLesson} xpGained={xpGained} />
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Sticky bottom pill CTA — Duolingo style */}
-      <div
-        className="flex-shrink-0 px-5 pt-3 pb-5 bg-background border-t border-border"
-        style={{ paddingBottom: "max(env(safe-area-inset-bottom, 20px), 20px)" }}
-      >
-        <div className="relative rounded-full overflow-hidden">
-          <Button
-            onClick={handleContinue}
-            disabled={!canContinue}
-            variant="duo"
-            size="lg"
-            className={cn(
-              "relative w-full h-14 text-base shimmer-button",
-              canContinue && step.type !== "exercise" && "animate-pulse-glow"
-            )}
-          >
-            {currentStep === steps.length - 1
-              ? isLastLesson ? "Completa corso" : "Prossima lezione"
-              : step.type === "exercise" && !currentExerciseAnswered
-              ? "Rispondi per continuare"
-              : "Continua"}
-            <ChevronRight className="w-5 h-5 ml-1" />
+    <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
+      {/* Top bar */}
+      <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
+        <div className="flex items-center gap-3 mb-2">
+          <Button variant="ghost" size="icon-sm" onClick={onClose} className="rounded-full -ml-1">
+            <X className="w-5 h-5" />
           </Button>
-          {canContinue && <BorderBeam size={140} duration={4} colorFrom="hsl(var(--primary-glow))" colorTo="hsl(var(--tertiary))" />}
+          
+          {/* Segmented progress bar */}
+          <div className="flex-1 flex gap-0.5 h-2">
+            {Array.from({ length: segments }).map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "flex-1 rounded-full transition-all duration-500 ease-m3-emphasized",
+                  i < currentStep
+                    ? "bg-primary"
+                    : i === currentStep
+                    ? "bg-primary animate-progress-glow"
+                    : "bg-surface-container-highest"
+                )}
+              />
+            ))}
+          </div>
+
+          {/* XP counter */}
+          <div className="relative flex items-center gap-1 label-medium text-warning bg-warning/10 px-2.5 py-1 rounded-full">
+            <Zap className="w-3.5 h-3.5" />
+            <span>{xpGained}</span>
+            {showXpFloat && (
+              <span className="absolute -top-2 right-0 text-xs font-bold text-warning animate-xp-float">
+                +10
+              </span>
+            )}
+          </div>
         </div>
+        <p className="body-small text-muted-foreground text-center">
+          Lezione {lessonNumber} di {totalLessons} · <span className="text-foreground title-small">{lesson.title}</span>
+        </p>
+      </div>
+
+      {/* Content area */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col" ref={contentRef}>
+        <div className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full">
+          <div key={currentStep} className={cn("animate-lesson-in", isAnimating && "animate-lesson-out")}>
+            {step.type === "concept" && <ConceptStep concept={lesson.concept} />}
+            {step.type === "explanation_part" && step.explanationPartIndex !== undefined && (
+              <ExplanationPartStep
+                part={explanationParts[step.explanationPartIndex]}
+                partNumber={step.explanationPartIndex + 1}
+                totalParts={explanationParts.length}
+              />
+            )}
+            {step.type === "example" && lesson.example && <ExampleStep example={lesson.example} />}
+            {step.type === "exercise" && step.exerciseIndex !== undefined && exercises[step.exerciseIndex] && (
+              <ExerciseStep
+                exercise={exercises[step.exerciseIndex]}
+                exerciseNumber={step.exerciseIndex + 1}
+                totalExercises={exercises.length}
+                onComplete={handleExerciseComplete}
+                isCompleted={currentExerciseAnswered}
+              />
+            )}
+            {step.type === "summary" && (
+              <SummaryStep correctCount={correctCount} totalExercises={exercises.length} isLastLesson={isLastLesson} xpGained={xpGained} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom action */}
+      <div className="flex-shrink-0 p-4 pb-8 safe-area-bottom">
+        <Button
+          onClick={handleContinue}
+          disabled={!canContinue}
+          className={cn(
+            "w-full h-14 rounded-2xl text-base font-semibold transition-all duration-300 ease-m3-emphasized",
+            canContinue
+              ? "shadow-level-2 hover:shadow-level-3 active:scale-[0.97]"
+              : "bg-surface-container-highest text-muted-foreground shadow-level-0"
+          )}
+          size="lg"
+        >
+          {currentStep === steps.length - 1
+            ? isLastLesson ? "Completa corso 🎓" : "Prossima lezione"
+            : step.type === "exercise" && !currentExerciseAnswered
+            ? "Rispondi per continuare"
+            : "Continua"}
+          {(canContinue || step.type !== "exercise") && <ChevronRight className="w-5 h-5 ml-1" />}
+        </Button>
       </div>
     </div>
   );
@@ -267,23 +248,17 @@ export function FullscreenLesson({
 
 function ConceptStep({ concept }: { concept: string }) {
   return (
-    <div className="text-center space-y-6 pt-2">
-      <motion.div
-        initial={{ scale: 0.6, opacity: 0, rotate: -8 }}
-        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 220, damping: 14 }}
-        className="relative w-24 h-24 rounded-[28px] mx-auto overflow-hidden items-center justify-center bg-primary shadow-level-3 flex flex-col"
-      >
-        <Lightbulb className="relative z-10 w-12 h-12 text-primary-foreground" fill="currentColor" strokeWidth={0} />
-        <BorderBeam size={120} duration={5} borderWidth={2} />
-      </motion.div>
+    <div className="text-center space-y-6">
+      <div className="w-20 h-20 rounded-3xl bg-primary flex items-center justify-center mx-auto shadow-level-3 animate-bounce-in">
+        <Lightbulb className="w-10 h-10 text-primary-foreground" />
+      </div>
       <div>
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-4">
-          <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary label-medium mb-4">
+          <Star className="w-3.5 h-3.5" />
           Concetto chiave
         </div>
-        <div className="text-2xl font-extrabold leading-snug prose prose-sm max-w-none mx-auto text-foreground prose-strong:text-foreground prose-em:text-foreground prose-p:text-foreground">
-          <ReactMarkdown components={{ p: ({ children }) => <p className="text-2xl font-bold">{children}</p> }}>{concept}</ReactMarkdown>
+        <div className="title-large font-display leading-relaxed prose prose-sm max-w-none mx-auto">
+          <ReactMarkdown>{concept}</ReactMarkdown>
         </div>
       </div>
     </div>
@@ -292,25 +267,29 @@ function ConceptStep({ concept }: { concept: string }) {
 
 function ExplanationPartStep({ part, partNumber, totalParts }: { part: ExplanationPart; partNumber: number; totalParts: number }) {
   const isExample = part.part_title.startsWith("📌") || part.part_title.startsWith("🔍");
-
+  
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 mb-1">
+    <div className="space-y-5">
+      <div className="flex items-center gap-3 mb-2">
         <div className={cn(
-          "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0",
-          isExample ? "bg-tertiary-container text-tertiary" : "bg-primary-container text-primary"
+          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-level-1",
+          isExample ? "bg-tertiary-container" : "bg-secondary-container"
         )}>
-          {isExample ? <span className="text-xl">💡</span> : <BookOpen className="w-6 h-6" strokeWidth={2.2} />}
+          {isExample ? (
+            <span className="text-xl">💡</span>
+          ) : (
+            <BookOpen className={cn("w-6 h-6", isExample ? "text-tertiary" : "text-secondary")} />
+          )}
         </div>
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-bold text-foreground block truncate">{part.part_title}</span>
-          <div className="flex items-center gap-1 mt-1.5">
+        <div className="flex-1">
+          <span className="label-large text-foreground">{part.part_title}</span>
+          <div className="flex items-center gap-1 mt-0.5">
             {Array.from({ length: totalParts }).map((_, i) => (
               <div
                 key={i}
                 className={cn(
                   "h-1 rounded-full flex-1 transition-all duration-300",
-                  i < partNumber ? (isExample ? "bg-tertiary" : "bg-primary") : "bg-muted"
+                  i < partNumber ? (isExample ? "bg-tertiary" : "bg-secondary") : "bg-surface-container-highest"
                 )}
               />
             ))}
@@ -318,22 +297,23 @@ function ExplanationPartStep({ part, partNumber, totalParts }: { part: Explanati
         </div>
       </div>
       <div className={cn(
-        "p-5 spotlight",
-        isExample ? "card-3d-warning" : "card-3d-primary"
+        "p-5 rounded-2xl shadow-level-1",
+        isExample ? "bg-tertiary-container/50 border-l-4 border-tertiary" : "bg-surface-container-low"
       )}>
-        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none prose-strong:text-foreground prose-em:text-foreground/90 prose-p:text-foreground">
+        <div className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90">
           <ReactMarkdown>{part.content}</ReactMarkdown>
         </div>
-
+        
+        {/* Image from source material */}
         {part.image_url && (
           <div className="mt-4">
-            <img
-              src={part.image_url}
-              alt={part.image_description || "Immagine dal materiale"}
-              className="w-full rounded-xl border border-border object-contain max-h-64"
+            <img 
+              src={part.image_url} 
+              alt={part.image_description || "Immagine dal materiale"} 
+              className="w-full rounded-2xl shadow-level-2 object-contain max-h-64"
             />
             {part.image_description && (
-              <p className="text-center text-xs text-muted-foreground mt-2 italic">
+              <p className="text-center body-small text-muted-foreground mt-2 italic">
                 {part.image_description}
               </p>
             )}
@@ -348,13 +328,13 @@ function ExampleStep({ example }: { example: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-success-container flex items-center justify-center text-success">
-          <span className="text-2xl">📖</span>
+        <div className="w-12 h-12 rounded-2xl bg-tertiary-container flex items-center justify-center shadow-level-1">
+          <span className="text-2xl">💡</span>
         </div>
-        <span className="text-sm font-bold text-foreground">Esempio pratico</span>
+        <span className="label-large text-foreground">Esempio pratico</span>
       </div>
-      <div className="p-5 card-3d-success spotlight">
-        <div className="text-base text-foreground leading-relaxed prose prose-sm max-w-none prose-strong:text-foreground prose-em:text-foreground prose-p:text-foreground">
+      <div className="p-5 rounded-2xl bg-tertiary-container/50 border-l-4 border-tertiary shadow-level-1">
+        <div className="body-large text-foreground leading-relaxed prose prose-sm max-w-none">
           <ReactMarkdown>{example}</ReactMarkdown>
         </div>
       </div>
@@ -392,7 +372,7 @@ function ExerciseStep({
           ))}
         </div>
       </div>
-      <div className="p-5 card-3d-tertiary spotlight">
+      <div className="p-5 rounded-2xl bg-surface-container-low shadow-level-1">
         <ExerciseRenderer exercise={exercise} onComplete={onComplete} isCompleted={isCompleted} />
       </div>
     </div>
