@@ -211,7 +211,7 @@ serve(async (req) => {
       const storagePath = `lesson-figures/${lessonId}/page_${det.pageNum}.jpg`;
       const bytes = base64ToBytes(pageBundle.b64);
       const { error: upErr } = await supabase.storage
-        .from("study-pdfs")
+        .from("study-images")
         .upload(storagePath, bytes, { contentType: "image/jpeg", upsert: true });
       if (upErr) {
         console.error(`Upload failed for ${storagePath}:`, upErr);
