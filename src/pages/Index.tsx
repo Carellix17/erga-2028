@@ -119,7 +119,7 @@ const Index = () => {
         hasFiles={hasFiles}
       />
 
-      <main className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-4 sm:px-6 pb-28">
+      <main className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-4 sm:px-6 pb-24">
         {activeTab === "studio" && (
           <StudioView
             key={`studio-${refreshKey}`}
