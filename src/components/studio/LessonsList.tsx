@@ -179,6 +179,12 @@ export function LessonsList({
                 {/* Single continuous SVG path — behind everything */}
                 {pathD && (
                   <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${SVG_WIDTH} ${totalH}`} preserveAspectRatio="none" style={{ zIndex: 0 }}>
+                    <defs>
+                      <linearGradient id={`grad-${modIndex}`} x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" className={cn("[stop-color:currentColor]", color.text)} />
+                        <stop offset="100%" className={cn("[stop-color:currentColor]", color.text)} />
+                      </linearGradient>
+                    </defs>
                     {/* Background track (future) */}
                     <path
                       d={pathD}
@@ -194,7 +200,7 @@ export function LessonsList({
                       <path
                         d={pathD}
                         fill="none"
-                        stroke="hsl(var(--success))"
+                        stroke={`url(#grad-${modIndex})`}
                         strokeWidth={4}
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -256,7 +262,7 @@ export function LessonsList({
                         <span
                           className={cn(
                             "absolute inset-0 flex items-center justify-center transition-all duration-300",
-                            isCompleted && "bg-success shadow-level-2",
+                            isCompleted && cn("bg-gradient-to-br shadow-level-2 opacity-90", color.gradient),
                             isCurrent && cn("bg-gradient-to-br shadow-level-3", color.gradient),
                             !isCurrent && !isCompleted && !isLocked && "bg-surface-container-low shadow-level-1 border-2 border-outline-variant/40",
                             isLocked && "bg-surface-container shadow-level-0 opacity-45",
@@ -290,7 +296,7 @@ export function LessonsList({
                       {/* Label */}
                       <span className={cn(
                         "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 px-1.5 py-0.5 rounded-md bg-background/90",
-                        isCompleted && "text-success",
+                        isCompleted && cn(color.text, "font-semibold"),
                         isCurrent && cn(color.text, "font-semibold text-xs"),
                         isLocked && "text-muted-foreground/40",
                         !isCurrent && !isCompleted && !isLocked && "text-foreground/70",
