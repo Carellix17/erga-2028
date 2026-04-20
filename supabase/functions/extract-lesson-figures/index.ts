@@ -5,20 +5,16 @@ import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_s
 /**
  * Extract figure crops for a single lesson on-demand.
  *
- * Flow:
- * 1. Load lesson + page range (page_start..page_end) from mini_lessons
- * 2. Check lesson_figures cache → if present, return immediately
- * 3. Render only those PDF pages to JPEG (in this Edge Function via pdfjs-serverless)
- * 4. Send pages to Gemini Vision → get bbox of figures (% coordinates)
- * 5. Crop each figure from rendered page (using @cf-wasm/photon? No → use canvas-via-skia not in Deno)
- *    → Strategy: store the FULL page render + bbox metadata; client crops via CSS object-fit
- * 6. Upload page renders to study-pdfs/lesson-figures/<lessonId>/page_<n>.jpg
- * 7. Insert rows in lesson_figures with bbox metadata
+ * Client renders the relevant PDF pages (using pdfjs-dist in browser) and POSTs
+ * them as base64 JPEGs. This function:
+ *   1. Loads lesson + checks cache (lesson_figures table) → return if hit
+ *   2. Sends pages to Gemini Vision → bbox in % coords
+ *   3. Uploads page renders to study-pdfs/lesson-figures/<lessonId>/page_<n>.jpg
+ *   4. Inserts rows in lesson_figures with bbox metadata
+ *   5. Returns figures so client renders crops via CSS object-position/clip
  *
- * Why store the full page + crop client-side:
- * - Avoids needing a wasm image library in Deno Edge runtime (heavy, slow cold start)
- * - The PdfCrop component uses bbox to position with object-position/clip → identical UX
- * - Storage cost is similar (one page can host multiple figures)
+ * We store the FULL page image + bbox (not the actual crop) to avoid needing
+ * a wasm image library in Deno Edge. PdfCrop component crops via CSS.
  */
 
 interface FigureBox {
@@ -29,41 +25,20 @@ interface FigureBox {
   description: string;
 }
 
-async function renderPdfPage(pdfBytes: Uint8Array, pageNum: number): Promise<Uint8Array | null> {
-  try {
-    const pdfjsModule = await import("https://esm.sh/pdfjs-serverless@0.5.1?bundle");
-    const pdfjs = await pdfjsModule.resolvePDFJS();
-    const doc = await pdfjs.getDocument({ data: pdfBytes, useSystemFonts: true }).promise;
-    if (pageNum > doc.numPages || pageNum < 1) return null;
-
-    const page = await doc.getPage(pageNum);
-    const viewport = page.getViewport({ scale: 1.4 });
-
-    // pdfjs-serverless ships with a canvas implementation
-    const { createCanvas } = await import("https://esm.sh/@napi-rs/canvas@0.1.53");
-    const canvas = createCanvas(viewport.width, viewport.height);
-    const ctx = canvas.getContext("2d");
-    // deno-lint-ignore no-explicit-any
-    await page.render({ canvasContext: ctx as any, viewport }).promise;
-    const buf = canvas.toBuffer("image/jpeg", 82);
-    return new Uint8Array(buf);
-  } catch (err) {
-    console.error(`renderPdfPage(${pageNum}) failed:`, err);
-    return null;
-  }
+interface IncomingPage {
+  pageNum: number;
+  b64: string; // raw base64 (no data: prefix)
 }
 
-function uint8ToBase64(bytes: Uint8Array): string {
-  let bin = "";
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    bin += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(bin);
+function base64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
 }
 
 async function detectFigures(
-  pageImages: { pageNum: number; b64: string }[],
+  pageImages: IncomingPage[],
   apiKey: string,
 ): Promise<{ pageNum: number; figures: FigureBox[] }[]> {
   if (pageImages.length === 0) return [];
@@ -154,7 +129,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { lessonId } = body;
+    const { lessonId, pages } = body as { lessonId?: string; pages?: IncomingPage[] };
     if (!lessonId) return errorResponse("lessonId mancante", 400);
 
     const auth = await validateAuth(req, body);
@@ -164,7 +139,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 1. Load lesson
+    // 1. Load lesson (ownership check)
     const { data: lesson, error: lessonErr } = await supabase
       .from("mini_lessons")
       .select("id, user_id, context_id, page_start, page_end, title")
@@ -194,78 +169,50 @@ serve(async (req) => {
       return successResponse({ figures, cached: true });
     }
 
-    // 3. Need PDF + page range
-    if (!lesson.context_id || lesson.page_start == null || lesson.page_end == null) {
-      console.log("Lesson has no page range, returning empty");
-      return successResponse({ figures: [], cached: false });
-    }
-
-    const { data: ctx } = await supabase
-      .from("study_contexts")
-      .select("file_path")
-      .eq("id", lesson.context_id)
-      .maybeSingle();
-
-    if (!ctx?.file_path || !ctx.file_path.toLowerCase().endsWith(".pdf")) {
-      console.log("Context has no PDF file, returning empty");
-      return successResponse({ figures: [], cached: false });
-    }
-
-    // 4. Download PDF
-    const { data: pdfBlob, error: dlErr } = await supabase.storage
-      .from("study-pdfs")
-      .download(ctx.file_path);
-
-    if (dlErr || !pdfBlob) {
-      console.error("PDF download failed:", dlErr);
-      return errorResponse("Impossibile scaricare il PDF", 500);
-    }
-
-    const pdfBytes = new Uint8Array(await pdfBlob.arrayBuffer());
-
-    // 5. Render pages in range (cap at 6 pages to control cost/time)
-    const startPage = Math.max(1, lesson.page_start);
-    const endPage = Math.min(lesson.page_end, startPage + 5);
-    const pageImages: { pageNum: number; b64: string; bytes: Uint8Array }[] = [];
-
-    for (let p = startPage; p <= endPage; p++) {
-      const bytes = await renderPdfPage(pdfBytes, p);
-      if (bytes) {
-        pageImages.push({ pageNum: p, b64: uint8ToBase64(bytes), bytes });
+    // 3. Need pages from client
+    if (!pages || !Array.isArray(pages) || pages.length === 0) {
+      // Tell client to render and resend
+      const startPage = lesson.page_start;
+      const endPage = lesson.page_end;
+      if (startPage == null || endPage == null) {
+        return successResponse({ figures: [], cached: false });
       }
+      return successResponse({
+        figures: [],
+        cached: false,
+        needPages: { startPage, endPage: Math.min(endPage, startPage + 5) },
+      });
     }
 
-    if (pageImages.length === 0) {
-      console.log("No pages rendered");
+    // 4. Detect figures via Vision (cap at 6 pages)
+    const limited = pages.slice(0, 6).filter(p => p && typeof p.pageNum === "number" && typeof p.b64 === "string");
+    if (limited.length === 0) {
       return successResponse({ figures: [], cached: false });
     }
 
-    // 6. Detect figures via Vision
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     if (!lovableKey) return errorResponse("AI non configurato", 500);
 
-    const detection = await detectFigures(
-      pageImages.map(p => ({ pageNum: p.pageNum, b64: p.b64 })),
-      lovableKey,
-    );
+    const detection = await detectFigures(limited, lovableKey);
 
     if (detection.length === 0 || detection.every(d => d.figures.length === 0)) {
       console.log("No figures detected");
       return successResponse({ figures: [], cached: false });
     }
 
-    // 7. Upload pages that have figures + insert rows
+    // 5. Upload pages that have figures + insert rows
     const result: { id: string; page: number; bbox: FigureBox; url: string; description: string }[] = [];
 
     for (const det of detection) {
       if (det.figures.length === 0) continue;
-      const pageBundle = pageImages.find(p => p.pageNum === det.pageNum);
+      const pageBundle = limited.find(p => p.pageNum === det.pageNum);
       if (!pageBundle) continue;
 
       const storagePath = `lesson-figures/${lessonId}/page_${det.pageNum}.jpg`;
+      const bytes = base64ToBytes(pageBundle.b64);
       const { error: upErr } = await supabase.storage
         .from("study-pdfs")
-        .upload(storagePath, pageBundle.bytes, { contentType: "image/jpeg", upsert: true });
+        .upload(storagePath, bytes, { contentType: "image/jpeg", upsert: true });
       if (upErr) {
         console.error(`Upload failed for ${storagePath}:`, upErr);
         continue;
