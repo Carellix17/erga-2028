@@ -5,6 +5,8 @@ import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { fireCelebration, fireStarBurst } from "@/lib/confetti";
+import { PdfCrop } from "./PdfCrop";
+import { useLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
 
 interface ExplanationPart {
   part_title: string;
@@ -93,6 +95,7 @@ export function FullscreenLesson({
 }: FullscreenLessonProps) {
   const explanationParts = useMemo(() => parseExplanationParts(lesson.explanation), [lesson.explanation]);
   const steps = useMemo(() => buildSteps(lesson, explanationParts), [lesson, explanationParts]);
+  const { figures } = useLessonFigures(lesson.id);
   const [currentStep, setCurrentStep] = useState(0);
   const [exerciseResults, setExerciseResults] = useState<Record<number, boolean>>({});
   const [currentExerciseAnswered, setCurrentExerciseAnswered] = useState(false);
@@ -200,6 +203,7 @@ export function FullscreenLesson({
                 part={explanationParts[step.explanationPartIndex]}
                 partNumber={step.explanationPartIndex + 1}
                 totalParts={explanationParts.length}
+                figures={figures}
               />
             )}
             {step.type === "example" && lesson.example && <ExampleStep example={lesson.example} />}
@@ -265,9 +269,26 @@ function ConceptStep({ concept }: { concept: string }) {
   );
 }
 
-function ExplanationPartStep({ part, partNumber, totalParts }: { part: ExplanationPart; partNumber: number; totalParts: number }) {
+function ExplanationPartStep({ part, partNumber, totalParts, figures }: { part: ExplanationPart; partNumber: number; totalParts: number; figures: LessonFigure[] }) {
   const isExample = part.part_title.startsWith("📌") || part.part_title.startsWith("🔍");
-  
+
+  const segments = useMemo(() => {
+    const out: Array<{ type: "text"; value: string } | { type: "fig"; figure: LessonFigure }> = [];
+    const text = part.content || "";
+    const re = /\[FIG:(\d+)\]/g;
+    let last = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) out.push({ type: "text", value: text.slice(last, m.index) });
+      const idx = parseInt(m[1], 10);
+      const fig = figures[idx];
+      if (fig) out.push({ type: "fig", figure: fig });
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) out.push({ type: "text", value: text.slice(last) });
+    return out.length > 0 ? out : [{ type: "text" as const, value: text }];
+  }, [part.content, figures]);
+
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3 mb-2">
@@ -275,50 +296,31 @@ function ExplanationPartStep({ part, partNumber, totalParts }: { part: Explanati
           "w-12 h-12 rounded-2xl flex items-center justify-center shadow-level-1",
           isExample ? "bg-tertiary-container" : "bg-secondary-container"
         )}>
-          {isExample ? (
-            <span className="text-xl">💡</span>
-          ) : (
-            <BookOpen className={cn("w-6 h-6", isExample ? "text-tertiary" : "text-secondary")} />
-          )}
+          {isExample ? <span className="text-xl">💡</span> : <BookOpen className={cn("w-6 h-6", isExample ? "text-tertiary" : "text-secondary")} />}
         </div>
         <div className="flex-1">
           <span className="label-large text-foreground">{part.part_title}</span>
           <div className="flex items-center gap-1 mt-0.5">
             {Array.from({ length: totalParts }).map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "h-1 rounded-full flex-1 transition-all duration-300",
-                  i < partNumber ? (isExample ? "bg-tertiary" : "bg-secondary") : "bg-surface-container-highest"
-                )}
-              />
+              <div key={i} className={cn("h-1 rounded-full flex-1 transition-all duration-300",
+                i < partNumber ? (isExample ? "bg-tertiary" : "bg-secondary") : "bg-surface-container-highest")} />
             ))}
           </div>
         </div>
       </div>
       <div className={cn(
-        "p-5 rounded-2xl shadow-level-1",
+        "p-5 rounded-2xl shadow-level-1 space-y-4",
         isExample ? "bg-tertiary-container/50 border-l-4 border-tertiary" : "bg-surface-container-low"
       )}>
-        <div className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90">
-          <ReactMarkdown>{part.content}</ReactMarkdown>
-        </div>
-        
-        {/* Image from source material */}
-        {part.image_url && (
-          <div className="mt-4">
-            <img 
-              src={part.image_url} 
-              alt={part.image_description || "Immagine dal materiale"} 
-              className="w-full rounded-2xl shadow-level-2 object-contain max-h-64"
-            />
-            {part.image_description && (
-              <p className="text-center body-small text-muted-foreground mt-2 italic">
-                {part.image_description}
-              </p>
-            )}
-          </div>
-        )}
+        {segments.map((seg, i) => seg.type === "text" ? (
+          seg.value.trim() ? (
+            <div key={i} className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90">
+              <ReactMarkdown>{seg.value}</ReactMarkdown>
+            </div>
+          ) : null
+        ) : (
+          <PdfCrop key={i} url={seg.figure.url} bbox={seg.figure.bbox} description={seg.figure.description} />
+        ))}
       </div>
     </div>
   );

@@ -73,6 +73,60 @@ export type Database = {
           },
         ]
       }
+      lesson_figures: {
+        Row: {
+          bbox: Json
+          context_id: string | null
+          created_at: string
+          description: string | null
+          figure_index: number
+          id: string
+          lesson_id: string
+          page_number: number
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          bbox?: Json
+          context_id?: string | null
+          created_at?: string
+          description?: string | null
+          figure_index?: number
+          id?: string
+          lesson_id: string
+          page_number: number
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          bbox?: Json
+          context_id?: string | null
+          created_at?: string
+          description?: string | null
+          figure_index?: number
+          id?: string
+          lesson_id?: string
+          page_number?: number
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_figures_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "study_contexts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_figures_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "mini_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_progress: {
         Row: {
           current_lesson_index: number
