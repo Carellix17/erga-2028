@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Plus, Loader2, Trash2 } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useStudyEventsQuery, useAddStudyEvents, useDeleteStudyEvent, type StudyEvent } from "@/hooks/useStudyEvents";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -18,37 +19,24 @@ import {
 import { cn } from "@/lib/utils";
 
 interface PianoViewProps { hasFiles: boolean; onUploadClick: () => void; }
-interface StudyEvent { id: string; subject: string; title: string; event_date: string; event_time?: string; event_type: "test" | "assignment" | "study"; }
 interface PlanSuggestionData { explanation: string; studySessions: { subject: string; title: string; date: string; time?: string; }[]; }
 
 export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const [showAddSheet, setShowAddSheet] = useState(false);
-  const [events, setEvents] = useState<StudyEvent[]>([]);
   const [suggestion, setSuggestion] = useState<PlanSuggestionData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [eventToDelete, setEventToDelete] = useState<StudyEvent | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
 
-  const fetchEvents = useCallback(async () => {
-    if (!currentUser) return;
-    setIsLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/save-event`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "list" }) });
-      const data = await response.json();
-      if (response.ok && data.events) setEvents(data.events);
-    } catch (error) { console.error("Error fetching events:", error); }
-    finally { setIsLoading(false); }
-  }, [currentUser]);
-
-  useEffect(() => { if (hasFiles) fetchEvents(); }, [hasFiles, fetchEvents]);
+  const eventsQuery = useStudyEventsQuery(hasFiles);
+  const addEvents = useAddStudyEvents();
+  const deleteEvent = useDeleteStudyEvent();
+  const events = eventsQuery.data ?? [];
+  // Loading visivo solo al primo caricamento; tra le tab è istantaneo
+  const isLoading = eventsQuery.isLoading && events.length === 0;
+  const isDeleting = deleteEvent.isPending;
 
   const generatePlan = async () => {
     if (!currentUser) return;
@@ -68,51 +56,37 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   };
 
   const handleAcceptPlan = async () => {
-    if (!suggestion || !currentUser) return;
+    if (!suggestion) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const studyEvents = suggestion.studySessions.map(s => ({ subject: s.subject, title: s.title, date: s.date, time: s.time, type: "study" as const }));
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/save-event`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "add", events: studyEvents }) });
-      if (!response.ok) throw new Error("Errore nel salvataggio del piano");
+      const studyEvents = suggestion.studySessions.map(s => ({
+        subject: s.subject, title: s.title, date: s.date, time: s.time, type: "study" as const,
+      }));
+      await addEvents.mutateAsync(studyEvents);
       toast({ title: "Piano accettato!", description: "Le sessioni di studio sono state aggiunte al tuo calendario." });
-      setSuggestion(null); await fetchEvents();
-    } catch (error) { console.error("Error saving plan:", error);
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel salvataggio", variant: "destructive" }); }
+      setSuggestion(null);
+    } catch (error) {
+      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel salvataggio", variant: "destructive" });
+    }
   };
 
   const handleAddEvent = async (event: { subject: string; title: string; date: string; type: "test" | "assignment"; }) => {
-    if (!currentUser) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/save-event`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "add", events: [event] }) });
-      if (!response.ok) throw new Error("Errore nel salvataggio dell'evento");
+      await addEvents.mutateAsync([event]);
       toast({ title: "Evento aggiunto", description: `${event.title} è stato aggiunto al calendario.` });
-      await fetchEvents();
-    } catch (error) { console.error("Error adding event:", error);
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel salvataggio", variant: "destructive" }); }
+    } catch (error) {
+      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel salvataggio", variant: "destructive" });
+    }
   };
 
   const handleDeleteEvent = async () => {
-    if (!eventToDelete || !currentUser) return;
-    setIsDeleting(true);
+    if (!eventToDelete) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/save-event`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "delete", events: [eventToDelete.id] }) });
-      if (!response.ok) throw new Error("Errore nell'eliminazione dell'evento");
+      await deleteEvent.mutateAsync(eventToDelete.id);
       toast({ title: "Evento eliminato", description: `${eventToDelete.title} è stato rimosso dal calendario.` });
-      setEventToDelete(null); await fetchEvents();
-    } catch (error) { console.error("Error deleting event:", error);
+      setEventToDelete(null);
+    } catch (error) {
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nell'eliminazione", variant: "destructive" });
-    } finally { setIsDeleting(false); }
+    }
   };
 
   const formatDate = (dateString: string) => format(new Date(dateString), "d MMM", { locale: it });
