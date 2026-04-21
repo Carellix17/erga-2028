@@ -7,6 +7,7 @@ import ReactMarkdown from "react-markdown";
 import { fireCelebration, fireStarBurst } from "@/lib/confetti";
 import { PdfCrop } from "./PdfCrop";
 import { useLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
+import { LessonFigureGallery } from "./LessonFigureGallery";
 
 interface ExplanationPart {
   part_title: string;
@@ -38,6 +39,7 @@ interface Step {
   type: StepType;
   exerciseIndex?: number;
   explanationPartIndex?: number;
+  showFiguresFallback?: boolean;
 }
 
 function parseExplanationParts(explanation: string): ExplanationPart[] {
@@ -94,8 +96,38 @@ export function FullscreenLesson({
   lesson, lessonNumber, totalLessons, onClose, onComplete, isLastLesson,
 }: FullscreenLessonProps) {
   const explanationParts = useMemo(() => parseExplanationParts(lesson.explanation), [lesson.explanation]);
-  const steps = useMemo(() => buildSteps(lesson, explanationParts), [lesson, explanationParts]);
   const { figures } = useLessonFigures(lesson.id);
+
+  // Compute which figures are actually referenced via [FIG:N] in the explanation.
+  // Any figure NOT referenced will be shown in a fallback gallery on the summary step.
+  const unreferencedFigures = useMemo(() => {
+    if (!figures || figures.length === 0) return [];
+    const referenced = new Set<number>();
+    const re = /\[FIG:(\d+)\]/g;
+    for (const part of explanationParts) {
+      const text = (part.content || "");
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(text)) !== null) referenced.add(parseInt(m[1], 10));
+    }
+    return figures.filter((_, idx) => !referenced.has(idx));
+  }, [figures, explanationParts]);
+
+  const steps = useMemo(() => {
+    const base = buildSteps(lesson, explanationParts);
+    if (unreferencedFigures.length === 0) return base;
+    // Insert a dedicated figures gallery step right after the last explanation_part,
+    // before example / exercises / summary.
+    const lastExplanationIdx = (() => {
+      for (let i = base.length - 1; i >= 0; i--) {
+        if (base[i].type === "explanation_part") return i;
+      }
+      return 0; // after concept if no explanation parts
+    })();
+    const next = base.slice();
+    next.splice(lastExplanationIdx + 1, 0, { type: "explanation_part", showFiguresFallback: true });
+    return next;
+  }, [lesson, explanationParts, unreferencedFigures.length]);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [exerciseResults, setExerciseResults] = useState<Record<number, boolean>>({});
   const [currentExerciseAnswered, setCurrentExerciseAnswered] = useState(false);
@@ -198,7 +230,16 @@ export function FullscreenLesson({
         <div className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full">
           <div key={currentStep} className={cn("animate-lesson-in", isAnimating && "animate-lesson-out")}>
             {step.type === "concept" && <ConceptStep concept={lesson.concept} />}
-            {step.type === "explanation_part" && step.explanationPartIndex !== undefined && (
+            {step.type === "explanation_part" && step.showFiguresFallback && (
+              <div className="space-y-5">
+                <LessonFigureGallery
+                  figures={unreferencedFigures}
+                  title="Figure dal materiale"
+                  subtitle="Estratte automaticamente dalle pagine del PDF"
+                />
+              </div>
+            )}
+            {step.type === "explanation_part" && step.explanationPartIndex !== undefined && !step.showFiguresFallback && (
               <ExplanationPartStep
                 part={explanationParts[step.explanationPartIndex]}
                 partNumber={step.explanationPartIndex + 1}

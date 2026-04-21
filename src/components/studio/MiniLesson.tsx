@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import { useLessonFigures } from "@/hooks/useLessonFigures";
+import { LessonFigureGallery } from "./LessonFigureGallery";
 
 interface MiniLessonProps {
   lesson: {
@@ -38,6 +40,7 @@ export function MiniLesson({
 
   const exercises = lesson.exercises || [];
   const hasExercises = exercises.length > 0;
+  const { figures } = useLessonFigures(lesson.id);
 
   const handleExerciseComplete = (correct: boolean) => {
     const newResults = [...exerciseResults, correct];
@@ -129,6 +132,13 @@ export function MiniLesson({
                 <span className="text-lg">💡</span> Esempio pratico
               </p>
               <div className="body-large text-foreground leading-relaxed prose prose-sm max-w-none"><ReactMarkdown>{lesson.example}</ReactMarkdown></div>
+            </div>
+          )}
+
+          {/* Figures extracted from the PDF (always visible here, regardless of [FIG:N] markers) */}
+          {figures.length > 0 && (
+            <div className="pt-2">
+              <LessonFigureGallery figures={figures} compact />
             </div>
           )}
         </CardContent>
