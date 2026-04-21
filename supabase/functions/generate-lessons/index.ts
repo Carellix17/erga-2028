@@ -338,7 +338,14 @@ REGOLE:
 4. Segui l'ordine logico del documento.
 5. Ignora indici, bibliografie o note a piè di pagina.
 6. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato.
-7. Per ogni lezione indica anche il numero di pagina iniziale e finale del PDF da cui proviene il contenuto. Usa i numeri di pagina presenti nel testo (es. "Pagina 3", "pag. 5", headers/footers con numeri). Se non riesci a identificare le pagine esatte, stima in base alla posizione nel documento.
+7. MAPPING PAGINE (OBBLIGATORIO E CRITICO):
+   - Il testo è suddiviso in blocchi delimitati da marker "=== PAGINA N ===" che indicano l'inizio della pagina N del PDF originale.
+   - Per OGNI lezione devi indicare "page_start" e "page_end" usando ESATTAMENTE i numeri N che appaiono in questi marker.
+   - "page_start" = numero della prima pagina che contiene contenuto della lezione.
+   - "page_end" = numero dell'ultima pagina che contiene contenuto della lezione (può essere uguale a page_start se sta tutto su una pagina; può estendersi su 2-4 pagine).
+   - DIVIETO ASSOLUTO: NON impostare page_start=1 e page_end=1 per tutte le lezioni. Se lo fai, la richiesta verrà rigettata.
+   - Le pagine devono essere DIVERSE e progressive tra lezioni successive (lezione 2 inizia dove finisce la lezione 1, o poco dopo).
+   - Se davvero non riesci a stimarle, distribuisci le lezioni in modo proporzionale tra pagina 1 e l'ultimo marker presente.
 
 ESEMPIO: Se il materiale parla di "La cellula", NON creare una lezione "La cellula e le sue parti". Crea invece: "La membrana cellulare", "Il nucleo", "I mitocondri", "Il reticolo endoplasmatico", etc.
 

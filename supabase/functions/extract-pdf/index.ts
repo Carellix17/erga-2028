@@ -385,7 +385,10 @@ async function extractTextWithPdfJs(pdfBytes: Uint8Array): Promise<string> {
         .join(" ");
       
       if (pageText.trim()) {
-        pages.push(pageText);
+        // Prefix every page with an explicit marker so downstream LLMs can
+        // map content back to the original PDF page numbers (used for figure
+        // extraction, page_start/page_end in the study plan, etc.).
+        pages.push(`=== PAGINA ${i} ===\n${pageText}`);
       }
     } catch (pageError) {
       console.error(`Error extracting page ${i}:`, pageError);
