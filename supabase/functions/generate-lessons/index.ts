@@ -154,15 +154,17 @@ serve(async (req) => {
 
       const figureInstructions = expectedFigures > 0
         ? `\n\nFIGURE DAL PDF (token speciali):
-Il sistema estrarrà automaticamente le figure reali dalle pagine ${pageStart}-${pageEnd} del PDF.
-Quando vuoi riferirti a una figura, inserisci ESATTAMENTE il token [FIG:0], [FIG:1], ecc. nel campo "content" di una explanation_part — NON descrivere mai a parole l'immagine.
+Il sistema estrarrà automaticamente fino a ${expectedFigures} figure reali (foto, diagrammi, tabelle, schemi, formule, riquadri grafici) dalle pagine ${pageStart}-${pageEnd} del PDF.
 
-REGOLE OBBLIGATORIE:
-- Puoi inserire da 0 a ${expectedFigures} token [FIG:n] in totale, distribuiti nelle parti pertinenti.
-- I token vengono numerati a partire da 0 nell'ordine in cui appaiono nel testo.
-- NON usare mai "image_url" o descrizioni testuali tipo "L'immagine mostra…".
-- Se non sei sicuro che ci siano figure visive nelle pagine, NON inserire nessun [FIG:n].
-- Inserisci il token su una riga a sé, non in mezzo a una frase.`
+REGOLE OBBLIGATORIE PER LE FIGURE:
+1. DEVI inserire ALMENO UN token [FIG:0] in una "explanation_part" pertinente, a meno che le pagine contengano SOLO testo continuo (caso raro).
+2. Puoi usare token da [FIG:0] fino a [FIG:${expectedFigures - 1}], in ordine crescente.
+3. Inserisci il token su una RIGA A SÉ all'interno del campo "content", subito DOPO la frase a cui si riferisce.
+   Esempio:
+     "content": "Il bosco benedettino è strutturato a filari ordinati per ottimizzare la produzione.\\n\\n[FIG:0]\\n\\nQuesta organizzazione…"
+4. NON descrivere mai a parole il contenuto dell'immagine ("L'immagine mostra…", "Come si vede in figura…").
+5. NON usare il campo "image_url".
+6. Se proprio non c'è nessuna figura visiva nelle pagine, ometti tutti i token — verranno mostrate comunque in galleria.`
         : "";
 
       const prompt = `Sei un tutor universitario esperto e coinvolgente. Crea una lezione basata ESCLUSIVAMENTE sul materiale fornito.

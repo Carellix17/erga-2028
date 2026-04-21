@@ -7,6 +7,7 @@ import ReactMarkdown from "react-markdown";
 import { fireCelebration, fireStarBurst } from "@/lib/confetti";
 import { PdfCrop } from "./PdfCrop";
 import { useLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
+import { LessonFigureGallery } from "./LessonFigureGallery";
 
 interface ExplanationPart {
   part_title: string;
@@ -96,6 +97,21 @@ export function FullscreenLesson({
   const explanationParts = useMemo(() => parseExplanationParts(lesson.explanation), [lesson.explanation]);
   const steps = useMemo(() => buildSteps(lesson, explanationParts), [lesson, explanationParts]);
   const { figures } = useLessonFigures(lesson.id);
+
+  // Compute which figures are actually referenced via [FIG:N] in the explanation.
+  // Any figure NOT referenced will be shown in a fallback gallery on the summary step.
+  const unreferencedFigures = useMemo(() => {
+    if (!figures || figures.length === 0) return [];
+    const referenced = new Set<number>();
+    const re = /\[FIG:(\d+)\]/g;
+    for (const part of explanationParts) {
+      const text = (part.content || "");
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(text)) !== null) referenced.add(parseInt(m[1], 10));
+    }
+    return figures.filter((_, idx) => !referenced.has(idx));
+  }, [figures, explanationParts]);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [exerciseResults, setExerciseResults] = useState<Record<number, boolean>>({});
   const [currentExerciseAnswered, setCurrentExerciseAnswered] = useState(false);
