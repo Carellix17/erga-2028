@@ -338,7 +338,14 @@ REGOLE:
 4. Segui l'ordine logico del documento.
 5. Ignora indici, bibliografie o note a piè di pagina.
 6. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato.
-7. Per ogni lezione indica anche il numero di pagina iniziale e finale del PDF da cui proviene il contenuto. Usa i numeri di pagina presenti nel testo (es. "Pagina 3", "pag. 5", headers/footers con numeri). Se non riesci a identificare le pagine esatte, stima in base alla posizione nel documento.
+7. MAPPING PAGINE (OBBLIGATORIO E CRITICO):
+   - Il testo è suddiviso in blocchi delimitati da marker "=== PAGINA N ===" che indicano l'inizio della pagina N del PDF originale.
+   - Per OGNI lezione devi indicare "page_start" e "page_end" usando ESATTAMENTE i numeri N che appaiono in questi marker.
+   - "page_start" = numero della prima pagina che contiene contenuto della lezione.
+   - "page_end" = numero dell'ultima pagina che contiene contenuto della lezione (può essere uguale a page_start se sta tutto su una pagina; può estendersi su 2-4 pagine).
+   - DIVIETO ASSOLUTO: NON impostare page_start=1 e page_end=1 per tutte le lezioni. Se lo fai, la richiesta verrà rigettata.
+   - Le pagine devono essere DIVERSE e progressive tra lezioni successive (lezione 2 inizia dove finisce la lezione 1, o poco dopo).
+   - Se davvero non riesci a stimarle, distribuisci le lezioni in modo proporzionale tra pagina 1 e l'ultimo marker presente.
 
 ESEMPIO: Se il materiale parla di "La cellula", NON creare una lezione "La cellula e le sue parti". Crea invece: "La membrana cellulare", "Il nucleo", "I mitocondri", "Il reticolo endoplasmatico", etc.
 
@@ -369,6 +376,36 @@ ${combinedContent}`;
       .filter((t): t is { title: string; page_start: number | null; page_end: number | null } => !!t && !!t.title);
 
     if (titles.length === 0) throw new Error("Non sono riuscito a creare un indice valido. Riprova.");
+
+    // ── SAFETY NET: auto-fix degenerate page mapping ──
+    // If the LLM returned the same page range for every lesson (typical
+    // failure mode: everything = 1/1), distribute pages proportionally.
+    const pageMarkers = Array.from(combinedContent.matchAll(/=== PAGINA (\d+) ===/g))
+      .map((m) => parseInt(m[1], 10))
+      .filter((n) => !isNaN(n));
+    const maxPdfPage = pageMarkers.length > 0 ? Math.max(...pageMarkers) : 0;
+
+    const uniqueRanges = new Set(
+      titles.map((t) => `${t.page_start ?? "x"}-${t.page_end ?? "x"}`)
+    );
+    const allMissing = titles.every((t) => t.page_start == null || t.page_end == null);
+    const allCollapsed =
+      titles.length > 1 && uniqueRanges.size === 1 && titles[0].page_start != null;
+
+    if ((allMissing || allCollapsed) && maxPdfPage > 1 && titles.length > 0) {
+      console.warn(
+        `⚠️ Page mapping degenerate (${
+          allMissing ? "all missing" : "all collapsed to " + [...uniqueRanges][0]
+        }). Auto-distributing ${titles.length} lessons across ${maxPdfPage} pages.`
+      );
+      const span = Math.max(1, Math.floor(maxPdfPage / titles.length));
+      titles.forEach((t, i) => {
+        const start = Math.min(maxPdfPage, i * span + 1);
+        const end = Math.min(maxPdfPage, i === titles.length - 1 ? maxPdfPage : (i + 1) * span);
+        t.page_start = start;
+        t.page_end = Math.max(start, end);
+      });
+    }
 
     // Delete old lessons for same context
     let deleteQuery = supabase.from("mini_lessons").delete().eq("user_id", userId);
