@@ -377,6 +377,36 @@ ${combinedContent}`;
 
     if (titles.length === 0) throw new Error("Non sono riuscito a creare un indice valido. Riprova.");
 
+    // ── SAFETY NET: auto-fix degenerate page mapping ──
+    // If the LLM returned the same page range for every lesson (typical
+    // failure mode: everything = 1/1), distribute pages proportionally.
+    const pageMarkers = Array.from(combinedContent.matchAll(/=== PAGINA (\d+) ===/g))
+      .map((m) => parseInt(m[1], 10))
+      .filter((n) => !isNaN(n));
+    const maxPdfPage = pageMarkers.length > 0 ? Math.max(...pageMarkers) : 0;
+
+    const uniqueRanges = new Set(
+      titles.map((t) => `${t.page_start ?? "x"}-${t.page_end ?? "x"}`)
+    );
+    const allMissing = titles.every((t) => t.page_start == null || t.page_end == null);
+    const allCollapsed =
+      titles.length > 1 && uniqueRanges.size === 1 && titles[0].page_start != null;
+
+    if ((allMissing || allCollapsed) && maxPdfPage > 1 && titles.length > 0) {
+      console.warn(
+        `⚠️ Page mapping degenerate (${
+          allMissing ? "all missing" : "all collapsed to " + [...uniqueRanges][0]
+        }). Auto-distributing ${titles.length} lessons across ${maxPdfPage} pages.`
+      );
+      const span = Math.max(1, Math.floor(maxPdfPage / titles.length));
+      titles.forEach((t, i) => {
+        const start = Math.min(maxPdfPage, i * span + 1);
+        const end = Math.min(maxPdfPage, i === titles.length - 1 ? maxPdfPage : (i + 1) * span);
+        t.page_start = start;
+        t.page_end = Math.max(start, end);
+      });
+    }
+
     // Delete old lessons for same context
     let deleteQuery = supabase.from("mini_lessons").delete().eq("user_id", userId);
     if (contextId) { deleteQuery = deleteQuery.eq("context_id", contextId); } else { deleteQuery = deleteQuery.is("context_id", null); }
