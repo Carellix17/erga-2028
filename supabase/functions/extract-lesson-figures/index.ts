@@ -156,7 +156,11 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { lessonId, pages } = body as { lessonId?: string; pages?: IncomingPage[] };
+    const { lessonId, pages, crops } = body as {
+      lessonId?: string;
+      pages?: IncomingPage[];
+      crops?: IncomingCrop[];
+    };
     if (!lessonId) return errorResponse("lessonId mancante", 400);
 
     const auth = await validateAuth(req, body);
@@ -175,6 +179,59 @@ serve(async (req) => {
 
     if (lessonErr || !lesson) return errorResponse("Lezione non trovata", 404);
     if (lesson.user_id !== userId) return errorResponse("Non autorizzato", 403);
+
+    // ========================================================================
+    // PHASE 3 — client sent the actually-cropped JPEGs. Upload + DB insert.
+    // ========================================================================
+    if (crops && Array.isArray(crops) && crops.length > 0) {
+      const result: { id: string; page: number; bbox: FigureBox; url: string; description: string }[] = [];
+
+      for (const crop of crops) {
+        if (!crop || typeof crop.b64Crop !== "string" || !crop.bbox) continue;
+        const storagePath = `lesson-figures/${lessonId}/p${crop.pageNum}_f${crop.figureIndex}.jpg`;
+        const bytes = base64ToBytes(crop.b64Crop);
+        const { error: upErr } = await supabase.storage
+          .from("study-images")
+          .upload(storagePath, bytes, { contentType: "image/jpeg", upsert: true });
+        if (upErr) {
+          console.error(`Upload crop failed for ${storagePath}:`, upErr);
+          continue;
+        }
+
+        const { data: inserted, error: insErr } = await supabase
+          .from("lesson_figures")
+          .insert({
+            lesson_id: lessonId,
+            user_id: userId,
+            context_id: lesson.context_id,
+            page_number: crop.pageNum,
+            figure_index: crop.figureIndex,
+            // bbox stored for reference (original % coords on the source page),
+            // but the file at storage_path is ALREADY cropped → PdfCrop will
+            // receive bbox 0/0/100/100 from the URL (see below) so it shows
+            // the file as-is. We override here with full-rect for renderer.
+            bbox: { x: 0, y: 0, width: 100, height: 100, description: crop.description || "" },
+            storage_path: storagePath,
+            description: crop.description || "Figura dal materiale",
+          })
+          .select("id")
+          .single();
+        if (insErr || !inserted) {
+          console.error("Insert lesson_figure failed:", insErr);
+          continue;
+        }
+        result.push({
+          id: inserted.id,
+          page: crop.pageNum,
+          bbox: { x: 0, y: 0, width: 100, height: 100, description: crop.description || "" },
+          url: `${supabaseUrl}/storage/v1/object/public/study-images/${storagePath}`,
+          description: crop.description || "Figura dal materiale",
+        });
+      }
+
+      console.log(`Uploaded ${result.length} cropped figures for lesson ${lessonId}`);
+      return successResponse({ figures: result, cached: false, phase: "uploaded" });
+    }
 
     // 2. Check cache
     const { data: cached } = await supabase
@@ -196,9 +253,10 @@ serve(async (req) => {
       return successResponse({ figures, cached: true });
     }
 
-    // 3. Need pages from client
+    // ========================================================================
+    // PHASE 1 — probe: no pages yet, ask client to render the page range.
+    // ========================================================================
     if (!pages || !Array.isArray(pages) || pages.length === 0) {
-      // Tell client to render and resend
       const startPage = lesson.page_start;
       const endPage = lesson.page_end;
       if (startPage == null || endPage == null) {
@@ -211,7 +269,10 @@ serve(async (req) => {
       });
     }
 
-    // 4. Detect figures via Vision (cap at 6 pages)
+    // ========================================================================
+    // PHASE 2 — detection: client sent full pages. Run Vision and return
+    // the bounding boxes. Client will perform the physical crop and resend.
+    // ========================================================================
     const limited = pages.slice(0, 6).filter(p => p && typeof p.pageNum === "number" && typeof p.b64 === "string");
     if (limited.length === 0) {
       return successResponse({ figures: [], cached: false });
@@ -227,56 +288,26 @@ serve(async (req) => {
       return successResponse({ figures: [], cached: false });
     }
 
-    // 5. Upload pages that have figures + insert rows
-    const result: { id: string; page: number; bbox: FigureBox; url: string; description: string }[] = [];
-
+    // Flatten boxes for the client (no upload yet — client will crop & resend)
+    const detectedBoxes: { pageNum: number; figureIndex: number; bbox: FigureBox; description: string }[] = [];
     for (const det of detection) {
-      if (det.figures.length === 0) continue;
-      const pageBundle = limited.find(p => p.pageNum === det.pageNum);
-      if (!pageBundle) continue;
-
-      const storagePath = `lesson-figures/${lessonId}/page_${det.pageNum}.jpg`;
-      const bytes = base64ToBytes(pageBundle.b64);
-      const { error: upErr } = await supabase.storage
-        .from("study-images")
-        .upload(storagePath, bytes, { contentType: "image/jpeg", upsert: true });
-      if (upErr) {
-        console.error(`Upload failed for ${storagePath}:`, upErr);
-        continue;
-      }
-
-      for (let idx = 0; idx < det.figures.length; idx++) {
-        const fig = det.figures[idx];
-        const { data: inserted, error: insErr } = await supabase
-          .from("lesson_figures")
-          .insert({
-            lesson_id: lessonId,
-            user_id: userId,
-            context_id: lesson.context_id,
-            page_number: det.pageNum,
-            figure_index: idx,
-            bbox: fig,
-            storage_path: storagePath,
-            description: fig.description,
-          })
-          .select("id")
-          .single();
-        if (insErr || !inserted) {
-          console.error("Insert lesson_figure failed:", insErr);
-          continue;
-        }
-        result.push({
-          id: inserted.id,
-          page: det.pageNum,
+      det.figures.forEach((fig, idx) => {
+        detectedBoxes.push({
+          pageNum: det.pageNum,
+          figureIndex: idx,
           bbox: fig,
-          url: `${supabaseUrl}/storage/v1/object/public/study-images/${storagePath}`,
           description: fig.description,
         });
-      }
+      });
     }
 
-    console.log(`Extracted ${result.length} figures for lesson ${lessonId}`);
-    return successResponse({ figures: result, cached: false });
+    console.log(`Detected ${detectedBoxes.length} bounding boxes for lesson ${lessonId}`);
+    return successResponse({
+      figures: [],
+      cached: false,
+      detectedBoxes,
+      phase: "detection",
+    });
   } catch (error) {
     console.error("extract-lesson-figures error:", error);
     return errorResponse(error instanceof Error ? error.message : "Errore");
