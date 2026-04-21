@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { renderPdfPagesRangeAsBase64 } from "@/lib/pdfPageRenderer";
+import { renderPdfPagesRangeAsBase64, renderPdfPageCropAsBase64 } from "@/lib/pdfPageRenderer";
 
 export interface LessonFigure {
   id: string;
@@ -11,14 +11,16 @@ export interface LessonFigure {
 }
 
 /**
- * Loads (and lazily extracts) figure crops for a lesson.
+ * Loads (and lazily extracts) figure crops for a lesson — STRATEGY A.
  *
- * Two-phase flow:
- *  1) Call edge function with just lessonId. If cache hit → return.
- *     Otherwise it returns `needPages: { startPage, endPage }`.
- *  2) Client downloads PDF, renders that page range to JPEG base64,
- *     calls the edge function again with the rendered pages.
- *     Edge function runs Vision, uploads pages, caches in lesson_figures.
+ * Three-phase flow with the edge function:
+ *  1) PROBE: send only lessonId. Cache hit → return. Otherwise we get
+ *     needPages: { startPage, endPage }.
+ *  2) DETECTION: client downloads the PDF, renders the requested page range
+ *     and sends FULL pages to Vision. Edge function returns detectedBoxes.
+ *  3) CROP & UPLOAD: client physically crops each bbox via Canvas (no Deno
+ *     image lib involved!) and uploads the real cropped JPEGs to the edge
+ *     function, which stores them in study-images and inserts the rows.
  */
 export function useLessonFigures(lessonId: string | null | undefined) {
   const [figures, setFigures] = useState<LessonFigure[]>([]);
@@ -48,8 +50,7 @@ export function useLessonFigures(lessonId: string | null | undefined) {
         const needPages = data?.needPages as { startPage: number; endPage: number } | undefined;
 
         if (figs.length === 0 && needPages) {
-          // Phase 2: render pages client-side and resend
-          // Get PDF path from the lesson's context
+          // === Resolve PDF path ===
           const { data: lessonRow } = await supabase
             .from("mini_lessons")
             .select("context_id")
@@ -72,10 +73,11 @@ export function useLessonFigures(lessonId: string | null | undefined) {
             .from("study-pdfs")
             .download(ctx.file_path);
           if (dlErr || !blob) throw dlErr || new Error("PDF download failed");
+          const pdfBytes = new Uint8Array(await blob.arrayBuffer());
 
-          const bytes = new Uint8Array(await blob.arrayBuffer());
+          // === Phase 2: render full pages → Vision detection ===
           const pages = await renderPdfPagesRangeAsBase64(
-            bytes,
+            pdfBytes,
             needPages.startPage,
             needPages.endPage,
           );
@@ -85,13 +87,61 @@ export function useLessonFigures(lessonId: string | null | undefined) {
             return;
           }
 
-          const { data: data2, error: fnErr2 } = await supabase.functions.invoke(
+          const { data: dataDet, error: fnErr2 } = await supabase.functions.invoke(
             "extract-lesson-figures",
             { body: { lessonId, pages } },
           );
           if (cancelled) return;
           if (fnErr2) throw fnErr2;
-          figs = Array.isArray(data2?.figures) ? (data2.figures as LessonFigure[]) : [];
+
+          const detectedBoxes = Array.isArray(dataDet?.detectedBoxes)
+            ? (dataDet.detectedBoxes as {
+                pageNum: number;
+                figureIndex: number;
+                bbox: { x: number; y: number; width: number; height: number };
+                description: string;
+              }[])
+            : [];
+
+          if (detectedBoxes.length === 0) {
+            setFigures([]);
+            return;
+          }
+
+          // === Phase 3: physical crop in browser Canvas ===
+          const crops: {
+            pageNum: number;
+            figureIndex: number;
+            bbox: { x: number; y: number; width: number; height: number };
+            description: string;
+            b64Crop: string;
+          }[] = [];
+
+          for (const det of detectedBoxes) {
+            const b64Crop = await renderPdfPageCropAsBase64(pdfBytes, det.pageNum, det.bbox);
+            if (!b64Crop) continue;
+            crops.push({
+              pageNum: det.pageNum,
+              figureIndex: det.figureIndex,
+              bbox: det.bbox,
+              description: det.description,
+              b64Crop,
+            });
+          }
+          if (cancelled) return;
+          if (crops.length === 0) {
+            setFigures([]);
+            return;
+          }
+
+          // === Send the real crops back for upload + DB persistence ===
+          const { data: dataUp, error: fnErr3 } = await supabase.functions.invoke(
+            "extract-lesson-figures",
+            { body: { lessonId, crops } },
+          );
+          if (cancelled) return;
+          if (fnErr3) throw fnErr3;
+          figs = Array.isArray(dataUp?.figures) ? (dataUp.figures as LessonFigure[]) : [];
         }
 
         setFigures(figs);

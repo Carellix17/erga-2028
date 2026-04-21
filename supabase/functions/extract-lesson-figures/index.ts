@@ -3,18 +3,25 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
 
 /**
- * Extract figure crops for a single lesson on-demand.
+ * Extract figure crops for a single lesson on-demand — STRATEGY A.
  *
- * Client renders the relevant PDF pages (using pdfjs-dist in browser) and POSTs
- * them as base64 JPEGs. This function:
- *   1. Loads lesson + checks cache (lesson_figures table) → return if hit
- *   2. Sends pages to Gemini Vision → bbox in % coords
- *   3. Uploads page renders to study-pdfs/lesson-figures/<lessonId>/page_<n>.jpg
- *   4. Inserts rows in lesson_figures with bbox metadata
- *   5. Returns figures so client renders crops via CSS object-position/clip
- *
- * We store the FULL page image + bbox (not the actual crop) to avoid needing
- * a wasm image library in Deno Edge. PdfCrop component crops via CSS.
+ * Three-phase flow (orchestrated with the client):
+ *   Phase 1 — probe: client sends only { lessonId }.
+ *     - Cache hit on lesson_figures → return figures, done.
+ *     - Otherwise return { needPages: { startPage, endPage } } so the client
+ *       renders those pages via pdfjs-dist in the browser.
+ *   Phase 2 — detection: client sends { lessonId, pages: [{pageNum, b64}] }
+ *     where each b64 is a JPEG of the FULL page.
+ *     - We run Gemini Vision (permissive prompt: photos, diagrams, tables,
+ *       schemes, charts, formulas, framed graphics).
+ *     - Return { detectedBoxes: [{pageNum, bbox, description}] } so the client
+ *       can do the physical crop via Canvas.
+ *   Phase 3 — upload: client sends { lessonId, crops: [{pageNum, figureIndex,
+ *     bbox, description, b64Crop}] } where each b64Crop is the ALREADY
+ *     CROPPED JPEG (just the figure, not the page).
+ *     - We upload each crop to study-images/lesson-figures/<lessonId>/...
+ *     - Insert rows with bbox stored as the original % rect for fullscreen
+ *       highlight, but the URL points to the real cropped file.
  */
 
 interface FigureBox {
@@ -28,6 +35,14 @@ interface FigureBox {
 interface IncomingPage {
   pageNum: number;
   b64: string; // raw base64 (no data: prefix)
+}
+
+interface IncomingCrop {
+  pageNum: number;
+  figureIndex: number;
+  bbox: FigureBox;
+  description?: string;
+  b64Crop: string; // raw base64 of the ALREADY-cropped JPEG
 }
 
 function base64ToBytes(b64: string): Uint8Array {
@@ -58,21 +73,33 @@ async function detectFigures(
         content: [
           {
             type: "text",
-            text: `Analizza queste pagine di un PDF didattico. Identifica SOLO figure visive REALI (foto, diagrammi, grafici, schemi, illustrazioni, tabelle complesse). NON segnalare blocchi di testo, intestazioni o paragrafi.
+            text: `Analizza queste pagine di un libro/PDF didattico e identifica TUTTI gli elementi visivi distinti dal flusso di testo.
 
 ${pageList}
 
-Per ogni figura trovata restituisci un bounding box in PERCENTUALI (0-100) della pagina:
+CONSIDERA "FIGURA" qualsiasi blocco visivo non puramente testuale, inclusi:
+- foto, illustrazioni, disegni, ritratti, mappe
+- diagrammi, schemi, grafici, istogrammi, flowchart, alberi
+- TABELLE (anche semplici)
+- formule matematiche/fisiche/chimiche complesse rese come immagine
+- riquadri grafici, box laterali con bordo, callout, infografiche
+- linee del tempo, cronologie illustrate
+- esempi/codice in box evidenziati
+
+NON considerare figura: paragrafi di testo normale, titoli, sottotitoli, numeri di pagina, header/footer.
+
+Per ogni figura restituisci un bounding box in PERCENTUALI (0-100) della pagina:
 - x, y: angolo in alto a sinistra
 - width, height: dimensioni
-- description: didascalia breve in italiano (max 8 parole)
+- description: didascalia breve in italiano (max 10 parole)
 
-Aggiungi un margine del 3% intorno alla figura per non tagliarla.
+Aggiungi un margine del 2-3% intorno alla figura per non tagliarla, ma NON includere paragrafi di testo adiacenti.
 
 REGOLE:
-- Se una pagina contiene SOLO testo, ritorna figures: [].
-- Massimo 3 figure per pagina (le più rilevanti).
+- Se una pagina è SOLO testo continuo, ritorna figures: [].
+- Massimo 4 figure per pagina (le più rilevanti).
 - Non inventare figure che non vedi.
+- Sii GENEROSO: meglio includere una tabella o un riquadro che escluderlo.
 
 Rispondi SOLO con JSON valido, senza markdown:
 [{"page_index": 0, "figures": [{"x": 12, "y": 30, "width": 70, "height": 40, "description": "Schema della cellula"}]}]`,
@@ -83,7 +110,7 @@ Rispondi SOLO con JSON valido, senza markdown:
           })),
         ],
       }],
-      max_tokens: 2000,
+      max_tokens: 2500,
       temperature: 0.1,
     }),
   });
@@ -129,7 +156,11 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { lessonId, pages } = body as { lessonId?: string; pages?: IncomingPage[] };
+    const { lessonId, pages, crops } = body as {
+      lessonId?: string;
+      pages?: IncomingPage[];
+      crops?: IncomingCrop[];
+    };
     if (!lessonId) return errorResponse("lessonId mancante", 400);
 
     const auth = await validateAuth(req, body);
@@ -148,6 +179,59 @@ serve(async (req) => {
 
     if (lessonErr || !lesson) return errorResponse("Lezione non trovata", 404);
     if (lesson.user_id !== userId) return errorResponse("Non autorizzato", 403);
+
+    // ========================================================================
+    // PHASE 3 — client sent the actually-cropped JPEGs. Upload + DB insert.
+    // ========================================================================
+    if (crops && Array.isArray(crops) && crops.length > 0) {
+      const result: { id: string; page: number; bbox: FigureBox; url: string; description: string }[] = [];
+
+      for (const crop of crops) {
+        if (!crop || typeof crop.b64Crop !== "string" || !crop.bbox) continue;
+        const storagePath = `lesson-figures/${lessonId}/p${crop.pageNum}_f${crop.figureIndex}.jpg`;
+        const bytes = base64ToBytes(crop.b64Crop);
+        const { error: upErr } = await supabase.storage
+          .from("study-images")
+          .upload(storagePath, bytes, { contentType: "image/jpeg", upsert: true });
+        if (upErr) {
+          console.error(`Upload crop failed for ${storagePath}:`, upErr);
+          continue;
+        }
+
+        const { data: inserted, error: insErr } = await supabase
+          .from("lesson_figures")
+          .insert({
+            lesson_id: lessonId,
+            user_id: userId,
+            context_id: lesson.context_id,
+            page_number: crop.pageNum,
+            figure_index: crop.figureIndex,
+            // bbox stored for reference (original % coords on the source page),
+            // but the file at storage_path is ALREADY cropped → PdfCrop will
+            // receive bbox 0/0/100/100 from the URL (see below) so it shows
+            // the file as-is. We override here with full-rect for renderer.
+            bbox: { x: 0, y: 0, width: 100, height: 100, description: crop.description || "" },
+            storage_path: storagePath,
+            description: crop.description || "Figura dal materiale",
+          })
+          .select("id")
+          .single();
+        if (insErr || !inserted) {
+          console.error("Insert lesson_figure failed:", insErr);
+          continue;
+        }
+        result.push({
+          id: inserted.id,
+          page: crop.pageNum,
+          bbox: { x: 0, y: 0, width: 100, height: 100, description: crop.description || "" },
+          url: `${supabaseUrl}/storage/v1/object/public/study-images/${storagePath}`,
+          description: crop.description || "Figura dal materiale",
+        });
+      }
+
+      console.log(`Uploaded ${result.length} cropped figures for lesson ${lessonId}`);
+      return successResponse({ figures: result, cached: false, phase: "uploaded" });
+    }
 
     // 2. Check cache
     const { data: cached } = await supabase
@@ -169,9 +253,10 @@ serve(async (req) => {
       return successResponse({ figures, cached: true });
     }
 
-    // 3. Need pages from client
+    // ========================================================================
+    // PHASE 1 — probe: no pages yet, ask client to render the page range.
+    // ========================================================================
     if (!pages || !Array.isArray(pages) || pages.length === 0) {
-      // Tell client to render and resend
       const startPage = lesson.page_start;
       const endPage = lesson.page_end;
       if (startPage == null || endPage == null) {
@@ -184,7 +269,10 @@ serve(async (req) => {
       });
     }
 
-    // 4. Detect figures via Vision (cap at 6 pages)
+    // ========================================================================
+    // PHASE 2 — detection: client sent full pages. Run Vision and return
+    // the bounding boxes. Client will perform the physical crop and resend.
+    // ========================================================================
     const limited = pages.slice(0, 6).filter(p => p && typeof p.pageNum === "number" && typeof p.b64 === "string");
     if (limited.length === 0) {
       return successResponse({ figures: [], cached: false });
@@ -200,56 +288,26 @@ serve(async (req) => {
       return successResponse({ figures: [], cached: false });
     }
 
-    // 5. Upload pages that have figures + insert rows
-    const result: { id: string; page: number; bbox: FigureBox; url: string; description: string }[] = [];
-
+    // Flatten boxes for the client (no upload yet — client will crop & resend)
+    const detectedBoxes: { pageNum: number; figureIndex: number; bbox: FigureBox; description: string }[] = [];
     for (const det of detection) {
-      if (det.figures.length === 0) continue;
-      const pageBundle = limited.find(p => p.pageNum === det.pageNum);
-      if (!pageBundle) continue;
-
-      const storagePath = `lesson-figures/${lessonId}/page_${det.pageNum}.jpg`;
-      const bytes = base64ToBytes(pageBundle.b64);
-      const { error: upErr } = await supabase.storage
-        .from("study-images")
-        .upload(storagePath, bytes, { contentType: "image/jpeg", upsert: true });
-      if (upErr) {
-        console.error(`Upload failed for ${storagePath}:`, upErr);
-        continue;
-      }
-
-      for (let idx = 0; idx < det.figures.length; idx++) {
-        const fig = det.figures[idx];
-        const { data: inserted, error: insErr } = await supabase
-          .from("lesson_figures")
-          .insert({
-            lesson_id: lessonId,
-            user_id: userId,
-            context_id: lesson.context_id,
-            page_number: det.pageNum,
-            figure_index: idx,
-            bbox: fig,
-            storage_path: storagePath,
-            description: fig.description,
-          })
-          .select("id")
-          .single();
-        if (insErr || !inserted) {
-          console.error("Insert lesson_figure failed:", insErr);
-          continue;
-        }
-        result.push({
-          id: inserted.id,
-          page: det.pageNum,
+      det.figures.forEach((fig, idx) => {
+        detectedBoxes.push({
+          pageNum: det.pageNum,
+          figureIndex: idx,
           bbox: fig,
-          url: `${supabaseUrl}/storage/v1/object/public/study-images/${storagePath}`,
           description: fig.description,
         });
-      }
+      });
     }
 
-    console.log(`Extracted ${result.length} figures for lesson ${lessonId}`);
-    return successResponse({ figures: result, cached: false });
+    console.log(`Detected ${detectedBoxes.length} bounding boxes for lesson ${lessonId}`);
+    return successResponse({
+      figures: [],
+      cached: false,
+      detectedBoxes,
+      phase: "detection",
+    });
   } catch (error) {
     console.error("extract-lesson-figures error:", error);
     return errorResponse(error instanceof Error ? error.message : "Errore");

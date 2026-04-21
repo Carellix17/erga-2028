@@ -64,24 +64,6 @@ export function MiniLesson({
 
   return (
     <div className="space-y-5 animate-fade-up">
-      {/* 🧪 TEST D — Verifica end-to-end pipeline immagini.
-          Se vedi questa immagine, il bucket pubblico study-images,
-          gli URL pubblici Supabase e il rendering <img> nel frontend
-          funzionano correttamente. Rimuovere dopo aver attivato la pipeline reale. */}
-      <figure className="rounded-2xl overflow-hidden border-2 border-dashed border-primary/40 bg-surface-container-low p-3">
-        <img
-          src="https://xtcifacgiyekudoispdk.supabase.co/storage/v1/object/public/study-images/test/erga-test-figure.jpg"
-          alt="Immagine di test pipeline figure Erga"
-          width={1024}
-          height={768}
-          loading="lazy"
-          className="w-full h-auto rounded-xl"
-        />
-        <figcaption className="label-small text-muted-foreground mt-2 text-center">
-          🧪 Test pipeline immagini — bucket study-images → URL pubblico → &lt;img&gt; ✅
-        </figcaption>
-      </figure>
-
       {/* Progress Header */}
       <div className="m3-card-elevated rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">

@@ -86,3 +86,61 @@ export async function renderPdfPagesRangeAsBase64(
   }
   return results;
 }
+
+/**
+ * Crops a region (in % coords 0-100) from a single PDF page using Canvas.
+ * Returns base64 JPEG of ONLY the cropped region (no `data:` prefix).
+ * Strategy A: physical client-side crop — the file uploaded to Storage is the
+ * actual figure, not the whole page.
+ */
+export async function renderPdfPageCropAsBase64(
+  pdfBytes: ArrayBuffer | Uint8Array,
+  pageNum: number,
+  bbox: { x: number; y: number; width: number; height: number },
+  scale = 2.0,
+): Promise<string | null> {
+  try {
+    const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+    if (pageNum < 1 || pageNum > pdf.numPages) return null;
+    const page = await pdf.getPage(pageNum);
+    const viewport = page.getViewport({ scale });
+
+    // 1. Render the full page to an off-screen canvas
+    const fullCanvas = document.createElement("canvas");
+    fullCanvas.width = viewport.width;
+    fullCanvas.height = viewport.height;
+    const fullCtx = fullCanvas.getContext("2d")!;
+    await page.render({ canvasContext: fullCtx, viewport }).promise;
+
+    // 2. Compute crop rect in pixels from % bbox (clamped)
+    const x = Math.max(0, Math.min(100, bbox.x)) / 100 * viewport.width;
+    const y = Math.max(0, Math.min(100, bbox.y)) / 100 * viewport.height;
+    const w = Math.max(1, Math.min(100 - bbox.x, bbox.width)) / 100 * viewport.width;
+    const h = Math.max(1, Math.min(100 - bbox.y, bbox.height)) / 100 * viewport.height;
+
+    // 3. Draw the crop region into a smaller canvas
+    const cropCanvas = document.createElement("canvas");
+    cropCanvas.width = Math.round(w);
+    cropCanvas.height = Math.round(h);
+    const cropCtx = cropCanvas.getContext("2d")!;
+    cropCtx.drawImage(
+      fullCanvas,
+      x, y, w, h,        // source rect
+      0, 0, cropCanvas.width, cropCanvas.height, // dest rect
+    );
+
+    const dataUrl = cropCanvas.toDataURL("image/jpeg", 0.88);
+    const b64 = dataUrl.split(",")[1] || null;
+
+    // Cleanup
+    fullCanvas.width = 0;
+    fullCanvas.height = 0;
+    cropCanvas.width = 0;
+    cropCanvas.height = 0;
+
+    return b64;
+  } catch (err) {
+    console.warn(`Failed to crop page ${pageNum}:`, err);
+    return null;
+  }
+}
