@@ -5,6 +5,7 @@ import { UserMenu } from "./UserMenu";
 import { SubscriptionBadge } from "@/components/subscription/SubscriptionBadge";
 import { SubscriptionSheet } from "@/components/subscription/SubscriptionSheet";
 import { useSubscription } from "@/hooks/useSubscription";
+import { SaveStatusIndicator, SaveStatusDot } from "./SaveStatusIndicator";
 
 interface AppHeaderProps {
   onUploadClick: () => void;
@@ -26,6 +27,8 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
                 Erga
               </span>
             </div>
+            <SaveStatusIndicator />
+            <SaveStatusDot />
           </div>
           
           <div className="flex items-center gap-2.5">

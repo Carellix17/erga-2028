@@ -1,94 +1,76 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { edgeFetch } from "@/lib/edgeFetch";
+import { useTrackedMutation } from "./useTrackedMutation";
 
-async function fetchCloudData<T>(key: string, userId: string): Promise<T | null> {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+export const userDataKey = (userId: string | null, key: string) =>
+  ["user-data", userId, key] as const;
 
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-data`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ action: "get", key, userId }),
-      }
-    );
-    if (!response.ok) return null;
-    const result = await response.json();
-    return result.value ?? null;
-  } catch {
-    return null;
-  }
-}
-
-async function saveCloudData<T>(key: string, value: T, userId: string): Promise<void> {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-    await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-data`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ action: "save", key, value, userId }),
-      }
-    );
-  } catch (e) {
-    console.error("Error saving cloud data:", e);
-  }
-}
-
+/**
+ * Hook KV cloud-backed.
+ * - Cache 5 min via React Query (zero spinner tra le tab dopo il primo fetch).
+ * - Optimistic update istantaneo + retry automatico.
+ * - Stato di salvataggio segnalato all'indicatore globale.
+ * Mantiene l'API pubblica { data, updateData, isLoaded }.
+ */
 export function useUserData<T>(key: string, defaultValue: T) {
   const { isAuthenticated, currentUser } = useAuth();
-  const [data, setData] = useState<T>(defaultValue);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const qc = useQueryClient();
+  const enabled = isAuthenticated && !!currentUser;
 
-  // Load data from cloud on mount/user change
-  useEffect(() => {
-    if (isAuthenticated && currentUser) {
-      setIsLoaded(false);
-      fetchCloudData<T>(key, currentUser).then((cloudValue) => {
-        if (cloudValue !== null) {
-          setData(cloudValue);
-        }
-        setIsLoaded(true);
+  const query = useQuery<T>({
+    queryKey: userDataKey(currentUser, key),
+    queryFn: async () => {
+      const result = await edgeFetch<{ value: T | null }>("user-data", {
+        action: "get",
+        key,
+        userId: currentUser,
       });
-    } else {
-      setData(defaultValue);
-      setIsLoaded(false);
-    }
-  }, [isAuthenticated, currentUser, key]);
+      return (result.value ?? defaultValue) as T;
+    },
+    enabled,
+    initialData: enabled ? undefined : defaultValue,
+  });
+
+  const mutation = useTrackedMutation<unknown, Error, T, { previous: T | undefined }>({
+    mutationFn: async (value: T) => {
+      if (!currentUser) return null;
+      return edgeFetch("user-data", { action: "save", key, value, userId: currentUser });
+    },
+    onMutate: async (next) => {
+      const qk = userDataKey(currentUser, key);
+      await qc.cancelQueries({ queryKey: qk });
+      const previous = qc.getQueryData<T>(qk);
+      qc.setQueryData<T>(qk, next);
+      return { previous };
+    },
+    onError: (_err, _next, ctx) => {
+      if (ctx?.previous !== undefined) {
+        qc.setQueryData(userDataKey(currentUser, key), ctx.previous);
+      }
+    },
+  });
 
   const updateData = useCallback(
     (newData: T | ((prev: T) => T)) => {
-      setData((prev) => {
-        const nextData = typeof newData === "function"
-          ? (newData as (prev: T) => T)(prev)
+      const qk = userDataKey(currentUser, key);
+      const prev = (qc.getQueryData<T>(qk) ?? query.data ?? defaultValue) as T;
+      const next =
+        typeof newData === "function"
+          ? (newData as (p: T) => T)(prev)
           : newData;
-
-        if (isAuthenticated && currentUser) {
-          // Debounce cloud saves to avoid excessive requests
-          if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-          saveTimeoutRef.current = setTimeout(() => {
-            saveCloudData(key, nextData, currentUser);
-          }, 500);
-        }
-
-        return nextData;
-      });
+      // Optimistic update immediato
+      qc.setQueryData<T>(qk, next);
+      if (enabled) mutation.mutate(next);
     },
-    [key, isAuthenticated, currentUser]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentUser, key, enabled, qc, query.data]
   );
 
-  return { data, updateData, isLoaded };
+  return {
+    data: (query.data ?? defaultValue) as T,
+    updateData,
+    isLoaded: query.isFetched || !enabled,
+  };
 }

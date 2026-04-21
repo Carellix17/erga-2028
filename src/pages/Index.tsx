@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { StudioView } from "@/components/studio/StudioView";
@@ -7,8 +7,7 @@ import { PraticaView } from "@/components/pratica/PraticaView";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { UploadSheet } from "@/components/upload/UploadSheet";
 import { useUserData } from "@/hooks/useUserData";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useHasContentQuery, useLessonsCacheControls } from "@/hooks/useLessons";
 import { Loader2 } from "lucide-react";
 
 type Tab = "studio" | "piano" | "pratica" | "profilo";
@@ -22,53 +21,20 @@ interface UploadedFile {
 const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>("studio");
   const [showUpload, setShowUpload] = useState(false);
-  const [hasCloudContent, setHasCloudContent] = useState(false);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const { currentUser } = useAuth();
-  
+
   const { data: uploadedFiles, updateData: setUploadedFiles } = useUserData<UploadedFile[]>(
     "uploaded_files",
     []
   );
 
-  const checkCloudContent = useCallback(async () => {
-    if (!currentUser) {
-      setInitialLoading(false);
-      return;
-    }
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const hasContentQuery = useHasContentQuery();
+  const { invalidateAll, invalidateContexts, invalidateHasContent } = useLessonsCacheControls();
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({ userId: currentUser, action: "hasContent" }),
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setHasCloudContent(data.hasContent || false);
-      }
-    } catch (error) {
-      console.error("Error checking cloud content:", error);
-    } finally {
-      setInitialLoading(false);
-    }
-  }, [currentUser]);
-
-  useEffect(() => {
-    checkCloudContent();
-  }, [checkCloudContent]);
-
+  // Loading iniziale: solo il primo fetch, mai più tra le tab
+  const initialLoading = hasContentQuery.isLoading;
+  const hasCloudContent = hasContentQuery.data ?? false;
   const hasFiles = uploadedFiles.length > 0 || hasCloudContent;
 
   const handleUpload = (files: { name: string; size: number }[], contextId?: string) => {
@@ -78,23 +44,22 @@ const Index = () => {
       uploadedAt: new Date().toISOString(),
     }));
     setUploadedFiles((prev) => [...prev, ...newFiles]);
-    setHasCloudContent(true);
-    if (contextId) {
-      setSelectedContextId(contextId);
-    }
-    setRefreshKey(prev => prev + 1);
+    if (contextId) setSelectedContextId(contextId);
+    // Nuovo file caricato: invalida tutto il dominio lezioni/contesti
+    invalidateAll();
+    invalidateHasContent();
     setActiveTab("studio");
   };
 
   const handleSelectFile = (contextId: string) => {
     setSelectedContextId(contextId);
     setActiveTab("studio");
-    setRefreshKey(prev => prev + 1);
   };
 
   const handleFileDeleted = () => {
-    setRefreshKey(prev => prev + 1);
-    checkCloudContent();
+    invalidateAll();
+    invalidateContexts();
+    invalidateHasContent();
   };
 
   const displayFiles = uploadedFiles.map((f) => ({
@@ -123,7 +88,6 @@ const Index = () => {
       <main className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-4 sm:px-6 pb-24">
         {activeTab === "studio" && (
           <StudioView
-            key={`studio-${refreshKey}`}
             hasFiles={hasFiles}
             onUploadClick={() => setShowUpload(true)}
             selectedContextId={selectedContextId}

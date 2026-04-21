@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { FullscreenLesson } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
 import { LessonsList } from "./LessonsList";
@@ -11,6 +11,13 @@ import { Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  useLessonsQuery,
+  useStudyContextsQuery,
+  useUpdateLessonProgress,
+  useLessonsCacheControls,
+  type Lesson,
+} from "@/hooks/useLessons";
 
 interface StudioViewProps {
   hasFiles: boolean;
@@ -20,22 +27,8 @@ interface StudioViewProps {
   onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
-interface Lesson {
-  id: string;
-  title: string;
-  concept: string;
-  explanation: string;
-  example?: string;
-  exercises?: Exercise[];
-  is_generated: boolean;
-  lesson_order: number;
-  context_id?: string;
-}
-
 export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClearContext, onFullscreenChange }: StudioViewProps) {
-  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingLesson, setIsGeneratingLesson] = useState(false);
   const [generationStep, setGenerationStep] = useState<"analyzing" | "creating-index" | "generating-lessons" | "complete">("analyzing");
@@ -43,62 +36,65 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const [generationTotalLessons, setGenerationTotalLessons] = useState(0);
   const [showList, setShowList] = useState(true);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
-  const [contextFileName, setContextFileName] = useState<string | null>(null);
   const [activeContextId, setActiveContextId] = useState<string | null>(null);
   const [showFinalTest, setShowFinalTest] = useState(false);
   const [finalTestExercises, setFinalTestExercises] = useState<Exercise[]>([]);
   const [isLoadingFinalTest, setIsLoadingFinalTest] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
-  const [contextStatus, setContextStatus] = useState<string | null>(null);
-  const [allContexts, setAllContexts] = useState<{ id: string; file_name: string; processing_status?: string | null }[]>([]);
 
+  // === React Query: contesti + lezioni cached (5 min) ===
+  const contextsQuery = useStudyContextsQuery();
+  const allContexts = contextsQuery.data ?? [];
+
+  // Determina contextId effettivo
   useEffect(() => {
     if (selectedContextId) setActiveContextId(selectedContextId);
   }, [selectedContextId]);
 
-  const fetchLessons = useCallback(async () => {
-    if (!currentUser || !hasFiles) return;
-    setIsLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const contextsResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "listContexts" }) }
-      );
-      const contextsData = await contextsResponse.json();
-      const contexts = (contextsData.contexts || []) as { id: string; file_name: string; processing_status?: string | null }[];
-      setAllContexts(contexts);
-      const availableContextIds = new Set(contexts.map((c) => c.id));
-      const latestContext = contexts[0] || null;
-      let effectiveContextId = selectedContextId && availableContextIds.has(selectedContextId) ? selectedContextId : null;
-      if (!effectiveContextId && activeContextId && availableContextIds.has(activeContextId)) effectiveContextId = activeContextId;
-      if (!effectiveContextId && latestContext) effectiveContextId = latestContext.id;
-      if (contexts.length > 0 && !effectiveContextId && selectedContextId) onClearContext?.();
-      if (contexts.length > 0) {
-        const ctx = effectiveContextId ? contexts.find((c) => c.id === effectiveContextId) : contexts[0];
-        if (ctx) { setContextFileName(ctx.file_name || null); setContextStatus(ctx.processing_status || null);
-          if (!selectedContextId && ctx.id !== activeContextId) setActiveContextId(ctx.id); }
-      } else { setContextFileName(null); setContextStatus(null); setActiveContextId(null); setLessons([]); }
-      const body: Record<string, unknown> = { userId: currentUser, action: "get" };
-      if (effectiveContextId) body.contextId = effectiveContextId;
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify(body) }
-      );
-      const data = await response.json();
-      if (response.ok && data.lessons) { setLessons(data.lessons); setCurrentLessonIndex(data.currentIndex || 0); }
-    } catch (error) { console.error("Error fetching lessons:", error); }
-    finally { setIsLoading(false); }
-  }, [currentUser, hasFiles, selectedContextId, activeContextId, onClearContext]);
+  useEffect(() => {
+    if (allContexts.length === 0) return;
+    const availableIds = new Set(allContexts.map((c) => c.id));
+    if (selectedContextId && !availableIds.has(selectedContextId)) {
+      onClearContext?.();
+    }
+    if (!selectedContextId && (!activeContextId || !availableIds.has(activeContextId))) {
+      setActiveContextId(allContexts[0].id);
+    }
+  }, [allContexts, selectedContextId, activeContextId, onClearContext]);
 
-  useEffect(() => { fetchLessons(); }, [fetchLessons]);
+  const effectiveContextId =
+    (selectedContextId && allContexts.some((c) => c.id === selectedContextId) && selectedContextId) ||
+    (activeContextId && allContexts.some((c) => c.id === activeContextId) && activeContextId) ||
+    allContexts[0]?.id ||
+    null;
+
+  const activeContext = allContexts.find((c) => c.id === effectiveContextId) || null;
+  const contextFileName = activeContext?.file_name || null;
+  const contextStatus = activeContext?.processing_status || null;
+
+  const lessonsQuery = useLessonsQuery(effectiveContextId);
+  const lessons: Lesson[] = lessonsQuery.data?.lessons ?? [];
+  const cachedCurrentIndex = lessonsQuery.data?.currentIndex ?? 0;
+  const updateProgress = useUpdateLessonProgress(effectiveContextId);
+  const { invalidateList, invalidateContexts, setLessonsList } = useLessonsCacheControls();
+
+  // Sincronizza l'indice corrente con quello del cloud al primo load di un context
+  useEffect(() => {
+    setCurrentLessonIndex(cachedCurrentIndex);
+  }, [effectiveContextId, cachedCurrentIndex]);
+
+  // Spinner SOLO al primo fetch (nessuna cache disponibile)
+  const isLoading = hasFiles && lessonsQuery.isLoading && lessons.length === 0;
+
   useEffect(() => { if (lessons.length === 0) return; setCurrentLessonIndex((idx) => { if (idx < 0) return 0; if (idx > lessons.length - 1) return lessons.length - 1; return idx; }); }, [lessons.length]);
-  useEffect(() => { if (lessons.length === 0) return; const lesson = lessons[currentLessonIndex]; if (!lesson || lesson.is_generated || isGeneratingLesson || isGenerating) return; generateLessonContent(currentLessonIndex); }, [currentLessonIndex, lessons, isGeneratingLesson, isGenerating]);
+  useEffect(() => { if (lessons.length === 0) return; const lesson = lessons[currentLessonIndex]; if (!lesson || lesson.is_generated || isGeneratingLesson || isGenerating) return; generateLessonContent(currentLessonIndex); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [currentLessonIndex, lessons, isGeneratingLesson, isGenerating]);
   useEffect(() => { onFullscreenChange?.(activeLessonIndex !== null || showFinalTest); }, [activeLessonIndex, showFinalTest, onFullscreenChange]);
+
+  const refetchLessons = async () => {
+    invalidateContexts();
+    invalidateList(effectiveContextId);
+  };
 
   const handleGenerateLessons = async () => {
     if (!currentUser) return;
@@ -134,7 +130,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       setGenerationStep("complete");
       toast({ title: "Percorso creato!", description: `Creato un percorso con ${data.lessonsCount} mini-lezioni.` });
       await new Promise(r => setTimeout(r, 1000));
-      await fetchLessons();
+      await refetchLessons();
     } catch (error) { console.error("Error generating lessons:", error);
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella generazione", variant: "destructive" });
     } finally { setIsGenerating(false); setGenerationStep("analyzing"); }
@@ -153,7 +149,15 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` }, body: JSON.stringify(body) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Errore nella generazione");
-      if (data.lesson) setLessons(prev => prev.map(l => l.lesson_order === lessonIndex ? data.lesson : l));
+      if (data.lesson) {
+        setLessonsList(effectiveContextId, (prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            lessons: prev.lessons.map((l) => (l.lesson_order === lessonIndex ? data.lesson : l)),
+          };
+        });
+      }
       return data.lesson;
     } catch (error) { console.error("Error generating lesson:", error);
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella generazione", variant: "destructive" }); return null;
@@ -167,13 +171,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       if (!nextLesson) return;
       if (!nextLesson.is_generated) await generateLessonContent(newIndex);
       setCurrentLessonIndex(newIndex);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`,
-          { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-            body: JSON.stringify({ userId: currentUser, action: "updateProgress", lessonIndex: newIndex }) });
-      } catch (error) { console.error("Error updating progress:", error); }
+      updateProgress.mutate(newIndex);
     } else { handleStartFinalTest(); }
   };
 
@@ -201,13 +199,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     if (!selectedLesson) return;
     if (!selectedLesson.is_generated) await generateLessonContent(index);
     setCurrentLessonIndex(index); setShowList(false);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "updateProgress", lessonIndex: index }) });
-    } catch (error) { console.error("Error updating progress:", error); }
+    updateProgress.mutate(index);
   };
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
@@ -271,7 +263,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         </div>
         
         {isPdfProcessing ? (
-          <Button onClick={fetchLessons} variant="outline" className="h-12 px-6">
+          <Button onClick={refetchLessons} variant="outline" className="h-12 px-6">
             <RefreshCw className="w-4 h-4 mr-2" />
             Aggiorna stato
           </Button>
@@ -294,7 +286,6 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const handleSelectCourse = (contextId: string) => {
     setActiveContextId(contextId);
     setActiveLessonIndex(null);
-    setLessons([]);
     setCurrentLessonIndex(0);
   };
 
@@ -314,13 +305,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           if (!lesson) return;
           if (!lesson.is_generated) await generateLessonContent(index);
           setActiveLessonIndex(index);
-          try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-            await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`,
-              { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-                body: JSON.stringify({ userId: currentUser, action: "updateProgress", lessonIndex: index }) });
-          } catch (error) { console.error("Error updating progress:", error); }
+          updateProgress.mutate(index);
         }}
         onBack={() => {}}
         isGenerating={isGeneratingLesson}
@@ -342,14 +327,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
             const nextIndex = activeLessonIndex < lessons.length - 1 ? activeLessonIndex + 1 : activeLessonIndex;
             setCurrentLessonIndex(nextIndex);
             setActiveLessonIndex(null);
-            // Update progress in background
-            supabase.auth.getSession().then(({ data: { session } }) => {
-              const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-              fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
-                method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-                body: JSON.stringify({ userId: currentUser, action: "updateProgress", lessonIndex: nextIndex })
-              }).catch(err => console.error("Error updating progress:", err));
-            });
+            updateProgress.mutate(nextIndex);
           }}
           isLastLesson={activeLessonIndex === lessons.length - 1}
         />
