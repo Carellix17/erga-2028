@@ -115,22 +115,6 @@ export function LessonsList({
 
   return (
     <div className="pb-32 animate-fade-in">
-      {/* 🧪 TEST D — Banner diagnostico pipeline immagini.
-          Verifica end-to-end: bucket study-images → URL pubblico → <img>.
-          Visibile nella vista Studio (lista lezioni). Rimuovere dopo la conferma. */}
-      <figure className="mx-4 mb-6 rounded-2xl overflow-hidden border-2 border-dashed border-primary/40 bg-surface-container-low p-3">
-        <img
-          src="https://xtcifacgiyekudoispdk.supabase.co/storage/v1/object/public/study-images/test/erga-test-figure.jpg"
-          alt="Immagine di test pipeline figure Erga"
-          width={1024}
-          height={768}
-          loading="lazy"
-          className="w-full h-auto rounded-xl"
-        />
-        <figcaption className="label-small text-muted-foreground mt-2 text-center">
-          🧪 TEST IMAGE — bucket study-images → URL pubblico → &lt;img&gt; ✅
-        </figcaption>
-      </figure>
       {/* Header */}
       <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-xl border-b border-outline-variant/30 px-4 pt-4 pb-3">
         <div className="flex items-center gap-3 mb-3">
