@@ -1,60 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Trash2, FileText, BookOpen, Loader2, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useFileContextsQuery, useDeleteFileContext, type FileContext } from "@/hooks/useFileContexts";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface StudyContext { id: string; file_name: string; created_at: string; lesson_count: number; }
 interface FileManagerProps { onFileDeleted: () => void; onSelectFile: (contextId: string) => void; }
 
 export function FileManager({ onFileDeleted, onSelectFile }: FileManagerProps) {
-  const [contexts, setContexts] = useState<StudyContext[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [deleteTarget, setDeleteTarget] = useState<StudyContext | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { currentUser } = useAuth();
+  const [deleteTarget, setDeleteTarget] = useState<FileContext | null>(null);
   const { toast } = useToast();
-
-  const fetchContexts = async () => {
-    if (!currentUser) return;
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-context`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "list" }) });
-      const data = await response.json();
-      if (response.ok && data.contexts) setContexts(data.contexts);
-    } catch (error) { console.error("Error fetching contexts:", error); }
-    finally { setIsLoading(false); }
-  };
-
-  useEffect(() => { fetchContexts(); }, [currentUser]);
+  const { data: contexts = [], isLoading } = useFileContextsQuery();
+  const deleteMutation = useDeleteFileContext();
 
   const handleDelete = async () => {
-    if (!deleteTarget || !currentUser) return;
-    setIsDeleting(true);
+    if (!deleteTarget) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-context`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, contextId: deleteTarget.id, action: "delete" }) });
-      const data = await response.json();
-      if (response.ok) {
-        toast({ title: "File eliminato", description: `"${deleteTarget.file_name}" è stato rimosso insieme alle sue lezioni.` });
-        setContexts(prev => prev.filter(c => c.id !== deleteTarget.id)); onFileDeleted();
-      } else throw new Error(data.error || "Errore nell'eliminazione");
-    } catch (error) { toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nell'eliminazione", variant: "destructive" }); }
-    finally { setIsDeleting(false); setDeleteTarget(null); }
+      await deleteMutation.mutateAsync(deleteTarget.id);
+      toast({ title: "File eliminato", description: `"${deleteTarget.file_name}" è stato rimosso insieme alle sue lezioni.` });
+      onFileDeleted();
+    } catch (error) {
+      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nell'eliminazione", variant: "destructive" });
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
-  if (isLoading) return (
+  const isDeleting = deleteMutation.isPending;
+
+  if (isLoading && contexts.length === 0) return (
     <div className="flex items-center justify-center p-8">
       <Loader2 className="w-6 h-6 animate-spin text-primary" />
     </div>
