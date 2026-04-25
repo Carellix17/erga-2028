@@ -163,14 +163,15 @@ serve(async (req) => {
 Il sistema estrarrà automaticamente fino a ${expectedFigures} figure reali (foto, diagrammi, tabelle, schemi, formule, riquadri grafici) dalle pagine ${pageStart}-${pageEnd} del PDF.
 
 REGOLE OBBLIGATORIE PER LE FIGURE:
-1. DEVI inserire ALMENO UN token [FIG:0] in una "explanation_part" pertinente, a meno che le pagine contengano SOLO testo continuo (caso raro).
-2. Puoi usare token da [FIG:0] fino a [FIG:${expectedFigures - 1}], in ordine crescente.
-3. Inserisci il token su una RIGA A SÉ all'interno del campo "content", subito DOPO la frase a cui si riferisce.
-   Esempio:
-     "content": "Il bosco benedettino è strutturato a filari ordinati per ottimizzare la produzione.\\n\\n[FIG:0]\\n\\nQuesta organizzazione…"
-4. NON descrivere mai a parole il contenuto dell'immagine ("L'immagine mostra…", "Come si vede in figura…").
-5. NON usare il campo "image_url".
-6. Se proprio non c'è nessuna figura visiva nelle pagine, ometti tutti i token — verranno mostrate comunque in galleria.`
+1. UNICITÀ ASSOLUTA: ogni token [FIG:N] deve apparire UNA SOLA VOLTA in tutta la lezione. MAI ripetere lo stesso indice in più parti.
+2. DISTRIBUZIONE: se inserisci più figure, mettile in "explanation_parts" DIVERSE, distanziate fra loro (es. una alla parte 2 e una alla parte 4). MAI tutte nella stessa parte, MAI tutte all'inizio o tutte in fondo.
+3. PERTINENZA RIGOROSA: inserisci [FIG:N] SOLO se la frase immediatamente precedente parla davvero di ciò che la figura raffigura. Se non c'è un nesso logico chiaro col paragrafo, OMETTI il token — meglio nessuna figura che una figura fuori contesto.
+4. Indici da usare: solo da [FIG:0] a [FIG:${expectedFigures - 1}], in ordine crescente, senza saltare numeri intermedi.
+5. Posizionamento: token su una RIGA A SÉ dentro il "content", subito DOPO la frase pertinente.
+   Esempio: "content": "Il bosco benedettino è strutturato a filari ordinati.\\n\\n[FIG:0]\\n\\nQuesta organizzazione…"
+6. NON descrivere mai a parole il contenuto dell'immagine ("L'immagine mostra…", "Come si vede in figura…").
+7. NON usare il campo "image_url".
+8. Se nessuna figura è davvero pertinente al testo della lezione, ometti TUTTI i token. Le figure resteranno comunque accessibili altrove.`
         : "";
 
       const prompt = `Sei un tutor universitario esperto e coinvolgente. Crea una lezione basata ESCLUSIVAMENTE sul materiale fornito.
@@ -248,6 +249,23 @@ ${studyContent}`;
         if (typeof part.content === "string") part.content = sanitizeContent(part.content);
         const { image_url: _u, image_description: _d, ...rest } = part as Record<string, unknown>;
         return rest;
+      });
+
+      // Enforce uniqueness of [FIG:N] markers across the lesson:
+      // keep only the FIRST occurrence of each index, strip the rest.
+      const seenFigs = new Set<number>();
+      explanationParts = explanationParts.map((part) => {
+        if (typeof part.content !== "string") return part;
+        let content = part.content as string;
+        content = content.replace(/\[FIG:(\d+)\]/g, (full, n) => {
+          const idx = parseInt(n, 10);
+          if (seenFigs.has(idx)) return ""; // duplicate → drop
+          seenFigs.add(idx);
+          return full;
+        });
+        // Tidy leftover blank lines from removed markers
+        content = content.replace(/\n{3,}/g, "\n\n").trim();
+        return { ...part, content };
       });
 
       if (explanationParts.length > 0) {
