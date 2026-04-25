@@ -497,7 +497,7 @@ REGOLE OBBLIGATORIE:
     };
 
   const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
-  let data: Record<string, unknown> | null = null;
+  let data: { candidates?: { content?: { parts?: { text?: string }[] } }[] } | null = null;
   for (const model of models) {
     for (let attempt = 0; attempt < 3; attempt++) {
       const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
