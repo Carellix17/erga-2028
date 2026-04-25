@@ -257,6 +257,12 @@ serve(async (req) => {
         }
 
         if (!extractedText || extractedText.length < 50) {
+          console.warn("PDF text layer is empty, trying Gemini PDF vision fallback");
+          extractedText = await extractTextWithGeminiPdfVision(pdfBytes);
+          console.log(`Extracted with Gemini PDF vision: ${extractedText.length} characters`);
+        }
+
+        if (!extractedText || extractedText.length < 50) {
           throw new Error("INSUFFICIENT_TEXT");
         }
 
