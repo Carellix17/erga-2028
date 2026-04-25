@@ -119,7 +119,10 @@ export function useLessonFigures(lessonId: string | null | undefined) {
 
           for (const det of detectedBoxes) {
             const b64Crop = await renderPdfPageCropAsBase64(pdfBytes, det.pageNum, det.bbox);
-            if (!b64Crop) continue;
+             if (!b64Crop) {
+               console.warn("Figure crop failed", { lessonId, pageNum: det.pageNum, bbox: det.bbox });
+               continue;
+             }
             crops.push({
               pageNum: det.pageNum,
               figureIndex: det.figureIndex,
@@ -130,6 +133,7 @@ export function useLessonFigures(lessonId: string | null | undefined) {
           }
           if (cancelled) return;
           if (crops.length === 0) {
+             setError("Figure rilevate, ma ritaglio non riuscito");
             setFigures([]);
             return;
           }

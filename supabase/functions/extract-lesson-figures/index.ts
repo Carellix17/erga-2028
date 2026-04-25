@@ -35,6 +35,8 @@ interface FigureBox {
 interface IncomingPage {
   pageNum: number;
   b64: string; // raw base64 (no data: prefix)
+  width?: number;
+  height?: number;
 }
 
 interface IncomingCrop {
@@ -50,6 +52,32 @@ function base64ToBytes(b64: string): Uint8Array {
   const out = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
+}
+
+function normalizeBox(box: FigureBox, page?: IncomingPage): FigureBox | null {
+  const pageWidth = page?.width || 0;
+  const pageHeight = page?.height || 0;
+  const looksLikePixels = box.x > 100 || box.y > 100 || box.width > 100 || box.height > 100;
+
+  let x = box.x;
+  let y = box.y;
+  let width = box.width;
+  let height = box.height;
+
+  if (looksLikePixels && pageWidth > 0 && pageHeight > 0) {
+    x = (x / pageWidth) * 100;
+    y = (y / pageHeight) * 100;
+    width = (width / pageWidth) * 100;
+    height = (height / pageHeight) * 100;
+  }
+
+  x = Math.max(0, Math.min(95, x));
+  y = Math.max(0, Math.min(95, y));
+  width = Math.max(5, Math.min(100 - x, width));
+  height = Math.max(5, Math.min(100 - y, height));
+
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(width) || !Number.isFinite(height)) return null;
+  return { x, y, width, height, description: box.description || "Figura dal materiale" };
 }
 
 async function detectFigures(
@@ -135,13 +163,8 @@ Rispondi SOLO con JSON valido, senza markdown:
         const figs = (p.figures || [])
           .filter(f => f && typeof f.x === "number" && typeof f.y === "number" && f.width > 5 && f.height > 5)
           .slice(0, 3)
-          .map(f => ({
-            x: Math.max(0, Math.min(95, f.x)),
-            y: Math.max(0, Math.min(95, f.y)),
-            width: Math.max(5, Math.min(100 - Math.max(0, f.x), f.width)),
-            height: Math.max(5, Math.min(100 - Math.max(0, f.y), f.height)),
-            description: f.description || "Figura dal materiale",
-          }));
+          .map(f => normalizeBox(f, img))
+          .filter((f): f is FigureBox => !!f);
         return { pageNum: img.pageNum, figures: figs };
       })
       .filter((x): x is { pageNum: number; figures: FigureBox[] } => !!x);
