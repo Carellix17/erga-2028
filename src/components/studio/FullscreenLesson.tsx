@@ -40,7 +40,6 @@ interface Step {
   type: StepType;
   exerciseIndex?: number;
   explanationPartIndex?: number;
-  showFiguresFallback?: boolean;
 }
 
 function parseExplanationParts(explanation: string): ExplanationPart[] {
