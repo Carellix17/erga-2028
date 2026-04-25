@@ -71,12 +71,10 @@ function normalizeBox(box: FigureBox, page?: IncomingPage): FigureBox | null {
     height = (height / pageHeight) * 100;
   }
 
-  // Apply 10% padding around the detected box so we never crop too tight.
-  // The model often returns a box that hugs the figure edges, cutting off
-  // borders, captions-internal-to-figure, or thin frames. We expand by ~10%
-  // of the box size on each side, clamped to page bounds.
-  const padX = width * 0.10;
-  const padY = height * 0.10;
+  // Apply 5% padding around the detected box so we never crop too tight,
+  // but keep the look compact and clean (the previous 10% was too loose).
+  const padX = width * 0.05;
+  const padY = height * 0.05;
   x = x - padX;
   y = y - padY;
   width = width + padX * 2;
