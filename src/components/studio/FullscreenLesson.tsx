@@ -1,12 +1,12 @@
-import { useState, useCallback, useMemo, useRef } from "react";
-import { X, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star } from "lucide-react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { X, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { fireCelebration, fireStarBurst } from "@/lib/confetti";
 import { PdfCrop } from "./PdfCrop";
-import { useLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
+import { useLessonFigures, prefetchLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
 import { LessonFigureGallery } from "./LessonFigureGallery";
 
 interface ExplanationPart {
@@ -31,6 +31,7 @@ interface FullscreenLessonProps {
   onClose: () => void;
   onComplete: () => void;
   isLastLesson: boolean;
+  nextLessonId?: string | null;
 }
 
 type StepType = "concept" | "explanation_part" | "example" | "exercise" | "summary";
@@ -93,40 +94,18 @@ function buildSteps(lesson: FullscreenLessonProps["lesson"], explanationParts: E
 }
 
 export function FullscreenLesson({
-  lesson, lessonNumber, totalLessons, onClose, onComplete, isLastLesson,
+  lesson, lessonNumber, totalLessons, onClose, onComplete, isLastLesson, nextLessonId,
 }: FullscreenLessonProps) {
   const explanationParts = useMemo(() => parseExplanationParts(lesson.explanation), [lesson.explanation]);
-  const { figures } = useLessonFigures(lesson.id);
+  const { figures, loading: figuresLoading } = useLessonFigures(lesson.id);
 
-  // Compute which figures are actually referenced via [FIG:N] in the explanation.
-  // Any figure NOT referenced will be shown in a fallback gallery on the summary step.
-  const unreferencedFigures = useMemo(() => {
-    if (!figures || figures.length === 0) return [];
-    const referenced = new Set<number>();
-    const re = /\[FIG:(\d+)\]/g;
-    for (const part of explanationParts) {
-      const text = (part.content || "");
-      let m: RegExpExecArray | null;
-      while ((m = re.exec(text)) !== null) referenced.add(parseInt(m[1], 10));
-    }
-    return figures.filter((_, idx) => !referenced.has(idx));
-  }, [figures, explanationParts]);
+  // Pre-fetch the next lesson's figures so they're already cached
+  // by the time the user moves on.
+  useEffect(() => {
+    if (nextLessonId) prefetchLessonFigures(nextLessonId);
+  }, [nextLessonId]);
 
-  const steps = useMemo(() => {
-    const base = buildSteps(lesson, explanationParts);
-    if (unreferencedFigures.length === 0) return base;
-    // Insert a dedicated figures gallery step right after the last explanation_part,
-    // before example / exercises / summary.
-    const lastExplanationIdx = (() => {
-      for (let i = base.length - 1; i >= 0; i--) {
-        if (base[i].type === "explanation_part") return i;
-      }
-      return 0; // after concept if no explanation parts
-    })();
-    const next = base.slice();
-    next.splice(lastExplanationIdx + 1, 0, { type: "explanation_part", showFiguresFallback: true });
-    return next;
-  }, [lesson, explanationParts, unreferencedFigures.length]);
+  const steps = useMemo(() => buildSteps(lesson, explanationParts), [lesson, explanationParts]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [exerciseResults, setExerciseResults] = useState<Record<number, boolean>>({});
@@ -230,21 +209,13 @@ export function FullscreenLesson({
         <div className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full">
           <div key={currentStep} className={cn("animate-lesson-in", isAnimating && "animate-lesson-out")}>
             {step.type === "concept" && <ConceptStep concept={lesson.concept} />}
-            {step.type === "explanation_part" && step.showFiguresFallback && (
-              <div className="space-y-5">
-                <LessonFigureGallery
-                  figures={unreferencedFigures}
-                  title="Figure dal materiale"
-                  subtitle="Estratte automaticamente dalle pagine del PDF"
-                />
-              </div>
-            )}
-            {step.type === "explanation_part" && step.explanationPartIndex !== undefined && !step.showFiguresFallback && (
+            {step.type === "explanation_part" && step.explanationPartIndex !== undefined && (
               <ExplanationPartStep
                 part={explanationParts[step.explanationPartIndex]}
                 partNumber={step.explanationPartIndex + 1}
                 totalParts={explanationParts.length}
                 figures={figures}
+                figuresLoading={figuresLoading}
               />
             )}
             {step.type === "example" && lesson.example && <ExampleStep example={lesson.example} />}
@@ -259,6 +230,30 @@ export function FullscreenLesson({
             )}
             {step.type === "summary" && (
               <SummaryStep correctCount={correctCount} totalExercises={exercises.length} isLastLesson={isLastLesson} xpGained={xpGained} />
+            )}
+
+            {/* Permanent media gallery — shows on every step EXCEPT the summary,
+                so the user always has access to all extracted figures even if
+                the AI forgot the [FIG:N] markers. */}
+            {step.type !== "summary" && (figuresLoading || figures.length > 0) && (
+              <div className="mt-8 pt-6 border-t border-outline-variant/40">
+                {figuresLoading && figures.length === 0 ? (
+                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-surface-container-low">
+                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                    <div className="flex-1 min-w-0">
+                      <p className="label-medium text-foreground">Estraggo le figure dal PDF…</p>
+                      <p className="body-small text-muted-foreground">Appariranno qui appena pronte</p>
+                    </div>
+                  </div>
+                ) : (
+                  <LessonFigureGallery
+                    figures={figures}
+                    title="Immagini della lezione"
+                    subtitle="Tutte le figure estratte dalle pagine del PDF"
+                    compact
+                  />
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -310,11 +305,11 @@ function ConceptStep({ concept }: { concept: string }) {
   );
 }
 
-function ExplanationPartStep({ part, partNumber, totalParts, figures }: { part: ExplanationPart; partNumber: number; totalParts: number; figures: LessonFigure[] }) {
+function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoading }: { part: ExplanationPart; partNumber: number; totalParts: number; figures: LessonFigure[]; figuresLoading: boolean }) {
   const isExample = part.part_title.startsWith("📌") || part.part_title.startsWith("🔍");
 
   const segments = useMemo(() => {
-    const out: Array<{ type: "text"; value: string } | { type: "fig"; figure: LessonFigure }> = [];
+    const out: Array<{ type: "text"; value: string } | { type: "fig"; figure: LessonFigure } | { type: "fig-pending"; index: number }> = [];
     const text = part.content || "";
     const re = /\[FIG:(\d+)\]/g;
     let last = 0;
@@ -324,6 +319,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures }: { part: 
       const idx = parseInt(m[1], 10);
       const fig = figures[idx];
       if (fig) out.push({ type: "fig", figure: fig });
+      else out.push({ type: "fig-pending", index: idx });
       last = m.index + m[0].length;
     }
     if (last < text.length) out.push({ type: "text", value: text.slice(last) });
@@ -353,15 +349,34 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures }: { part: 
         "p-5 rounded-2xl shadow-level-1 space-y-4",
         isExample ? "bg-tertiary-container/50 border-l-4 border-tertiary" : "bg-surface-container-low"
       )}>
-        {segments.map((seg, i) => seg.type === "text" ? (
-          seg.value.trim() ? (
-            <div key={i} className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90">
-              <ReactMarkdown>{seg.value}</ReactMarkdown>
+        {segments.map((seg, i) => {
+          if (seg.type === "text") {
+            return seg.value.trim() ? (
+              <div key={i} className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90">
+                <ReactMarkdown>{seg.value}</ReactMarkdown>
+              </div>
+            ) : null;
+          }
+          if (seg.type === "fig") {
+            return <PdfCrop key={i} url={seg.figure.url} bbox={seg.figure.bbox} description={seg.figure.description} />;
+          }
+          // fig-pending: marker present but figure not yet loaded
+          return (
+            <div key={i} className="rounded-2xl bg-surface-container-highest/60 border-2 border-dashed border-outline-variant/60 p-6 flex flex-col items-center justify-center gap-2 min-h-[140px]">
+              {figuresLoading ? (
+                <>
+                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                  <p className="body-small text-muted-foreground">Caricamento figura…</p>
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="w-6 h-6 text-muted-foreground/60" />
+                  <p className="body-small text-muted-foreground">Figura non disponibile</p>
+                </>
+              )}
             </div>
-          ) : null
-        ) : (
-          <PdfCrop key={i} url={seg.figure.url} bbox={seg.figure.bbox} description={seg.figure.description} />
-        ))}
+          );
+        })}
       </div>
     </div>
   );
