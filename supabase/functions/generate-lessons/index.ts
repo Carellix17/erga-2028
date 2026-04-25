@@ -131,10 +131,16 @@ serve(async (req) => {
       let studyContent = "";
       if (lessons.context_id) {
         // Try with UUID first, then legacy email
-        let { data: context } = await supabase.from("study_contexts").select("content, file_name, processing_status").eq("id", lessons.context_id).eq("user_id", userId).single();
+        let { data: context } = await supabase.from("study_contexts").select("content, file_name, processing_status, error_message").eq("id", lessons.context_id).eq("user_id", userId).single();
         if (!context && legacyUserId) {
-          const { data: legacyCtx } = await supabase.from("study_contexts").select("content, file_name, processing_status").eq("id", lessons.context_id).eq("user_id", legacyUserId).single();
+          const { data: legacyCtx } = await supabase.from("study_contexts").select("content, file_name, processing_status, error_message").eq("id", lessons.context_id).eq("user_id", legacyUserId).single();
           context = legacyCtx;
+        }
+        if (context?.processing_status === "failed") {
+          const contextError = (context as Record<string, unknown>).error_message;
+          throw new Error(typeof contextError === "string" && contextError.trim()
+            ? contextError
+            : "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.");
         }
         if (context?.processing_status !== "completed") throw new Error("Il PDF è ancora in elaborazione. Riprova tra qualche secondo.");
         if (context?.content) studyContent = `FILE: ${context.file_name}\n${context.content}`.substring(0, MAX_CONTEXT_CHARS);
@@ -316,8 +322,9 @@ ${studyContent}`;
     // ── GENERATE LESSON TITLES (STUDY PLAN) ──
     let combinedContent = "";
     if (contextId) {
-      const { data: ctx } = await supabase.from("study_contexts").select("content, file_name, processing_status").eq("id", contextId).eq("user_id", userId).single();
+      const { data: ctx } = await supabase.from("study_contexts").select("content, file_name, processing_status, error_message").eq("id", contextId).eq("user_id", userId).single();
       if (!ctx) throw new Error("Contesto non trovato");
+      if (ctx.processing_status === "failed") throw new Error(ctx.error_message || "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.");
       if (ctx.processing_status !== "completed") throw new Error("Il PDF è ancora in elaborazione. Riprova tra qualche secondo.");
       if (!ctx.content) throw new Error("Nessun contenuto disponibile per questo PDF.");
       combinedContent = `FILE: ${ctx.file_name}\n${ctx.content}`;
@@ -429,6 +436,8 @@ ${combinedContent}`;
     const safeMessages = [
       "Lezione non trovata",
       "Il PDF è ancora in elaborazione. Riprova tra qualche secondo.",
+      "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.",
+      "Impossibile estrarre testo sufficiente dal PDF. Il file potrebbe essere un'immagine o protetto.",
       "Contenuto vuoto. Caricamento fallito?",
       "Contesto non trovato",
       "Nessun contenuto disponibile per questo PDF.",

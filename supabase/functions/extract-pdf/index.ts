@@ -257,6 +257,12 @@ serve(async (req) => {
         }
 
         if (!extractedText || extractedText.length < 50) {
+          console.warn("PDF text layer is empty, trying Gemini PDF vision fallback");
+          extractedText = await extractTextWithGeminiPdfVision(pdfBytes);
+          console.log(`Extracted with Gemini PDF vision: ${extractedText.length} characters`);
+        }
+
+        if (!extractedText || extractedText.length < 50) {
           throw new Error("INSUFFICIENT_TEXT");
         }
 
@@ -292,6 +298,8 @@ serve(async (req) => {
         const userMessage = processError instanceof Error
           ? processError.message === "FILE_DOWNLOAD_ERROR" ? "Impossibile scaricare il file"
           : processError.message === "INSUFFICIENT_TEXT" ? "Impossibile estrarre testo sufficiente dal PDF. Il file potrebbe essere un'immagine o protetto."
+          : processError.message === "AI_CONFIG_ERROR" ? "Configurazione AI mancante"
+          : processError.message === "AI_PROCESSING_ERROR" ? "Servizio AI temporaneamente occupato. Riprova tra qualche minuto."
           : processError.message === "DATABASE_ERROR" ? "Errore nel salvataggio"
           : "Errore durante l'elaborazione del PDF"
           : "Errore durante l'elaborazione del PDF";
@@ -448,6 +456,73 @@ function extractTextFallback(pdfBytes: Uint8Array): string {
   }
 
   return cleanExtractedText(extractedParts.join(" "));
+}
+
+async function extractTextWithGeminiPdfVision(pdfBytes: Uint8Array): Promise<string> {
+  const apiKey = Deno.env.get("ERGA_GEMINI_KEY_APRIL") || Deno.env.get("ERGA_DEMO_ROUTER");
+  if (!apiKey) throw new Error("AI_CONFIG_ERROR");
+
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < pdfBytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...pdfBytes.slice(i, i + chunkSize));
+  }
+
+  const requestBody = {
+      contents: [{
+        role: "user",
+        parts: [
+          {
+            text: `Estrai TUTTO il testo leggibile da questo PDF scansionato o basato su immagini.
+
+REGOLE OBBLIGATORIE:
+- Mantieni l'ordine originale delle pagine.
+- Inserisci prima di ogni pagina il marker esatto: === PAGINA N ===
+- Trascrivi titoli, paragrafi, didascalie, tabelle, schemi e testo dentro immagini.
+- Non riassumere e non aggiungere spiegazioni esterne.
+- Se una pagina non contiene testo leggibile, scrivi comunque il marker e passa alla pagina successiva.`
+          },
+          {
+            inline_data: {
+              mime_type: "application/pdf",
+              data: btoa(binary),
+            },
+          },
+        ],
+      }],
+      generationConfig: {
+        temperature: 0,
+        maxOutputTokens: 20000,
+      },
+    };
+
+  const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+  let data: { candidates?: { content?: { parts?: { text?: string }[] } }[] } | null = null;
+  for (const model of models) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+      if (resp.ok) {
+        data = await resp.json();
+        break;
+      }
+      const errBody = await resp.text();
+      console.error(`Gemini PDF vision error (${model}, attempt ${attempt + 1}):`, resp.status, errBody);
+      if (![429, 500, 502, 503, 504].includes(resp.status)) break;
+      await new Promise((resolve) => setTimeout(resolve, 1200 * (attempt + 1)));
+    }
+    if (data) break;
+  }
+
+  if (!data) throw new Error("AI_PROCESSING_ERROR");
+
+  const text = data.candidates?.[0]?.content?.parts
+    ?.map((part: { text?: string }) => part.text || "")
+    .join("\n") || "";
+  return cleanExtractedText(text);
 }
 
 function isPdfGarbage(text: string): boolean {

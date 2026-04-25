@@ -72,6 +72,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const activeContext = allContexts.find((c) => c.id === effectiveContextId) || null;
   const contextFileName = activeContext?.file_name || null;
   const contextStatus = activeContext?.processing_status || null;
+  const contextErrorMessage = activeContext?.error_message || "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.";
 
   const lessonsQuery = useLessonsQuery(effectiveContextId);
   const lessons: Lesson[] = lessonsQuery.data?.lessons ?? [];
@@ -96,8 +97,23 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     invalidateList(effectiveContextId);
   };
 
+  useEffect(() => {
+    if (contextStatus !== "pending" && contextStatus !== "processing") return;
+    const timer = window.setInterval(refetchLessons, 2500);
+    return () => window.clearInterval(timer);
+  }, [contextStatus, effectiveContextId]);
+
   const handleGenerateLessons = async () => {
     if (!currentUser) return;
+    if (contextStatus === "pending" || contextStatus === "processing") {
+      toast({ title: "PDF in elaborazione", description: "Attendi il completamento dell'analisi prima di generare il percorso." });
+      await refetchLessons();
+      return;
+    }
+    if (contextStatus === "failed") {
+      toast({ title: "PDF non elaborabile", description: contextErrorMessage, variant: "destructive" });
+      return;
+    }
     setIsGenerating(true);
     setGenerationStep("analyzing");
     setGenerationLessonCount(0);
@@ -254,7 +270,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           </h3>
           <p className="text-muted-foreground max-w-xs body-medium">
             {isPdfProcessing ? "Attendi qualche secondo mentre analizziamo il tuo documento." :
-             isPdfFailed ? "Si è verificato un errore. Prova a ricaricare il file." :
+             isPdfFailed ? contextErrorMessage :
              "L'AI analizzerà i tuoi materiali e creerà un percorso di mini-lezioni personalizzato."}
           </p>
           {contextFileName && (
