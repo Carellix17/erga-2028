@@ -436,6 +436,8 @@ ${combinedContent}`;
     const safeMessages = [
       "Lezione non trovata",
       "Il PDF è ancora in elaborazione. Riprova tra qualche secondo.",
+      "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.",
+      "Impossibile estrarre testo sufficiente dal PDF. Il file potrebbe essere un'immagine o protetto.",
       "Contenuto vuoto. Caricamento fallito?",
       "Contesto non trovato",
       "Nessun contenuto disponibile per questo PDF.",
