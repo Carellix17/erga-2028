@@ -16,15 +16,38 @@ export interface LessonFigure {
 const figuresCache = new Map<string, LessonFigure[]>();
 const inflight = new Map<string, Promise<LessonFigure[]>>();
 
+// Serialize all figure-extraction calls to avoid hammering the edge runtime
+// (which returns 503 SUPABASE_EDGE_RUNTIME_ERROR when too many concurrent
+// invocations of the same heavy function pile up). Pre-fetch + current
+// lesson would otherwise fire in parallel.
+let chain: Promise<unknown> = Promise.resolve();
+function enqueue<T>(task: () => Promise<T>): Promise<T> {
+  const next = chain.then(task, task);
+  chain = next.catch(() => undefined);
+  return next;
+}
+
+async function invokeWithRetry(body: Record<string, unknown>, attempts = 3): Promise<{ data: any; error: any }> {
+  let lastErr: any = null;
+  for (let i = 0; i < attempts; i++) {
+    const res = await supabase.functions.invoke("extract-lesson-figures", { body });
+    const status = (res.error as any)?.context?.status ?? (res.error as any)?.status;
+    if (!res.error) return res;
+    lastErr = res.error;
+    // Retry only on transient 503 / network-ish errors
+    if (status !== 503 && status !== 504 && status !== 429) return res;
+    await new Promise(r => setTimeout(r, 800 * (i + 1)));
+  }
+  return { data: null, error: lastErr };
+}
+
 async function loadFiguresFor(lessonId: string): Promise<LessonFigure[]> {
   if (figuresCache.has(lessonId)) return figuresCache.get(lessonId)!;
   if (inflight.has(lessonId)) return inflight.get(lessonId)!;
 
   const promise = (async () => {
     // Phase 1: probe
-    const { data, error: fnErr } = await supabase.functions.invoke("extract-lesson-figures", {
-      body: { lessonId },
-    });
+    const { data, error: fnErr } = await enqueue(() => invokeWithRetry({ lessonId }));
     if (fnErr) throw fnErr;
 
     let figs = Array.isArray(data?.figures) ? (data.figures as LessonFigure[]) : [];
@@ -52,9 +75,8 @@ async function loadFiguresFor(lessonId: string): Promise<LessonFigure[]> {
       const pages = await renderPdfPagesRangeAsBase64(pdfBytes, needPages.startPage, needPages.endPage);
       if (pages.length === 0) return [];
 
-      const { data: dataDet, error: fnErr2 } = await supabase.functions.invoke(
-        "extract-lesson-figures",
-        { body: { lessonId, pages } },
+      const { data: dataDet, error: fnErr2 } = await enqueue(() =>
+        invokeWithRetry({ lessonId, pages }),
       );
       if (fnErr2) throw fnErr2;
 
@@ -82,9 +104,8 @@ async function loadFiguresFor(lessonId: string): Promise<LessonFigure[]> {
       }
       if (crops.length === 0) return [];
 
-      const { data: dataUp, error: fnErr3 } = await supabase.functions.invoke(
-        "extract-lesson-figures",
-        { body: { lessonId, crops } },
+      const { data: dataUp, error: fnErr3 } = await enqueue(() =>
+        invokeWithRetry({ lessonId, crops }),
       );
       if (fnErr3) throw fnErr3;
       figs = Array.isArray(dataUp?.figures) ? (dataUp.figures as LessonFigure[]) : [];
