@@ -322,8 +322,9 @@ ${studyContent}`;
     // ── GENERATE LESSON TITLES (STUDY PLAN) ──
     let combinedContent = "";
     if (contextId) {
-      const { data: ctx } = await supabase.from("study_contexts").select("content, file_name, processing_status").eq("id", contextId).eq("user_id", userId).single();
+      const { data: ctx } = await supabase.from("study_contexts").select("content, file_name, processing_status, error_message").eq("id", contextId).eq("user_id", userId).single();
       if (!ctx) throw new Error("Contesto non trovato");
+      if (ctx.processing_status === "failed") throw new Error(ctx.error_message || "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.");
       if (ctx.processing_status !== "completed") throw new Error("Il PDF è ancora in elaborazione. Riprova tra qualche secondo.");
       if (!ctx.content) throw new Error("Nessun contenuto disponibile per questo PDF.");
       combinedContent = `FILE: ${ctx.file_name}\n${ctx.content}`;
