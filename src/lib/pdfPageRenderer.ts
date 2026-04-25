@@ -6,6 +6,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs
 const MAX_PAGES = 50;
 const RENDER_SCALE = 1.5; // Good quality without being too large
 
+function clonePdfData(pdfBytes: ArrayBuffer | Uint8Array): Uint8Array {
+  const source = pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes);
+  return new Uint8Array(source);
+}
+
 /**
  * Renders PDF pages as PNG blobs from a File object.
  * Returns an array of { pageNum, blob } for each rendered page.
@@ -62,9 +67,9 @@ export async function renderPdfPagesRangeAsBase64(
   startPage: number,
   endPage: number,
   scale = 1.4,
-): Promise<{ pageNum: number; b64: string }[]> {
-  const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
-  const results: { pageNum: number; b64: string }[] = [];
+): Promise<{ pageNum: number; b64: string; width: number; height: number }[]> {
+  const pdf = await pdfjsLib.getDocument({ data: clonePdfData(pdfBytes) }).promise;
+  const results: { pageNum: number; b64: string; width: number; height: number }[] = [];
   const last = Math.min(endPage, pdf.numPages);
   for (let i = startPage; i <= last; i++) {
     try {
@@ -77,7 +82,7 @@ export async function renderPdfPagesRangeAsBase64(
       await page.render({ canvasContext: ctx, viewport }).promise;
       const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
       const b64 = dataUrl.split(",")[1] || "";
-      results.push({ pageNum: i, b64 });
+      results.push({ pageNum: i, b64, width: canvas.width, height: canvas.height });
       canvas.width = 0;
       canvas.height = 0;
     } catch (err) {
@@ -100,7 +105,7 @@ export async function renderPdfPageCropAsBase64(
   scale = 2.0,
 ): Promise<string | null> {
   try {
-    const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+    const pdf = await pdfjsLib.getDocument({ data: clonePdfData(pdfBytes) }).promise;
     if (pageNum < 1 || pageNum > pdf.numPages) return null;
     const page = await pdf.getPage(pageNum);
     const viewport = page.getViewport({ scale });
