@@ -298,6 +298,8 @@ serve(async (req) => {
         const userMessage = processError instanceof Error
           ? processError.message === "FILE_DOWNLOAD_ERROR" ? "Impossibile scaricare il file"
           : processError.message === "INSUFFICIENT_TEXT" ? "Impossibile estrarre testo sufficiente dal PDF. Il file potrebbe essere un'immagine o protetto."
+          : processError.message === "AI_CONFIG_ERROR" ? "Configurazione AI mancante"
+          : processError.message === "AI_PROCESSING_ERROR" ? "Servizio AI temporaneamente occupato. Riprova tra qualche minuto."
           : processError.message === "DATABASE_ERROR" ? "Errore nel salvataggio"
           : "Errore durante l'elaborazione del PDF"
           : "Errore durante l'elaborazione del PDF";
