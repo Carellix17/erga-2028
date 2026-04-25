@@ -101,33 +101,40 @@ async function detectFigures(
         content: [
           {
             type: "text",
-            text: `Analizza queste pagine di un libro/PDF didattico e identifica TUTTI gli elementi visivi distinti dal flusso di testo.
+            text: `Analizza queste pagine di un libro/PDF didattico e identifica SOLO i veri elementi grafici (NON il testo).
 
 ${pageList}
 
-CONSIDERA "FIGURA" qualsiasi blocco visivo non puramente testuale, inclusi:
-- foto, illustrazioni, disegni, ritratti, mappe
+CONSIDERA "FIGURA" SOLO questi elementi visivi:
+- foto, illustrazioni, disegni, ritratti, opere d'arte
+- mappe geografiche e cartine
 - diagrammi, schemi, grafici, istogrammi, flowchart, alberi
-- TABELLE (anche semplici)
-- formule matematiche/fisiche/chimiche complesse rese come immagine
-- riquadri grafici, box laterali con bordo, callout, infografiche
-- linee del tempo, cronologie illustrate
-- esempi/codice in box evidenziati
+- TABELLE strutturate (con righe e colonne)
+- linee del tempo illustrate
+- infografiche e riquadri con contenuto grafico
 
-NON considerare figura: paragrafi di testo normale, titoli, sottotitoli, numeri di pagina, header/footer.
+NON considerare MAI figura (ESCLUDI sempre):
+- paragrafi di testo, titoli, sottotitoli
+- DIDASCALIE sotto/sopra le figure (es. "Fig. 1 — Il David di Michelangelo")
+- numeri di figura, etichette testuali, citazioni
+- numeri di pagina, header, footer, note a margine
+- formule matematiche inline o brevi
+- box di SOLO testo (anche se incorniciati)
+
+IMPORTANTE: il bounding box deve contenere SOLO l'elemento grafico, MAI la didascalia testuale che lo accompagna. Se vedi "Fig.X" o testo descrittivo sotto/sopra l'immagine, NON includerlo nel box.
 
 Per ogni figura restituisci un bounding box in PERCENTUALI (0-100) della pagina:
 - x, y: angolo in alto a sinistra
 - width, height: dimensioni
 - description: didascalia breve in italiano (max 10 parole)
 
-Aggiungi un margine del 2-3% intorno alla figura per non tagliarla, ma NON includere paragrafi di testo adiacenti.
+Aggiungi un margine MINIMO (1%) intorno alla figura. NON includere paragrafi di testo né didascalie adiacenti.
 
 REGOLE:
 - Se una pagina è SOLO testo continuo, ritorna figures: [].
-- Massimo 4 figure per pagina (le più rilevanti).
+- Massimo 4 figure per pagina (le più rilevanti, vere immagini/diagrammi/tabelle).
 - Non inventare figure che non vedi.
-- Sii GENEROSO: meglio includere una tabella o un riquadro che escluderlo.
+- In caso di dubbio (è solo testo decorato?), ESCLUDI.
 
 Rispondi SOLO con JSON valido, senza markdown:
 [{"page_index": 0, "figures": [{"x": 12, "y": 30, "width": 70, "height": 40, "description": "Schema della cellula"}]}]`,
