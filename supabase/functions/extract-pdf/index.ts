@@ -468,10 +468,7 @@ async function extractTextWithGeminiPdfVision(pdfBytes: Uint8Array): Promise<str
     binary += String.fromCharCode(...pdfBytes.slice(i, i + chunkSize));
   }
 
-  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const requestBody = {
       contents: [{
         role: "user",
         parts: [
@@ -497,15 +494,31 @@ REGOLE OBBLIGATORIE:
         temperature: 0,
         maxOutputTokens: 20000,
       },
-    }),
-  });
+    };
 
-  if (!resp.ok) {
-    console.error("Gemini PDF vision error:", resp.status, await resp.text());
-    throw new Error("AI_PROCESSING_ERROR");
+  const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+  let data: Record<string, unknown> | null = null;
+  for (const model of models) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+      if (resp.ok) {
+        data = await resp.json();
+        break;
+      }
+      const errBody = await resp.text();
+      console.error(`Gemini PDF vision error (${model}, attempt ${attempt + 1}):`, resp.status, errBody);
+      if (![429, 500, 502, 503, 504].includes(resp.status)) break;
+      await new Promise((resolve) => setTimeout(resolve, 1200 * (attempt + 1)));
+    }
+    if (data) break;
   }
 
-  const data = await resp.json();
+  if (!data) throw new Error("AI_PROCESSING_ERROR");
+
   const text = data.candidates?.[0]?.content?.parts
     ?.map((part: { text?: string }) => part.text || "")
     .join("\n") || "";
