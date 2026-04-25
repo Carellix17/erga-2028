@@ -71,10 +71,24 @@ function normalizeBox(box: FigureBox, page?: IncomingPage): FigureBox | null {
     height = (height / pageHeight) * 100;
   }
 
-  x = Math.max(0, Math.min(95, x));
-  y = Math.max(0, Math.min(95, y));
-  width = Math.max(5, Math.min(100 - x, width));
-  height = Math.max(5, Math.min(100 - y, height));
+  // Apply 10% padding around the detected box so we never crop too tight.
+  // The model often returns a box that hugs the figure edges, cutting off
+  // borders, captions-internal-to-figure, or thin frames. We expand by ~10%
+  // of the box size on each side, clamped to page bounds.
+  const padX = width * 0.10;
+  const padY = height * 0.10;
+  x = x - padX;
+  y = y - padY;
+  width = width + padX * 2;
+  height = height + padY * 2;
+
+  // Clamp to page (allow full 0-100 range now that we pad)
+  if (x < 0) { width += x; x = 0; }
+  if (y < 0) { height += y; y = 0; }
+  if (x + width > 100) width = 100 - x;
+  if (y + height > 100) height = 100 - y;
+  width = Math.max(5, width);
+  height = Math.max(5, height);
 
   if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(width) || !Number.isFinite(height)) return null;
   return { x, y, width, height, description: box.description || "Figura dal materiale" };
@@ -101,43 +115,51 @@ async function detectFigures(
         content: [
           {
             type: "text",
-            text: `Analizza queste pagine di un libro/PDF didattico e identifica SOLO i veri elementi grafici (NON il testo).
+            text: `Sei un sistema di rilevamento di FIGURE in pagine di libri di testo. Sii ESTREMAMENTE SELETTIVO: meglio zero figure che figure sbagliate.
 
 ${pageList}
 
-CONSIDERA "FIGURA" SOLO questi elementi visivi:
-- foto, illustrazioni, disegni, ritratti, opere d'arte
-- mappe geografiche e cartine
-- diagrammi, schemi, grafici, istogrammi, flowchart, alberi
-- TABELLE strutturate (con righe e colonne)
-- linee del tempo illustrate
-- infografiche e riquadri con contenuto grafico
+ESTRARRE SOLO (whitelist tassativa):
+1. FOTOGRAFIE (di opere d'arte, persone, luoghi, oggetti reali)
+2. ILLUSTRAZIONI / DISEGNI / RITRATTI / DIPINTI completi
+3. GRAFICI (a barre, a torta, istogrammi, line chart)
+4. DIAGRAMMI e SCHEMI strutturati (flowchart, alberi, mappe concettuali)
+5. MAPPE geografiche / cartine / piante architettoniche
+6. TABELLE con righe e colonne ben definite
 
-NON considerare MAI figura (ESCLUDI sempre):
-- paragrafi di testo, titoli, sottotitoli
-- DIDASCALIE sotto/sopra le figure (es. "Fig. 1 — Il David di Michelangelo")
-- numeri di figura, etichette testuali, citazioni
-- numeri di pagina, header, footer, note a margine
-- formule matematiche inline o brevi
-- box di SOLO testo (anche se incorniciati)
+ESCLUDERE TASSATIVAMENTE (blacklist — se in dubbio, ESCLUDI):
+❌ Titoli di capitolo o paragrafo (anche se grandi o decorati)
+❌ Numeri di pagina, header, footer, intestazioni
+❌ DIDASCALIE isolate (es. "Fig. 12 — Il David di Michelangelo") quando non c'è un'immagine sopra/sotto
+❌ Note a margine, citazioni, virgolette decorative
+❌ Spazi bianchi, margini vuoti, separatori grafici
+❌ Box di SOLO testo (anche se incorniciati o colorati)
+❌ Lettere capitali decorate (drop cap)
+❌ Frammenti di paragrafo
+❌ Loghi della casa editrice, marchi, watermark
+❌ Linee, righe orizzontali, decorazioni tipografiche
 
-IMPORTANTE: il bounding box deve contenere SOLO l'elemento grafico, MAI la didascalia testuale che lo accompagna. Se vedi "Fig.X" o testo descrittivo sotto/sopra l'immagine, NON includerlo nel box.
+TEST DI VALIDITÀ — una figura passa SOLO se:
+a) Occupa almeno il 10% dell'area pagina (width*height >= 10)
+b) È un elemento grafico VERO E PROPRIO (immagine raster o vettoriale, non testo)
+c) Ha senso anche estratta da sola, fuori contesto
+d) Se la togli, la pagina perde un'informazione visiva (non solo decorativa)
 
-Per ogni figura restituisci un bounding box in PERCENTUALI (0-100) della pagina:
-- x, y: angolo in alto a sinistra
-- width, height: dimensioni
-- description: didascalia breve in italiano (max 10 parole)
+BOUNDING BOX:
+- Coordinate in PERCENTUALI 0-100 della pagina
+- x, y = angolo in alto a sinistra
+- width, height = dimensioni
+- Includi SOLO la figura, NON didascalie, NON titoli adiacenti, NON il testo del paragrafo accanto
+- Sii preciso: bordo della figura, niente di più
 
-Aggiungi un margine MINIMO (1%) intorno alla figura. NON includere paragrafi di testo né didascalie adiacenti.
-
-REGOLE:
-- Se una pagina è SOLO testo continuo, ritorna figures: [].
-- Massimo 4 figure per pagina (le più rilevanti, vere immagini/diagrammi/tabelle).
-- Non inventare figure che non vedi.
-- In caso di dubbio (è solo testo decorato?), ESCLUDI.
+REGOLE FINALI:
+- Se la pagina è SOLO testo (anche con titoli grandi), ritorna figures: []
+- MASSIMO 2 figure per pagina (solo le più significative)
+- Non inventare. Se non sei sicuro al 90%, ESCLUDI.
+- description: max 8 parole in italiano, descrivi COSA si vede ("Statua del David", "Grafico vendite 2020", "Mappa dell'Impero Romano")
 
 Rispondi SOLO con JSON valido, senza markdown:
-[{"page_index": 0, "figures": [{"x": 12, "y": 30, "width": 70, "height": 40, "description": "Schema della cellula"}]}]`,
+[{"page_index": 0, "figures": [{"x": 12, "y": 30, "width": 70, "height": 40, "description": "Statua del David di Michelangelo"}]}]`,
           },
           ...pageImages.map(p => ({
             type: "image_url",
@@ -146,7 +168,7 @@ Rispondi SOLO con JSON valido, senza markdown:
         ],
       }],
       max_tokens: 2500,
-      temperature: 0.1,
+      temperature: 0.0,
     }),
   });
 
