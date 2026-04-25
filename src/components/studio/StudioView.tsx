@@ -270,7 +270,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           </h3>
           <p className="text-muted-foreground max-w-xs body-medium">
             {isPdfProcessing ? "Attendi qualche secondo mentre analizziamo il tuo documento." :
-             isPdfFailed ? "Si è verificato un errore. Prova a ricaricare il file." :
+             isPdfFailed ? contextErrorMessage :
              "L'AI analizzerà i tuoi materiali e creerà un percorso di mini-lezioni personalizzato."}
           </p>
           {contextFileName && (
