@@ -437,7 +437,7 @@ function ExerciseStep({
   );
 }
 
-function SummaryStep({ correctCount, totalExercises, isLastLesson, xpGained }: { correctCount: number; totalExercises: number; isLastLesson: boolean; xpGained: number }) {
+function SummaryStep({ correctCount, totalExercises, isLastLesson, xpGained, orphanFigures }: { correctCount: number; totalExercises: number; isLastLesson: boolean; xpGained: number; orphanFigures: LessonFigure[] }) {
   const great = correctCount >= totalExercises * 0.7;
   const percentage = totalExercises > 0 ? Math.round((correctCount / totalExercises) * 100) : 0;
   
@@ -481,6 +481,17 @@ function SummaryStep({ correctCount, totalExercises, isLastLesson, xpGained }: {
       <p className="body-small text-muted-foreground">
         {isLastLesson ? "Premi per completare il corso!" : "Premi per passare alla prossima lezione."}
       </p>
+
+      {orphanFigures.length > 0 && (
+        <div className="mt-6 pt-6 border-t border-outline-variant/40 text-left">
+          <LessonFigureGallery
+            figures={orphanFigures}
+            title="Altre immagini dal materiale"
+            subtitle="Figure estratte ma non citate nel testo"
+            compact
+          />
+        </div>
+      )}
     </div>
   );
 }
