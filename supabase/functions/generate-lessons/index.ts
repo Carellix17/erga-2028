@@ -131,10 +131,16 @@ serve(async (req) => {
       let studyContent = "";
       if (lessons.context_id) {
         // Try with UUID first, then legacy email
-        let { data: context } = await supabase.from("study_contexts").select("content, file_name, processing_status").eq("id", lessons.context_id).eq("user_id", userId).single();
+        let { data: context } = await supabase.from("study_contexts").select("content, file_name, processing_status, error_message").eq("id", lessons.context_id).eq("user_id", userId).single();
         if (!context && legacyUserId) {
-          const { data: legacyCtx } = await supabase.from("study_contexts").select("content, file_name, processing_status").eq("id", lessons.context_id).eq("user_id", legacyUserId).single();
+          const { data: legacyCtx } = await supabase.from("study_contexts").select("content, file_name, processing_status, error_message").eq("id", lessons.context_id).eq("user_id", legacyUserId).single();
           context = legacyCtx;
+        }
+        if (context?.processing_status === "failed") {
+          const contextError = (context as Record<string, unknown>).error_message;
+          throw new Error(typeof contextError === "string" && contextError.trim()
+            ? contextError
+            : "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.");
         }
         if (context?.processing_status !== "completed") throw new Error("Il PDF è ancora in elaborazione. Riprova tra qualche secondo.");
         if (context?.content) studyContent = `FILE: ${context.file_name}\n${context.content}`.substring(0, MAX_CONTEXT_CHARS);
