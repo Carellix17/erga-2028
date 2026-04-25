@@ -456,6 +456,60 @@ function extractTextFallback(pdfBytes: Uint8Array): string {
   return cleanExtractedText(extractedParts.join(" "));
 }
 
+async function extractTextWithGeminiPdfVision(pdfBytes: Uint8Array): Promise<string> {
+  const apiKey = Deno.env.get("ERGA_GEMINI_KEY_APRIL") || Deno.env.get("ERGA_DEMO_ROUTER");
+  if (!apiKey) throw new Error("AI_CONFIG_ERROR");
+
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < pdfBytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...pdfBytes.slice(i, i + chunkSize));
+  }
+
+  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{
+        role: "user",
+        parts: [
+          {
+            text: `Estrai TUTTO il testo leggibile da questo PDF scansionato o basato su immagini.
+
+REGOLE OBBLIGATORIE:
+- Mantieni l'ordine originale delle pagine.
+- Inserisci prima di ogni pagina il marker esatto: === PAGINA N ===
+- Trascrivi titoli, paragrafi, didascalie, tabelle, schemi e testo dentro immagini.
+- Non riassumere e non aggiungere spiegazioni esterne.
+- Se una pagina non contiene testo leggibile, scrivi comunque il marker e passa alla pagina successiva.`
+          },
+          {
+            inline_data: {
+              mime_type: "application/pdf",
+              data: btoa(binary),
+            },
+          },
+        ],
+      }],
+      generationConfig: {
+        temperature: 0,
+        maxOutputTokens: 20000,
+      },
+    }),
+  });
+
+  if (!resp.ok) {
+    console.error("Gemini PDF vision error:", resp.status, await resp.text());
+    throw new Error("AI_PROCESSING_ERROR");
+  }
+
+  const data = await resp.json();
+  const text = data.candidates?.[0]?.content?.parts
+    ?.map((part: { text?: string }) => part.text || "")
+    .join("\n") || "";
+  return cleanExtractedText(text);
+}
+
 function isPdfGarbage(text: string): boolean {
   const garbagePatterns = [
     /^[0-9\s.]+$/,
