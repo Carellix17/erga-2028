@@ -106,6 +106,25 @@ export function FullscreenLesson({
 
   const steps = useMemo(() => buildSteps(lesson, explanationParts), [lesson, explanationParts]);
 
+  // Compute which figure indices are referenced in the lesson text, so we can
+  // surface unreferenced (“orphan”) figures only in the summary as a fallback.
+  const referencedFigureIndices = useMemo(() => {
+    const set = new Set<number>();
+    const re = /\[FIG:(\d+)\]/g;
+    for (const part of explanationParts) {
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(part.content || "")) !== null) {
+        set.add(parseInt(m[1], 10));
+      }
+    }
+    return set;
+  }, [explanationParts]);
+
+  const orphanFigures = useMemo(
+    () => figures.filter((_, i) => !referencedFigureIndices.has(i)),
+    [figures, referencedFigureIndices]
+  );
+
   const [currentStep, setCurrentStep] = useState(0);
   const [exerciseResults, setExerciseResults] = useState<Record<number, boolean>>({});
   const [currentExerciseAnswered, setCurrentExerciseAnswered] = useState(false);
@@ -228,31 +247,13 @@ export function FullscreenLesson({
               />
             )}
             {step.type === "summary" && (
-              <SummaryStep correctCount={correctCount} totalExercises={exercises.length} isLastLesson={isLastLesson} xpGained={xpGained} />
-            )}
-
-            {/* Permanent media gallery — shows on every step EXCEPT the summary,
-                so the user always has access to all extracted figures even if
-                the AI forgot the [FIG:N] markers. */}
-            {step.type !== "summary" && (figuresLoading || figures.length > 0) && (
-              <div className="mt-8 pt-6 border-t border-outline-variant/40">
-                {figuresLoading && figures.length === 0 ? (
-                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-surface-container-low">
-                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                    <div className="flex-1 min-w-0">
-                      <p className="label-medium text-foreground">Estraggo le figure dal PDF…</p>
-                      <p className="body-small text-muted-foreground">Appariranno qui appena pronte</p>
-                    </div>
-                  </div>
-                ) : (
-                  <LessonFigureGallery
-                    figures={figures}
-                    title="Immagini della lezione"
-                    subtitle="Tutte le figure estratte dalle pagine del PDF"
-                    compact
-                  />
-                )}
-              </div>
+              <SummaryStep
+                correctCount={correctCount}
+                totalExercises={exercises.length}
+                isLastLesson={isLastLesson}
+                xpGained={xpGained}
+                orphanFigures={orphanFigures}
+              />
             )}
           </div>
         </div>
