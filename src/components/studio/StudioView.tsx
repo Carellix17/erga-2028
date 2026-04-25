@@ -346,6 +346,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
             updateProgress.mutate(nextIndex);
           }}
           isLastLesson={activeLessonIndex === lessons.length - 1}
+          nextLessonId={
+            activeLessonIndex < lessons.length - 1
+              ? lessons[activeLessonIndex + 1]?.id ?? null
+              : null
+          }
         />
       )}
 
