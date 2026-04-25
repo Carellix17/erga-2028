@@ -19,18 +19,15 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  // The trick: we put the image inside a container that has overflow:hidden,
-  // then scale & translate the image so only the bbox region fills the container.
-  // - container has aspect-ratio = bbox.width / bbox.height
-  // - image is scaled by 100/bbox.width (horizontally) and 100/bbox.height (vertically)
-  // - image is translated by -bbox.x and -bbox.y in % of the SCALED image size
-  // Simpler: use CSS clip-path-ish approach with absolute positioning.
-
+  // The file at `url` is normally ALREADY cropped (server-side via canvas),
+  // and bbox is full-rect {0,0,100,100}. In that case we just render the
+  // image at its natural aspect ratio with object-contain.
+  // Legacy path: if bbox covers only a sub-region (width<100 or height<100
+  // or x>0 or y>0), we still use the scale+translate trick to crop on the fly.
+  const isFullRect = bbox.x <= 0.5 && bbox.y <= 0.5 && bbox.width >= 99.5 && bbox.height >= 99.5;
   const scaleX = 100 / bbox.width;
   const scaleY = 100 / bbox.height;
-  // Use the larger scale to "cover" — but figures are rectangular so use width-based scale and adjust height
-  // Cleanest: scale both axes independently (allows non-square crops without distortion since both come from same source)
-  const aspect = bbox.width / bbox.height;
+  const cropAspect = bbox.width / bbox.height;
 
   return (
     <>
@@ -41,28 +38,39 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
           "group relative block w-full overflow-hidden rounded-xl border border-border bg-surface-container-low shadow-level-1 transition-all duration-300 hover:shadow-level-2 active:scale-[0.98]",
           className,
         )}
-        style={{ aspectRatio: aspect }}
+        style={isFullRect ? undefined : { aspectRatio: cropAspect }}
         aria-label={description || "Apri figura"}
       >
-        <div
-          className="absolute inset-0"
-          style={{
-            transform: `scale(${scaleX}, ${scaleY}) translate(${-bbox.x}%, ${-bbox.y}%)`,
-            transformOrigin: "0 0",
-            width: "100%",
-            height: "100%",
-          }}
-        >
+        {isFullRect ? (
           <img
             src={url}
             alt={description || "Figura dal materiale"}
             onLoad={() => setLoaded(true)}
-            className="block w-full h-full object-cover select-none pointer-events-none"
-            style={{ objectPosition: "0 0" }}
+            className="block w-full h-auto max-h-[60vh] object-contain mx-auto select-none pointer-events-none"
             loading="lazy"
             draggable={false}
           />
-        </div>
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{
+              transform: `scale(${scaleX}, ${scaleY}) translate(${-bbox.x}%, ${-bbox.y}%)`,
+              transformOrigin: "0 0",
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            <img
+              src={url}
+              alt={description || "Figura dal materiale"}
+              onLoad={() => setLoaded(true)}
+              className="block w-full h-full object-cover select-none pointer-events-none"
+              style={{ objectPosition: "0 0" }}
+              loading="lazy"
+              draggable={false}
+            />
+          </div>
+        )}
         {!loaded && (
           <div className="absolute inset-0 bg-surface-container animate-pulse" />
         )}
