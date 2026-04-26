@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { jwtVerify, importJWK, decodeProtectedHeader, type JWK } from "https://esm.sh/jose@5.9.6";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,6 +12,59 @@ export interface AuthResult {
   userEmail?: string;
   // deno-lint-ignore no-explicit-any
   supabase: any;
+}
+
+// Cache JWKS keys in module scope (per isolate) to avoid re-parsing on every call
+let cachedKeys: Map<string, CryptoKey> | null = null;
+
+async function getKeyForKid(kid: string | undefined): Promise<CryptoKey | null> {
+  if (!cachedKeys) {
+    const jwksRaw = Deno.env.get("SUPABASE_JWKS");
+    if (!jwksRaw) return null;
+    try {
+      const parsed = JSON.parse(jwksRaw) as { keys: JWK[] };
+      cachedKeys = new Map();
+      for (const k of parsed.keys ?? []) {
+        if (!k.kid) continue;
+        const ck = (await importJWK(k, k.alg ?? "ES256")) as CryptoKey;
+        cachedKeys.set(k.kid, ck);
+      }
+    } catch (e) {
+      console.error("Failed to parse SUPABASE_JWKS:", e);
+      return null;
+    }
+  }
+  if (!kid) {
+    // fallback: return first key
+    return cachedKeys.values().next().value ?? null;
+  }
+  return cachedKeys.get(kid) ?? null;
+}
+
+interface JwtPayload {
+  sub?: string;
+  email?: string;
+  exp?: number;
+}
+
+/**
+ * Verify a Supabase JWT locally using the JWKS public keys.
+ * This avoids GoTrue server calls (which can fail with session_not_found
+ * even when the JWT itself is still valid and unexpired).
+ */
+async function verifyJwtLocally(token: string): Promise<JwtPayload | null> {
+  try {
+    const header = decodeProtectedHeader(token);
+    // Legacy HS256 tokens cannot be verified with JWKS — fall back to caller
+    if (header.alg === "HS256") return null;
+    const key = await getKeyForKid(header.kid);
+    if (!key) return null;
+    const { payload } = await jwtVerify(token, key);
+    return payload as JwtPayload;
+  } catch (e) {
+    console.error("Local JWT verify failed:", (e as Error).message);
+    return null;
+  }
 }
 
 /**
@@ -29,39 +83,39 @@ export async function validateAuth(
 
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.replace("Bearer ", "");
-    
+
     // Skip if it's just the anon key (not a user token)
     if (token !== supabaseAnonKey) {
-      // Use service-role client and pass token explicitly to getUser(token).
-      // This works with both legacy HS256 and the new ES256 signing-keys JWTs,
-      // because validation is delegated to the GoTrue server (JWKS) rather
-      // than to a local secret on the supabase-js client.
       const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-      // Retry transient auth.getUser failures (cold-start network blips on the
-      // GoTrue side return error without a user, which surfaced as 500s).
-      let lastErr: unknown = null;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          const { data, error } = await supabaseAdmin.auth.getUser(token);
-          if (!error && data?.user) {
-            console.log(`Authenticated user: ${data.user.email || data.user.id}`);
-            return {
-              userId: data.user.id,
-              userEmail: data.user.email ?? undefined,
-              isAuthenticated: true,
-              supabase: supabaseAdmin,
-            };
-          }
-          lastErr = error;
-        } catch (e) {
-          lastErr = e;
-        }
-        if (attempt < 3) {
-          await new Promise((r) => setTimeout(r, 200 * attempt));
-        }
+      // 1) Try LOCAL JWKS verification first (fast + does not depend on
+      //    the GoTrue session existing). This is what fixes the
+      //    "session_not_found" 403s we were seeing in auth logs.
+      const payload = await verifyJwtLocally(token);
+      if (payload?.sub) {
+        return {
+          userId: payload.sub,
+          userEmail: payload.email,
+          isAuthenticated: true,
+          supabase: supabaseAdmin,
+        };
       }
-      console.error("auth.getUser failed after retries:", lastErr);
+
+      // 2) Fallback: legacy HS256 tokens or missing JWKS — ask GoTrue.
+      try {
+        const { data, error } = await supabaseAdmin.auth.getUser(token);
+        if (!error && data?.user) {
+          return {
+            userId: data.user.id,
+            userEmail: data.user.email ?? undefined,
+            isAuthenticated: true,
+            supabase: supabaseAdmin,
+          };
+        }
+        console.error("auth.getUser fallback failed:", error?.message);
+      } catch (e) {
+        console.error("auth.getUser threw:", (e as Error).message);
+      }
     }
   }
 
