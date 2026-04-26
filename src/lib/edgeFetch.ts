@@ -21,8 +21,8 @@ export async function edgeFetch<T = unknown>(
   };
 
   // Retry transient edge-runtime saturation (503/504) and rate-limits (429)
-  // with exponential backoff: 600ms → 1.2s → 2.4s.
-  const maxAttempts = 3;
+  // with exponential backoff: 250ms → 500ms → 1s → 2s.
+  const maxAttempts = 4;
   let lastErr: unknown = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -33,7 +33,7 @@ export async function edgeFetch<T = unknown>(
 
       if (!res.ok) {
         if (TRANSIENT_STATUSES.has(res.status) && attempt < maxAttempts) {
-          await sleep(600 * Math.pow(2, attempt - 1));
+          await sleep(250 * Math.pow(2, attempt - 1));
           continue;
         }
         const msg = (parsed && typeof parsed === "object" && "error" in parsed && typeof (parsed as { error?: unknown }).error === "string")
@@ -48,7 +48,7 @@ export async function edgeFetch<T = unknown>(
       // Network failure (e.g. "Failed to fetch") → retry too
       const isNetwork = err instanceof TypeError;
       if (isNetwork && attempt < maxAttempts) {
-        await sleep(600 * Math.pow(2, attempt - 1));
+        await sleep(250 * Math.pow(2, attempt - 1));
         continue;
       }
       if (attempt >= maxAttempts) throw err;
