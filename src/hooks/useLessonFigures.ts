@@ -165,8 +165,10 @@ export function useLessonFigures(lessonId: string | null | undefined) {
         setFigures(figs);
       } catch (err) {
         if (cancelled) return;
-        console.error("useLessonFigures error:", err);
-        setError(err instanceof Error ? err.message : "Errore");
+        // Figure extraction is non-critical: log but don't surface to UI.
+        // The lesson itself works fine without [FIG:N] markers.
+        console.warn("useLessonFigures (non-blocking):", err);
+        setError(null);
         setFigures([]);
       } finally {
         if (!cancelled) setLoading(false);
