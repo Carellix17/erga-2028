@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { jwtVerify, importJWK, decodeProtectedHeader, type JWK } from "https://esm.sh/jose@5.9.6";
+import { jwtVerify, createRemoteJWKSet, decodeProtectedHeader } from "https://esm.sh/jose@5.9.6";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,31 +14,18 @@ export interface AuthResult {
   supabase: any;
 }
 
-// Cache JWKS keys in module scope (per isolate) to avoid re-parsing on every call
-let cachedKeys: Map<string, CryptoKey> | null = null;
+// Cache the remote JWKS resolver in module scope (per isolate).
+// jose handles HTTP caching + key rotation automatically.
+let jwksResolver: ReturnType<typeof createRemoteJWKSet> | null = null;
 
-async function getKeyForKid(kid: string | undefined): Promise<CryptoKey | null> {
-  if (!cachedKeys) {
-    const jwksRaw = Deno.env.get("SUPABASE_JWKS");
-    if (!jwksRaw) return null;
-    try {
-      const parsed = JSON.parse(jwksRaw) as { keys: JWK[] };
-      cachedKeys = new Map();
-      for (const k of parsed.keys ?? []) {
-        if (!k.kid) continue;
-        const ck = (await importJWK(k, k.alg ?? "ES256")) as CryptoKey;
-        cachedKeys.set(k.kid, ck);
-      }
-    } catch (e) {
-      console.error("Failed to parse SUPABASE_JWKS:", e);
-      return null;
-    }
+function getJwks() {
+  if (!jwksResolver) {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    jwksResolver = createRemoteJWKSet(
+      new URL(`${supabaseUrl}/auth/v1/.well-known/jwks.json`),
+    );
   }
-  if (!kid) {
-    // fallback: return first key
-    return cachedKeys.values().next().value ?? null;
-  }
-  return cachedKeys.get(kid) ?? null;
+  return jwksResolver;
 }
 
 interface JwtPayload {
@@ -57,9 +44,7 @@ async function verifyJwtLocally(token: string): Promise<JwtPayload | null> {
     const header = decodeProtectedHeader(token);
     // Legacy HS256 tokens cannot be verified with JWKS — fall back to caller
     if (header.alg === "HS256") return null;
-    const key = await getKeyForKid(header.kid);
-    if (!key) return null;
-    const { payload } = await jwtVerify(token, key);
+    const { payload } = await jwtVerify(token, getJwks());
     return payload as JwtPayload;
   } catch (e) {
     console.error("Local JWT verify failed:", (e as Error).message);
