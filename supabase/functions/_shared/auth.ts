@@ -32,24 +32,25 @@ export async function validateAuth(
     
     // Skip if it's just the anon key (not a user token)
     if (token !== supabaseAnonKey) {
-      const supabaseWithAuth = createClient(supabaseUrl, supabaseAnonKey, {
-        global: { headers: { Authorization: authHeader } },
-      });
+      // Use service-role client and pass token explicitly to getUser(token).
+      // This works with both legacy HS256 and the new ES256 signing-keys JWTs,
+      // because validation is delegated to the GoTrue server (JWKS) rather
+      // than to a local secret on the supabase-js client.
+      const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
       // Retry transient auth.getUser failures (cold-start network blips on the
       // GoTrue side return error without a user, which surfaced as 500s).
       let lastErr: unknown = null;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          const { data, error } = await supabaseWithAuth.auth.getUser();
+          const { data, error } = await supabaseAdmin.auth.getUser(token);
           if (!error && data?.user) {
             console.log(`Authenticated user: ${data.user.email || data.user.id}`);
-            const supabase = createClient(supabaseUrl, supabaseServiceKey);
             return {
               userId: data.user.id,
               userEmail: data.user.email ?? undefined,
               isAuthenticated: true,
-              supabase,
+              supabase: supabaseAdmin,
             };
           }
           lastErr = error;
