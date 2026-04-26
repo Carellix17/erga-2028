@@ -80,7 +80,8 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const updateProgress = useUpdateLessonProgress(effectiveContextId);
   const { invalidateList, invalidateContexts, setLessonsList } = useLessonsCacheControls();
 
-  // Sincronizza l'indice corrente con quello del cloud al primo load di un context
+  // Sincronizza l'indice corrente con quello del cloud al primo load di un context.
+  // Per un nuovo PDF la progressione è separata, quindi parte da 0.
   useEffect(() => {
     setCurrentLessonIndex(cachedCurrentIndex);
   }, [effectiveContextId, cachedCurrentIndex]);
@@ -89,7 +90,16 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const isLoading = hasFiles && lessonsQuery.isLoading && lessons.length === 0;
 
   useEffect(() => { if (lessons.length === 0) return; setCurrentLessonIndex((idx) => { if (idx < 0) return 0; if (idx > lessons.length - 1) return lessons.length - 1; return idx; }); }, [lessons.length]);
-  useEffect(() => { if (lessons.length === 0) return; const lesson = lessons[currentLessonIndex]; if (!lesson || lesson.is_generated || isGeneratingLesson || isGenerating) return; generateLessonContent(currentLessonIndex); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [currentLessonIndex, lessons, isGeneratingLesson, isGenerating]);
+  // Auto-generazione SEQUENZIALE: genera sempre la prima lezione non ancora generata
+  // (in ordine di lesson_order), mai una successiva prima delle precedenti.
+  useEffect(() => {
+    if (lessons.length === 0) return;
+    if (isGeneratingLesson || isGenerating) return;
+    const firstUngeneratedIdx = lessons.findIndex((l) => !l.is_generated);
+    if (firstUngeneratedIdx === -1) return;
+    generateLessonContent(firstUngeneratedIdx);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [lessons, isGeneratingLesson, isGenerating]);
   useEffect(() => { onFullscreenChange?.(activeLessonIndex !== null || showFinalTest); }, [activeLessonIndex, showFinalTest, onFullscreenChange]);
 
   const refetchLessons = async () => {

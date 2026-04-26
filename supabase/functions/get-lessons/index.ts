@@ -44,22 +44,29 @@ serve(async (req) => {
         ? await legacyLessonsQuery
         : { data: null };
 
-      // Get progress
-      const { data: progress } = await supabase
+      // Get progress (per-context when contextId provided, else global)
+      let progressQuery = supabase
         .from("lesson_progress")
         .select("current_lesson_index")
-        .eq("user_id", userId)
-        .maybeSingle();
+        .eq("user_id", userId);
+      progressQuery = contextId
+        ? progressQuery.eq("context_id", contextId)
+        : progressQuery.is("context_id", null);
+      const { data: progress } = await progressQuery.maybeSingle();
 
       if (lessonsError) {
         console.error("Lessons error:", lessonsError);
         throw new Error("Errore nel caricamento delle lezioni");
       }
 
-      return successResponse({ 
-        success: true, 
-        lessons: [...(lessons || []), ...(legacyLessons || [])],
-        currentIndex: progress?.current_lesson_index || 0
+      const mergedLessons = [...(lessons || []), ...(legacyLessons || [])].sort(
+        (a: { lesson_order: number }, b: { lesson_order: number }) =>
+          (a.lesson_order ?? 0) - (b.lesson_order ?? 0)
+      );
+      return successResponse({
+        success: true,
+        lessons: mergedLessons,
+        currentIndex: progress?.current_lesson_index || 0,
       });
     }
 
@@ -86,14 +93,32 @@ serve(async (req) => {
     }
 
     if (action === "updateProgress" && lessonIndex !== undefined) {
-      // Update progress
-      const { error } = await supabase
+      // Update progress per context (or global when no contextId)
+      // We can't rely on onConflict with a partial/expression unique index,
+      // so do a manual select-then-insert/update.
+      let existingQuery = supabase
         .from("lesson_progress")
-        .upsert({
-          user_id: userId,
-          current_lesson_index: lessonIndex,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: "user_id" });
+        .select("id")
+        .eq("user_id", userId);
+      existingQuery = contextId
+        ? existingQuery.eq("context_id", contextId)
+        : existingQuery.is("context_id", null);
+      const { data: existing } = await existingQuery.maybeSingle();
+
+      const { error } = existing
+        ? await supabase
+            .from("lesson_progress")
+            .update({
+              current_lesson_index: lessonIndex,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existing.id)
+        : await supabase.from("lesson_progress").insert({
+            user_id: userId,
+            context_id: contextId ?? null,
+            current_lesson_index: lessonIndex,
+            updated_at: new Date().toISOString(),
+          });
 
       if (error) {
         console.error("Progress error:", error);
