@@ -95,18 +95,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const isLoading = hasFiles && lessonsQuery.isLoading && lessons.length === 0;
 
   useEffect(() => { if (lessons.length === 0) return; setCurrentLessonIndex((idx) => { if (idx < 0) return 0; if (idx > lessons.length - 1) return lessons.length - 1; return idx; }); }, [lessons.length]);
-  // Auto-generazione SEQUENZIALE: genera sempre la prima lezione non ancora generata
-  // (in ordine di lesson_order), mai una successiva prima delle precedenti.
-  useEffect(() => {
-    if (lessons.length === 0) return;
-    if (isGenerating) return;
-    const firstUngeneratedIdx = lessons.findIndex((l) => !l.is_generated);
-    if (firstUngeneratedIdx === -1) return;
-    const key = `${effectiveContextId ?? "null"}::${firstUngeneratedIdx}`;
-    if (inflightLessonsRef.current.has(key)) return;
-    generateLessonContent(firstUngeneratedIdx);
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [lessons, isGenerating, effectiveContextId]);
+  // ⚠️ NESSUNA auto-generazione a cascata. Le lezioni vengono generate SOLO on-demand:
+  //   - quando l'utente apre una lezione (handleSelectLesson)
+  //   - quando l'utente passa alla "prossima" (handleNext), max 1 in anticipo
+  // Concorrenza: massimo UNA richiesta in volo (vedi inflightLessonsRef + isGeneratingLesson).
   useEffect(() => { onFullscreenChange?.(activeLessonIndex !== null || showFinalTest); }, [activeLessonIndex, showFinalTest, onFullscreenChange]);
 
   const refetchLessons = async () => {
