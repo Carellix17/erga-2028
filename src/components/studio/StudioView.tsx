@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FullscreenLesson } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
 import { LessonsList } from "./LessonsList";
@@ -11,6 +11,7 @@ import { Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
+import { edgeFetch } from "@/lib/edgeFetch";
 import {
   useLessonsQuery,
   useStudyContextsQuery,
@@ -42,6 +43,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const [isLoadingFinalTest, setIsLoadingFinalTest] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+
+  // Tracciamento delle generazioni di lezione in volo per evitare doppie chiamate
+  // sullo stesso (contextId, lessonIndex) durante refetch della query.
+  const inflightLessonsRef = useRef<Set<string>>(new Set());
 
   // === React Query: contesti + lezioni cached (5 min) ===
   const contextsQuery = useStudyContextsQuery();
@@ -94,12 +99,14 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   // (in ordine di lesson_order), mai una successiva prima delle precedenti.
   useEffect(() => {
     if (lessons.length === 0) return;
-    if (isGeneratingLesson || isGenerating) return;
+    if (isGenerating) return;
     const firstUngeneratedIdx = lessons.findIndex((l) => !l.is_generated);
     if (firstUngeneratedIdx === -1) return;
+    const key = `${effectiveContextId ?? "null"}::${firstUngeneratedIdx}`;
+    if (inflightLessonsRef.current.has(key)) return;
     generateLessonContent(firstUngeneratedIdx);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [lessons, isGeneratingLesson, isGenerating]);
+  }, [lessons, isGenerating, effectiveContextId]);
   useEffect(() => { onFullscreenChange?.(activeLessonIndex !== null || showFinalTest); }, [activeLessonIndex, showFinalTest, onFullscreenChange]);
 
   const refetchLessons = async () => {
@@ -164,30 +171,37 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   const generateLessonContent = async (lessonIndex: number) => {
     if (!currentUser) return null;
+    const contextId = selectedContextId || activeContextId;
+    const key = `${contextId ?? "null"}::${lessonIndex}`;
+    // Guard: una sola richiesta in volo per (contextId, lessonIndex)
+    if (inflightLessonsRef.current.has(key)) return null;
+    inflightLessonsRef.current.add(key);
     setIsGeneratingLesson(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const body: Record<string, unknown> = { userId: currentUser, action: "generateLesson", lessonIndex };
-      const contextId = selectedContextId || activeContextId;
       if (contextId) body.contextId = contextId;
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` }, body: JSON.stringify(body) });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Errore nella generazione");
+      // edgeFetch ha retry esponenziale su 429/502/503/504 e su "Failed to fetch"
+      const data = await edgeFetch<{ lesson?: Lesson }>("generate-lessons", body);
       if (data.lesson) {
         setLessonsList(effectiveContextId, (prev) => {
           if (!prev) return prev;
           return {
             ...prev,
-            lessons: prev.lessons.map((l) => (l.lesson_order === lessonIndex ? data.lesson : l)),
+            lessons: prev.lessons.map((l) => (l.lesson_order === lessonIndex ? (data.lesson as Lesson) : l)),
           };
         });
       }
-      return data.lesson;
-    } catch (error) { console.error("Error generating lesson:", error);
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella generazione", variant: "destructive" }); return null;
-    } finally { setIsGeneratingLesson(false); }
+      return data.lesson ?? null;
+    } catch (error) {
+      console.error("Error generating lesson:", error);
+      const msg = error instanceof Error ? error.message : "Errore nella generazione";
+      // Il network-blip transient è già stato ritentato da edgeFetch; se siamo qui è un vero errore
+      toast({ title: "Errore", description: msg, variant: "destructive" });
+      return null;
+    } finally {
+      inflightLessonsRef.current.delete(key);
+      setIsGeneratingLesson(false);
+    }
   };
 
   const handleNext = async () => {
