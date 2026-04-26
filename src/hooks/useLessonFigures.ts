@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { renderPdfPagesRangeAsBase64, renderPdfPageCropAsBase64 } from "@/lib/pdfPageRenderer";
+import { edgeFetch } from "@/lib/edgeFetch";
 
 export interface LessonFigure {
   id: string;
@@ -27,18 +28,13 @@ function enqueue<T>(task: () => Promise<T>): Promise<T> {
   return next;
 }
 
-async function invokeWithRetry(body: Record<string, unknown>, attempts = 3): Promise<{ data: any; error: any }> {
-  let lastErr: any = null;
-  for (let i = 0; i < attempts; i++) {
-    const res = await supabase.functions.invoke("extract-lesson-figures", { body });
-    const status = (res.error as any)?.context?.status ?? (res.error as any)?.status;
-    if (!res.error) return res;
-    lastErr = res.error;
-    // Retry only on transient 503 / network-ish errors
-    if (status !== 503 && status !== 504 && status !== 429) return res;
-    await new Promise(r => setTimeout(r, 800 * (i + 1)));
+async function invokeWithRetry(body: Record<string, unknown>): Promise<{ data: any; error: any }> {
+  try {
+    const data = await edgeFetch<any>("extract-lesson-figures", body);
+    return { data, error: null };
+  } catch (err) {
+    return { data: null, error: err };
   }
-  return { data: null, error: lastErr };
 }
 
 async function loadFiguresFor(lessonId: string): Promise<LessonFigure[]> {
