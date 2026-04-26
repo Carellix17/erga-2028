@@ -177,6 +177,10 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes("Missing authentication")) {
+      return errorResponse("Sessione scaduta. Effettua di nuovo l'accesso.", 401);
+    }
     return errorResponse("Errore nel caricamento delle lezioni. Riprova.");
   }
 });

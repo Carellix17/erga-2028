@@ -36,20 +36,31 @@ export async function validateAuth(
         global: { headers: { Authorization: authHeader } },
       });
 
-      const { data, error } = await supabaseWithAuth.auth.getUser();
-
-      if (!error && data?.user) {
-        console.log(`Authenticated user: ${data.user.email || data.user.id}`);
-        
-        const supabase = createClient(supabaseUrl, supabaseServiceKey);
-        
-        return {
-          userId: data.user.id,
-          userEmail: data.user.email ?? undefined,
-          isAuthenticated: true,
-          supabase,
-        };
+      // Retry transient auth.getUser failures (cold-start network blips on the
+      // GoTrue side return error without a user, which surfaced as 500s).
+      let lastErr: unknown = null;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          const { data, error } = await supabaseWithAuth.auth.getUser();
+          if (!error && data?.user) {
+            console.log(`Authenticated user: ${data.user.email || data.user.id}`);
+            const supabase = createClient(supabaseUrl, supabaseServiceKey);
+            return {
+              userId: data.user.id,
+              userEmail: data.user.email ?? undefined,
+              isAuthenticated: true,
+              supabase,
+            };
+          }
+          lastErr = error;
+        } catch (e) {
+          lastErr = e;
+        }
+        if (attempt < 3) {
+          await new Promise((r) => setTimeout(r, 200 * attempt));
+        }
       }
+      console.error("auth.getUser failed after retries:", lastErr);
     }
   }
 
