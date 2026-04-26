@@ -59,10 +59,14 @@ serve(async (req) => {
         throw new Error("Errore nel caricamento delle lezioni");
       }
 
-      return successResponse({ 
-        success: true, 
-        lessons: [...(lessons || []), ...(legacyLessons || [])],
-        currentIndex: progress?.current_lesson_index || 0
+      const mergedLessons = [...(lessons || []), ...(legacyLessons || [])].sort(
+        (a: { lesson_order: number }, b: { lesson_order: number }) =>
+          (a.lesson_order ?? 0) - (b.lesson_order ?? 0)
+      );
+      return successResponse({
+        success: true,
+        lessons: mergedLessons,
+        currentIndex: progress?.current_lesson_index || 0,
       });
     }
 
