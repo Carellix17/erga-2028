@@ -165,8 +165,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     if (!currentUser) return null;
     const contextId = selectedContextId || activeContextId;
     const key = `${contextId ?? "null"}::${lessonIndex}`;
-    // Guard: una sola richiesta in volo per (contextId, lessonIndex)
-    if (inflightLessonsRef.current.has(key)) return null;
+    // 🛑 LIMITE DI CONCORRENZA: una sola richiesta di generazione in volo nell'intera app.
+    if (inflightLessonsRef.current.size > 0) {
+      console.warn("[generateLessonContent] richiesta ignorata: un'altra è già in corso", { lessonIndex });
+      return null;
+    }
     inflightLessonsRef.current.add(key);
     setIsGeneratingLesson(true);
     try {
