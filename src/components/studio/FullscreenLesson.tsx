@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { X, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, ImageIcon } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { cn } from "@/lib/utils";
@@ -163,6 +163,16 @@ export function FullscreenLesson({
     }
   }, [currentStep, steps, onComplete, isAnimating]);
 
+  const handleBack = useCallback(() => {
+    if (isAnimating || currentStep === 0) return;
+    setIsAnimating(true);
+    setTimeout(() => {
+      setCurrentStep(s => Math.max(0, s - 1));
+      setCurrentExerciseAnswered(false);
+      setIsAnimating(false);
+    }, 250);
+  }, [currentStep, isAnimating]);
+
   const handleExerciseComplete = useCallback(
     (correct: boolean) => {
       if (step.exerciseIndex !== undefined) {
@@ -261,11 +271,23 @@ export function FullscreenLesson({
 
       {/* Bottom action */}
       <div className="flex-shrink-0 p-4 pb-8 safe-area-bottom">
+        <div className="flex gap-2">
+        {currentStep > 0 && (
+          <Button
+            onClick={handleBack}
+            variant="tonal"
+            size="lg"
+            className="h-14 rounded-2xl px-5"
+            aria-label="Torna indietro"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+        )}
         <Button
           onClick={handleContinue}
           disabled={!canContinue}
           className={cn(
-            "w-full h-14 rounded-2xl text-base font-semibold transition-all duration-300 ease-m3-emphasized",
+            "flex-1 h-14 rounded-2xl text-base font-semibold transition-all duration-300 ease-m3-emphasized",
             canContinue
               ? "shadow-level-2 hover:shadow-level-3 active:scale-[0.97]"
               : "bg-surface-container-highest text-muted-foreground shadow-level-0"
@@ -279,6 +301,7 @@ export function FullscreenLesson({
             : "Continua"}
           {(canContinue || step.type !== "exercise") && <ChevronRight className="w-5 h-5 ml-1" />}
         </Button>
+        </div>
       </div>
     </div>
   );
