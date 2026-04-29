@@ -206,7 +206,8 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       if (!nextLesson) return;
       if (!nextLesson.is_generated) await generateLessonContent(newIndex);
       setCurrentLessonIndex(newIndex);
-      updateProgress.mutate(newIndex);
+      // Avanzamento reale: persiste il nuovo massimo raggiunto.
+      if (newIndex > cachedCurrentIndex) updateProgress.mutate(newIndex);
     } else { handleStartFinalTest(); }
   };
 
@@ -234,7 +235,8 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     if (!selectedLesson) return;
     if (!selectedLesson.is_generated) await generateLessonContent(index);
     setCurrentLessonIndex(index); setShowList(false);
-    updateProgress.mutate(index);
+    // Aggiorna i progressi solo in avanti: tornare indietro non riduce il completamento.
+    if (index > cachedCurrentIndex) updateProgress.mutate(index);
   };
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
@@ -340,7 +342,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           if (!lesson) return;
           if (!lesson.is_generated) await generateLessonContent(index);
           setActiveLessonIndex(index);
-          updateProgress.mutate(index);
+          if (index > cachedCurrentIndex) updateProgress.mutate(index);
         }}
         onBack={() => {}}
         isGenerating={isGeneratingLesson}
@@ -362,7 +364,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
             const nextIndex = activeLessonIndex < lessons.length - 1 ? activeLessonIndex + 1 : activeLessonIndex;
             setCurrentLessonIndex(nextIndex);
             setActiveLessonIndex(null);
-            updateProgress.mutate(nextIndex);
+            if (nextIndex > cachedCurrentIndex) updateProgress.mutate(nextIndex);
           }}
           isLastLesson={activeLessonIndex === lessons.length - 1}
           nextLessonId={

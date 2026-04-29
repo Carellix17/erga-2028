@@ -52,7 +52,10 @@ export function LessonsList({
   isLoadingFinalTest,
   contextFileName,
 }: LessonsListProps) {
-  const completedCount = lessons.filter(l => l.is_generated).length;
+  // Conta le lezioni effettivamente completate dall'utente (non quelle generate).
+  // currentIndex = indice della lezione "corrente"; le precedenti sono completate.
+  // Clampato in [0, lessons.length] così se l'utente torna indietro il valore non scende.
+  const completedCount = Math.max(0, Math.min(currentIndex, lessons.length));
   const progress = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
   const color = getStableSubjectColor(contextFileName || "");
 
