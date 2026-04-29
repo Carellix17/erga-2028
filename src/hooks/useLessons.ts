@@ -86,11 +86,13 @@ export function useUpdateLessonProgress(contextId: string | null | undefined) {
 
   return useTrackedMutation<unknown, Error, number, { previous?: { lessons: Lesson[]; currentIndex: number } }>({
     mutationFn: async (lessonIndex: number) => {
-      return edgeFetch("get-lessons", {
+      const body: Record<string, unknown> = {
         userId: currentUser,
         action: "updateProgress",
         lessonIndex,
-      });
+      };
+      if (contextId) body.contextId = contextId;
+      return edgeFetch("get-lessons", body);
     },
     onMutate: async (lessonIndex) => {
       const qk = lessonsKeys.list(currentUser, contextId);
