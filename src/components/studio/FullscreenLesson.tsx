@@ -275,9 +275,8 @@ export function FullscreenLesson({
         {currentStep > 0 && (
           <Button
             onClick={handleBack}
-            variant="tonal"
             size="lg"
-            className="h-14 rounded-2xl px-5"
+            className="h-14 rounded-2xl px-5 bg-[hsl(8_85%_55%)] hover:bg-[hsl(8_85%_50%)] text-white shadow-level-2"
             aria-label="Torna indietro"
           >
             <ChevronLeft className="w-5 h-5" />
