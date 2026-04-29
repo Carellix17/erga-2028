@@ -57,24 +57,55 @@ function base64ToBytes(b64: string): Uint8Array {
 function normalizeBox(box: FigureBox, page?: IncomingPage): FigureBox | null {
   const pageWidth = page?.width || 0;
   const pageHeight = page?.height || 0;
-  const looksLikePixels = box.x > 100 || box.y > 100 || box.width > 100 || box.height > 100;
 
   let x = box.x;
   let y = box.y;
   let width = box.width;
   let height = box.height;
 
-  if (looksLikePixels && pageWidth > 0 && pageHeight > 0) {
-    x = (x / pageWidth) * 100;
-    y = (y / pageHeight) * 100;
-    width = (width / pageWidth) * 100;
-    height = (height / pageHeight) * 100;
+  // Auto-detect coordinate scale used by the model.
+  // Possible scales: 0-1 (normalized), 0-100 (percent), 0-1000 (Gemini default),
+  // or absolute pixels matching pageWidth/pageHeight.
+  const maxVal = Math.max(
+    Math.abs(x), Math.abs(y),
+    Math.abs(x + width), Math.abs(y + height),
+  );
+
+  let scale: "unit" | "percent" | "thousand" | "pixels";
+  if (maxVal <= 1.5) scale = "unit";
+  else if (maxVal <= 100.5) scale = "percent";
+  else if (maxVal <= 1000.5) scale = "thousand";
+  else scale = "pixels";
+
+  const before = { x, y, width, height };
+
+  if (scale === "unit") {
+    x *= 100; y *= 100; width *= 100; height *= 100;
+  } else if (scale === "thousand") {
+    x = (x / 1000) * 100;
+    y = (y / 1000) * 100;
+    width = (width / 1000) * 100;
+    height = (height / 1000) * 100;
+  } else if (scale === "pixels") {
+    if (pageWidth > 0 && pageHeight > 0) {
+      x = (x / pageWidth) * 100;
+      y = (y / pageHeight) * 100;
+      width = (width / pageWidth) * 100;
+      height = (height / pageHeight) * 100;
+    } else {
+      console.warn(`[normalizeBox] pixel coords but no page dims for page ${page?.pageNum}`);
+      return null;
+    }
   }
 
-  // Apply 5% padding around the detected box so we never crop too tight,
-  // but keep the look compact and clean (the previous 10% was too loose).
-  const padX = width * 0.05;
-  const padY = height * 0.05;
+  console.log(
+    `[normalizeBox] page=${page?.pageNum} dims=${pageWidth}x${pageHeight} scale=${scale} ` +
+    `raw=${JSON.stringify(before)} → pct=${JSON.stringify({ x: +x.toFixed(2), y: +y.toFixed(2), width: +width.toFixed(2), height: +height.toFixed(2) })}`,
+  );
+
+  // Apply small padding so we never crop too tight.
+  const padX = width * 0.04;
+  const padY = height * 0.04;
   x = x - padX;
   y = y - padY;
   width = width + padX * 2;
@@ -98,7 +129,11 @@ async function detectFigures(
 ): Promise<{ pageNum: number; figures: FigureBox[] }[]> {
   if (pageImages.length === 0) return [];
 
-  const pageList = pageImages.map((p, i) => `Immagine ${i + 1} = pagina ${p.pageNum}`).join(", ");
+  const pageList = pageImages
+    .map((p, i) => `Immagine ${i + 1} = pagina ${p.pageNum} (${p.width || "?"}x${p.height || "?"} px)`)
+    .join(", ");
+
+  console.log(`[detectFigures] sending ${pageImages.length} page(s) to Vision: ${pageList}`);
 
   const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -143,12 +178,18 @@ b) È un elemento grafico VERO E PROPRIO (immagine raster o vettoriale, non test
 c) Ha senso anche estratta da sola, fuori contesto
 d) Se la togli, la pagina perde un'informazione visiva (non solo decorativa)
 
-BOUNDING BOX:
-- Coordinate in PERCENTUALI 0-100 della pagina
-- x, y = angolo in alto a sinistra
-- width, height = dimensioni
-- Includi SOLO la figura, NON didascalie, NON titoli adiacenti, NON il testo del paragrafo accanto
-- Sii preciso: bordo della figura, niente di più
+BOUNDING BOX (CRITICO — leggere con attenzione):
+- Sistema di coordinate: PERCENTUALI da 0 a 100 della pagina visibile.
+- Origine (0,0) = angolo IN ALTO A SINISTRA della pagina.
+- Asse X cresce verso DESTRA, asse Y cresce verso il BASSO.
+- x = distanza dal bordo SINISTRO (in % della larghezza pagina).
+- y = distanza dal bordo SUPERIORE (in % dell'altezza pagina).
+- width = larghezza del riquadro (in % della larghezza pagina).
+- height = altezza del riquadro (in % dell'altezza pagina).
+- Vincolo: 0 ≤ x, x+width ≤ 100  e  0 ≤ y, y+height ≤ 100.
+- NON usare pixel. NON usare il formato [ymin, xmin, ymax, xmax]. NON normalizzare 0-1 o 0-1000.
+- Includi SOLO la figura: NIENTE didascalie, titoli adiacenti, testo del paragrafo accanto.
+- Sii preciso: il riquadro deve combaciare col bordo della figura, niente di più, niente di meno.
 
 REGOLE FINALI:
 - Se la pagina è SOLO testo (anche con titoli grandi), ritorna figures: []
@@ -177,7 +218,7 @@ Rispondi SOLO con JSON valido, senza markdown:
 
   const data = await resp.json();
   const content = data.choices?.[0]?.message?.content || "";
-  console.log("Vision response (first 400):", content.substring(0, 400));
+  console.log("Vision response (first 600):", content.substring(0, 600));
 
   try {
     const match = content.match(/\[[\s\S]*\]/);
