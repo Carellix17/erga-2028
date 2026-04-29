@@ -342,7 +342,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           if (!lesson) return;
           if (!lesson.is_generated) await generateLessonContent(index);
           setActiveLessonIndex(index);
-          updateProgress.mutate(index);
+          if (index > cachedCurrentIndex) updateProgress.mutate(index);
         }}
         onBack={() => {}}
         isGenerating={isGeneratingLesson}
@@ -364,7 +364,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
             const nextIndex = activeLessonIndex < lessons.length - 1 ? activeLessonIndex + 1 : activeLessonIndex;
             setCurrentLessonIndex(nextIndex);
             setActiveLessonIndex(null);
-            updateProgress.mutate(nextIndex);
+            if (nextIndex > cachedCurrentIndex) updateProgress.mutate(nextIndex);
           }}
           isLastLesson={activeLessonIndex === lessons.length - 1}
           nextLessonId={
