@@ -35,7 +35,7 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "group relative block w-full overflow-hidden rounded-xl border border-border bg-surface-container-low shadow-level-1 transition-all duration-300 hover:shadow-level-2 active:scale-[0.98]",
+          "group relative block w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-border bg-surface-container-low shadow-sm transition-all duration-300 hover:shadow-md active:scale-[0.98]",
           className,
         )}
         style={isFullRect ? undefined : { aspectRatio: cropAspect }}
@@ -46,13 +46,13 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
             src={url}
             alt={description || "Figura dal materiale"}
             onLoad={() => setLoaded(true)}
-            className="block w-full h-auto max-h-[60vh] object-contain mx-auto select-none pointer-events-none"
+            className="block w-full h-auto max-h-[60vh] object-cover rounded-2xl mx-auto select-none pointer-events-none"
             loading="lazy"
             draggable={false}
           />
         ) : (
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 rounded-2xl overflow-hidden"
             style={{
               transform: `scale(${scaleX}, ${scaleY}) translate(${-bbox.x}%, ${-bbox.y}%)`,
               transformOrigin: "0 0",
