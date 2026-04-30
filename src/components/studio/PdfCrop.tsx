@@ -35,7 +35,7 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "group relative block w-full rounded-2xl transition-all duration-300 active:scale-[0.98]",
+          "group relative block w-full overflow-hidden rounded-2xl bg-transparent shadow-none ring-1 ring-border/40 transition-all duration-300 active:scale-[0.98]",
           className,
         )}
         style={isFullRect ? undefined : { aspectRatio: cropAspect }}
@@ -46,26 +46,24 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
             src={url}
             alt={description || "Figura dal materiale"}
             onLoad={() => setLoaded(true)}
-            className="block w-full h-auto max-h-[60vh] object-cover rounded-2xl mx-auto select-none pointer-events-none ring-1 ring-black/10 dark:ring-white/10"
+            className="block w-full h-auto max-h-[60vh] rounded-2xl object-cover mx-auto select-none pointer-events-none"
             loading="lazy"
             draggable={false}
           />
         ) : (
           <div
-            className="absolute inset-0 rounded-2xl overflow-hidden"
-            style={{
-              transform: `scale(${scaleX}, ${scaleY}) translate(${-bbox.x}%, ${-bbox.y}%)`,
-              transformOrigin: "0 0",
-              width: "100%",
-              height: "100%",
-            }}
+            className="absolute inset-0 overflow-hidden rounded-2xl bg-transparent"
           >
             <img
               src={url}
               alt={description || "Figura dal materiale"}
               onLoad={() => setLoaded(true)}
-              className="block w-full h-full object-cover select-none pointer-events-none"
-              style={{ objectPosition: "0 0" }}
+              className="block w-full h-full rounded-2xl object-cover select-none pointer-events-none"
+              style={{
+                transform: `scale(${scaleX}, ${scaleY}) translate(${-bbox.x}%, ${-bbox.y}%)`,
+                transformOrigin: "0 0",
+                objectPosition: "0 0",
+              }}
               loading="lazy"
               draggable={false}
             />
