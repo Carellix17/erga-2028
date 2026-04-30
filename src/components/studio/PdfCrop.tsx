@@ -35,7 +35,7 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "group relative block w-full overflow-hidden rounded-2xl bg-transparent shadow-none ring-1 ring-border/40 transition-all duration-300 active:scale-[0.98]",
+          "group relative block w-full overflow-hidden rounded-2xl bg-transparent p-0 shadow-none outline-none transition-transform duration-300 active:scale-[0.98]",
           className,
         )}
         style={isFullRect ? undefined : { aspectRatio: cropAspect }}
@@ -70,7 +70,7 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
           </div>
         )}
         {!loaded && (
-          <div className="absolute inset-0 bg-surface-container animate-pulse" />
+          <div className="absolute inset-0 rounded-2xl bg-surface-container animate-pulse" />
         )}
         <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-level-1">
           <ZoomIn className="w-4 h-4 text-foreground" />
