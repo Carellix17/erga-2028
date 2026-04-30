@@ -42,14 +42,16 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
         aria-label={description || "Apri figura"}
       >
         {isFullRect ? (
-          <img
-            src={url}
-            alt={description || "Figura dal materiale"}
-            onLoad={() => setLoaded(true)}
-            className="block w-full h-auto max-h-[60vh] rounded-2xl object-cover mx-auto select-none pointer-events-none"
-            loading="lazy"
-            draggable={false}
-          />
+          <span className="block overflow-hidden rounded-2xl bg-transparent">
+            <img
+              src={url}
+              alt={description || "Figura dal materiale"}
+              onLoad={() => setLoaded(true)}
+              className="block w-full h-auto max-h-[60vh] scale-[1.045] rounded-2xl object-cover mx-auto select-none pointer-events-none"
+              loading="lazy"
+              draggable={false}
+            />
+          </span>
         ) : (
           <div
             className="absolute inset-0 overflow-hidden rounded-2xl bg-transparent"
