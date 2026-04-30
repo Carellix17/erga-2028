@@ -35,7 +35,7 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "group relative block w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-border bg-surface-container-low shadow-sm transition-all duration-300 hover:shadow-md active:scale-[0.98]",
+          "group relative block w-full overflow-hidden rounded-2xl ring-1 ring-black/10 dark:ring-white/10 transition-all duration-300 hover:shadow-md active:scale-[0.98]",
           className,
         )}
         style={isFullRect ? undefined : { aspectRatio: cropAspect }}
