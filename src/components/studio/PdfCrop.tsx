@@ -47,7 +47,7 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
               src={url}
               alt={description || "Figura dal materiale"}
               onLoad={() => setLoaded(true)}
-              className="block w-full h-auto max-h-[60vh] scale-[1.045] rounded-2xl object-cover mx-auto select-none pointer-events-none"
+              className="block w-full h-auto max-h-[60vh] scale-[1.12] rounded-2xl object-cover mx-auto select-none pointer-events-none"
               loading="lazy"
               draggable={false}
             />
