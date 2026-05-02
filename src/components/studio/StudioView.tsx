@@ -335,13 +335,18 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
             Aggiorna stato
           </Button>
         ) : (
-          <Button onClick={handleGenerateLessons} disabled={isGenerating} className="h-12 px-6">
+          <Button onClick={handleGenerateLessons} disabled={isGenerating || generationBlocked} className="h-12 px-6">
             {isGenerating ? (
               <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Analisi in corso...</>
             ) : (
               <><Sparkles className="w-4 h-4 mr-2" />Genera percorso</>
             )}
           </Button>
+        )}
+        {generationBlocked && !isPdfProcessing && (
+          <p className="text-sm text-destructive max-w-sm bg-error-container/40 px-4 py-3 rounded-2xl border border-destructive/20">
+            {FREE_LIMIT_MESSAGE}
+          </p>
         )}
       </div>
     );
@@ -363,6 +368,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         activeContextId={activeContextId}
         onSelectCourse={handleSelectCourse}
       />
+      {generationBlocked && (
+        <div className="mx-4 mt-3 mb-1 px-4 py-3 rounded-2xl bg-error-container/50 border border-destructive/20 text-destructive text-sm font-medium animate-fade-in">
+          {FREE_LIMIT_MESSAGE}
+        </div>
+      )}
       <LessonsList
         lessons={lessons}
         currentIndex={currentLessonIndex}
@@ -378,7 +388,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         isGenerating={isGeneratingLesson}
         showBackButton={false}
         onRegenerate={handleGenerateLessons}
-        isRegenerating={isGenerating}
+        isRegenerating={isGenerating || generationBlocked}
         showFinalTest={allGenerated}
         onStartFinalTest={handleStartFinalTest}
         isLoadingFinalTest={isLoadingFinalTest}
