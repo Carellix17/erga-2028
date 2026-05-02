@@ -35,23 +35,21 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "group relative block w-full overflow-hidden rounded-2xl bg-transparent p-0 shadow-none outline-none transition-transform duration-300 active:scale-[0.98]",
+          "group relative block w-full p-0 bg-transparent shadow-none outline-none transition-transform duration-300 active:scale-[0.98]",
           className,
         )}
         style={isFullRect ? undefined : { aspectRatio: cropAspect }}
         aria-label={description || "Apri figura"}
       >
         {isFullRect ? (
-          <span className="block overflow-hidden rounded-2xl bg-transparent">
-            <img
-              src={url}
-              alt={description || "Figura dal materiale"}
-              onLoad={() => setLoaded(true)}
-              className="block w-full h-auto max-h-[60vh] scale-[1.12] rounded-2xl object-cover mx-auto select-none pointer-events-none"
-              loading="lazy"
-              draggable={false}
-            />
-          </span>
+          <img
+            src={url}
+            alt={description || "Figura dal materiale"}
+            onLoad={() => setLoaded(true)}
+            className="block w-full h-auto max-h-[60vh] rounded-2xl object-contain mx-auto select-none pointer-events-none ring-1 ring-border/40"
+            loading="lazy"
+            draggable={false}
+          />
         ) : (
           <div
             className="absolute inset-0 overflow-hidden rounded-2xl bg-transparent"
@@ -60,7 +58,7 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
               src={url}
               alt={description || "Figura dal materiale"}
               onLoad={() => setLoaded(true)}
-              className="block w-full h-full rounded-2xl object-cover select-none pointer-events-none"
+              className="block w-full h-full object-cover select-none pointer-events-none"
               style={{
                 transform: `scale(${scaleX}, ${scaleY}) translate(${-bbox.x}%, ${-bbox.y}%)`,
                 transformOrigin: "0 0",
@@ -72,7 +70,7 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
           </div>
         )}
         {!loaded && (
-          <div className="absolute inset-0 rounded-2xl bg-surface-container animate-pulse" />
+          <div className="absolute inset-0 rounded-2xl bg-surface-container animate-pulse pointer-events-none" />
         )}
         <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-level-1">
           <ZoomIn className="w-4 h-4 text-foreground" />
