@@ -2,6 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
 
 const MAX_CONTEXT_CHARS = 80000;
+const FREE_GENERATION_LIMIT = 5;
+const LIMIT_REACHED_MESSAGE =
+  "Hai raggiunto il limite di 5 lezioni gratuite per la beta. Per continuare a usare Erga senza limiti contattaci!";
 
 function extractJson(raw: string): unknown {
   let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
