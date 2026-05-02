@@ -91,9 +91,10 @@ export function ProfileView() {
     setIsUploadingAvatar(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
-      // Generate a unique file path
-      const ext = file.name.split(".").pop() || "jpg";
+
+      // Sanitize the extension client-side too (server enforces this as well).
+      const rawExt = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const ext = ["jpg", "jpeg", "png", "webp"].includes(rawExt) ? (rawExt === "jpeg" ? "jpg" : rawExt) : "jpg";
       const userId = session?.user?.id || currentUser.replace(/[^a-zA-Z0-9]/g, "_");
       const filePath = `${userId}/avatar.${ext}`;
 
@@ -114,7 +115,10 @@ export function ProfileView() {
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "uploadAvatar", fileData: base64, filePath }),
+          // filePath is NOT sent: the edge function derives it server-side
+          // from the authenticated user's id to prevent overwriting other
+          // users' avatars.
+          body: JSON.stringify({ userId: currentUser, action: "uploadAvatar", fileData: base64, ext }),
         });
         if (!response.ok) throw new Error("Upload fallito");
       }
