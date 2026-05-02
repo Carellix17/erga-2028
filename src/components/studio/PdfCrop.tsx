@@ -46,13 +46,13 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
             src={url}
             alt={description || "Figura dal materiale"}
             onLoad={() => setLoaded(true)}
-            className="block w-full h-auto max-h-[60vh] rounded-2xl object-contain mx-auto select-none pointer-events-none"
+            className="block w-full h-auto max-h-[60vh] rounded-2xl object-contain mx-auto select-none pointer-events-none border border-border/60"
             loading="lazy"
             draggable={false}
           />
         ) : (
           <div
-            className="absolute inset-0 overflow-hidden rounded-2xl bg-transparent"
+            className="absolute inset-0 overflow-hidden rounded-2xl bg-transparent border border-border/60"
           >
             <img
               src={url}
