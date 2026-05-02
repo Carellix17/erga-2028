@@ -76,7 +76,11 @@ serve(async (req) => {
     const { action, lessonIndex, contextId } = body;
 
     const auth = await validateAuth(req, body);
-    const { userId, supabase } = auth;
+    const { userId, supabase, userEmail: authEmail } = auth;
+
+    // Account demo/admin: nessun limite, e i contesti che crea sono marcati come demo
+    // così tutti gli altri utenti possono visualizzarli senza che contino nel limite.
+    const isDemoAdmin = (authEmail || "").toLowerCase() === "alecare2025@gmail.com";
 
     // Fetch user profile for personalization
     const { data: userProfile } = await supabase
@@ -120,6 +124,33 @@ serve(async (req) => {
       }
 
       if (!lessons) throw new Error("Lezione non trovata");
+
+      // ── RATE LIMIT (BETA) ──
+      // Verifica se la lezione appartiene a un contesto demo: in tal caso la
+      // generazione è gratuita e NON conta nel limite (le demo sono di sola lettura
+      // e già preparate dall'account admin).
+      let lessonIsDemo = false;
+      if (lessons.context_id) {
+        const { data: ctxFlag } = await supabase
+          .from("study_contexts")
+          .select("is_demo")
+          .eq("id", lessons.context_id)
+          .maybeSingle();
+        lessonIsDemo = !!ctxFlag?.is_demo;
+      }
+
+      // Se NON è demo e NON è l'admin → applica il limite gratuito
+      if (!lessonIsDemo && !isDemoAdmin) {
+        const { data: profileForLimit } = await supabase
+          .from("user_profiles")
+          .select("generation_count")
+          .eq("user_id", userId)
+          .maybeSingle();
+        const currentCount = profileForLimit?.generation_count ?? 0;
+        if (currentCount >= FREE_GENERATION_LIMIT) {
+          return errorResponse(LIMIT_REACHED_MESSAGE, 403);
+        }
+      }
       
       // Extract page range from lesson record
       const pageStart = (lessons as Record<string, unknown>).page_start as number | null;
@@ -282,6 +313,25 @@ ${studyContent}`;
         exercises: lessonData.exercises || [],
         is_generated: true,
       }).eq("id", lessons.id);
+
+      // ── INCREMENTA il contatore (solo per lezioni "vere", non demo, non admin) ──
+      if (!lessonIsDemo && !isDemoAdmin) {
+        const { data: existingProfile } = await supabase
+          .from("user_profiles")
+          .select("id, generation_count")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (existingProfile) {
+          await supabase
+            .from("user_profiles")
+            .update({ generation_count: (existingProfile.generation_count ?? 0) + 1 })
+            .eq("id", existingProfile.id);
+        } else {
+          await supabase
+            .from("user_profiles")
+            .insert({ user_id: userId, generation_count: 1 });
+        }
+      }
 
       const { data: updated } = await supabase.from("mini_lessons").select("*").eq("id", lessons.id).single();
       return successResponse({ success: true, lesson: updated });
@@ -449,6 +499,15 @@ ${combinedContent}`;
 
     const { error: insertError } = await supabase.from("mini_lessons").insert(lessonsToInsert);
     if (insertError) throw new Error("Errore durante il salvataggio delle lezioni");
+
+    // Se il piano è stato creato dall'admin demo, marca il contesto come demo
+    // così sarà visibile a tutti gli altri utenti senza consumare il loro limite.
+    if (isDemoAdmin && contextId) {
+      await supabase
+        .from("study_contexts")
+        .update({ is_demo: true })
+        .eq("id", contextId);
+    }
 
     return successResponse({ success: true, lessonsCount: titles.length, titles: titles.map((t: { title: string }) => t.title) });
 
