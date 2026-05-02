@@ -235,6 +235,25 @@ serve(async (req) => {
       return successResponse({ success: true, contexts: contextsWithCounts });
     }
 
+    if (action === "getUsage") {
+      // Restituisce l'uso corrente del piano gratuito per il rate limiting beta.
+      const FREE_LIMIT = 5;
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("generation_count")
+        .eq("user_id", userId)
+        .maybeSingle();
+      const isAdmin = (userEmail || "").toLowerCase() === "alecare2025@gmail.com";
+      const used = profile?.generation_count ?? 0;
+      return successResponse({
+        success: true,
+        used,
+        limit: FREE_LIMIT,
+        remaining: Math.max(0, FREE_LIMIT - used),
+        unlimited: isAdmin,
+      });
+    }
+
     return errorResponse("Invalid action", 400);
 
   } catch (error) {
