@@ -515,6 +515,7 @@ ${combinedContent}`;
     console.error("Error:", error);
     const safeMessages = [
       "Lezione non trovata",
+      LIMIT_REACHED_MESSAGE,
       "Il PDF è ancora in elaborazione. Riprova tra qualche secondo.",
       "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.",
       "Impossibile estrarre testo sufficiente dal PDF. Il file potrebbe essere un'immagine o protetto.",
