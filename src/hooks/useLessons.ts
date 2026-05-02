@@ -25,6 +25,7 @@ export interface StudyContextSummary {
   lesson_count?: number;
   processing_status?: string | null;
   error_message?: string | null;
+  is_demo?: boolean | null;
 }
 
 export const lessonsKeys = {
