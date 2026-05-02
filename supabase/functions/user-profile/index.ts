@@ -75,16 +75,24 @@ serve(async (req) => {
     }
 
     if (action === "uploadAvatar") {
-      const { fileData, filePath } = body;
-      if (!fileData || !filePath) return errorResponse("Dati mancanti", 400);
+      const { fileData, ext: rawExt } = body;
+      if (!fileData) return errorResponse("Dati mancanti", 400);
+
+      // Always derive the storage path from the authenticated user's id so
+      // that no caller can overwrite another user's avatar by supplying a
+      // crafted filePath.
+      const allowedExts = ["jpg", "jpeg", "png", "webp"] as const;
+      const safeExt = (typeof rawExt === "string" && allowedExts.includes(rawExt.toLowerCase() as typeof allowedExts[number]))
+        ? rawExt.toLowerCase()
+        : "jpg";
+      const filePath = `${userId}/avatar.${safeExt === "jpeg" ? "jpg" : safeExt}`;
 
       const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const adminClient = createClient(supabaseUrl, serviceKey);
 
       const binaryData = Uint8Array.from(atob(fileData), c => c.charCodeAt(0));
-      const ext = filePath.split(".").pop()?.toLowerCase() || "jpg";
-      const contentType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+      const contentType = safeExt === "png" ? "image/png" : safeExt === "webp" ? "image/webp" : "image/jpeg";
 
       const { error: uploadError } = await adminClient.storage
         .from("avatars")
@@ -95,7 +103,7 @@ serve(async (req) => {
         return errorResponse("Errore nel caricamento dell'immagine");
       }
 
-      return successResponse({ success: true });
+      return successResponse({ success: true, filePath });
     }
 
     return errorResponse("Azione non valida", 400);
