@@ -19,14 +19,19 @@ serve(async (req) => {
 
     if (action === "get") {
       // Get all lessons, optionally filtered by context
+      // NB: grazie alle RLS policy "Anyone can view lessons of demo contexts",
+      // la SELECT senza filtro user_id ritorna sia le lezioni dell'utente sia
+      // quelle dei contesti demo (se contextId punta a un demo).
       let lessonsQuery = supabase
         .from("mini_lessons")
         .select("*")
-        .eq("user_id", userId)
         .order("lesson_order", { ascending: true });
 
       if (contextId) {
         lessonsQuery = lessonsQuery.eq("context_id", contextId);
+      } else {
+        // Senza contextId limitiamo all'utente per evitare di mescolare tutto.
+        lessonsQuery = lessonsQuery.eq("user_id", userId);
       }
 
       const { data: lessons, error: lessonsError } = await lessonsQuery;
@@ -150,19 +155,27 @@ serve(async (req) => {
     }
 
     if (action === "listContexts") {
-      // List all contexts with lesson counts and processing status
+      // List all contexts with lesson counts and processing status.
+      // Include sia i contesti dell'utente sia tutti i contesti demo (di chiunque).
       const { data: contexts } = await supabase
         .from("study_contexts")
-        .select("id, file_name, created_at, processing_status, error_message")
+        .select("id, file_name, created_at, processing_status, error_message, is_demo")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
       const { data: legacyContexts } = legacyUserId
         ? await supabase
             .from("study_contexts")
-            .select("id, file_name, created_at, processing_status, error_message")
+            .select("id, file_name, created_at, processing_status, error_message, is_demo")
             .eq("user_id", legacyUserId)
             .order("created_at", { ascending: false })
         : { data: null };
+
+      // Contesti demo (di chiunque) — RLS lo permette.
+      const { data: demoContexts } = await supabase
+        .from("study_contexts")
+        .select("id, file_name, created_at, processing_status, error_message, is_demo")
+        .eq("is_demo", true)
+        .order("created_at", { ascending: false });
 
       const { data: lessons } = await supabase
         .from("mini_lessons")
@@ -174,28 +187,71 @@ serve(async (req) => {
             .select("context_id")
             .eq("user_id", legacyUserId)
         : { data: null };
+      // Conta anche le lezioni dei contesti demo
+      const demoCtxIds = (demoContexts || []).map((c: { id: string }) => c.id);
+      const { data: demoLessons } = demoCtxIds.length
+        ? await supabase
+            .from("mini_lessons")
+            .select("context_id")
+            .in("context_id", demoCtxIds)
+        : { data: null };
 
       const lessonCounts: Record<string, number> = {};
-      const allLessons = [...(lessons || []), ...(legacyLessons || [])];
+      const allLessons = [
+        ...(lessons || []),
+        ...(legacyLessons || []),
+        ...(demoLessons || []),
+      ];
       for (const l of allLessons) {
         if (l.context_id) {
           lessonCounts[l.context_id] = (lessonCounts[l.context_id] || 0) + 1;
         }
       }
 
-      const allContexts = [...(contexts || []), ...(legacyContexts || [])];
+      // Merge + dedup (il proprio contesto può essere anche demo)
+      const merged = [
+        ...(contexts || []),
+        ...(legacyContexts || []),
+        ...(demoContexts || []),
+      ];
+      const seenIds = new Set<string>();
+      const allContexts = merged.filter((c: { id: string }) => {
+        if (seenIds.has(c.id)) return false;
+        seenIds.add(c.id);
+        return true;
+      });
       const contextsWithCounts = allContexts.map((c: { 
         id: string; 
         file_name: string; 
         created_at: string;
         processing_status: string | null;
         error_message: string | null;
+        is_demo?: boolean | null;
       }) => ({
         ...c,
         lesson_count: lessonCounts[c.id] || 0,
       }));
 
       return successResponse({ success: true, contexts: contextsWithCounts });
+    }
+
+    if (action === "getUsage") {
+      // Restituisce l'uso corrente del piano gratuito per il rate limiting beta.
+      const FREE_LIMIT = 5;
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("generation_count")
+        .eq("user_id", userId)
+        .maybeSingle();
+      const isAdmin = (userEmail || "").toLowerCase() === "alecare2025@gmail.com";
+      const used = profile?.generation_count ?? 0;
+      return successResponse({
+        success: true,
+        used,
+        limit: FREE_LIMIT,
+        remaining: Math.max(0, FREE_LIMIT - used),
+        unlimited: isAdmin,
+      });
     }
 
     return errorResponse("Invalid action", 400);

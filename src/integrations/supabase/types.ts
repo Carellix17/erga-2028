@@ -215,6 +215,7 @@ export type Database = {
           file_name: string
           file_path: string | null
           id: string
+          is_demo: boolean
           processing_status: string | null
           user_id: string
         }
@@ -225,6 +226,7 @@ export type Database = {
           file_name: string
           file_path?: string | null
           id?: string
+          is_demo?: boolean
           processing_status?: string | null
           user_id: string
         }
@@ -235,6 +237,7 @@ export type Database = {
           file_name?: string
           file_path?: string | null
           id?: string
+          is_demo?: boolean
           processing_status?: string | null
           user_id?: string
         }
@@ -351,6 +354,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           first_name: string | null
+          generation_count: number
           id: string
           institute_type: string
           is_beta_tester: boolean
@@ -366,6 +370,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           first_name?: string | null
+          generation_count?: number
           id?: string
           institute_type?: string
           is_beta_tester?: boolean
@@ -381,6 +386,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           first_name?: string | null
+          generation_count?: number
           id?: string
           institute_type?: string
           is_beta_tester?: boolean
@@ -402,6 +408,7 @@ export type Database = {
         Args: { check_env?: string; user_text: string }
         Returns: boolean
       }
+      is_demo_admin: { Args: { _user_id: string }; Returns: boolean }
       is_pro_user: {
         Args: { check_env?: string; user_text: string }
         Returns: boolean
