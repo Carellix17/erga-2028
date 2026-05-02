@@ -19,6 +19,11 @@ import {
   useLessonsCacheControls,
   type Lesson,
 } from "@/hooks/useLessons";
+import {
+  useGenerationUsage,
+  useInvalidateGenerationUsage,
+  FREE_LIMIT_MESSAGE,
+} from "@/hooks/useGenerationUsage";
 
 interface StudioViewProps {
   hasFiles: boolean;
@@ -43,6 +48,13 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const [isLoadingFinalTest, setIsLoadingFinalTest] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+
+  // Rate limiting beta: 5 mini-lezioni gratuite per utente.
+  // Le lezioni dei contesti demo NON contano nel limite.
+  const usageQuery = useGenerationUsage();
+  const usage = usageQuery.data;
+  const invalidateUsage = useInvalidateGenerationUsage();
+  const limitReached = !!usage && !usage.unlimited && usage.remaining <= 0;
 
   // Tracciamento delle generazioni di lezione in volo per evitare doppie chiamate
   // sullo stesso (contextId, lessonIndex) durante refetch della query.
@@ -78,6 +90,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const contextFileName = activeContext?.file_name || null;
   const contextStatus = activeContext?.processing_status || null;
   const contextErrorMessage = activeContext?.error_message || "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.";
+  const isDemoContext = !!activeContext?.is_demo;
+  // Il limite è effettivo solo per percorsi NON demo
+  const generationBlocked = limitReached && !isDemoContext;
 
   const lessonsQuery = useLessonsQuery(effectiveContextId);
   const lessons: Lesson[] = lessonsQuery.data?.lessons ?? [];
@@ -114,6 +129,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   const handleGenerateLessons = async () => {
     if (!currentUser) return;
+    if (generationBlocked) {
+      toast({ title: "Limite raggiunto", description: FREE_LIMIT_MESSAGE, variant: "destructive" });
+      return;
+    }
     if (contextStatus === "pending" || contextStatus === "processing") {
       toast({ title: "PDF in elaborazione", description: "Attendi il completamento dell'analisi prima di generare il percorso." });
       await refetchLessons();
@@ -163,6 +182,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   const generateLessonContent = async (lessonIndex: number) => {
     if (!currentUser) return null;
+    // Blocca preventivamente quando il limite è raggiunto e il contesto NON è demo.
+    if (generationBlocked) {
+      toast({ title: "Limite raggiunto", description: FREE_LIMIT_MESSAGE, variant: "destructive" });
+      return null;
+    }
     const contextId = selectedContextId || activeContextId;
     const key = `${contextId ?? "null"}::${lessonIndex}`;
     // 🛑 LIMITE DI CONCORRENZA: una sola richiesta di generazione in volo nell'intera app.
@@ -186,10 +210,16 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           };
         });
       }
+      // Aggiorna il contatore d'uso lato client (anche se demo per rinfrescare).
+      invalidateUsage();
       return data.lesson ?? null;
     } catch (error) {
       console.error("Error generating lesson:", error);
       const msg = error instanceof Error ? error.message : "Errore nella generazione";
+      if (msg === FREE_LIMIT_MESSAGE) {
+        // Forza il refresh: il limite è stato applicato server-side
+        invalidateUsage();
+      }
       // Il network-blip transient è già stato ritentato da edgeFetch; se siamo qui è un vero errore
       toast({ title: "Errore", description: msg, variant: "destructive" });
       return null;
