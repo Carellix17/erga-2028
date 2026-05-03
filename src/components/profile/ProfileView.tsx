@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2 } from "lucide-react";
+import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +27,7 @@ const SUBJECTS = [
 ];
 
 interface SubjectLevels { [subject: string]: number; }
+interface SubjectGoals { [subject: string]: number; }
 
 export function ProfileView() {
   const { currentUser } = useAuth();
@@ -46,6 +47,11 @@ export function ProfileView() {
   const [subjectLevels, setSubjectLevels] = useState<SubjectLevels>(() => {
     const defaults: SubjectLevels = {};
     SUBJECTS.forEach((s) => (defaults[s] = 6));
+    return defaults;
+  });
+  const [subjectGoals, setSubjectGoals] = useState<SubjectGoals>(() => {
+    const defaults: SubjectGoals = {};
+    SUBJECTS.forEach((s) => (defaults[s] = 8));
     return defaults;
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -75,6 +81,9 @@ export function ProfileView() {
         if (p.avatar_url) setAvatarPreview(p.avatar_url);
         if (p.subject_levels && Object.keys(p.subject_levels).length > 0) {
           setSubjectLevels((prev) => ({ ...prev, ...p.subject_levels }));
+        }
+        if (p.subject_goals && Object.keys(p.subject_goals).length > 0) {
+          setSubjectGoals((prev) => ({ ...prev, ...p.subject_goals }));
         }
       }
     } catch (err) { console.error("Error loading profile:", err); }
@@ -144,7 +153,7 @@ export function ProfileView() {
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
           body: JSON.stringify({
             userId: currentUser, action: "save",
-            institute_type: institute, subject_levels: subjectLevels,
+            institute_type: institute, subject_levels: subjectLevels, subject_goals: subjectGoals,
             first_name: firstName, last_name: lastName, nickname,
             age: age ? parseInt(age) : null, school, avatar_url: avatarUrl,
           }) }
@@ -162,6 +171,10 @@ export function ProfileView() {
 
   const handleLevelChange = (subject: string, value: number[]) => {
     setSubjectLevels((prev) => ({ ...prev, [subject]: value[0] }));
+  };
+
+  const handleGoalChange = (subject: string, value: number[]) => {
+    setSubjectGoals((prev) => ({ ...prev, [subject]: value[0] }));
   };
 
   const getLevelLabel = (level: number) => {
