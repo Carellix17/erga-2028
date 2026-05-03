@@ -361,6 +361,7 @@ export type Database = {
           last_name: string | null
           nickname: string | null
           school: string | null
+          subject_goals: Json
           subject_levels: Json
           updated_at: string
           user_id: string
@@ -377,6 +378,7 @@ export type Database = {
           last_name?: string | null
           nickname?: string | null
           school?: string | null
+          subject_goals?: Json
           subject_levels?: Json
           updated_at?: string
           user_id: string
@@ -393,6 +395,7 @@ export type Database = {
           last_name?: string | null
           nickname?: string | null
           school?: string | null
+          subject_goals?: Json
           subject_levels?: Json
           updated_at?: string
           user_id?: string
