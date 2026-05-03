@@ -288,50 +288,43 @@ export function ProfileView() {
         </RadioGroup>
       </div>
 
-      {/* Subject Levels Section */}
-      <div className="m3-card-elevated rounded-3xl p-5 space-y-5">
+      {/* Subject Levels & Goals Section */}
+      <div className="m3-card-elevated rounded-3xl p-5 space-y-6">
         <div className="flex items-center gap-2 mb-1">
           <BookOpen className="w-5 h-5 text-tertiary" />
-          <h2 className="title-medium font-display text-foreground">Livello per materia</h2>
+          <h2 className="title-medium font-display text-foreground">Voti e obiettivi</h2>
         </div>
-        <p className="body-small text-muted-foreground -mt-2">Indica come vai in ogni materia (da 2 a 10)</p>
+        <p className="body-small text-muted-foreground -mt-2">Indica il tuo livello attuale e l'obiettivo che vuoi raggiungere in ogni materia</p>
 
-        <div className="space-y-5">
+        <div className="space-y-7">
           {SUBJECTS.map((subject) => {
             const level = subjectLevels[subject] || 6;
+            const goal = subjectGoals[subject] ?? Math.max(level, 8);
             return (
-              <div key={subject} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="body-large text-foreground">{subject}</Label>
-                  <span className={cn("label-large", getLevelColor(level))}>
-                    {level} — {getLevelLabel(level)}
-                  </span>
-                </div>
-                <Slider value={[level]} onValueChange={(v) => handleLevelChange(subject, v)} min={2} max={10} step={1} className="w-full" />
-              </div>
-            );
-          })}
-        </div>
-      </div>
+              <div key={subject} className="space-y-3">
+                <Label className="body-large text-foreground font-semibold">{subject}</Label>
 
-      {/* Subject Goals Section */}
-      <div className="m3-card-elevated rounded-3xl p-5 space-y-5">
-        <div className="flex items-center gap-2 mb-1">
-          <Target className="w-5 h-5 text-primary" />
-          <h2 className="title-medium font-display text-foreground">Obiettivi per materia</h2>
-        </div>
-        <p className="body-small text-muted-foreground -mt-2">Scegli il voto che vuoi raggiungere in ogni materia (da 6 a 10)</p>
-
-        <div className="space-y-5">
-          {SUBJECTS.map((subject) => {
-            const goal = subjectGoals[subject] ?? 8;
-            return (
-              <div key={subject} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="body-large text-foreground">{subject}</Label>
-                  <span className="label-large text-primary">Obiettivo: {goal}</span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="label-medium text-muted-foreground flex items-center gap-1.5">
+                      <BookOpen className="w-3.5 h-3.5" /> Attuale
+                    </span>
+                    <span className={cn("label-large", getLevelColor(level))}>
+                      {level} — {getLevelLabel(level)}
+                    </span>
+                  </div>
+                  <Slider value={[level]} onValueChange={(v) => handleLevelChange(subject, v)} min={2} max={10} step={1} className="w-full" />
                 </div>
-                <Slider value={[goal]} onValueChange={(v) => handleGoalChange(subject, v)} min={6} max={10} step={1} className="w-full" />
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="label-medium text-muted-foreground flex items-center gap-1.5">
+                      <Target className="w-3.5 h-3.5" /> Obiettivo
+                    </span>
+                    <span className="label-large text-primary">{goal}</span>
+                  </div>
+                  <Slider value={[goal]} onValueChange={(v) => handleGoalChange(subject, v)} min={Math.max(2, level)} max={10} step={1} className="w-full" />
+                </div>
               </div>
             );
           })}
