@@ -25,7 +25,7 @@ serve(async (req) => {
     }
 
     if (action === "save") {
-      const { institute_type, subject_levels, first_name, last_name, nickname, age, school, avatar_url } = body;
+      const { institute_type, subject_levels, subject_goals, first_name, last_name, nickname, age, school, avatar_url } = body;
 
       const validInstitutes = ["liceo_scientifico", "liceo_classico", "liceo_linguistico", "istituto_tecnico"];
       if (institute_type && !validInstitutes.includes(institute_type)) {
@@ -44,9 +44,21 @@ serve(async (req) => {
         }
       }
 
+      if (subject_goals && (typeof subject_goals !== "object" || subject_goals === null)) {
+        return errorResponse("Obiettivi materie non validi", 400);
+      }
+      if (subject_goals) {
+        for (const [, goal] of Object.entries(subject_goals)) {
+          if (typeof goal !== "number" || goal < 6 || goal > 10 || !Number.isInteger(goal)) {
+            return errorResponse("Gli obiettivi devono essere numeri interi tra 6 e 10", 400);
+          }
+        }
+      }
+
       const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (institute_type) updateData.institute_type = institute_type;
       if (subject_levels) updateData.subject_levels = subject_levels;
+      if (subject_goals) updateData.subject_goals = subject_goals;
       if (first_name !== undefined) updateData.first_name = String(first_name).slice(0, 50);
       if (last_name !== undefined) updateData.last_name = String(last_name).slice(0, 50);
       if (nickname !== undefined) updateData.nickname = String(nickname).slice(0, 30);
