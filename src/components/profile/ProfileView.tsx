@@ -314,6 +314,30 @@ export function ProfileView() {
         </div>
       </div>
 
+      {/* Subject Goals Section */}
+      <div className="m3-card-elevated rounded-3xl p-5 space-y-5">
+        <div className="flex items-center gap-2 mb-1">
+          <Target className="w-5 h-5 text-primary" />
+          <h2 className="title-medium font-display text-foreground">Obiettivi per materia</h2>
+        </div>
+        <p className="body-small text-muted-foreground -mt-2">Scegli il voto che vuoi raggiungere in ogni materia (da 6 a 10)</p>
+
+        <div className="space-y-5">
+          {SUBJECTS.map((subject) => {
+            const goal = subjectGoals[subject] ?? 8;
+            return (
+              <div key={subject} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="body-large text-foreground">{subject}</Label>
+                  <span className="label-large text-primary">Obiettivo: {goal}</span>
+                </div>
+                <Slider value={[goal]} onValueChange={(v) => handleGoalChange(subject, v)} min={6} max={10} step={1} className="w-full" />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Save Button */}
       <Button onClick={handleSave} disabled={isSaving} className="w-full h-14 gradient-primary border-0 shadow-level-2" size="lg">
         {isSaving ? (
