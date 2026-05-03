@@ -324,6 +324,14 @@ serve(async (req) => {
 
     console.log(`Registering PDF upload: ${fileName} for user: ${userId}`);
 
+    // Validate file path ownership to prevent path traversal across users.
+    // The background processor runs with service-role and would otherwise
+    // happily download any other user's PDF if they could supply the path.
+    const paths = String(filePath).split(",").map((p) => p.trim()).filter(Boolean);
+    if (paths.length === 0 || !paths.every((p) => p.startsWith(`${userId}/`))) {
+      return errorResponse("File non autorizzato", 403);
+    }
+
     const { data, error } = await supabase
       .from("study_contexts")
       .insert({
