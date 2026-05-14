@@ -8,7 +8,6 @@ import { fireCelebration, fireStarBurst } from "@/lib/confetti";
 import { PdfCrop } from "./PdfCrop";
 import { useLessonFigures, prefetchLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
 import { LessonFigureGallery } from "./LessonFigureGallery";
-import { ListenButton } from "./ListenButton";
 
 interface ExplanationPart {
   part_title: string;
