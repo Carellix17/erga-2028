@@ -292,7 +292,15 @@ export function InterrogazioneView() {
         )}
 
         <Dialog open={!!selectedCourse} onOpenChange={(open) => { if (!open) setSelectedCourse(null); }}>
-          <DialogContent className="max-w-md rounded-3xl">
+          <DialogContent
+            className="max-w-md rounded-[28px] duration-500 ease-m3-emphasized data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95 data-[state=open]:slide-in-from-bottom-4 data-[state=closed]:slide-out-to-bottom-4"
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              const el = e.currentTarget as HTMLElement | null;
+              const first = el?.querySelector<HTMLElement>("button:not([aria-label='Close'])");
+              first?.focus();
+            }}
+          >
             <DialogHeader>
               <DialogTitle className="text-center">Scegli la modalità</DialogTitle>
               {selectedCourseObj && (
@@ -304,7 +312,7 @@ export function InterrogazioneView() {
             <div className="grid grid-cols-2 gap-4 pt-2">
               <button
                 onClick={() => selectedCourse && startInterrogazione(selectedCourse, "structured")}
-                className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-primary-container border border-primary/20 hover:shadow-level-2 transition-all active:scale-95"
+                className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-primary-container border border-primary/20 hover:shadow-level-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <MessageSquare className="w-10 h-10 text-primary" />
                 <span className="label-large text-primary font-semibold">Domande</span>
@@ -312,7 +320,7 @@ export function InterrogazioneView() {
               </button>
               <button
                 onClick={() => selectedCourse && startInterrogazione(selectedCourse, "free")}
-                className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-secondary-container border border-secondary/20 hover:shadow-level-2 transition-all active:scale-95"
+                className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-secondary-container border border-secondary/20 hover:shadow-level-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2"
               >
                 <Volume2 className="w-10 h-10 text-secondary" />
                 <span className="label-large text-secondary font-semibold">Esposizione</span>
