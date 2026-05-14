@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 type Mode = "select" | "structured" | "free";
 type Phase = "idle" | "question" | "listening" | "evaluating" | "feedback";
@@ -252,6 +253,7 @@ export function InterrogazioneView() {
 
   // Course & mode selection
   if (mode === "select") {
+    const selectedCourseObj = courses.find(c => c.id === selectedCourse);
     return (
       <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
         <div className="text-center space-y-2">
@@ -265,8 +267,7 @@ export function InterrogazioneView() {
         {courses.length === 0 ? (
           <p className="text-center text-muted-foreground body-medium">Nessun corso disponibile. Carica prima dei materiali.</p>
         ) : (
-          <>
-            <div className="space-y-2">
+          <div className="space-y-2">
               <p className="label-large text-foreground">Scegli il corso:</p>
               <div className="space-y-2">
                 {courses.map(course => (
@@ -287,33 +288,39 @@ export function InterrogazioneView() {
                   </button>
                 ))}
               </div>
-            </div>
-
-            {selectedCourse && (
-              <div className="space-y-2 animate-fade-up">
-                <p className="label-large text-foreground">Modalità:</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => startInterrogazione(selectedCourse, "structured")}
-                    className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-primary-container border border-primary/20 hover:shadow-level-2 transition-all active:scale-95"
-                  >
-                    <MessageSquare className="w-7 h-7 text-primary" />
-                    <span className="label-large text-primary">Domande</span>
-                    <span className="label-small text-muted-foreground text-center">Il tutor ti fa domande</span>
-                  </button>
-                  <button
-                    onClick={() => startInterrogazione(selectedCourse, "free")}
-                    className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-secondary-container border border-secondary/20 hover:shadow-level-2 transition-all active:scale-95"
-                  >
-                    <Volume2 className="w-7 h-7 text-secondary" />
-                    <span className="label-large text-secondary">Esposizione</span>
-                    <span className="label-small text-muted-foreground text-center">Esponi l'argomento</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
+          </div>
         )}
+
+        <Dialog open={!!selectedCourse} onOpenChange={(open) => { if (!open) setSelectedCourse(null); }}>
+          <DialogContent className="max-w-md rounded-3xl">
+            <DialogHeader>
+              <DialogTitle className="text-center">Scegli la modalità</DialogTitle>
+              {selectedCourseObj && (
+                <DialogDescription className="text-center truncate">
+                  {selectedCourseObj.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}
+                </DialogDescription>
+              )}
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <button
+                onClick={() => selectedCourse && startInterrogazione(selectedCourse, "structured")}
+                className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-primary-container border border-primary/20 hover:shadow-level-2 transition-all active:scale-95"
+              >
+                <MessageSquare className="w-10 h-10 text-primary" />
+                <span className="label-large text-primary font-semibold">Domande</span>
+                <span className="label-small text-muted-foreground text-center">Il tutor ti fa domande</span>
+              </button>
+              <button
+                onClick={() => selectedCourse && startInterrogazione(selectedCourse, "free")}
+                className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-secondary-container border border-secondary/20 hover:shadow-level-2 transition-all active:scale-95"
+              >
+                <Volume2 className="w-10 h-10 text-secondary" />
+                <span className="label-large text-secondary font-semibold">Esposizione</span>
+                <span className="label-small text-muted-foreground text-center">Esponi l'argomento</span>
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
