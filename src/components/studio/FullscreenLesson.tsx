@@ -322,9 +322,6 @@ function ConceptStep({ concept }: { concept: string }) {
         <div className="title-large font-display leading-relaxed prose prose-sm max-w-none mx-auto">
           <ReactMarkdown>{concept}</ReactMarkdown>
         </div>
-        <div className="flex justify-center mt-4">
-          <ListenButton text={concept} />
-        </div>
       </div>
     </div>
   );
@@ -369,7 +366,6 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
             ))}
           </div>
         </div>
-        <ListenButton text={part.content} />
       </div>
       <div className={cn(
         "p-5 rounded-2xl shadow-level-1 space-y-4",
@@ -416,7 +412,6 @@ function ExampleStep({ example }: { example: string }) {
           <span className="text-2xl">💡</span>
         </div>
         <span className="label-large text-foreground">Esempio pratico</span>
-        <div className="ml-auto"><ListenButton text={example} /></div>
       </div>
       <div className="p-5 rounded-2xl bg-tertiary-container/50 border-l-4 border-tertiary shadow-level-1">
         <div className="body-large text-foreground leading-relaxed prose prose-sm max-w-none">
