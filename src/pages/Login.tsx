@@ -94,9 +94,9 @@ export default function Login() {
             <Sparkles className="w-9 h-9 text-white" />
           </div>
           <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent">
-            Erga
+            Erga — Il tuo assistente di studio
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">Il tuo assistente di studio</p>
+          <p className="text-muted-foreground text-sm mt-1">Accedi per continuare</p>
         </div>
 
         <div className="glass-card rounded-[1.75rem] p-6 shadow-glass-xl">

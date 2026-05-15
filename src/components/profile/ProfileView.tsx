@@ -212,7 +212,7 @@ export function ProfileView() {
             className="w-24 h-24 rounded-[2rem] overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-400 ease-m3-emphasized hover:scale-105 hover:shadow-level-3 active:scale-95 relative group"
           >
             {avatarPreview ? (
-              <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+              <img src={avatarPreview} alt="Foto profilo utente" className="w-full h-full object-cover" />
             ) : (
               <UserCircle2 className="w-12 h-12 text-primary" />
             )}

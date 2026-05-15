@@ -122,7 +122,7 @@ export function LessonsList({
       <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-xl border-b border-outline-variant/30 px-4 pt-4 pb-3">
         <div className="flex items-center gap-3 mb-3">
           {showBackButton && (
-            <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full -ml-2">
+            <Button variant="ghost" size="icon" onClick={onBack} aria-label="Torna indietro" className="rounded-full -ml-2">
               <ChevronLeft className="w-5 h-5" />
             </Button>
           )}
@@ -135,7 +135,7 @@ export function LessonsList({
             </p>
           </div>
           {onRegenerate && (
-            <Button variant="outline" size="icon" onClick={onRegenerate} disabled={isRegenerating} className="rounded-full h-8 w-8">
+            <Button variant="outline" size="icon" onClick={onRegenerate} disabled={isRegenerating} aria-label="Rigenera percorso di studio" className="rounded-full h-8 w-8">
               {isRegenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
             </Button>
           )}

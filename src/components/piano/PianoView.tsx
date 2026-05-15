@@ -175,10 +175,10 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
 
       {/* Section Header */}
       <div className="flex items-center justify-between">
-        <h2 className="title-medium font-display font-semibold">
+        <h1 className="title-medium font-display font-semibold">
           {selectedDate ? format(selectedDate, "d MMMM yyyy", { locale: it }) : "Prossimi eventi"}
-        </h2>
-        <Button variant="outline" size="sm" onClick={() => setShowAddSheet(true)}>
+        </h1>
+        <Button variant="outline" size="sm" onClick={() => setShowAddSheet(true)} aria-label="Aggiungi nuovo evento">
           <Plus className="w-4 h-4 mr-1" />Aggiungi
         </Button>
       </div>
@@ -194,7 +194,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           {selectedDateEvents.map((event, i) => (
             <div key={event.id} className={`relative group animate-fade-up animate-stagger-${Math.min(i + 1, 5)}`}>
               <PlanItem item={{ id: event.id, subject: event.subject, title: event.title, date: formatDate(event.event_date), time: event.event_time, type: event.event_type }} />
-              <Button variant="destructive" size="icon"
+              <Button variant="destructive" size="icon" aria-label="Elimina evento"
                 className="absolute -right-2 -top-2 w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-level-2 scale-0 group-hover:scale-100"
                 onClick={(e) => { e.stopPropagation(); setEventToDelete(event); }}>
                 <Trash2 className="w-4 h-4" />
@@ -214,7 +214,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
               <div key={event.id} className={`relative group animate-fade-up animate-stagger-${Math.min(i + 1, 5)}`}>
                 <PlanItem item={{ id: event.id, subject: event.subject, title: event.title, date: formatDate(event.event_date), time: event.event_time, type: event.event_type }}
                   onClick={() => setSelectedDate(new Date(event.event_date))} />
-                <Button variant="destructive" size="icon"
+                <Button variant="destructive" size="icon" aria-label="Elimina evento"
                   className="absolute -right-2 -top-2 w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-level-2 scale-0 group-hover:scale-100"
                   onClick={(e) => { e.stopPropagation(); setEventToDelete(event); }}>
                   <Trash2 className="w-4 h-4" />
