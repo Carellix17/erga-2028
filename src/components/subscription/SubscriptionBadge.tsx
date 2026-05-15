@@ -39,6 +39,7 @@ export function SubscriptionBadge({ tier, onClick }: SubscriptionBadgeProps) {
   return (
     <button
       onClick={onClick}
+      aria-label={`Piano ${config.label} — visualizza dettagli abbonamento`}
       className={cn(
         "w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center",
         "bg-gradient-to-br", config.gradient,

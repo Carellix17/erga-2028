@@ -39,7 +39,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <div className="p-2.5 pb-0">
             <img 
               src={message.imageUrl} 
-              alt="Allegato" 
+              alt="Immagine allegata al messaggio in chat" 
               className="max-w-full max-h-52 rounded-2xl object-cover shadow-level-1"
             />
           </div>

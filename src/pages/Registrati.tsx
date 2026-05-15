@@ -78,9 +78,9 @@ export default function Registrati() {
             <Sparkles className="w-9 h-9 text-white" />
           </div>
           <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent">
-            Erga
+            Erga — Crea il tuo account studente
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">Crea il tuo account</p>
+          <p className="text-muted-foreground text-sm mt-1">Inizia a studiare con l'AI</p>
         </div>
 
         <div className="glass-card rounded-[1.75rem] p-6 shadow-glass-xl">

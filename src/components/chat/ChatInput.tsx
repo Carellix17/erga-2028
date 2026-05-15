@@ -141,10 +141,11 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         {imagePreview && (
           <div className="px-4 pt-3 animate-scale-in">
             <div className="relative inline-block">
-              <img src={imagePreview} alt="Preview" className="h-20 w-auto rounded-xl object-cover shadow-level-1" />
+              <img src={imagePreview} alt="Anteprima immagine allegata al messaggio" className="h-20 w-auto rounded-xl object-cover shadow-level-1" />
               <button
                 type="button"
                 onClick={removeImage}
+                aria-label="Rimuovi immagine allegata"
                 className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center shadow-level-2 hover:scale-110 transition-transform"
               >
                 <X className="w-3.5 h-3.5" />
@@ -161,6 +162,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled || isUploading}
+            aria-label="Allega un'immagine"
             className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-foreground/[0.08] disabled:opacity-38"
           >
             <ImageIcon className="w-5 h-5" />
@@ -184,6 +186,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
               type="button"
               onClick={toggleListening}
               disabled={disabled}
+              aria-label={isListening ? "Interrompi dettatura vocale" : "Avvia dettatura vocale"}
               className={cn(
                 "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300",
                 isListening
@@ -201,6 +204,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             type="submit"
             size="icon"
             disabled={!hasContent || disabled || isUploading}
+            aria-label="Invia messaggio"
             className={cn(
               "flex-shrink-0 h-10 w-10 rounded-full transition-all duration-300 ease-m3-emphasized",
               hasContent
