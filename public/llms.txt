@@ -1,0 +1,23 @@
+# Erga
+
+> Erga è un assistente di studio AI per studenti italiani: trasforma PDF, foto e ricerche web in lezioni, riassunti, esercizi e interrogazioni personalizzate.
+
+Erga aiuta gli studenti a studiare meglio generando percorsi di studio gamificati, mini-lezioni, esercizi e simulazioni di interrogazione a partire dai propri materiali (PDF, immagini) o da ricerche sul web. Include chat AI multimodale, piano di studio con calendario e test finali.
+
+## Pagine
+
+- [Home](/): Panoramica di Erga, l'assistente di studio intelligente basato su AI.
+- [Accedi](/login): Accesso all'area studente.
+- [Registrati](/registrati): Crea un account studente gratuito.
+
+## Funzionalità principali
+
+- Studio: percorsi di studio generati da PDF, foto o ricerca web, con mini-lezioni e immagini ritagliate dalle fonti.
+- Pratica: esercizi a risposta chiusa e simulazioni di interrogazione orale con valutazione AI.
+- Chat: assistente AI multimodale (testo, voce, immagini) sui propri materiali di studio.
+- Piano: calendario interattivo con scadenze ed eventi di studio suggeriti dall'AI.
+- Profilo: gestione account, scuola, materie e abbonamento.
+
+## Optional
+
+- [Cambia password](/change-password): Reimpostazione della password account.
