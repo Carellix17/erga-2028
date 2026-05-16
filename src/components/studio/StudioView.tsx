@@ -35,11 +35,11 @@ interface StudioViewProps {
 
 export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClearContext, onFullscreenChange }: StudioViewProps) {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
-  const [isGenerating, setIsGenerating] = useState(false);
+  // `localStarting` copre la finestra tra il click "Genera" e la prima scrittura
+  // di `generation_status='generating'` da parte del backend. Lo stato vero
+  // arriva via Realtime dalla riga di `study_contexts`.
+  const [localStarting, setLocalStarting] = useState(false);
   const [isGeneratingLesson, setIsGeneratingLesson] = useState(false);
-  const [generationStep, setGenerationStep] = useState<"analyzing" | "creating-index" | "generating-lessons" | "complete">("analyzing");
-  const [generationLessonCount, setGenerationLessonCount] = useState(0);
-  const [generationTotalLessons, setGenerationTotalLessons] = useState(0);
   const [showList, setShowList] = useState(true);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
   const [activeContextId, setActiveContextId] = useState<string | null>(null);
@@ -94,6 +94,33 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   // Il limite è effettivo solo per percorsi NON demo
   const generationBlocked = limitReached && !isDemoContext;
 
+  // ── Stato persistente di generazione (sopravvive a chiusura app) ──
+  const generationStatus = activeContext?.generation_status ?? "idle";
+  const generationProgress = activeContext?.generation_progress ?? {};
+  const isGenerating = localStarting || generationStatus === "generating";
+  const generationStep = (generationProgress.step as
+    | "analyzing"
+    | "creating-index"
+    | "generating-lessons"
+    | "complete") || "creating-index";
+  const generationTotalLessons = generationProgress.totalLessons ?? 0;
+  const generationLessonCount = generationProgress.generatedCount ?? 0;
+
+  // Quando il backend completa, ricarica le lezioni e mostra un toast.
+  useEffect(() => {
+    if (generationStatus === "completed") {
+      invalidateList(effectiveContextId);
+      invalidateContexts();
+    } else if (generationStatus === "failed" && activeContext?.generation_error) {
+      toast({
+        title: "Generazione non riuscita",
+        description: activeContext.generation_error,
+        variant: "destructive",
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generationStatus, effectiveContextId]);
+
   const lessonsQuery = useLessonsQuery(effectiveContextId);
   const lessons: Lesson[] = lessonsQuery.data?.lessons ?? [];
   const cachedCurrentIndex = lessonsQuery.data?.currentIndex ?? 0;
@@ -142,42 +169,32 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       toast({ title: "PDF non elaborabile", description: contextErrorMessage, variant: "destructive" });
       return;
     }
-    setIsGenerating(true);
-    setGenerationStep("analyzing");
-    setGenerationLessonCount(0);
-    setGenerationTotalLessons(0);
+    if (isGenerating) {
+      toast({ title: "Generazione già in corso", description: "Stiamo già creando il tuo percorso. Attendi qualche istante." });
+      return;
+    }
+    setLocalStarting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const contextId = selectedContextId || activeContextId;
+      if (!contextId) throw new Error("Seleziona prima un documento.");
 
-      // Step 1: analyzing
-      await new Promise(r => setTimeout(r, 800));
-      setGenerationStep("creating-index");
-
-      // Step 2: creating index + generating
+      // Il backend risponde 202 e prosegue in background (EdgeRuntime.waitUntil).
+      // Lo stato della generazione è leggibile via realtime su `study_contexts`.
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, ...(contextId ? { contextId } : {}) }) });
+          body: JSON.stringify({ userId: currentUser, contextId }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Errore nella generazione");
-
-      setGenerationStep("generating-lessons");
-      setGenerationTotalLessons(data.lessonsCount || 0);
-
-      // Simulate incremental progress briefly
-      for (let i = 0; i <= (data.lessonsCount || 0); i++) {
-        setGenerationLessonCount(i);
-        await new Promise(r => setTimeout(r, 150));
-      }
-
-      setGenerationStep("complete");
-      toast({ title: "Percorso creato!", description: `Creato un percorso con ${data.lessonsCount} mini-lezioni.` });
-      await new Promise(r => setTimeout(r, 1000));
+      // Forza refetch del contesto: lo stato dovrebbe già essere 'generating'
       await refetchLessons();
-    } catch (error) { console.error("Error generating lessons:", error);
+    } catch (error) {
+      console.error("Error generating lessons:", error);
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella generazione", variant: "destructive" });
-    } finally { setIsGenerating(false); setGenerationStep("analyzing"); }
+    } finally {
+      setLocalStarting(false);
+    }
   };
 
   const generateLessonContent = async (lessonIndex: number) => {
