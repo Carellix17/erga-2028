@@ -415,7 +415,10 @@ ${studyContent}`;
 
     // Idempotenza: se già in generazione, non avviare un nuovo job
     if (ctxPre.generation_status === "generating") {
-      return successResponse({ success: true, status: "generating", contextId, alreadyRunning: true }, 202);
+      return new Response(
+        JSON.stringify({ success: true, status: "generating", contextId, alreadyRunning: true }),
+        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Segna subito lo stato come "generating" prima di rispondere
@@ -539,7 +542,10 @@ ${combinedContent}`;
       backgroundTitles();
     }
 
-    return successResponse({ success: true, status: "generating", contextId }, 202);
+    return new Response(
+      JSON.stringify({ success: true, status: "generating", contextId }),
+      { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
 
   } catch (error) {
     console.error("Error:", error);
