@@ -73,6 +73,42 @@ export type Database = {
           },
         ]
       }
+      exercise_jobs: {
+        Row: {
+          context_id: string | null
+          created_at: string
+          error: string | null
+          id: string
+          lesson_ids: Json
+          result: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          lesson_ids?: Json
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          lesson_ids?: Json
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lesson_figures: {
         Row: {
           bbox: Json
@@ -214,6 +250,10 @@ export type Database = {
           error_message: string | null
           file_name: string
           file_path: string | null
+          generation_error: string | null
+          generation_progress: Json
+          generation_started_at: string | null
+          generation_status: string
           id: string
           is_demo: boolean
           processing_status: string | null
@@ -225,6 +265,10 @@ export type Database = {
           error_message?: string | null
           file_name: string
           file_path?: string | null
+          generation_error?: string | null
+          generation_progress?: Json
+          generation_started_at?: string | null
+          generation_status?: string
           id?: string
           is_demo?: boolean
           processing_status?: string | null
@@ -236,6 +280,10 @@ export type Database = {
           error_message?: string | null
           file_name?: string
           file_path?: string | null
+          generation_error?: string | null
+          generation_progress?: Json
+          generation_started_at?: string | null
+          generation_status?: string
           id?: string
           is_demo?: boolean
           processing_status?: string | null

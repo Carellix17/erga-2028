@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 
 serve(async (req) => {
@@ -71,6 +71,40 @@ serve(async (req) => {
 
     if (!studyContent) return errorResponse("Nessun contenuto trovato", 400);
 
+    // Idempotenza: se esiste già un job 'generating' per stessa selezione, riusalo
+    const lessonIdsKey = Array.isArray(lessonIds) ? [...lessonIds].sort() : [];
+    const { data: existingJob } = await supabase
+      .from("exercise_jobs")
+      .select("id, lesson_ids")
+      .eq("user_id", userId)
+      .eq("context_id", contextId)
+      .eq("status", "generating")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (existingJob) {
+      const existingIds = Array.isArray(existingJob.lesson_ids) ? [...existingJob.lesson_ids].sort() : [];
+      if (JSON.stringify(existingIds) === JSON.stringify(lessonIdsKey)) {
+        return new Response(
+          JSON.stringify({ success: true, status: "generating", jobId: existingJob.id, alreadyRunning: true }),
+          { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Crea il job in stato 'generating' e rispondi subito
+    const { data: job, error: jobErr } = await supabase
+      .from("exercise_jobs")
+      .insert({
+        user_id: userId,
+        context_id: contextId,
+        lesson_ids: lessonIdsKey,
+        status: "generating",
+      })
+      .select("id")
+      .single();
+    if (jobErr || !job) return errorResponse("Impossibile creare il job di generazione", 500);
+
     const trimmed = studyContent.slice(0, 15000);
 
     const prompt = `Genera 10 esercizi basati ESCLUSIVAMENTE su questi materiali di studio. Usa SOLO questi tipi di esercizio, alternandoli:
@@ -117,19 +151,40 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
   }
 ]`;
 
-    const content = await callAIText([{ role: "user", content: prompt }], 0.5, 4096);
+    const backgroundJob = async () => {
+      try {
+        const content = await callAIText([{ role: "user", content: prompt }], 0.5, 4096);
+        const arrayMatch = content.match(/\[[\s\S]*\]/);
+        if (!arrayMatch) throw new Error("Formato risposta non valido");
+        const exercises = JSON.parse(arrayMatch[0]);
+        if (!Array.isArray(exercises)) throw new Error("Risposta non valida");
+        await supabase.from("exercise_jobs").update({
+          status: "completed",
+          result: { exercises },
+          error: null,
+        }).eq("id", job.id);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Errore nella generazione degli esercizi";
+        console.error(`❌ exercise_jobs ${job.id} failed:`, msg);
+        await supabase.from("exercise_jobs").update({
+          status: "failed",
+          error: msg,
+        }).eq("id", job.id);
+      }
+    };
 
-    // Extract JSON array
-    const arrayMatch = content.match(/\[[\s\S]*\]/);
-    if (!arrayMatch) return errorResponse("Formato risposta non valido");
-
-    try {
-      const exercises = JSON.parse(arrayMatch[0]);
-      if (!Array.isArray(exercises)) throw new Error("Not array");
-      return successResponse({ exercises });
-    } catch {
-      return errorResponse("Errore nel parsing degli esercizi");
+    // @ts-ignore — EdgeRuntime è iniettato da Supabase Edge Runtime
+    if (typeof EdgeRuntime !== "undefined" && typeof EdgeRuntime.waitUntil === "function") {
+      // @ts-ignore
+      EdgeRuntime.waitUntil(backgroundJob());
+    } else {
+      backgroundJob();
     }
+
+    return new Response(
+      JSON.stringify({ success: true, status: "generating", jobId: job.id }),
+      { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (error) {
     console.error("Error:", error);
     return errorResponse("Errore nella generazione degli esercizi. Riprova.");

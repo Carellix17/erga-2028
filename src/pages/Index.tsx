@@ -8,6 +8,7 @@ import { ProfileView } from "@/components/profile/ProfileView";
 import { UploadSheet } from "@/components/upload/UploadSheet";
 import { useUserData } from "@/hooks/useUserData";
 import { useHasContentQuery, useLessonsCacheControls } from "@/hooks/useLessons";
+import { useGenerationRealtime } from "@/hooks/useGenerationRealtime";
 import { Loader2 } from "lucide-react";
 
 type Tab = "studio" | "piano" | "pratica" | "profilo";
@@ -19,6 +20,9 @@ interface UploadedFile {
 }
 
 const Index = () => {
+  // Mantiene in tempo reale lo stato dei job di generazione (lezioni + esercizi)
+  // così la UI riprende l'attesa anche se l'utente è uscito e rientrato nell'app.
+  useGenerationRealtime();
   const [activeTab, setActiveTab] = useState<Tab>("studio");
   const [showUpload, setShowUpload] = useState(false);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
