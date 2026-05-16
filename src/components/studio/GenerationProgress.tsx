@@ -164,12 +164,19 @@ export function GenerationProgress({
 
       {/* Rotating tip */}
       {currentStep !== "complete" && (
-        <p
-          key={tipIndex}
-          className="text-center body-medium text-muted-foreground animate-fade-up max-w-[260px]"
-        >
-          {tips[tipIndex]}
-        </p>
+        <>
+          <p
+            key={tipIndex}
+            className="text-center body-medium text-muted-foreground animate-fade-up max-w-[260px]"
+          >
+            {tips[tipIndex]}
+          </p>
+          <p className="mt-6 text-center body-small text-muted-foreground/90 max-w-[300px] px-4 py-3 rounded-2xl bg-surface-container-highest/60 border border-outline-variant/20">
+            L'AI sta elaborando testo e immagini. Potrebbe volerci un po'.
+            <br />
+            Puoi anche uscire dall'app o bloccare lo schermo: non perderai i progressi e ti avviseremo quando è pronto! ✨
+          </p>
+        </>
       )}
     </div>
   );
