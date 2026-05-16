@@ -140,11 +140,63 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       });
       if (!response.ok) throw new Error("Errore nella generazione");
       const data = await response.json();
-      setExercises(data.exercises || []);
+      // Backend ora risponde 202 con jobId: lavoro in background.
+      const jobId = data.jobId;
+      if (!jobId) throw new Error("Job non avviato");
+
+      // Polling + realtime fallback sullo stato del job.
+      // Realtime sub
+      const channel = supabase
+        .channel(`exercise-job-${jobId}`)
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "exercise_jobs", filter: `id=eq.${jobId}` },
+          (payload) => {
+            const row = payload.new as { status: string; result: { exercises?: Exercise[] } | null; error: string | null };
+            if (row.status === "completed" && row.result?.exercises) {
+              setExercises(row.result.exercises);
+              setIsLoading(false);
+              supabase.removeChannel(channel);
+            } else if (row.status === "failed") {
+              toast({ title: "Errore", description: row.error || "Generazione fallita", variant: "destructive" });
+              setIsLoading(false);
+              onFullscreenChange?.(false);
+              supabase.removeChannel(channel);
+            }
+          }
+        )
+        .subscribe();
+
+      // Poll di backup (ogni 4s, max 5 min) nel caso realtime non arrivi
+      let elapsed = 0;
+      const poll = window.setInterval(async () => {
+        elapsed += 4;
+        const { data: job } = await supabase
+          .from("exercise_jobs")
+          .select("status, result, error")
+          .eq("id", jobId)
+          .maybeSingle();
+        if (job?.status === "completed" && (job.result as { exercises?: Exercise[] } | null)?.exercises) {
+          setExercises((job.result as { exercises: Exercise[] }).exercises);
+          setIsLoading(false);
+          window.clearInterval(poll);
+          supabase.removeChannel(channel);
+        } else if (job?.status === "failed") {
+          toast({ title: "Errore", description: job.error || "Generazione fallita", variant: "destructive" });
+          setIsLoading(false);
+          onFullscreenChange?.(false);
+          window.clearInterval(poll);
+          supabase.removeChannel(channel);
+        } else if (elapsed > 300) {
+          window.clearInterval(poll);
+          supabase.removeChannel(channel);
+        }
+      }, 4000);
+      return;
     } catch {
       toast({ title: "Errore", description: "Non riesco a generare gli esercizi", variant: "destructive" });
-    } finally {
       setIsLoading(false);
+      onFullscreenChange?.(false);
     }
   }, [currentUser, toast, lessons.length]);
 
