@@ -26,6 +26,14 @@ export interface StudyContextSummary {
   processing_status?: string | null;
   error_message?: string | null;
   is_demo?: boolean | null;
+  generation_status?: "idle" | "generating" | "completed" | "failed" | null;
+  generation_progress?: {
+    step?: "analyzing" | "creating-index" | "generating-lessons" | "complete";
+    generatedCount?: number;
+    totalLessons?: number;
+  } | null;
+  generation_error?: string | null;
+  generation_started_at?: string | null;
 }
 
 export const lessonsKeys = {
