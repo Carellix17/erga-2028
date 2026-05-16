@@ -390,22 +390,47 @@ ${studyContent}`;
       return successResponse({ success: true, exercises });
     }
 
-    // ── GENERATE LESSON TITLES (STUDY PLAN) ──
-    let combinedContent = "";
-    if (contextId) {
-      const { data: ctx } = await supabase.from("study_contexts").select("content, file_name, processing_status, error_message").eq("id", contextId).eq("user_id", userId).single();
-      if (!ctx) throw new Error("Contesto non trovato");
-      if (ctx.processing_status === "failed") throw new Error(ctx.error_message || "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.");
-      if (ctx.processing_status !== "completed") throw new Error("Il PDF è ancora in elaborazione. Riprova tra qualche secondo.");
-      if (!ctx.content) throw new Error("Nessun contenuto disponibile per questo PDF.");
-      combinedContent = `FILE: ${ctx.file_name}\n${ctx.content}`;
-    } else {
-      const { data: ctxs } = await supabase.from("study_contexts").select("content, file_name").eq("user_id", userId);
-      if (ctxs) combinedContent = ctxs.map((c: { file_name: string; content: string }) => `FILE: ${c.file_name}\n${c.content}`).join("\n\n");
+    // ── GENERATE LESSON TITLES (STUDY PLAN) — ASYNC/BACKGROUND ──
+    // Per non perdere il progresso se l'utente chiude l'app, il lavoro AI gira
+    // in background con EdgeRuntime.waitUntil. Lo stato è persistito su
+    // study_contexts.generation_status (idle | generating | completed | failed).
+    if (!contextId) {
+      return errorResponse("contextId richiesto per la generazione del percorso", 400);
     }
-    combinedContent = combinedContent.substring(0, MAX_CONTEXT_CHARS);
 
-    const titlesPrompt = `Analizza il testo fornito e crea un piano di studi strutturato.
+    const { data: ctxPre } = await supabase
+      .from("study_contexts")
+      .select("content, file_name, processing_status, error_message, generation_status")
+      .eq("id", contextId)
+      .eq("user_id", userId)
+      .single();
+    if (!ctxPre) throw new Error("Contesto non trovato");
+    if (ctxPre.processing_status === "failed") {
+      throw new Error(ctxPre.error_message || "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.");
+    }
+    if (ctxPre.processing_status !== "completed") {
+      throw new Error("Il PDF è ancora in elaborazione. Riprova tra qualche secondo.");
+    }
+    if (!ctxPre.content) throw new Error("Nessun contenuto disponibile per questo PDF.");
+
+    // Idempotenza: se già in generazione, non avviare un nuovo job
+    if (ctxPre.generation_status === "generating") {
+      return successResponse({ success: true, status: "generating", contextId, alreadyRunning: true }, 202);
+    }
+
+    // Segna subito lo stato come "generating" prima di rispondere
+    await supabase.from("study_contexts").update({
+      generation_status: "generating",
+      generation_started_at: new Date().toISOString(),
+      generation_progress: { step: "creating-index", generatedCount: 0, totalLessons: 0 },
+      generation_error: null,
+    }).eq("id", contextId);
+
+    const combinedContent = `FILE: ${ctxPre.file_name}\n${ctxPre.content}`.substring(0, MAX_CONTEXT_CHARS);
+
+    const backgroundTitles = async () => {
+      try {
+        const titlesPrompt = `Analizza il testo fornito e crea un piano di studi strutturato.
 
 IMPORTANTE: Rispondi SOLO con un array JSON valido. SOLO JSON puro.
 
@@ -433,83 +458,88 @@ Output richiesto:
 TESTO DA ANALIZZARE:
 ${combinedContent}`;
 
-    const content = await callAI([
-      { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Solo l'array JSON richiesto." },
-      { role: "user", content: titlesPrompt }
-    ], 0.1, 16000);
+        const content = await callAI([
+          { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Solo l'array JSON richiesto." },
+          { role: "user", content: titlesPrompt }
+        ], 0.1, 16000);
 
-    console.log("AI titles response (first 300 chars):", content.substring(0, 300));
-    const parsedTitles = extractJson(content);
-    if (!Array.isArray(parsedTitles)) throw new Error("Formato titoli non valido");
+        console.log("AI titles response (first 300 chars):", content.substring(0, 300));
+        const parsedTitles = extractJson(content);
+        if (!Array.isArray(parsedTitles)) throw new Error("Formato titoli non valido");
 
-    const titles = parsedTitles
-      .map((t) => {
-        if (typeof t === "string") return { title: t, page_start: null, page_end: null };
-        if (t && typeof t === "object" && "title" in t && typeof (t as { title?: unknown }).title === "string") {
-          const obj = t as { title: string; page_start?: number; page_end?: number };
-          return { title: obj.title, page_start: typeof obj.page_start === "number" ? obj.page_start : null, page_end: typeof obj.page_end === "number" ? obj.page_end : null };
+        const titles = parsedTitles
+          .map((t) => {
+            if (typeof t === "string") return { title: t, page_start: null, page_end: null };
+            if (t && typeof t === "object" && "title" in t && typeof (t as { title?: unknown }).title === "string") {
+              const obj = t as { title: string; page_start?: number; page_end?: number };
+              return { title: obj.title, page_start: typeof obj.page_start === "number" ? obj.page_start : null, page_end: typeof obj.page_end === "number" ? obj.page_end : null };
+            }
+            return null;
+          })
+          .filter((t): t is { title: string; page_start: number | null; page_end: number | null } => !!t && !!t.title);
+
+        if (titles.length === 0) throw new Error("Non sono riuscito a creare un indice valido. Riprova.");
+
+        const pageMarkers = Array.from(combinedContent.matchAll(/=== PAGINA (\d+) ===/g))
+          .map((m) => parseInt(m[1], 10)).filter((n) => !isNaN(n));
+        const maxPdfPage = pageMarkers.length > 0 ? Math.max(...pageMarkers) : 0;
+        const uniqueRanges = new Set(titles.map((t) => `${t.page_start ?? "x"}-${t.page_end ?? "x"}`));
+        const allMissing = titles.every((t) => t.page_start == null || t.page_end == null);
+        const allCollapsed = titles.length > 1 && uniqueRanges.size === 1 && titles[0].page_start != null;
+        if ((allMissing || allCollapsed) && maxPdfPage > 1 && titles.length > 0) {
+          const span = Math.max(1, Math.floor(maxPdfPage / titles.length));
+          titles.forEach((t, i) => {
+            const start = Math.min(maxPdfPage, i * span + 1);
+            const end = Math.min(maxPdfPage, i === titles.length - 1 ? maxPdfPage : (i + 1) * span);
+            t.page_start = start;
+            t.page_end = Math.max(start, end);
+          });
         }
-        return null;
-      })
-      .filter((t): t is { title: string; page_start: number | null; page_end: number | null } => !!t && !!t.title);
 
-    if (titles.length === 0) throw new Error("Non sono riuscito a creare un indice valido. Riprova.");
+        const { error: deleteError } = await supabase
+          .from("mini_lessons").delete()
+          .eq("user_id", userId).eq("context_id", contextId);
+        if (deleteError) throw new Error("Errore durante la pulizia delle vecchie lezioni");
 
-    // ── SAFETY NET: auto-fix degenerate page mapping ──
-    // If the LLM returned the same page range for every lesson (typical
-    // failure mode: everything = 1/1), distribute pages proportionally.
-    const pageMarkers = Array.from(combinedContent.matchAll(/=== PAGINA (\d+) ===/g))
-      .map((m) => parseInt(m[1], 10))
-      .filter((n) => !isNaN(n));
-    const maxPdfPage = pageMarkers.length > 0 ? Math.max(...pageMarkers) : 0;
+        const lessonsToInsert = titles.map((t, i: number) => ({
+          user_id: userId, context_id: contextId, title: t.title,
+          lesson_order: i, is_generated: false, concept: "", explanation: "",
+          page_start: t.page_start, page_end: t.page_end,
+        }));
+        const { error: insertError } = await supabase.from("mini_lessons").insert(lessonsToInsert);
+        if (insertError) throw new Error("Errore durante il salvataggio delle lezioni");
 
-    const uniqueRanges = new Set(
-      titles.map((t) => `${t.page_start ?? "x"}-${t.page_end ?? "x"}`)
-    );
-    const allMissing = titles.every((t) => t.page_start == null || t.page_end == null);
-    const allCollapsed =
-      titles.length > 1 && uniqueRanges.size === 1 && titles[0].page_start != null;
+        if (isDemoAdmin) {
+          await supabase.from("study_contexts").update({ is_demo: true }).eq("id", contextId);
+        }
 
-    if ((allMissing || allCollapsed) && maxPdfPage > 1 && titles.length > 0) {
-      console.warn(
-        `⚠️ Page mapping degenerate (${
-          allMissing ? "all missing" : "all collapsed to " + [...uniqueRanges][0]
-        }). Auto-distributing ${titles.length} lessons across ${maxPdfPage} pages.`
-      );
-      const span = Math.max(1, Math.floor(maxPdfPage / titles.length));
-      titles.forEach((t, i) => {
-        const start = Math.min(maxPdfPage, i * span + 1);
-        const end = Math.min(maxPdfPage, i === titles.length - 1 ? maxPdfPage : (i + 1) * span);
-        t.page_start = start;
-        t.page_end = Math.max(start, end);
-      });
+        await supabase.from("study_contexts").update({
+          generation_status: "completed",
+          generation_progress: { step: "complete", generatedCount: titles.length, totalLessons: titles.length },
+          generation_error: null,
+        }).eq("id", contextId);
+
+        console.log(`✅ Background generation complete for context ${contextId}: ${titles.length} lessons`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Errore nella generazione delle lezioni";
+        console.error(`❌ Background generation failed for context ${contextId}:`, msg);
+        await supabase.from("study_contexts").update({
+          generation_status: "failed",
+          generation_error: msg,
+        }).eq("id", contextId);
+      }
+    };
+
+    // @ts-ignore — EdgeRuntime è iniettato da Supabase Edge Runtime
+    if (typeof EdgeRuntime !== "undefined" && typeof EdgeRuntime.waitUntil === "function") {
+      // @ts-ignore
+      EdgeRuntime.waitUntil(backgroundTitles());
+    } else {
+      // Fallback (test locali): non attendere
+      backgroundTitles();
     }
 
-    // Delete old lessons for same context
-    let deleteQuery = supabase.from("mini_lessons").delete().eq("user_id", userId);
-    if (contextId) { deleteQuery = deleteQuery.eq("context_id", contextId); } else { deleteQuery = deleteQuery.is("context_id", null); }
-    const { error: deleteError } = await deleteQuery;
-    if (deleteError) throw new Error("Errore durante la pulizia delle vecchie lezioni");
-
-    const lessonsToInsert = titles.map((t, i: number) => ({
-      user_id: userId, context_id: contextId ?? null, title: t.title,
-      lesson_order: i, is_generated: false, concept: "", explanation: "",
-      page_start: t.page_start, page_end: t.page_end,
-    }));
-
-    const { error: insertError } = await supabase.from("mini_lessons").insert(lessonsToInsert);
-    if (insertError) throw new Error("Errore durante il salvataggio delle lezioni");
-
-    // Se il piano è stato creato dall'admin demo, marca il contesto come demo
-    // così sarà visibile a tutti gli altri utenti senza consumare il loro limite.
-    if (isDemoAdmin && contextId) {
-      await supabase
-        .from("study_contexts")
-        .update({ is_demo: true })
-        .eq("id", contextId);
-    }
-
-    return successResponse({ success: true, lessonsCount: titles.length, titles: titles.map((t: { title: string }) => t.title) });
+    return successResponse({ success: true, status: "generating", contextId }, 202);
 
   } catch (error) {
     console.error("Error:", error);
