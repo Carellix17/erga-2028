@@ -176,8 +176,9 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           .select("status, result, error")
           .eq("id", jobId)
           .maybeSingle();
-        if (job?.status === "completed" && (job.result as { exercises?: Exercise[] } | null)?.exercises) {
-          setExercises((job.result as { exercises: Exercise[] }).exercises);
+        const result = job?.result as unknown as { exercises?: Exercise[] } | null;
+        if (job?.status === "completed" && result?.exercises) {
+          setExercises(result.exercises);
           setIsLoading(false);
           window.clearInterval(poll);
           supabase.removeChannel(channel);
