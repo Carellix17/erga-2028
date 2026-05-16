@@ -157,15 +157,16 @@ serve(async (req) => {
     if (action === "listContexts") {
       // List all contexts with lesson counts and processing status.
       // Include sia i contesti dell'utente sia tutti i contesti demo (di chiunque).
+      const ctxFields = "id, file_name, created_at, processing_status, error_message, is_demo, generation_status, generation_progress, generation_error, generation_started_at";
       const { data: contexts } = await supabase
         .from("study_contexts")
-        .select("id, file_name, created_at, processing_status, error_message, is_demo")
+        .select(ctxFields)
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
       const { data: legacyContexts } = legacyUserId
         ? await supabase
             .from("study_contexts")
-            .select("id, file_name, created_at, processing_status, error_message, is_demo")
+            .select(ctxFields)
             .eq("user_id", legacyUserId)
             .order("created_at", { ascending: false })
         : { data: null };
@@ -173,7 +174,7 @@ serve(async (req) => {
       // Contesti demo (di chiunque) — RLS lo permette.
       const { data: demoContexts } = await supabase
         .from("study_contexts")
-        .select("id, file_name, created_at, processing_status, error_message, is_demo")
+        .select(ctxFields)
         .eq("is_demo", true)
         .order("created_at", { ascending: false });
 
