@@ -527,7 +527,7 @@ ${combinedContent}`;
           const { sendPushToUser } = await import("../_shared/push.ts");
           await sendPushToUser(supabase, userId, {
             title: "Lezione pronta 🚀",
-            body: `La tua lezione su ${context?.file_name || "il tuo materiale"} è pronta!`,
+            body: `La tua lezione su ${ctxPre?.file_name || "il tuo materiale"} è pronta!`,
             url: "/?tab=studio",
             tag: `lessons-${contextId}`,
           });
