@@ -208,6 +208,15 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
           result: { exercises },
           error: null,
         }).eq("id", job.id);
+        try {
+          const { sendPushToUser } = await import("../_shared/push.ts");
+          await sendPushToUser(supabase, userId, {
+            title: "Esercizi pronti 🎯",
+            body: "I tuoi esercizi mirati sono pronti! Mettiti alla prova.",
+            url: "/?tab=pratica",
+            tag: `exercises-${job.id}`,
+          });
+        } catch (e) { console.error("[push] notify exercises failed:", e); }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Errore nella generazione degli esercizi";
         console.error(`❌ exercise_jobs ${job.id} failed:`, msg);
