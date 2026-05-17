@@ -2,18 +2,14 @@
 // POST { subscription: PushSubscriptionJSON } -> upsert
 // DELETE { endpoint } -> cancella
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
-import { requireAuth } from "../_shared/auth.ts";
+import { validateAuth, unauthorizedResponse } from "../_shared/auth.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
-    const auth = await requireAuth(req);
-    if (!auth.isAuthenticated) {
-      return new Response(JSON.stringify({ error: "Non autorizzato" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    let auth;
+    try { auth = await validateAuth(req); }
+    catch { return unauthorizedResponse("Non autorizzato"); }
     const { userId, supabase } = auth;
     const body = await req.json().catch(() => ({}));
 
