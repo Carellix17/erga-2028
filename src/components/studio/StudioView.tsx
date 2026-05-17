@@ -24,6 +24,7 @@ import {
   useInvalidateGenerationUsage,
   FREE_LIMIT_MESSAGE,
 } from "@/hooks/useGenerationUsage";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 interface StudioViewProps {
   hasFiles: boolean;
@@ -48,6 +49,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const [isLoadingFinalTest, setIsLoadingFinalTest] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const push = usePushNotifications();
 
   // Rate limiting beta: 5 mini-lezioni gratuite per utente.
   // Le lezioni dei contesti demo NON contano nel limite.
@@ -175,6 +177,12 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     }
     setLocalStarting(true);
     try {
+      // Chiedi (una sola volta) il permesso notifiche: avviseremo a fine generazione.
+      if (push.supported && push.permission === "default") {
+        push.subscribe().catch(() => {});
+      } else if (push.supported && push.permission === "granted") {
+        push.subscribe().catch(() => {});
+      }
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const contextId = selectedContextId || activeContextId;
