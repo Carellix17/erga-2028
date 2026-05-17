@@ -2,6 +2,48 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 
+function extractJsonArray(raw: string): unknown[] {
+  let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  try { const p = JSON.parse(cleaned); if (Array.isArray(p)) return p; } catch { /* continue */ }
+  const arrMatch = cleaned.match(/\[[\s\S]*\]/);
+  if (arrMatch) {
+    try { const p = JSON.parse(arrMatch[0]); if (Array.isArray(p)) return p; } catch { /* continue */ }
+    cleaned = arrMatch[0];
+  }
+  // Walk top-level {...} objects inside the array, dropping any truncated/corrupt tail.
+  const arrStart = cleaned.indexOf("[");
+  if (arrStart !== -1) {
+    const items: string[] = [];
+    let i = arrStart + 1;
+    while (i < cleaned.length) {
+      while (i < cleaned.length && /[\s,]/.test(cleaned[i])) i++;
+      if (i >= cleaned.length || cleaned[i] === "]") break;
+      if (cleaned[i] !== "{") { i++; continue; }
+      const objStart = i;
+      let depth = 0, inStr = false, esc = false;
+      for (; i < cleaned.length; i++) {
+        const ch = cleaned[i];
+        if (esc) { esc = false; continue; }
+        if (ch === "\\") { esc = true; continue; }
+        if (ch === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (ch === "{") depth++;
+        else if (ch === "}") { depth--; if (depth === 0) { i++; break; } }
+      }
+      if (depth === 0) {
+        const slice = cleaned.slice(objStart, i);
+        try { JSON.parse(slice); items.push(slice); } catch { /* skip broken item */ }
+      } else {
+        break; // truncated mid-object
+      }
+    }
+    if (items.length > 0) {
+      try { return JSON.parse("[" + items.join(",") + "]"); } catch { /* continue */ }
+    }
+  }
+  throw new Error("Impossibile estrarre JSON dalla risposta AI");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
