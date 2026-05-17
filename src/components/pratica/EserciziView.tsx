@@ -58,6 +58,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const { currentUser } = useAuth();
+  const { supported: pushSupported, permission: pushPermission, subscribe: subscribePush } = usePushNotifications();
   const { toast } = useToast();
 
   // Load courses
