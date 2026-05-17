@@ -523,6 +523,15 @@ ${combinedContent}`;
         }).eq("id", contextId);
 
         console.log(`✅ Background generation complete for context ${contextId}: ${titles.length} lessons`);
+        try {
+          const { sendPushToUser } = await import("../_shared/push.ts");
+          await sendPushToUser(supabase, userId, {
+            title: "Lezione pronta 🚀",
+            body: `La tua lezione su ${context?.file_name || "il tuo materiale"} è pronta!`,
+            url: "/?tab=studio",
+            tag: `lessons-${contextId}`,
+          });
+        } catch (e) { console.error("[push] notify lessons failed:", e); }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Errore nella generazione delle lezioni";
         console.error(`❌ Background generation failed for context ${contextId}:`, msg);
