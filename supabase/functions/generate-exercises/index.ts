@@ -2,6 +2,48 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 
+function extractJsonArray(raw: string): unknown[] {
+  let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  try { const p = JSON.parse(cleaned); if (Array.isArray(p)) return p; } catch { /* continue */ }
+  const arrMatch = cleaned.match(/\[[\s\S]*\]/);
+  if (arrMatch) {
+    try { const p = JSON.parse(arrMatch[0]); if (Array.isArray(p)) return p; } catch { /* continue */ }
+    cleaned = arrMatch[0];
+  }
+  // Walk top-level {...} objects inside the array, dropping any truncated/corrupt tail.
+  const arrStart = cleaned.indexOf("[");
+  if (arrStart !== -1) {
+    const items: string[] = [];
+    let i = arrStart + 1;
+    while (i < cleaned.length) {
+      while (i < cleaned.length && /[\s,]/.test(cleaned[i])) i++;
+      if (i >= cleaned.length || cleaned[i] === "]") break;
+      if (cleaned[i] !== "{") { i++; continue; }
+      const objStart = i;
+      let depth = 0, inStr = false, esc = false;
+      for (; i < cleaned.length; i++) {
+        const ch = cleaned[i];
+        if (esc) { esc = false; continue; }
+        if (ch === "\\") { esc = true; continue; }
+        if (ch === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (ch === "{") depth++;
+        else if (ch === "}") { depth--; if (depth === 0) { i++; break; } }
+      }
+      if (depth === 0) {
+        const slice = cleaned.slice(objStart, i);
+        try { JSON.parse(slice); items.push(slice); } catch { /* skip broken item */ }
+      } else {
+        break; // truncated mid-object
+      }
+    }
+    if (items.length > 0) {
+      try { return JSON.parse("[" + items.join(",") + "]"); } catch { /* continue */ }
+    }
+  }
+  throw new Error("Impossibile estrarre JSON dalla risposta AI");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -107,7 +149,9 @@ serve(async (req) => {
 
     const trimmed = studyContent.slice(0, 15000);
 
-    const prompt = `Genera 10 esercizi basati ESCLUSIVAMENTE su questi materiali di studio. Usa SOLO questi tipi di esercizio, alternandoli:
+    const prompt = `Rispondi ESCLUSIVAMENTE con un array JSON valido. NIENTE markdown, NIENTE \`\`\`json, NIENTE testo prima o dopo. Tutte le virgolette dentro le stringhe devono essere correttamente protette con \\". NIENTE virgole finali.
+
+Genera 10 esercizi basati ESCLUSIVAMENTE su questi materiali di studio. Usa SOLO questi tipi di esercizio, alternandoli:
 
 1. "multiple_choice" - Scelta multipla con 4 opzioni
 2. "true_false" - Vero o Falso con options ["Vero", "Falso"]
@@ -153,11 +197,12 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
 
     const backgroundJob = async () => {
       try {
-        const content = await callAIText([{ role: "user", content: prompt }], 0.5, 4096);
-        const arrayMatch = content.match(/\[[\s\S]*\]/);
-        if (!arrayMatch) throw new Error("Formato risposta non valido");
-        const exercises = JSON.parse(arrayMatch[0]);
-        if (!Array.isArray(exercises)) throw new Error("Risposta non valida");
+        const content = await callAIText([
+          { role: "system", content: "Rispondi ESCLUSIVAMENTE con un array JSON valido. Niente markdown, niente ```json, niente testo extra. Tutte le virgolette interne alle stringhe devono essere escape con \\\". Niente virgole finali." },
+          { role: "user", content: prompt },
+        ], 0.3, 4096);
+        const exercises = extractJsonArray(content);
+        if (!Array.isArray(exercises) || exercises.length === 0) throw new Error("Risposta AI non valida");
         await supabase.from("exercise_jobs").update({
           status: "completed",
           result: { exercises },
