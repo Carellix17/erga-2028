@@ -149,7 +149,9 @@ serve(async (req) => {
 
     const trimmed = studyContent.slice(0, 15000);
 
-    const prompt = `Genera 10 esercizi basati ESCLUSIVAMENTE su questi materiali di studio. Usa SOLO questi tipi di esercizio, alternandoli:
+    const prompt = `Rispondi ESCLUSIVAMENTE con un array JSON valido. NIENTE markdown, NIENTE \`\`\`json, NIENTE testo prima o dopo. Tutte le virgolette dentro le stringhe devono essere correttamente protette con \\". NIENTE virgole finali.
+
+Genera 10 esercizi basati ESCLUSIVAMENTE su questi materiali di studio. Usa SOLO questi tipi di esercizio, alternandoli:
 
 1. "multiple_choice" - Scelta multipla con 4 opzioni
 2. "true_false" - Vero o Falso con options ["Vero", "Falso"]
@@ -195,11 +197,12 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
 
     const backgroundJob = async () => {
       try {
-        const content = await callAIText([{ role: "user", content: prompt }], 0.5, 4096);
-        const arrayMatch = content.match(/\[[\s\S]*\]/);
-        if (!arrayMatch) throw new Error("Formato risposta non valido");
-        const exercises = JSON.parse(arrayMatch[0]);
-        if (!Array.isArray(exercises)) throw new Error("Risposta non valida");
+        const content = await callAIText([
+          { role: "system", content: "Rispondi ESCLUSIVAMENTE con un array JSON valido. Niente markdown, niente ```json, niente testo extra. Tutte le virgolette interne alle stringhe devono essere escape con \\\". Niente virgole finali." },
+          { role: "user", content: prompt },
+        ], 0.3, 4096);
+        const exercises = extractJsonArray(content);
+        if (!Array.isArray(exercises) || exercises.length === 0) throw new Error("Risposta AI non valida");
         await supabase.from("exercise_jobs").update({
           status: "completed",
           result: { exercises },
