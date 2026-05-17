@@ -19,14 +19,15 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: null, // We register manually with iframe/preview guards
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "icon-192.png", "icon-512.png"],
       devOptions: {
         enabled: false,
       },
-      workbox: {
+      injectManifest: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
-        cleanupOutdatedCaches: true,
       },
       manifest: {
         name: "Erga - Ridefinisci lo studio",
