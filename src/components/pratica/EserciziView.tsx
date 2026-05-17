@@ -127,6 +127,10 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     onFullscreenChange?.(true);
 
     try {
+      // Notifica push opt-in al primo uso
+      if (pushSupported && pushPermission !== "denied") {
+        subscribePush().catch(() => {});
+      }
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const body: Record<string, unknown> = { userId: currentUser, contextId: courseId };
