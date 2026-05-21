@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight, Sparkles } from "lucide-react";
+import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight, Sparkles, Brain, Zap, FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -80,6 +80,9 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [results, setResults] = useState<ExerciseResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const [genStage, setGenStage] = useState<"queue" | "analyze" | "generate" | "finalize">("queue");
+  const [genProgress, setGenProgress] = useState(0); // 0..100
+  const [genCourseName, setGenCourseName] = useState<string>("");
   const [pastJobs, setPastJobs] = useState<PastJob[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [view, setView] = useState<"menu" | "generate" | "history">("menu");
@@ -216,7 +219,32 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     setCurrentIndex(0);
     setResults([]);
     setIsFinished(false);
+    setGenStage("queue");
+    setGenProgress(2);
+    const courseObj = courses.find(c => c.id === courseId);
+    setGenCourseName(courseObj ? courseObj.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "") : "");
     onFullscreenChange?.(true);
+
+    // Animated progress: target moves with stage; ticker eases toward it and caps at 95% until completion.
+    const stageTargets: Record<typeof genStage extends infer T ? string : never, number> = { queue: 10, analyze: 35, generate: 80, finalize: 95 } as never;
+    let stageRef: "queue" | "analyze" | "generate" | "finalize" = "queue";
+    const setStage = (s: "queue" | "analyze" | "generate" | "finalize") => { stageRef = s; setGenStage(s); };
+    const ticker = window.setInterval(() => {
+      const target = (stageTargets as Record<string, number>)[stageRef] ?? 95;
+      setGenProgress(prev => {
+        if (prev >= 95) return 95;
+        const diff = target - prev;
+        if (diff <= 0.3) return prev + 0.15; // creep
+        return prev + diff * 0.06;
+      });
+    }, 250);
+    const t1 = window.setTimeout(() => setStage("analyze"), 1200);
+    const t2 = window.setTimeout(() => setStage("generate"), 6000);
+    const t3 = window.setTimeout(() => setStage("finalize"), 25000);
+    const stopProgress = () => {
+      window.clearInterval(ticker);
+      window.clearTimeout(t1); window.clearTimeout(t2); window.clearTimeout(t3);
+    };
 
     try {
       // Notifica push opt-in al primo uso
@@ -239,6 +267,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       // Backend ora risponde 202 con jobId: lavoro in background.
       const jobId = data.jobId;
       if (!jobId) throw new Error("Job non avviato");
+      setStage("analyze");
 
       // Polling + realtime fallback sullo stato del job.
       // Realtime sub
@@ -250,10 +279,14 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           (payload) => {
             const row = payload.new as { status: string; result: { exercises?: Exercise[] } | null; error: string | null };
             if (row.status === "completed" && row.result?.exercises) {
+              stopProgress();
+              setGenProgress(100);
+              setStage("finalize");
               setExercises(row.result.exercises);
               setIsLoading(false);
               supabase.removeChannel(channel);
             } else if (row.status === "failed") {
+              stopProgress();
               toast({ title: "Errore", description: row.error || "Generazione fallita", variant: "destructive" });
               setIsLoading(false);
               onFullscreenChange?.(false);
@@ -274,28 +307,34 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           .maybeSingle();
         const result = job?.result as unknown as { exercises?: Exercise[] } | null;
         if (job?.status === "completed" && result?.exercises) {
+          stopProgress();
+          setGenProgress(100);
+          setStage("finalize");
           setExercises(result.exercises);
           setIsLoading(false);
           window.clearInterval(poll);
           supabase.removeChannel(channel);
         } else if (job?.status === "failed") {
+          stopProgress();
           toast({ title: "Errore", description: job.error || "Generazione fallita", variant: "destructive" });
           setIsLoading(false);
           onFullscreenChange?.(false);
           window.clearInterval(poll);
           supabase.removeChannel(channel);
         } else if (elapsed > 300) {
+          stopProgress();
           window.clearInterval(poll);
           supabase.removeChannel(channel);
         }
       }, 4000);
       return;
     } catch {
+      stopProgress();
       toast({ title: "Errore", description: "Non riesco a generare gli esercizi", variant: "destructive" });
       setIsLoading(false);
       onFullscreenChange?.(false);
     }
-  }, [currentUser, toast, lessons.length]);
+  }, [currentUser, toast, lessons.length, courses, onFullscreenChange, pushPermission, pushSupported, subscribePush]);
 
   const currentExercise = exercises[currentIndex];
 
@@ -615,20 +654,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     }
 
     // === Loading generazione (fallback) ===
-    return (
-      <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
-        <div className="text-center space-y-2">
-          <div className="w-16 h-16 mx-auto rounded-3xl bg-primary/10 flex items-center justify-center">
-            <Dumbbell className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="font-display text-xl font-bold text-foreground">Esercizi Mirati</h2>
-        </div>
-        <div className="flex flex-col items-center gap-3 py-8">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          <p className="body-medium text-muted-foreground">Genero gli esercizi...</p>
-        </div>
-      </div>
-    );
+    return <ExerciseGenerationProgress stage={genStage} progress={genProgress} courseName={genCourseName} />;
   }
 
   // Finished summary
@@ -841,6 +867,113 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+type GenStage = "queue" | "analyze" | "generate" | "finalize";
+
+const STAGE_STEPS: { id: GenStage; label: string; sublabel: string; icon: typeof Brain }[] = [
+  { id: "queue", label: "Avvio generazione", sublabel: "Preparo la richiesta", icon: Loader2 },
+  { id: "analyze", label: "Analisi materiali", sublabel: "Leggo lezioni e concetti", icon: FileSearch },
+  { id: "generate", label: "Creazione esercizi", sublabel: "L'AI scrive 10 esercizi su misura", icon: Brain },
+  { id: "finalize", label: "Quasi pronto", sublabel: "Controllo qualità e formattazione", icon: Zap },
+];
+
+const TIPS = [
+  "Scelgo le domande più utili per te… 🎯",
+  "Mescolo scelta multipla, V/F, abbinamenti… 🧩",
+  "Verifico le risposte e le spiegazioni… 📖",
+  "Ancora qualche secondo, sto rifinendo… ✨",
+];
+
+function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: GenStage; progress: number; courseName: string }) {
+  const [tipIndex, setTipIndex] = useState(0);
+  const [dots, setDots] = useState("");
+
+  useEffect(() => {
+    const a = setInterval(() => setTipIndex(i => (i + 1) % TIPS.length), 3500);
+    const b = setInterval(() => setDots(d => (d.length >= 3 ? "" : d + ".")), 500);
+    return () => { clearInterval(a); clearInterval(b); };
+  }, []);
+
+  const currentIdx = STAGE_STEPS.findIndex(s => s.id === stage);
+  const radius = 56;
+  const circumference = 2 * Math.PI * radius;
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 animate-fade-up">
+      <div className="relative mb-8">
+        <div className="w-28 h-28 rounded-[2rem] gradient-primary flex items-center justify-center shadow-level-3 animate-float">
+          <Dumbbell className="w-12 h-12 text-primary-foreground" />
+        </div>
+        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r={radius} fill="none" stroke="hsl(var(--outline-variant))" strokeWidth="3" opacity="0.3" />
+          <circle
+            cx="60" cy="60" r={radius} fill="none"
+            stroke="hsl(var(--primary))" strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeDasharray={`${circumference}`}
+            strokeDashoffset={`${circumference * (1 - progress / 100)}`}
+            className="transition-all duration-300"
+          />
+        </svg>
+      </div>
+
+      <div className="text-center mb-6">
+        <span className="text-4xl font-display font-bold text-foreground">{Math.round(progress)}%</span>
+        {courseName && (
+          <p className="body-small text-primary font-medium mt-1 bg-primary-container px-3 py-1 rounded-full inline-block">
+            {courseName}
+          </p>
+        )}
+      </div>
+
+      <div className="w-full max-w-xs space-y-1.5 mb-8">
+        {STAGE_STEPS.map((step, index) => {
+          const Icon = step.icon;
+          const isActive = index === currentIdx;
+          const isComplete = index < currentIdx;
+          const isPending = index > currentIdx;
+          return (
+            <div
+              key={step.id}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-500",
+                isActive && "bg-primary-container scale-[1.02]",
+                isComplete && "opacity-60",
+                isPending && "opacity-30"
+              )}
+            >
+              <div className={cn(
+                "w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-500 flex-shrink-0",
+                isActive && "bg-primary text-primary-foreground shadow-level-1",
+                isComplete && "bg-success text-success-foreground",
+                isPending && "bg-surface-container-highest text-muted-foreground"
+              )}>
+                {isComplete ? <Check className="w-4 h-4" /> : <Icon className={cn("w-4 h-4", isActive && "animate-pulse")} />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={cn(
+                  "label-large leading-tight",
+                  isActive && "text-primary font-semibold",
+                  isComplete && "text-success"
+                )}>
+                  {step.label}{isActive && dots}
+                </p>
+                <p className="body-small text-muted-foreground">{step.sublabel}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <p key={tipIndex} className="text-center body-medium text-muted-foreground animate-fade-up max-w-[280px]">
+        {TIPS[tipIndex]}
+      </p>
+      <p className="mt-6 text-center body-small text-muted-foreground/90 max-w-[320px] px-4 py-3 rounded-2xl bg-surface-container-highest/60 border border-outline-variant/20">
+        Puoi anche uscire dall'app: la generazione continua in background e ti avviseremo con una notifica quando è pronta! 🔔
+      </p>
     </div>
   );
 }
