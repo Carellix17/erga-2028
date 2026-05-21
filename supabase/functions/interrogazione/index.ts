@@ -50,25 +50,32 @@ serve(async (req) => {
     };
 
     if (action === "ask") {
-      const prompt = `Sei un professore italiano che sta interrogando uno studente. Basandoti ESCLUSIVAMENTE su questi materiali di studio, formula UNA domanda chiara e precisa per verificare la comprensione dello studente. La domanda deve essere aperta e richiedere una spiegazione.
+      const prompt = `Sei un tutor amichevole che sta aiutando uno studente a ripassare. Usa un tono colloquiale, dai del tu, niente formalismi. Basandoti SOLO sui materiali qui sotto, fai UNA domanda chiara e diretta per capire se ha capito un concetto importante. La domanda dev'essere aperta (richiede spiegazione), non troppo lunga, in italiano semplice.
 
 MATERIALI:
 ${studyContent}
 
-Rispondi SOLO con la domanda, nient'altro.`;
+Rispondi SOLO con la domanda, senza preamboli né virgolette.`;
 
-      const result = await callAI([{ role: "user", content: prompt }], 0.8);
-      return successResponse({ question: result.trim() });
+      let result = (await callAI([{ role: "user", content: prompt }], 0.8)).trim();
+      if (!result) {
+        // retry once with different temperature if empty
+        result = (await callAI([{ role: "user", content: prompt }], 0.5)).trim();
+      }
+      if (!result) return errorResponse("Non sono riuscito a generare la domanda, riprova", 502);
+      return successResponse({ question: result });
     }
 
     if (action === "topic") {
-      const prompt = `Basandoti su questi materiali di studio, scegli UN argomento specifico su cui lo studente dovrà esporre le sue conoscenze. Rispondi SOLO con il nome dell'argomento (2-6 parole).
+      const prompt = `Dai un'occhiata a questi materiali e scegli UN argomento specifico su cui lo studente possa esporsi. Rispondi SOLO con il nome dell'argomento (2-6 parole), senza virgolette.
 
 MATERIALI:
 ${studyContent}`;
 
-      const result = await callAI([{ role: "user", content: prompt }], 0.9);
-      return successResponse({ topic: result.trim() });
+      let result = (await callAI([{ role: "user", content: prompt }], 0.9)).trim().replace(/^["'«»]+|["'«»]+$/g, "");
+      if (!result) result = (await callAI([{ role: "user", content: prompt }], 0.6)).trim().replace(/^["'«»]+|["'«»]+$/g, "");
+      if (!result) return errorResponse("Non sono riuscito a scegliere l'argomento, riprova", 502);
+      return successResponse({ topic: result });
     }
 
     if (action === "evaluate" || action === "evaluate_free") {
@@ -81,7 +88,7 @@ ${studyContent}`;
         .join("\n");
 
       const prompt = isStructured
-        ? `Sei un professore italiano che sta interrogando uno studente. Valuta questa risposta.
+        ? `Sei un tutor amichevole che sta aiutando uno studente a ripassare. Dai del tu, usa un tono caloroso e incoraggiante, niente formalismi da professore severo. Valuta questa risposta in modo chiaro e costruttivo.
 
 MATERIALI DI STUDIO:
 ${studyContent}
@@ -92,22 +99,22 @@ ${historyText}
 DOMANDA ATTUALE: ${question}
 RISPOSTA DELLO STUDENTE: ${answer}
 
-Rispondi in formato JSON (SOLO JSON, nessun testo prima o dopo):
+Puoi usare **grassetto** per i concetti chiave. Rispondi in formato JSON (SOLO JSON, nessun testo prima o dopo):
 {
-  "feedback": "Valutazione dettagliata della risposta (2-3 frasi). Evidenzia cosa è corretto e cosa manca.",
+  "feedback": "Valutazione amichevole (2-3 frasi). Dì cosa è giusto e cosa manca, con tono incoraggiante.",
   "score": <voto da 1 a 10>,
-  ${qNum < maxQuestions ? '"nextQuestion": "La prossima domanda da fare (diversa dalle precedenti)",' : '"finished": true,'}
+  ${qNum < maxQuestions ? '"nextQuestion": "La prossima domanda (diversa dalle precedenti, tono colloquiale)",' : '"finished": true'}
 }`
-        : `Sei un professore italiano. Lo studente ha esposto le sue conoscenze sull'argomento "${question}". Valuta la sua esposizione.
+        : `Sei un tutor amichevole. Lo studente ha esposto le sue conoscenze sull'argomento "${question}". Valuta la sua esposizione con tono caloroso e incoraggiante, dandogli del tu.
 
 MATERIALI DI STUDIO:
 ${studyContent}
 
 ESPOSIZIONE DELLO STUDENTE: ${answer}
 
-Rispondi in formato JSON (SOLO JSON):
+Puoi usare **grassetto** per i concetti chiave. Rispondi in formato JSON (SOLO JSON):
 {
-  "feedback": "Valutazione completa dell'esposizione: cosa è stato detto bene, cosa manca, suggerimenti. (4-5 frasi dettagliate)",
+  "feedback": "Valutazione completa e amichevole: cosa ha detto bene, cosa manca, suggerimenti pratici (4-5 frasi).",
   "score": <voto da 1 a 10>,
   "finished": true
 }`;
@@ -119,7 +126,10 @@ Rispondi in formato JSON (SOLO JSON):
       if (!jsonMatch) return errorResponse("Errore nel formato della risposta");
 
       try {
-        const parsed = JSON.parse(jsonMatch[0]);
+        let raw = jsonMatch[0]
+          .replace(/,(\s*[}\]])/g, "$1") // trailing commas
+          .replace(/[\x00-\x1F\x7F]/g, " ");
+        const parsed = JSON.parse(raw);
         return successResponse(parsed);
       } catch {
         return errorResponse("Errore nel parsing della risposta");

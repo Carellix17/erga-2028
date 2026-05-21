@@ -384,8 +384,25 @@ export function InterrogazioneView() {
             <div className="label-small text-muted-foreground mb-1">
               {item.type === "question" ? "🎓 Tutor" : item.type === "answer" ? "🎤 Tu" : "📝 Valutazione"}
             </div>
-            <div className="body-medium prose prose-sm max-w-none">
-              <ReactMarkdown>{item.content}</ReactMarkdown>
+            <div className="body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold prose-strong:text-foreground prose-em:italic prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5">
+              <ReactMarkdown
+                components={{
+                  p: ({ children }) => <p className="my-1.5 whitespace-pre-wrap">{children}</p>,
+                  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                  em: ({ children }) => <em className="italic">{children}</em>,
+                  ul: ({ children }) => <ul className="list-disc pl-4 my-1.5 space-y-0.5">{children}</ul>,
+                  ol: ({ children }) => <ol className="list-decimal pl-4 my-1.5 space-y-0.5">{children}</ol>,
+                  li: ({ children }) => <li className="my-0.5">{children}</li>,
+                  h1: ({ children }) => <h3 className="font-display font-medium text-base mt-2 mb-1">{children}</h3>,
+                  h2: ({ children }) => <h4 className="font-display font-medium text-base mt-2 mb-1">{children}</h4>,
+                  h3: ({ children }) => <h5 className="font-display font-medium mt-2 mb-1">{children}</h5>,
+                  code: ({ children }) => (
+                    <code className="bg-surface-container-highest px-1.5 py-0.5 rounded-lg text-xs font-mono">{children}</code>
+                  ),
+                }}
+              >
+                {item.content}
+              </ReactMarkdown>
             </div>
           </div>
         ))}
