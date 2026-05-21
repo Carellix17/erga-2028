@@ -870,3 +870,110 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     </div>
   );
 }
+
+type GenStage = "queue" | "analyze" | "generate" | "finalize";
+
+const STAGE_STEPS: { id: GenStage; label: string; sublabel: string; icon: typeof Brain }[] = [
+  { id: "queue", label: "Avvio generazione", sublabel: "Preparo la richiesta", icon: Loader2 },
+  { id: "analyze", label: "Analisi materiali", sublabel: "Leggo lezioni e concetti", icon: FileSearch },
+  { id: "generate", label: "Creazione esercizi", sublabel: "L'AI scrive 10 esercizi su misura", icon: Brain },
+  { id: "finalize", label: "Quasi pronto", sublabel: "Controllo qualità e formattazione", icon: Zap },
+];
+
+const TIPS = [
+  "Scelgo le domande più utili per te… 🎯",
+  "Mescolo scelta multipla, V/F, abbinamenti… 🧩",
+  "Verifico le risposte e le spiegazioni… 📖",
+  "Ancora qualche secondo, sto rifinendo… ✨",
+];
+
+function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: GenStage; progress: number; courseName: string }) {
+  const [tipIndex, setTipIndex] = useState(0);
+  const [dots, setDots] = useState("");
+
+  useEffect(() => {
+    const a = setInterval(() => setTipIndex(i => (i + 1) % TIPS.length), 3500);
+    const b = setInterval(() => setDots(d => (d.length >= 3 ? "" : d + ".")), 500);
+    return () => { clearInterval(a); clearInterval(b); };
+  }, []);
+
+  const currentIdx = STAGE_STEPS.findIndex(s => s.id === stage);
+  const radius = 56;
+  const circumference = 2 * Math.PI * radius;
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 animate-fade-up">
+      <div className="relative mb-8">
+        <div className="w-28 h-28 rounded-[2rem] gradient-primary flex items-center justify-center shadow-level-3 animate-float">
+          <Dumbbell className="w-12 h-12 text-primary-foreground" />
+        </div>
+        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r={radius} fill="none" stroke="hsl(var(--outline-variant))" strokeWidth="3" opacity="0.3" />
+          <circle
+            cx="60" cy="60" r={radius} fill="none"
+            stroke="hsl(var(--primary))" strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeDasharray={`${circumference}`}
+            strokeDashoffset={`${circumference * (1 - progress / 100)}`}
+            className="transition-all duration-300"
+          />
+        </svg>
+      </div>
+
+      <div className="text-center mb-6">
+        <span className="text-4xl font-display font-bold text-foreground">{Math.round(progress)}%</span>
+        {courseName && (
+          <p className="body-small text-primary font-medium mt-1 bg-primary-container px-3 py-1 rounded-full inline-block">
+            {courseName}
+          </p>
+        )}
+      </div>
+
+      <div className="w-full max-w-xs space-y-1.5 mb-8">
+        {STAGE_STEPS.map((step, index) => {
+          const Icon = step.icon;
+          const isActive = index === currentIdx;
+          const isComplete = index < currentIdx;
+          const isPending = index > currentIdx;
+          return (
+            <div
+              key={step.id}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-500",
+                isActive && "bg-primary-container scale-[1.02]",
+                isComplete && "opacity-60",
+                isPending && "opacity-30"
+              )}
+            >
+              <div className={cn(
+                "w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-500 flex-shrink-0",
+                isActive && "bg-primary text-primary-foreground shadow-level-1",
+                isComplete && "bg-success text-success-foreground",
+                isPending && "bg-surface-container-highest text-muted-foreground"
+              )}>
+                {isComplete ? <Check className="w-4 h-4" /> : <Icon className={cn("w-4 h-4", isActive && "animate-pulse")} />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={cn(
+                  "label-large leading-tight",
+                  isActive && "text-primary font-semibold",
+                  isComplete && "text-success"
+                )}>
+                  {step.label}{isActive && dots}
+                </p>
+                <p className="body-small text-muted-foreground">{step.sublabel}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <p key={tipIndex} className="text-center body-medium text-muted-foreground animate-fade-up max-w-[280px]">
+        {TIPS[tipIndex]}
+      </p>
+      <p className="mt-6 text-center body-small text-muted-foreground/90 max-w-[320px] px-4 py-3 rounded-2xl bg-surface-container-highest/60 border border-outline-variant/20">
+        Puoi anche uscire dall'app: la generazione continua in background e ti avviseremo con una notifica quando è pronta! 🔔
+      </p>
+    </div>
+  );
+}
