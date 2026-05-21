@@ -343,6 +343,9 @@ export function ProfileView() {
         )}
         {isSaving ? "Salvataggio..." : saved ? "Salvato! ✨" : "Salva profilo"}
       </Button>
+
+      {/* Notifiche push */}
+      <NotificationsCard />
     </div>
   );
 }
