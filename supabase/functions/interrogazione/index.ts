@@ -46,7 +46,9 @@ serve(async (req) => {
     }
 
     const callAI = async (messages: any[], temperature = 0.7) => {
-      return callAIText(messages, temperature, 1024);
+      // Gemini 2.5 Flash consuma "reasoning tokens" dal budget: serve un margine ampio
+      // per evitare risposte troncate a metà frase.
+      return callAIText(messages, temperature, 4096);
     };
 
     if (action === "ask") {
