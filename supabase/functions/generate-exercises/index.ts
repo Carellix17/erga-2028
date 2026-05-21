@@ -51,7 +51,8 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { contextId, lessonIds } = body;
+    const { contextId, lessonIds, count } = body;
+    const requestedCount = Math.min(20, Math.max(1, Math.round(Number(count) || 10)));
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
 
@@ -151,14 +152,14 @@ serve(async (req) => {
 
     const prompt = `Rispondi ESCLUSIVAMENTE con un array JSON valido. NIENTE markdown, NIENTE \`\`\`json, NIENTE testo prima o dopo. Tutte le virgolette dentro le stringhe devono essere correttamente protette con \\". NIENTE virgole finali.
 
-Genera 10 esercizi basati ESCLUSIVAMENTE su questi materiali di studio. Usa SOLO questi tipi di esercizio, alternandoli:
+Genera ${requestedCount} esercizi basati ESCLUSIVAMENTE su questi materiali di studio. Usa SOLO questi tipi di esercizio, alternandoli:
 
 1. "multiple_choice" - Scelta multipla con 4 opzioni
 2. "true_false" - Vero o Falso con options ["Vero", "Falso"]
 3. "matching" - Abbinamento di coppie (pairs con left/right)
 4. "ordering" - Metti in ordine (items da ordinare, correctAnswer è l'ordine giusto)
 
-IMPORTANTE: Genera ESATTAMENTE 10 esercizi. NON usare "short_answer" né "fill_blank". La maggior parte devono essere "multiple_choice" e "true_false".
+IMPORTANTE: Genera ESATTAMENTE ${requestedCount} esercizi. NON usare "short_answer" né "fill_blank". La maggior parte devono essere "multiple_choice" e "true_false".
 
 MATERIALI:
 ${trimmed}
