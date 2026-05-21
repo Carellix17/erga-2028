@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight, Sparkles } from "lucide-react";
+import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight, Sparkles, Brain, Zap, FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -80,6 +80,9 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [results, setResults] = useState<ExerciseResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const [genStage, setGenStage] = useState<"queue" | "analyze" | "generate" | "finalize">("queue");
+  const [genProgress, setGenProgress] = useState(0); // 0..100
+  const [genCourseName, setGenCourseName] = useState<string>("");
   const [pastJobs, setPastJobs] = useState<PastJob[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [view, setView] = useState<"menu" | "generate" | "history">("menu");
