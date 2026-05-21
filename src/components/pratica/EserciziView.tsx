@@ -82,6 +82,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [isFinished, setIsFinished] = useState(false);
   const [pastJobs, setPastJobs] = useState<PastJob[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [view, setView] = useState<"menu" | "generate" | "history">("menu");
   const { currentUser } = useAuth();
   const { supported: pushSupported, permission: pushPermission, subscribe: subscribePush } = usePushNotifications();
   const { toast } = useToast();
