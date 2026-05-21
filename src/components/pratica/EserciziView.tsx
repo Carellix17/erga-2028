@@ -472,6 +472,60 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
             ))}
           </div>
         )}
+
+        {/* I tuoi esercizi (history) */}
+        {!isLoading && (
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4 text-tertiary" />
+              <p className="label-large text-foreground">I tuoi esercizi</p>
+            </div>
+            {loadingHistory ? (
+              <div className="flex items-center gap-2 text-muted-foreground py-3">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="body-small">Carico la cronologia...</span>
+              </div>
+            ) : pastJobs.length === 0 ? (
+              <p className="body-small text-muted-foreground">
+                Non hai ancora generato esercizi. I tuoi set appariranno qui per riprenderli quando vuoi.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {Object.entries(
+                  pastJobs.reduce<Record<string, PastJob[]>>((acc, job) => {
+                    const label = formatGroupLabel(new Date(job.created_at));
+                    (acc[label] ||= []).push(job);
+                    return acc;
+                  }, {})
+                ).map(([label, jobs]) => (
+                  <div key={label} className="space-y-2">
+                    <p className="label-small text-muted-foreground uppercase tracking-wide">{label}</p>
+                    <div className="space-y-2">
+                      {jobs.map((job) => (
+                        <button
+                          key={job.id}
+                          onClick={() => openPastJob(job)}
+                          className="w-full flex items-center gap-3 p-4 rounded-2xl border bg-tertiary-container/30 border-outline-variant/30 hover:bg-tertiary-container/60 transition-all active:scale-[0.98]"
+                        >
+                          <div className="w-10 h-10 rounded-2xl bg-tertiary-container flex items-center justify-center flex-shrink-0">
+                            <Dumbbell className="w-5 h-5 text-tertiary" />
+                          </div>
+                          <div className="flex-1 min-w-0 text-left">
+                            <p className="label-large text-foreground truncate">{job.contextName}</p>
+                            <p className="label-small text-muted-foreground">
+                              {job.exercises.length} esercizi • {formatTime(new Date(job.created_at))}
+                            </p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
