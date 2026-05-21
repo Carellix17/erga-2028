@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight } from "lucide-react";
+import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -82,6 +82,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [isFinished, setIsFinished] = useState(false);
   const [pastJobs, setPastJobs] = useState<PastJob[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [view, setView] = useState<"menu" | "generate" | "history">("menu");
   const { currentUser } = useAuth();
   const { supported: pushSupported, permission: pushPermission, subscribe: subscribePush } = usePushNotifications();
   const { toast } = useToast();
@@ -435,97 +436,197 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     );
   }
 
-  // Course selection
+  // Menu + sotto-sezioni (Genera / I tuoi esercizi)
   if (!selectedCourse || exercises.length === 0) {
+    // === MENU ===
+    if (view === "menu" && !isLoading) {
+      return (
+        <div className="flex flex-col h-full px-4 py-6 space-y-6 overflow-y-auto">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 mx-auto rounded-3xl bg-primary/10 flex items-center justify-center">
+              <Dumbbell className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="font-display text-xl font-bold text-foreground">Esercizi Mirati</h2>
+            <p className="body-medium text-muted-foreground">Allenati con esercizi creati dai tuoi materiali</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <button
+              onClick={() => setView("generate")}
+              className="group relative overflow-hidden text-left p-5 rounded-3xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-level-2 hover:shadow-level-3 transition-all duration-400 ease-m3-emphasized active:scale-[0.98]"
+            >
+              <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary-foreground/10 blur-2xl" />
+              <div className="relative space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-primary-foreground/15 backdrop-blur flex items-center justify-center">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="title-medium font-display font-bold">Genera esercizi</p>
+                  <p className="body-small opacity-90 mt-1">Crea un nuovo set di esercizi mirati dai tuoi corsi</p>
+                </div>
+                <div className="flex items-center gap-1 label-medium pt-1">
+                  Inizia <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setView("history")}
+              className="group relative overflow-hidden text-left p-5 rounded-3xl bg-gradient-to-br from-tertiary-container to-tertiary-container/40 text-foreground shadow-level-1 hover:shadow-level-2 transition-all duration-400 ease-m3-emphasized active:scale-[0.98] border border-outline-variant/30"
+            >
+              <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-tertiary/10 blur-2xl" />
+              <div className="relative space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-tertiary/15 flex items-center justify-center">
+                  <History className="w-6 h-6 text-tertiary" />
+                </div>
+                <div>
+                  <p className="title-medium font-display font-bold">I tuoi esercizi</p>
+                  <p className="body-small text-muted-foreground mt-1">
+                    {loadingHistory
+                      ? "Carico la cronologia..."
+                      : pastJobs.length === 0
+                        ? "Qui troverai tutti i set già generati"
+                        : `${pastJobs.length} set disponibili da rifare`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 label-medium text-tertiary pt-1">
+                  Apri <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // === GENERA ESERCIZI: lista corsi ===
+    if (view === "generate" && !isLoading) {
+      return (
+        <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setView("menu")}
+              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
+              aria-label="Indietro"
+            >
+              <ChevronLeft className="w-5 h-5 text-foreground" />
+            </button>
+            <div>
+              <h2 className="font-display text-lg font-bold text-foreground">Genera esercizi</h2>
+              <p className="body-small text-muted-foreground">Scegli un corso per iniziare</p>
+            </div>
+          </div>
+
+          {courses.length === 0 ? (
+            <p className="text-center text-muted-foreground body-medium py-6">Nessun corso disponibile.</p>
+          ) : (
+            <div className="space-y-2">
+              {courses.map(course => (
+                <button
+                  key={course.id}
+                  onClick={() => loadLessonsForCourse(course.id)}
+                  className="w-full flex items-center gap-3 p-4 rounded-2xl border bg-surface-container border-outline-variant/30 hover:bg-surface-container-high transition-all active:scale-[0.98]"
+                >
+                  <BookOpen className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span className="label-large text-foreground truncate">
+                    {course.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}
+                  </span>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // === I TUOI ESERCIZI: cronologia ===
+    if (view === "history" && !isLoading) {
+      return (
+        <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setView("menu")}
+              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
+              aria-label="Indietro"
+            >
+              <ChevronLeft className="w-5 h-5 text-foreground" />
+            </button>
+            <div>
+              <h2 className="font-display text-lg font-bold text-foreground">I tuoi esercizi</h2>
+              <p className="body-small text-muted-foreground">Riprendi un set già generato</p>
+            </div>
+          </div>
+
+          {loadingHistory ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-6 justify-center">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="body-small">Carico la cronologia...</span>
+            </div>
+          ) : pastJobs.length === 0 ? (
+            <div className="text-center py-8 space-y-3">
+              <div className="w-14 h-14 mx-auto rounded-3xl bg-tertiary-container flex items-center justify-center">
+                <History className="w-6 h-6 text-tertiary" />
+              </div>
+              <p className="body-medium text-muted-foreground">
+                Non hai ancora generato esercizi. I tuoi set appariranno qui per riprenderli quando vuoi.
+              </p>
+              <Button onClick={() => setView("generate")} className="rounded-full mt-2">
+                <Sparkles className="w-4 h-4 mr-2" /> Genera ora
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {Object.entries(
+                pastJobs.reduce<Record<string, PastJob[]>>((acc, job) => {
+                  const label = formatGroupLabel(new Date(job.created_at));
+                  (acc[label] ||= []).push(job);
+                  return acc;
+                }, {})
+              ).map(([label, jobs]) => (
+                <div key={label} className="space-y-2">
+                  <p className="label-small text-muted-foreground uppercase tracking-wide">{label}</p>
+                  <div className="space-y-2">
+                    {jobs.map((job) => (
+                      <button
+                        key={job.id}
+                        onClick={() => openPastJob(job)}
+                        className="w-full flex items-center gap-3 p-4 rounded-2xl border bg-tertiary-container/30 border-outline-variant/30 hover:bg-tertiary-container/60 transition-all active:scale-[0.98]"
+                      >
+                        <div className="w-10 h-10 rounded-2xl bg-tertiary-container flex items-center justify-center flex-shrink-0">
+                          <Dumbbell className="w-5 h-5 text-tertiary" />
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <p className="label-large text-foreground truncate">{job.contextName}</p>
+                          <p className="label-small text-muted-foreground">
+                            {job.exercises.length} esercizi • {formatTime(new Date(job.created_at))}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // === Loading generazione (fallback) ===
     return (
       <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto rounded-3xl bg-primary/10 flex items-center justify-center">
             <Dumbbell className="w-8 h-8 text-primary" />
           </div>
           <h2 className="font-display text-xl font-bold text-foreground">Esercizi Mirati</h2>
-          <p className="body-medium text-muted-foreground">Allenati con esercizi generati dai tuoi materiali</p>
         </div>
-
-        {isLoading ? (
-          <div className="flex flex-col items-center gap-3 py-8">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            <p className="body-medium text-muted-foreground">Genero gli esercizi...</p>
-          </div>
-        ) : courses.length === 0 ? (
-          <p className="text-center text-muted-foreground body-medium">Nessun corso disponibile.</p>
-        ) : (
-          <div className="space-y-2">
-            <p className="label-large text-foreground">Scegli il corso:</p>
-            {courses.map(course => (
-              <button
-                key={course.id}
-                onClick={() => loadLessonsForCourse(course.id)}
-                className="w-full flex items-center gap-3 p-4 rounded-2xl border bg-surface-container border-outline-variant/30 hover:bg-surface-container-high transition-all active:scale-[0.98]"
-              >
-                <BookOpen className="w-5 h-5 text-primary flex-shrink-0" />
-                <span className="label-large text-foreground truncate">
-                  {course.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}
-                </span>
-                <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto" />
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* I tuoi esercizi (history) */}
-        {!isLoading && (
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-tertiary" />
-              <p className="label-large text-foreground">I tuoi esercizi</p>
-            </div>
-            {loadingHistory ? (
-              <div className="flex items-center gap-2 text-muted-foreground py-3">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="body-small">Carico la cronologia...</span>
-              </div>
-            ) : pastJobs.length === 0 ? (
-              <p className="body-small text-muted-foreground">
-                Non hai ancora generato esercizi. I tuoi set appariranno qui per riprenderli quando vuoi.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {Object.entries(
-                  pastJobs.reduce<Record<string, PastJob[]>>((acc, job) => {
-                    const label = formatGroupLabel(new Date(job.created_at));
-                    (acc[label] ||= []).push(job);
-                    return acc;
-                  }, {})
-                ).map(([label, jobs]) => (
-                  <div key={label} className="space-y-2">
-                    <p className="label-small text-muted-foreground uppercase tracking-wide">{label}</p>
-                    <div className="space-y-2">
-                      {jobs.map((job) => (
-                        <button
-                          key={job.id}
-                          onClick={() => openPastJob(job)}
-                          className="w-full flex items-center gap-3 p-4 rounded-2xl border bg-tertiary-container/30 border-outline-variant/30 hover:bg-tertiary-container/60 transition-all active:scale-[0.98]"
-                        >
-                          <div className="w-10 h-10 rounded-2xl bg-tertiary-container flex items-center justify-center flex-shrink-0">
-                            <Dumbbell className="w-5 h-5 text-tertiary" />
-                          </div>
-                          <div className="flex-1 min-w-0 text-left">
-                            <p className="label-large text-foreground truncate">{job.contextName}</p>
-                            <p className="label-small text-muted-foreground">
-                              {job.exercises.length} esercizi • {formatTime(new Date(job.created_at))}
-                            </p>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        <div className="flex flex-col items-center gap-3 py-8">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          <p className="body-medium text-muted-foreground">Genero gli esercizi...</p>
+        </div>
       </div>
     );
   }
