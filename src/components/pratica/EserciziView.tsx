@@ -7,6 +7,18 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { Slider } from "@/components/ui/slider";
+
+const MAX_EXERCISES = 20;
+const MIN_PER_LESSON = 2;
+const MAX_PER_LESSON = 5;
+function exerciseRangeFor(n: number) {
+  if (n <= 0) return { min: 3, max: MAX_EXERCISES, def: 5 };
+  const min = Math.min(MAX_EXERCISES, Math.max(3, MIN_PER_LESSON * n));
+  const max = Math.min(MAX_EXERCISES, Math.max(min, MAX_PER_LESSON * n));
+  const def = Math.min(max, Math.max(min, Math.round((min + max) / 2)));
+  return { min, max, def };
+}
 
 interface Course {
   id: string;
@@ -69,6 +81,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
+  const [exerciseCount, setExerciseCount] = useState<number>(10);
   const [showLessonPicker, setShowLessonPicker] = useState(false);
   const [loadingLessons, setLoadingLessons] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -212,7 +225,18 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     }
   };
 
-  const generateExercises = useCallback(async (courseId: string, lessonIds?: string[]) => {
+  // Clamp exerciseCount within range proportional to # selected lessons
+  useEffect(() => {
+    const { min, max, def } = exerciseRangeFor(selectedLessonIds.length);
+    setExerciseCount(prev => {
+      if (selectedLessonIds.length === 0) return def;
+      if (prev < min) return min;
+      if (prev > max) return max;
+      return prev;
+    });
+  }, [selectedLessonIds.length]);
+
+  const generateExercises = useCallback(async (courseId: string, lessonIds?: string[], count?: number) => {
     setIsLoading(true);
     setShowLessonPicker(false);
     setExercises([]);
@@ -256,6 +280,9 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       const body: Record<string, unknown> = { userId: currentUser, contextId: courseId };
       if (lessonIds && lessonIds.length > 0 && lessonIds.length < lessons.length) {
         body.lessonIds = lessonIds;
+      }
+      if (typeof count === "number" && count > 0) {
+        body.count = Math.min(MAX_EXERCISES, Math.max(1, Math.round(count)));
       }
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-exercises`, {
         method: "POST",
@@ -461,12 +488,34 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
 
         {!loadingLessons && lessons.length > 0 && (
           <div className="flex-shrink-0 px-4 py-3 border-t border-outline-variant/20 bg-background">
+            {selectedLessonIds.length > 0 && (() => {
+              const { min, max } = exerciseRangeFor(selectedLessonIds.length);
+              return (
+                <div className="mb-4 p-3 rounded-2xl bg-surface-container-low border border-outline-variant/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="label-medium text-foreground">Numero di esercizi</span>
+                    <span className="label-large font-display font-bold text-primary">{exerciseCount}</span>
+                  </div>
+                  <Slider
+                    value={[exerciseCount]}
+                    min={min}
+                    max={max}
+                    step={1}
+                    onValueChange={(v) => setExerciseCount(v[0])}
+                  />
+                  <div className="flex justify-between mt-1.5">
+                    <span className="body-small text-muted-foreground">min {min}</span>
+                    <span className="body-small text-muted-foreground">max {max}</span>
+                  </div>
+                </div>
+              );
+            })()}
             <Button
-              onClick={() => generateExercises(selectedCourse, selectedLessonIds)}
+              onClick={() => generateExercises(selectedCourse, selectedLessonIds, exerciseCount)}
               disabled={selectedLessonIds.length === 0}
               className="w-full h-12 rounded-full bg-primary text-primary-foreground"
             >
-              Genera esercizi {selectedLessonIds.length > 0 && `(${selectedLessonIds.length} ${selectedLessonIds.length === 1 ? "lezione" : "lezioni"})`}
+              Genera {exerciseCount} esercizi {selectedLessonIds.length > 0 && `· ${selectedLessonIds.length} ${selectedLessonIds.length === 1 ? "lezione" : "lezioni"}`}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
