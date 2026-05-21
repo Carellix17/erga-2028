@@ -346,6 +346,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     setExercises([]);
     setIsFinished(false);
     onFullscreenChange?.(false);
+    loadHistory();
   };
 
   // Lesson picker view
