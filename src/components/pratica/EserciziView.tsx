@@ -225,6 +225,17 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     }
   };
 
+  // Clamp exerciseCount within range proportional to # selected lessons
+  useEffect(() => {
+    const { min, max, def } = exerciseRangeFor(selectedLessonIds.length);
+    setExerciseCount(prev => {
+      if (selectedLessonIds.length === 0) return def;
+      if (prev < min) return min;
+      if (prev > max) return max;
+      return prev;
+    });
+  }, [selectedLessonIds.length]);
+
   const generateExercises = useCallback(async (courseId: string, lessonIds?: string[], count?: number) => {
     setIsLoading(true);
     setShowLessonPicker(false);
