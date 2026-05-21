@@ -488,12 +488,34 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
 
         {!loadingLessons && lessons.length > 0 && (
           <div className="flex-shrink-0 px-4 py-3 border-t border-outline-variant/20 bg-background">
+            {selectedLessonIds.length > 0 && (() => {
+              const { min, max } = exerciseRangeFor(selectedLessonIds.length);
+              return (
+                <div className="mb-4 p-3 rounded-2xl bg-surface-container-low border border-outline-variant/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="label-medium text-foreground">Numero di esercizi</span>
+                    <span className="label-large font-display font-bold text-primary">{exerciseCount}</span>
+                  </div>
+                  <Slider
+                    value={[exerciseCount]}
+                    min={min}
+                    max={max}
+                    step={1}
+                    onValueChange={(v) => setExerciseCount(v[0])}
+                  />
+                  <div className="flex justify-between mt-1.5">
+                    <span className="body-small text-muted-foreground">min {min}</span>
+                    <span className="body-small text-muted-foreground">max {max}</span>
+                  </div>
+                </div>
+              );
+            })()}
             <Button
-              onClick={() => generateExercises(selectedCourse, selectedLessonIds)}
+              onClick={() => generateExercises(selectedCourse, selectedLessonIds, exerciseCount)}
               disabled={selectedLessonIds.length === 0}
               className="w-full h-12 rounded-full bg-primary text-primary-foreground"
             >
-              Genera esercizi {selectedLessonIds.length > 0 && `(${selectedLessonIds.length} ${selectedLessonIds.length === 1 ? "lezione" : "lezioni"})`}
+              Genera {exerciseCount} esercizi {selectedLessonIds.length > 0 && `· ${selectedLessonIds.length} ${selectedLessonIds.length === 1 ? "lezione" : "lezioni"}`}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
