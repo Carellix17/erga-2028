@@ -13,8 +13,7 @@ const MAX_EXERCISES = 20;
 const MIN_PER_LESSON = 2;
 const MAX_PER_LESSON = 5;
 function exerciseRangeFor(n: number) {
-  if (n <= 0) return { min: 3, max: MAX_EXERCISES, def: 5 };
-  const min = Math.min(MAX_EXERCISES, Math.max(3, MIN_PER_LESSON * n));
+  const min = Math.min(MAX_EXERCISES, MIN_PER_LESSON * n);
   const max = Math.min(MAX_EXERCISES, Math.max(min, MAX_PER_LESSON * n));
   const def = Math.min(max, Math.max(min, Math.round((min + max) / 2)));
   return { min, max, def };
