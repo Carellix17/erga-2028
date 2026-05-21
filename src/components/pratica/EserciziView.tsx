@@ -654,20 +654,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     }
 
     // === Loading generazione (fallback) ===
-    return (
-      <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
-        <div className="text-center space-y-2">
-          <div className="w-16 h-16 mx-auto rounded-3xl bg-primary/10 flex items-center justify-center">
-            <Dumbbell className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="font-display text-xl font-bold text-foreground">Esercizi Mirati</h2>
-        </div>
-        <div className="flex flex-col items-center gap-3 py-8">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          <p className="body-medium text-muted-foreground">Genero gli esercizi...</p>
-        </div>
-      </div>
-    );
+    return <ExerciseGenerationProgress stage={genStage} progress={genProgress} courseName={genCourseName} />;
   }
 
   // Finished summary
