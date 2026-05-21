@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check } from "lucide-react";
+import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,6 +41,29 @@ interface EserciziViewProps {
   onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
+interface PastJob {
+  id: string;
+  context_id: string | null;
+  created_at: string;
+  exercises: Exercise[];
+  contextName: string;
+}
+
+function formatGroupLabel(date: Date): string {
+  const today = new Date();
+  const yest = new Date();
+  yest.setDate(today.getDate() - 1);
+  const sameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  if (sameDay(date, today)) return "Oggi";
+  if (sameDay(date, yest)) return "Ieri";
+  return date.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+}
+
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+}
+
 export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
@@ -57,6 +80,8 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [results, setResults] = useState<ExerciseResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const [pastJobs, setPastJobs] = useState<PastJob[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const { currentUser } = useAuth();
   const { supported: pushSupported, permission: pushPermission, subscribe: subscribePush } = usePushNotifications();
   const { toast } = useToast();
@@ -79,6 +104,71 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     };
     loadCourses();
   }, [currentUser]);
+
+  // Load past completed exercise jobs (history)
+  const loadHistory = useCallback(async () => {
+    if (!currentUser) return;
+    setLoadingHistory(true);
+    try {
+      const { data: jobs } = await supabase
+        .from("exercise_jobs")
+        .select("id, context_id, created_at, result")
+        .eq("user_id", currentUser)
+        .eq("status", "completed")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      const ctxIds = Array.from(
+        new Set((jobs || []).map((j: { context_id: string | null }) => j.context_id).filter(Boolean))
+      ) as string[];
+      let ctxMap: Record<string, string> = {};
+      if (ctxIds.length > 0) {
+        const { data: ctxs } = await supabase
+          .from("study_contexts")
+          .select("id, file_name")
+          .in("id", ctxIds);
+        ctxMap = Object.fromEntries(
+          (ctxs || []).map((c: { id: string; file_name: string }) => [c.id, c.file_name])
+        );
+      }
+      const mapped: PastJob[] = (jobs || [])
+        .map((j: { id: string; context_id: string | null; created_at: string; result: unknown }) => {
+          const result = j.result as { exercises?: Exercise[] } | null;
+          const exs = result?.exercises || [];
+          return {
+            id: j.id,
+            context_id: j.context_id,
+            created_at: j.created_at,
+            exercises: exs,
+            contextName: (j.context_id && ctxMap[j.context_id])
+              ? ctxMap[j.context_id].replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")
+              : "Esercizi",
+          };
+        })
+        .filter((j: PastJob) => j.exercises.length > 0);
+      setPastJobs(mapped);
+    } catch (e) {
+      console.error("[esercizi] history load error:", e);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [currentUser]);
+
+  useEffect(() => { loadHistory(); }, [loadHistory]);
+
+  const openPastJob = useCallback((job: PastJob) => {
+    setSelectedCourse(job.context_id);
+    setShowLessonPicker(false);
+    setExercises(job.exercises);
+    setCurrentIndex(0);
+    setResults([]);
+    setUserAnswer("");
+    setMatchAnswers({});
+    setOrderAnswers([]);
+    setShowResult(false);
+    setIsFinished(false);
+    setIsLoading(false);
+    onFullscreenChange?.(true);
+  }, [onFullscreenChange]);
 
   // Load lessons for a course
   const loadLessonsForCourse = useCallback(async (courseId: string) => {
@@ -256,6 +346,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     setExercises([]);
     setIsFinished(false);
     onFullscreenChange?.(false);
+    loadHistory();
   };
 
   // Lesson picker view
@@ -380,6 +471,60 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
                 <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto" />
               </button>
             ))}
+          </div>
+        )}
+
+        {/* I tuoi esercizi (history) */}
+        {!isLoading && (
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4 text-tertiary" />
+              <p className="label-large text-foreground">I tuoi esercizi</p>
+            </div>
+            {loadingHistory ? (
+              <div className="flex items-center gap-2 text-muted-foreground py-3">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="body-small">Carico la cronologia...</span>
+              </div>
+            ) : pastJobs.length === 0 ? (
+              <p className="body-small text-muted-foreground">
+                Non hai ancora generato esercizi. I tuoi set appariranno qui per riprenderli quando vuoi.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {Object.entries(
+                  pastJobs.reduce<Record<string, PastJob[]>>((acc, job) => {
+                    const label = formatGroupLabel(new Date(job.created_at));
+                    (acc[label] ||= []).push(job);
+                    return acc;
+                  }, {})
+                ).map(([label, jobs]) => (
+                  <div key={label} className="space-y-2">
+                    <p className="label-small text-muted-foreground uppercase tracking-wide">{label}</p>
+                    <div className="space-y-2">
+                      {jobs.map((job) => (
+                        <button
+                          key={job.id}
+                          onClick={() => openPastJob(job)}
+                          className="w-full flex items-center gap-3 p-4 rounded-2xl border bg-tertiary-container/30 border-outline-variant/30 hover:bg-tertiary-container/60 transition-all active:scale-[0.98]"
+                        >
+                          <div className="w-10 h-10 rounded-2xl bg-tertiary-container flex items-center justify-center flex-shrink-0">
+                            <Dumbbell className="w-5 h-5 text-tertiary" />
+                          </div>
+                          <div className="flex-1 min-w-0 text-left">
+                            <p className="label-large text-foreground truncate">{job.contextName}</p>
+                            <p className="label-small text-muted-foreground">
+                              {job.exercises.length} esercizi • {formatTime(new Date(job.created_at))}
+                            </p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { NotificationsCard } from "./NotificationsCard";
 
 const INSTITUTES = [
   { value: "liceo_scientifico", label: "Liceo Scientifico" },
@@ -342,6 +343,9 @@ export function ProfileView() {
         )}
         {isSaving ? "Salvataggio..." : saved ? "Salvato! ✨" : "Salva profilo"}
       </Button>
+
+      {/* Notifiche push */}
+      <NotificationsCard />
     </div>
   );
 }
