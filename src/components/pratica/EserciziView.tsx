@@ -7,6 +7,18 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { Slider } from "@/components/ui/slider";
+
+const MAX_EXERCISES = 20;
+const MIN_PER_LESSON = 2;
+const MAX_PER_LESSON = 5;
+function exerciseRangeFor(n: number) {
+  if (n <= 0) return { min: 3, max: MAX_EXERCISES, def: 5 };
+  const min = Math.min(MAX_EXERCISES, Math.max(3, MIN_PER_LESSON * n));
+  const max = Math.min(MAX_EXERCISES, Math.max(min, MAX_PER_LESSON * n));
+  const def = Math.min(max, Math.max(min, Math.round((min + max) / 2)));
+  return { min, max, def };
+}
 
 interface Course {
   id: string;
@@ -69,6 +81,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
+  const [exerciseCount, setExerciseCount] = useState<number>(10);
   const [showLessonPicker, setShowLessonPicker] = useState(false);
   const [loadingLessons, setLoadingLessons] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -212,7 +225,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     }
   };
 
-  const generateExercises = useCallback(async (courseId: string, lessonIds?: string[]) => {
+  const generateExercises = useCallback(async (courseId: string, lessonIds?: string[], count?: number) => {
     setIsLoading(true);
     setShowLessonPicker(false);
     setExercises([]);
@@ -256,6 +269,9 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       const body: Record<string, unknown> = { userId: currentUser, contextId: courseId };
       if (lessonIds && lessonIds.length > 0 && lessonIds.length < lessons.length) {
         body.lessonIds = lessonIds;
+      }
+      if (typeof count === "number" && count > 0) {
+        body.count = Math.min(MAX_EXERCISES, Math.max(1, Math.round(count)));
       }
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-exercises`, {
         method: "POST",
