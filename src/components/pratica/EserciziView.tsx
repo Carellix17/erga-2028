@@ -113,7 +113,6 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       const { data: jobs } = await supabase
         .from("exercise_jobs")
         .select("id, context_id, created_at, result")
-        .eq("user_id", currentUser)
         .eq("status", "completed")
         .order("created_at", { ascending: false })
         .limit(50);
