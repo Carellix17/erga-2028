@@ -219,7 +219,32 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     setCurrentIndex(0);
     setResults([]);
     setIsFinished(false);
+    setGenStage("queue");
+    setGenProgress(2);
+    const courseObj = courses.find(c => c.id === courseId);
+    setGenCourseName(courseObj ? courseObj.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "") : "");
     onFullscreenChange?.(true);
+
+    // Animated progress: target moves with stage; ticker eases toward it and caps at 95% until completion.
+    const stageTargets: Record<typeof genStage extends infer T ? string : never, number> = { queue: 10, analyze: 35, generate: 80, finalize: 95 } as never;
+    let stageRef: "queue" | "analyze" | "generate" | "finalize" = "queue";
+    const setStage = (s: "queue" | "analyze" | "generate" | "finalize") => { stageRef = s; setGenStage(s); };
+    const ticker = window.setInterval(() => {
+      const target = (stageTargets as Record<string, number>)[stageRef] ?? 95;
+      setGenProgress(prev => {
+        if (prev >= 95) return 95;
+        const diff = target - prev;
+        if (diff <= 0.3) return prev + 0.15; // creep
+        return prev + diff * 0.06;
+      });
+    }, 250);
+    const t1 = window.setTimeout(() => setStage("analyze"), 1200);
+    const t2 = window.setTimeout(() => setStage("generate"), 6000);
+    const t3 = window.setTimeout(() => setStage("finalize"), 25000);
+    const stopProgress = () => {
+      window.clearInterval(ticker);
+      window.clearTimeout(t1); window.clearTimeout(t2); window.clearTimeout(t3);
+    };
 
     try {
       // Notifica push opt-in al primo uso
@@ -242,6 +267,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       // Backend ora risponde 202 con jobId: lavoro in background.
       const jobId = data.jobId;
       if (!jobId) throw new Error("Job non avviato");
+      setStage("analyze");
 
       // Polling + realtime fallback sullo stato del job.
       // Realtime sub
@@ -253,10 +279,14 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           (payload) => {
             const row = payload.new as { status: string; result: { exercises?: Exercise[] } | null; error: string | null };
             if (row.status === "completed" && row.result?.exercises) {
+              stopProgress();
+              setGenProgress(100);
+              setStage("finalize");
               setExercises(row.result.exercises);
               setIsLoading(false);
               supabase.removeChannel(channel);
             } else if (row.status === "failed") {
+              stopProgress();
               toast({ title: "Errore", description: row.error || "Generazione fallita", variant: "destructive" });
               setIsLoading(false);
               onFullscreenChange?.(false);
@@ -277,28 +307,34 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           .maybeSingle();
         const result = job?.result as unknown as { exercises?: Exercise[] } | null;
         if (job?.status === "completed" && result?.exercises) {
+          stopProgress();
+          setGenProgress(100);
+          setStage("finalize");
           setExercises(result.exercises);
           setIsLoading(false);
           window.clearInterval(poll);
           supabase.removeChannel(channel);
         } else if (job?.status === "failed") {
+          stopProgress();
           toast({ title: "Errore", description: job.error || "Generazione fallita", variant: "destructive" });
           setIsLoading(false);
           onFullscreenChange?.(false);
           window.clearInterval(poll);
           supabase.removeChannel(channel);
         } else if (elapsed > 300) {
+          stopProgress();
           window.clearInterval(poll);
           supabase.removeChannel(channel);
         }
       }, 4000);
       return;
     } catch {
+      stopProgress();
       toast({ title: "Errore", description: "Non riesco a generare gli esercizi", variant: "destructive" });
       setIsLoading(false);
       onFullscreenChange?.(false);
     }
-  }, [currentUser, toast, lessons.length]);
+  }, [currentUser, toast, lessons.length, courses, onFullscreenChange, pushPermission, pushSupported, subscribePush]);
 
   const currentExercise = exercises[currentIndex];
 
