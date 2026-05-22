@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.extract-lesson-figures]
 verify_jwt = false
+
+[functions.text-to-speech]
+verify_jwt = false
