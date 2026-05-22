@@ -172,9 +172,9 @@ export function GenerationProgress({
             {tips[tipIndex]}
           </p>
           <p className="mt-6 text-center body-small text-muted-foreground/90 max-w-[300px] px-4 py-3 rounded-2xl bg-surface-container-highest/60 border border-outline-variant/20">
-            L'AI sta elaborando testo e immagini. Potrebbe volerci un po'.
+            L'AI sta elaborando la tua lezione personalizzata.
             <br />
-            Puoi anche uscire dall'app o bloccare lo schermo: non perderai i progressi e ti avviseremo quando è pronto! ✨
+            Puoi anche uscire dall'app, ti avviseremo con una notifica appena è pronta! ✨
           </p>
         </>
       )}
