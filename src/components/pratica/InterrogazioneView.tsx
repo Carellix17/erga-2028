@@ -28,10 +28,18 @@ const speakText = (text: string, onEnd?: () => void) => {
   utterance.lang = "it-IT";
   utterance.rate = 0.95;
   utterance.pitch = 1.0;
-  // Try to pick an Italian voice
+  // Pick the highest-quality Italian voice available
   const voices = window.speechSynthesis.getVoices();
-  const italianVoice = voices.find(v => v.lang.startsWith("it"));
-  if (italianVoice) utterance.voice = italianVoice;
+  const italianVoices = voices.filter(v => v.lang === "it-IT" || v.lang.startsWith("it"));
+  const isPremium = (v: SpeechSynthesisVoice) => /google|natural|premium|enhanced|neural|wavenet/i.test(`${v.name} ${v.voiceURI}`);
+  let chosen: SpeechSynthesisVoice | undefined;
+  for (const v of italianVoices) {
+    if (isPremium(v)) { chosen = v; break; }
+  }
+  if (!chosen) chosen = italianVoices.find(v => v.lang === "it-IT") || italianVoices[0];
+  if (chosen) utterance.voice = chosen;
+  utterance.rate = 0.95;
+  utterance.pitch = 1.0;
   if (onEnd) utterance.onend = onEnd;
   window.speechSynthesis.speak(utterance);
 };
