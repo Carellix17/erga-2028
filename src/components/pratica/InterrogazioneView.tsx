@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX } from "lucide-react";
+import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,31 +21,51 @@ interface ExchangeItem {
   content: string;
 }
 
-const speakText = (text: string, onEnd?: () => void) => {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "it-IT";
-  utterance.rate = 0.95;
-  utterance.pitch = 1.0;
-  // Pick the highest-quality Italian voice available
-  const voices = window.speechSynthesis.getVoices();
-  const italianVoices = voices.filter(v => v.lang === "it-IT" || v.lang.startsWith("it"));
-  const isPremium = (v: SpeechSynthesisVoice) => /google|natural|premium|enhanced|neural|wavenet/i.test(`${v.name} ${v.voiceURI}`);
-  let chosen: SpeechSynthesisVoice | undefined;
-  for (const v of italianVoices) {
-    if (isPremium(v)) { chosen = v; break; }
-  }
-  if (!chosen) chosen = italianVoices.find(v => v.lang === "it-IT") || italianVoices[0];
-  if (chosen) utterance.voice = chosen;
-  utterance.rate = 0.95;
-  utterance.pitch = 1.0;
-  if (onEnd) utterance.onend = onEnd;
-  window.speechSynthesis.speak(utterance);
-};
+// Module-level singleton audio so we can stop previous playback across calls
+let currentAudio: HTMLAudioElement | null = null;
+let currentObjectUrl: string | null = null;
 
 const stopSpeaking = () => {
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  if (currentAudio) {
+    try { currentAudio.pause(); } catch { /* noop */ }
+    currentAudio.src = "";
+    currentAudio = null;
+  }
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+  }
+  // Safety: also stop native synth in case anything leftover is playing
+  if (typeof window !== "undefined" && window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+};
+
+const speakWithAzure = async (text: string, onStart?: () => void, onEnd?: () => void) => {
+  stopSpeaking();
+  const { data: { session } } = await supabase.auth.getSession();
+  const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error(`TTS error ${res.status}`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  currentAudio = audio;
+  currentObjectUrl = url;
+  audio.onended = () => {
+    if (currentObjectUrl === url) {
+      URL.revokeObjectURL(url);
+      currentObjectUrl = null;
+    }
+    if (currentAudio === audio) currentAudio = null;
+    onEnd?.();
+  };
+  audio.onplay = () => onStart?.();
+  await audio.play();
 };
 
 export function InterrogazioneView() {
@@ -61,27 +81,15 @@ export function InterrogazioneView() {
   const [questionCount, setQuestionCount] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
+  const [isLoadingVoice, setIsLoadingVoice] = useState(false);
   const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { currentUser } = useAuth();
   const { toast } = useToast();
 
-  // Preload voices
+  // Cleanup on unmount
   useEffect(() => {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-    }
     return () => { stopSpeaking(); };
-  }, []);
-
-  // Track speaking state
-  useEffect(() => {
-    if (!window.speechSynthesis) return;
-    const interval = setInterval(() => {
-      setIsSpeaking(window.speechSynthesis.speaking);
-    }, 200);
-    return () => clearInterval(interval);
   }, []);
 
   // Load courses
@@ -154,11 +162,22 @@ export function InterrogazioneView() {
     return response.json();
   }, [currentUser, selectedCourse]);
 
-  const speakIfEnabled = useCallback((text: string) => {
-    if (ttsEnabled) {
-      // Strip markdown/emoji for cleaner speech
-      const clean = text.replace(/[📖🎓📝🎤]/g, "").replace(/[*_#>\-]/g, "").replace(/\n+/g, ". ").trim();
-      speakText(clean);
+  const speakIfEnabled = useCallback(async (text: string) => {
+    if (!ttsEnabled) return;
+    const clean = text.replace(/[📖🎓📝🎤]/g, "").replace(/[*_#>\-]/g, "").replace(/\n+/g, ". ").trim();
+    if (!clean) return;
+    setIsLoadingVoice(true);
+    setIsSpeaking(false);
+    try {
+      await speakWithAzure(
+        clean,
+        () => { setIsLoadingVoice(false); setIsSpeaking(true); },
+        () => { setIsSpeaking(false); }
+      );
+    } catch (err) {
+      console.error("Azure TTS failed", err);
+      setIsLoadingVoice(false);
+      setIsSpeaking(false);
     }
   }, [ttsEnabled]);
 
@@ -365,11 +384,11 @@ export function InterrogazioneView() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => { if (isSpeaking) stopSpeaking(); setTtsEnabled(!ttsEnabled); }}
+            onClick={() => { if (isSpeaking || isLoadingVoice) { stopSpeaking(); setIsSpeaking(false); setIsLoadingVoice(false); } setTtsEnabled(!ttsEnabled); }}
             className={cn("rounded-full", ttsEnabled ? "text-tertiary" : "text-muted-foreground")}
             title={ttsEnabled ? "Disattiva voce" : "Attiva voce"}
           >
-            {ttsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {isLoadingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : ttsEnabled ? <Volume2 className={cn("w-4 h-4", isSpeaking && "animate-pulse")} /> : <VolumeX className="w-4 h-4" />}
           </Button>
           <Button variant="ghost" size="icon" onClick={resetInterrogazione} className="rounded-full">
             <RotateCcw className="w-4 h-4" />
@@ -390,7 +409,14 @@ export function InterrogazioneView() {
             )}
           >
             <div className="label-small text-muted-foreground mb-1">
-              {item.type === "question" ? "🎓 Tutor" : item.type === "answer" ? "🎤 Tu" : "📝 Valutazione"}
+              <span className="inline-flex items-center gap-1.5">
+                {item.type === "question" ? "🎓 Tutor" : item.type === "answer" ? "🎤 Tu" : "📝 Valutazione"}
+                {item.type !== "answer" && i === exchanges.length - 1 && (isLoadingVoice || isSpeaking) && (
+                  isLoadingVoice
+                    ? <Loader2 className="w-3 h-3 animate-spin text-tertiary" />
+                    : <Volume2 className="w-3 h-3 text-tertiary animate-pulse" />
+                )}
+              </span>
             </div>
             <div className="body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold prose-strong:text-foreground prose-em:italic prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5">
               <ReactMarkdown
