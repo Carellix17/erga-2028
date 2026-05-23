@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Loader2, Trash2 } from "lucide-react";
+import { Plus, Loader2, Trash2, Sparkles } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -125,8 +125,24 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       )}
 
       {!suggestion && (
-        <Button variant="outline" onClick={generatePlan} disabled={isGeneratingPlan} className="w-full h-12 border-primary/30 hover:bg-primary-container hover:shadow-level-1 transition-all duration-300">
-          {isGeneratingPlan ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generazione piano...</> : "🪄 Genera piano di studio AI"}
+        <Button
+          variant="default"
+          size="lg"
+          onClick={generatePlan}
+          disabled={isGeneratingPlan}
+          className="w-full h-14 gap-2.5 rounded-2xl shadow-level-1 hover:shadow-level-2 hover:scale-[1.02] transition-all duration-400 ease-m3-emphasized"
+        >
+          {isGeneratingPlan ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="font-display font-semibold">Generazione piano...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-5 h-5" />
+              <span className="font-display font-semibold">Genera piano di studio AI</span>
+            </>
+          )}
         </Button>
       )}
 
