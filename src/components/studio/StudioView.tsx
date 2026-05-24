@@ -417,6 +417,72 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         showFinalTest={allGenerated}
         onStartFinalTest={handleStartFinalTest}
         isLoadingFinalTest={isLoadingFinalTest}
+        onRegenerateLesson={async (index) => {
+          const lesson = lessons[index];
+          if (!lesson) return;
+          // Mark as not generated locally so the edge function generates from scratch.
+          setLessonsList(effectiveContextId, (prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              lessons: prev.lessons.map((l) =>
+                l.id === lesson.id ? { ...l, is_generated: false } : l,
+              ),
+            };
+          });
+          try {
+            await supabase
+              .from("mini_lessons")
+              .update({ is_generated: false, explanation: "", concept: "", example: null, exercises: [] })
+              .eq("id", lesson.id);
+          } catch (err) {
+            console.error("Error resetting lesson for regenerate:", err);
+          }
+          const fresh = await generateLessonContent(index);
+          if (fresh) {
+            toast({ title: "Lezione rigenerata", description: "I contenuti sono stati aggiornati." });
+          }
+        }}
+        onDeleteLesson={async (lessonId) => {
+          const lessonOrder = lessons.find((l) => l.id === lessonId)?.lesson_order;
+          try {
+            const { error } = await supabase.from("mini_lessons").delete().eq("id", lessonId);
+            if (error) throw error;
+            setLessonsList(effectiveContextId, (prev) => {
+              if (!prev) return prev;
+              const remaining = prev.lessons.filter((l) => l.id !== lessonId);
+              return { ...prev, lessons: remaining };
+            });
+            toast({ title: "Lezione eliminata" });
+            if (lessonOrder !== undefined && currentLessonIndex >= lessons.length - 1) {
+              setCurrentLessonIndex(Math.max(0, lessons.length - 2));
+            }
+            await refetchLessons();
+          } catch (err) {
+            console.error("Error deleting lesson:", err);
+            toast({ title: "Errore", description: "Impossibile eliminare la lezione", variant: "destructive" });
+          }
+        }}
+        onRenameLesson={async (lessonId, newTitle) => {
+          try {
+            const { error } = await supabase
+              .from("mini_lessons")
+              .update({ title: newTitle })
+              .eq("id", lessonId);
+            if (error) throw error;
+            setLessonsList(effectiveContextId, (prev) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                lessons: prev.lessons.map((l) => (l.id === lessonId ? { ...l, title: newTitle } : l)),
+              };
+            });
+            toast({ title: "Titolo aggiornato" });
+          } catch (err) {
+            console.error("Error renaming lesson:", err);
+            toast({ title: "Errore", description: "Impossibile rinominare la lezione", variant: "destructive" });
+          }
+        }}
       />
 
       {activeLessonIndex !== null && currentLesson && currentLesson.is_generated && !isGeneratingLesson && (
