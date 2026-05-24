@@ -141,7 +141,6 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
               <span className="font-display font-semibold">Genera piano di studio AI</span>
             )}
           </Button>
-        </div>
       )}
 
       {/* Calendar */}
