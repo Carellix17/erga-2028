@@ -392,6 +392,26 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         courses={allContexts}
         activeContextId={activeContextId}
         onSelectCourse={handleSelectCourse}
+        onRenameCourse={async (contextId, newName) => {
+          const ctx = allContexts.find((c) => c.id === contextId);
+          if (!ctx) return;
+          const original = ctx.file_name || "";
+          const prefix = original.startsWith("🌐") ? "🌐 " : "";
+          const suffix = /\.pdf$/i.test(original) ? ".pdf" : "";
+          const finalName = `${prefix}${newName}${suffix}`;
+          try {
+            const { error } = await supabase
+              .from("study_contexts")
+              .update({ file_name: finalName })
+              .eq("id", contextId);
+            if (error) throw error;
+            invalidateContexts();
+            toast({ title: "Corso rinominato" });
+          } catch (err) {
+            console.error("Error renaming course:", err);
+            toast({ title: "Errore", description: "Impossibile rinominare il corso", variant: "destructive" });
+          }
+        }}
       />
       {generationBlocked && (
         <div className="mx-4 mt-3 mb-1 px-4 py-3 rounded-2xl bg-error-container/50 border border-destructive/20 text-destructive text-sm font-medium animate-fade-in">
