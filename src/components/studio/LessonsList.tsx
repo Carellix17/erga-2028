@@ -1,9 +1,11 @@
-import { ChevronLeft, CheckCircle2, Lock, Loader2, RefreshCw, Target, Star, Crown } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Lock, Loader2, RefreshCw, Target, Star, Crown, Sparkles, Trash2, Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { getStableSubjectColor } from "@/lib/subjectColors";
-import { useMemo } from "react";
+import { useMemo, useRef as useReactRef, useState } from "react";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
 
 interface Lesson {
   id: string;
@@ -29,6 +31,9 @@ interface LessonsListProps {
   onStartFinalTest?: () => void;
   isLoadingFinalTest?: boolean;
   contextFileName?: string | null;
+  onRegenerateLesson?: (lessonIndex: number) => Promise<void> | void;
+  onDeleteLesson?: (lessonId: string) => Promise<void> | void;
+  onRenameLesson?: (lessonId: string, newTitle: string) => Promise<void> | void;
 }
 
 const MODULE_SIZE = 4;
@@ -51,6 +56,9 @@ export function LessonsList({
   onStartFinalTest,
   isLoadingFinalTest,
   contextFileName,
+  onRegenerateLesson,
+  onDeleteLesson,
+  onRenameLesson,
 }: LessonsListProps) {
   // Conta le lezioni effettivamente completate dall'utente (non quelle generate).
   // currentIndex = indice della lezione "corrente"; le precedenti sono completate.
@@ -58,6 +66,79 @@ export function LessonsList({
   const completedCount = Math.max(0, Math.min(currentIndex, lessons.length));
   const progress = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
   const color = getStableSubjectColor(contextFileName || "");
+
+  // ── Long-press menu state ──
+  const [menuLesson, setMenuLesson] = useState<{ lesson: Lesson; index: number } | null>(null);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [actionLoading, setActionLoading] = useState<"regen" | "delete" | "rename" | null>(null);
+  const pressTimerRef = useReactRef<number | null>(null);
+  const longPressTriggeredRef = useReactRef(false);
+
+  const clearPressTimer = () => {
+    if (pressTimerRef.current !== null) {
+      window.clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+  };
+
+  const startPress = (lesson: Lesson, index: number) => {
+    if (isGenerating) return;
+    longPressTriggeredRef.current = false;
+    clearPressTimer();
+    pressTimerRef.current = window.setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      // Haptic feedback if supported
+      try { (navigator as any).vibrate?.(15); } catch {}
+      setMenuLesson({ lesson, index });
+      setIsRenaming(false);
+      setRenameValue(lesson.title);
+    }, 450);
+  };
+
+  const closeMenu = () => {
+    setMenuLesson(null);
+    setIsRenaming(false);
+    setActionLoading(null);
+  };
+
+  const handleRegenerate = async () => {
+    if (!menuLesson || !onRegenerateLesson) return;
+    setActionLoading("regen");
+    try {
+      await onRegenerateLesson(menuLesson.index);
+      closeMenu();
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!menuLesson || !onDeleteLesson) return;
+    setActionLoading("delete");
+    try {
+      await onDeleteLesson(menuLesson.lesson.id);
+      closeMenu();
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRename = async () => {
+    if (!menuLesson || !onRenameLesson) return;
+    const trimmed = renameValue.trim();
+    if (!trimmed || trimmed === menuLesson.lesson.title) {
+      setIsRenaming(false);
+      return;
+    }
+    setActionLoading("rename");
+    try {
+      await onRenameLesson(menuLesson.lesson.id, trimmed);
+      closeMenu();
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   // Group lessons into modules
   const modules = useMemo(() => {
@@ -238,7 +319,18 @@ export function LessonsList({
                       }}
                     >
                       <button
-                        onClick={() => !isGenerating && onSelectLesson(globalIndex)}
+                        onClick={() => {
+                          if (longPressTriggeredRef.current) {
+                            longPressTriggeredRef.current = false;
+                            return;
+                          }
+                          if (!isGenerating) onSelectLesson(globalIndex);
+                        }}
+                        onPointerDown={() => startPress(lesson, globalIndex)}
+                        onPointerUp={clearPressTimer}
+                        onPointerLeave={clearPressTimer}
+                        onPointerCancel={clearPressTimer}
+                        onContextMenu={(e) => { e.preventDefault(); }}
                         disabled={isGenerating || isLocked}
                         className={cn(
                           "relative flex items-center justify-center transition-all duration-300 ease-m3-emphasized",
@@ -248,6 +340,9 @@ export function LessonsList({
                           width: size,
                           height: size,
                           borderRadius: radius,
+                          touchAction: "manipulation",
+                          WebkitUserSelect: "none",
+                          userSelect: "none",
                         }}
                       >
                         {/* Pulse ring for current */}
@@ -297,15 +392,33 @@ export function LessonsList({
                       </button>
 
                       {/* Label */}
-                      <span className={cn(
-                        "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 px-1.5 py-0.5 rounded-md bg-background/90",
-                        isCompleted && cn(color.text, "font-semibold"),
-                        isCurrent && cn(color.text, "font-semibold text-xs"),
-                        isLocked && "text-muted-foreground/40",
-                        !isCurrent && !isCompleted && !isLocked && "text-foreground/70",
-                      )}>
+                      <button
+                        type="button"
+                        onPointerDown={(e) => { e.stopPropagation(); startPress(lesson, globalIndex); }}
+                        onPointerUp={clearPressTimer}
+                        onPointerLeave={clearPressTimer}
+                        onPointerCancel={clearPressTimer}
+                        onContextMenu={(e) => { e.preventDefault(); }}
+                        onClick={(e) => {
+                          if (longPressTriggeredRef.current) {
+                            e.stopPropagation();
+                            longPressTriggeredRef.current = false;
+                            return;
+                          }
+                          if (!isGenerating && !isLocked) onSelectLesson(globalIndex);
+                        }}
+                        disabled={isGenerating}
+                        className={cn(
+                          "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 px-2 py-1 rounded-xl bg-background/90 active:scale-95 hover:shadow-level-1",
+                          isCompleted && cn(color.text, "font-semibold"),
+                          isCurrent && cn(color.text, "font-semibold text-xs"),
+                          isLocked && "text-muted-foreground/40",
+                          !isCurrent && !isCompleted && !isLocked && "text-foreground/70",
+                        )}
+                        style={{ touchAction: "manipulation", WebkitUserSelect: "none", userSelect: "none" }}
+                      >
                         {lesson.title}
-                      </span>
+                      </button>
                     </div>
                   );
                 })}
@@ -343,6 +456,115 @@ export function LessonsList({
           </div>
         )}
       </div>
+
+      {/* ── Long-press action drawer ── */}
+      <Drawer
+        open={!!menuLesson}
+        onOpenChange={(open) => { if (!open) closeMenu(); }}
+      >
+        <DrawerContent className="pb-6">
+          {menuLesson && (
+            <div className="px-5 pt-2 animate-fade-in">
+              <div className="flex flex-col items-center text-center mb-5">
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl bg-gradient-to-br shadow-level-2 flex items-center justify-center mb-3",
+                  color.gradient,
+                )}>
+                  <span className="text-white font-display font-bold">{menuLesson.index + 1}</span>
+                </div>
+                {!isRenaming ? (
+                  <>
+                    <h3 className="font-display font-bold text-base text-foreground line-clamp-2 max-w-xs">
+                      {menuLesson.lesson.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">Cosa vuoi fare con questa lezione?</p>
+                  </>
+                ) : (
+                  <div className="w-full max-w-sm mx-auto flex items-center gap-2">
+                    <Input
+                      autoFocus
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") { e.preventDefault(); handleRename(); }
+                        if (e.key === "Escape") { setIsRenaming(false); }
+                      }}
+                      placeholder="Nuovo titolo"
+                      className="h-11 rounded-xl"
+                      maxLength={120}
+                    />
+                    <Button
+                      size="icon"
+                      onClick={handleRename}
+                      disabled={actionLoading === "rename" || !renameValue.trim()}
+                      className="h-11 w-11 rounded-xl flex-shrink-0"
+                      aria-label="Conferma"
+                    >
+                      {actionLoading === "rename" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => setIsRenaming(false)}
+                      className="h-11 w-11 rounded-xl flex-shrink-0"
+                      aria-label="Annulla"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {!isRenaming && (
+                <div className="grid grid-cols-3 gap-3 animate-scale-in">
+                  <button
+                    onClick={handleRegenerate}
+                    disabled={actionLoading !== null || !onRegenerateLesson}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-surface-container-low hover:bg-surface-container shadow-level-1 hover:shadow-level-2 transition-all duration-300 ease-m3-emphasized active:scale-95 disabled:opacity-50",
+                    )}
+                  >
+                    <span className={cn("w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-level-1", color.gradient)}>
+                      {actionLoading === "regen" ? (
+                        <Loader2 className="w-5 h-5 text-white animate-spin" />
+                      ) : (
+                        <Sparkles className="w-5 h-5 text-white" />
+                      )}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">Rigenera</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setRenameValue(menuLesson.lesson.title); setIsRenaming(true); }}
+                    disabled={actionLoading !== null || !onRenameLesson}
+                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-surface-container-low hover:bg-surface-container shadow-level-1 hover:shadow-level-2 transition-all duration-300 ease-m3-emphasized active:scale-95 disabled:opacity-50"
+                  >
+                    <span className="w-10 h-10 rounded-xl bg-tertiary-container text-tertiary flex items-center justify-center shadow-level-1">
+                      <Pencil className="w-5 h-5" />
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">Rinomina</span>
+                  </button>
+
+                  <button
+                    onClick={handleDelete}
+                    disabled={actionLoading !== null || !onDeleteLesson}
+                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-surface-container-low hover:bg-error-container/50 shadow-level-1 hover:shadow-level-2 transition-all duration-300 ease-m3-emphasized active:scale-95 disabled:opacity-50"
+                  >
+                    <span className="w-10 h-10 rounded-xl bg-error-container text-destructive flex items-center justify-center shadow-level-1">
+                      {actionLoading === "delete" ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-5 h-5" />
+                      )}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">Elimina</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
