@@ -125,19 +125,13 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       )}
 
       {!suggestion && (
-        <div className="relative">
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-            <div className="w-9 h-9 rounded-full bg-tertiary flex items-center justify-center shadow-level-2 ring-2 ring-background">
-              <Sparkles className="w-5 h-5 text-tertiary-foreground" />
-            </div>
-          </div>
-          <Button
-            variant="elevated"
-            size="lg"
-            onClick={generatePlan}
-            disabled={isGeneratingPlan}
-            className="w-full h-14 pt-1 gap-2.5 rounded-2xl shadow-level-1 hover:shadow-level-2 hover:scale-[1.02] transition-all duration-400 ease-m3-emphasized"
-          >
+        <Button
+          variant="elevated"
+          size="lg"
+          onClick={generatePlan}
+          disabled={isGeneratingPlan}
+          className="w-full h-14 gap-2.5 rounded-2xl shadow-level-1 hover:shadow-level-2 hover:scale-[1.02] transition-all duration-400 ease-m3-emphasized"
+        >
             {isGeneratingPlan ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -147,7 +141,6 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
               <span className="font-display font-semibold">Genera piano di studio AI</span>
             )}
           </Button>
-        </div>
       )}
 
       {/* Calendar */}
