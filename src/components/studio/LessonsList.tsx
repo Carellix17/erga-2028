@@ -405,6 +405,13 @@ export function LessonsList({
                         onPointerLeave={clearPressTimer}
                         onPointerCancel={clearPressTimer}
                         onContextMenu={(e) => { e.preventDefault(); }}
+                        onDoubleClick={(e) => {
+                          e.stopPropagation();
+                          if (isGenerating) return;
+                          setMenuLesson({ lesson, index: globalIndex });
+                          setIsRenaming(false);
+                          setRenameValue(lesson.title);
+                        }}
                         onClick={(e) => {
                           if (longPressTriggeredRef.current) {
                             e.stopPropagation();
