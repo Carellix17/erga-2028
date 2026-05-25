@@ -331,6 +331,12 @@ export function LessonsList({
                         onPointerLeave={clearPressTimer}
                         onPointerCancel={clearPressTimer}
                         onContextMenu={(e) => { e.preventDefault(); }}
+                        onDoubleClick={() => {
+                          if (isGenerating) return;
+                          setMenuLesson({ lesson, index: globalIndex });
+                          setIsRenaming(false);
+                          setRenameValue(lesson.title);
+                        }}
                         disabled={isGenerating || isLocked}
                         className={cn(
                           "relative flex items-center justify-center transition-all duration-300 ease-m3-emphasized",
