@@ -121,6 +121,10 @@ export function CourseSelector({ courses, activeContextId, onSelectCourse, onRen
               onPointerLeave={clearLongPress}
               onPointerCancel={clearLongPress}
               onContextMenu={(e) => e.preventDefault()}
+              onDoubleClick={() => {
+                setRenameValue(cleanName(course.file_name));
+                setMenuCourse(course);
+              }}
               className={cn(
                 "flex items-center gap-2.5 px-5 py-3 rounded-full whitespace-nowrap flex-shrink-0 select-none touch-none",
                 "transition-all duration-500 ease-m3-emphasized",
