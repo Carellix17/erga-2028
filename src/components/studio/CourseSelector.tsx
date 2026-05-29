@@ -33,6 +33,8 @@ export function CourseSelector({ courses, activeContextId, onSelectCourse, onRen
   const activeBtnRef = useRef<HTMLButtonElement>(null);
   const longPressTimer = useRef<number | null>(null);
   const longPressTriggered = useRef(false);
+  const lastTapRef = useRef<{ id: string; time: number } | null>(null);
+  const DOUBLE_TAP_MS = 350;
   const [menuCourse, setMenuCourse] = useState<Course | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -82,6 +84,21 @@ export function CourseSelector({ courses, activeContextId, onSelectCourse, onRen
     onSelectCourse(course.id);
   };
 
+  const detectDoubleTap = (course: Course): boolean => {
+    const now = Date.now();
+    const last = lastTapRef.current;
+    if (last && last.id === course.id && now - last.time < DOUBLE_TAP_MS) {
+      lastTapRef.current = null;
+      longPressTriggered.current = true; // suppress upcoming click
+      try { navigator.vibrate?.(15); } catch {}
+      setRenameValue(cleanName(course.file_name));
+      setMenuCourse(course);
+      return true;
+    }
+    lastTapRef.current = { id: course.id, time: now };
+    return false;
+  };
+
   const handleSaveRename = async () => {
     if (!menuCourse || !onRenameCourse) return;
     const trimmed = renameValue.trim();
@@ -117,7 +134,7 @@ export function CourseSelector({ courses, activeContextId, onSelectCourse, onRen
               ref={isActive ? activeBtnRef : undefined}
               onClick={() => handleClick(course)}
               onPointerDown={() => startLongPress(course)}
-              onPointerUp={clearLongPress}
+              onPointerUp={() => { clearLongPress(); detectDoubleTap(course); }}
               onPointerLeave={clearLongPress}
               onPointerCancel={clearLongPress}
               onContextMenu={(e) => e.preventDefault()}
