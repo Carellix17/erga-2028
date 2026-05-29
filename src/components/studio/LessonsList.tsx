@@ -347,7 +347,7 @@ export function LessonsList({
                           if (!isGenerating) onSelectLesson(globalIndex);
                         }}
                         onPointerDown={() => startPress(lesson, globalIndex)}
-                        onPointerUp={clearPressTimer}
+                        onPointerUp={() => { clearPressTimer(); detectDoubleTap(lesson, globalIndex); }}
                         onPointerLeave={clearPressTimer}
                         onPointerCancel={clearPressTimer}
                         onContextMenu={(e) => { e.preventDefault(); }}
@@ -421,7 +421,7 @@ export function LessonsList({
                       <button
                         type="button"
                         onPointerDown={(e) => { e.stopPropagation(); startPress(lesson, globalIndex); }}
-                        onPointerUp={clearPressTimer}
+                        onPointerUp={(e) => { e.stopPropagation(); clearPressTimer(); detectDoubleTap(lesson, globalIndex); }}
                         onPointerLeave={clearPressTimer}
                         onPointerCancel={clearPressTimer}
                         onContextMenu={(e) => { e.preventDefault(); }}
