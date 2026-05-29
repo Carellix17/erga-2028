@@ -74,6 +74,26 @@ export function LessonsList({
   const [actionLoading, setActionLoading] = useState<"regen" | "delete" | "rename" | null>(null);
   const pressTimerRef = useReactRef<number | null>(null);
   const longPressTriggeredRef = useReactRef(false);
+  // Manual double-tap detection (onDoubleClick is unreliable on touch devices)
+  const lastTapRef = useReactRef<{ id: string; time: number } | null>(null);
+  const DOUBLE_TAP_MS = 350;
+
+  const detectDoubleTap = (lesson: Lesson, index: number): boolean => {
+    if (isGenerating) return false;
+    const now = Date.now();
+    const last = lastTapRef.current;
+    if (last && last.id === lesson.id && now - last.time < DOUBLE_TAP_MS) {
+      lastTapRef.current = null;
+      longPressTriggeredRef.current = true; // suppress upcoming click
+      try { (navigator as any).vibrate?.(15); } catch {}
+      setMenuLesson({ lesson, index });
+      setIsRenaming(false);
+      setRenameValue(lesson.title);
+      return true;
+    }
+    lastTapRef.current = { id: lesson.id, time: now };
+    return false;
+  };
 
   const clearPressTimer = () => {
     if (pressTimerRef.current !== null) {
@@ -327,7 +347,7 @@ export function LessonsList({
                           if (!isGenerating) onSelectLesson(globalIndex);
                         }}
                         onPointerDown={() => startPress(lesson, globalIndex)}
-                        onPointerUp={clearPressTimer}
+                        onPointerUp={() => { clearPressTimer(); detectDoubleTap(lesson, globalIndex); }}
                         onPointerLeave={clearPressTimer}
                         onPointerCancel={clearPressTimer}
                         onContextMenu={(e) => { e.preventDefault(); }}
@@ -401,7 +421,7 @@ export function LessonsList({
                       <button
                         type="button"
                         onPointerDown={(e) => { e.stopPropagation(); startPress(lesson, globalIndex); }}
-                        onPointerUp={clearPressTimer}
+                        onPointerUp={(e) => { e.stopPropagation(); clearPressTimer(); detectDoubleTap(lesson, globalIndex); }}
                         onPointerLeave={clearPressTimer}
                         onPointerCancel={clearPressTimer}
                         onContextMenu={(e) => { e.preventDefault(); }}
