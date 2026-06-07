@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Moon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { NotificationsCard } from "./NotificationsCard";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const INSTITUTES = [
   { value: "liceo_scientifico", label: "Liceo Scientifico" },
@@ -34,6 +36,7 @@ export function ProfileView() {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { theme, setTheme, isLoaded: themeLoaded } = useTheme();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -287,6 +290,25 @@ export function ProfileView() {
             </label>
           ))}
         </RadioGroup>
+      </div>
+
+      {/* Appearance */}
+      <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Moon className="w-5 h-5 text-primary" />
+          <h2 className="title-medium font-display text-foreground">Aspetto</h2>
+        </div>
+        <label className="flex items-center justify-between gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-300 ease-m3-emphasized hover:bg-foreground/[0.08]">
+          <div className="flex flex-col">
+            <span className="body-large text-foreground">Modalità scura</span>
+            <span className="body-small text-muted-foreground">Riduce l'affaticamento visivo</span>
+          </div>
+          <Switch
+            checked={theme === "dark"}
+            disabled={!themeLoaded}
+            onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+          />
+        </label>
       </div>
 
       {/* Subject Levels & Goals Section */}
