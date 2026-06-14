@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 
 const MAX_CONTEXT_CHARS = 80000;
 const FREE_GENERATION_LIMIT = 5;
@@ -102,6 +103,11 @@ serve(async (req) => {
       }
       profileContext += "\nAdatta la difficoltà e gli esempi al livello dello studente.";
     }
+
+    // Personalizzazione cognitiva (Esagono): regole dinamiche basate sui punteggi 0-100.
+    const cognitive = await fetchCognitiveProfile(supabase, userId);
+    const cognitiveAddon = buildCognitivePromptAddon(cognitive);
+    profileContext += cognitiveAddon;
 
     const { userEmail } = auth;
     const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;

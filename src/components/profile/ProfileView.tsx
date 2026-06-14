@@ -7,11 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Moon } from "lucide-react";
+import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Moon, Sparkles, Hexagon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { NotificationsCard } from "./NotificationsCard";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
+import { CognitiveRadar } from "./CognitiveRadar";
+import { Button as UiButton } from "@/components/ui/button";
 
 const INSTITUTES = [
   { value: "liceo_scientifico", label: "Liceo Scientifico" },
@@ -32,11 +35,16 @@ const SUBJECTS = [
 interface SubjectLevels { [subject: string]: number; }
 interface SubjectGoals { [subject: string]: number; }
 
-export function ProfileView() {
+interface ProfileViewProps {
+  onOpenCognitive?: () => void;
+}
+
+export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme, setTheme, isLoaded: themeLoaded } = useTheme();
+  const { profile: cognitive } = useCognitiveProfile();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -271,6 +279,46 @@ export function ProfileView() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Esagono Cognitivo */}
+      <div className="m3-card-elevated rounded-3xl p-5 space-y-4 bg-gradient-to-br from-primary/[0.04] to-tertiary/[0.06] backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10">
+        <div className="flex items-center gap-2 mb-1">
+          <Hexagon className="w-5 h-5 text-primary" />
+          <h2 className="title-medium font-display text-foreground">Esagono Cognitivo</h2>
+        </div>
+        {cognitive ? (
+          <>
+            <CognitiveRadar profile={cognitive} />
+            <div className="grid grid-cols-3 gap-2 text-[11px]">
+              {[
+                ["Logica", cognitive.log_score],
+                ["Memoria", cognitive.mem_score],
+                ["Focus", cognitive.foc_score],
+                ["Lessico", cognitive.voc_score],
+                ["Calma", cognitive.ans_score],
+                ["Pratica", cognitive.app_score],
+              ].map(([label, val]) => (
+                <div key={label as string} className="rounded-2xl bg-foreground/[0.04] backdrop-blur-md py-2 text-center">
+                  <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</div>
+                  <div className="text-base font-bold text-foreground tabular-nums">{val}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="body-small text-muted-foreground">
+            Non hai ancora calcolato il tuo Esagono Cognitivo.
+          </p>
+        )}
+        <UiButton
+          onClick={onOpenCognitive}
+          variant="outline"
+          className="w-full rounded-2xl h-12 backdrop-blur-md border-[0.5px] border-primary/30 bg-primary/[0.06] hover:bg-primary/[0.12] transition-all duration-300"
+        >
+          <Sparkles className="w-4 h-4 mr-2 text-primary" />
+          {cognitive ? "Ricalcola il tuo Esagono Cognitivo" : "Calcola il tuo Esagono Cognitivo"}
+        </UiButton>
       </div>
 
       {/* Institute Section */}
