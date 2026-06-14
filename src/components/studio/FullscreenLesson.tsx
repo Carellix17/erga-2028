@@ -328,15 +328,15 @@ export function FullscreenLesson({
 function ConceptStep({ concept }: { concept: string }) {
   return (
     <div className="text-center space-y-6">
-      <div className="w-20 h-20 rounded-3xl bg-primary flex items-center justify-center mx-auto shadow-level-3 animate-bounce-in">
+      <div className="w-20 h-20 rounded-3xl bg-primary flex items-center justify-center mx-auto shadow-[0_12px_40px_0_rgba(0,0,0,0.15)] border-[0.5px] border-white/30 animate-bounce-in transition-all duration-300 ease-in-out">
         <Lightbulb className="w-10 h-10 text-primary-foreground" />
       </div>
       <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary label-medium mb-4">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 text-primary label-medium mb-4 shadow-[0_4px_16px_0_rgba(0,0,0,0.04)]">
           <Star className="w-3.5 h-3.5" />
           Concetto chiave
         </div>
-        <div className="title-large font-display leading-relaxed prose prose-sm max-w-none mx-auto">
+        <div className="title-large font-semibold tracking-tight leading-relaxed prose prose-sm max-w-none mx-auto">
           <ReactMarkdown>{concept}</ReactMarkdown>
         </div>
       </div>
@@ -369,7 +369,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
     <div className="space-y-5">
       <div className="flex items-center gap-3 mb-2">
         <div className={cn(
-          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-level-1",
+          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-[0_8px_24px_0_rgba(0,0,0,0.08)] border-[0.5px] border-white/40 dark:border-white/10 backdrop-blur-md transition-all duration-300 ease-in-out",
           isExample ? "bg-tertiary-container" : "bg-secondary-container"
         )}>
           {isExample ? <span className="text-xl">💡</span> : <BookOpen className={cn("w-6 h-6", isExample ? "text-tertiary" : "text-secondary")} />}
@@ -385,8 +385,10 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
         </div>
       </div>
       <div className={cn(
-        "p-5 rounded-2xl shadow-level-1 space-y-4",
-        isExample ? "bg-tertiary-container/50 border-l-4 border-tertiary" : "bg-surface-container-low"
+        "p-5 rounded-3xl backdrop-blur-md border-[0.5px] shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-4 transition-all duration-300 ease-in-out",
+        isExample
+          ? "bg-tertiary-container/60 border-tertiary/30 border-l-4 border-l-tertiary"
+          : "bg-white/70 dark:bg-black/60 border-white/40 dark:border-white/10"
       )}>
         {segments.map((seg, i) => {
           if (seg.type === "text") {
@@ -425,12 +427,12 @@ function ExampleStep({ example }: { example: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-tertiary-container flex items-center justify-center shadow-level-1">
+        <div className="w-12 h-12 rounded-2xl bg-tertiary-container flex items-center justify-center shadow-[0_8px_24px_0_rgba(0,0,0,0.08)] border-[0.5px] border-white/40 dark:border-white/10 backdrop-blur-md">
           <span className="text-2xl">💡</span>
         </div>
         <span className="label-large text-foreground">Esempio pratico</span>
       </div>
-      <div className="p-5 rounded-2xl bg-tertiary-container/50 border-l-4 border-tertiary shadow-level-1">
+      <div className="p-5 rounded-3xl bg-tertiary-container/60 backdrop-blur-md border-[0.5px] border-tertiary/30 border-l-4 border-l-tertiary shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out">
         <div className="body-large text-foreground leading-relaxed prose prose-sm max-w-none">
           <ReactMarkdown>{example}</ReactMarkdown>
         </div>
@@ -449,7 +451,7 @@ function ExerciseStep({
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-level-2">
+          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-[0_8px_24px_0_rgba(0,0,0,0.12)] border-[0.5px] border-white/30">
             <Dumbbell className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
@@ -469,7 +471,7 @@ function ExerciseStep({
           ))}
         </div>
       </div>
-      <div className="p-5 rounded-2xl bg-surface-container-low shadow-level-1">
+      <div className="p-5 rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out">
         <ExerciseRenderer exercise={exercise} onComplete={onComplete} isCompleted={isCompleted} />
       </div>
     </div>
