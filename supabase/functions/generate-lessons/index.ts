@@ -208,38 +208,93 @@ REGOLE OBBLIGATORIE PER LE FIGURE:
 8. Se nessuna figura è davvero pertinente al testo della lezione, ometti TUTTI i token. Le figure resteranno comunque accessibili altrove.`
         : "";
 
-      const prompt = `Sei un tutor universitario esperto e coinvolgente. Crea una lezione basata ESCLUSIVAMENTE sul materiale fornito.
+      const prompt = `Sei un TUTOR DIDATTICO esperto. Il tuo compito NON è riassumere o riproporre frasi del materiale: devi RIELABORARE e RISTRUTTURARE i concetti da zero, con parole tue, in una lezione didatticamente ottimale.
 ${profileContext}${pageRangeInfo}
 
 IMPORTANTE: Rispondi SOLO con un oggetto JSON valido. NON aggiungere testo prima o dopo il JSON. SOLO JSON puro.
 
-OBIETTIVO: Creare una mini-lezione modulare stile Duolingo su UN SOLO CONCETTO SPECIFICO. Ogni parte sarà mostrata come uno step separato a schermo intero.
-
 TITOLO LEZIONE: "${lessons.title}"
+REGOLA DI FOCUS: la lezione tratta SOLO l'argomento del titolo. Spiega in profondità un unico nucleo tematico.
 
-REGOLA CRITICA: Questa lezione deve trattare SOLO l'argomento indicato nel titolo. Spiega BENE e in PROFONDITÀ questo unico concetto.
+════════════════════════════════════════
+1) FILTRO DI RIELABORAZIONE (NO COPY-PASTE)
+════════════════════════════════════════
+- È TASSATIVAMENTE VIETATO copiare frasi o paragrafi letterali dal materiale fornito. Nessuna sequenza di 8+ parole consecutive può coincidere col testo originale.
+- Procedura obbligatoria: (a) leggi, (b) isola i concetti chiave, (c) stabilisci l'ordine logico ottimale di apprendimento (dal semplice al complesso, dal generale allo specifico), (d) RISCRIVI tutto da zero con prosa tua, chiara, incisiva, priva di gergo inutile.
+- Vietate: ridondanze, retorica vuota, frasi-riempitivo, "come abbiamo detto", "in questo paragrafo vedremo".
+- Mantieni terminologia tecnica corretta, ma definiscila al primo uso.
 
-DIVIETO ASSOLUTO SULLE IMMAGINI:
-- NON scrivere MAI frasi come "L'immagine mostra...", "Come si vede nella figura...", "La tabella illustra...".
-- Per riferirti a un elemento visivo del PDF, usa SOLO il token [FIG:n] come specificato sotto.
-- NON inventare descrizioni di figure inesistenti.
+════════════════════════════════════════
+2) ARCHITETTURA DIDATTICA DELLA LEZIONE
+════════════════════════════════════════
+La lezione deve articolarsi in MACRO-AREE logiche, in quest'ordine:
+  A. INTRODUZIONE — contesto, problema, perché questo argomento esiste / a cosa serve.
+  B. PILASTRI CONCETTUALI — i 2-4 concetti fondamentali, uno per parte, definiti e spiegati a fondo.
+  C. NESSI E RELAZIONI — esplicita causa-effetto, dipendenze, correlazioni. Se il concetto B presuppone A, dichiaralo PRIMA di introdurre B ("Per capire B serve aver chiaro che A …").
+  D. APPLICAZIONE / ESEMPIO PRATICO — almeno una parte con esempio concreto (titolo che inizia con "📌 Esempio:" o "🔍 In pratica:").
+  E. SINTESI SCHEMATICA FINALE — una parte conclusiva ("🧭 In sintesi" o "🗺️ Mappa") che ricostruisce il quadro con un elenco strutturato, una tabella o una timeline.
 
-ISTRUZIONI:
-1. Concept: 1-2 frasi accattivanti.
-2. Explanation_parts: 5-8 parti BREVI con titolo chiaro e 2-3 frasi MASSIMO ciascuna. Almeno 2 parti devono essere ESEMPI PRATICI (part_title che inizia con "📌 Esempio:" o "🔍 In pratica:"). Procedi dal semplice al complesso.
-3. Example: 1 esempio finale concreto (2-3 frasi).
-4. Exercises: 3-4 esercizi SOLO "multiple_choice" e "true_false". Alterna i due tipi.
+════════════════════════════════════════
+3) STRUTTURA DEI BLOCCHI "explanation_parts"
+════════════════════════════════════════
+- 5-8 parti totali, ciascuna con "part_title" e "content".
+- NESSUN limite rigido di righe: una parte concept può essere un paragrafo corposo (fino a ~120 parole) PURCHÉ resti su UN SINGOLO nucleo tematico e usi prosa fluida, senza ripetizioni.
+- Una parte = un'idea. Mai mescolare più concetti distinti nello stesso blocco.
+- Usa **grassetto** per i termini-chiave la prima volta che li introduci. Usa *corsivo* con parsimonia.
+
+════════════════════════════════════════
+4) INTEGRAZIONE NATIVA DI SCHEMI / TABELLE / TIMELINE
+════════════════════════════════════════
+Sei OBBLIGATO a individuare nel materiale i punti che si prestano a visualizzazione strutturata e a renderli con Markdown all'interno di "content", interrompendo la narrazione nel punto strategico per fissare la memoria visiva.
+
+Quando convertire OBBLIGATORIAMENTE in struttura visiva:
+  • Confronto fra due o più entità (teorie, autori, modelli, eventi, periodi) → **tabella Markdown GFM**.
+  • Dati quantitativi, parametri, classificazioni → **tabella**.
+  • Sequenze temporali (eventi storici, fasi di un processo) → **timeline** come elenco numerato con anno/fase in grassetto.
+  • Procedure / algoritmi a passi → **elenco numerato a step** con verbo d'azione iniziale.
+  • Tassonomie / gerarchie → **elenco puntato annidato**.
+
+Sintassi tabella Markdown GFM (obbligatoria, mantieni le pipe):
+\`\`\`
+| Aspetto | Teoria A | Teoria B |
+|---|---|---|
+| Origine | … | … |
+| Tesi    | … | … |
+\`\`\`
+
+Sintassi timeline (elenco numerato):
+\`\`\`
+1. **1789** — Scoppio della Rivoluzione …
+2. **1799** — Colpo di stato di Brumaio …
+\`\`\`
+
+Regole: almeno UNA struttura visiva (tabella o timeline o elenco a step) deve comparire nella lezione se il materiale lo permette anche solo lontanamente. La sintesi finale è il punto naturale per uno schema riepilogativo.
+
+════════════════════════════════════════
+5) FIGURE DAL PDF
+════════════════════════════════════════
+- DIVIETO ASSOLUTO di descrivere immagini a parole ("L'immagine mostra…", "Come si vede in figura…", "La tabella illustra…").
+- Per riferirti a un elemento visivo del PDF usa SOLO il token [FIG:n].
+- NON usare mai il campo "image_url".
 ${figureInstructions}
 
-JSON richiesto:
+════════════════════════════════════════
+6) ALTRI CAMPI
+════════════════════════════════════════
+- "concept": 1-2 frasi che catturano l'essenza del titolo (riformulata, non copiata).
+- "example": un caso concreto finale (3-5 frasi), nuovo, non ripreso letteralmente dal testo.
+- "exercises": 3-4 esercizi ALTERNANDO "multiple_choice" e "true_false". Le domande devono testare la COMPRENSIONE dei nessi, non il riconoscimento di una frase del testo.
+
+JSON richiesto (rispetta esattamente questa forma):
 {
   "concept": "...",
   "explanation_parts": [
-    { "part_title": "Cos'è...", "content": "Spiegazione breve e chiara..." },
-    { "part_title": "📌 Esempio: ...", "content": "Esempio pratico concreto.\\n[FIG:0]" },
-    { "part_title": "Come funziona...", "content": "Spiegazione del meccanismo..." },
-    { "part_title": "🔍 In pratica: ...", "content": "Applicazione reale..." },
-    { "part_title": "Ricapitolando", "content": "Sintesi dei punti chiave..." }
+    { "part_title": "Il contesto: perché parlarne", "content": "Introduzione riscritta…" },
+    { "part_title": "Il primo pilastro: …", "content": "Definizione e spiegazione…" },
+    { "part_title": "Il secondo pilastro: …", "content": "Spiegazione. Nesso col primo pilastro esplicitato." },
+    { "part_title": "Confronto", "content": "Testo introduttivo.\\n\\n| Aspetto | A | B |\\n|---|---|---|\\n| … | … | … |" },
+    { "part_title": "📌 Esempio: …", "content": "Caso concreto rielaborato.\\n[FIG:0]" },
+    { "part_title": "🧭 In sintesi", "content": "1. **Punto 1** — …\\n2. **Punto 2** — …\\n3. **Punto 3** — …" }
   ],
   "example": "...",
   "exercises": [
@@ -249,13 +304,13 @@ JSON richiesto:
   ]
 }
 
-MATERIALE DI STUDIO:
+MATERIALE DI STUDIO (fonte da rielaborare, MAI da copiare):
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Per riferirti a figure visive del PDF usa SOLO i token [FIG:n]. DIVIETO ASSOLUTO: NON scrivere mai descrizioni testuali di immagini/figure/tabelle. NON usare mai il campo image_url." },
+        { role: "system", content: "Sei un tutor didattico che RIELABORA i contenuti, non li copia. Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Obbligatorio includere almeno una struttura visiva (tabella Markdown GFM, timeline numerata o elenco strutturato) quando il contenuto lo consente. Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url." },
         { role: "user", content: prompt }
-      ], 0.15, 6000);
+      ], 0.35, 7000);
 
       console.log("AI lesson response (first 300 chars):", content.substring(0, 300));
       const lessonData = extractJson(content) as Record<string, unknown>;
