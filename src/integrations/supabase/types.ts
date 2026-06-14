@@ -73,6 +73,54 @@ export type Database = {
           },
         ]
       }
+      cognitive_profiles: {
+        Row: {
+          ans_score: number
+          app_score: number
+          created_at: string
+          eta: number | null
+          foc_score: number
+          id: string
+          istituto: string | null
+          log_score: number
+          mem_score: number
+          nome: string | null
+          updated_at: string
+          user_id: string
+          voc_score: number
+        }
+        Insert: {
+          ans_score?: number
+          app_score?: number
+          created_at?: string
+          eta?: number | null
+          foc_score?: number
+          id?: string
+          istituto?: string | null
+          log_score?: number
+          mem_score?: number
+          nome?: string | null
+          updated_at?: string
+          user_id: string
+          voc_score?: number
+        }
+        Update: {
+          ans_score?: number
+          app_score?: number
+          created_at?: string
+          eta?: number | null
+          foc_score?: number
+          id?: string
+          istituto?: string | null
+          log_score?: number
+          mem_score?: number
+          nome?: string | null
+          updated_at?: string
+          user_id?: string
+          voc_score?: number
+        }
+        Relationships: []
+      }
       exercise_jobs: {
         Row: {
           context_id: string | null
@@ -436,6 +484,7 @@ export type Database = {
           created_at: string
           first_name: string | null
           generation_count: number
+          has_completed_onboarding: boolean
           id: string
           institute_type: string
           is_beta_tester: boolean
@@ -453,6 +502,7 @@ export type Database = {
           created_at?: string
           first_name?: string | null
           generation_count?: number
+          has_completed_onboarding?: boolean
           id?: string
           institute_type?: string
           is_beta_tester?: boolean
@@ -470,6 +520,7 @@ export type Database = {
           created_at?: string
           first_name?: string | null
           generation_count?: number
+          has_completed_onboarding?: boolean
           id?: string
           institute_type?: string
           is_beta_tester?: boolean
