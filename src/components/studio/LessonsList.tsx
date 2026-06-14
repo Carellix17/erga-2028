@@ -374,7 +374,7 @@ export function LessonsList({
                         {/* Pulse ring for current */}
                         {isCurrent && (
                           <span
-                            className={cn("absolute animate-pulse opacity-20 bg-gradient-to-br", color.gradient)}
+                            className={cn("absolute animate-pulse opacity-20 bg-gradient-to-br backdrop-blur-sm border-[0.5px] border-white/30", color.gradient)}
                             style={{
                               inset: -6,
                               borderRadius: radius + 4,
