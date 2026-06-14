@@ -282,34 +282,34 @@ export function InterrogazioneView() {
   if (mode === "select") {
     const selectedCourseObj = courses.find(c => c.id === selectedCourse);
     return (
-      <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
-        <div className="text-center space-y-2">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-tertiary/10 flex items-center justify-center">
+      <div className="flex flex-col h-full px-4 sm:px-6 py-6 space-y-6 overflow-y-auto">
+        <div className="text-center space-y-3">
+          <div className="w-16 h-16 mx-auto rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex items-center justify-center">
             <Mic className="w-8 h-8 text-tertiary" />
           </div>
-          <h2 className="font-display text-xl font-bold text-foreground">Interrogazione</h2>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Interrogazione</h2>
           <p className="body-medium text-muted-foreground">Scegli un corso e la modalità</p>
         </div>
 
         {courses.length === 0 ? (
           <p className="text-center text-muted-foreground body-medium">Nessun corso disponibile. Carica prima dei materiali.</p>
         ) : (
-          <div className="space-y-2">
-              <p className="label-large text-foreground">Scegli il corso:</p>
-              <div className="space-y-2">
+          <div className="space-y-3">
+              <p className="label-large font-semibold tracking-tight text-foreground">Scegli il corso:</p>
+              <div className="space-y-2.5">
                 {courses.map(course => (
                   <button
                     key={course.id}
                     onClick={() => setSelectedCourse(course.id)}
                     className={cn(
-                      "w-full flex items-center gap-3 p-4 rounded-2xl border transition-all duration-300",
+                      "w-full flex items-center gap-3 p-5 rounded-3xl border-[0.5px] backdrop-blur-md transition-all duration-300 ease-in-out hover:scale-[1.01] shadow-[0_8px_32px_0_rgba(0,0,0,0.04)]",
                       selectedCourse === course.id
-                        ? "bg-tertiary-container border-tertiary/30 shadow-level-1"
-                        : "bg-surface-container border-outline-variant/30 hover:bg-surface-container-high"
+                        ? "bg-tertiary-container/80 border-tertiary/30"
+                        : "bg-white/70 dark:bg-black/60 border-white/40 dark:border-white/10 hover:bg-white/80 dark:hover:bg-black/70"
                     )}
                   >
                     <BookOpen className="w-5 h-5 text-tertiary flex-shrink-0" />
-                    <span className="label-large text-foreground truncate">
+                    <span className="label-large font-semibold tracking-tight text-foreground truncate">
                       {course.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}
                     </span>
                   </button>
@@ -320,7 +320,7 @@ export function InterrogazioneView() {
 
         <Dialog open={!!selectedCourse} onOpenChange={(open) => { if (!open) setSelectedCourse(null); }}>
           <DialogContent
-            className="max-w-md rounded-[28px] duration-500 ease-m3-emphasized data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95 data-[state=open]:slide-in-from-bottom-4 data-[state=closed]:slide-out-to-bottom-4"
+            className="max-w-md rounded-3xl bg-white/80 dark:bg-black/70 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] duration-500 ease-m3-emphasized data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95 data-[state=open]:slide-in-from-bottom-4 data-[state=closed]:slide-out-to-bottom-4"
             onOpenAutoFocus={(e) => {
               e.preventDefault();
               const el = e.currentTarget as HTMLElement | null;
@@ -329,28 +329,28 @@ export function InterrogazioneView() {
             }}
           >
             <DialogHeader>
-              <DialogTitle className="text-center">Scegli la modalità</DialogTitle>
+              <DialogTitle className="text-center font-bold tracking-tight">Scegli la modalità</DialogTitle>
               {selectedCourseObj && (
                 <DialogDescription className="text-center truncate">
                   {selectedCourseObj.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}
                 </DialogDescription>
               )}
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="grid grid-cols-2 gap-4 pt-3">
               <button
                 onClick={() => selectedCourse && startInterrogazione(selectedCourse, "structured")}
-                className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-primary-container border border-primary/20 hover:shadow-level-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-primary-container/80 backdrop-blur-md border-[0.5px] border-primary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <MessageSquare className="w-10 h-10 text-primary" />
-                <span className="label-large text-primary font-semibold">Domande</span>
+                <span className="label-large text-primary font-semibold tracking-tight">Domande</span>
                 <span className="label-small text-muted-foreground text-center">Il tutor ti fa domande</span>
               </button>
               <button
                 onClick={() => selectedCourse && startInterrogazione(selectedCourse, "free")}
-                className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-secondary-container border border-secondary/20 hover:shadow-level-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2"
+                className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-secondary-container/80 backdrop-blur-md border-[0.5px] border-secondary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2"
               >
                 <Volume2 className="w-10 h-10 text-secondary" />
-                <span className="label-large text-secondary font-semibold">Esposizione</span>
+                <span className="label-large text-secondary font-semibold tracking-tight">Esposizione</span>
                 <span className="label-small text-muted-foreground text-center">Esponi l'argomento</span>
               </button>
             </div>
@@ -364,9 +364,9 @@ export function InterrogazioneView() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-outline-variant/20">
+      <div className="flex items-center justify-between px-5 py-3.5 bg-white/70 dark:bg-black/60 backdrop-blur-md border-b-[0.5px] border-white/40 dark:border-white/10">
         <div className="flex items-center gap-2">
-          <span className="label-large text-foreground">
+          <span className="label-large font-semibold tracking-tight text-foreground">
             {mode === "structured" ? `Domanda ${questionCount}` : "Esposizione libera"}
           </span>
           {score !== null && (
@@ -397,15 +397,15 @@ export function InterrogazioneView() {
       </div>
 
       {/* Exchanges */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3">
         {exchanges.map((item, i) => (
           <div
             key={i}
             className={cn(
-              "rounded-2xl px-4 py-3 animate-fade-up",
-              item.type === "question" && "bg-tertiary-container text-on-tertiary-container",
-              item.type === "answer" && "bg-surface-container-high text-foreground ml-8",
-              item.type === "feedback" && "bg-primary-container text-on-primary-container border border-primary/10"
+              "rounded-3xl px-5 py-4 backdrop-blur-md border-[0.5px] shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out animate-fade-up",
+              item.type === "question" && "bg-tertiary-container/80 text-on-tertiary-container border-white/40 dark:border-white/10",
+              item.type === "answer" && "bg-white/70 dark:bg-black/60 text-foreground ml-8 border-white/40 dark:border-white/10",
+              item.type === "feedback" && "bg-primary-container/80 text-on-primary-container border-primary/10"
             )}
           >
             <div className="label-small text-muted-foreground mb-1">
@@ -456,9 +456,9 @@ export function InterrogazioneView() {
 
       {/* Voice input */}
       {phase === "question" && (
-        <div className="px-4 pb-4 pt-2 space-y-3 border-t border-outline-variant/20">
+        <div className="px-5 pb-5 pt-3 space-y-3 bg-white/70 dark:bg-black/60 backdrop-blur-md border-t-[0.5px] border-white/40 dark:border-white/10">
           {transcript && (
-            <div className="p-3 rounded-xl bg-surface-container text-foreground body-small max-h-24 overflow-y-auto">
+            <div className="p-4 rounded-2xl bg-white/60 dark:bg-black/40 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 text-foreground body-small max-h-24 overflow-y-auto">
               {transcript}
             </div>
           )}
