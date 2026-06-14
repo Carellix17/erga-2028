@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { fireCelebration, fireStarBurst } from "@/lib/confetti";
 import { PdfCrop } from "./PdfCrop";
 import { useLessonFigures, prefetchLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
@@ -336,8 +337,8 @@ function ConceptStep({ concept }: { concept: string }) {
           <Star className="w-3.5 h-3.5" />
           Concetto chiave
         </div>
-        <div className="title-large font-semibold tracking-tight leading-relaxed prose prose-sm max-w-none mx-auto">
-          <ReactMarkdown>{concept}</ReactMarkdown>
+        <div className="title-large font-semibold tracking-tight leading-relaxed prose prose-sm max-w-none mx-auto prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-primary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{concept}</ReactMarkdown>
         </div>
       </div>
     </div>
@@ -393,8 +394,8 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
         {segments.map((seg, i) => {
           if (seg.type === "text") {
             return seg.value.trim() ? (
-              <div key={i} className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90">
-                <ReactMarkdown>{seg.value}</ReactMarkdown>
+              <div key={i} className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-white/40 dark:prose-table:border-white/10 prose-table:backdrop-blur-md prose-th:bg-secondary-container/60 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30 dark:prose-td:border-white/10 prose-hr:my-4 prose-hr:border-white/30 dark:prose-hr:border-white/10">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{seg.value}</ReactMarkdown>
               </div>
             ) : null;
           }
@@ -433,8 +434,8 @@ function ExampleStep({ example }: { example: string }) {
         <span className="label-large text-foreground">Esempio pratico</span>
       </div>
       <div className="p-5 rounded-3xl bg-tertiary-container/60 backdrop-blur-md border-[0.5px] border-tertiary/30 border-l-4 border-l-tertiary shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out">
-        <div className="body-large text-foreground leading-relaxed prose prose-sm max-w-none">
-          <ReactMarkdown>{example}</ReactMarkdown>
+        <div className="body-large text-foreground leading-relaxed prose prose-sm max-w-none prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{example}</ReactMarkdown>
         </div>
       </div>
     </div>
