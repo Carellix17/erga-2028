@@ -359,8 +359,8 @@ export function LessonsList({
                         }}
                         disabled={isGenerating || isLocked}
                         className={cn(
-                          "relative flex items-center justify-center transition-all duration-300 ease-m3-emphasized",
-                          !isGenerating && !isLocked && "active:scale-90 hover:scale-105",
+                          "relative flex items-center justify-center transition-all duration-300 ease-in-out",
+                          !isGenerating && !isLocked && "active:scale-[0.97] hover:scale-[1.02]",
                         )}
                         style={{
                           width: size,
