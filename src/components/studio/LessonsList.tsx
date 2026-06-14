@@ -581,9 +581,9 @@ export function LessonsList({
                   <button
                     onClick={handleDelete}
                     disabled={actionLoading !== null || !onDeleteLesson}
-                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-surface-container-low hover:bg-error-container/50 shadow-level-1 hover:shadow-level-2 transition-all duration-300 ease-m3-emphasized active:scale-95 disabled:opacity-50"
+                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] hover:bg-error-container/30 transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50"
                   >
-                    <span className="w-10 h-10 rounded-xl bg-error-container text-destructive flex items-center justify-center shadow-level-1">
+                    <span className="w-10 h-10 rounded-xl bg-error-container text-destructive flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] backdrop-blur-md border-[0.5px] border-white/30">
                       {actionLoading === "delete" ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
