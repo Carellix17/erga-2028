@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
+import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 
 function extractJsonArray(raw: string): unknown[] {
   let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
@@ -114,6 +115,10 @@ serve(async (req) => {
 
     if (!studyContent) return errorResponse("Nessun contenuto trovato", 400);
 
+    // Personalizzazione cognitiva (Esagono): regole basate sui punteggi 0-100
+    const cognitive = await fetchCognitiveProfile(supabase, userId);
+    const cognitiveAddon = buildCognitivePromptAddon(cognitive);
+
     // Idempotenza: se esiste già un job 'generating' per stessa selezione, riusalo
     const lessonIdsKey = Array.isArray(lessonIds) ? [...lessonIds].sort() : [];
     const { data: existingJob } = await supabase
@@ -160,7 +165,7 @@ Genera ${requestedCount} esercizi basati ESCLUSIVAMENTE su questi materiali di s
 4. "ordering" - Metti in ordine (items da ordinare, correctAnswer è l'ordine giusto)
 
 IMPORTANTE: Genera ESATTAMENTE ${requestedCount} esercizi. NON usare "short_answer" né "fill_blank". La maggior parte devono essere "multiple_choice" e "true_false".
-
+${cognitiveAddon}
 MATERIALI:
 ${trimmed}
 
