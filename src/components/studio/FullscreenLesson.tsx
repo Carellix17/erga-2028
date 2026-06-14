@@ -194,11 +194,40 @@ export function FullscreenLesson({
     <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
-        <div className="flex items-center gap-3 mb-2">
-          <Button variant="ghost" size="icon-sm" onClick={onClose} className="rounded-full -ml-1">
-            <X className="w-5 h-5" />
-          </Button>
-          
+        <div className="flex items-center gap-2 mb-2">
+          {currentStep > 0 ? (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleBack}
+              className="rounded-full -ml-1 text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out"
+              aria-label="Torna indietro"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={onClose}
+              className="rounded-full -ml-1 text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out"
+              aria-label="Chiudi lezione"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          )}
+          {currentStep > 0 && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={onClose}
+              className="rounded-full text-muted-foreground/70 hover:text-foreground transition-all duration-300 ease-in-out"
+              aria-label="Chiudi lezione"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+
           {/* Segmented progress bar */}
           <div className="flex-1 flex gap-0.5 h-2">
             {Array.from({ length: segments }).map((_, i) => (
@@ -271,25 +300,14 @@ export function FullscreenLesson({
 
       {/* Bottom action */}
       <div className="flex-shrink-0 p-4 pb-8 safe-area-bottom">
-        <div className="flex gap-2">
-        {currentStep > 0 && (
-          <Button
-            onClick={handleBack}
-            size="lg"
-            className="h-14 rounded-2xl px-5 bg-[hsl(8_85%_55%)] hover:bg-[hsl(8_85%_50%)] text-white shadow-level-2"
-            aria-label="Torna indietro"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-        )}
         <Button
           onClick={handleContinue}
           disabled={!canContinue}
           className={cn(
-            "flex-1 h-14 rounded-2xl text-base font-semibold transition-all duration-300 ease-m3-emphasized",
+            "w-full h-14 rounded-3xl text-base font-semibold tracking-tight transition-all duration-300 ease-in-out border-[0.5px] border-white/40 dark:border-white/10 backdrop-blur-md",
             canContinue
-              ? "shadow-level-2 hover:shadow-level-3 active:scale-[0.97]"
-              : "bg-surface-container-highest text-muted-foreground shadow-level-0"
+              ? "shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.12)] hover:scale-[1.01] active:scale-[0.97]"
+              : "bg-white/60 dark:bg-black/40 text-muted-foreground shadow-[0_4px_16px_0_rgba(0,0,0,0.04)]"
           )}
           size="lg"
         >
@@ -300,7 +318,6 @@ export function FullscreenLesson({
             : "Continua"}
           {(canContinue || step.type !== "exercise") && <ChevronRight className="w-5 h-5 ml-1" />}
         </Button>
-        </div>
       </div>
     </div>
   );
