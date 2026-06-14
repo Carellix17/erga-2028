@@ -386,10 +386,10 @@ export function LessonsList({
                         <span
                           className={cn(
                             "absolute inset-0 flex items-center justify-center transition-all duration-300",
-                            isCompleted && cn("bg-gradient-to-br shadow-level-2 opacity-90", color.gradient),
-                            isCurrent && cn("bg-gradient-to-br shadow-level-3", color.gradient),
-                            !isCurrent && !isCompleted && !isLocked && "bg-surface-container-low shadow-level-1 border-2 border-outline-variant/40",
-                            isLocked && "bg-surface-container shadow-level-0 opacity-45",
+                            isCompleted && cn("bg-gradient-to-br shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] backdrop-blur-md border-[0.5px] border-white/50 dark:border-white/20 opacity-90", color.gradient),
+                            isCurrent && cn("bg-gradient-to-br shadow-[0_8px_32px_0_rgba(0,0,0,0.15)] backdrop-blur-md border-[0.5px] border-white/50 dark:border-white/20", color.gradient),
+                            !isCurrent && !isCompleted && !isLocked && "bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)]",
+                            isLocked && "bg-white/40 dark:bg-black/30 backdrop-blur-sm border-[0.5px] border-white/20 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.02)] opacity-45",
                           )}
                           style={{ borderRadius: radius }}
                         >
