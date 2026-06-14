@@ -442,11 +442,11 @@ export function LessonsList({
                         }}
                         disabled={isGenerating}
                         className={cn(
-                          "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 px-2 py-1 rounded-xl bg-background/90 active:scale-95 hover:shadow-level-1",
-                          isCompleted && cn(color.text, "font-semibold"),
-                          isCurrent && cn(color.text, "font-semibold text-xs"),
-                          isLocked && "text-muted-foreground/40",
-                          !isCurrent && !isCompleted && !isLocked && "text-foreground/70",
+                          "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 ease-in-out px-2 py-1 rounded-xl backdrop-blur-md border-[0.5px] border-white/30 dark:border-white/10 active:scale-[0.97] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.04)]",
+                          isCompleted && cn(color.text, "font-semibold", "bg-white/50 dark:bg-black/40"),
+                          isCurrent && cn(color.text, "font-semibold text-xs", "bg-white/60 dark:bg-black/50"),
+                          isLocked && "text-muted-foreground/40 bg-white/20 dark:bg-black/20",
+                          !isCurrent && !isCompleted && !isLocked && "text-foreground/70 bg-white/50 dark:bg-black/40",
                         )}
                         style={{ touchAction: "manipulation", WebkitUserSelect: "none", userSelect: "none" }}
                       >
