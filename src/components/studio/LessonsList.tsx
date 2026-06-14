@@ -474,7 +474,7 @@ export function LessonsList({
               />
               <span
                 className={cn(
-                  "w-20 h-20 flex items-center justify-center shadow-level-3 text-white bg-gradient-to-br group-hover:shadow-level-4 group-hover:scale-105 transition-all",
+                  "w-20 h-20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] backdrop-blur-md border-[0.5px] border-white/50 dark:border-white/20 text-white bg-gradient-to-br group-hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.16)] group-hover:scale-[1.02] transition-all duration-300 ease-in-out",
                   color.gradient,
                 )}
                 style={{ borderRadius: 24 }}
