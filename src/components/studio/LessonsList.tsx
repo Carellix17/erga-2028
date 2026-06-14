@@ -269,7 +269,7 @@ export function LessonsList({
               {/* Module header */}
               <div className="flex items-center gap-2 mb-4 px-2">
                 <div className={cn(
-                  "h-8 px-3 rounded-xl flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r shadow-level-1",
+                  "h-8 px-3 rounded-xl flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] backdrop-blur-md border-[0.5px] border-white/50 transition-all duration-300 ease-in-out",
                   color.gradient
                 )}>
                   <Crown className="w-3.5 h-3.5" />
