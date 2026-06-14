@@ -409,7 +409,7 @@ export function LessonsList({
                         {/* Badge for current */}
                         {isCurrent && !isGenerating && (
                           <span
-                            className="absolute w-6 h-6 bg-warning flex items-center justify-center shadow-level-2 animate-bounce-gentle"
+                            className="absolute w-6 h-6 bg-warning flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] backdrop-blur-md border-[0.5px] border-white/40 animate-bounce-gentle"
                             style={{ top: -4, right: -4, borderRadius: 8 }}
                           >
                             <Star className="w-3 h-3 text-warning-foreground fill-warning-foreground" />
