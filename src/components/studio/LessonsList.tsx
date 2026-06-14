@@ -269,7 +269,7 @@ export function LessonsList({
               {/* Module header */}
               <div className="flex items-center gap-2 mb-4 px-2">
                 <div className={cn(
-                  "h-8 px-3 rounded-xl flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r shadow-level-1",
+                  "h-8 px-3 rounded-xl flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] backdrop-blur-md border-[0.5px] border-white/50 transition-all duration-300 ease-in-out",
                   color.gradient
                 )}>
                   <Crown className="w-3.5 h-3.5" />
@@ -359,8 +359,8 @@ export function LessonsList({
                         }}
                         disabled={isGenerating || isLocked}
                         className={cn(
-                          "relative flex items-center justify-center transition-all duration-300 ease-m3-emphasized",
-                          !isGenerating && !isLocked && "active:scale-90 hover:scale-105",
+                          "relative flex items-center justify-center transition-all duration-300 ease-in-out",
+                          !isGenerating && !isLocked && "active:scale-[0.97] hover:scale-[1.02]",
                         )}
                         style={{
                           width: size,
@@ -374,7 +374,7 @@ export function LessonsList({
                         {/* Pulse ring for current */}
                         {isCurrent && (
                           <span
-                            className={cn("absolute animate-pulse opacity-20 bg-gradient-to-br", color.gradient)}
+                            className={cn("absolute animate-pulse opacity-20 bg-gradient-to-br backdrop-blur-sm border-[0.5px] border-white/30", color.gradient)}
                             style={{
                               inset: -6,
                               borderRadius: radius + 4,
@@ -386,10 +386,10 @@ export function LessonsList({
                         <span
                           className={cn(
                             "absolute inset-0 flex items-center justify-center transition-all duration-300",
-                            isCompleted && cn("bg-gradient-to-br shadow-level-2 opacity-90", color.gradient),
-                            isCurrent && cn("bg-gradient-to-br shadow-level-3", color.gradient),
-                            !isCurrent && !isCompleted && !isLocked && "bg-surface-container-low shadow-level-1 border-2 border-outline-variant/40",
-                            isLocked && "bg-surface-container shadow-level-0 opacity-45",
+                            isCompleted && cn("bg-gradient-to-br shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] backdrop-blur-md border-[0.5px] border-white/50 dark:border-white/20 opacity-90", color.gradient),
+                            isCurrent && cn("bg-gradient-to-br shadow-[0_8px_32px_0_rgba(0,0,0,0.15)] backdrop-blur-md border-[0.5px] border-white/50 dark:border-white/20", color.gradient),
+                            !isCurrent && !isCompleted && !isLocked && "bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)]",
+                            isLocked && "bg-white/40 dark:bg-black/30 backdrop-blur-sm border-[0.5px] border-white/20 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.02)] opacity-45",
                           )}
                           style={{ borderRadius: radius }}
                         >
@@ -409,7 +409,7 @@ export function LessonsList({
                         {/* Badge for current */}
                         {isCurrent && !isGenerating && (
                           <span
-                            className="absolute w-6 h-6 bg-warning flex items-center justify-center shadow-level-2 animate-bounce-gentle"
+                            className="absolute w-6 h-6 bg-warning flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] backdrop-blur-md border-[0.5px] border-white/40 animate-bounce-gentle"
                             style={{ top: -4, right: -4, borderRadius: 8 }}
                           >
                             <Star className="w-3 h-3 text-warning-foreground fill-warning-foreground" />
@@ -442,11 +442,11 @@ export function LessonsList({
                         }}
                         disabled={isGenerating}
                         className={cn(
-                          "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 px-2 py-1 rounded-xl bg-background/90 active:scale-95 hover:shadow-level-1",
-                          isCompleted && cn(color.text, "font-semibold"),
-                          isCurrent && cn(color.text, "font-semibold text-xs"),
-                          isLocked && "text-muted-foreground/40",
-                          !isCurrent && !isCompleted && !isLocked && "text-foreground/70",
+                          "mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 ease-in-out px-2 py-1 rounded-xl backdrop-blur-md border-[0.5px] border-white/30 dark:border-white/10 active:scale-[0.97] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.04)]",
+                          isCompleted && cn(color.text, "font-semibold", "bg-white/50 dark:bg-black/40"),
+                          isCurrent && cn(color.text, "font-semibold text-xs", "bg-white/60 dark:bg-black/50"),
+                          isLocked && "text-muted-foreground/40 bg-white/20 dark:bg-black/20",
+                          !isCurrent && !isCompleted && !isLocked && "text-foreground/70 bg-white/50 dark:bg-black/40",
                         )}
                         style={{ touchAction: "manipulation", WebkitUserSelect: "none", userSelect: "none" }}
                       >
@@ -474,7 +474,7 @@ export function LessonsList({
               />
               <span
                 className={cn(
-                  "w-20 h-20 flex items-center justify-center shadow-level-3 text-white bg-gradient-to-br group-hover:shadow-level-4 group-hover:scale-105 transition-all",
+                  "w-20 h-20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] backdrop-blur-md border-[0.5px] border-white/50 dark:border-white/20 text-white bg-gradient-to-br group-hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.16)] group-hover:scale-[1.02] transition-all duration-300 ease-in-out",
                   color.gradient,
                 )}
                 style={{ borderRadius: 24 }}
@@ -554,10 +554,10 @@ export function LessonsList({
                     onClick={handleRegenerate}
                     disabled={actionLoading !== null || !onRegenerateLesson}
                     className={cn(
-                      "flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-surface-container-low hover:bg-surface-container shadow-level-1 hover:shadow-level-2 transition-all duration-300 ease-m3-emphasized active:scale-95 disabled:opacity-50",
+                      "flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50",
                     )}
                   >
-                    <span className={cn("w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-level-1", color.gradient)}>
+                    <span className={cn("w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] backdrop-blur-md border-[0.5px] border-white/40", color.gradient)}>
                       {actionLoading === "regen" ? (
                         <Loader2 className="w-5 h-5 text-white animate-spin" />
                       ) : (
@@ -570,9 +570,9 @@ export function LessonsList({
                   <button
                     onClick={() => { setRenameValue(menuLesson.lesson.title); setIsRenaming(true); }}
                     disabled={actionLoading !== null || !onRenameLesson}
-                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-surface-container-low hover:bg-surface-container shadow-level-1 hover:shadow-level-2 transition-all duration-300 ease-m3-emphasized active:scale-95 disabled:opacity-50"
+                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50"
                   >
-                    <span className="w-10 h-10 rounded-xl bg-tertiary-container text-tertiary flex items-center justify-center shadow-level-1">
+                    <span className="w-10 h-10 rounded-xl bg-tertiary-container text-tertiary flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] backdrop-blur-md border-[0.5px] border-white/30">
                       <Pencil className="w-5 h-5" />
                     </span>
                     <span className="text-xs font-semibold text-foreground">Rinomina</span>
@@ -581,9 +581,9 @@ export function LessonsList({
                   <button
                     onClick={handleDelete}
                     disabled={actionLoading !== null || !onDeleteLesson}
-                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-surface-container-low hover:bg-error-container/50 shadow-level-1 hover:shadow-level-2 transition-all duration-300 ease-m3-emphasized active:scale-95 disabled:opacity-50"
+                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] hover:bg-error-container/30 transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50"
                   >
-                    <span className="w-10 h-10 rounded-xl bg-error-container text-destructive flex items-center justify-center shadow-level-1">
+                    <span className="w-10 h-10 rounded-xl bg-error-container text-destructive flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] backdrop-blur-md border-[0.5px] border-white/30">
                       {actionLoading === "delete" ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
