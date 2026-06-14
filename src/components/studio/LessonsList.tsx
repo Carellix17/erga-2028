@@ -554,10 +554,10 @@ export function LessonsList({
                     onClick={handleRegenerate}
                     disabled={actionLoading !== null || !onRegenerateLesson}
                     className={cn(
-                      "flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-surface-container-low hover:bg-surface-container shadow-level-1 hover:shadow-level-2 transition-all duration-300 ease-m3-emphasized active:scale-95 disabled:opacity-50",
+                      "flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50",
                     )}
                   >
-                    <span className={cn("w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-level-1", color.gradient)}>
+                    <span className={cn("w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] backdrop-blur-md border-[0.5px] border-white/40", color.gradient)}>
                       {actionLoading === "regen" ? (
                         <Loader2 className="w-5 h-5 text-white animate-spin" />
                       ) : (
