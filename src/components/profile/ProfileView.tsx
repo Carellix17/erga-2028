@@ -7,11 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Moon } from "lucide-react";
+import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Moon, Sparkles, Hexagon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { NotificationsCard } from "./NotificationsCard";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
+import { CognitiveRadar } from "./CognitiveRadar";
+import { Button as UiButton } from "@/components/ui/button";
 
 const INSTITUTES = [
   { value: "liceo_scientifico", label: "Liceo Scientifico" },
@@ -32,11 +35,16 @@ const SUBJECTS = [
 interface SubjectLevels { [subject: string]: number; }
 interface SubjectGoals { [subject: string]: number; }
 
-export function ProfileView() {
+interface ProfileViewProps {
+  onOpenCognitive?: () => void;
+}
+
+export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme, setTheme, isLoaded: themeLoaded } = useTheme();
+  const { profile: cognitive } = useCognitiveProfile();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
