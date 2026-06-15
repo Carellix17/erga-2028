@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX, Loader2, Trophy, Sparkles, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -8,8 +9,20 @@ import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
-type Mode = "select" | "structured" | "free";
+type Mode = "select" | "config" | "structured" | "free" | "report";
 type Phase = "idle" | "question" | "listening" | "evaluating" | "feedback";
+
+interface ScoreEntry {
+  question: number;
+  score: number;
+  questionText: string;
+}
+
+interface FinalReport {
+  average: number;
+  scores: ScoreEntry[];
+  considerations: string;
+}
 
 interface Course {
   id: string;
@@ -84,6 +97,10 @@ export function InterrogazioneView() {
   const [exchanges, setExchanges] = useState<ExchangeItem[]>([]);
   const [score, setScore] = useState<number | null>(null);
   const [questionCount, setQuestionCount] = useState(0);
+  const [maxQuestions, setMaxQuestions] = useState<number>(5);
+  const [scores, setScores] = useState<ScoreEntry[]>([]);
+  const [finalReport, setFinalReport] = useState<FinalReport | null>(null);
+  const [isBuildingReport, setIsBuildingReport] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [isLoadingVoice, setIsLoadingVoice] = useState(false);
@@ -216,6 +233,8 @@ export function InterrogazioneView() {
     setExchanges([]);
     setScore(null);
     setQuestionCount(0);
+    setScores([]);
+    setFinalReport(null);
 
     if (selectedMode === "structured") {
       setPhase("evaluating");
@@ -264,21 +283,55 @@ export function InterrogazioneView() {
 
     try {
       const action = mode === "structured" ? "evaluate" : "evaluate_free";
+      const isLastQuestion = mode === "structured" && questionCount >= maxQuestions;
       const data = await callInterrogazione(action, {
         question: currentQuestion,
         answer,
         history: exchanges,
         questionNumber: questionCount,
+        maxQuestions,
       });
 
       setExchanges(prev => [...prev, { type: "feedback", content: data.feedback }]);
-      if (data.score !== undefined) setScore(data.score);
+      let updatedScores = scores;
+      if (data.score !== undefined) {
+        setScore(data.score);
+        if (mode === "structured") {
+          updatedScores = [...scores, { question: questionCount, score: Number(data.score), questionText: currentQuestion }];
+          setScores(updatedScores);
+        }
+      }
 
       // Sequential audio queue: wait for feedback TTS to finish before
       // revealing/speaking the next question
       await speakIfEnabled(data.feedback);
 
-      if (data.nextQuestion && mode === "structured") {
+      if (mode === "structured" && isLastQuestion) {
+        // Build the final report
+        setIsBuildingReport(true);
+        setPhase("evaluating");
+        try {
+          const reportData = await callInterrogazione("final_report", {
+            history: [...exchanges, { type: "answer", content: answer }, { type: "feedback", content: data.feedback }],
+            scores: updatedScores,
+          });
+          const avg = updatedScores.length
+            ? updatedScores.reduce((a, s) => a + s.score, 0) / updatedScores.length
+            : 0;
+          setFinalReport({
+            average: Math.round(avg * 10) / 10,
+            scores: updatedScores,
+            considerations: reportData.considerations || "Bel lavoro! Continua così.",
+          });
+          setMode("report");
+          setPhase("idle");
+        } catch {
+          toast({ title: "Errore", description: "Non riesco a generare il report finale", variant: "destructive" });
+          setPhase("question");
+        } finally {
+          setIsBuildingReport(false);
+        }
+      } else if (data.nextQuestion && mode === "structured") {
         setCurrentQuestion(data.nextQuestion);
         setExchanges(prev => [...prev, { type: "question", content: data.nextQuestion }]);
         setQuestionCount(prev => prev + 1);
@@ -305,6 +358,9 @@ export function InterrogazioneView() {
     setScore(null);
     setTranscript("");
     setQuestionCount(0);
+    setScores([]);
+    setFinalReport(null);
+    setSelectedCourse(null);
   };
 
   const hasSpeech = typeof window !== "undefined" && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
