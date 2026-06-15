@@ -91,13 +91,13 @@
     --radius-full: 9999px;
     --radius: 1rem;
 
-    /* ─── M3 Elevation Shadows — Ultra-soft, imperceptible ─── */
+    /* ─── M3 Elevation Shadows — Crisp, modern, subtly elevated ─── */
     --shadow-level-0: none;
-    --shadow-level-1: 0 1px 2px rgba(15, 23, 42, 0.04);
-    --shadow-level-2: 0 2px 6px rgba(15, 23, 42, 0.05);
-    --shadow-level-3: 0 4px 12px rgba(15, 23, 42, 0.06);
-    --shadow-level-4: 0 8px 20px rgba(15, 23, 42, 0.07);
-    --shadow-level-5: 0 12px 32px rgba(15, 23, 42, 0.08);
+    --shadow-level-1: 0 1px 3px rgba(15, 23, 42, 0.06);
+    --shadow-level-2: 0 3px 8px rgba(15, 23, 42, 0.08);
+    --shadow-level-3: 0 6px 16px rgba(15, 23, 42, 0.10);
+    --shadow-level-4: 0 10px 24px rgba(15, 23, 42, 0.12);
+    --shadow-level-5: 0 14px 40px rgba(15, 23, 42, 0.14);
 
     /* ─── M3 State Layer Opacities ─── */
     --state-hover: 0.08;
