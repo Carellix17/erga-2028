@@ -56,16 +56,21 @@ const speakWithAzure = async (text: string, onStart?: () => void, onEnd?: () => 
   const audio = new Audio(url);
   currentAudio = audio;
   currentObjectUrl = url;
-  audio.onended = () => {
-    if (currentObjectUrl === url) {
-      URL.revokeObjectURL(url);
-      currentObjectUrl = null;
-    }
-    if (currentAudio === audio) currentAudio = null;
-    onEnd?.();
-  };
-  audio.onplay = () => onStart?.();
-  await audio.play();
+  return new Promise<void>((resolve) => {
+    const cleanup = () => {
+      if (currentObjectUrl === url) {
+        URL.revokeObjectURL(url);
+        currentObjectUrl = null;
+      }
+      if (currentAudio === audio) currentAudio = null;
+      onEnd?.();
+      resolve();
+    };
+    audio.onended = cleanup;
+    audio.onerror = cleanup;
+    audio.onplay = () => onStart?.();
+    audio.play().catch(() => cleanup());
+  });
 };
 
 export function InterrogazioneView() {
@@ -84,6 +89,8 @@ export function InterrogazioneView() {
   const [isLoadingVoice, setIsLoadingVoice] = useState(false);
   const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const transcriptBufferRef = useRef<string>("");
+  const muteMicRef = useRef<boolean>(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
 
@@ -120,13 +127,17 @@ export function InterrogazioneView() {
       recognition.interimResults = true;
       recognition.continuous = true;
       recognition.onresult = (event: any) => {
+        if (muteMicRef.current) return;
         let final = "";
         let interim = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
           if (event.results[i].isFinal) final += event.results[i][0].transcript;
           else interim += event.results[i][0].transcript;
         }
-        if (final) setTranscript(prev => prev + " " + final);
+        if (final) {
+          transcriptBufferRef.current = (transcriptBufferRef.current + " " + final).trim();
+          setTranscript(transcriptBufferRef.current);
+        }
       };
       recognition.onerror = () => setIsListening(false);
       recognition.onend = () => setIsListening(false);
@@ -140,15 +151,28 @@ export function InterrogazioneView() {
 
   const toggleListening = () => {
     if (!recognitionRef.current) return;
+    if (muteMicRef.current) return;
     if (isListening) {
-      recognitionRef.current.stop();
+      try { recognitionRef.current.stop(); } catch { /* noop */ }
       setIsListening(false);
     } else {
+      transcriptBufferRef.current = "";
       setTranscript("");
-      recognitionRef.current.start();
-      setIsListening(true);
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch { /* already started */ }
     }
   };
+
+  const hardStopListening = useCallback(() => {
+    const rec = recognitionRef.current;
+    if (rec) {
+      try { rec.abort?.(); } catch { /* noop */ }
+      try { rec.stop(); } catch { /* noop */ }
+    }
+    setIsListening(false);
+  }, []);
 
   const callInterrogazione = useCallback(async (action: string, extraBody: Record<string, unknown> = {}) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -166,6 +190,9 @@ export function InterrogazioneView() {
     if (!ttsEnabled) return;
     const clean = text.replace(/[📖🎓📝🎤]/g, "").replace(/[*_#>\-]/g, "").replace(/\n+/g, ". ").trim();
     if (!clean) return;
+    // Mute the microphone while the AI speaks to avoid echo / feedback loops
+    muteMicRef.current = true;
+    hardStopListening();
     setIsLoadingVoice(true);
     setIsSpeaking(false);
     try {
@@ -178,8 +205,10 @@ export function InterrogazioneView() {
       console.error("Azure TTS failed", err);
       setIsLoadingVoice(false);
       setIsSpeaking(false);
+    } finally {
+      muteMicRef.current = false;
     }
-  }, [ttsEnabled]);
+  }, [ttsEnabled, hardStopListening]);
 
   const startInterrogazione = async (courseId: string, selectedMode: "structured" | "free") => {
     setSelectedCourse(courseId);
@@ -218,12 +247,11 @@ export function InterrogazioneView() {
   };
 
   const submitAnswer = async () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-    }
+    // Hard-stop the mic and discard any pending recognition results to avoid
+    // the same word being transcribed repeatedly
+    hardStopListening();
     stopSpeaking();
-    const answer = transcript.trim();
+    const answer = (transcriptBufferRef.current || transcript).trim();
     if (!answer) {
       toast({ title: "Rispondi prima!", description: "Dì qualcosa prima di inviare", variant: "destructive" });
       return;
@@ -231,6 +259,7 @@ export function InterrogazioneView() {
 
     setExchanges(prev => [...prev, { type: "answer", content: answer }]);
     setPhase("evaluating");
+    transcriptBufferRef.current = "";
     setTranscript("");
 
     try {
@@ -243,18 +272,18 @@ export function InterrogazioneView() {
       });
 
       setExchanges(prev => [...prev, { type: "feedback", content: data.feedback }]);
-      speakIfEnabled(data.feedback);
-
       if (data.score !== undefined) setScore(data.score);
 
+      // Sequential audio queue: wait for feedback TTS to finish before
+      // revealing/speaking the next question
+      await speakIfEnabled(data.feedback);
+
       if (data.nextQuestion && mode === "structured") {
-        setTimeout(() => {
-          setCurrentQuestion(data.nextQuestion);
-          setExchanges(prev => [...prev, { type: "question", content: data.nextQuestion }]);
-          setQuestionCount(prev => prev + 1);
-          setPhase("question");
-          speakIfEnabled(data.nextQuestion);
-        }, 2000);
+        setCurrentQuestion(data.nextQuestion);
+        setExchanges(prev => [...prev, { type: "question", content: data.nextQuestion }]);
+        setQuestionCount(prev => prev + 1);
+        setPhase("question");
+        await speakIfEnabled(data.nextQuestion);
       } else if (data.finished) {
         setPhase("idle");
       } else {
@@ -268,6 +297,8 @@ export function InterrogazioneView() {
 
   const resetInterrogazione = () => {
     stopSpeaking();
+    hardStopListening();
+    transcriptBufferRef.current = "";
     setMode("select");
     setPhase("idle");
     setExchanges([]);
@@ -466,12 +497,14 @@ export function InterrogazioneView() {
             {hasSpeech && (
               <button
                 onClick={toggleListening}
+                disabled={isSpeaking || isLoadingVoice}
                 className={cn(
-                  "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-level-2",
+                  "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-level-2 disabled:opacity-50 disabled:cursor-not-allowed",
                   isListening
                     ? "bg-destructive text-destructive-foreground animate-pulse-soft scale-110"
                     : "bg-tertiary text-tertiary-foreground hover:scale-105"
                 )}
+                title={isSpeaking || isLoadingVoice ? "Microfono disattivato mentre il tutor parla" : undefined}
               >
                 {isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
               </button>
