@@ -312,7 +312,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
-  if (isGenerating) {
+  if (isGenerating || (postCompleteSettling && lessons.length === 0)) {
     return (
       <GenerationProgress
         isGenerating={isGenerating}
