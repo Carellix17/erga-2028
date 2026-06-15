@@ -683,13 +683,13 @@
   50% { box-shadow: 0 0 12px hsl(var(--primary) / 0.6); }
 }
 
-.animate-lesson-in { animation: lesson-slide-in 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-.animate-lesson-out { animation: lesson-slide-out 250ms cubic-bezier(0.3, 0, 0.8, 0.15) both; }
-.animate-feedback-correct { animation: feedback-correct 400ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.animate-feedback-wrong { animation: feedback-wrong 400ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.animate-option-pop { animation: option-pop 350ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-.animate-xp-float { animation: xp-float 800ms cubic-bezier(0.05, 0.7, 0.1, 1) both; }
-.animate-progress-glow { animation: progress-glow 1.5s ease-in-out infinite; }
+.animate-lesson-in { animation: lesson-slide-in 500ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
+.animate-lesson-out { animation: lesson-slide-out 350ms cubic-bezier(0.3, 0, 0.8, 0.15) both; will-change: transform, opacity; }
+.animate-feedback-correct { animation: feedback-correct 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both; will-change: transform; }
+.animate-feedback-wrong { animation: feedback-wrong 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both; will-change: transform; }
+.animate-option-pop { animation: option-pop 450ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
+.animate-xp-float { animation: xp-float 900ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
+.animate-progress-glow { animation: progress-glow 2s ease-in-out infinite; will-change: box-shadow; }
 
 /* Safe area */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
