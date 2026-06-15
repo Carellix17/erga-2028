@@ -48,33 +48,33 @@
 
     /* Surface / Background — Candid white (interrogazione style) */
     --background: 0 0% 100%;
-    --foreground: 240 15% 12%;
+    --foreground: 222 47% 4%;
 
-    --surface-dim: 0 0% 98%;
+    --surface-dim: 0 0% 100%;
     --surface-bright: 0 0% 100%;
     --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 0 0% 99%;
-    --surface-container: 0 0% 98%;
-    --surface-container-high: 240 10% 97%;
-    --surface-container-highest: 240 10% 96%;
+    --surface-container-low: 0 0% 100%;
+    --surface-container: 0 0% 100%;
+    --surface-container-high: 0 0% 100%;
+    --surface-container-highest: 0 0% 100%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 15% 12%;
+    --card-foreground: 222 47% 4%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 15% 12%;
+    --popover-foreground: 222 47% 4%;
 
-    --muted: 240 10% 96%;
-    --muted-foreground: 240 8% 46%;
+    --muted: 0 0% 100%;
+    --muted-foreground: 215 16% 35%;
 
     --accent: 250 100% 93%;
     --accent-foreground: 252 90% 22%;
 
-    --outline: 240 6% 70%;
-    --outline-variant: 240 10% 92%;
+    --outline: 214 32% 91%;
+    --outline-variant: 214 32% 94%;
 
-    --border: 240 10% 92%;
-    --input: 240 10% 88%;
+    --border: 214 32% 94%;
+    --input: 214 32% 91%;
     --ring: 252 85% 60%;
 
     --inverse-surface: 240 15% 16%;
@@ -107,12 +107,12 @@
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 15% 12%;
+    --sidebar-foreground: 222 47% 4%;
     --sidebar-primary: 252 85% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 10% 97%;
-    --sidebar-accent-foreground: 240 15% 12%;
-    --sidebar-border: 240 10% 92%;
+    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent-foreground: 222 47% 4%;
+    --sidebar-border: 214 32% 94%;
     --sidebar-ring: 252 85% 60%;
   }
 
