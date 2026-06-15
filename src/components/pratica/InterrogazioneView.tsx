@@ -511,63 +511,67 @@ export function InterrogazioneView() {
     const avgColor = avg >= 7 ? "text-success" : avg >= 5 ? "text-warning" : "text-destructive";
     const avgBg = avg >= 7 ? "bg-success-container" : avg >= 5 ? "bg-warning/10" : "bg-error-container";
     return (
-      <div className="flex flex-col h-full px-4 sm:px-6 py-6 space-y-5 overflow-y-auto">
-        <div className="text-center space-y-3">
-          <div className="w-16 h-16 mx-auto rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex items-center justify-center">
-            <Trophy className="w-8 h-8 text-primary" />
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-5">
+          <div className="text-center space-y-3">
+            <div className="w-16 h-16 mx-auto rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex items-center justify-center">
+              <Trophy className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Report finale</h2>
+            <p className="body-medium text-muted-foreground">La tua interrogazione è terminata</p>
           </div>
-          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Report finale</h2>
-          <p className="body-medium text-muted-foreground">La tua interrogazione è terminata</p>
-        </div>
 
-        <div className={cn(
-          "p-8 rounded-3xl backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] text-center space-y-2",
-          avgBg
-        )}>
-          <p className="label-medium text-muted-foreground uppercase tracking-wider">Voto complessivo</p>
-          <p className={cn("font-display text-7xl font-bold tabular-nums", avgColor)}>
-            {avg.toFixed(1).replace(".", ",")}
-          </p>
-          <p className="label-small text-muted-foreground">media su {finalReport.scores.length} domande</p>
-        </div>
-
-        <div className="p-5 rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-3">
-          <p className="label-large font-semibold tracking-tight text-foreground">Voti per domanda</p>
-          <ul className="space-y-2">
-            {finalReport.scores.map((s) => {
-              const c = s.score >= 7 ? "text-success" : s.score >= 5 ? "text-warning" : "text-destructive";
-              return (
-                <li
-                  key={s.question}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-white/60 dark:bg-black/40 border-[0.5px] border-white/40 dark:border-white/10"
-                >
-                  <span className="label-medium text-foreground">Domanda {s.question}</span>
-                  <span className={cn("font-display font-bold tabular-nums", c)}>
-                    {s.score.toString().replace(".", ",")}/10
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-
-        <div className="p-5 rounded-3xl bg-primary-container/80 backdrop-blur-md border-[0.5px] border-primary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <p className="label-large font-semibold tracking-tight text-on-primary-container">Considerazioni finali del Tutor</p>
+          <div className={cn(
+            "p-8 rounded-3xl backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] text-center space-y-2",
+            avgBg
+          )}>
+            <p className="label-medium text-muted-foreground uppercase tracking-wider">Voto complessivo</p>
+            <p className={cn("font-display text-7xl font-bold tabular-nums", avgColor)}>
+              {avg.toFixed(1).replace(".", ",")}
+            </p>
+            <p className="label-small text-muted-foreground">media su {finalReport.scores.length} domande</p>
           </div>
-          <div className="body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold text-on-primary-container">
-            <ReactMarkdown>{finalReport.considerations}</ReactMarkdown>
+
+          <div className="p-5 rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-3">
+            <p className="label-large font-semibold tracking-tight text-foreground">Voti per domanda</p>
+            <ul className="space-y-2">
+              {finalReport.scores.map((s) => {
+                const c = s.score >= 7 ? "text-success" : s.score >= 5 ? "text-warning" : "text-destructive";
+                return (
+                  <li
+                    key={s.question}
+                    className="flex items-center justify-between p-3 rounded-2xl bg-white/60 dark:bg-black/40 border-[0.5px] border-white/40 dark:border-white/10"
+                  >
+                    <span className="label-medium text-foreground">Domanda {s.question}</span>
+                    <span className={cn("font-display font-bold tabular-nums", c)}>
+                      {s.score.toString().replace(".", ",")}/10
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          <div className="p-5 rounded-3xl bg-primary-container/80 backdrop-blur-md border-[0.5px] border-primary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <p className="label-large font-semibold tracking-tight text-on-primary-container">Considerazioni finali del Tutor</p>
+            </div>
+            <div className="body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold text-on-primary-container">
+              <ReactMarkdown>{finalReport.considerations}</ReactMarkdown>
+            </div>
           </div>
         </div>
 
-        <Button
-          onClick={resetInterrogazione}
-          className="h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
-        >
-          <RotateCcw className="w-5 h-5 mr-2" />
-          Nuova interrogazione
-        </Button>
+        <div className="px-4 sm:px-6 py-4 bg-white/70 dark:bg-black/60 backdrop-blur-md border-t-[0.5px] border-white/40 dark:border-white/10">
+          <Button
+            onClick={resetInterrogazione}
+            className="w-full h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
+          >
+            <RotateCcw className="w-5 h-5 mr-2" />
+            Nuova interrogazione
+          </Button>
+        </div>
       </div>
     );
   }
