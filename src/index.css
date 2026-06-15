@@ -46,35 +46,35 @@
     --warning: 32 95% 52%;
     --warning-foreground: 32 100% 10%;
 
-    /* Surface / Background — Warm off-white */
-    --background: 240 20% 98%;
+    /* Surface / Background — Candid white (interrogazione style) */
+    --background: 0 0% 100%;
     --foreground: 240 15% 12%;
 
-    --surface-dim: 240 12% 90%;
-    --surface-bright: 240 20% 98%;
+    --surface-dim: 0 0% 98%;
+    --surface-bright: 0 0% 100%;
     --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 245 18% 96%;
-    --surface-container: 245 15% 94%;
-    --surface-container-high: 245 14% 92%;
-    --surface-container-highest: 245 12% 89%;
+    --surface-container-low: 0 0% 99%;
+    --surface-container: 0 0% 98%;
+    --surface-container-high: 240 10% 97%;
+    --surface-container-highest: 240 10% 96%;
 
-    --card: 245 18% 96%;
+    --card: 0 0% 100%;
     --card-foreground: 240 15% 12%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 240 15% 12%;
 
-    --muted: 245 12% 89%;
+    --muted: 240 10% 96%;
     --muted-foreground: 240 8% 46%;
 
     --accent: 250 100% 93%;
     --accent-foreground: 252 90% 22%;
 
-    --outline: 240 8% 52%;
-    --outline-variant: 245 15% 82%;
+    --outline: 240 6% 70%;
+    --outline-variant: 240 10% 92%;
 
-    --border: 245 15% 84%;
-    --input: 240 8% 52%;
+    --border: 240 10% 92%;
+    --input: 240 10% 88%;
     --ring: 252 85% 60%;
 
     --inverse-surface: 240 15% 16%;
@@ -91,13 +91,13 @@
     --radius-full: 9999px;
     --radius: 1rem;
 
-    /* ─── M3 Elevation Shadows ─── */
+    /* ─── M3 Elevation Shadows — Ultra-soft, imperceptible ─── */
     --shadow-level-0: none;
-    --shadow-level-1: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
-    --shadow-level-2: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
-    --shadow-level-3: 0 4px 8px 3px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.3);
-    --shadow-level-4: 0 6px 10px 4px rgba(0,0,0,0.15), 0 2px 3px rgba(0,0,0,0.3);
-    --shadow-level-5: 0 8px 12px 6px rgba(0,0,0,0.15), 0 4px 4px rgba(0,0,0,0.3);
+    --shadow-level-1: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-level-2: 0 2px 6px rgba(15, 23, 42, 0.05);
+    --shadow-level-3: 0 4px 12px rgba(15, 23, 42, 0.06);
+    --shadow-level-4: 0 8px 20px rgba(15, 23, 42, 0.07);
+    --shadow-level-5: 0 12px 32px rgba(15, 23, 42, 0.08);
 
     /* ─── M3 State Layer Opacities ─── */
     --state-hover: 0.08;
@@ -106,13 +106,13 @@
     --state-dragged: 0.16;
 
     /* Sidebar */
-    --sidebar-background: 245 18% 96%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 15% 12%;
     --sidebar-primary: 252 85% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 245 14% 92%;
+    --sidebar-accent: 240 10% 97%;
     --sidebar-accent-foreground: 240 15% 12%;
-    --sidebar-border: 245 15% 84%;
+    --sidebar-border: 240 10% 92%;
     --sidebar-ring: 252 85% 60%;
   }
 
