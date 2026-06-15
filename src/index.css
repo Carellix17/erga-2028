@@ -477,54 +477,65 @@
     box-shadow: var(--shadow-level-2);
   }
 
-  /* ═══════ M3 MOTION ═══════ */
-  .motion-emphasized { transition-timing-function: cubic-bezier(0.2, 0, 0, 1); transition-duration: 500ms; }
-  .motion-emphasized-decel { transition-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1); transition-duration: 400ms; }
-  .motion-emphasized-accel { transition-timing-function: cubic-bezier(0.3, 0, 0.8, 0.15); transition-duration: 200ms; }
-  .motion-standard { transition-timing-function: cubic-bezier(0.2, 0, 0, 1); transition-duration: 300ms; }
-  .motion-standard-decel { transition-timing-function: cubic-bezier(0, 0, 0, 1); transition-duration: 250ms; }
-  .motion-standard-accel { transition-timing-function: cubic-bezier(0.3, 0, 1, 1); transition-duration: 200ms; }
+  /* ═══════ M3 MOTION — Ultra-smooth ═══════ */
+  .motion-emphasized { transition-timing-function: cubic-bezier(0.2, 0, 0, 1); transition-duration: 600ms; }
+  .motion-emphasized-decel { transition-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1); transition-duration: 500ms; }
+  .motion-emphasized-accel { transition-timing-function: cubic-bezier(0.3, 0, 0.8, 0.15); transition-duration: 250ms; }
+  .motion-standard { transition-timing-function: cubic-bezier(0.2, 0, 0, 1); transition-duration: 400ms; }
+  .motion-standard-decel { transition-timing-function: cubic-bezier(0, 0, 0, 1); transition-duration: 350ms; }
+  .motion-standard-accel { transition-timing-function: cubic-bezier(0.3, 0, 1, 1); transition-duration: 250ms; }
+  .smooth-transition { transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1); will-change: transform, opacity; }
 
-  /* ═══════ M3 BOUNCY ANIMATIONS ═══════ */
+  /* ═══════ M3 FLUID ENTRANCE ANIMATIONS ═══════ */
   .animate-fade-up {
-    animation: m3-fade-up 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: m3-fade-up 600ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    will-change: transform, opacity;
   }
   .animate-scale-in {
-    animation: m3-scale-in 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: m3-scale-in 550ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    will-change: transform, opacity;
   }
   .animate-slide-up {
-    animation: m3-slide-up 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: m3-slide-up 700ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    will-change: transform, opacity;
   }
   .animate-fade-in {
-    animation: m3-fade-in 400ms cubic-bezier(0.05, 0.7, 0.1, 1);
+    animation: m3-fade-in 500ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    will-change: opacity;
   }
   .animate-bounce-in {
-    animation: m3-bounce-in 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: m3-bounce-in 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    will-change: transform, opacity;
   }
   .animate-pop {
-    animation: m3-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: m3-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    will-change: transform, opacity;
   }
   .animate-wiggle {
-    animation: m3-wiggle 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: m3-wiggle 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    will-change: transform;
   }
   .animate-pulse-soft {
     animation: m3-pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    will-change: transform, opacity;
   }
   .animate-float {
     animation: m3-float 3s ease-in-out infinite;
+    will-change: transform;
   }
   .animate-bounce-gentle {
     animation: bounce-gentle 2s ease-in-out infinite;
+    will-change: transform;
   }
   @keyframes bounce-gentle {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-4px); }
   }
-  .animate-stagger-1 { animation-delay: 50ms; animation-fill-mode: both; }
-  .animate-stagger-2 { animation-delay: 100ms; animation-fill-mode: both; }
-  .animate-stagger-3 { animation-delay: 150ms; animation-fill-mode: both; }
-  .animate-stagger-4 { animation-delay: 200ms; animation-fill-mode: both; }
-  .animate-stagger-5 { animation-delay: 250ms; animation-fill-mode: both; }
+  .animate-stagger-1 { animation-delay: 60ms; animation-fill-mode: both; }
+  .animate-stagger-2 { animation-delay: 120ms; animation-fill-mode: both; }
+  .animate-stagger-3 { animation-delay: 180ms; animation-fill-mode: both; }
+  .animate-stagger-4 { animation-delay: 240ms; animation-fill-mode: both; }
+  .animate-stagger-5 { animation-delay: 300ms; animation-fill-mode: both; }
 
   /* ═══════ M3 PROGRESS ═══════ */
   .m3-progress-track {
@@ -535,7 +546,8 @@
   .m3-progress-indicator {
     background-color: hsl(var(--primary));
     border-radius: var(--radius-full);
-    transition: width 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: width 700ms cubic-bezier(0.05, 0.7, 0.1, 1);
+    will-change: width;
   }
 
   /* ═══════ M3 DIVIDER ═══════ */
@@ -546,7 +558,8 @@
     background-color: hsl(var(--surface-container-highest));
     border-radius: var(--radius-lg) var(--radius-lg) var(--radius-xs) var(--radius-xs);
     border-bottom: 2px solid hsl(var(--outline-variant));
-    transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, border-color;
   }
   .m3-text-field-filled:focus-within {
     border-bottom: 2px solid hsl(var(--primary));
@@ -555,7 +568,8 @@
   .m3-text-field-outlined {
     border: 1.5px solid hsl(var(--outline-variant));
     border-radius: var(--radius-lg);
-    transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, border-color, box-shadow;
   }
   .m3-text-field-outlined:focus-within {
     border: 2px solid hsl(var(--primary));
