@@ -30,6 +30,7 @@ export function useGenerationRealtime() {
         () => {
           qc.invalidateQueries({ queryKey: lessonsKeys.contexts(currentUser) });
           qc.invalidateQueries({ queryKey: lessonsKeys.all(currentUser) });
+          qc.invalidateQueries({ queryKey: lessonsKeys.hasContent(currentUser) });
         }
       )
       .on(
