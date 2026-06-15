@@ -9,7 +9,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { action, contextId, question, answer, history, questionNumber } = body;
+    const { action, contextId, question, answer, history, questionNumber, maxQuestions: maxQuestionsBody, scores } = body;
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
 
@@ -83,7 +83,7 @@ ${studyContent}`;
     if (action === "evaluate" || action === "evaluate_free") {
       const isStructured = action === "evaluate";
       const qNum = questionNumber || 1;
-      const maxQuestions = 5;
+      const maxQuestions = Math.min(10, Math.max(3, Number(maxQuestionsBody) || 5));
 
       const historyText = (history || [])
         .map((h: any) => `${h.type === "question" ? "DOMANDA" : h.type === "answer" ? "RISPOSTA" : "FEEDBACK"}: ${h.content}`)
@@ -101,10 +101,11 @@ ${historyText}
 DOMANDA ATTUALE: ${question}
 RISPOSTA DELLO STUDENTE: ${answer}
 
-Puoi usare **grassetto** per i concetti chiave. Rispondi in formato JSON (SOLO JSON, nessun testo prima o dopo):
+Puoi usare **grassetto** per i concetti chiave. Il voto deve essere un numero con UN decimale italiano (es. 6.5, 7, 8.5) compreso tra 2 e 10, riferito SOLO a questa ultima risposta.
+Rispondi in formato JSON (SOLO JSON, nessun testo prima o dopo):
 {
   "feedback": "Valutazione amichevole (2-3 frasi). Dì cosa è giusto e cosa manca, con tono incoraggiante.",
-  "score": <voto da 1 a 10>,
+  "score": <voto da 2 a 10 con eventuale decimale, es. 7.5>,
   ${qNum < maxQuestions ? '"nextQuestion": "La prossima domanda (diversa dalle precedenti, tono colloquiale)",' : '"finished": true'}
 }`
         : `Sei un tutor amichevole. Lo studente ha esposto le sue conoscenze sull'argomento "${question}". Valuta la sua esposizione con tono caloroso e incoraggiante, dandogli del tu.
@@ -114,10 +115,11 @@ ${studyContent}
 
 ESPOSIZIONE DELLO STUDENTE: ${answer}
 
-Puoi usare **grassetto** per i concetti chiave. Rispondi in formato JSON (SOLO JSON):
+Puoi usare **grassetto** per i concetti chiave. Il voto deve essere un numero con UN decimale italiano (es. 6.5, 7, 8.5) compreso tra 2 e 10.
+Rispondi in formato JSON (SOLO JSON):
 {
   "feedback": "Valutazione completa e amichevole: cosa ha detto bene, cosa manca, suggerimenti pratici (4-5 frasi).",
-  "score": <voto da 1 a 10>,
+  "score": <voto da 2 a 10 con eventuale decimale, es. 7.5>,
   "finished": true
 }`;
 
@@ -135,6 +137,46 @@ Puoi usare **grassetto** per i concetti chiave. Rispondi in formato JSON (SOLO J
         return successResponse(parsed);
       } catch {
         return errorResponse("Errore nel parsing della risposta");
+      }
+    }
+
+    if (action === "final_report") {
+      const historyText = (history || [])
+        .map((h: any) => `${h.type === "question" ? "DOMANDA" : h.type === "answer" ? "RISPOSTA" : "FEEDBACK"}: ${h.content}`)
+        .join("\n");
+      const scoresText = Array.isArray(scores)
+        ? scores.map((s: any, i: number) => `Domanda ${i + 1}: ${s.score}/10`).join("\n")
+        : "";
+      const avg = Array.isArray(scores) && scores.length
+        ? (scores.reduce((a: number, s: any) => a + Number(s.score || 0), 0) / scores.length)
+        : 0;
+
+      const prompt = `Sei un tutor amichevole che ha appena concluso un'interrogazione orale con uno studente. Dai del tu, tono caloroso e costruttivo.
+
+MATERIALI DI STUDIO:
+${studyContent}
+
+STORICO INTERROGAZIONE:
+${historyText}
+
+VOTI PER DOMANDA:
+${scoresText}
+MEDIA: ${avg.toFixed(2)}/10
+
+Scrivi una breve analisi finale (4-6 frasi) in italiano: punti di forza emersi, lacune o concetti da rivedere, e 1-2 consigli pratici per migliorare. Usa **grassetto** sui concetti chiave. Rispondi SOLO in JSON:
+{
+  "considerations": "testo dell'analisi finale"
+}`;
+
+      const result = await callAI([{ role: "user", content: prompt }], 0.5);
+      const jsonMatch = result.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) return successResponse({ considerations: result.trim() });
+      try {
+        const raw = jsonMatch[0].replace(/,(\s*[}\]])/g, "$1").replace(/[\x00-\x1F\x7F]/g, " ");
+        const parsed = JSON.parse(raw);
+        return successResponse(parsed);
+      } catch {
+        return successResponse({ considerations: result.trim() });
       }
     }
 
