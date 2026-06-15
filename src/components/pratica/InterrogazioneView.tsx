@@ -575,7 +575,7 @@ export function InterrogazioneView() {
       <div className="flex items-center justify-between px-5 py-3.5 bg-white/70 dark:bg-black/60 backdrop-blur-md border-b-[0.5px] border-white/40 dark:border-white/10">
         <div className="flex items-center gap-2">
           <span className="label-large font-semibold tracking-tight text-foreground">
-            {mode === "structured" ? `Domanda ${questionCount}` : "Esposizione libera"}
+            {mode === "structured" ? `Domanda ${questionCount} di ${maxQuestions}` : "Esposizione libera"}
           </span>
           {score !== null && (
             <span className={cn(
