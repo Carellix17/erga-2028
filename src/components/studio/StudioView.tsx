@@ -129,6 +129,22 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const updateProgress = useUpdateLessonProgress(effectiveContextId);
   const { invalidateList, invalidateContexts, setLessonsList } = useLessonsCacheControls();
 
+  // 🚦 Bridging: dopo che il backend segna 'completed', le lezioni potrebbero
+  // non essere ancora arrivate al client. Manteniamo uno stato "settling" per
+  // evitare che l'utente veda lampeggiare la schermata "Nessuna lezione" tra
+  // la fine della generazione e l'arrivo del refetch.
+  const [postCompleteSettling, setPostCompleteSettling] = useState(false);
+  useEffect(() => {
+    if (generationStatus === "completed") {
+      setPostCompleteSettling(true);
+      // Forza il refetch immediato e sblocca quando arrivano i dati o dopo timeout.
+      lessonsQuery.refetch().finally(() => setPostCompleteSettling(false));
+      const t = window.setTimeout(() => setPostCompleteSettling(false), 6000);
+      return () => window.clearTimeout(t);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generationStatus, effectiveContextId]);
+
   // Sincronizza l'indice corrente con quello del cloud al primo load di un context.
   // Per un nuovo PDF la progressione è separata, quindi parte da 0.
   useEffect(() => {
@@ -296,7 +312,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
-  if (isGenerating) {
+  if (isGenerating || (postCompleteSettling && lessons.length === 0)) {
     return (
       <GenerationProgress
         isGenerating={isGenerating}
