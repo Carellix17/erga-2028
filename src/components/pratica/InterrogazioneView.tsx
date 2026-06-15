@@ -56,16 +56,21 @@ const speakWithAzure = async (text: string, onStart?: () => void, onEnd?: () => 
   const audio = new Audio(url);
   currentAudio = audio;
   currentObjectUrl = url;
-  audio.onended = () => {
-    if (currentObjectUrl === url) {
-      URL.revokeObjectURL(url);
-      currentObjectUrl = null;
-    }
-    if (currentAudio === audio) currentAudio = null;
-    onEnd?.();
-  };
-  audio.onplay = () => onStart?.();
-  await audio.play();
+  return new Promise<void>((resolve) => {
+    const cleanup = () => {
+      if (currentObjectUrl === url) {
+        URL.revokeObjectURL(url);
+        currentObjectUrl = null;
+      }
+      if (currentAudio === audio) currentAudio = null;
+      onEnd?.();
+      resolve();
+    };
+    audio.onended = cleanup;
+    audio.onerror = cleanup;
+    audio.onplay = () => onStart?.();
+    audio.play().catch(() => cleanup());
+  });
 };
 
 export function InterrogazioneView() {
