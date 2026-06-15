@@ -451,52 +451,56 @@ export function InterrogazioneView() {
   if (mode === "config") {
     const selectedCourseObj = courses.find(c => c.id === selectedCourse);
     return (
-      <div className="flex flex-col h-full px-4 sm:px-6 py-6 space-y-6 overflow-y-auto">
-        <button
-          onClick={resetInterrogazione}
-          className="self-start inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors duration-200"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="label-medium">Indietro</span>
-        </button>
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-6">
+          <button
+            onClick={resetInterrogazione}
+            className="self-start inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors duration-200"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="label-medium">Indietro</span>
+          </button>
 
-        <div className="text-center space-y-3">
-          <div className="w-16 h-16 mx-auto rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex items-center justify-center">
-            <MessageSquare className="w-8 h-8 text-primary" />
+          <div className="text-center space-y-3">
+            <div className="w-16 h-16 mx-auto rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex items-center justify-center">
+              <MessageSquare className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Configura sessione</h2>
+            {selectedCourseObj && (
+              <p className="body-medium text-muted-foreground truncate">
+                {selectedCourseObj.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}
+              </p>
+            )}
           </div>
-          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Configura sessione</h2>
-          {selectedCourseObj && (
-            <p className="body-medium text-muted-foreground truncate">
-              {selectedCourseObj.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}
-            </p>
-          )}
+
+          <div className="p-6 rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-5">
+            <div className="flex items-baseline justify-between">
+              <span className="label-large font-semibold tracking-tight text-foreground">Numero di domande</span>
+              <span className="font-display text-4xl font-bold text-primary tabular-nums">{maxQuestions}</span>
+            </div>
+            <Slider
+              min={3}
+              max={10}
+              step={1}
+              value={[maxQuestions]}
+              onValueChange={(v) => setMaxQuestions(v[0])}
+            />
+            <div className="flex justify-between label-small text-muted-foreground">
+              <span>3</span>
+              <span>10</span>
+            </div>
+          </div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-5">
-          <div className="flex items-baseline justify-between">
-            <span className="label-large font-semibold tracking-tight text-foreground">Numero di domande</span>
-            <span className="font-display text-4xl font-bold text-primary tabular-nums">{maxQuestions}</span>
-          </div>
-          <Slider
-            min={3}
-            max={10}
-            step={1}
-            value={[maxQuestions]}
-            onValueChange={(v) => setMaxQuestions(v[0])}
-          />
-          <div className="flex justify-between label-small text-muted-foreground">
-            <span>3</span>
-            <span>10</span>
-          </div>
+        <div className="px-4 sm:px-6 py-4 bg-white/70 dark:bg-black/60 backdrop-blur-md border-t-[0.5px] border-white/40 dark:border-white/10">
+          <Button
+            onClick={() => selectedCourse && startInterrogazione(selectedCourse, "structured")}
+            className="w-full h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
+          >
+            <Play className="w-5 h-5 mr-2" />
+            Avvia Interrogazione
+          </Button>
         </div>
-
-        <Button
-          onClick={() => selectedCourse && startInterrogazione(selectedCourse, "structured")}
-          className="h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
-        >
-          <Play className="w-5 h-5 mr-2" />
-          Avvia Interrogazione
-        </Button>
       </div>
     );
   }
