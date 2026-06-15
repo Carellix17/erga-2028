@@ -497,12 +497,14 @@ export function InterrogazioneView() {
             {hasSpeech && (
               <button
                 onClick={toggleListening}
+                disabled={isSpeaking || isLoadingVoice}
                 className={cn(
-                  "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-level-2",
+                  "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-level-2 disabled:opacity-50 disabled:cursor-not-allowed",
                   isListening
                     ? "bg-destructive text-destructive-foreground animate-pulse-soft scale-110"
                     : "bg-tertiary text-tertiary-foreground hover:scale-105"
                 )}
+                title={isSpeaking || isLoadingVoice ? "Microfono disattivato mentre il tutor parla" : undefined}
               >
                 {isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
               </button>
