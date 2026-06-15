@@ -425,7 +425,7 @@ export function InterrogazioneView() {
             </DialogHeader>
             <div className="grid grid-cols-2 gap-4 pt-3">
               <button
-                onClick={() => selectedCourse && startInterrogazione(selectedCourse, "structured")}
+                onClick={() => { if (selectedCourse) { setMode("config"); } }}
                 className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-primary-container/80 backdrop-blur-md border-[0.5px] border-primary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <MessageSquare className="w-10 h-10 text-primary" />
@@ -443,6 +443,127 @@ export function InterrogazioneView() {
             </div>
           </DialogContent>
         </Dialog>
+      </div>
+    );
+  }
+
+  // Configuration screen for structured mode (number of questions)
+  if (mode === "config") {
+    const selectedCourseObj = courses.find(c => c.id === selectedCourse);
+    return (
+      <div className="flex flex-col h-full px-4 sm:px-6 py-6 space-y-6 overflow-y-auto">
+        <button
+          onClick={resetInterrogazione}
+          className="self-start inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="label-medium">Indietro</span>
+        </button>
+
+        <div className="text-center space-y-3">
+          <div className="w-16 h-16 mx-auto rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex items-center justify-center">
+            <MessageSquare className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Configura sessione</h2>
+          {selectedCourseObj && (
+            <p className="body-medium text-muted-foreground truncate">
+              {selectedCourseObj.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}
+            </p>
+          )}
+        </div>
+
+        <div className="p-6 rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-5">
+          <div className="flex items-baseline justify-between">
+            <span className="label-large font-semibold tracking-tight text-foreground">Numero di domande</span>
+            <span className="font-display text-4xl font-bold text-primary tabular-nums">{maxQuestions}</span>
+          </div>
+          <Slider
+            min={3}
+            max={10}
+            step={1}
+            value={[maxQuestions]}
+            onValueChange={(v) => setMaxQuestions(v[0])}
+          />
+          <div className="flex justify-between label-small text-muted-foreground">
+            <span>3</span>
+            <span>10</span>
+          </div>
+        </div>
+
+        <Button
+          onClick={() => selectedCourse && startInterrogazione(selectedCourse, "structured")}
+          className="h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
+        >
+          <Play className="w-5 h-5 mr-2" />
+          Avvia Interrogazione
+        </Button>
+      </div>
+    );
+  }
+
+  // Final report screen
+  if (mode === "report" && finalReport) {
+    const avg = finalReport.average;
+    const avgColor = avg >= 7 ? "text-success" : avg >= 5 ? "text-warning" : "text-destructive";
+    const avgBg = avg >= 7 ? "bg-success-container" : avg >= 5 ? "bg-warning/10" : "bg-error-container";
+    return (
+      <div className="flex flex-col h-full px-4 sm:px-6 py-6 space-y-5 overflow-y-auto">
+        <div className="text-center space-y-3">
+          <div className="w-16 h-16 mx-auto rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex items-center justify-center">
+            <Trophy className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Report finale</h2>
+          <p className="body-medium text-muted-foreground">La tua interrogazione è terminata</p>
+        </div>
+
+        <div className={cn(
+          "p-8 rounded-3xl backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] text-center space-y-2",
+          avgBg
+        )}>
+          <p className="label-medium text-muted-foreground uppercase tracking-wider">Voto complessivo</p>
+          <p className={cn("font-display text-7xl font-bold tabular-nums", avgColor)}>
+            {avg.toFixed(1).replace(".", ",")}
+          </p>
+          <p className="label-small text-muted-foreground">media su {finalReport.scores.length} domande</p>
+        </div>
+
+        <div className="p-5 rounded-3xl bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-3">
+          <p className="label-large font-semibold tracking-tight text-foreground">Voti per domanda</p>
+          <ul className="space-y-2">
+            {finalReport.scores.map((s) => {
+              const c = s.score >= 7 ? "text-success" : s.score >= 5 ? "text-warning" : "text-destructive";
+              return (
+                <li
+                  key={s.question}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-white/60 dark:bg-black/40 border-[0.5px] border-white/40 dark:border-white/10"
+                >
+                  <span className="label-medium text-foreground">Domanda {s.question}</span>
+                  <span className={cn("font-display font-bold tabular-nums", c)}>
+                    {s.score.toString().replace(".", ",")}/10
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <div className="p-5 rounded-3xl bg-primary-container/80 backdrop-blur-md border-[0.5px] border-primary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <p className="label-large font-semibold tracking-tight text-on-primary-container">Considerazioni finali del Tutor</p>
+          </div>
+          <div className="body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold text-on-primary-container">
+            <ReactMarkdown>{finalReport.considerations}</ReactMarkdown>
+          </div>
+        </div>
+
+        <Button
+          onClick={resetInterrogazione}
+          className="h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
+        >
+          <RotateCcw className="w-5 h-5 mr-2" />
+          Nuova interrogazione
+        </Button>
       </div>
     );
   }
