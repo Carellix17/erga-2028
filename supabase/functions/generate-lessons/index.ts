@@ -231,22 +231,39 @@ REGOLA DI FOCUS: la lezione tratta SOLO l'argomento del titolo. Spiega in profon
 - Mantieni terminologia tecnica corretta, ma definiscila al primo uso.
 
 ════════════════════════════════════════
-2) ARCHITETTURA DIDATTICA DELLA LEZIONE
+2) ARCHITETTURA "SNACKABLE" DELLA LEZIONE (3-5 MINUTI DI LETTURA ATTIVA)
 ════════════════════════════════════════
-La lezione deve articolarsi in MACRO-AREE logiche, in quest'ordine:
-  A. INTRODUZIONE — contesto, problema, perché questo argomento esiste / a cosa serve.
-  B. PILASTRI CONCETTUALI — i 2-4 concetti fondamentali, uno per parte, definiti e spiegati a fondo.
-  C. NESSI E RELAZIONI — esplicita causa-effetto, dipendenze, correlazioni. Se il concetto B presuppone A, dichiaralo PRIMA di introdurre B ("Per capire B serve aver chiaro che A …").
-  D. APPLICAZIONE / ESEMPIO PRATICO — almeno una parte con esempio concreto (titolo che inizia con "📌 Esempio:" o "🔍 In pratica:").
-  E. SINTESI SCHEMATICA FINALE — una parte conclusiva ("🧭 In sintesi" o "🗺️ Mappa") che ricostruisce il quadro con un elenco strutturato, una tabella o una timeline.
+Anche su argomenti complessi, la lezione DEVE essere leggibile in 3-5 minuti. VIETATO il muro di testo. Costruisci un flusso visivo ARIOSO composto, in quest'ordine, da QUESTE macro-aree:
+
+  A. 🎯 GANCIO INIZIALE (max 50 parole)
+     - Una frase d'apertura forte o un concetto-shock che attiri SUBITO l'attenzione.
+     - Parole-chiave in **grassetto**.
+     - part_title: inizia con "🎯 " seguito da un'esca breve (es. "🎯 Perché ti riguarda").
+
+  B. 📚 SPIEGAZIONE RITMATA (2-4 parti, ognuna max ~120 parole)
+     - Il nucleo concettuale, diviso in MICRO-PARAGRAFI da ~2 righe l'uno (separati da riga vuota).
+     - Intervalla SEMPRE i micro-paragrafi con elenchi puntati, elenchi numerati o emoji pertinenti che aiutino la lettura.
+     - Una parte = un'idea. Mai due concetti nello stesso blocco.
+     - Usa **grassetto** per i termini chiave la PRIMA volta che li introduci.
+
+  C. 💡 FOCUS / CURIOSITÀ (max 60 parole) — OBBLIGATORIO
+     - Un box evidenziato che spezza il ritmo e fissa un dettaglio importante.
+     - part_title deve iniziare con uno di: "💡 Lo sapevi che…", "🔎 Focus:", "📌 Nomenclatura:", "⚡ Curiosità:".
+     - Contenuto secco, mirato, memorabile.
+
+  D. 🧭 SINTESI VISIVA FINALE
+     - Una parte conclusiva con part_title che inizia con "🧭 In sintesi" o "🗺️ Mappa".
+     - Ricostruisce il quadro con un elenco numerato strutturato, una tabella Markdown o una timeline.
+
+Totale parti: 5-8. La somma di tutto il testo NON deve superare ~500 parole (lettura 3-5 min). Se serve più materiale, spezza in più parti brevi invece di gonfiare un singolo blocco.
 
 ════════════════════════════════════════
-3) STRUTTURA DEI BLOCCHI "explanation_parts"
+3) REGOLE DI FORMATTAZIONE ARIOSA
 ════════════════════════════════════════
-- 5-8 parti totali, ciascuna con "part_title" e "content".
-- NESSUN limite rigido di righe: una parte concept può essere un paragrafo corposo (fino a ~120 parole) PURCHÉ resti su UN SINGOLO nucleo tematico e usi prosa fluida, senza ripetizioni.
-- Una parte = un'idea. Mai mescolare più concetti distinti nello stesso blocco.
-- Usa **grassetto** per i termini-chiave la prima volta che li introduci. Usa *corsivo* con parsimonia.
+- Separa SEMPRE i micro-paragrafi con una riga vuota (\\n\\n) per dare respiro visivo.
+- Niente paragrafi >3 righe consecutive di prosa: spezza con elenco puntato, elenco numerato o emoji.
+- Usa emoji pertinenti (1-2 per parte, non di più) come ancore visive, mai come decorazione gratuita.
+- Usa **grassetto** con misura: solo termini-chiave e parole-pivot, non frasi intere.
 
 ════════════════════════════════════════
 4) INTEGRAZIONE NATIVA DI SCHEMI / TABELLE / TIMELINE
