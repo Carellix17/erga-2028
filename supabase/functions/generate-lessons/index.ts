@@ -300,24 +300,25 @@ ${figureInstructions}
 ════════════════════════════════════════
 - "concept": 1-2 frasi che catturano l'essenza del titolo (riformulata, non copiata).
 - "example": un caso concreto finale (3-5 frasi), nuovo, non ripreso letteralmente dal testo.
-- "exercises": ESATTAMENTE 4 o 5 esercizi (QUIZ DI SBLOCCO al termine della lezione, per gamificare il passaggio al livello successivo). Alterna i tipi "multiple_choice" e "true_false". Le domande devono testare la COMPRENSIONE dei nessi, non il riconoscimento di una frase del testo. Almeno 1 domanda deve riguardare il blocco "FOCUS/CURIOSITÀ".
+- "exercises": ESATTAMENTE 3 o 4 esercizi (= 3-4 SLIDE-QUIZ DI SBARRAMENTO mostrate consecutivamente subito dopo le slide di teoria, all'interno della stessa lezione). Alterna i tipi "multiple_choice" e "true_false". Domande secche, una sola idea per quiz, max 20 parole nella domanda/affermazione, opzioni brevissime (max 6 parole l'una). Le domande devono testare la COMPRENSIONE dei concetti delle slide precedenti, non il riconoscimento di una frase del testo. Almeno 1 domanda deve riguardare il blocco "FOCUS/CURIOSITÀ".
 
 JSON richiesto (rispetta esattamente questa forma):
 {
   "concept": "...",
   "explanation_parts": [
-    { "part_title": "🎯 Perché ti riguarda", "content": "Gancio max 50 parole con **parole chiave** in grassetto." },
-    { "part_title": "Il primo pilastro: …", "content": "Micro-paragrafo 1.\\n\\nMicro-paragrafo 2.\\n\\n- punto\\n- punto" },
-    { "part_title": "Il secondo pilastro: …", "content": "Micro-paragrafo 1.\\n\\nMicro-paragrafo 2 con nesso col primo pilastro." },
-    { "part_title": "💡 Lo sapevi che…", "content": "Curiosità o focus di nomenclatura, max 60 parole, secco e memorabile." },
-    { "part_title": "🧭 In sintesi", "content": "1. **Punto 1** — …\\n2. **Punto 2** — …\\n3. **Punto 3** — …" }
+    { "part_title": "🎯 Perché ti riguarda", "content": "Una frase d'impatto con **parola chiave**." },
+    { "part_title": "Definizione", "content": "Definizione secca in 1 frase, max 20 parole." },
+    { "part_title": "Il primo pilastro", "content": "Idea singola, 1-2 frasi brevi, max 25 parole." },
+    { "part_title": "Esempio", "content": "Un caso concreto in 1 frase breve." },
+    { "part_title": "Dato chiave", "content": "- Punto 1\\n- Punto 2\\n- Punto 3" },
+    { "part_title": "💡 Lo sapevi che…", "content": "Dettaglio memorabile in 1 frase, max 25 parole." },
+    { "part_title": "🧭 In sintesi", "content": "1. **Punto 1**\\n2. **Punto 2**\\n3. **Punto 3**" }
   ],
   "example": "...",
   "exercises": [
      { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 0 },
      { "type": "true_false", "statement": "...", "correct": true },
-     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 },
-     { "type": "true_false", "statement": "...", "correct": false }
+     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 }
   ]
 }
 
