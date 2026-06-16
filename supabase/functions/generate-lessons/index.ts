@@ -312,18 +312,18 @@ JSON richiesto (rispetta esattamente questa forma):
 {
   "concept": "...",
   "explanation_parts": [
-    { "part_title": "Il contesto: perché parlarne", "content": "Introduzione riscritta…" },
-    { "part_title": "Il primo pilastro: …", "content": "Definizione e spiegazione…" },
-    { "part_title": "Il secondo pilastro: …", "content": "Spiegazione. Nesso col primo pilastro esplicitato." },
-    { "part_title": "Confronto", "content": "Testo introduttivo.\\n\\n| Aspetto | A | B |\\n|---|---|---|\\n| … | … | … |" },
-    { "part_title": "📌 Esempio: …", "content": "Caso concreto rielaborato.\\n[FIG:0]" },
+    { "part_title": "🎯 Perché ti riguarda", "content": "Gancio max 50 parole con **parole chiave** in grassetto." },
+    { "part_title": "Il primo pilastro: …", "content": "Micro-paragrafo 1.\\n\\nMicro-paragrafo 2.\\n\\n- punto\\n- punto" },
+    { "part_title": "Il secondo pilastro: …", "content": "Micro-paragrafo 1.\\n\\nMicro-paragrafo 2 con nesso col primo pilastro." },
+    { "part_title": "💡 Lo sapevi che…", "content": "Curiosità o focus di nomenclatura, max 60 parole, secco e memorabile." },
     { "part_title": "🧭 In sintesi", "content": "1. **Punto 1** — …\\n2. **Punto 2** — …\\n3. **Punto 3** — …" }
   ],
   "example": "...",
   "exercises": [
      { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 0 },
      { "type": "true_false", "statement": "...", "correct": true },
-     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 }
+     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 },
+     { "type": "true_false", "statement": "...", "correct": false }
   ]
 }
 
