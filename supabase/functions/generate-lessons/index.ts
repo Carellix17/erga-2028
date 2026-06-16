@@ -306,7 +306,7 @@ ${figureInstructions}
 ════════════════════════════════════════
 - "concept": 1-2 frasi che catturano l'essenza del titolo (riformulata, non copiata).
 - "example": un caso concreto finale (3-5 frasi), nuovo, non ripreso letteralmente dal testo.
-- "exercises": 3-4 esercizi ALTERNANDO "multiple_choice" e "true_false". Le domande devono testare la COMPRENSIONE dei nessi, non il riconoscimento di una frase del testo.
+- "exercises": ESATTAMENTE 4 o 5 esercizi (QUIZ DI SBLOCCO al termine della lezione, per gamificare il passaggio al livello successivo). Alterna i tipi "multiple_choice" e "true_false". Le domande devono testare la COMPRENSIONE dei nessi, non il riconoscimento di una frase del testo. Almeno 1 domanda deve riguardare il blocco "FOCUS/CURIOSITÀ".
 
 JSON richiesto (rispetta esattamente questa forma):
 {
