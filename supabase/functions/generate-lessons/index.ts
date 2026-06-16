@@ -231,31 +231,25 @@ REGOLA DI FOCUS: la lezione tratta SOLO l'argomento del titolo. Spiega in profon
 - Mantieni terminologia tecnica corretta, ma definiscila al primo uso.
 
 ════════════════════════════════════════
-2) ARCHITETTURA "SNACKABLE" DELLA LEZIONE (3-5 MINUTI DI LETTURA ATTIVA)
+2) ARCHITETTURA A SLIDE (STILE FINANZ — ULTRA-PARCELLIZZATA)
 ════════════════════════════════════════
-Anche su argomenti complessi, la lezione DEVE essere leggibile in 3-5 minuti. VIETATO il muro di testo. Costruisci un flusso visivo ARIOSO composto, in quest'ordine, da QUESTE macro-aree:
+Ogni elemento di "explanation_parts" è UNA SLIDE a tutto schermo che l'utente sblocca cliccando "Continua". REGOLA GEOMETRICA TASSATIVA:
 
-  A. 🎯 GANCIO INIZIALE (max 50 parole)
-     - Una frase d'apertura forte o un concetto-shock che attiri SUBITO l'attenzione.
-     - Parole-chiave in **grassetto**.
-     - part_title: inizia con "🎯 " seguito da un'esca breve (es. "🎯 Perché ti riguarda").
+- Genera 6-8 SLIDE DI TEORIA (più 3-4 slide-esercizio gestite a parte in "exercises", per un totale di 10-15 slide).
+- Ogni slide contiene POCHISSIMO testo: massimo 1-2 frasi brevi, MAI più di 25 parole. Limite invalicabile: 30 parole = output errato.
+- Una slide = una micro-idea. VIETATO impilare due concetti nella stessa slide. Se serve più materiale, AGGIUNGI UNA SLIDE: non gonfiare quella esistente.
+- Vietati i muri di testo, i paragrafi lunghi, le digressioni. Niente frasi-riempitivo, niente "come abbiamo detto", niente preamboli.
+- Spacca il concetto in step sequenziali: una slide per l'introduzione, una per la definizione, una per l'esempio, una per il dato chiave, una per il confronto, una per il box evidenziato, una per la sintesi. Ritmo da carosello.
 
-  B. 📚 SPIEGAZIONE RITMATA (2-4 parti, ognuna max ~120 parole)
-     - Il nucleo concettuale, diviso in MICRO-PARAGRAFI da ~2 righe l'uno (separati da riga vuota).
-     - Intervalla SEMPRE i micro-paragrafi con elenchi puntati, elenchi numerati o emoji pertinenti che aiutino la lettura.
-     - Una parte = un'idea. Mai due concetti nello stesso blocco.
-     - Usa **grassetto** per i termini chiave la PRIMA volta che li introduci.
+Sequenza obbligatoria delle 6-8 slide di teoria (in quest'ordine logico):
 
-  C. 💡 FOCUS / CURIOSITÀ (max 60 parole) — OBBLIGATORIO
-     - Un box evidenziato che spezza il ritmo e fissa un dettaglio importante.
-     - part_title deve iniziare con uno di: "💡 Lo sapevi che…", "🔎 Focus:", "📌 Nomenclatura:", "⚡ Curiosità:".
-     - Contenuto secco, mirato, memorabile.
+  1. 🎯 GANCIO — 1 frase d'impatto (max 20 parole) con 1-2 **parole chiave** in grassetto. part_title inizia con "🎯 ".
+  2-3. 📚 DEFINIZIONE / PRIMO PILASTRO — 1-2 slide secchissime che introducono il nucleo. Ogni slide max 25 parole.
+  4-5. 🔬 ESEMPIO / DATO / DETTAGLIO — 1-2 slide con un caso concreto, un numero, una micro-tabella o un elenco di 2-3 voci ultra-brevi.
+  6. 💡 FOCUS / CURIOSITÀ (obbligatoria) — 1 slide-box con part_title che inizia con "💡 Lo sapevi che…", "🔎 Focus:", "📌 Nomenclatura:" o "⚡ Curiosità:". Max 25 parole, secco e memorabile.
+  7-8. 🧭 SINTESI / TAKEAWAY — 1-2 slide finali (elenco numerato di 2-4 punti brevissimi, oppure mini-tabella, oppure timeline a 2-3 tappe). part_title inizia con "🧭 In sintesi" o "🗺️ Mappa".
 
-  D. 🧭 SINTESI VISIVA FINALE
-     - Una parte conclusiva con part_title che inizia con "🧭 In sintesi" o "🗺️ Mappa".
-     - Ricostruisce il quadro con un elenco numerato strutturato, una tabella Markdown o una timeline.
-
-Totale parti: 5-8. La somma di tutto il testo NON deve superare ~500 parole (lettura 3-5 min). Se serve più materiale, spezza in più parti brevi invece di gonfiare un singolo blocco.
+Conteggio parole: somma totale di tutte le slide di teoria ≤ 180 parole. Se sfori, accorcia — non eliminare slide.
 
 ════════════════════════════════════════
 3) REGOLE DI FORMATTAZIONE ARIOSA
