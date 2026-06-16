@@ -326,7 +326,7 @@ MATERIALE DI STUDIO (fonte da rielaborare, MAI da copiare):
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Sei un tutor didattico che RIELABORA i contenuti, non li copia. Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Obbligatorio includere almeno una struttura visiva (tabella Markdown GFM, timeline numerata o elenco strutturato) quando il contenuto lo consente. Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url." },
+        { role: "system", content: "Sei un tutor didattico in stile carosello/Finanz. Genera lezioni ULTRA-PARCELLIZZATE: 6-8 slide di teoria + 3-4 slide-quiz. Ogni slide max 25 parole (limite invalicabile 30). Una slide = una micro-idea. VIETATI muri di testo o paragrafi lunghi: se serve più materiale, AGGIUNGI UNA SLIDE, non gonfiare quella esistente. Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url." },
         { role: "user", content: prompt }
       ], 0.35, 7000);
 
