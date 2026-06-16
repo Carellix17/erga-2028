@@ -231,22 +231,39 @@ REGOLA DI FOCUS: la lezione tratta SOLO l'argomento del titolo. Spiega in profon
 - Mantieni terminologia tecnica corretta, ma definiscila al primo uso.
 
 ════════════════════════════════════════
-2) ARCHITETTURA DIDATTICA DELLA LEZIONE
+2) ARCHITETTURA "SNACKABLE" DELLA LEZIONE (3-5 MINUTI DI LETTURA ATTIVA)
 ════════════════════════════════════════
-La lezione deve articolarsi in MACRO-AREE logiche, in quest'ordine:
-  A. INTRODUZIONE — contesto, problema, perché questo argomento esiste / a cosa serve.
-  B. PILASTRI CONCETTUALI — i 2-4 concetti fondamentali, uno per parte, definiti e spiegati a fondo.
-  C. NESSI E RELAZIONI — esplicita causa-effetto, dipendenze, correlazioni. Se il concetto B presuppone A, dichiaralo PRIMA di introdurre B ("Per capire B serve aver chiaro che A …").
-  D. APPLICAZIONE / ESEMPIO PRATICO — almeno una parte con esempio concreto (titolo che inizia con "📌 Esempio:" o "🔍 In pratica:").
-  E. SINTESI SCHEMATICA FINALE — una parte conclusiva ("🧭 In sintesi" o "🗺️ Mappa") che ricostruisce il quadro con un elenco strutturato, una tabella o una timeline.
+Anche su argomenti complessi, la lezione DEVE essere leggibile in 3-5 minuti. VIETATO il muro di testo. Costruisci un flusso visivo ARIOSO composto, in quest'ordine, da QUESTE macro-aree:
+
+  A. 🎯 GANCIO INIZIALE (max 50 parole)
+     - Una frase d'apertura forte o un concetto-shock che attiri SUBITO l'attenzione.
+     - Parole-chiave in **grassetto**.
+     - part_title: inizia con "🎯 " seguito da un'esca breve (es. "🎯 Perché ti riguarda").
+
+  B. 📚 SPIEGAZIONE RITMATA (2-4 parti, ognuna max ~120 parole)
+     - Il nucleo concettuale, diviso in MICRO-PARAGRAFI da ~2 righe l'uno (separati da riga vuota).
+     - Intervalla SEMPRE i micro-paragrafi con elenchi puntati, elenchi numerati o emoji pertinenti che aiutino la lettura.
+     - Una parte = un'idea. Mai due concetti nello stesso blocco.
+     - Usa **grassetto** per i termini chiave la PRIMA volta che li introduci.
+
+  C. 💡 FOCUS / CURIOSITÀ (max 60 parole) — OBBLIGATORIO
+     - Un box evidenziato che spezza il ritmo e fissa un dettaglio importante.
+     - part_title deve iniziare con uno di: "💡 Lo sapevi che…", "🔎 Focus:", "📌 Nomenclatura:", "⚡ Curiosità:".
+     - Contenuto secco, mirato, memorabile.
+
+  D. 🧭 SINTESI VISIVA FINALE
+     - Una parte conclusiva con part_title che inizia con "🧭 In sintesi" o "🗺️ Mappa".
+     - Ricostruisce il quadro con un elenco numerato strutturato, una tabella Markdown o una timeline.
+
+Totale parti: 5-8. La somma di tutto il testo NON deve superare ~500 parole (lettura 3-5 min). Se serve più materiale, spezza in più parti brevi invece di gonfiare un singolo blocco.
 
 ════════════════════════════════════════
-3) STRUTTURA DEI BLOCCHI "explanation_parts"
+3) REGOLE DI FORMATTAZIONE ARIOSA
 ════════════════════════════════════════
-- 5-8 parti totali, ciascuna con "part_title" e "content".
-- NESSUN limite rigido di righe: una parte concept può essere un paragrafo corposo (fino a ~120 parole) PURCHÉ resti su UN SINGOLO nucleo tematico e usi prosa fluida, senza ripetizioni.
-- Una parte = un'idea. Mai mescolare più concetti distinti nello stesso blocco.
-- Usa **grassetto** per i termini-chiave la prima volta che li introduci. Usa *corsivo* con parsimonia.
+- Separa SEMPRE i micro-paragrafi con una riga vuota (\\n\\n) per dare respiro visivo.
+- Niente paragrafi >3 righe consecutive di prosa: spezza con elenco puntato, elenco numerato o emoji.
+- Usa emoji pertinenti (1-2 per parte, non di più) come ancore visive, mai come decorazione gratuita.
+- Usa **grassetto** con misura: solo termini-chiave e parole-pivot, non frasi intere.
 
 ════════════════════════════════════════
 4) INTEGRAZIONE NATIVA DI SCHEMI / TABELLE / TIMELINE
@@ -289,24 +306,24 @@ ${figureInstructions}
 ════════════════════════════════════════
 - "concept": 1-2 frasi che catturano l'essenza del titolo (riformulata, non copiata).
 - "example": un caso concreto finale (3-5 frasi), nuovo, non ripreso letteralmente dal testo.
-- "exercises": 3-4 esercizi ALTERNANDO "multiple_choice" e "true_false". Le domande devono testare la COMPRENSIONE dei nessi, non il riconoscimento di una frase del testo.
+- "exercises": ESATTAMENTE 4 o 5 esercizi (QUIZ DI SBLOCCO al termine della lezione, per gamificare il passaggio al livello successivo). Alterna i tipi "multiple_choice" e "true_false". Le domande devono testare la COMPRENSIONE dei nessi, non il riconoscimento di una frase del testo. Almeno 1 domanda deve riguardare il blocco "FOCUS/CURIOSITÀ".
 
 JSON richiesto (rispetta esattamente questa forma):
 {
   "concept": "...",
   "explanation_parts": [
-    { "part_title": "Il contesto: perché parlarne", "content": "Introduzione riscritta…" },
-    { "part_title": "Il primo pilastro: …", "content": "Definizione e spiegazione…" },
-    { "part_title": "Il secondo pilastro: …", "content": "Spiegazione. Nesso col primo pilastro esplicitato." },
-    { "part_title": "Confronto", "content": "Testo introduttivo.\\n\\n| Aspetto | A | B |\\n|---|---|---|\\n| … | … | … |" },
-    { "part_title": "📌 Esempio: …", "content": "Caso concreto rielaborato.\\n[FIG:0]" },
+    { "part_title": "🎯 Perché ti riguarda", "content": "Gancio max 50 parole con **parole chiave** in grassetto." },
+    { "part_title": "Il primo pilastro: …", "content": "Micro-paragrafo 1.\\n\\nMicro-paragrafo 2.\\n\\n- punto\\n- punto" },
+    { "part_title": "Il secondo pilastro: …", "content": "Micro-paragrafo 1.\\n\\nMicro-paragrafo 2 con nesso col primo pilastro." },
+    { "part_title": "💡 Lo sapevi che…", "content": "Curiosità o focus di nomenclatura, max 60 parole, secco e memorabile." },
     { "part_title": "🧭 In sintesi", "content": "1. **Punto 1** — …\\n2. **Punto 2** — …\\n3. **Punto 3** — …" }
   ],
   "example": "...",
   "exercises": [
      { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 0 },
      { "type": "true_false", "statement": "...", "correct": true },
-     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 }
+     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 },
+     { "type": "true_false", "statement": "...", "correct": false }
   ]
 }
 
@@ -492,20 +509,37 @@ ${studyContent}`;
 
     const combinedContent = `FILE: ${ctxPre.file_name}\n${ctxPre.content}`.substring(0, MAX_CONTEXT_CHARS);
 
+    // Stima la complessità del documento per scalare dinamicamente il numero di lezioni
+    const _pageMarkersPre = Array.from(combinedContent.matchAll(/=== PAGINA (\d+) ===/g))
+      .map((m) => parseInt(m[1], 10)).filter((n) => !isNaN(n));
+    const _maxPdfPagePre = _pageMarkersPre.length > 0 ? Math.max(..._pageMarkersPre) : 0;
+    const _charCount = combinedContent.length;
+    // Heuristica: ~1 lezione ogni ~2500 caratteri o ~1 lezione ogni 0.6 pagine, con bound dinamici
+    const _byChars = Math.round(_charCount / 2500);
+    const _byPages = _maxPdfPagePre > 0 ? Math.round(_maxPdfPagePre / 0.6) : 0;
+    const _rawEstimate = Math.max(_byChars, _byPages, 8);
+    const _minLessons = _maxPdfPagePre > 0 && _maxPdfPagePre <= 5 ? 8 : Math.min(12, _rawEstimate);
+    const _maxLessons = Math.max(_minLessons + 2, Math.min(40, _rawEstimate + 4));
+
     const backgroundTitles = async () => {
       try {
-        const titlesPrompt = `Analizza il testo fornito e crea un piano di studi strutturato.
+        const titlesPrompt = `Analizza il testo fornito e crea un piano di studi strutturato, PROPORZIONATO alla reale complessità del documento.
 
 IMPORTANTE: Rispondi SOLO con un array JSON valido. SOLO JSON puro.
 
 REGOLE:
-1. Ogni lezione deve coprire UN SOLO concetto o argomento specifico. NON raggruppare più concetti diversi in una lezione.
-2. Preferisci MOLTE lezioni brevi e focalizzate piuttosto che poche lezioni dense.
-3. Se un argomento ha sotto-argomenti importanti, crea una lezione separata per ciascuno.
-4. Segui l'ordine logico del documento.
-5. Ignora indici, bibliografie o note a piè di pagina.
-6. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato.
-7. MAPPING PAGINE (OBBLIGATORIO E CRITICO):
+1. Ogni lezione copre UN SOLO concetto o argomento specifico. MAI raggruppare più concetti diversi nella stessa lezione.
+2. SCALA DINAMICA (numero totale di lezioni proporzionale al materiale):
+   - File brevi (2-5 pagine, materiale conciso) → 8-12 lezioni.
+   - Capitoli o saggi di media complessità (6-20 pagine) → 12-22 lezioni.
+   - Testi universitari densi, manuali, trattati (Diritto Romano, saggi di economia, capitoli lunghi) → puoi spingerti a 22-35+ lezioni se davvero il materiale lo richiede.
+   - Per QUESTO documento il range CONSIGLIATO è ${_minLessons}-${_maxLessons} lezioni (pagine PDF stimate: ${_maxPdfPagePre || "n/d"}; caratteri: ${_charCount}). Resta in questo intervallo a meno che il contenuto non imponga chiaramente di più o di meno.
+3. EQUILIBRIO E ASSENZA DI RIPETIZIONI: distribuisci gli argomenti in modo bilanciato lungo tutto il documento; non concentrare metà lezioni su un capitolo e ignorare il resto; non creare lezioni che ripetono lo stesso concetto con titoli diversi.
+4. Se un argomento ha sotto-argomenti importanti, crea una lezione separata per ciascuno.
+5. Segui l'ordine logico del documento.
+6. Ignora indici, bibliografie, note a piè di pagina, ringraziamenti, copertine.
+7. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato (no titoli generici tipo "Introduzione", "Parte 2").
+8. MAPPING PAGINE (OBBLIGATORIO E CRITICO):
    - Il testo è suddiviso in blocchi delimitati da marker "=== PAGINA N ===" che indicano l'inizio della pagina N del PDF originale.
    - Per OGNI lezione devi indicare "page_start" e "page_end" usando ESATTAMENTE i numeri N che appaiono in questi marker.
    - "page_start" = numero della prima pagina che contiene contenuto della lezione.
