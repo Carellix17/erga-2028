@@ -492,6 +492,18 @@ ${studyContent}`;
 
     const combinedContent = `FILE: ${ctxPre.file_name}\n${ctxPre.content}`.substring(0, MAX_CONTEXT_CHARS);
 
+    // Stima la complessità del documento per scalare dinamicamente il numero di lezioni
+    const _pageMarkersPre = Array.from(combinedContent.matchAll(/=== PAGINA (\d+) ===/g))
+      .map((m) => parseInt(m[1], 10)).filter((n) => !isNaN(n));
+    const _maxPdfPagePre = _pageMarkersPre.length > 0 ? Math.max(..._pageMarkersPre) : 0;
+    const _charCount = combinedContent.length;
+    // Heuristica: ~1 lezione ogni ~2500 caratteri o ~1 lezione ogni 0.6 pagine, con bound dinamici
+    const _byChars = Math.round(_charCount / 2500);
+    const _byPages = _maxPdfPagePre > 0 ? Math.round(_maxPdfPagePre / 0.6) : 0;
+    const _rawEstimate = Math.max(_byChars, _byPages, 8);
+    const _minLessons = _maxPdfPagePre > 0 && _maxPdfPagePre <= 5 ? 8 : Math.min(12, _rawEstimate);
+    const _maxLessons = Math.max(_minLessons + 2, Math.min(40, _rawEstimate + 4));
+
     const backgroundTitles = async () => {
       try {
         const titlesPrompt = `Analizza il testo fornito e crea un piano di studi strutturato.
