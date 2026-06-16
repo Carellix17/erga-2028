@@ -231,31 +231,25 @@ REGOLA DI FOCUS: la lezione tratta SOLO l'argomento del titolo. Spiega in profon
 - Mantieni terminologia tecnica corretta, ma definiscila al primo uso.
 
 ════════════════════════════════════════
-2) ARCHITETTURA "SNACKABLE" DELLA LEZIONE (3-5 MINUTI DI LETTURA ATTIVA)
+2) ARCHITETTURA A SLIDE (STILE FINANZ — ULTRA-PARCELLIZZATA)
 ════════════════════════════════════════
-Anche su argomenti complessi, la lezione DEVE essere leggibile in 3-5 minuti. VIETATO il muro di testo. Costruisci un flusso visivo ARIOSO composto, in quest'ordine, da QUESTE macro-aree:
+Ogni elemento di "explanation_parts" è UNA SLIDE a tutto schermo che l'utente sblocca cliccando "Continua". REGOLA GEOMETRICA TASSATIVA:
 
-  A. 🎯 GANCIO INIZIALE (max 50 parole)
-     - Una frase d'apertura forte o un concetto-shock che attiri SUBITO l'attenzione.
-     - Parole-chiave in **grassetto**.
-     - part_title: inizia con "🎯 " seguito da un'esca breve (es. "🎯 Perché ti riguarda").
+- Genera 6-8 SLIDE DI TEORIA (più 3-4 slide-esercizio gestite a parte in "exercises", per un totale di 10-15 slide).
+- Ogni slide contiene POCHISSIMO testo: massimo 1-2 frasi brevi, MAI più di 25 parole. Limite invalicabile: 30 parole = output errato.
+- Una slide = una micro-idea. VIETATO impilare due concetti nella stessa slide. Se serve più materiale, AGGIUNGI UNA SLIDE: non gonfiare quella esistente.
+- Vietati i muri di testo, i paragrafi lunghi, le digressioni. Niente frasi-riempitivo, niente "come abbiamo detto", niente preamboli.
+- Spacca il concetto in step sequenziali: una slide per l'introduzione, una per la definizione, una per l'esempio, una per il dato chiave, una per il confronto, una per il box evidenziato, una per la sintesi. Ritmo da carosello.
 
-  B. 📚 SPIEGAZIONE RITMATA (2-4 parti, ognuna max ~120 parole)
-     - Il nucleo concettuale, diviso in MICRO-PARAGRAFI da ~2 righe l'uno (separati da riga vuota).
-     - Intervalla SEMPRE i micro-paragrafi con elenchi puntati, elenchi numerati o emoji pertinenti che aiutino la lettura.
-     - Una parte = un'idea. Mai due concetti nello stesso blocco.
-     - Usa **grassetto** per i termini chiave la PRIMA volta che li introduci.
+Sequenza obbligatoria delle 6-8 slide di teoria (in quest'ordine logico):
 
-  C. 💡 FOCUS / CURIOSITÀ (max 60 parole) — OBBLIGATORIO
-     - Un box evidenziato che spezza il ritmo e fissa un dettaglio importante.
-     - part_title deve iniziare con uno di: "💡 Lo sapevi che…", "🔎 Focus:", "📌 Nomenclatura:", "⚡ Curiosità:".
-     - Contenuto secco, mirato, memorabile.
+  1. 🎯 GANCIO — 1 frase d'impatto (max 20 parole) con 1-2 **parole chiave** in grassetto. part_title inizia con "🎯 ".
+  2-3. 📚 DEFINIZIONE / PRIMO PILASTRO — 1-2 slide secchissime che introducono il nucleo. Ogni slide max 25 parole.
+  4-5. 🔬 ESEMPIO / DATO / DETTAGLIO — 1-2 slide con un caso concreto, un numero, una micro-tabella o un elenco di 2-3 voci ultra-brevi.
+  6. 💡 FOCUS / CURIOSITÀ (obbligatoria) — 1 slide-box con part_title che inizia con "💡 Lo sapevi che…", "🔎 Focus:", "📌 Nomenclatura:" o "⚡ Curiosità:". Max 25 parole, secco e memorabile.
+  7-8. 🧭 SINTESI / TAKEAWAY — 1-2 slide finali (elenco numerato di 2-4 punti brevissimi, oppure mini-tabella, oppure timeline a 2-3 tappe). part_title inizia con "🧭 In sintesi" o "🗺️ Mappa".
 
-  D. 🧭 SINTESI VISIVA FINALE
-     - Una parte conclusiva con part_title che inizia con "🧭 In sintesi" o "🗺️ Mappa".
-     - Ricostruisce il quadro con un elenco numerato strutturato, una tabella Markdown o una timeline.
-
-Totale parti: 5-8. La somma di tutto il testo NON deve superare ~500 parole (lettura 3-5 min). Se serve più materiale, spezza in più parti brevi invece di gonfiare un singolo blocco.
+Conteggio parole: somma totale di tutte le slide di teoria ≤ 180 parole. Se sfori, accorcia — non eliminare slide.
 
 ════════════════════════════════════════
 3) REGOLE DI FORMATTAZIONE ARIOSA
@@ -306,24 +300,25 @@ ${figureInstructions}
 ════════════════════════════════════════
 - "concept": 1-2 frasi che catturano l'essenza del titolo (riformulata, non copiata).
 - "example": un caso concreto finale (3-5 frasi), nuovo, non ripreso letteralmente dal testo.
-- "exercises": ESATTAMENTE 4 o 5 esercizi (QUIZ DI SBLOCCO al termine della lezione, per gamificare il passaggio al livello successivo). Alterna i tipi "multiple_choice" e "true_false". Le domande devono testare la COMPRENSIONE dei nessi, non il riconoscimento di una frase del testo. Almeno 1 domanda deve riguardare il blocco "FOCUS/CURIOSITÀ".
+- "exercises": ESATTAMENTE 3 o 4 esercizi (= 3-4 SLIDE-QUIZ DI SBARRAMENTO mostrate consecutivamente subito dopo le slide di teoria, all'interno della stessa lezione). Alterna i tipi "multiple_choice" e "true_false". Domande secche, una sola idea per quiz, max 20 parole nella domanda/affermazione, opzioni brevissime (max 6 parole l'una). Le domande devono testare la COMPRENSIONE dei concetti delle slide precedenti, non il riconoscimento di una frase del testo. Almeno 1 domanda deve riguardare il blocco "FOCUS/CURIOSITÀ".
 
 JSON richiesto (rispetta esattamente questa forma):
 {
   "concept": "...",
   "explanation_parts": [
-    { "part_title": "🎯 Perché ti riguarda", "content": "Gancio max 50 parole con **parole chiave** in grassetto." },
-    { "part_title": "Il primo pilastro: …", "content": "Micro-paragrafo 1.\\n\\nMicro-paragrafo 2.\\n\\n- punto\\n- punto" },
-    { "part_title": "Il secondo pilastro: …", "content": "Micro-paragrafo 1.\\n\\nMicro-paragrafo 2 con nesso col primo pilastro." },
-    { "part_title": "💡 Lo sapevi che…", "content": "Curiosità o focus di nomenclatura, max 60 parole, secco e memorabile." },
-    { "part_title": "🧭 In sintesi", "content": "1. **Punto 1** — …\\n2. **Punto 2** — …\\n3. **Punto 3** — …" }
+    { "part_title": "🎯 Perché ti riguarda", "content": "Una frase d'impatto con **parola chiave**." },
+    { "part_title": "Definizione", "content": "Definizione secca in 1 frase, max 20 parole." },
+    { "part_title": "Il primo pilastro", "content": "Idea singola, 1-2 frasi brevi, max 25 parole." },
+    { "part_title": "Esempio", "content": "Un caso concreto in 1 frase breve." },
+    { "part_title": "Dato chiave", "content": "- Punto 1\\n- Punto 2\\n- Punto 3" },
+    { "part_title": "💡 Lo sapevi che…", "content": "Dettaglio memorabile in 1 frase, max 25 parole." },
+    { "part_title": "🧭 In sintesi", "content": "1. **Punto 1**\\n2. **Punto 2**\\n3. **Punto 3**" }
   ],
   "example": "...",
   "exercises": [
      { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 0 },
      { "type": "true_false", "statement": "...", "correct": true },
-     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 },
-     { "type": "true_false", "statement": "...", "correct": false }
+     { "type": "multiple_choice", "question": "...", "options": ["A","B","C","D"], "correct_index": 2 }
   ]
 }
 
@@ -331,7 +326,7 @@ MATERIALE DI STUDIO (fonte da rielaborare, MAI da copiare):
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Sei un tutor didattico che RIELABORA i contenuti, non li copia. Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Obbligatorio includere almeno una struttura visiva (tabella Markdown GFM, timeline numerata o elenco strutturato) quando il contenuto lo consente. Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url." },
+        { role: "system", content: "Sei un tutor didattico in stile carosello/Finanz. Genera lezioni ULTRA-PARCELLIZZATE: 6-8 slide di teoria + 3-4 slide-quiz. Ogni slide max 25 parole (limite invalicabile 30). Una slide = una micro-idea. VIETATI muri di testo o paragrafi lunghi: se serve più materiale, AGGIUNGI UNA SLIDE, non gonfiare quella esistente. Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url." },
         { role: "user", content: prompt }
       ], 0.35, 7000);
 
