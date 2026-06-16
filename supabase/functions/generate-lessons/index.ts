@@ -506,18 +506,23 @@ ${studyContent}`;
 
     const backgroundTitles = async () => {
       try {
-        const titlesPrompt = `Analizza il testo fornito e crea un piano di studi strutturato.
+        const titlesPrompt = `Analizza il testo fornito e crea un piano di studi strutturato, PROPORZIONATO alla reale complessità del documento.
 
 IMPORTANTE: Rispondi SOLO con un array JSON valido. SOLO JSON puro.
 
 REGOLE:
-1. Ogni lezione deve coprire UN SOLO concetto o argomento specifico. NON raggruppare più concetti diversi in una lezione.
-2. Preferisci MOLTE lezioni brevi e focalizzate piuttosto che poche lezioni dense.
-3. Se un argomento ha sotto-argomenti importanti, crea una lezione separata per ciascuno.
-4. Segui l'ordine logico del documento.
-5. Ignora indici, bibliografie o note a piè di pagina.
-6. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato.
-7. MAPPING PAGINE (OBBLIGATORIO E CRITICO):
+1. Ogni lezione copre UN SOLO concetto o argomento specifico. MAI raggruppare più concetti diversi nella stessa lezione.
+2. SCALA DINAMICA (numero totale di lezioni proporzionale al materiale):
+   - File brevi (2-5 pagine, materiale conciso) → 8-12 lezioni.
+   - Capitoli o saggi di media complessità (6-20 pagine) → 12-22 lezioni.
+   - Testi universitari densi, manuali, trattati (Diritto Romano, saggi di economia, capitoli lunghi) → puoi spingerti a 22-35+ lezioni se davvero il materiale lo richiede.
+   - Per QUESTO documento il range CONSIGLIATO è ${_minLessons}-${_maxLessons} lezioni (pagine PDF stimate: ${_maxPdfPagePre || "n/d"}; caratteri: ${_charCount}). Resta in questo intervallo a meno che il contenuto non imponga chiaramente di più o di meno.
+3. EQUILIBRIO E ASSENZA DI RIPETIZIONI: distribuisci gli argomenti in modo bilanciato lungo tutto il documento; non concentrare metà lezioni su un capitolo e ignorare il resto; non creare lezioni che ripetono lo stesso concetto con titoli diversi.
+4. Se un argomento ha sotto-argomenti importanti, crea una lezione separata per ciascuno.
+5. Segui l'ordine logico del documento.
+6. Ignora indici, bibliografie, note a piè di pagina, ringraziamenti, copertine.
+7. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato (no titoli generici tipo "Introduzione", "Parte 2").
+8. MAPPING PAGINE (OBBLIGATORIO E CRITICO):
    - Il testo è suddiviso in blocchi delimitati da marker "=== PAGINA N ===" che indicano l'inizio della pagina N del PDF originale.
    - Per OGNI lezione devi indicare "page_start" e "page_end" usando ESATTAMENTE i numeri N che appaiono in questi marker.
    - "page_start" = numero della prima pagina che contiene contenuto della lezione.
