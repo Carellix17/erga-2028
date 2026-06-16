@@ -172,6 +172,20 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     return () => window.clearInterval(timer);
   }, [contextStatus, effectiveContextId]);
 
+  // 🔁 Fallback di polling durante la generazione: se la sottoscrizione Realtime
+  // non recapita gli update (es. replication non attiva sulla tabella), forziamo
+  // comunque il refresh del contesto + lista lezioni così l'UI si aggiorna sulla
+  // stessa scheda senza dover ricaricare.
+  useEffect(() => {
+    if (!isGenerating) return;
+    const timer = window.setInterval(() => {
+      invalidateContexts();
+      invalidateList(effectiveContextId);
+    }, 2500);
+    return () => window.clearInterval(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isGenerating, effectiveContextId]);
+
   const handleGenerateLessons = async () => {
     if (!currentUser) return;
     if (generationBlocked) {
