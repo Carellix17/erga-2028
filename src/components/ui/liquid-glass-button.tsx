@@ -29,6 +29,36 @@ const liquidbuttonVariants = cva(
   }
 )
 
+function GlassFilter() {
+  return (
+    <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
+      <defs>
+        <filter id="container-glass" colorInterpolationFilters="sRGB">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.01 0.01"
+            numOctaves="1"
+            result="noise"
+            seed="1"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale="4"
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="displaced"
+          />
+          <feMerge>
+            <feMergeNode in="displaced" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+    </svg>
+  )
+}
+
 interface LiquidButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof liquidbuttonVariants> {
@@ -44,7 +74,6 @@ function LiquidButton({
   ...props
 }: LiquidButtonProps) {
   const Comp = asChild ? Slot : "button"
-  const filterId = React.useId().replace(/:/g, "")
 
   return (
     <>
@@ -54,7 +83,7 @@ function LiquidButton({
           "relative isolate overflow-hidden select-none",
           liquidbuttonVariants({ variant, size, className })
         )}
-        style={{ filter: `url(#liquid-filter-${filterId})` }}
+        style={{ filter: 'url(#container-glass)' }}
         {...props}
       >
         {/* Effetto luce riflessa interna (Glossy) */}
@@ -69,33 +98,7 @@ function LiquidButton({
         </span>
       </Comp>
 
-      {/* Filtro SVG specifico accoppiato per l'effetto liquido/gelatina */}
-      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
-        <defs>
-          <filter id={`liquid-filter-${filterId}`} colorInterpolationFilters="sRGB">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.02 0.02"
-              numOctaves="2"
-              result="noise"
-              seed="2"
-            />
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="noise"
-              scale="12"
-              xChannelSelector="R"
-              yChannelSelector="G"
-              result="displaced"
-            />
-            <feGaussianBlur in="displaced" stdDeviation="0.5" result="blurred" />
-            <feMerge>
-              <feMergeNode in="blurred" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-      </svg>
+      <GlassFilter />
     </>
   )
 }
