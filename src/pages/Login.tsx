@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
@@ -138,9 +139,9 @@ export default function Login() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-12 gradient-primary text-white border-0 rounded-xl shadow-glass-md hover:shadow-glass-lg hover:scale-[1.02] transition-all duration-300 font-semibold" disabled={isSubmitting}>
+            <LiquidButton type="submit" className="w-full h-12 gradient-primary text-white border-0 rounded-xl shadow-glass-md hover:shadow-glass-lg hover:scale-[1.02] transition-all duration-300 font-semibold" disabled={isSubmitting}>
               Accedi
-            </Button>
+            </LiquidButton>
 
             <p className="text-center text-sm text-muted-foreground">
               Non hai un account?{" "}
