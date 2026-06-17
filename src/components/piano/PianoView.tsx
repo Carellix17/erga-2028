@@ -3,6 +3,7 @@ import { Plus, Loader2, Trash2, Sparkles } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Calendar } from "@/components/ui/calendar";
 import { PlanItem } from "./PlanItem";
 import { PlanSuggestion } from "./PlanSuggestion";
@@ -125,12 +126,11 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       )}
 
       {!suggestion && (
-        <Button
-          variant="elevated"
+        <LiquidButton
           size="lg"
           onClick={generatePlan}
           disabled={isGeneratingPlan}
-          className="w-full h-14 gap-2.5 rounded-2xl shadow-level-1 hover:shadow-level-2 hover:scale-[1.02] transition-all duration-400 ease-m3-emphasized"
+          className="w-full h-14 gap-2.5 rounded-2xl bg-primary text-primary-foreground shadow-level-1 hover:shadow-level-2 hover:scale-[1.02] transition-all duration-400 ease-m3-emphasized"
         >
             {isGeneratingPlan ? (
               <>
@@ -140,7 +140,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             ) : (
               <span className="font-display font-semibold">Genera piano di studio AI</span>
             )}
-          </Button>
+          </LiquidButton>
       )}
 
       {/* Calendar */}
