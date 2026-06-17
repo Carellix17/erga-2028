@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
 import { edgeFetch } from "@/lib/edgeFetch";
@@ -390,13 +391,13 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
             Aggiorna stato
           </Button>
         ) : (
-          <Button onClick={handleGenerateLessons} disabled={isGenerating || generationBlocked} className="h-12 px-6">
+          <LiquidButton onClick={handleGenerateLessons} disabled={isGenerating || generationBlocked} className="h-12 px-6 bg-primary text-primary-foreground">
             {isGenerating ? (
               <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Analisi in corso...</>
             ) : (
               <><Sparkles className="w-4 h-4 mr-2" />Genera percorso</>
             )}
-          </Button>
+          </LiquidButton>
         )}
         {generationBlocked && !isPdfProcessing && (
           <p className="text-sm text-destructive max-w-sm bg-error-container/40 px-4 py-3 rounded-2xl border border-destructive/20">

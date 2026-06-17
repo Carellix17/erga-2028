@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX, Loader2, Trophy, Sparkles, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -493,13 +494,13 @@ export function InterrogazioneView() {
         </div>
 
         <div className="px-4 sm:px-6 py-4 bg-white/70 dark:bg-black/60 backdrop-blur-md border-t-[0.5px] border-white/40 dark:border-white/10">
-          <Button
+          <LiquidButton
             onClick={() => selectedCourse && startInterrogazione(selectedCourse, "structured")}
             className="w-full h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
           >
             <Play className="w-5 h-5 mr-2" />
             Avvia Interrogazione
-          </Button>
+          </LiquidButton>
         </div>
       </div>
     );
