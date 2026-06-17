@@ -10,6 +10,53 @@ import { PdfCrop } from "./PdfCrop";
 import { useLessonFigures, prefetchLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
 import { LessonFigureGallery } from "./LessonFigureGallery";
 
+/**
+ * Stile Finanz: i blockquote che iniziano con un'emoji tematica vengono
+ * renderizzati come box colorato (giallo / rosa / blu) per spezzare il blocco
+ * di testo della slide e creare contrasto visivo.
+ */
+const CALLOUT_VARIANTS = {
+  yellow: "bg-amber-100/80 dark:bg-amber-300/15 border-amber-300/70 dark:border-amber-300/30 text-amber-950 dark:text-amber-100",
+  pink: "bg-rose-100/80 dark:bg-rose-300/15 border-rose-300/70 dark:border-rose-300/30 text-rose-950 dark:text-rose-100",
+  blue: "bg-sky-100/80 dark:bg-sky-300/15 border-sky-300/70 dark:border-sky-300/30 text-sky-950 dark:text-sky-100",
+  neutral: "bg-surface-container-high/80 border-outline-variant/40 text-foreground",
+} as const;
+
+const YELLOW_EMOJI = ["💡", "⭐", "🎯", "⚡", "🌟", "✨"];
+const PINK_EMOJI = ["🛡️", "⚠️", "🔥", "❗", "❤️", "🚨"];
+const BLUE_EMOJI = ["📊", "🧭", "🔎", "📌", "📐", "📚", "🧪", "🗺️"];
+
+function detectCalloutVariant(text: string): keyof typeof CALLOUT_VARIANTS {
+  const trimmed = text.trimStart();
+  if (YELLOW_EMOJI.some((e) => trimmed.startsWith(e))) return "yellow";
+  if (PINK_EMOJI.some((e) => trimmed.startsWith(e))) return "pink";
+  if (BLUE_EMOJI.some((e) => trimmed.startsWith(e))) return "blue";
+  return "neutral";
+}
+
+function CalloutBlockquote({ children }: { children?: React.ReactNode }) {
+  // Extract leading text to detect the emoji
+  const flatten = (node: React.ReactNode): string => {
+    if (typeof node === "string") return node;
+    if (Array.isArray(node)) return node.map(flatten).join("");
+    if (node && typeof node === "object" && "props" in (node as any)) {
+      return flatten((node as any).props?.children);
+    }
+    return "";
+  };
+  const variant = detectCalloutVariant(flatten(children));
+  return (
+    <div
+      className={cn(
+        "my-3 px-4 py-3 rounded-2xl border-[0.5px] backdrop-blur-md shadow-[0_4px_16px_0_rgba(0,0,0,0.04)] body-medium leading-relaxed [&>p]:m-0 [&_strong]:font-semibold",
+        CALLOUT_VARIANTS[variant]
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 interface ExplanationPart {
   part_title: string;
   content: string;
@@ -395,7 +442,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
           if (seg.type === "text") {
             return seg.value.trim() ? (
               <div key={i} className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-white/40 dark:prose-table:border-white/10 prose-table:backdrop-blur-md prose-th:bg-secondary-container/60 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30 dark:prose-td:border-white/10 prose-hr:my-4 prose-hr:border-white/30 dark:prose-hr:border-white/10">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{seg.value}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ blockquote: CalloutBlockquote }}>{seg.value}</ReactMarkdown>
               </div>
             ) : null;
           }

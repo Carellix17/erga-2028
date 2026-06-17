@@ -236,20 +236,26 @@ REGOLA DI FOCUS: la lezione tratta SOLO l'argomento del titolo. Spiega in profon
 Ogni elemento di "explanation_parts" è UNA SLIDE a tutto schermo che l'utente sblocca cliccando "Continua". REGOLA GEOMETRICA TASSATIVA:
 
 - Genera 6-8 SLIDE DI TEORIA (più 3-4 slide-esercizio gestite a parte in "exercises", per un totale di 10-15 slide).
-- Ogni slide contiene POCHISSIMO testo: massimo 1-2 frasi brevi, MAI più di 25 parole. Limite invalicabile: 30 parole = output errato.
-- Una slide = una micro-idea. VIETATO impilare due concetti nella stessa slide. Se serve più materiale, AGGIUNGI UNA SLIDE: non gonfiare quella esistente.
-- Vietati i muri di testo, i paragrafi lunghi, le digressioni. Niente frasi-riempitivo, niente "come abbiamo detto", niente preamboli.
-- Spacca il concetto in step sequenziali: una slide per l'introduzione, una per la definizione, una per l'esempio, una per il dato chiave, una per il confronto, una per il box evidenziato, una per la sintesi. Ritmo da carosello.
+- Ogni slide è CALIBRATA: deve contenere fra 30 e 50 parole — non meno (slide vuote = output errato), non più (muro di testo = output errato). Frasi complete, fluide, didatticamente valide, mai monche.
+- Una slide = una micro-idea sviluppata in 2-4 frasi compatte. VIETATO impilare due concetti distinti nella stessa slide: se serve più materiale, AGGIUNGI UNA SLIDE.
+- Vietati i muri di testo, i paragrafi lunghi (>4 frasi), le digressioni, i preamboli ("come abbiamo detto", "in questo paragrafo vedremo").
+- Spacca il concetto in step sequenziali: introduzione, definizione, pilastri, esempio, dato chiave, focus/box evidenziato, sintesi. Ritmo da carosello informativo.
 
-Sequenza obbligatoria delle 6-8 slide di teoria (in quest'ordine logico):
+Sequenza obbligatoria delle 6-8 slide di teoria (in quest'ordine logico). OGNI part_title DEVE iniziare con un'emoji pertinente al tema (🧠, 🛡️, 📊, 🎯, 📚, 🔬, 💡, 🧭, ⚖️, 🏛️, 🧪, 📜, 🌍, ⚡, 🔎, 📌, 🗺️ …):
 
-  1. 🎯 GANCIO — 1 frase d'impatto (max 20 parole) con 1-2 **parole chiave** in grassetto. part_title inizia con "🎯 ".
-  2-3. 📚 DEFINIZIONE / PRIMO PILASTRO — 1-2 slide secchissime che introducono il nucleo. Ogni slide max 25 parole.
-  4-5. 🔬 ESEMPIO / DATO / DETTAGLIO — 1-2 slide con un caso concreto, un numero, una micro-tabella o un elenco di 2-3 voci ultra-brevi.
-  6. 💡 FOCUS / CURIOSITÀ (obbligatoria) — 1 slide-box con part_title che inizia con "💡 Lo sapevi che…", "🔎 Focus:", "📌 Nomenclatura:" o "⚡ Curiosità:". Max 25 parole, secco e memorabile.
-  7-8. 🧭 SINTESI / TAKEAWAY — 1-2 slide finali (elenco numerato di 2-4 punti brevissimi, oppure mini-tabella, oppure timeline a 2-3 tappe). part_title inizia con "🧭 In sintesi" o "🗺️ Mappa".
+  1. 🎯 GANCIO — frase d'impatto che mostra perché il concetto è rilevante (30-45 parole) con 2-3 **parole chiave** in grassetto. part_title inizia con "🎯 ".
+  2-3. 📚 DEFINIZIONE / PRIMO PILASTRO — 1-2 slide che spiegano il nucleo in modo completo (30-50 parole l'una). Usa frasi piene, definisci i termini tecnici al primo uso.
+  4-5. 🔬 ESEMPIO / DATO / DETTAGLIO — 1-2 slide con un caso concreto, un numero significativo, una micro-tabella o un elenco di 3 voci brevi. 30-50 parole.
+  6. 💡 FOCUS / CURIOSITÀ (obbligatoria) — 1 slide-box con part_title che inizia con "💡 Lo sapevi che…", "🔎 Focus:", "📌 Nomenclatura:" o "⚡ Curiosità:". 30-50 parole, secco e memorabile.
+  7-8. 🧭 SINTESI / TAKEAWAY — 1-2 slide finali (elenco numerato di 3-4 punti brevi con **lead bold**, oppure mini-tabella, oppure timeline a 3 tappe). part_title inizia con "🧭 In sintesi" o "🗺️ Mappa".
 
-Conteggio parole: somma totale di tutte le slide di teoria ≤ 180 parole. Se sfori, accorcia — non eliminare slide.
+Conteggio parole: ogni slide di teoria 30-50 parole. Somma teoria 240-380 parole. Se una slide sfora, spostane una parte in una NUOVA slide; se è troppo corta, ARRICCHISCILA con un esempio o un dettaglio del PDF — mai lasciarla scarna.
+
+BOX COLORATI OBBLIGATORI (stile Finanz). All'interno di OGNI slide di teoria devi inserire ALMENO un mini-box visivo per spezzare il blocco di testo e creare contrasto. Sintassi: una riga (o più righe consecutive) che inizia con \`> EMOJI \` viene renderizzata come box colorato. Il colore dipende dall'emoji iniziale:
+  • \`> 💡 …\` / \`> ⭐ …\` / \`> 🎯 …\` / \`> ⚡ …\` → box GIALLO SOFT (insight, curiosità, takeaway).
+  • \`> 🛡️ …\` / \`> ⚠️ …\` / \`> 🔥 …\` / \`> ❗ …\` → box ROSA SOFT (attenzione, rischio, errore comune, regola critica).
+  • \`> 📊 …\` / \`> 🧭 …\` / \`> 🔎 …\` / \`> 📌 …\` / \`> 📐 …\` → box BLU SOFT (dato, metrica, definizione tecnica, riferimento).
+Il box deve contenere 8-20 parole ad alto impatto, con almeno una **parola chiave** in grassetto. NON sprecare il box per ripetere la frase precedente: aggiungi un dettaglio, una formula, una regola memorabile.
 
 ════════════════════════════════════════
 3) REGOLE DI FORMATTAZIONE ARIOSA
@@ -258,6 +264,8 @@ Conteggio parole: somma totale di tutte le slide di teoria ≤ 180 parole. Se sf
 - Niente paragrafi >3 righe consecutive di prosa: spezza con elenco puntato, elenco numerato o emoji.
 - Usa emoji pertinenti (1-2 per parte, non di più) come ancore visive, mai come decorazione gratuita.
 - Usa **grassetto** con misura: solo termini-chiave e parole-pivot, non frasi intere.
+- Apertura slide: il part_title DEVE sempre iniziare con un'emoji tematica seguita da uno spazio e poi dal titolo (max 5 parole).
+- Skimming: distribuisci 3-5 grassetti per slide sulle parole-pivot, così che chi legge solo i bold capisca comunque il senso.
 
 ════════════════════════════════════════
 4) INTEGRAZIONE NATIVA DI SCHEMI / TABELLE / TIMELINE
@@ -306,13 +314,13 @@ JSON richiesto (rispetta esattamente questa forma):
 {
   "concept": "...",
   "explanation_parts": [
-    { "part_title": "🎯 Perché ti riguarda", "content": "Una frase d'impatto con **parola chiave**." },
-    { "part_title": "Definizione", "content": "Definizione secca in 1 frase, max 20 parole." },
-    { "part_title": "Il primo pilastro", "content": "Idea singola, 1-2 frasi brevi, max 25 parole." },
-    { "part_title": "Esempio", "content": "Un caso concreto in 1 frase breve." },
-    { "part_title": "Dato chiave", "content": "- Punto 1\\n- Punto 2\\n- Punto 3" },
-    { "part_title": "💡 Lo sapevi che…", "content": "Dettaglio memorabile in 1 frase, max 25 parole." },
-    { "part_title": "🧭 In sintesi", "content": "1. **Punto 1**\\n2. **Punto 2**\\n3. **Punto 3**" }
+    { "part_title": "🎯 Perché ti riguarda", "content": "Il **principio X** governa ogni decisione operativa: capirlo significa anticipare gli errori più costosi. Senza questa lente, il resto del capitolo resta opaco.\\n\\n> ⚡ In 3 righe capisci **perché** tutto il resto ha senso." },
+    { "part_title": "📚 Definizione", "content": "La **nozione chiave** indica il meccanismo per cui un sistema reagisce a uno stimolo mantenendo l'equilibrio interno. È un concetto **tecnico** ma quotidiano: la usi ogni volta che bilanci due forze contrapposte.\\n\\n> 📐 **Formula mentale:** stimolo → risposta → ritorno all'equilibrio." },
+    { "part_title": "🏛️ Il primo pilastro", "content": "Il primo pilastro stabilisce che ogni **azione** produce una reazione misurabile. Tre elementi lo definiscono: l'origine dello stimolo, l'intensità e la durata della risposta. Senza uno dei tre, il modello non regge.\\n\\n> 🛡️ Mai confondere **intensità** e **durata**: sono indipendenti." },
+    { "part_title": "🔬 Esempio concreto", "content": "Pensa a un termostato: rileva la temperatura, confronta col valore obiettivo e attiva la caldaia. È l'archetipo del meccanismo: **sensore**, **confronto**, **attuatore**.\\n\\n> 🔎 Lo stesso schema spiega anche la **glicemia** nel sangue." },
+    { "part_title": "📊 Dato chiave", "content": "Tre componenti, sempre presenti, in ordine fisso:\\n\\n1. **Sensore** — misura la grandezza.\\n2. **Comparatore** — calcola lo scarto dall'obiettivo.\\n3. **Attuatore** — corregge la deviazione.\\n\\n> 📊 Se manca uno solo, il sistema **non si autoregola**." },
+    { "part_title": "💡 Lo sapevi che…", "content": "Il termine **feedback** nasce in ingegneria nel 1909, ma oggi lo usiamo perfino in psicologia organizzativa. Il principio resta identico: un'informazione di ritorno che modifica il comportamento futuro del sistema.\\n\\n> 💡 Stesso nome, **stessa logica**, contesti diversissimi." },
+    { "part_title": "🧭 In sintesi", "content": "1. **Definizione:** meccanismo di autoregolazione.\\n2. **Tre parti:** sensore, comparatore, attuatore.\\n3. **Esempio guida:** termostato.\\n\\n> 🧭 Se sai ripetere questi **tre punti**, hai capito la lezione." }
   ],
   "example": "...",
   "exercises": [
@@ -326,7 +334,7 @@ MATERIALE DI STUDIO (fonte da rielaborare, MAI da copiare):
 ${studyContent}`;
 
       const content = await callAI([
-        { role: "system", content: "Sei un tutor didattico in stile carosello/Finanz. Genera lezioni ULTRA-PARCELLIZZATE: 6-8 slide di teoria + 3-4 slide-quiz. Ogni slide max 25 parole (limite invalicabile 30). Una slide = una micro-idea. VIETATI muri di testo o paragrafi lunghi: se serve più materiale, AGGIUNGI UNA SLIDE, non gonfiare quella esistente. Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url." },
+        { role: "system", content: "Sei un tutor didattico in stile carosello/Finanz. Genera lezioni a SLIDE CALIBRATE: 6-8 slide di teoria (ognuna 30-50 parole, MAI meno di 30, MAI più di 50) + 3-4 slide-quiz. Una slide = una micro-idea sviluppata con frasi complete. Ogni part_title inizia con un'emoji tematica. In OGNI slide includi almeno un BOX colorato con sintassi blockquote: '> 💡/⭐/🎯/⚡ ...' = box giallo (insight), '> 🛡️/⚠️/🔥/❗ ...' = box rosa (attenzione), '> 📊/🧭/🔎/📌/📐 ...' = box blu (dato/definizione). Usa **grassetto** sulle parole-pivot per favorire lo skimming. VIETATI muri di testo (>50 parole/slide) e slide vuote (<30 parole). Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url." },
         { role: "user", content: prompt }
       ], 0.35, 7000);
 
