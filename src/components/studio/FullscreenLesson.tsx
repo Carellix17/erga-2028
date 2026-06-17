@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
@@ -348,13 +349,13 @@ export function FullscreenLesson({
 
       {/* Bottom action */}
       <div className="flex-shrink-0 p-4 pb-8 safe-area-bottom">
-        <Button
+        <LiquidButton
           onClick={handleContinue}
           disabled={!canContinue}
           className={cn(
             "w-full h-14 rounded-3xl text-base font-semibold tracking-tight transition-all duration-300 ease-in-out border-[0.5px] border-white/40 dark:border-white/10 backdrop-blur-md",
             canContinue
-              ? "shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.12)] hover:scale-[1.01] active:scale-[0.97]"
+              ? "bg-primary text-primary-foreground shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.12)] hover:scale-[1.01] active:scale-[0.97]"
               : "bg-white/60 dark:bg-black/40 text-muted-foreground shadow-[0_4px_16px_0_rgba(0,0,0,0.04)]"
           )}
           size="lg"
@@ -365,7 +366,7 @@ export function FullscreenLesson({
             ? "Rispondi per continuare"
             : "Continua"}
           {(canContinue || step.type !== "exercise") && <ChevronRight className="w-5 h-5 ml-1" />}
-        </Button>
+        </LiquidButton>
       </div>
     </div>
   );
