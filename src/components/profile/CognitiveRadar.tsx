@@ -26,21 +26,30 @@ export function CognitiveRadar({ profile }: Props) {
 
   return (
     <div className="w-full h-72 select-none">
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <linearGradient id="cognitive-radar-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="hsl(var(--gold-antique))" stopOpacity="0.08" />
+          </linearGradient>
+        </defs>
+      </svg>
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={data} outerRadius="78%">
-          <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.6} />
+          <PolarGrid stroke="hsl(var(--outline-variant))" strokeOpacity={0.7} strokeWidth={0.6} />
           <PolarAngleAxis
             dataKey="area"
-            tick={{ fill: "hsl(var(--foreground))", fontSize: 12, fontWeight: 600 }}
+            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontWeight: 500, letterSpacing: 1 }}
           />
           <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} axisLine={false} />
           <Radar
             name="Esagono"
             dataKey="value"
             stroke="hsl(var(--primary))"
-            fill="hsl(var(--primary))"
-            fillOpacity={0.35}
-            strokeWidth={2}
+            fill="url(#cognitive-radar-fill)"
+            fillOpacity={1}
+            strokeWidth={1.2}
+            strokeOpacity={0.85}
             isAnimationActive
           />
         </RadarChart>
