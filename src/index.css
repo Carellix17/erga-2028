@@ -7,97 +7,100 @@
    Design System — Vibrant & Bouncy
    ═══════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap');
-
 @layer base {
   :root {
-    /* ─── M3 Color System ─── Light Scheme ─── PUNCHY & YOUTHFUL ─── */
+    /* ─── Erga — Editorial Premium Palette ─── */
+    /* Inspired by NotebookLM editorial calm + Apple hardware neutrals */
 
-    /* Primary — Electric Indigo */
-    --primary: 252 85% 60%;
+    /* Primary — Refined Indigo (less neon, more ink) */
+    --primary: 235 45% 32%;
     --primary-foreground: 0 0% 100%;
-    --primary-container: 250 100% 93%;
-    --on-primary-container: 252 90% 22%;
+    --primary-container: 235 40% 94%;
+    --on-primary-container: 235 55% 18%;
 
-    /* Secondary — Hot Pink */
-    --secondary: 340 82% 58%;
+    /* Secondary — Quiet Slate (was hot pink) */
+    --secondary: 220 14% 28%;
     --secondary-foreground: 0 0% 100%;
-    --secondary-container: 340 100% 93%;
-    --on-secondary-container: 340 70% 18%;
+    --secondary-container: 220 14% 95%;
+    --on-secondary-container: 220 14% 18%;
 
-    /* Tertiary — Vivid Cyan */
-    --tertiary: 185 90% 42%;
+    /* Tertiary — Antique Gold (editorial accent, used for focus blocks) */
+    --tertiary: 38 38% 52%;
     --tertiary-foreground: 0 0% 100%;
-    --tertiary-container: 185 80% 90%;
-    --on-tertiary-container: 185 85% 12%;
+    --tertiary-container: 38 45% 94%;
+    --on-tertiary-container: 30 40% 22%;
+
+    /* Antique gold direct token (for thin borders, editorial focus blocks) */
+    --gold-antique: 38 30% 55%;
+    --gold-antique-soft: 38 45% 90%;
 
     /* Error */
-    --destructive: 4 80% 56%;
+    --destructive: 4 60% 48%;
     --destructive-foreground: 0 0% 100%;
-    --error-container: 4 90% 94%;
-    --on-error-container: 4 60% 16%;
+    --error-container: 4 60% 95%;
+    --on-error-container: 4 50% 22%;
 
-    /* Success — Emerald */
-    --success: 160 70% 40%;
+    /* Success — Muted Sage */
+    --success: 158 35% 38%;
     --success-foreground: 0 0% 100%;
-    --success-container: 158 65% 90%;
+    --success-container: 158 35% 94%;
 
-    /* Warning — Sunny Orange */
-    --warning: 32 95% 52%;
-    --warning-foreground: 32 100% 10%;
+    /* Warning — Muted Amber */
+    --warning: 32 60% 48%;
+    --warning-foreground: 0 0% 100%;
 
-    /* Surface / Background — Candid white (interrogazione style) */
-    --background: 0 0% 100%;
-    --foreground: 222 47% 4%;
+    /* Surface / Background — Apple neutral gray #F5F5F7 */
+    --background: 240 6% 97%;
+    --foreground: 222 18% 12%;
 
-    --surface-dim: 0 0% 100%;
+    --surface-dim: 240 6% 95%;
     --surface-bright: 0 0% 100%;
     --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 0 0% 100%;
+    --surface-container-low: 0 0% 99%;
     --surface-container: 0 0% 100%;
-    --surface-container-high: 0 0% 100%;
-    --surface-container-highest: 0 0% 100%;
+    --surface-container-high: 240 6% 98%;
+    --surface-container-highest: 240 6% 96%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 4%;
+    --card-foreground: 222 18% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 4%;
+    --popover-foreground: 222 18% 12%;
 
-    --muted: 0 0% 100%;
-    --muted-foreground: 215 16% 35%;
+    --muted: 240 6% 96%;
+    --muted-foreground: 222 10% 42%;
 
-    --accent: 250 100% 93%;
-    --accent-foreground: 252 90% 22%;
+    --accent: 235 40% 96%;
+    --accent-foreground: 235 55% 22%;
 
-    --outline: 214 32% 91%;
-    --outline-variant: 214 32% 94%;
+    --outline: 222 12% 86%;
+    --outline-variant: 222 12% 92%;
 
-    --border: 214 32% 94%;
-    --input: 214 32% 91%;
-    --ring: 252 85% 60%;
+    --border: 222 12% 91%;
+    --input: 222 12% 88%;
+    --ring: 235 45% 38%;
 
-    --inverse-surface: 240 15% 16%;
+    --inverse-surface: 222 18% 14%;
     --inverse-on-surface: 240 12% 92%;
-    --inverse-primary: 250 80% 78%;
+    --inverse-primary: 235 50% 72%;
 
-    /* ─── M3 Expressive Shape Scale ─── */
-    --radius-xs: 0.5rem;
-    --radius-sm: 0.75rem;
-    --radius-md: 1rem;
-    --radius-lg: 1.5rem;
-    --radius-xl: 2rem;
-    --radius-2xl: 1.75rem;
+    /* ─── Shape Scale — calmer, premium radii ─── */
+    --radius-xs: 0.375rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.5rem;
     --radius-full: 9999px;
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* ─── M3 Elevation Shadows — Rich, layered, modern depth ─── */
+    /* ─── Elevation — softer, more diffused ─── */
     --shadow-level-0: none;
-    --shadow-level-1: 0 1px 4px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
-    --shadow-level-2: 0 4px 12px rgba(15, 23, 42, 0.10), 0 2px 4px rgba(15, 23, 42, 0.06);
-    --shadow-level-3: 0 8px 24px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
-    --shadow-level-4: 0 12px 32px rgba(15, 23, 42, 0.14), 0 4px 12px rgba(15, 23, 42, 0.08);
-    --shadow-level-5: 0 20px 48px rgba(15, 23, 42, 0.16), 0 8px 16px rgba(15, 23, 42, 0.10);
+    --shadow-level-1: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(15, 23, 42, 0.03);
+    --shadow-level-2: 0 2px 8px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-level-3: 0 6px 18px rgba(15, 23, 42, 0.07), 0 1px 4px rgba(15, 23, 42, 0.04);
+    --shadow-level-4: 0 10px 28px rgba(15, 23, 42, 0.09), 0 2px 6px rgba(15, 23, 42, 0.05);
+    --shadow-level-5: 0 16px 40px rgba(15, 23, 42, 0.11), 0 4px 10px rgba(15, 23, 42, 0.06);
 
     /* ─── M3 State Layer Opacities ─── */
     --state-hover: 0.08;
@@ -106,14 +109,14 @@
     --state-dragged: 0.16;
 
     /* Sidebar */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 4%;
-    --sidebar-primary: 252 85% 60%;
+    --sidebar-background: 240 6% 97%;
+    --sidebar-foreground: 222 18% 12%;
+    --sidebar-primary: 235 45% 32%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 222 47% 4%;
-    --sidebar-border: 214 32% 94%;
-    --sidebar-ring: 252 85% 60%;
+    --sidebar-accent: 240 6% 95%;
+    --sidebar-accent-foreground: 222 18% 12%;
+    --sidebar-border: 222 12% 91%;
+    --sidebar-ring: 235 45% 38%;
   }
 
   .dark {
@@ -202,41 +205,45 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Google Sans Text', 'Google Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, 'SF Pro Text', sans-serif;
+    font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* M3 Type Scale */
+  /* Editorial Type Scale — Serif headings, sans body */
   h1, .display-large {
-    font-family: 'Google Sans', system-ui, sans-serif;
-    font-size: 3.5625rem;
-    line-height: 4rem;
-    letter-spacing: -0.25px;
+    font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+    font-optical-sizing: auto;
+    font-size: 3.25rem;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
     font-weight: 400;
   }
 
   h2, .headline-large {
-    font-family: 'Google Sans', system-ui, sans-serif;
+    font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+    font-optical-sizing: auto;
     font-size: 2rem;
-    line-height: 2.5rem;
-    letter-spacing: 0;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
     font-weight: 400;
   }
 
   h3, .headline-medium {
-    font-family: 'Google Sans', system-ui, sans-serif;
-    font-size: 1.75rem;
-    line-height: 2.25rem;
-    letter-spacing: 0;
+    font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+    font-optical-sizing: auto;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
     font-weight: 400;
   }
 
   .title-large {
-    font-family: 'Google Sans', system-ui, sans-serif;
-    font-size: 1.375rem;
-    line-height: 1.75rem;
-    letter-spacing: 0;
+    font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
     font-weight: 500;
   }
 
