@@ -94,8 +94,8 @@ export default function Login() {
           <div className="w-20 h-20 rounded-[1.75rem] gradient-primary flex items-center justify-center mb-4 shadow-glass-xl animate-glow-pulse">
             <Sparkles className="w-9 h-9 text-white" />
           </div>
-          <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent">
-            Erga — Il tuo assistente di studio
+          <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent whitespace-pre-line">
+            {"\u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 Erga\n\u00a0Il tuo assistente di studio"}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">Accedi per continuare</p>
         </div>
