@@ -9,7 +9,13 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const { action } = body;
-    const auth = await validateAuth(req, body);
+    let auth;
+    try {
+      auth = await validateAuth(req, body);
+    } catch (authErr) {
+      console.error("cognitive-profile auth error:", (authErr as Error).message);
+      return errorResponse("Unauthorized", 401);
+    }
     const { userId, supabase } = auth;
 
     if (action === "get") {
