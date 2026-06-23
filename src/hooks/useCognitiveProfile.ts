@@ -47,10 +47,17 @@ export function useCognitiveProfile(): UseCognitiveProfileResult {
       setIsLoaded(true);
       return;
     }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setIsLoaded(true);
+      return;
+    }
     try {
       const data = await callFn({ action: "get", userId: currentUser });
-      setProfile(data?.cognitive ?? null);
-      setHasCompletedOnboarding(!!data?.hasCompletedOnboarding);
+      if (data && !data.error) {
+        setProfile(data?.cognitive ?? null);
+        setHasCompletedOnboarding(!!data?.hasCompletedOnboarding);
+      }
     } catch (e) {
       console.error("cognitive get error", e);
     } finally {
