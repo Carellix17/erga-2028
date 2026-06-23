@@ -353,10 +353,10 @@ export function FullscreenLesson({
           onClick={handleContinue}
           disabled={!canContinue}
           className={cn(
-            "w-full h-14 rounded-3xl text-base font-semibold tracking-tight transition-all duration-300 ease-in-out border-[0.5px] border-white/40 dark:border-white/10 backdrop-blur-md",
+            "w-full h-12 rounded-xl text-base font-medium tracking-tight transition-all duration-200 border border-white/20",
             canContinue
-              ? "bg-primary text-primary-foreground shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.12)] hover:scale-[1.01] active:scale-[0.97]"
-              : "bg-white/60 dark:bg-black/40 text-muted-foreground shadow-[0_4px_16px_0_rgba(0,0,0,0.04)]"
+              ? "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 active:scale-[0.98]"
+              : "bg-surface-container-high text-muted-foreground"
           )}
           size="lg"
         >
@@ -377,15 +377,15 @@ export function FullscreenLesson({
 function ConceptStep({ concept }: { concept: string }) {
   return (
     <div className="text-center space-y-6">
-      <div className="w-20 h-20 rounded-3xl bg-primary flex items-center justify-center mx-auto shadow-[0_12px_40px_0_rgba(0,0,0,0.15)] border-[0.5px] border-white/30 animate-bounce-in transition-all duration-300 ease-in-out">
-        <Lightbulb className="w-10 h-10 text-primary-foreground" />
+      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto border border-primary/20 transition-all duration-300 ease-in-out">
+        <Lightbulb className="w-5 h-5 text-primary" />
       </div>
       <div>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 dark:bg-black/60 backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10 text-primary label-medium mb-4 shadow-[0_4px_16px_0_rgba(0,0,0,0.04)]">
           <Star className="w-3.5 h-3.5" />
           Concetto chiave
         </div>
-        <div className="title-large font-semibold tracking-tight leading-relaxed prose prose-sm max-w-none mx-auto prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-primary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30">
+        <div className="text-xl font-normal tracking-tight leading-[1.7] prose prose-sm max-w-none mx-auto px-2 prose-p:font-normal prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-primary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{concept}</ReactMarkdown>
         </div>
       </div>
@@ -418,10 +418,10 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
     <div className="space-y-5">
       <div className="flex items-center gap-3 mb-2">
         <div className={cn(
-          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-[0_8px_24px_0_rgba(0,0,0,0.08)] border-[0.5px] border-white/40 dark:border-white/10 backdrop-blur-md transition-all duration-300 ease-in-out",
-          isExample ? "bg-tertiary-container" : "bg-secondary-container"
+          "w-8 h-8 rounded-lg flex items-center justify-center border border-outline-variant/40 transition-all duration-300 ease-in-out",
+          isExample ? "bg-tertiary-container/60" : "bg-secondary-container/60"
         )}>
-          {isExample ? <span className="text-xl">💡</span> : <BookOpen className={cn("w-6 h-6", isExample ? "text-tertiary" : "text-secondary")} />}
+          {isExample ? <span className="text-base">💡</span> : <BookOpen className={cn("w-4 h-4", isExample ? "text-tertiary" : "text-secondary")} />}
         </div>
         <div className="flex-1">
           <span className="label-large text-foreground">{part.part_title}</span>
@@ -434,7 +434,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
         </div>
       </div>
       <div className={cn(
-        "p-5 rounded-3xl backdrop-blur-md border-[0.5px] shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-4 transition-all duration-300 ease-in-out",
+        "p-6 sm:p-7 rounded-2xl backdrop-blur-md border-[0.5px] shadow-[0_4px_20px_0_rgba(0,0,0,0.03)] space-y-4 transition-all duration-300 ease-in-out",
         isExample
           ? "bg-tertiary-container/60 border-tertiary/30 border-l-4 border-l-tertiary"
           : "bg-white/70 dark:bg-black/60 border-white/40 dark:border-white/10"
@@ -442,7 +442,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
         {segments.map((seg, i) => {
           if (seg.type === "text") {
             return seg.value.trim() ? (
-              <div key={i} className="body-large text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-white/40 dark:prose-table:border-white/10 prose-table:backdrop-blur-md prose-th:bg-secondary-container/60 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30 dark:prose-td:border-white/10 prose-hr:my-4 prose-hr:border-white/30 dark:prose-hr:border-white/10">
+              <div key={i} className="text-[15px] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:text-foreground/80 prose-p:leading-[1.7] prose-p:my-3 prose-strong:font-semibold prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-white/40 dark:prose-table:border-white/10 prose-table:backdrop-blur-md prose-th:bg-secondary-container/60 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30 dark:prose-td:border-white/10 prose-hr:my-4 prose-hr:border-white/30 dark:prose-hr:border-white/10">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ blockquote: CalloutBlockquote }}>{seg.value}</ReactMarkdown>
               </div>
             ) : null;
@@ -476,13 +476,13 @@ function ExampleStep({ example }: { example: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-tertiary-container flex items-center justify-center shadow-[0_8px_24px_0_rgba(0,0,0,0.08)] border-[0.5px] border-white/40 dark:border-white/10 backdrop-blur-md">
-          <span className="text-2xl">💡</span>
+        <div className="w-8 h-8 rounded-lg bg-tertiary-container/60 flex items-center justify-center border border-tertiary/30">
+          <span className="text-base">💡</span>
         </div>
         <span className="label-large text-foreground">Esempio pratico</span>
       </div>
-      <div className="p-5 rounded-3xl bg-tertiary-container/60 backdrop-blur-md border-[0.5px] border-tertiary/30 border-l-4 border-l-tertiary shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out">
-        <div className="body-large text-foreground leading-relaxed prose prose-sm max-w-none prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30">
+      <div className="p-6 sm:p-7 rounded-2xl bg-tertiary-container/60 backdrop-blur-md border-[0.5px] border-tertiary/30 border-l-4 border-l-tertiary shadow-[0_4px_20px_0_rgba(0,0,0,0.03)] transition-all duration-300 ease-in-out">
+        <div className="text-[15px] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{example}</ReactMarkdown>
         </div>
       </div>

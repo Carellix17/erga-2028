@@ -76,30 +76,25 @@ export function SubscriptionSheet({ open, onOpenChange, currentTier }: Subscript
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto pb-6 space-y-6">
-          {/* Current plan card */}
-          <div className={cn(
-            "relative rounded-2xl p-5 overflow-hidden",
-            "bg-gradient-to-br", currentPlan.gradient,
-            "shadow-level-3"
-          )}>
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+          {/* Current plan card — minimal editorial */}
+          <div className="relative rounded-2xl p-5 overflow-hidden bg-surface-container border border-outline-variant/40 shadow-sm">
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-level-1">
-                  <currentPlan.icon className="w-6 h-6 text-white drop-shadow-sm" />
+                <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center border border-outline-variant/40">
+                  <currentPlan.icon className="w-5 h-5 text-foreground/70" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-display font-bold text-lg text-white">{currentPlan.name}</h3>
-                    <Badge variant="outline" className="bg-white/20 text-white border-white/30 text-xs backdrop-blur-sm">
+                    <h3 className="font-display font-semibold text-lg text-foreground">{currentPlan.name}</h3>
+                    <Badge variant="outline" className="bg-foreground/5 text-foreground/70 border-outline-variant/50 text-xs font-normal">
                       {currentPlan.badgeText}
                     </Badge>
                   </div>
-                  <p className="text-white/80 text-sm">{currentPlan.price}</p>
+                  <p className="text-muted-foreground text-sm">{currentPlan.price}</p>
                 </div>
               </div>
-              <p className="text-white/70 body-small">
-                Hai accesso a tutte le funzionalità di Erga come beta tester. Grazie per il tuo supporto! 🎉
+              <p className="text-muted-foreground body-small leading-relaxed">
+                Hai accesso a tutte le funzionalità di Erga come beta tester. Grazie per il tuo supporto.
               </p>
             </div>
           </div>

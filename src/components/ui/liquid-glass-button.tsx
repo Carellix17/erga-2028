@@ -6,7 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const liquidbuttonVariants = cva(
-  "inline-flex items-center transition-all duration-300 justify-center cursor-pointer gap-2 whitespace-nowrap rounded-xl text-sm font-semibold tracking-wide disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-95 shadow-md",
+  "inline-flex items-center transition-all duration-300 justify-center cursor-pointer gap-2 whitespace-nowrap rounded-xl text-sm font-medium tracking-tight disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98] shadow-sm border border-white/20",
   {
     variants: {
       variant: {
@@ -18,8 +18,8 @@ const liquidbuttonVariants = cva(
       size: {
         default: "h-10 px-5 py-2",
         sm: "h-8 text-xs px-3",
-        lg: "h-12 rounded-2xl px-6 text-base",
-        xl: "h-14 rounded-2xl px-8 text-lg",
+        lg: "h-12 rounded-xl px-6 text-base",
+        xl: "h-14 rounded-xl px-8 text-base",
       },
     },
     defaultVariants: {
@@ -28,36 +28,6 @@ const liquidbuttonVariants = cva(
     },
   }
 )
-
-function GlassFilter() {
-  return (
-    <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
-      <defs>
-        <filter id="container-glass" colorInterpolationFilters="sRGB">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.004 0.004"
-            numOctaves="1"
-            result="noise"
-            seed="1"
-          />
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="noise"
-            scale="1.2"
-            xChannelSelector="R"
-            yChannelSelector="G"
-            result="displaced"
-          />
-          <feMerge>
-            <feMergeNode in="displaced" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-    </svg>
-  )
-}
 
 interface LiquidButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -85,29 +55,22 @@ function LiquidButton({
         )}
         {...props}
       >
-        {/* Inner glass distortion — applied only to the gloss layer so outer edges stay crisp */}
+        {/* Subtle top sheen — thin, soft, no muddy gradient */}
         <span
           aria-hidden
-          className="absolute inset-[1px] z-10 block pointer-events-none rounded-[inherit] bg-gradient-to-b from-white/25 via-white/5 to-transparent"
-          style={{ filter: 'url(#container-glass)' }}
+          className="absolute inset-x-0 top-0 h-1/2 z-10 block pointer-events-none rounded-t-[inherit] bg-gradient-to-b from-white/15 to-transparent"
         />
-
-        {/* Bottom specular highlight — heavy glass bead */}
+        {/* Hairline inner border for "molded glass" feel */}
         <span
           aria-hidden
-          className="absolute inset-x-2 bottom-[2px] h-1/3 z-10 block pointer-events-none rounded-[inherit] bg-gradient-to-t from-white/20 to-transparent blur-[2px]"
+          className="absolute inset-0 z-10 block pointer-events-none rounded-[inherit] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
         />
-
-        {/* Inner shadow / depth */}
-        <span className="absolute inset-0 z-10 block pointer-events-none rounded-[inherit] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_2px_rgba(0,0,0,0.18)]" />
 
         {/* Contenuto del bottone (Testo / Icone) */}
         <span className="relative z-20 flex items-center justify-center gap-2">
           {children}
         </span>
       </Comp>
-
-      <GlassFilter />
     </>
   )
 }
