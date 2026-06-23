@@ -316,16 +316,38 @@
 @layer utilities {
   /* ═══════ GRADIENT ACCENTS ═══════ */
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--tertiary)));
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(235 50% 48%));
   }
   .gradient-warm {
-    background: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--warning)));
+    background: linear-gradient(135deg, hsl(var(--tertiary)), hsl(var(--warning)));
   }
   .gradient-cool {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(250 90% 72%));
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(220 35% 48%));
   }
   .gradient-surface {
-    background: linear-gradient(180deg, hsl(var(--primary-container) / 0.3), hsl(var(--background)));
+    background: linear-gradient(180deg, hsl(var(--surface-bright)), hsl(var(--background)));
+  }
+
+  /* ═══════ EDITORIAL FOCUS BLOCK ═══════ */
+  /* Replaces yellow/highlight boxes with a refined glass card + antique gold border */
+  .editorial-focus {
+    background: hsl(0 0% 100% / 0.55);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid hsl(var(--gold-antique) / 0.45);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 0 hsl(0 0% 100% / 0.6) inset, var(--shadow-level-1);
+    padding: 1.25rem 1.5rem;
+    color: hsl(var(--foreground));
+  }
+  .editorial-focus-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--gold-antique));
+    font-weight: 500;
+    margin-bottom: 0.5rem;
   }
 
   /* ═══════ M3 SURFACE CONTAINERS ═══════ */

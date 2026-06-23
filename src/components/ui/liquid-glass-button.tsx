@@ -36,7 +36,7 @@ function GlassFilter() {
         <filter id="container-glass" colorInterpolationFilters="sRGB">
           <feTurbulence
             type="fractalNoise"
-            baseFrequency="0.01 0.01"
+            baseFrequency="0.004 0.004"
             numOctaves="1"
             result="noise"
             seed="1"
@@ -44,7 +44,7 @@ function GlassFilter() {
           <feDisplacementMap
             in="SourceGraphic"
             in2="noise"
-            scale="4"
+            scale="1.2"
             xChannelSelector="R"
             yChannelSelector="G"
             result="displaced"
@@ -83,14 +83,23 @@ function LiquidButton({
           "relative isolate overflow-hidden select-none",
           liquidbuttonVariants({ variant, size, className })
         )}
-        style={{ filter: 'url(#container-glass)' }}
         {...props}
       >
-        {/* Effetto luce riflessa interna (Glossy) */}
-        <span className="absolute inset-0 z-10 block pointer-events-none rounded-[inherit] border border-white/20 bg-gradient-to-b from-white/10 to-transparent opacity-100" />
+        {/* Inner glass distortion — applied only to the gloss layer so outer edges stay crisp */}
+        <span
+          aria-hidden
+          className="absolute inset-[1px] z-10 block pointer-events-none rounded-[inherit] bg-gradient-to-b from-white/25 via-white/5 to-transparent"
+          style={{ filter: 'url(#container-glass)' }}
+        />
 
-        {/* Ombra interna per simulare la profondità del fluido */}
-        <span className="absolute inset-0 z-10 block pointer-events-none rounded-[inherit] shadow-[inset_0_2px_4px_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)]" />
+        {/* Bottom specular highlight — heavy glass bead */}
+        <span
+          aria-hidden
+          className="absolute inset-x-2 bottom-[2px] h-1/3 z-10 block pointer-events-none rounded-[inherit] bg-gradient-to-t from-white/20 to-transparent blur-[2px]"
+        />
+
+        {/* Inner shadow / depth */}
+        <span className="absolute inset-0 z-10 block pointer-events-none rounded-[inherit] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_2px_rgba(0,0,0,0.18)]" />
 
         {/* Contenuto del bottone (Testo / Icone) */}
         <span className="relative z-20 flex items-center justify-center gap-2">
