@@ -29,36 +29,6 @@ const liquidbuttonVariants = cva(
   }
 )
 
-function GlassFilter() {
-  return (
-    <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
-      <defs>
-        <filter id="container-glass" colorInterpolationFilters="sRGB">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.008 0.008"
-            numOctaves="1"
-            result="noise"
-            seed="1"
-          />
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="noise"
-            scale="3"
-            xChannelSelector="R"
-            yChannelSelector="G"
-            result="displaced"
-          />
-          <feMerge>
-            <feMergeNode in="displaced" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-    </svg>
-  )
-}
-
 interface LiquidButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof liquidbuttonVariants> {
