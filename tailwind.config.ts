@@ -115,8 +115,9 @@ export default {
         "level-5": "var(--shadow-level-5)",
       },
       fontFamily: {
-        sans: ['"Google Sans Text"', '"Google Sans"', 'system-ui', 'sans-serif'],
-        display: ['"Google Sans"', 'system-ui', 'sans-serif'],
+        sans: ['Inter', '"Google Sans Text"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['Fraunces', '"Iowan Old Style"', '"Apple Garamond"', 'Georgia', 'serif'],
       },
       keyframes: {
         "accordion-down": {
