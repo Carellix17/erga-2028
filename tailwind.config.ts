@@ -117,7 +117,7 @@ export default {
       fontFamily: {
         sans: ['Inter', '"Google Sans Text"', 'system-ui', '-apple-system', 'sans-serif'],
         display: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        serif: ['Fraunces', '"Iowan Old Style"', '"Apple Garamond"', 'Georgia', 'serif'],
+        serif: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {

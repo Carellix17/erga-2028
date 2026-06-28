@@ -6,20 +6,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const liquidbuttonVariants = cva(
-  "inline-flex items-center transition-all duration-300 justify-center cursor-pointer gap-2 whitespace-nowrap rounded-xl text-sm font-medium tracking-tight disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98] shadow-sm border border-white/20",
+  "inline-flex items-center transition-colors duration-150 justify-center cursor-pointer gap-2 whitespace-nowrap rounded-lg text-sm font-medium tracking-tight disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 shadow-sm",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:brightness-110",
-        outline: "border border-input bg-background hover:bg-accent",
-        secondary: "bg-secondary text-secondary-foreground hover:brightness-110",
-        ghost: "hover:bg-accent",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        outline: "border border-input bg-background hover:bg-accent text-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
+        ghost: "hover:bg-accent text-foreground",
       },
       size: {
         default: "h-10 px-5 py-2",
-        sm: "h-8 text-xs px-3",
-        lg: "h-12 rounded-xl px-6 text-base",
-        xl: "h-14 rounded-xl px-8 text-base",
+        sm: "h-8 text-xs px-3 rounded-md",
+        lg: "h-11 rounded-lg px-6 text-[15px]",
+        xl: "h-12 rounded-lg px-7 text-base",
       },
     },
     defaultVariants: {
@@ -46,32 +46,13 @@ function LiquidButton({
   const Comp = asChild ? Slot : "button"
 
   return (
-    <>
-      <Comp
-        data-slot="button"
-        className={cn(
-          "relative isolate overflow-hidden select-none",
-          liquidbuttonVariants({ variant, size, className })
-        )}
-        {...props}
-      >
-        {/* Subtle top sheen — thin, soft, no muddy gradient */}
-        <span
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-1/2 z-10 block pointer-events-none rounded-t-[inherit] bg-gradient-to-b from-white/15 to-transparent"
-        />
-        {/* Hairline inner border for "molded glass" feel */}
-        <span
-          aria-hidden
-          className="absolute inset-0 z-10 block pointer-events-none rounded-[inherit] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
-        />
-
-        {/* Contenuto del bottone (Testo / Icone) */}
-        <span className="relative z-20 flex items-center justify-center gap-2">
-          {children}
-        </span>
-      </Comp>
-    </>
+    <Comp
+      data-slot="button"
+      className={cn("select-none", liquidbuttonVariants({ variant, size, className }))}
+      {...props}
+    >
+      {children}
+    </Comp>
   )
 }
 
