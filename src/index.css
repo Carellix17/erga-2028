@@ -24,15 +24,16 @@
     --secondary-container: 220 14% 95%;
     --on-secondary-container: 220 14% 18%;
 
-    /* Tertiary — Antique Gold (editorial accent, used for focus blocks) */
-    --tertiary: 38 38% 52%;
+    /* Tertiary — Neutralized to graphite (was antique gold). Kept as token
+       so existing `bg-tertiary*` usages render as a quiet neutral instead of gold. */
+    --tertiary: 220 10% 35%;
     --tertiary-foreground: 0 0% 100%;
-    --tertiary-container: 38 45% 94%;
-    --on-tertiary-container: 30 40% 22%;
+    --tertiary-container: 220 8% 95%;
+    --on-tertiary-container: 220 14% 18%;
 
-    /* Antique gold direct token (for thin borders, editorial focus blocks) */
-    --gold-antique: 38 30% 55%;
-    --gold-antique-soft: 38 45% 90%;
+    /* Neutralized gold tokens — now soft warm grays */
+    --gold-antique: 220 8% 60%;
+    --gold-antique-soft: 220 8% 94%;
 
     /* Error */
     --destructive: 4 60% 48%;
@@ -49,17 +50,17 @@
     --warning: 32 60% 48%;
     --warning-foreground: 0 0% 100%;
 
-    /* Surface / Background — Apple neutral gray #F5F5F7 */
-    --background: 240 6% 97%;
+    /* Surface / Background — near-white, Apple-grade */
+    --background: 0 0% 99%;
     --foreground: 222 18% 12%;
 
-    --surface-dim: 240 6% 95%;
+    --surface-dim: 0 0% 97%;
     --surface-bright: 0 0% 100%;
     --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 0 0% 99%;
+    --surface-container-low: 0 0% 99.5%;
     --surface-container: 0 0% 100%;
-    --surface-container-high: 240 6% 98%;
-    --surface-container-highest: 240 6% 96%;
+    --surface-container-high: 0 0% 98%;
+    --surface-container-highest: 0 0% 96%;
 
     --card: 0 0% 100%;
     --card-foreground: 222 18% 12%;
@@ -211,40 +212,37 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Editorial Type Scale — Serif headings, sans body */
+  /* Type Scale — Inter everywhere, semibold titles (Apple-grade) */
   h1, .display-large {
-    font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-    font-optical-sizing: auto;
-    font-size: 3.25rem;
-    line-height: 1.08;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 3rem;
+    line-height: 1.1;
     letter-spacing: -0.02em;
-    font-weight: 400;
+    font-weight: 600;
   }
 
   h2, .headline-large {
-    font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-    font-optical-sizing: auto;
-    font-size: 2rem;
-    line-height: 1.15;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 1.875rem;
+    line-height: 1.2;
     letter-spacing: -0.015em;
-    font-weight: 400;
+    font-weight: 600;
   }
 
   h3, .headline-medium {
-    font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-    font-optical-sizing: auto;
-    font-size: 1.5rem;
-    line-height: 1.2;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 1.375rem;
+    line-height: 1.25;
     letter-spacing: -0.01em;
-    font-weight: 400;
+    font-weight: 600;
   }
 
   .title-large {
-    font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-    font-size: 1.25rem;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 1.125rem;
     line-height: 1.3;
     letter-spacing: -0.005em;
-    font-weight: 500;
+    font-weight: 600;
   }
 
   .title-medium {
@@ -319,7 +317,7 @@
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(235 50% 48%));
   }
   .gradient-warm {
-    background: linear-gradient(135deg, hsl(var(--tertiary)), hsl(var(--warning)));
+    background: linear-gradient(135deg, hsl(var(--surface-container-highest)), hsl(var(--surface-container)));
   }
   .gradient-cool {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(220 35% 48%));
@@ -328,25 +326,22 @@
     background: linear-gradient(180deg, hsl(var(--surface-bright)), hsl(var(--background)));
   }
 
-  /* ═══════ EDITORIAL FOCUS BLOCK ═══════ */
-  /* Replaces yellow/highlight boxes with a refined glass card + antique gold border */
+  /* ═══════ FOCUS BLOCK — solid neutral card (was glass + gold) ═══════ */
   .editorial-focus {
-    background: hsl(0 0% 100% / 0.55);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border: 1px solid hsl(var(--gold-antique) / 0.45);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 1px 0 hsl(0 0% 100% / 0.6) inset, var(--shadow-level-1);
+    background: hsl(var(--surface-container));
+    border: 1px solid hsl(var(--outline-variant));
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-level-1);
     padding: 1.25rem 1.5rem;
     color: hsl(var(--foreground));
   }
   .editorial-focus-title {
-    font-family: 'Fraunces', Georgia, serif;
-    font-size: 0.75rem;
-    letter-spacing: 0.18em;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: hsl(var(--gold-antique));
-    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    font-weight: 600;
     margin-bottom: 0.5rem;
   }
 
@@ -371,42 +366,32 @@
   /* ═══════ M3 CARDS — Expressive ═══════ */
   .m3-card-elevated {
     background-color: hsl(var(--surface-container-low));
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-level-1);
-    transition: box-shadow 280ms cubic-bezier(0.2, 0, 0, 1),
-                background-color 280ms cubic-bezier(0.2, 0, 0, 1),
-                transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1),
+                background-color 200ms cubic-bezier(0.2, 0, 0, 1);
   }
   .m3-card-elevated:hover {
     box-shadow: var(--shadow-level-2);
-    transform: translateY(-3px) scale(1.01);
   }
-  .m3-card-elevated:active {
-    transform: scale(0.98);
-  }
+  .m3-card-elevated:active { box-shadow: var(--shadow-level-1); }
 
   .m3-card-filled {
     background-color: hsl(var(--surface-container-highest));
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-level-0);
-    transition: box-shadow 280ms cubic-bezier(0.2, 0, 0, 1), transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
   }
-  .m3-card-filled:hover {
-    box-shadow: var(--shadow-level-1);
-    transform: translateY(-2px) scale(1.01);
-  }
+  .m3-card-filled:hover { box-shadow: var(--shadow-level-1); }
 
   .m3-card-outlined {
     background-color: hsl(var(--background));
     border: 1px solid hsl(var(--outline-variant));
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-level-0);
-    transition: box-shadow 280ms cubic-bezier(0.2, 0, 0, 1), transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
   }
-  .m3-card-outlined:hover {
-    box-shadow: var(--shadow-level-1);
-    transform: translateY(-2px) scale(1.01);
-  }
+  .m3-card-outlined:hover { box-shadow: var(--shadow-level-1); }
 
   /* ═══════ M3 STATE LAYERS ═══════ */
   .state-layer {
@@ -439,15 +424,9 @@
   .m3-chip {
     @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium;
     border-radius: var(--radius-full);
-    transition: all 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: background-color 200ms ease, box-shadow 200ms ease;
   }
-  .m3-chip:hover {
-    transform: scale(1.06);
-    box-shadow: var(--shadow-level-1);
-  }
-  .m3-chip:active {
-    transform: scale(0.95);
-  }
+  .m3-chip:hover { box-shadow: var(--shadow-level-1); }
 
   .m3-chip-assist {
     background-color: hsl(var(--background));
@@ -466,17 +445,11 @@
 
   /* ═══════ M3 FAB — Expressive ═══════ */
   .m3-fab {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-level-3);
-    transition: box-shadow 280ms cubic-bezier(0.2, 0, 0, 1), transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
   }
-  .m3-fab:hover {
-    box-shadow: var(--shadow-level-4);
-    transform: scale(1.08);
-  }
-  .m3-fab:active {
-    transform: scale(0.92);
-  }
+  .m3-fab:hover { box-shadow: var(--shadow-level-4); }
   .m3-fab-primary { background-color: hsl(var(--primary-container)); color: hsl(var(--on-primary-container)); }
   .m3-fab-secondary { background-color: hsl(var(--secondary-container)); color: hsl(var(--on-secondary-container)); }
   .m3-fab-tertiary { background-color: hsl(var(--tertiary-container)); color: hsl(var(--on-tertiary-container)); }
@@ -533,28 +506,26 @@
     will-change: opacity;
   }
   .animate-bounce-in {
-    animation: m3-bounce-in 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation: m3-fade-in 250ms cubic-bezier(0.2, 0, 0, 1) both;
     will-change: transform, opacity;
   }
   .animate-pop {
-    animation: m3-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation: m3-fade-in 220ms cubic-bezier(0.2, 0, 0, 1) both;
     will-change: transform, opacity;
   }
   .animate-wiggle {
-    animation: m3-wiggle 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-    will-change: transform;
+    animation: m3-fade-in 220ms ease both;
+    will-change: opacity;
   }
   .animate-pulse-soft {
-    animation: m3-pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    will-change: transform, opacity;
+    animation: m3-fade-in 250ms ease both;
+    will-change: opacity;
   }
   .animate-float {
-    animation: m3-float 3s ease-in-out infinite;
-    will-change: transform;
+    animation: none;
   }
   .animate-bounce-gentle {
-    animation: bounce-gentle 2s ease-in-out infinite;
-    will-change: transform;
+    animation: none;
   }
   @keyframes bounce-gentle {
     0%, 100% { transform: translateY(0); }
@@ -715,10 +686,10 @@
 .animate-lesson-in { animation: lesson-slide-in 500ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
 .animate-lesson-out { animation: lesson-slide-out 350ms cubic-bezier(0.3, 0, 0.8, 0.15) both; will-change: transform, opacity; }
 .animate-feedback-correct { animation: feedback-correct 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both; will-change: transform; }
-.animate-feedback-wrong { animation: feedback-wrong 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both; will-change: transform; }
+.animate-feedback-wrong { animation: m3-fade-in 200ms ease both; }
 .animate-option-pop { animation: option-pop 450ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
 .animate-xp-float { animation: xp-float 900ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
-.animate-progress-glow { animation: progress-glow 2s ease-in-out infinite; will-change: box-shadow; }
+.animate-progress-glow { animation: none; }
 
 /* Safe area */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }

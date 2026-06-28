@@ -139,15 +139,15 @@ export function SubscriptionSheet({ open, onOpenChange, currentTier }: Subscript
           {/* Upgrade section */}
           <div className="bg-surface-container rounded-2xl p-4 border border-outline-variant/30">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warning to-secondary flex items-center justify-center shadow-level-1">
-                <Crown className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-lg bg-surface-container-highest border border-outline-variant/50 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-foreground/70" />
               </div>
               <div>
                 <h3 className="font-display font-semibold text-sm">Piano Pro</h3>
                 <p className="text-muted-foreground body-small">Prossimamente disponibile</p>
               </div>
             </div>
-            <Button disabled className="w-full h-12 rounded-xl opacity-60" size="lg">
+            <Button disabled className="w-full h-11 rounded-lg opacity-60" size="lg">
               <Crown className="w-4 h-4 mr-2" />
               Disponibile a breve
             </Button>
