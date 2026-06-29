@@ -1,4 +1,19 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { validateAuth, unauthorizedResponse } from '../_shared/auth.ts';
+
+// Allowlist of supported Azure neural voices (it-IT + a few EN fallbacks).
+const ALLOWED_VOICES = new Set<string>([
+  'it-IT-ElsaNeural',
+  'it-IT-IsabellaNeural',
+  'it-IT-DiegoNeural',
+  'it-IT-BenignoNeural',
+  'it-IT-CalimeroNeural',
+  'it-IT-GianniNeural',
+  'it-IT-PalmiraNeural',
+  'it-IT-PierinaNeural',
+  'en-US-JennyNeural',
+  'en-US-GuyNeural',
+]);
 
 const escapeXml = (s: string) =>
   s.replace(/&/g, '&amp;')
@@ -13,6 +28,13 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require authenticated user — prevents anonymous abuse of Azure credits.
+    try {
+      await validateAuth(req);
+    } catch {
+      return unauthorizedResponse('Sessione scaduta. Effettua di nuovo l\'accesso.');
+    }
+
     const { text, voice } = await req.json();
     if (!text || typeof text !== 'string') {
       return new Response(JSON.stringify({ error: 'Missing text' }), {
@@ -24,15 +46,18 @@ Deno.serve(async (req) => {
     const key = Deno.env.get('AZURE_SPEECH_KEY');
     const region = Deno.env.get('AZURE_SPEECH_REGION') || 'italynorth';
     if (!key) {
-      return new Response(JSON.stringify({ error: 'Azure key not configured' }), {
+      console.error('Azure TTS key not configured');
+      return new Response(JSON.stringify({ error: 'TTS service unavailable' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const voiceName = voice || 'it-IT-ElsaNeural';
+    // Validate voice against allowlist to prevent SSML/XML injection.
+    const requested = typeof voice === 'string' ? voice : '';
+    const voiceName = ALLOWED_VOICES.has(requested) ? requested : 'it-IT-ElsaNeural';
     const truncated = text.length > 3000 ? text.slice(0, 3000) : text;
-    const ssml = `<speak version='1.0' xml:lang='it-IT'><voice xml:lang='it-IT' xml:gender='Female' name='${voiceName}'>${escapeXml(truncated)}</voice></speak>`;
+    const ssml = `<speak version='1.0' xml:lang='it-IT'><voice xml:lang='it-IT' xml:gender='Female' name='${escapeXml(voiceName)}'>${escapeXml(truncated)}</voice></speak>`;
 
     const endpoint = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
     const azureRes = await fetch(endpoint, {
@@ -49,7 +74,7 @@ Deno.serve(async (req) => {
     if (!azureRes.ok) {
       const errText = await azureRes.text();
       console.error('Azure TTS error', azureRes.status, errText);
-      return new Response(JSON.stringify({ error: `Azure TTS ${azureRes.status}`, detail: errText }), {
+      return new Response(JSON.stringify({ error: 'TTS service error' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -66,7 +91,7 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error('TTS function error', err);
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+    return new Response(JSON.stringify({ error: 'TTS service error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

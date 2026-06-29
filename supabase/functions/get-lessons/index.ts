@@ -18,10 +18,26 @@ serve(async (req) => {
     console.log(`Get lessons for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
 
     if (action === "get") {
-      // Get all lessons, optionally filtered by context
-      // NB: grazie alle RLS policy "Anyone can view lessons of demo contexts",
-      // la SELECT senza filtro user_id ritorna sia le lezioni dell'utente sia
-      // quelle dei contesti demo (se contextId punta a un demo).
+      // Get all lessons, optionally filtered by context.
+      // Ownership is always enforced: when contextId is supplied we additionally
+      // allow it if the context is flagged as demo (is_demo = true).
+      let allowAnyOwner = false;
+      if (contextId) {
+        const { data: ctx } = await supabase
+          .from("study_contexts")
+          .select("user_id, is_demo")
+          .eq("id", contextId)
+          .maybeSingle();
+        if (!ctx) {
+          return successResponse({ success: true, lessons: [], currentIndex: 0 });
+        }
+        const isOwner = ctx.user_id === userId || (legacyUserId && ctx.user_id === legacyUserId);
+        if (!isOwner && !ctx.is_demo) {
+          return errorResponse("Not authorized", 403);
+        }
+        allowAnyOwner = !!ctx.is_demo;
+      }
+
       let lessonsQuery = supabase
         .from("mini_lessons")
         .select("*")
@@ -29,8 +45,10 @@ serve(async (req) => {
 
       if (contextId) {
         lessonsQuery = lessonsQuery.eq("context_id", contextId);
+        if (!allowAnyOwner) {
+          lessonsQuery = lessonsQuery.eq("user_id", userId);
+        }
       } else {
-        // Senza contextId limitiamo all'utente per evitare di mescolare tutto.
         lessonsQuery = lessonsQuery.eq("user_id", userId);
       }
 
