@@ -8,6 +8,7 @@ import { SaveStatusProvider } from "@/contexts/SaveStatusContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import ChangePassword from "./pages/ChangePassword";
 import Registrati from "./pages/Registrati";
@@ -43,8 +44,9 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/registrati" element={<Registrati />} />
             <Route path="/cambia-password" element={<ChangePassword />} />
+            <Route path="/" element={<Landing />} />
             <Route
-              path="/"
+              path="/app"
               element={
                 <ProtectedRoute>
                   <Index />

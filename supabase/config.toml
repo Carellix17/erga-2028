@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.cognitive-profile]
 verify_jwt = false
+
+[functions.generate-lessons-demo]
+verify_jwt = false
