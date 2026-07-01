@@ -23,7 +23,7 @@ export default function Login() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate("/", { replace: true });
+      navigate("/app", { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate]);
 
@@ -55,7 +55,7 @@ export default function Login() {
 
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/app`,
         extraParams: provider === "google" ? { prompt: "select_account" } : undefined,
       });
 
