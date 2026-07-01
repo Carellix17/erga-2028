@@ -31,7 +31,7 @@ export default function Registrati() {
     const { error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: `${window.location.origin}/app` },
     });
 
     if (error) {

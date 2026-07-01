@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
 import { CognitiveOnboarding } from "@/components/onboarding/CognitiveOnboarding";
 import { Sparkles } from "lucide-react";
+import { useDemoHandoff } from "@/hooks/useDemoHandoff";
 
 type Tab = "studio" | "piano" | "pratica" | "profilo";
 
@@ -26,6 +27,9 @@ const Index = () => {
   // Mantiene in tempo reale lo stato dei job di generazione (lezioni + esercizi)
   // così la UI riprende l'attesa anche se l'utente è uscito e rientrato nell'app.
   useGenerationRealtime();
+  // Se l'utente arriva qui dopo una sessione demo anonima, persistiamo l'esagono
+  // calcolato in locale sul suo nuovo profilo cognitivo.
+  useDemoHandoff();
   const [activeTab, setActiveTab] = useState<Tab>("studio");
   const [showUpload, setShowUpload] = useState(false);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
