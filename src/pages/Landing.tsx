@@ -58,8 +58,8 @@ export default function Landing() {
             <span className="text-slate-400">In tre slide.</span>
           </h1>
           <p className="mt-5 text-slate-500 text-base sm:text-lg leading-relaxed">
-            Scrivi un argomento o trascina un PDF. Ti mostro una micro-lezione,
-            ti sfido con un quiz, e ricavo il tuo Esagono Cognitivo.
+            Trasforma i tuoi materiali in sessioni di apprendimento attivo.
+            Mappa le tue competenze e colma le lacune in tempo reale.
           </p>
         </div>
 
