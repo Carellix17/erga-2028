@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Upload, Sparkles, ArrowRight, Check, Lock, Mail, Eye, EyeOff, ChevronLeft, Loader2 } from "lucide-react";
+import {
+  Upload, Sparkles, ArrowRight, Check, Lock, Mail, Eye, EyeOff,
+  ChevronLeft, Loader2, X, CheckCircle2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,63 +17,64 @@ import { writeDemoState, type DemoHexagon } from "@/hooks/useDemoHandoff";
 
 type Slide = { part_title: string; content: string };
 type QuizItem = { question: string; options: string[]; correct: number; skill: string };
-type Lesson = { title: string; slides: Slide[]; quiz: QuizItem[] };
+type Lesson = { title: string; subtitle?: string; slides: Slide[]; quiz: QuizItem[] };
+type Course = { courseTitle: string; lessons: Lesson[] };
 
-type Step = "input" | "generating" | "slide" | "quiz" | "result";
+// Guest can complete lessons 1..GUEST_LIMIT; anything beyond triggers auth wall.
+const GUEST_LIMIT = 3;
 
-function computeHexagon(quiz: QuizItem[], answers: number[]): DemoHexagon {
-  // Baseline 55 for each of the 6 skills; +30 per correct answer mapped to a skill,
-  // -8 per wrong answer on that skill. Skills not tested keep a mid neutral value.
-  const base = { LOG: 55, MEM: 55, FOC: 60, VOC: 55, ANS: 60, APP: 55 } as Record<string, number>;
-  quiz.forEach((q, i) => {
-    const correct = answers[i] === q.correct;
-    const skill = q.skill in base ? q.skill : "LOG";
-    base[skill] = Math.max(0, Math.min(100, base[skill] + (correct ? 30 : -8)));
+type CompletionMap = Record<number, { answers: number[] }>;
+
+function neutralHex(): DemoHexagon {
+  return { log_score: 55, mem_score: 55, foc_score: 60, voc_score: 55, ans_score: 60, app_score: 55 };
+}
+
+function computeHexagon(lessons: Lesson[], completions: CompletionMap): DemoHexagon {
+  const base: Record<string, number> = { LOG: 55, MEM: 55, FOC: 60, VOC: 55, ANS: 60, APP: 55 };
+  let touched = false;
+  Object.entries(completions).forEach(([idxStr, { answers }]) => {
+    const idx = Number(idxStr);
+    const lesson = lessons[idx];
+    if (!lesson) return;
+    touched = true;
+    lesson.quiz.forEach((q, i) => {
+      const correct = answers[i] === q.correct;
+      const skill = q.skill in base ? q.skill : "LOG";
+      base[skill] = Math.max(0, Math.min(100, base[skill] + (correct ? 18 : -5)));
+    });
   });
-  // Slight FOC/ANS boost if user completed the quiz at all
-  base.FOC = Math.min(100, base.FOC + 5);
-  base.ANS = Math.min(100, base.ANS + 5);
+  if (touched) {
+    base.FOC = Math.min(100, base.FOC + 5);
+    base.ANS = Math.min(100, base.ANS + 5);
+  }
   return {
-    log_score: base.LOG,
-    mem_score: base.MEM,
-    foc_score: base.FOC,
-    voc_score: base.VOC,
-    ans_score: base.ANS,
-    app_score: base.APP,
+    log_score: base.LOG, mem_score: base.MEM, foc_score: base.FOC,
+    voc_score: base.VOC, ans_score: base.ANS, app_score: base.APP,
   };
 }
 
-async function readPdfAsText(file: File): Promise<string> {
-  // Very light-touch: send the file's first ~50k chars of raw text extraction
-  // via edge extract-pdf would require auth + storage. For guest demo we keep it
-  // simple: prefer topic input; if a PDF is dropped, we fall back to using the
-  // file name as a topic hint. This keeps the sandbox 100% stateless.
-  return `Argomento suggerito dal file: ${file.name.replace(/\.pdf$/i, "")}`;
-}
-
 export function DemoFlow() {
-  const [step, setStep] = useState<Step>("input");
+  const [phase, setPhase] = useState<"input" | "generating" | "course">("input");
   const [topic, setTopic] = useState("");
-  const [pdfHint, setPdfHint] = useState<string>("");
-  const [lesson, setLesson] = useState<Lesson | null>(null);
-  const [slideIdx, setSlideIdx] = useState(0);
-  const [quizIdx, setQuizIdx] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [pdfHint, setPdfHint] = useState("");
   const [isDragging, setIsDragging] = useState(false);
-  const [showAuthWall, setShowAuthWall] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [course, setCourse] = useState<Course | null>(null);
+  const [completions, setCompletions] = useState<CompletionMap>({});
+  const [activeLesson, setActiveLesson] = useState<number | null>(null);
+  const [showAuthWall, setShowAuthWall] = useState(false);
+
   const hexagon = useMemo(
-    () => (lesson && answers.length === lesson.quiz.length ? computeHexagon(lesson.quiz, answers) : null),
-    [lesson, answers],
+    () => (course ? computeHexagon(course.lessons, completions) : neutralHex()),
+    [course, completions],
   );
 
   async function startDemo() {
     const finalTopic = topic.trim() || pdfHint;
     if (!finalTopic) return;
     setError(null);
-    setStep("generating");
+    setPhase("generating");
     try {
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons-demo`,
@@ -84,46 +88,14 @@ export function DemoFlow() {
         },
       );
       if (!res.ok) throw new Error("gen failed");
-      const data = (await res.json()) as Lesson;
-      setLesson(data);
-      setSlideIdx(0);
-      setStep("slide");
+      const data = (await res.json()) as Course;
+      setCourse(data);
+      setCompletions({});
+      setPhase("course");
     } catch (e) {
       console.error(e);
-      setError("Non riusciamo a generare la lezione. Riprova tra poco.");
-      setStep("input");
-    }
-  }
-
-  function nextSlide() {
-    if (!lesson) return;
-    if (slideIdx < lesson.slides.length - 1) setSlideIdx(slideIdx + 1);
-    else {
-      setStep("quiz");
-      setQuizIdx(0);
-      setSelected(null);
-    }
-  }
-
-  function submitAnswer() {
-    if (selected === null || !lesson) return;
-    const nextAnswers = [...answers, selected];
-    setAnswers(nextAnswers);
-    setSelected(null);
-    if (quizIdx < lesson.quiz.length - 1) setQuizIdx(quizIdx + 1);
-    else {
-      // finalize: persist to localStorage
-      const hex = computeHexagon(lesson.quiz, nextAnswers);
-      writeDemoState({
-        topic: topic.trim() || pdfHint,
-        title: lesson.title,
-        slides: lesson.slides,
-        quiz: lesson.quiz,
-        answers: nextAnswers,
-        hexagon: hex,
-        completedAt: new Date().toISOString(),
-      });
-      setStep("result");
+      setError("Non riusciamo a generare il percorso. Riprova tra poco.");
+      setPhase("input");
     }
   }
 
@@ -132,51 +104,63 @@ export function DemoFlow() {
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file && /\.pdf$/i.test(file.name)) {
-      readPdfAsText(file).then((hint) => {
-        setPdfHint(hint);
-        if (!topic) setTopic(file.name.replace(/\.pdf$/i, ""));
-      });
+      const hint = `Argomento suggerito dal file: ${file.name.replace(/\.pdf$/i, "")}`;
+      setPdfHint(hint);
+      if (!topic) setTopic(file.name.replace(/\.pdf$/i, ""));
     }
+  }
+
+  function tryOpenLesson(idx: number) {
+    if (idx >= GUEST_LIMIT) { setShowAuthWall(true); return; }
+    setActiveLesson(idx);
+  }
+
+  function completeLesson(idx: number, answers: number[]) {
+    if (!course) return;
+    const nextCompletions: CompletionMap = { ...completions, [idx]: { answers } };
+    setCompletions(nextCompletions);
+    const hex = computeHexagon(course.lessons, nextCompletions);
+    writeDemoState({
+      topic: topic.trim() || pdfHint,
+      courseTitle: course.courseTitle,
+      hexagon: hex,
+      completedLessons: Object.keys(nextCompletions).length,
+      completedAt: new Date().toISOString(),
+    });
   }
 
   return (
     <div className="w-full">
-      {step === "input" && (
+      {phase === "input" && (
         <InputStep
-          topic={topic}
-          setTopic={setTopic}
-          isDragging={isDragging}
-          setIsDragging={setIsDragging}
-          onDrop={onDrop}
-          onStart={startDemo}
-          error={error}
+          topic={topic} setTopic={setTopic}
+          isDragging={isDragging} setIsDragging={setIsDragging}
+          onDrop={onDrop} onStart={startDemo} error={error}
         />
       )}
-      {step === "generating" && <GeneratingStep />}
-      {step === "slide" && lesson && (
-        <SlideStep
-          lesson={lesson}
-          idx={slideIdx}
-          onNext={nextSlide}
-          onBack={() => setStep("input")}
-        />
-      )}
-      {step === "quiz" && lesson && (
-        <QuizStep
-          item={lesson.quiz[quizIdx]}
-          idx={quizIdx}
-          total={lesson.quiz.length}
-          selected={selected}
-          setSelected={setSelected}
-          onSubmit={submitAnswer}
-        />
-      )}
-      {step === "result" && hexagon && lesson && (
-        <ResultStep
+      {phase === "generating" && <GeneratingStep />}
+      {phase === "course" && course && (
+        <CourseStep
+          course={course}
+          completions={completions}
           hexagon={hexagon}
-          correct={answers.filter((a, i) => a === lesson.quiz[i].correct).length}
-          total={lesson.quiz.length}
+          onOpen={tryOpenLesson}
           onOpenAuth={() => setShowAuthWall(true)}
+          onReset={() => { setCourse(null); setCompletions({}); setPhase("input"); }}
+        />
+      )}
+
+      {activeLesson !== null && course && (
+        <FullscreenLesson
+          lesson={course.lessons[activeLesson]}
+          lessonIndex={activeLesson}
+          totalLessons={course.lessons.length}
+          onClose={() => setActiveLesson(null)}
+          onComplete={(answers) => {
+            completeLesson(activeLesson, answers);
+          }}
+          onOpenAuth={() => setShowAuthWall(true)}
+          isLastGuestLesson={activeLesson === GUEST_LIMIT - 1}
         />
       )}
 
@@ -185,18 +169,15 @@ export function DemoFlow() {
   );
 }
 
-/* ────────────────── Steps ────────────────── */
+/* ────────────────── Input ────────────────── */
 
 function InputStep({
   topic, setTopic, isDragging, setIsDragging, onDrop, onStart, error,
 }: {
-  topic: string;
-  setTopic: (v: string) => void;
-  isDragging: boolean;
-  setIsDragging: (v: boolean) => void;
+  topic: string; setTopic: (v: string) => void;
+  isDragging: boolean; setIsDragging: (v: boolean) => void;
   onDrop: (e: React.DragEvent) => void;
-  onStart: () => void;
-  error: string | null;
+  onStart: () => void; error: string | null;
 }) {
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-up">
@@ -240,7 +221,7 @@ function InputStep({
         {error && <p className="mt-3 text-sm text-destructive text-center">{error}</p>}
 
         <p className="mt-4 text-center text-xs text-slate-400">
-          Nessuna registrazione richiesta · 3 slide + quiz
+          Nessuna registrazione richiesta · Percorso di 4 lezioni · 3 gratuite
         </p>
       </div>
 
@@ -265,122 +246,292 @@ function GeneratingStep() {
       <div className="w-16 h-16 rounded-3xl bg-slate-900 flex items-center justify-center shadow-lg">
         <Loader2 className="w-7 h-7 text-white animate-spin" />
       </div>
-      <p className="font-display text-2xl text-slate-900">Sto pensando…</p>
-      <p className="text-sm text-slate-500">Costruisco una micro-lezione su misura per te.</p>
+      <p className="font-display text-2xl text-slate-900">Sto progettando il tuo percorso…</p>
+      <p className="text-sm text-slate-500">Sto suddividendo l'argomento in 4 lezioni sequenziali.</p>
     </div>
   );
 }
 
-function SlideStep({
-  lesson, idx, onNext, onBack,
-}: { lesson: Lesson; idx: number; onNext: () => void; onBack: () => void }) {
-  const slide = lesson.slides[idx];
-  return (
-    <div className="w-full max-w-xl mx-auto animate-fade-up">
-      <button onClick={onBack} className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
-        <ChevronLeft className="w-4 h-4" /> Annulla
-      </button>
-      <div className="rounded-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.25)] p-6 sm:p-8">
-        <div className="text-xs uppercase tracking-widest text-slate-400 mb-2">
-          Slide {idx + 1} / {lesson.slides.length}
-        </div>
-        <h2 className="font-display text-2xl sm:text-3xl text-slate-900 mb-4">{slide.part_title}</h2>
-        <p className="text-slate-700 leading-relaxed whitespace-pre-line"
-          dangerouslySetInnerHTML={{ __html: slide.content.replace(/\*\*(.+?)\*\*/g, "<strong class='text-slate-900'>$1</strong>") }}
-        />
-      </div>
-      <LiquidButton
-        onClick={onNext}
-        className="w-full h-14 mt-5 rounded-2xl bg-slate-900 text-white text-base font-medium"
-      >
-        {idx < lesson.slides.length - 1 ? "Continua" : "Vai al quiz"}
-        <ArrowRight className="w-4 h-4 ml-2" />
-      </LiquidButton>
-    </div>
-  );
-}
+/* ────────────────── Course (linear list) ────────────────── */
 
-function QuizStep({
-  item, idx, total, selected, setSelected, onSubmit,
+function CourseStep({
+  course, completions, hexagon, onOpen, onOpenAuth, onReset,
 }: {
-  item: QuizItem;
-  idx: number;
-  total: number;
-  selected: number | null;
-  setSelected: (n: number) => void;
-  onSubmit: () => void;
+  course: Course;
+  completions: CompletionMap;
+  hexagon: DemoHexagon;
+  onOpen: (idx: number) => void;
+  onOpenAuth: () => void;
+  onReset: () => void;
 }) {
+  const completedCount = Object.keys(completions).length;
+  const showHex = completedCount > 0;
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-up">
-      <div className="text-xs uppercase tracking-widest text-slate-400 mb-3 text-center">
-        Domanda {idx + 1} / {total}
+      <button onClick={onReset} className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
+        <ChevronLeft className="w-4 h-4" /> Nuovo argomento
+      </button>
+
+      <div className="mb-6">
+        <p className="text-xs uppercase tracking-widest text-slate-400 mb-1">Il tuo percorso</p>
+        <h2 className="font-display text-2xl sm:text-3xl text-slate-900 tracking-tight">{course.courseTitle}</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          {completedCount} / {GUEST_LIMIT} lezioni gratuite completate
+        </p>
       </div>
-      <div className="rounded-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.25)] p-6 sm:p-8">
-        <h3 className="font-display text-xl sm:text-2xl text-slate-900 mb-5">{item.question}</h3>
-        <div className="space-y-2">
-          {item.options.map((opt, i) => (
-            <button
-              key={i}
-              onClick={() => setSelected(i)}
-              className={cn(
-                "w-full text-left px-4 py-3 rounded-2xl border transition-all",
-                selected === i
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-slate-200 bg-white hover:border-slate-400 text-slate-800",
-              )}
-            >
-              {opt}
-            </button>
-          ))}
+
+      <ol className="space-y-3">
+        {course.lessons.map((lesson, idx) => {
+          const done = !!completions[idx];
+          const locked = idx >= GUEST_LIMIT;
+          return (
+            <li key={idx}>
+              <button
+                onClick={() => (locked ? onOpenAuth() : onOpen(idx))}
+                className={cn(
+                  "w-full text-left rounded-2xl border p-4 sm:p-5 transition-all duration-300 flex items-start gap-4 group",
+                  locked
+                    ? "bg-slate-50 border-slate-200 hover:border-slate-300"
+                    : done
+                      ? "bg-white border-slate-900/10 shadow-[0_10px_30px_-20px_rgba(0,0,0,0.25)]"
+                      : "bg-white border-slate-200 hover:border-slate-400 hover:shadow-[0_10px_30px_-20px_rgba(0,0,0,0.25)]",
+                )}
+              >
+                <div
+                  className={cn(
+                    "w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-sm font-medium",
+                    locked
+                      ? "bg-slate-200 text-slate-500"
+                      : done
+                        ? "bg-slate-900 text-white"
+                        : "bg-slate-100 text-slate-700 group-hover:bg-slate-900 group-hover:text-white transition",
+                  )}
+                >
+                  {locked ? <Lock className="w-4 h-4" /> : done ? <Check className="w-4 h-4" /> : idx + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] uppercase tracking-widest text-slate-400">Lezione {idx + 1}</span>
+                    {locked && (
+                      <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900 text-white">
+                        Account richiesto
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="mt-0.5 font-display text-base sm:text-lg text-slate-900 truncate">{lesson.title}</h3>
+                  {lesson.subtitle && (
+                    <p className="mt-0.5 text-xs sm:text-sm text-slate-500 line-clamp-2">{lesson.subtitle}</p>
+                  )}
+                </div>
+                <ArrowRight className={cn("w-4 h-4 mt-3 shrink-0", locked ? "text-slate-400" : "text-slate-500")} />
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      {showHex && (
+        <div className="mt-8 rounded-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.25)] p-5">
+          <div className="text-center mb-2">
+            <p className="text-xs uppercase tracking-widest text-slate-400">Il tuo esagono, in tempo reale</p>
+          </div>
+          <CognitiveRadar profile={hexagon} />
+          <div className="mt-3 text-center text-xs text-slate-500">
+            Salvalo sul tuo profilo — <button onClick={onOpenAuth} className="underline underline-offset-2 text-slate-800">crea un account</button>.
+          </div>
         </div>
-      </div>
-      <LiquidButton
-        onClick={onSubmit}
-        disabled={selected === null}
-        className="w-full h-14 mt-5 rounded-2xl bg-slate-900 text-white text-base font-medium disabled:opacity-40"
-      >
-        {idx < total - 1 ? "Prossima" : "Vedi risultato"}
-        <ArrowRight className="w-4 h-4 ml-2" />
-      </LiquidButton>
+      )}
     </div>
   );
 }
 
-function ResultStep({
-  hexagon, correct, total, onOpenAuth,
-}: { hexagon: DemoHexagon; correct: number; total: number; onOpenAuth: () => void }) {
+/* ────────────────── Fullscreen lesson (slides + quiz + result) ────────────────── */
+
+function FullscreenLesson({
+  lesson, lessonIndex, totalLessons, onClose, onComplete, onOpenAuth, isLastGuestLesson,
+}: {
+  lesson: Lesson;
+  lessonIndex: number;
+  totalLessons: number;
+  onClose: () => void;
+  onComplete: (answers: number[]) => void;
+  onOpenAuth: () => void;
+  isLastGuestLesson: boolean;
+}) {
+  const [stage, setStage] = useState<"slide" | "quiz" | "result">("slide");
+  const [slideIdx, setSlideIdx] = useState(0);
+  const [quizIdx, setQuizIdx] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [answers, setAnswers] = useState<number[]>([]);
+  const [committed, setCommitted] = useState(false);
+
+  function nextSlide() {
+    if (slideIdx < lesson.slides.length - 1) setSlideIdx(slideIdx + 1);
+    else { setStage("quiz"); setSelected(null); }
+  }
+  function submitAnswer() {
+    if (selected === null) return;
+    const nextAnswers = [...answers, selected];
+    setAnswers(nextAnswers);
+    setSelected(null);
+    if (quizIdx < lesson.quiz.length - 1) setQuizIdx(quizIdx + 1);
+    else {
+      if (!committed) { onComplete(nextAnswers); setCommitted(true); }
+      setStage("result");
+    }
+  }
+
+  const correctCount = answers.filter((a, i) => a === lesson.quiz[i].correct).length;
+
   return (
-    <div className="w-full max-w-xl mx-auto animate-fade-up space-y-6">
-      <div className="text-center">
-        <p className="text-xs uppercase tracking-widest text-slate-400">Il tuo esagono</p>
-        <h2 className="font-display text-3xl text-slate-900 mt-1">
-          {correct} / {total} corrette
-        </h2>
-      </div>
-      <div className="rounded-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.25)] p-4">
-        <CognitiveRadar profile={hexagon} />
+    <div className="fixed inset-0 top-0 left-0 w-screen h-screen z-50 bg-[#FCFCFC] overflow-y-auto animate-fade-up">
+      {/* Top bar */}
+      <div className="sticky top-0 z-10 bg-[#FCFCFC]/90 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 sm:px-6 h-14">
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
+            aria-label="Chiudi lezione"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest text-slate-400">
+              Lezione {lessonIndex + 1} / {totalLessons}
+            </p>
+            <p className="text-sm font-medium text-slate-900 truncate">{lesson.title}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition"
+            aria-label="Esci"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        {/* Progress */}
+        <div className="h-[2px] bg-slate-100">
+          <div
+            className="h-full bg-slate-900 transition-all duration-500 ease-out"
+            style={{
+              width: `${
+                stage === "slide"
+                  ? ((slideIdx + 1) / (lesson.slides.length + lesson.quiz.length + 1)) * 100
+                  : stage === "quiz"
+                    ? ((lesson.slides.length + quizIdx + 1) / (lesson.slides.length + lesson.quiz.length + 1)) * 100
+                    : 100
+              }%`,
+            }}
+          />
+        </div>
       </div>
 
-      <div className="rounded-3xl bg-white/60 backdrop-blur-xl border border-white/70 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.35)] p-6 sm:p-8 text-center">
-        <h3 className="font-display text-2xl text-slate-900">Consolida la tua conoscenza.</h3>
-        <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-          Hai completato la tua prima sessione. Per salvare questo Esagono sul tuo profilo,
-          sbloccare la Vista Grafo interattiva del tuo percorso di studi e caricare file
-          illimitati, crea il tuo account gratuito.
-        </p>
-        <LiquidButton
-          onClick={onOpenAuth}
-          className="mt-5 w-full h-14 rounded-2xl bg-slate-900 text-white text-base font-medium"
-        >
-          Crea account gratuito
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </LiquidButton>
-        <p className="mt-3 text-xs text-slate-400">
-          Già iscritto?{" "}
-          <Link to="/login" className="underline underline-offset-2 hover:text-slate-700">
-            Accedi
-          </Link>
-        </p>
+      {/* Content */}
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {stage === "slide" && (
+          <div className="animate-fade-up">
+            <div className="text-xs uppercase tracking-widest text-slate-400 mb-3">
+              Slide {slideIdx + 1} / {lesson.slides.length}
+            </div>
+            <h2 className="font-display text-2xl sm:text-4xl text-slate-900 tracking-tight mb-5">
+              {lesson.slides[slideIdx].part_title}
+            </h2>
+            <div className="rounded-3xl bg-white border border-slate-100 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.15)] p-6 sm:p-8">
+              <p
+                className="text-slate-700 leading-relaxed whitespace-pre-line text-[15px] sm:text-base"
+                dangerouslySetInnerHTML={{
+                  __html: lesson.slides[slideIdx].content.replace(
+                    /\*\*(.+?)\*\*/g,
+                    "<strong class='text-slate-900 font-semibold'>$1</strong>",
+                  ),
+                }}
+              />
+            </div>
+            <LiquidButton
+              onClick={nextSlide}
+              className="w-full h-14 mt-6 rounded-2xl bg-slate-900 text-white text-base font-medium"
+            >
+              {slideIdx < lesson.slides.length - 1 ? "Continua" : "Vai al quiz"}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </LiquidButton>
+          </div>
+        )}
+
+        {stage === "quiz" && (
+          <div className="animate-fade-up">
+            <div className="text-xs uppercase tracking-widest text-slate-400 mb-3 text-center">
+              Domanda {quizIdx + 1} / {lesson.quiz.length}
+            </div>
+            <div className="rounded-3xl bg-white border border-slate-100 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.15)] p-6 sm:p-8">
+              <h3 className="font-display text-xl sm:text-2xl text-slate-900 mb-5">
+                {lesson.quiz[quizIdx].question}
+              </h3>
+              <div className="space-y-2">
+                {lesson.quiz[quizIdx].options.map((opt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelected(i)}
+                    className={cn(
+                      "w-full text-left px-4 py-3 rounded-2xl border transition-all",
+                      selected === i
+                        ? "border-slate-900 bg-slate-900 text-white"
+                        : "border-slate-200 bg-white hover:border-slate-400 text-slate-800",
+                    )}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <LiquidButton
+              onClick={submitAnswer}
+              disabled={selected === null}
+              className="w-full h-14 mt-6 rounded-2xl bg-slate-900 text-white text-base font-medium disabled:opacity-40"
+            >
+              {quizIdx < lesson.quiz.length - 1 ? "Prossima" : "Vedi risultato"}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </LiquidButton>
+          </div>
+        )}
+
+        {stage === "result" && (
+          <div className="animate-fade-up text-center">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-900 flex items-center justify-center mb-4">
+              <CheckCircle2 className="w-7 h-7 text-white" />
+            </div>
+            <p className="text-xs uppercase tracking-widest text-slate-400">Lezione completata</p>
+            <h2 className="font-display text-3xl text-slate-900 mt-1 tracking-tight">
+              {correctCount} / {lesson.quiz.length} corrette
+            </h2>
+            <p className="mt-3 text-sm text-slate-500 max-w-md mx-auto">
+              Le tue risposte hanno aggiornato il tuo <span className="text-slate-800 font-medium">Esagono Cognitivo</span>.
+              Torna al percorso per continuare.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 max-w-sm mx-auto">
+              {isLastGuestLesson ? (
+                <LiquidButton
+                  onClick={onOpenAuth}
+                  className="w-full h-14 rounded-2xl bg-slate-900 text-white text-base font-medium"
+                >
+                  Sblocca la prossima lezione
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </LiquidButton>
+              ) : (
+                <LiquidButton
+                  onClick={onClose}
+                  className="w-full h-14 rounded-2xl bg-slate-900 text-white text-base font-medium"
+                >
+                  Torna al percorso
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </LiquidButton>
+              )}
+              <button onClick={onClose} className="text-sm text-slate-500 hover:text-slate-900">
+                Chiudi
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -442,16 +593,16 @@ function AuthWallModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-up p-4">
-      <div className="w-full max-w-md rounded-3xl bg-white/85 backdrop-blur-2xl border border-white/70 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.5)] p-6 sm:p-8">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-up p-4">
+      <div className="w-full max-w-md rounded-3xl bg-white/90 backdrop-blur-2xl border border-white/70 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.5)] p-6 sm:p-8">
         <div className="flex items-center justify-between mb-1">
           <h3 className="font-display text-xl text-slate-900">
-            {mode === "signup" ? "Crea account" : "Bentornato"}
+            {mode === "signup" ? "Consolida la tua conoscenza" : "Bentornato"}
           </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-sm">Chiudi</button>
         </div>
         <p className="text-xs text-slate-500 mb-5">
-          Il tuo esagono verrà collegato al tuo profilo.
+          Per sbloccare le lezioni successive di questo percorso e salvare i tuoi dati, crea un account gratuito.
         </p>
 
         <form onSubmit={submit} className="space-y-4">
@@ -460,8 +611,7 @@ function AuthWallModal({ onClose }: { onClose: () => void }) {
             <div className="relative">
               <Mail className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
               <Input
-                type="email"
-                required
+                type="email" required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-11 h-12 rounded-xl bg-white border border-slate-200"
@@ -474,8 +624,7 @@ function AuthWallModal({ onClose }: { onClose: () => void }) {
               <Lock className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
               <Input
                 type={showPassword ? "text" : "password"}
-                required
-                minLength={8}
+                required minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-11 pr-12 h-12 rounded-xl bg-white border border-slate-200"
@@ -500,10 +649,8 @@ function AuthWallModal({ onClose }: { onClose: () => void }) {
           </LiquidButton>
 
           <Button
-            type="button"
-            variant="outline"
-            onClick={google}
-            disabled={submitting}
+            type="button" variant="outline"
+            onClick={google} disabled={submitting}
             className="w-full h-12 rounded-xl border-slate-200 bg-white"
           >
             Continua con Google
@@ -518,6 +665,9 @@ function AuthWallModal({ onClose }: { onClose: () => void }) {
             >
               {mode === "signup" ? "Accedi" : "Crea account"}
             </button>
+          </p>
+          <p className="text-center text-xs text-slate-400">
+            <Link to="/login" className="underline underline-offset-2 hover:text-slate-700">Vai alla pagina di accesso</Link>
           </p>
         </form>
       </div>

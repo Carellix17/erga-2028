@@ -15,11 +15,9 @@ export interface DemoHexagon {
 
 export interface DemoState {
   topic: string;
-  title: string;
-  slides: { part_title: string; content: string }[];
-  quiz: { question: string; options: string[]; correct: number; skill: string }[];
-  answers: number[];
+  courseTitle?: string;
   hexagon: DemoHexagon;
+  completedLessons?: number;
   completedAt: string;
 }
 
