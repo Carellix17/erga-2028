@@ -11,6 +11,8 @@ import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { writeDemoState, type DemoHexagon } from "@/hooks/useDemoHandoff";
+import { useTranslation, Trans } from "react-i18next";
+import { currentLanguage } from "@/i18n";
 
 type Slide = { part_title: string; content: string };
 type QuizItem = { question: string; options: string[]; correct: number; skill: string };
@@ -81,7 +83,7 @@ export function DemoFlow() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ topic: finalTopic }),
+          body: JSON.stringify({ topic: finalTopic, language: currentLanguage() }),
         },
       );
       if (!res.ok) throw new Error("gen failed");
