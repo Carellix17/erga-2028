@@ -300,6 +300,7 @@ export function LessonsList({
  strokeLinecap="round"
  strokeLinejoin="round"
  opacity={0.35}
+  vectorEffect="non-scaling-stroke"
  />
  {/* Progress overlay (completed) */}
  {progressRatio > 0 && (
@@ -313,6 +314,7 @@ export function LessonsList({
  strokeDasharray="10000"
  strokeDashoffset={10000 - 10000 * progressRatio}
  className="transition-all duration-700 ease-m3-emphasized"
+  vectorEffect="non-scaling-stroke"
  />
  )}
  </svg>
