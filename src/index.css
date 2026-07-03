@@ -238,7 +238,7 @@
 @layer utilities {
   /* ═══════ GRADIENT ACCENTS ═══════ */
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(235 50% 48%));
+    background: hsl(var(--primary));
   }
 
   /* ═══════ DOT GRID BACKGROUND ═══════
@@ -260,13 +260,15 @@
     animation: cinematic-enter 480ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
   }
   .gradient-warm {
-    background: linear-gradient(135deg, hsl(var(--surface-container-highest)), hsl(var(--surface-container)));
+    background: hsl(var(--surface-container));
   }
   .gradient-cool {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(220 35% 48%));
+    /* was black→blue: now pure black per design directive */
+    background: #000;
+    color: #fff;
   }
   .gradient-surface {
-    background: linear-gradient(180deg, hsl(var(--surface-bright)), hsl(var(--background)));
+    background: hsl(var(--background));
   }
 
   /* ═══════ FOCUS BLOCK — solid neutral card (was glass + gold) ═══════ */
