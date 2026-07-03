@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
+import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 
 const MAX_CONTEXT_CHARS = 80000;
 const FREE_GENERATION_LIMIT = 5;
@@ -63,8 +64,13 @@ function extractJson(raw: string): unknown {
 
 import { callAIText } from "../_shared/ai.ts";
 
+let REQUEST_LANGUAGE: "it" | "en" = "it";
 async function callAI(messages: { role: string; content: string }[], temperature = 0.1, maxTokens = 4000): Promise<string> {
-  return callAIText(messages, temperature, maxTokens);
+  const injected = [
+    { role: "system", content: languageDirective(REQUEST_LANGUAGE) },
+    ...messages,
+  ];
+  return callAIText(injected, temperature, maxTokens);
 }
 
 serve(async (req) => {
@@ -75,6 +81,7 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const { action, lessonIndex, contextId } = body;
+    REQUEST_LANGUAGE = normalizeLanguage(body.language);
 
     const auth = await validateAuth(req, body);
     const { userId, supabase, userEmail: authEmail } = auth;
