@@ -1,40 +1,18 @@
-import React, { createContext, useContext, useEffect } from "react";
-import { useUserData } from "@/hooks/useUserData";
+import React, { useEffect } from "react";
 
-type Theme = "light" | "dark";
-
-interface ThemeContextType {
-  theme: Theme;
-  setTheme: (next: Theme | ((prev: Theme) => Theme)) => void;
-  isLoaded: boolean;
-}
-
-const ThemeContext = createContext<ThemeContextType | null>(null);
-
+// L'app è light-only. Il provider si limita a garantire che la classe .dark
+// non venga mai applicata e imposta il meta theme-color sul bianco della landing.
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const { data: theme, updateData: setTheme, isLoaded } = useUserData<Theme>(
-    "theme",
-    "light"
-  );
-
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-
+    document.documentElement.classList.remove("dark");
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", theme === "dark" ? "#15121E" : "#6D4FE8");
-  }, [theme]);
+    if (meta) meta.setAttribute("content", "#FCFCFC");
+  }, []);
 
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme, isLoaded }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <>{children}</>;
 }
 
+// Compat shim per eventuali consumer residui.
 export function useTheme() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within a ThemeProvider");
-  return ctx;
+  return { theme: "light" as const, setTheme: () => {}, isLoaded: true };
 }

@@ -1,421 +1,403 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
-import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Moon, Sparkles, Hexagon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import { NotificationsCard } from "./NotificationsCard";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
-import { CognitiveRadar } from "./CognitiveRadar";
-import { Button as UiButton } from "@/components/ui/button";
+import { useState, useEffect, useCallback, useRef } from"react";
+import { useAuth } from"@/contexts/AuthContext";
+import { supabase } from"@/integrations/supabase/client";
+import { Button } from"@/components/ui/button";
+import { Input } from"@/components/ui/input";
+import { Label } from"@/components/ui/label";
+import { Slider } from"@/components/ui/slider";
+import { RadioGroup, RadioGroupItem } from"@/components/ui/radio-group";
+import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Sparkles, Hexagon } from"lucide-react";
+import { useToast } from"@/hooks/use-toast";
+import { cn } from"@/lib/utils";
+import { NotificationsCard } from"./NotificationsCard";
+// Theme fisso: light-only.
+import { useCognitiveProfile } from"@/hooks/useCognitiveProfile";
+import { CognitiveRadar } from"./CognitiveRadar";
+import { Button as UiButton } from"@/components/ui/button";
 
 const INSTITUTES = [
-  { value: "liceo_scientifico", label: "Liceo Scientifico" },
-  { value: "liceo_classico", label: "Liceo Classico" },
-  { value: "liceo_linguistico", label: "Liceo Linguistico" },
-  { value: "istituto_tecnico", label: "Istituto Tecnico" },
+ { value:"liceo_scientifico", label:"Liceo Scientifico" },
+ { value:"liceo_classico", label:"Liceo Classico" },
+ { value:"liceo_linguistico", label:"Liceo Linguistico" },
+ { value:"istituto_tecnico", label:"Istituto Tecnico" },
 ];
 
 const SCHOOLS = [
-  { value: "licei_cartesio", label: "Licei Cartesio" },
+ { value:"licei_cartesio", label:"Licei Cartesio" },
 ];
 
 const SUBJECTS = [
-  "Matematica", "Italiano", "Storia", "Inglese",
-  "Fisica", "Scienze", "Filosofia", "Informatica",
+"Matematica","Italiano","Storia","Inglese",
+"Fisica","Scienze","Filosofia","Informatica",
 ];
 
 interface SubjectLevels { [subject: string]: number; }
 interface SubjectGoals { [subject: string]: number; }
 
 interface ProfileViewProps {
-  onOpenCognitive?: () => void;
+ onOpenCognitive?: () => void;
 }
 
 export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
-  const { currentUser } = useAuth();
-  const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { theme, setTheme, isLoaded: themeLoaded } = useTheme();
-  const { profile: cognitive } = useCognitiveProfile();
+ const { currentUser } = useAuth();
+ const { toast } = useToast();
+ const fileInputRef = useRef<HTMLInputElement>(null);
+ // (Aspetto/tema rimosso — app sempre in modalità chiara.)
+ const { profile: cognitive } = useCognitiveProfile();
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [age, setAge] = useState<string>("");
-  const [school, setSchool] = useState("licei_cartesio");
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+ const [firstName, setFirstName] = useState("");
+ const [lastName, setLastName] = useState("");
+ const [nickname, setNickname] = useState("");
+ const [age, setAge] = useState<string>("");
+ const [school, setSchool] = useState("licei_cartesio");
+ const [avatarUrl, setAvatarUrl] = useState("");
+ const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+ const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
-  const [institute, setInstitute] = useState("liceo_scientifico");
-  const [subjectLevels, setSubjectLevels] = useState<SubjectLevels>(() => {
-    const defaults: SubjectLevels = {};
-    SUBJECTS.forEach((s) => (defaults[s] = 6));
-    return defaults;
-  });
-  const [subjectGoals, setSubjectGoals] = useState<SubjectGoals>(() => {
-    const defaults: SubjectGoals = {};
-    SUBJECTS.forEach((s) => (defaults[s] = 8));
-    return defaults;
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+ const [institute, setInstitute] = useState("liceo_scientifico");
+ const [subjectLevels, setSubjectLevels] = useState<SubjectLevels>(() => {
+ const defaults: SubjectLevels = {};
+ SUBJECTS.forEach((s) => (defaults[s] = 6));
+ return defaults;
+ });
+ const [subjectGoals, setSubjectGoals] = useState<SubjectGoals>(() => {
+ const defaults: SubjectGoals = {};
+ SUBJECTS.forEach((s) => (defaults[s] = 8));
+ return defaults;
+ });
+ const [isLoading, setIsLoading] = useState(true);
+ const [isSaving, setIsSaving] = useState(false);
+ const [saved, setSaved] = useState(false);
 
-  const loadProfile = useCallback(async () => {
-    if (!currentUser) return;
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "get" }) }
-      );
-      const data = await response.json();
-      if (data.profile) {
-        const p = data.profile;
-        setInstitute(p.institute_type || "liceo_scientifico");
-        setFirstName(p.first_name || "");
-        setLastName(p.last_name || "");
-        setNickname(p.nickname || "");
-        setAge(p.age ? String(p.age) : "");
-        setSchool(p.school || "licei_cartesio");
-        setAvatarUrl(p.avatar_url || "");
-        if (p.avatar_url) setAvatarPreview(p.avatar_url);
-        if (p.subject_levels && Object.keys(p.subject_levels).length > 0) {
-          setSubjectLevels((prev) => ({ ...prev, ...p.subject_levels }));
-        }
-        if (p.subject_goals && Object.keys(p.subject_goals).length > 0) {
-          setSubjectGoals((prev) => ({ ...prev, ...p.subject_goals }));
-        }
-      }
-    } catch (err) { console.error("Error loading profile:", err); }
-    finally { setIsLoading(false); }
-  }, [currentUser]);
+ const loadProfile = useCallback(async () => {
+ if (!currentUser) return;
+ try {
+ const { data: { session } } = await supabase.auth.getSession();
+ const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+ const response = await fetch(
+ `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`,
+ { method:"POST", headers: {"Content-Type":"application/json", Authorization: `Bearer ${authToken}` },
+ body: JSON.stringify({ userId: currentUser, action:"get" }) }
+ );
+ const data = await response.json();
+ if (data.profile) {
+ const p = data.profile;
+ setInstitute(p.institute_type ||"liceo_scientifico");
+ setFirstName(p.first_name ||"");
+ setLastName(p.last_name ||"");
+ setNickname(p.nickname ||"");
+ setAge(p.age ? String(p.age) :"");
+ setSchool(p.school ||"licei_cartesio");
+ setAvatarUrl(p.avatar_url ||"");
+ if (p.avatar_url) setAvatarPreview(p.avatar_url);
+ if (p.subject_levels && Object.keys(p.subject_levels).length > 0) {
+ setSubjectLevels((prev) => ({ ...prev, ...p.subject_levels }));
+ }
+ if (p.subject_goals && Object.keys(p.subject_goals).length > 0) {
+ setSubjectGoals((prev) => ({ ...prev, ...p.subject_goals }));
+ }
+ }
+ } catch (err) { console.error("Error loading profile:", err); }
+ finally { setIsLoading(false); }
+ }, [currentUser]);
 
-  useEffect(() => { loadProfile(); }, [loadProfile]);
+ useEffect(() => { loadProfile(); }, [loadProfile]);
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !currentUser) return;
-    if (file.size > 2 * 1024 * 1024) { toast({ title: "Errore", description: "L'immagine deve essere inferiore a 2MB", variant: "destructive" }); return; }
+ const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+ const file = e.target.files?.[0];
+ if (!file || !currentUser) return;
+ if (file.size > 2 * 1024 * 1024) { toast({ title:"Errore", description:"L'immagine deve essere inferiore a 2MB", variant:"destructive" }); return; }
 
-    setIsUploadingAvatar(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
+ setIsUploadingAvatar(true);
+ try {
+ const { data: { session } } = await supabase.auth.getSession();
 
-      // Sanitize the extension client-side too (server enforces this as well).
-      const rawExt = (file.name.split(".").pop() || "jpg").toLowerCase();
-      const ext = ["jpg", "jpeg", "png", "webp"].includes(rawExt) ? (rawExt === "jpeg" ? "jpg" : rawExt) : "jpg";
-      const userId = session?.user?.id || currentUser.replace(/[^a-zA-Z0-9]/g, "_");
-      const filePath = `${userId}/avatar.${ext}`;
+ // Sanitize the extension client-side too (server enforces this as well).
+ const rawExt = (file.name.split(".").pop() ||"jpg").toLowerCase();
+ const ext = ["jpg","jpeg","png","webp"].includes(rawExt) ? (rawExt ==="jpeg" ?"jpg" : rawExt) :"jpg";
+ const userId = session?.user?.id || currentUser.replace(/[^a-zA-Z0-9]/g,"_");
+ const filePath = `${userId}/avatar.${ext}`;
 
-      if (session) {
-        // Authenticated user: upload directly via Supabase storage
-        const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
-        if (uploadError) throw uploadError;
-      } else {
-        // Beta tester: upload via edge function with base64
-        const authToken = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const reader = new FileReader();
-        const base64 = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve((reader.result as string).split(",")[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          // filePath is NOT sent: the edge function derives it server-side
-          // from the authenticated user's id to prevent overwriting other
-          // users' avatars.
-          body: JSON.stringify({ userId: currentUser, action: "uploadAvatar", fileData: base64, ext }),
-        });
-        if (!response.ok) throw new Error("Upload fallito");
-      }
+ if (session) {
+ // Authenticated user: upload directly via Supabase storage
+ const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+ if (uploadError) throw uploadError;
+ } else {
+ // Beta tester: upload via edge function with base64
+ const authToken = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+ const reader = new FileReader();
+ const base64 = await new Promise<string>((resolve, reject) => {
+ reader.onload = () => resolve((reader.result as string).split(",")[1]);
+ reader.onerror = reject;
+ reader.readAsDataURL(file);
+ });
+ 
+ const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`, {
+ method:"POST",
+ headers: {"Content-Type":"application/json", Authorization: `Bearer ${authToken}` },
+ // filePath is NOT sent: the edge function derives it server-side
+ // from the authenticated user's id to prevent overwriting other
+ // users' avatars.
+ body: JSON.stringify({ userId: currentUser, action:"uploadAvatar", fileData: base64, ext }),
+ });
+ if (!response.ok) throw new Error("Upload fallito");
+ }
 
-      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      const urlWithCache = `${publicUrl}?t=${Date.now()}`;
-      setAvatarUrl(urlWithCache);
-      setAvatarPreview(urlWithCache);
-    } catch (err) {
-      console.error("Error uploading avatar:", err);
-      toast({ title: "Errore", description: "Impossibile caricare l'immagine", variant: "destructive" });
-    } finally { setIsUploadingAvatar(false); }
-  };
+ const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+ const urlWithCache = `${publicUrl}?t=${Date.now()}`;
+ setAvatarUrl(urlWithCache);
+ setAvatarPreview(urlWithCache);
+ } catch (err) {
+ console.error("Error uploading avatar:", err);
+ toast({ title:"Errore", description:"Impossibile caricare l'immagine", variant:"destructive" });
+ } finally { setIsUploadingAvatar(false); }
+ };
 
-  const handleSave = async () => {
-    if (!currentUser) return;
-    setIsSaving(true); setSaved(false);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({
-            userId: currentUser, action: "save",
-            institute_type: institute, subject_levels: subjectLevels, subject_goals: subjectGoals,
-            first_name: firstName, last_name: lastName, nickname,
-            age: age ? parseInt(age) : null, school, avatar_url: avatarUrl,
-          }) }
-      );
-      if (response.ok) {
-        setSaved(true);
-        toast({ title: "Profilo salvato! ✨", description: "I tuoi dati verranno usati per personalizzare l'esperienza." });
-        setTimeout(() => setSaved(false), 2000);
-      }
-    } catch (err) {
-      console.error("Error saving profile:", err);
-      toast({ title: "Errore", description: "Impossibile salvare il profilo.", variant: "destructive" });
-    } finally { setIsSaving(false); }
-  };
+ const handleSave = async () => {
+ if (!currentUser) return;
+ setIsSaving(true); setSaved(false);
+ try {
+ const { data: { session } } = await supabase.auth.getSession();
+ const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+ const response = await fetch(
+ `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`,
+ { method:"POST", headers: {"Content-Type":"application/json", Authorization: `Bearer ${authToken}` },
+ body: JSON.stringify({
+ userId: currentUser, action:"save",
+ institute_type: institute, subject_levels: subjectLevels, subject_goals: subjectGoals,
+ first_name: firstName, last_name: lastName, nickname,
+ age: age ? parseInt(age) : null, school, avatar_url: avatarUrl,
+ }) }
+ );
+ if (response.ok) {
+ setSaved(true);
+ toast({ title:"Profilo salvato! ✨", description:"I tuoi dati verranno usati per personalizzare l'esperienza." });
+ setTimeout(() => setSaved(false), 2000);
+ }
+ } catch (err) {
+ console.error("Error saving profile:", err);
+ toast({ title:"Errore", description:"Impossibile salvare il profilo.", variant:"destructive" });
+ } finally { setIsSaving(false); }
+ };
 
-  const handleLevelChange = (subject: string, value: number[]) => {
-    setSubjectLevels((prev) => ({ ...prev, [subject]: value[0] }));
-  };
+ const handleLevelChange = (subject: string, value: number[]) => {
+ setSubjectLevels((prev) => ({ ...prev, [subject]: value[0] }));
+ };
 
-  const handleGoalChange = (subject: string, value: number[]) => {
-    setSubjectGoals((prev) => ({ ...prev, [subject]: value[0] }));
-  };
+ const handleGoalChange = (subject: string, value: number[]) => {
+ setSubjectGoals((prev) => ({ ...prev, [subject]: value[0] }));
+ };
 
-  const getLevelLabel = (level: number) => {
-    if (level <= 3) return "Insufficiente";
-    if (level <= 5) return "Sufficiente";
-    if (level <= 7) return "Buono";
-    if (level <= 9) return "Ottimo";
-    return "Eccellente";
-  };
+ const getLevelLabel = (level: number) => {
+ if (level <= 3) return"Insufficiente";
+ if (level <= 5) return"Sufficiente";
+ if (level <= 7) return"Buono";
+ if (level <= 9) return"Ottimo";
+ return"Eccellente";
+ };
 
-  const getLevelColor = (level: number) => {
-    if (level <= 3) return "text-destructive";
-    if (level <= 5) return "text-warning";
-    if (level <= 7) return "text-primary";
-    return "text-success";
-  };
+ const getLevelColor = (level: number) => {
+ if (level <= 3) return"text-destructive";
+ if (level <= 5) return"text-warning";
+ if (level <= 7) return"text-primary";
+ return"text-success";
+ };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+ if (isLoading) {
+ return (
+ <div className="flex items-center justify-center min-h-[60vh]">
+ <Loader2 className="w-8 h-8 animate-spin text-primary" />
+ </div>
+ );
+ }
 
-  return (
-    <div className="px-4 pt-6 pb-32 space-y-6 max-w-lg mx-auto animate-fade-up">
-      {/* Avatar & Name Header */}
-      <div className="flex flex-col items-center gap-4 py-4">
-        <div className="relative">
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploadingAvatar}
-            className="w-24 h-24 rounded-[2rem] overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-400 ease-m3-emphasized hover:scale-105 hover:shadow-level-3 active:scale-95 relative group"
-          >
-            {avatarPreview ? (
-              <img src={avatarPreview} alt="Foto profilo utente" className="w-full h-full object-cover" />
-            ) : (
-              <UserCircle2 className="w-12 h-12 text-primary" />
-            )}
-            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              {isUploadingAvatar ? (
-                <Loader2 className="w-6 h-6 text-white animate-spin" />
-              ) : (
-                <Camera className="w-6 h-6 text-white" />
-              )}
-            </div>
-          </button>
-        </div>
-        <div className="text-center">
-          <h1 className="title-large font-display font-bold text-foreground">
-            {nickname || firstName || "Il tuo profilo"}
-          </h1>
-          <p className="body-medium text-muted-foreground">Personalizza la tua esperienza di studio</p>
-        </div>
-      </div>
+ return (
+ <div className="px-4 pt-6 pb-32 space-y-6 max-w-lg mx-auto animate-fade-up">
+ {/* Avatar & Name Header */}
+ <div className="flex flex-col items-center gap-4 py-4">
+ <div className="relative">
+ <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+ <button
+ onClick={() => fileInputRef.current?.click()}
+ disabled={isUploadingAvatar}
+ className="w-24 h-24 rounded-[2rem] overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-400 ease-m3-emphasized hover:scale-105 hover:shadow-level-3 active:scale-95 relative group"
+ >
+ {avatarPreview ? (
+ <img src={avatarPreview} alt="Foto profilo utente" className="w-full h-full object-cover" />
+ ) : (
+ <UserCircle2 className="w-12 h-12 text-primary" />
+ )}
+ <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+ {isUploadingAvatar ? (
+ <Loader2 className="w-6 h-6 text-white animate-spin" />
+ ) : (
+ <Camera className="w-6 h-6 text-white" />
+ )}
+ </div>
+ </button>
+ </div>
+ <div className="text-center">
+ <h1 className="title-large font-display font-bold text-foreground">
+ {nickname || firstName ||"Il tuo profilo"}
+ </h1>
+ <p className="body-medium text-muted-foreground">Personalizza la tua esperienza di studio</p>
+ </div>
+ </div>
 
-      {/* Personal Info */}
-      <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <User className="w-5 h-5 text-primary" />
-          <h2 className="title-medium font-display text-foreground">Dati personali</h2>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label className="label-medium text-muted-foreground">Nome</Label>
-            <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Mario" className="rounded-2xl h-11 bg-surface-container-high border-0" />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="label-medium text-muted-foreground">Cognome</Label>
-            <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Rossi" className="rounded-2xl h-11 bg-surface-container-high border-0" />
-          </div>
-        </div>
-        <div className="space-y-1.5">
-          <Label className="label-medium text-muted-foreground">Nickname <span className="text-primary">(usato dal chatbot)</span></Label>
-          <Input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="Il tuo soprannome" className="rounded-2xl h-11 bg-surface-container-high border-0" />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label className="label-medium text-muted-foreground">Età</Label>
-            <Input type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="16" min={13} max={30} className="rounded-2xl h-11 bg-surface-container-high border-0" />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="label-medium text-muted-foreground">Scuola</Label>
-            <div className="h-11 rounded-2xl bg-surface-container-high flex items-center px-3">
-              <select value={school} onChange={(e) => setSchool(e.target.value)} className="bg-transparent w-full body-medium outline-none">
-                {SCHOOLS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
+ {/* Personal Info */}
+ <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
+ <div className="flex items-center gap-2 mb-1">
+ <User className="w-5 h-5 text-primary" />
+ <h2 className="title-medium font-display text-foreground">Dati personali</h2>
+ </div>
+ <div className="grid grid-cols-2 gap-3">
+ <div className="space-y-1.5">
+ <Label className="label-medium text-muted-foreground">Nome</Label>
+ <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Mario" className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ </div>
+ <div className="space-y-1.5">
+ <Label className="label-medium text-muted-foreground">Cognome</Label>
+ <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Rossi" className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ </div>
+ </div>
+ <div className="space-y-1.5">
+ <Label className="label-medium text-muted-foreground">Nickname <span className="text-primary">(usato dal chatbot)</span></Label>
+ <Input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="Il tuo soprannome" className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ </div>
+ <div className="grid grid-cols-2 gap-3">
+ <div className="space-y-1.5">
+ <Label className="label-medium text-muted-foreground">Età</Label>
+ <Input type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="16" min={13} max={30} className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ </div>
+ <div className="space-y-1.5">
+ <Label className="label-medium text-muted-foreground">Scuola</Label>
+ <div className="h-11 rounded-2xl bg-surface-container-high flex items-center px-3">
+ <select value={school} onChange={(e) => setSchool(e.target.value)} className="bg-transparent w-full body-medium outline-none">
+ {SCHOOLS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+ </select>
+ </div>
+ </div>
+ </div>
+ </div>
 
-      {/* Esagono Cognitivo */}
-      <div className="m3-card-elevated rounded-3xl p-5 space-y-4 bg-gradient-to-br from-primary/[0.04] to-tertiary/[0.06] backdrop-blur-md border-[0.5px] border-white/40 dark:border-white/10">
-        <div className="flex items-center gap-2 mb-1">
-          <Hexagon className="w-5 h-5 text-primary" />
-          <h2 className="title-medium font-display text-foreground">Esagono Cognitivo</h2>
-        </div>
-        {cognitive ? (
-          <>
-            <CognitiveRadar profile={cognitive} />
-            <div className="grid grid-cols-3 gap-2 text-[11px]">
-              {[
-                ["Logica", cognitive.log_score],
-                ["Memoria", cognitive.mem_score],
-                ["Focus", cognitive.foc_score],
-                ["Lessico", cognitive.voc_score],
-                ["Calma", cognitive.ans_score],
-                ["Pratica", cognitive.app_score],
-              ].map(([label, val]) => (
-                <div key={label as string} className="rounded-2xl bg-foreground/[0.04] backdrop-blur-md py-2 text-center">
-                  <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</div>
-                  <div className="text-base font-bold text-foreground tabular-nums">{val}</div>
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <p className="body-small text-muted-foreground">
-            Non hai ancora calcolato il tuo Esagono Cognitivo.
-          </p>
-        )}
-        <UiButton
-          onClick={onOpenCognitive}
-          variant="outline"
-          className="w-full rounded-2xl h-12 backdrop-blur-md border-[0.5px] border-primary/30 bg-primary/[0.06] hover:bg-primary/[0.12] transition-all duration-300"
-        >
-          <Sparkles className="w-4 h-4 mr-2 text-primary" />
-          {cognitive ? "Ricalcola il tuo Esagono Cognitivo" : "Calcola il tuo Esagono Cognitivo"}
-        </UiButton>
-      </div>
+ {/* Esagono Cognitivo */}
+ <div className="m3-card-elevated rounded-3xl p-5 space-y-4 bg-gradient-to-br from-primary/[0.04] to-tertiary/[0.06] backdrop-blur-md border-[0.5px] border-white/40">
+ <div className="flex items-center gap-2 mb-1">
+ <Hexagon className="w-5 h-5 text-primary" />
+ <h2 className="title-medium font-display text-foreground">Esagono Cognitivo</h2>
+ </div>
+ {cognitive ? (
+ <>
+ <CognitiveRadar profile={cognitive} />
+ <div className="grid grid-cols-3 gap-2 text-[11px]">
+ {[
+ ["Logica", cognitive.log_score],
+ ["Memoria", cognitive.mem_score],
+ ["Focus", cognitive.foc_score],
+ ["Lessico", cognitive.voc_score],
+ ["Calma", cognitive.ans_score],
+ ["Pratica", cognitive.app_score],
+ ].map(([label, val]) => (
+ <div key={label as string} className="rounded-2xl bg-foreground/[0.04] backdrop-blur-md py-2 text-center">
+ <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</div>
+ <div className="text-base font-bold text-foreground tabular-nums">{val}</div>
+ </div>
+ ))}
+ </div>
+ </>
+ ) : (
+ <p className="body-small text-muted-foreground">
+ Non hai ancora calcolato il tuo Esagono Cognitivo.
+ </p>
+ )}
+ <UiButton
+ onClick={onOpenCognitive}
+ variant="outline"
+ className="w-full rounded-2xl h-12 backdrop-blur-md border-[0.5px] border-primary/30 bg-primary/[0.06] hover:bg-primary/[0.12] transition-all duration-300"
+ >
+ <Sparkles className="w-4 h-4 mr-2 text-primary" />
+ {cognitive ?"Ricalcola il tuo Esagono Cognitivo" :"Calcola il tuo Esagono Cognitivo"}
+ </UiButton>
+ </div>
 
-      {/* Institute Section */}
-      <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <GraduationCap className="w-5 h-5 text-secondary" />
-          <h2 className="title-medium font-display text-foreground">Tipo di istituto</h2>
-        </div>
-        <RadioGroup value={institute} onValueChange={setInstitute} className="space-y-1">
-          {INSTITUTES.map((inst) => (
-            <label
-              key={inst.value}
-              className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-300 ease-m3-emphasized hover:bg-foreground/[0.08] has-[data-state=checked]:bg-secondary-container"
-            >
-              <RadioGroupItem value={inst.value} />
-              <span className="body-large text-foreground">{inst.label}</span>
-            </label>
-          ))}
-        </RadioGroup>
-      </div>
+ {/* Institute Section */}
+ <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
+ <div className="flex items-center gap-2 mb-1">
+ <GraduationCap className="w-5 h-5 text-secondary" />
+ <h2 className="title-medium font-display text-foreground">Tipo di istituto</h2>
+ </div>
+ <RadioGroup value={institute} onValueChange={setInstitute} className="space-y-1">
+ {INSTITUTES.map((inst) => (
+ <label
+ key={inst.value}
+ className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-300 ease-m3-emphasized hover:bg-foreground/[0.08] has-[data-state=checked]:bg-secondary-container"
+ >
+ <RadioGroupItem value={inst.value} />
+ <span className="body-large text-foreground">{inst.label}</span>
+ </label>
+ ))}
+ </RadioGroup>
+ </div>
 
-      {/* Appearance */}
-      <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <Moon className="w-5 h-5 text-primary" />
-          <h2 className="title-medium font-display text-foreground">Aspetto</h2>
-        </div>
-        <label className="flex items-center justify-between gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-300 ease-m3-emphasized hover:bg-foreground/[0.08]">
-          <div className="flex flex-col">
-            <span className="body-large text-foreground">Modalità scura</span>
-            <span className="body-small text-muted-foreground">Riduce l'affaticamento visivo</span>
-          </div>
-          <Switch
-            checked={theme === "dark"}
-            disabled={!themeLoaded}
-            onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-          />
-        </label>
-      </div>
+ {/* Appearance rimosso: app sempre in tema chiaro */}
 
-      {/* Subject Levels & Goals Section */}
-      <div className="m3-card-elevated rounded-3xl p-5 space-y-6">
-        <div className="flex items-center gap-2 mb-1">
-          <BookOpen className="w-5 h-5 text-tertiary" />
-          <h2 className="title-medium font-display text-foreground">Voti e obiettivi</h2>
-        </div>
-        <p className="body-small text-muted-foreground -mt-2">Indica il tuo livello attuale e l'obiettivo che vuoi raggiungere in ogni materia</p>
+ {/* Subject Levels & Goals Section */}
+ <div className="m3-card-elevated rounded-3xl p-5 space-y-6">
+ <div className="flex items-center gap-2 mb-1">
+ <BookOpen className="w-5 h-5 text-tertiary" />
+ <h2 className="title-medium font-display text-foreground">Voti e obiettivi</h2>
+ </div>
+ <p className="body-small text-muted-foreground -mt-2">Indica il tuo livello attuale e l'obiettivo che vuoi raggiungere in ogni materia</p>
 
-        <div className="space-y-7">
-          {SUBJECTS.map((subject) => {
-            const level = subjectLevels[subject] || 6;
-            const goal = subjectGoals[subject] ?? Math.max(level, 8);
-            return (
-              <div key={subject} className="space-y-3">
-                <Label className="body-large text-foreground font-semibold">{subject}</Label>
+ <div className="space-y-7">
+ {SUBJECTS.map((subject) => {
+ const level = subjectLevels[subject] || 6;
+ const goal = subjectGoals[subject] ?? Math.max(level, 8);
+ return (
+ <div key={subject} className="space-y-3">
+ <Label className="body-large text-foreground font-semibold">{subject}</Label>
 
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="label-medium text-muted-foreground flex items-center gap-1.5">
-                      <BookOpen className="w-3.5 h-3.5" /> Attuale
-                    </span>
-                    <span className={cn("label-large", getLevelColor(level))}>
-                      {level} — {getLevelLabel(level)}
-                    </span>
-                  </div>
-                  <Slider value={[level]} onValueChange={(v) => handleLevelChange(subject, v)} min={2} max={10} step={1} className="w-full" />
-                </div>
+ <div className="space-y-1.5">
+ <div className="flex items-center justify-between">
+ <span className="label-medium text-muted-foreground flex items-center gap-1.5">
+ <BookOpen className="w-3.5 h-3.5" /> Attuale
+ </span>
+ <span className={cn("label-large", getLevelColor(level))}>
+ {level} — {getLevelLabel(level)}
+ </span>
+ </div>
+ <Slider value={[level]} onValueChange={(v) => handleLevelChange(subject, v)} min={2} max={10} step={1} className="w-full" />
+ </div>
 
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="label-medium text-muted-foreground flex items-center gap-1.5">
-                      <Target className="w-3.5 h-3.5" /> Obiettivo
-                    </span>
-                    <span className="label-large text-primary">{goal}</span>
-                  </div>
-                  <Slider value={[goal]} onValueChange={(v) => handleGoalChange(subject, v)} min={Math.max(2, level)} max={10} step={1} className="w-full" />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+ <div className="space-y-1.5">
+ <div className="flex items-center justify-between">
+ <span className="label-medium text-muted-foreground flex items-center gap-1.5">
+ <Target className="w-3.5 h-3.5" /> Obiettivo
+ </span>
+ <span className="label-large text-primary">{goal}</span>
+ </div>
+ <Slider value={[goal]} onValueChange={(v) => handleGoalChange(subject, v)} min={Math.max(2, level)} max={10} step={1} className="w-full" />
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
 
-      {/* Save Button */}
-      <Button onClick={handleSave} disabled={isSaving} className="w-full h-14 gradient-primary border-0 shadow-level-2" size="lg">
-        {isSaving ? (
-          <Loader2 className="w-5 h-5 animate-spin mr-2" />
-        ) : saved ? (
-          <CheckCircle2 className="w-5 h-5 mr-2" />
-        ) : (
-          <Save className="w-5 h-5 mr-2" />
-        )}
-        {isSaving ? "Salvataggio..." : saved ? "Salvato! ✨" : "Salva profilo"}
-      </Button>
+ {/* Save Button */}
+ <Button onClick={handleSave} disabled={isSaving} className="w-full h-14 gradient-primary border-0 shadow-level-2" size="lg">
+ {isSaving ? (
+ <Loader2 className="w-5 h-5 animate-spin mr-2" />
+ ) : saved ? (
+ <CheckCircle2 className="w-5 h-5 mr-2" />
+ ) : (
+ <Save className="w-5 h-5 mr-2" />
+ )}
+ {isSaving ?"Salvataggio..." : saved ?"Salvato! ✨" :"Salva profilo"}
+ </Button>
 
-      {/* Notifiche push */}
-      <NotificationsCard />
-    </div>
-  );
+ {/* Notifiche push */}
+ <NotificationsCard />
+ </div>
+ );
 }
