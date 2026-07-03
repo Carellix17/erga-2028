@@ -240,7 +240,7 @@ export function FullscreenLesson({
  const segments = steps.length;
 
  return (
- <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
+ <div className="fixed inset-0 z-50 bg-dot-grid flex flex-col animate-cinematic-in">
  {/* Top bar */}
  <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
  <div className="flex items-center gap-2 mb-2">
