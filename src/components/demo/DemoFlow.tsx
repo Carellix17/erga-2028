@@ -440,10 +440,16 @@ function FullscreenLesson({
               <p
                 className="text-slate-700 leading-relaxed whitespace-pre-line text-[15px] sm:text-base"
                 dangerouslySetInnerHTML={{
-                  __html: lesson.slides[slideIdx].content.replace(
-                    /\*\*(.+?)\*\*/g,
-                    "<strong class='text-slate-900 font-semibold'>$1</strong>",
-                  ),
+                  __html: lesson.slides[slideIdx].content
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#39;")
+                    .replace(
+                      /\*\*(.+?)\*\*/g,
+                      "<strong class=\"text-slate-900 font-semibold\">$1</strong>",
+                    ),
                 }}
               />
             </div>
