@@ -127,7 +127,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
 
             {currentSlide === "intro" && (
               <div className="text-center space-y-6 animate-fade-up">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-slate-900 flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-black flex items-center justify-center">
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <div className="space-y-2">
@@ -145,7 +145,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                 <Button
                   onClick={goNext}
                   size="lg"
-                  className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white border-0 transition-all duration-300 ease-in-out"
+                  className="w-full h-14 rounded-2xl bg-black hover:bg-stone-900 text-white border-0 transition-all duration-300 ease-in-out"
                 >
                   Inizia
                   <ChevronRight className="w-5 h-5 ml-1" />
@@ -303,7 +303,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                   onClick={goNext}
                   disabled={!canProceed}
                   size="lg"
-                  className="rounded-2xl h-12 px-6 bg-slate-900 hover:bg-slate-800 text-white border-0 transition-all duration-300 ease-in-out"
+                  className="rounded-2xl h-12 px-6 bg-black hover:bg-stone-900 text-white border-0 transition-all duration-300 ease-in-out"
                 >
                   {currentSlide === "question" && questionIndex === totalQuestions - 1 ? "Calcola Esagono" : "Avanti"}
                   <ChevronRight className="w-4 h-4 ml-1" />

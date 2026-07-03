@@ -355,7 +355,7 @@ export function FullscreenLesson({
  className={cn(
 "w-full h-12 rounded-xl text-base font-medium tracking-tight transition-all duration-200 border border-white/20",
  canContinue
- ?"bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 active:scale-[0.98]"
+ ?"bg-black text-white shadow-sm hover:bg-stone-900 active:scale-[0.98]"
  :"bg-surface-container-high text-muted-foreground"
  )}
  size="lg"
