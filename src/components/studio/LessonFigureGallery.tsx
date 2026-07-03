@@ -26,7 +26,7 @@ export function LessonFigureGallery({
     <div className={compact ? "space-y-3" : "space-y-4"}>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-secondary-container flex items-center justify-center shadow-level-1">
-          <ImageIcon className="w-5 h-5 text-secondary" />
+          <ImageIcon className="w-5 h-5 text-secondary-foreground" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="label-large text-foreground">{title}</p>

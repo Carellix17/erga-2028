@@ -26,7 +26,7 @@ const buttonVariants = cva(
         fab:
           "bg-primary-container text-primary shadow-level-3 hover:shadow-level-4 hover:scale-[1.06] rounded-2xl state-layer",
         "fab-secondary":
-          "bg-secondary-container text-secondary shadow-level-3 hover:shadow-level-4 hover:scale-[1.06] rounded-2xl state-layer",
+          "bg-secondary-container text-secondary-foreground shadow-level-3 hover:shadow-level-4 hover:scale-[1.06] rounded-2xl state-layer",
         "fab-tertiary":
           "bg-tertiary-container text-tertiary shadow-level-3 hover:shadow-level-4 hover:scale-[1.06] rounded-2xl state-layer",
         elevated:

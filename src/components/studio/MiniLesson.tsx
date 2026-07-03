@@ -115,7 +115,7 @@ export function MiniLesson({
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-full bg-secondary-container flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-secondary" />
+              <BookOpen className="w-5 h-5 text-secondary-foreground" />
             </div>
             <span>{lesson.title}</span>
           </CardTitle>

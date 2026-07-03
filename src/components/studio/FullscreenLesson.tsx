@@ -421,7 +421,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
 "w-8 h-8 rounded-lg flex items-center justify-center border border-outline-variant/40 transition-all duration-300 ease-in-out",
  isExample ?"bg-tertiary-container/60" :"bg-secondary-container/60"
  )}>
- {isExample ? <span className="text-base">💡</span> : <BookOpen className={cn("w-4 h-4", isExample ?"text-tertiary" :"text-secondary")} />}
+ {isExample ? <span className="text-base">💡</span> : <BookOpen className={cn("w-4 h-4", isExample ?"text-tertiary" :"text-secondary-foreground")} />}
  </div>
  <div className="flex-1">
  <span className="label-large text-foreground">{part.part_title}</span>
@@ -562,8 +562,8 @@ function SummaryStep({ correctCount, totalExercises, isLastLesson, xpGained, orp
  <span className="label-small text-muted-foreground">Corretti</span>
  </div>
  <div className="flex flex-col items-center p-4 rounded-2xl bg-secondary-container min-w-[90px] animate-option-pop animate-stagger-3">
- <Star className="w-5 h-5 text-secondary mb-1" />
- <span className="title-medium font-bold text-secondary">{percentage}%</span>
+ <Star className="w-5 h-5 text-secondary-foreground mb-1" />
+ <span className="title-medium font-bold text-secondary-foreground">{percentage}%</span>
  <span className="label-small text-muted-foreground">Precisione</span>
  </div>
  </div>

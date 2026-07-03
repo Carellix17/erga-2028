@@ -437,8 +437,8 @@ export function InterrogazioneView() {
  onClick={() => selectedCourse && startInterrogazione(selectedCourse,"free")}
  className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-secondary-container/80 backdrop-blur-md border-[0.5px] border-secondary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2"
  >
- <Volume2 className="w-10 h-10 text-secondary" />
- <span className="label-large text-secondary font-semibold tracking-tight">Esposizione</span>
+ <Volume2 className="w-10 h-10 text-secondary-foreground" />
+ <span className="label-large text-secondary-foreground font-semibold tracking-tight">Esposizione</span>
  <span className="label-small text-muted-foreground text-center">Esponi l'argomento</span>
  </button>
  </div>
