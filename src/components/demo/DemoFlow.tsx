@@ -53,6 +53,7 @@ function computeHexagon(lessons: Lesson[], completions: CompletionMap): DemoHexa
 }
 
 export function DemoFlow() {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<"input" | "generating" | "course">("input");
   const [topic, setTopic] = useState("");
   const [pdfHint, setPdfHint] = useState("");
@@ -93,7 +94,7 @@ export function DemoFlow() {
       setPhase("course");
     } catch (e) {
       console.error(e);
-      setError("Non riusciamo a generare il percorso. Riprova tra poco.");
+      setError(t("demo.genError"));
       setPhase("input");
     }
   }
