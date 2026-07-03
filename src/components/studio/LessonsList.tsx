@@ -333,8 +333,8 @@ export function LessonsList({
  className="absolute flex flex-col items-center animate-cinematic-in"
  style={{
  left: `${x}%`,
- top: y,
- transform:"translate(-50%, -50%)",
+ top: y - size / 2,
+ transform:"translate(-50%, 0)",
  zIndex: isCurrent ? 10 : 2,
  animationDelay: `${Math.min(i * 60, 480)}ms`,
  }}
