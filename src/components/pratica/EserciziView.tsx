@@ -540,7 +540,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
               onClick={() => setView("generate")}
-              className="group relative overflow-hidden text-left p-5 rounded-3xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-level-2 hover:shadow-level-3 transition-all duration-400 ease-m3-emphasized active:scale-[0.98]"
+              className="group relative overflow-hidden text-left p-5 rounded-3xl bg-black text-white shadow-level-2 hover:shadow-level-3 transition-all duration-400 ease-m3-emphasized active:scale-[0.98]"
             >
               <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary-foreground/10 blur-2xl" />
               <div className="relative space-y-3">
@@ -559,7 +559,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
 
             <button
               onClick={() => setView("history")}
-              className="group relative overflow-hidden text-left p-5 rounded-3xl bg-gradient-to-br from-tertiary-container to-tertiary-container/40 text-foreground shadow-level-1 hover:shadow-level-2 transition-all duration-400 ease-m3-emphasized active:scale-[0.98] border border-outline-variant/30"
+              className="group relative overflow-hidden text-left p-5 rounded-3xl bg-tertiary-container text-foreground shadow-level-1 hover:shadow-level-2 transition-all duration-400 ease-m3-emphasized active:scale-[0.98] border border-outline-variant/30"
             >
               <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-tertiary/10 blur-2xl" />
               <div className="relative space-y-3">
