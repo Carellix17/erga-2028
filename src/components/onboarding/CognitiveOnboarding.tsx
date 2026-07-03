@@ -109,7 +109,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-1.5 rounded-full bg-foreground/10 overflow-hidden backdrop-blur-md">
               <div
-                className="h-full bg-gradient-to-r from-primary to-tertiary transition-all duration-500 ease-out"
+                className="h-full bg-black transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>

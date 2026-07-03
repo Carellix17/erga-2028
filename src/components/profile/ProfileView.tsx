@@ -281,7 +281,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  </div>
 
  {/* Esagono Cognitivo */}
- <div className="m3-card-elevated rounded-3xl p-5 space-y-4 bg-gradient-to-br from-primary/[0.04] to-tertiary/[0.06] backdrop-blur-md border-[0.5px] border-white/40">
+ <div className="m3-card-elevated rounded-3xl p-5 space-y-4 bg-white backdrop-blur-md border-[0.5px] border-slate-200/70">
  <div className="flex items-center gap-2 mb-1">
  <Hexagon className="w-5 h-5 text-primary" />
  <h2 className="title-medium font-display text-foreground">Esagono Cognitivo</h2>
