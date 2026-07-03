@@ -278,6 +278,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const body: Record<string, unknown> = { userId: currentUser, contextId: courseId };
+      body.language = currentLanguage();
       if (lessonIds && lessonIds.length > 0 && lessonIds.length < lessons.length) {
         body.lessonIds = lessonIds;
       }
