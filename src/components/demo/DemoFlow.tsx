@@ -178,6 +178,7 @@ function InputStep({
   onDrop: (e: React.DragEvent) => void;
   onStart: () => void; error: string | null;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-up">
       <div
@@ -194,7 +195,7 @@ function InputStep({
             <Upload className="w-5 h-5 text-slate-500" />
           </div>
           <p className="text-sm text-slate-500">
-            Trascina un <strong className="text-slate-800 font-medium">PDF</strong> qui, oppure scrivi un argomento.
+            <Trans i18nKey="demo.dropHint" components={{ 1: <strong className="text-slate-800 font-medium" /> }} />
           </p>
         </div>
 
@@ -202,7 +203,7 @@ function InputStep({
           <Input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="Es. Lamarck e l'evoluzione"
+            placeholder={t("demo.placeholder")}
             className="h-14 rounded-2xl bg-white border border-slate-200 focus-visible:border-primary/60 pl-5 text-base"
             onKeyDown={(e) => e.key === "Enter" && topic.trim() && onStart()}
           />
@@ -212,27 +213,25 @@ function InputStep({
             className="w-full h-14 rounded-2xl bg-slate-900 text-white text-base font-medium disabled:opacity-40"
           >
             <Brain className="w-4 h-4 mr-2" />
-            Inizia Lezione Demo
+            {t("demo.startButton")}
             <ArrowRight className="w-4 h-4 ml-2" />
           </LiquidButton>
         </div>
 
         {error && <p className="mt-3 text-sm text-destructive text-center">{error}</p>}
 
-        <p className="mt-4 text-center text-xs text-slate-400">
-          Nessuna registrazione richiesta · Percorso di 4 lezioni · 3 gratuite
-        </p>
+        <p className="mt-4 text-center text-xs text-slate-400">{t("demo.noSignup")}</p>
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-6 text-xs text-slate-400">
         <span className="flex items-center gap-1.5 opacity-50 cursor-not-allowed">
-          <Lock className="w-3 h-3" /> Vista Grafo
+          <Lock className="w-3 h-3" /> {t("demo.lockedGraph")}
         </span>
         <span className="flex items-center gap-1.5 opacity-50 cursor-not-allowed">
-          <Lock className="w-3 h-3" /> Storico
+          <Lock className="w-3 h-3" /> {t("demo.lockedHistory")}
         </span>
         <span className="flex items-center gap-1.5 opacity-50 cursor-not-allowed">
-          <Lock className="w-3 h-3" /> File illimitati
+          <Lock className="w-3 h-3" /> {t("demo.lockedFiles")}
         </span>
       </div>
     </div>
@@ -240,13 +239,14 @@ function InputStep({
 }
 
 function GeneratingStep() {
+  const { t } = useTranslation();
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-up flex flex-col items-center justify-center py-16 gap-4">
       <div className="w-16 h-16 rounded-3xl bg-slate-900 flex items-center justify-center shadow-lg">
         <Loader2 className="w-7 h-7 text-white animate-spin" />
       </div>
-      <p className="font-display text-2xl text-slate-900">Sto progettando il tuo percorso…</p>
-      <p className="text-sm text-slate-500">Sto suddividendo l'argomento in 4 lezioni sequenziali.</p>
+      <p className="font-display text-2xl text-slate-900">{t("demo.generating")}</p>
+      <p className="text-sm text-slate-500">{t("demo.generatingSub")}</p>
     </div>
   );
 }
