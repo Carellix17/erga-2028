@@ -184,18 +184,20 @@ export function LessonsList({
 
  const getY = (indexInModule: number): number => NODE_SPACING * indexInModule + NODE_SPACING / 2;
 
- // Build a single continuous SVG path using a fixed width reference (390px mobile)
- const SVG_WIDTH = 390;
+ // Build a single continuous SVG path in a percentage-based coordinate space (0..100 wide).
+ // Using percentages guarantees the path aligns with the nodes (which use `left: x%`)
+ // regardless of the actual container width.
+ const SVG_WIDTH = 100;
  const buildModulePath = (lessonCount: number): string => {
  if (lessonCount < 2) return"";
  const points: string[] = [];
  for (let i = 0; i < lessonCount; i++) {
- const x = (getX(i) / 100) * SVG_WIDTH;
+  const x = getX(i); // already 0..100
  const y = getY(i);
  if (i === 0) {
  points.push(`M ${x} ${y}`);
  } else {
- const prevX = (getX(i - 1) / 100) * SVG_WIDTH;
+  const prevX = getX(i - 1);
  const prevY = getY(i - 1);
  const midY = (prevY + y) / 2;
  points.push(`C ${prevX} ${midY}, ${x} ${midY}, ${x} ${y}`);
