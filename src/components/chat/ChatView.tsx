@@ -9,16 +9,18 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { History, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import { currentLanguage } from "@/i18n";
 
 interface ChatViewProps { hasFiles: boolean; onUploadClick: () => void; }
 type Message = { id: string; role: "user" | "assistant"; content: string; imageUrl?: string; };
 
-const welcomeMessage: Message = {
-  id: "welcome", role: "assistant",
-  content: "Ciao! Sono il tuo tutor di studio personale. Rispondo alle tue domande basandomi esclusivamente sui materiali che hai caricato. Come posso aiutarti oggi?",
-};
-
 export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
+  const { t } = useTranslation();
+  const welcomeMessage: Message = {
+    id: "welcome", role: "assistant",
+    content: t("chat.welcome"),
+  };
   const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
   const [isLoading, setIsLoading] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -141,7 +143,7 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, messages: apiMessages }) });
+          body: JSON.stringify({ userId: currentUser, messages: apiMessages, language: currentLanguage() }) });
       if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || "Errore nella risposta"); }
       const contentType = response.headers.get("content-type");
       if (contentType?.includes("application/json")) {
@@ -246,7 +248,7 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
             )}
           >
             <History className="w-4 h-4" />
-            Cronologia
+            {t("chat.history")}
           </button>
           {activeConversationId && (
             <span className="text-xs text-muted-foreground truncate">
