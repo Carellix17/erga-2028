@@ -2,9 +2,12 @@ import { Navigate, Link } from "react-router-dom";
 import { Brain } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DemoFlow } from "@/components/demo/DemoFlow";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export default function Landing() {
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
@@ -32,17 +35,18 @@ export default function Landing() {
           <span className="font-display text-lg text-slate-900">Erga</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
+          <LanguageSwitcher />
           <Link
             to="/login"
             className="px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition"
           >
-            Accedi
+            {t("landing.signIn")}
           </Link>
           <Link
             to="/registrati"
             className="px-3 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition"
           >
-            Registrati
+            {t("landing.signUp")}
           </Link>
         </div>
       </header>
@@ -50,16 +54,15 @@ export default function Landing() {
       <main className="relative z-10 max-w-5xl mx-auto px-5 sm:px-8 pt-8 sm:pt-16 pb-24">
         <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 animate-fade-up">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-4">
-            Il tuo assistente di studio
+            {t("landing.tagline")}
           </p>
           <h1 className="font-display font-semibold text-4xl sm:text-6xl leading-[1.05] text-slate-900 tracking-tight">
-            Studia qualsiasi cosa.
+            {t("landing.titleTop")}
             <br />
-            <span className="text-slate-400">In tre slide.</span>
+            <span className="text-slate-400">{t("landing.titleBottom")}</span>
           </h1>
           <p className="mt-5 text-slate-500 text-base sm:text-lg leading-relaxed">
-            Trasforma i tuoi materiali in sessioni di apprendimento attivo.
-            Mappa le tue competenze e colma le lacune in tempo reale.
+            {t("landing.subtitle")}
           </p>
         </div>
 
@@ -67,7 +70,7 @@ export default function Landing() {
       </main>
 
       <footer className="relative z-10 pb-8 text-center text-xs text-slate-400">
-        Erga · Impara meglio, non di più.
+        {t("landing.footer")}
       </footer>
     </div>
   );
