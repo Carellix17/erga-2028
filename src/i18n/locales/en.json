@@ -1,0 +1,95 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "language": "Language",
+    "italian": "Italian",
+    "english": "English"
+  },
+  "nav": {
+    "studio": "Studio",
+    "piano": "Planner",
+    "pratica": "Practice",
+    "profilo": "Profile"
+  },
+  "header": {
+    "upload": "Upload",
+    "files": "Files"
+  },
+  "landing": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "tagline": "Your study assistant",
+    "titleTop": "Study anything.",
+    "titleBottom": "In three slides.",
+    "subtitle": "Turn your materials into active learning sessions. Map your skills and close the gaps in real time.",
+    "footer": "Erga · Learn better, not more."
+  },
+  "demo": {
+    "dropHint": "Drop a <1>PDF</1> here, or type a topic.",
+    "placeholder": "e.g. Lamarck and evolution",
+    "startButton": "Start demo lesson",
+    "noSignup": "No signup required · 4-lesson path · 3 free",
+    "lockedGraph": "Graph view",
+    "lockedHistory": "History",
+    "lockedFiles": "Unlimited files",
+    "generating": "Designing your path…",
+    "generatingSub": "Splitting the topic into 4 sequential lessons.",
+    "genError": "We couldn't generate the path. Please try again shortly.",
+    "newTopic": "New topic",
+    "yourPath": "Your path",
+    "lessonsProgress": "{{done}} / {{total}} free lessons completed",
+    "lessonLabel": "Lesson {{n}}",
+    "accountRequired": "Account required",
+    "hexTitle": "Your hexagon, in real time",
+    "hexSave": "Save it to your profile",
+    "createAccount": "create an account"
+  },
+  "login": {
+    "welcome": "Sign in to continue",
+    "title": "Sign in",
+    "subtitle": "Email, Google or Apple",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "submit": "Sign in",
+    "noAccount": "Don't have an account?",
+    "goSignup": "Sign up",
+    "or": "or",
+    "google": "Continue with Google",
+    "apple": "Continue with Apple",
+    "errorTitle": "Sign-in error",
+    "invalidCreds": "Incorrect email or password"
+  },
+  "signup": {
+    "title": "Create your account",
+    "subtitle": "Start studying with AI",
+    "email": "Email",
+    "password": "Password",
+    "confirm": "Confirm password",
+    "minChars": "Minimum 8 characters",
+    "match": "Passwords match",
+    "noMatch": "Passwords don't match",
+    "submit": "Sign up",
+    "submitting": "Signing up...",
+    "haveAccount": "Already have an account?",
+    "goLogin": "Sign in",
+    "checkEmail": "Check your email",
+    "confirmSent": "We sent a confirmation link to <1>{{email}}</1>. Click it to activate your account.",
+    "backToLogin": "Back to login"
+  },
+  "chat": {
+    "welcome": "Hi! I'm your personal study tutor. I answer your questions based only on the materials you've uploaded. How can I help today?",
+    "history": "History",
+    "quick": {
+      "explain": "Explain better",
+      "example": "Give an example",
+      "summarize": "Summarize",
+      "quiz": "Quick quiz"
+    }
+  }
+}
