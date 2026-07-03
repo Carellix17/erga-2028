@@ -264,19 +264,20 @@ function CourseStep({
   onOpenAuth: () => void;
   onReset: () => void;
 }) {
+  const { t } = useTranslation();
   const completedCount = Object.keys(completions).length;
   const showHex = completedCount > 0;
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-up">
       <button onClick={onReset} className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
-        <ChevronLeft className="w-4 h-4" /> Nuovo argomento
+        <ChevronLeft className="w-4 h-4" /> {t("demo.newTopic")}
       </button>
 
       <div className="mb-6">
-        <p className="text-xs uppercase tracking-widest text-slate-400 mb-1">Il tuo percorso</p>
+        <p className="text-xs uppercase tracking-widest text-slate-400 mb-1">{t("demo.yourPath")}</p>
         <h2 className="font-display text-2xl sm:text-3xl text-slate-900 tracking-tight">{course.courseTitle}</h2>
         <p className="mt-1 text-sm text-slate-500">
-          {completedCount} / {GUEST_LIMIT} lezioni gratuite completate
+          {t("demo.lessonsProgress", { done: completedCount, total: GUEST_LIMIT })}
         </p>
       </div>
 
@@ -311,10 +312,10 @@ function CourseStep({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] uppercase tracking-widest text-slate-400">Lezione {idx + 1}</span>
+                    <span className="text-[11px] uppercase tracking-widest text-slate-400">{t("demo.lessonLabel", { n: idx + 1 })}</span>
                     {locked && (
                       <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900 text-white">
-                        Account richiesto
+                        {t("demo.accountRequired")}
                       </span>
                     )}
                   </div>
@@ -333,11 +334,11 @@ function CourseStep({
       {showHex && (
         <div className="mt-8 rounded-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.25)] p-5">
           <div className="text-center mb-2">
-            <p className="text-xs uppercase tracking-widest text-slate-400">Il tuo esagono, in tempo reale</p>
+            <p className="text-xs uppercase tracking-widest text-slate-400">{t("demo.hexTitle")}</p>
           </div>
           <CognitiveRadar profile={hexagon} />
           <div className="mt-3 text-center text-xs text-slate-500">
-            Salvalo sul tuo profilo — <button onClick={onOpenAuth} className="underline underline-offset-2 text-slate-800">crea un account</button>.
+            {t("demo.hexSave")} — <button onClick={onOpenAuth} className="underline underline-offset-2 text-slate-800">{t("demo.createAccount")}</button>.
           </div>
         </div>
       )}
