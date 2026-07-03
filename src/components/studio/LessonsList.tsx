@@ -246,7 +246,7 @@ export function LessonsList({
  <div className="flex items-center gap-3">
  <div className="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
  <div
- className={cn("h-full rounded-full transition-all duration-700 ease-m3-emphasized bg-gradient-to-r", color.gradient)}
+ className={cn("h-full rounded-full transition-all duration-700 ease-m3-emphasized", color.solid)}
  style={{ width: `${progress}%` }}
  />
  </div>
@@ -269,8 +269,8 @@ export function LessonsList({
  {/* Module header */}
  <div className="flex items-center gap-2 mb-4 px-2">
  <div className={cn(
-"h-8 px-3 rounded-xl flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] backdrop-blur-md border-[0.5px] border-white/50 transition-all duration-300 ease-in-out",
- color.gradient
+"h-8 px-3 rounded-xl flex items-center gap-1.5 text-xs font-bold text-white shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] backdrop-blur-md border-[0.5px] border-white/50 transition-all duration-300 ease-in-out",
+ color.solid
  )}>
  <Crown className="w-3.5 h-3.5" />
  {mod.title}
@@ -375,7 +375,7 @@ export function LessonsList({
  {/* Pulse ring for current */}
  {isCurrent && (
  <span
- className={cn("absolute animate-pulse opacity-20 bg-gradient-to-br backdrop-blur-sm border-[0.5px] border-white/30", color.gradient)}
+ className={cn("absolute animate-pulse opacity-20 backdrop-blur-sm border-[0.5px] border-white/30", color.solid)}
  style={{
  inset: -6,
  borderRadius: radius + 4,
@@ -387,8 +387,8 @@ export function LessonsList({
  <span
  className={cn(
 "absolute inset-0 flex items-center justify-center transition-all duration-300",
- isCompleted && cn("bg-gradient-to-br shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] backdrop-blur-md border-[0.5px] border-white/50 opacity-90", color.gradient),
- isCurrent && cn("bg-gradient-to-br shadow-[0_8px_32px_0_rgba(0,0,0,0.15)] backdrop-blur-md border-[0.5px] border-white/50", color.gradient),
+ isCompleted && cn("shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] backdrop-blur-md border-[0.5px] border-white/50 opacity-90", color.solid),
+ isCurrent && cn("shadow-[0_8px_32px_0_rgba(0,0,0,0.15)] backdrop-blur-md border-[0.5px] border-white/50", color.solid),
  !isCurrent && !isCompleted && !isLocked &&"bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)]",
  isLocked &&"bg-white/40 backdrop-blur-sm border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.02)] opacity-45",
  )}
@@ -470,13 +470,13 @@ export function LessonsList({
  className="relative group flex flex-col items-center transition-all duration-300 ease-m3-emphasized active:scale-90"
  >
  <span
- className={cn("absolute animate-pulse opacity-15 bg-gradient-to-br", color.gradient)}
+ className={cn("absolute animate-pulse opacity-15", color.solid)}
  style={{ inset: -8, borderRadius: 24 }}
  />
  <span
  className={cn(
-"w-20 h-20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] backdrop-blur-md border-[0.5px] border-white/50 text-white bg-gradient-to-br group-hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.16)] group-hover:scale-[1.02] transition-all duration-300 ease-in-out",
- color.gradient,
+"w-20 h-20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] backdrop-blur-md border-[0.5px] border-white/50 text-white group-hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.16)] group-hover:scale-[1.02] transition-all duration-300 ease-in-out",
+ color.solid,
  )}
  style={{ borderRadius: 24 }}
  >
@@ -501,8 +501,8 @@ export function LessonsList({
  <div className="px-5 pt-2 animate-fade-in">
  <div className="flex flex-col items-center text-center mb-5">
  <div className={cn(
-"w-12 h-12 rounded-2xl bg-gradient-to-br shadow-level-2 flex items-center justify-center mb-3",
- color.gradient,
+"w-12 h-12 rounded-2xl shadow-level-2 flex items-center justify-center mb-3",
+ color.solid,
  )}>
  <span className="text-white font-display font-bold">{menuLesson.index + 1}</span>
  </div>
@@ -558,7 +558,7 @@ export function LessonsList({
 "flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50",
  )}
  >
- <span className={cn("w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] backdrop-blur-md border-[0.5px] border-white/40", color.gradient)}>
+ <span className={cn("w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] backdrop-blur-md border-[0.5px] border-white/40", color.solid)}>
  {actionLoading ==="regen" ? (
  <Loader2 className="w-5 h-5 text-white animate-spin" />
  ) : (
