@@ -227,7 +227,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  ) : (
  <UserCircle2 className="w-12 h-12 text-primary" />
  )}
- <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+ <div className="absolute inset-0 bg-slate-500/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
  {isUploadingAvatar ? (
  <Loader2 className="w-6 h-6 text-white animate-spin" />
  ) : (

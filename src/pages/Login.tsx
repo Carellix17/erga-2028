@@ -90,7 +90,7 @@ export default function Login() {
 
       <div className="w-full max-w-sm animate-fade-up relative z-10">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center mb-4">
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <h1 className="font-display text-2xl font-semibold tracking-tight text-slate-900 text-center">
@@ -138,7 +138,7 @@ export default function Login() {
               </div>
             </div>
 
-            <LiquidButton type="submit" className="w-full h-12 bg-slate-900 text-white hover:bg-slate-800 border-0 rounded-xl transition-all duration-300 font-semibold" disabled={isSubmitting}>
+            <LiquidButton type="submit" className="w-full h-12 bg-black text-white hover:bg-stone-900 border-0 rounded-xl transition-all duration-300 font-semibold" disabled={isSubmitting}>
               Accedi
             </LiquidButton>
 

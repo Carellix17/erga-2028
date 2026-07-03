@@ -211,7 +211,7 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
       {showHistory && (
         <>
           {/* Backdrop on mobile */}
-          <div className="absolute inset-0 bg-black/30 z-20 md:hidden" onClick={() => setShowHistory(false)} />
+          <div className="absolute inset-0 bg-slate-500/10 backdrop-blur-sm z-20 md:hidden" onClick={() => setShowHistory(false)} />
           <div className="absolute left-0 top-0 bottom-0 w-[280px] z-30 md:relative md:w-[260px] md:z-auto animate-fade-up">
             <div className="h-full relative">
               <button
