@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
+import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 
 /**
  * Stateless "demo" course generator for anonymous / guest users.
@@ -29,6 +30,7 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const topic = typeof body.topic === "string" ? body.topic.trim().slice(0, 240) : "";
     const text = typeof body.text === "string" ? body.text.trim().slice(0, 8000) : "";
+    const language = normalizeLanguage(body.language);
 
     if (!topic && !text) {
       return errorResponse("Argomento o testo mancante", 400);
@@ -38,7 +40,8 @@ serve(async (req) => {
       ? `MATERIALE FORNITO (usa questo come unica fonte):\n"""\n${text}\n"""`
       : `ARGOMENTO: "${topic}"`;
 
-    const prompt = `Sei un tutor didattico. Progetta un MINI-PERCORSO DEMO in italiano composto da 4 lezioni sequenziali che sviluppano progressivamente l'argomento (introduzione -> concetti fondamentali -> approfondimento -> sintesi / applicazione).
+    const prompt = `${languageDirective(language)}
+Sei un tutor didattico. Progetta un MINI-PERCORSO DEMO in ${languageName(language)} composto da 4 lezioni sequenziali che sviluppano progressivamente l'argomento (introduzione -> concetti fondamentali -> approfondimento -> sintesi / applicazione).
 
 ${sourceBlock}
 
