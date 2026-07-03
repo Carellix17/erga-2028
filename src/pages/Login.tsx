@@ -82,28 +82,27 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="glass-orb glass-orb-primary w-[500px] h-[500px] -top-48 -right-48 animate-float" />
-        <div className="glass-orb glass-orb-tertiary w-[400px] h-[400px] top-1/2 -left-40" style={{ animationDelay: '-3s', animationDuration: '14s' }} />
-        <div className="glass-orb glass-orb-accent w-[300px] h-[300px] -bottom-24 right-1/4" style={{ animationDelay: '-6s', animationDuration: '16s' }} />
+    <div className="min-h-screen bg-[#FCFCFC] flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="pointer-events-none fixed inset-0">
+        <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-primary/8 blur-3xl" />
+        <div className="absolute bottom-0 -left-40 w-[420px] h-[420px] rounded-full bg-tertiary/8 blur-3xl" />
       </div>
 
       <div className="w-full max-w-sm animate-fade-up relative z-10">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 rounded-[1.75rem] gradient-primary flex items-center justify-center mb-4 shadow-glass-xl animate-glow-pulse">
-            <Sparkles className="w-9 h-9 text-white" />
+          <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center mb-4">
+            <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent whitespace-pre-line">
-            {"\u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 Erga\n\u00a0Il tuo assistente di studio"}
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-slate-900 text-center">
+            Erga
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">Accedi per continuare</p>
+          <p className="text-slate-500 text-sm mt-1">Accedi per continuare</p>
         </div>
 
-        <div className="glass-card rounded-[1.75rem] p-6 shadow-glass-xl">
+        <div className="rounded-3xl bg-white border border-slate-200/70 shadow-[0_8px_32px_0_rgba(15,23,42,0.04)] p-6">
           <div className="text-center mb-6">
-            <h2 className="text-xl font-heading font-semibold">Accedi</h2>
-            <p className="text-sm text-muted-foreground mt-1">Email, Google o Apple</p>
+            <h2 className="text-xl font-semibold text-slate-900">Accedi</h2>
+            <p className="text-sm text-slate-500 mt-1">Email, Google o Apple</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -139,7 +138,7 @@ export default function Login() {
               </div>
             </div>
 
-            <LiquidButton type="submit" className="w-full h-12 gradient-primary text-white border-0 rounded-xl shadow-glass-md hover:shadow-glass-lg hover:scale-[1.02] transition-all duration-300 font-semibold" disabled={isSubmitting}>
+            <LiquidButton type="submit" className="w-full h-12 bg-slate-900 text-white hover:bg-slate-800 border-0 rounded-xl transition-all duration-300 font-semibold" disabled={isSubmitting}>
               Accedi
             </LiquidButton>
 
