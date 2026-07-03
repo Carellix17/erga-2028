@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Slider } from "@/components/ui/slider";
+import { currentLanguage } from "@/i18n";
 
 const MAX_EXERCISES = 20;
 const MIN_PER_LESSON = 2;
