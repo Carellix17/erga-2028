@@ -6,7 +6,7 @@ interface QuickActionsProps {
 
 const quickActions = [
   { label: "Spiegami meglio", emoji: "💡", cls: "bg-primary-container text-primary border-primary/20" },
-  { label: "Fammi un esempio", emoji: "📝", cls: "bg-secondary-container text-secondary border-secondary/20" },
+  { label: "Fammi un esempio", emoji: "📝", cls: "bg-secondary-container text-secondary-foreground border-secondary/20" },
   { label: "Riassumi", emoji: "📋", cls: "bg-tertiary-container text-tertiary border-tertiary/20" },
   { label: "Quiz veloce", emoji: "⚡", cls: "bg-warning/10 text-warning border-warning/20" },
 ];

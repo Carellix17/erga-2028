@@ -17,7 +17,7 @@ interface PlanItemProps {
 const typeConfig = {
   study: { bg: "bg-primary-container", border: "border-l-primary", badge: "bg-primary-container text-primary", label: "Studio" },
   test: { bg: "bg-tertiary-container", border: "border-l-tertiary", badge: "bg-tertiary-container text-tertiary", label: "Verifica" },
-  assignment: { bg: "bg-secondary-container", border: "border-l-secondary", badge: "bg-secondary-container text-secondary", label: "Compito" },
+  assignment: { bg: "bg-secondary-container", border: "border-l-secondary", badge: "bg-secondary-container text-secondary-foreground", label: "Compito" },
 };
 
 export function PlanItem({ item, onClick }: PlanItemProps) {

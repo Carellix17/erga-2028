@@ -323,7 +323,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  {/* Institute Section */}
  <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
  <div className="flex items-center gap-2 mb-1">
- <GraduationCap className="w-5 h-5 text-secondary" />
+ <GraduationCap className="w-5 h-5 text-secondary-foreground" />
  <h2 className="title-medium font-display text-foreground">Tipo di istituto</h2>
  </div>
  <RadioGroup value={institute} onValueChange={setInstitute} className="space-y-1">

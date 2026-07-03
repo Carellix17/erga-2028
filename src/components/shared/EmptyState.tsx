@@ -51,7 +51,7 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade-up animate-stagger-5">
           {[
             { label: "📄 PDF", cls: "bg-primary-container text-primary" },
-            { label: "🌐 Ricerca web", cls: "bg-secondary-container text-secondary" },
+            { label: "🌐 Ricerca web", cls: "bg-secondary-container text-secondary-foreground" },
             { label: "🧠 AI Tutor", cls: "bg-tertiary-container text-tertiary" },
           ].map((item) => (
             <span key={item.label} className={`m3-chip ${item.cls}`}>
