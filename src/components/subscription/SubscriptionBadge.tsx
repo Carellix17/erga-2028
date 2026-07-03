@@ -12,21 +12,21 @@ const tierConfig = {
   free: {
     icon: Zap,
     label: "Free",
-    gradient: "from-primary via-secondary to-tertiary",
+    solid: "bg-black",
     iconColor: "text-white",
     ring: "ring-primary/30",
   },
   beta: {
     icon: Brain,
     label: "Beta",
-    gradient: "from-primary via-secondary to-tertiary",
+    solid: "bg-black",
     iconColor: "text-white",
     ring: "ring-primary/30",
   },
   pro: {
     icon: Crown,
     label: "Pro",
-    gradient: "from-warning via-warning to-secondary",
+    solid: "bg-warning",
     iconColor: "text-white",
     ring: "ring-warning/30",
   },
@@ -42,7 +42,7 @@ export function SubscriptionBadge({ tier, onClick }: SubscriptionBadgeProps) {
       aria-label={`Piano ${config.label} — visualizza dettagli abbonamento`}
       className={cn(
         "w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center",
-        "bg-gradient-to-br", config.gradient,
+        config.solid,
         "shadow-level-2 ring-2", config.ring,
         "rotate-3 hover:rotate-0 hover:scale-110 active:scale-95",
         "transition-all duration-500 ease-m3-emphasized",
@@ -50,9 +50,6 @@ export function SubscriptionBadge({ tier, onClick }: SubscriptionBadgeProps) {
       )}
     >
       <Icon className={cn("w-5 h-5", config.iconColor, "drop-shadow-sm transition-transform duration-300 group-hover:scale-110")} />
-      {tier === "beta" && (
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-      )}
     </button>
   );
 }
