@@ -1,4 +1,4 @@
-import { FileUp, Sparkles, BookOpen, Brain, Zap } from "lucide-react";
+import { FileUp, Brain, BookOpen, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface EmptyStateProps {
@@ -20,7 +20,7 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
         {/* Icon composition */}
         <div className="relative mb-10 flex items-center justify-center">
           <div className="w-28 h-28 rounded-[2rem] gradient-primary flex items-center justify-center shadow-level-4 animate-bounce-in rotate-3">
-            <Sparkles className="w-14 h-14 text-white animate-wiggle" />
+            <Brain className="w-14 h-14 text-white animate-wiggle" />
           </div>
           <div className="absolute -right-5 -top-5 w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center shadow-level-2 animate-bounce-in animate-stagger-2 -rotate-6">
             <BookOpen className="w-7 h-7 text-white" />

@@ -240,6 +240,25 @@
   .gradient-primary {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(235 50% 48%));
   }
+
+  /* ═══════ DOT GRID BACKGROUND ═══════
+     Vercel/Linear inspired subtle dot pattern. Non-invasive depth cue. */
+  .bg-dot-grid {
+    background-color: #FCFCFC;
+    background-image: radial-gradient(hsl(215 20% 60% / 0.18) 1px, transparent 1px);
+    background-size: 22px 22px;
+    background-position: 0 0;
+  }
+
+  /* ═══════ CINEMATIC ENTER ═══════
+     Soft fade + micro scale-up. No bounce. */
+  @keyframes cinematic-enter {
+    0%   { opacity: 0; transform: scale(0.98) translateY(4px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .animate-cinematic-in {
+    animation: cinematic-enter 480ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
   .gradient-warm {
     background: linear-gradient(135deg, hsl(var(--surface-container-highest)), hsl(var(--surface-container)));
   }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight, Sparkles, Brain, Zap, FileSearch } from "lucide-react";
+import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight, Cpu, Brain, Zap, FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -545,7 +545,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
               <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary-foreground/10 blur-2xl" />
               <div className="relative space-y-3">
                 <div className="w-12 h-12 rounded-2xl bg-primary-foreground/15 backdrop-blur flex items-center justify-center">
-                  <Sparkles className="w-6 h-6" />
+                  <Cpu className="w-6 h-6" />
                 </div>
                 <div>
                   <p className="title-medium font-display font-bold">Genera esercizi</p>
@@ -659,7 +659,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
                 Non hai ancora generato esercizi. I tuoi set appariranno qui per riprenderli quando vuoi.
               </p>
               <Button onClick={() => setView("generate")} className="rounded-full mt-2">
-                <Sparkles className="w-4 h-4 mr-2" /> Genera ora
+                <Cpu className="w-4 h-4 mr-2" /> Genera ora
               </Button>
             </div>
           ) : (

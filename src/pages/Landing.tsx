@@ -1,5 +1,5 @@
 import { Navigate, Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Brain } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DemoFlow } from "@/components/demo/DemoFlow";
 
@@ -8,7 +8,7 @@ export default function Landing() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FCFCFC] flex items-center justify-center">
+      <div className="min-h-screen bg-dot-grid flex items-center justify-center">
         <div className="w-10 h-10 rounded-2xl bg-slate-900 animate-pulse" />
       </div>
     );
@@ -17,7 +17,7 @@ export default function Landing() {
   if (isAuthenticated) return <Navigate to="/app" replace />;
 
   return (
-    <div className="min-h-screen bg-[#FCFCFC] relative overflow-hidden">
+    <div className="min-h-screen bg-dot-grid relative overflow-hidden">
       {/* Subtle ambient orbs */}
       <div className="pointer-events-none fixed inset-0">
         <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-primary/8 blur-3xl" />
@@ -27,7 +27,7 @@ export default function Landing() {
       <header className="relative z-10 flex items-center justify-between max-w-5xl mx-auto px-5 sm:px-8 h-16">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
+            <Brain className="w-4 h-4 text-white" />
           </div>
           <span className="font-display text-lg text-slate-900">Erga</span>
         </div>

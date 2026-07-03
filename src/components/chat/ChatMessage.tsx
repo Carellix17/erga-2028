@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Sparkles } from "lucide-react";
+import { Brain } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 interface ChatMessageProps {
@@ -23,7 +23,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
     >
       {!isUser && (
         <div className="w-9 h-9 rounded-2xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-level-1">
-          <Sparkles className="w-4 h-4 text-white" />
+          <Brain className="w-4 h-4 text-white" />
         </div>
       )}
       

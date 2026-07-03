@@ -1,9 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Upload, Sparkles, ArrowRight, Check, Lock, Mail, Eye, EyeOff,
-  ChevronLeft, Loader2, X, CheckCircle2,
-} from "lucide-react";
+import { Upload, Brain, ArrowRight, Check, Lock, Mail, Eye, EyeOff, ChevronLeft, Loader2, X, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -212,7 +209,7 @@ function InputStep({
             disabled={!topic.trim()}
             className="w-full h-14 rounded-2xl bg-slate-900 text-white text-base font-medium disabled:opacity-40"
           >
-            <Sparkles className="w-4 h-4 mr-2" />
+            <Brain className="w-4 h-4 mr-2" />
             Inizia Lezione Demo
             <ArrowRight className="w-4 h-4 ml-2" />
           </LiquidButton>
@@ -384,9 +381,9 @@ function FullscreenLesson({
   const correctCount = answers.filter((a, i) => a === lesson.quiz[i].correct).length;
 
   return (
-    <div className="fixed inset-0 top-0 left-0 w-screen h-screen z-50 bg-[#FCFCFC] overflow-y-auto animate-fade-up">
+    <div className="fixed inset-0 top-0 left-0 w-screen h-screen z-50 bg-dot-grid overflow-y-auto animate-fade-up">
       {/* Top bar */}
-      <div className="sticky top-0 z-10 bg-[#FCFCFC]/90 backdrop-blur-md border-b border-slate-100">
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 sm:px-6 h-14">
           <button
             onClick={onClose}
