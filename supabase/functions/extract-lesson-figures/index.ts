@@ -401,6 +401,6 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("extract-lesson-figures error:", error);
-    return errorResponse(error instanceof Error ? error.message : "Errore");
+    return errorResponse("Si è verificato un errore. Riprova.", 500);
   }
 });

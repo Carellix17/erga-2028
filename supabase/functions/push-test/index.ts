@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("push-test error:", err);
     return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : "Errore" }),
+      JSON.stringify({ error: "Si è verificato un errore. Riprova." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
