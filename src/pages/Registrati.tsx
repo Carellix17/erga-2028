@@ -48,7 +48,7 @@ export default function Registrati() {
 
   if (registered) {
     return (
-      <div className="min-h-screen bg-[#FCFCFC] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-dot-grid flex items-center justify-center p-4">
         <div className="w-full max-w-sm text-center animate-fade-up space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center mx-auto">
             <Mail className="w-8 h-8 text-white" />
@@ -66,7 +66,7 @@ export default function Registrati() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FCFCFC] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-dot-grid flex items-center justify-center p-4 relative overflow-hidden">
       <div className="pointer-events-none fixed inset-0">
         <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-primary/8 blur-3xl" />
         <div className="absolute bottom-0 -left-40 w-[420px] h-[420px] rounded-full bg-tertiary/8 blur-3xl" />
