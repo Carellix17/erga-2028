@@ -223,7 +223,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       // Lo stato della generazione è leggibile via realtime su `study_contexts`.
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, contextId }) });
+          body: JSON.stringify({ userId: currentUser, contextId, language: (await import("@/i18n")).currentLanguage() }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Errore nella generazione");
       // Forza refetch del contesto: lo stato dovrebbe già essere 'generating'
@@ -306,7 +306,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       const contextId = selectedContextId || activeContextId;
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "generateFinalTest", ...(contextId ? { contextId } : {}) }) });
+          body: JSON.stringify({ userId: currentUser, action: "generateFinalTest", ...(contextId ? { contextId } : {}), language: (await import("@/i18n")).currentLanguage() }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Errore generazione test");
       setFinalTestExercises(data.exercises || []);
