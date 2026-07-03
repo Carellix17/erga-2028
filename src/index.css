@@ -13,14 +13,14 @@
     /* Inspired by NotebookLM editorial calm + Apple hardware neutrals */
 
     /* Primary — Refined Indigo (less neon, more ink) */
-    --primary: 235 45% 32%;
+    --primary: 222 47% 11%;
     --primary-foreground: 0 0% 100%;
     --primary-container: 235 40% 94%;
     --on-primary-container: 235 55% 18%;
 
     /* Secondary — Quiet Slate (was hot pink) */
-    --secondary: 220 14% 28%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
     --secondary-container: 220 14% 95%;
     --on-secondary-container: 220 14% 18%;
 
