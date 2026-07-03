@@ -11,7 +11,7 @@ import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, Use
 import { useToast } from"@/hooks/use-toast";
 import { cn } from"@/lib/utils";
 import { NotificationsCard } from"./NotificationsCard";
-import { useTheme } from"@/contexts/ThemeContext";
+// Theme fisso: light-only.
 import { useCognitiveProfile } from"@/hooks/useCognitiveProfile";
 import { CognitiveRadar } from"./CognitiveRadar";
 import { Button as UiButton } from"@/components/ui/button";
@@ -43,7 +43,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  const { currentUser } = useAuth();
  const { toast } = useToast();
  const fileInputRef = useRef<HTMLInputElement>(null);
- const { theme, setTheme, isLoaded: themeLoaded } = useTheme();
+ // (Aspetto/tema rimosso — app sempre in modalità chiara.)
  const { profile: cognitive } = useCognitiveProfile();
 
  const [firstName, setFirstName] = useState("");
@@ -340,24 +340,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  </RadioGroup>
  </div>
 
- {/* Appearance */}
- <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
- <div className="flex items-center gap-2 mb-1">
- <Moon className="w-5 h-5 text-primary" />
- <h2 className="title-medium font-display text-foreground">Aspetto</h2>
- </div>
- <label className="flex items-center justify-between gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-300 ease-m3-emphasized hover:bg-foreground/[0.08]">
- <div className="flex flex-col">
- <span className="body-large text-foreground">Modalità scura</span>
- <span className="body-small text-muted-foreground">Riduce l'affaticamento visivo</span>
- </div>
- <Switch
- checked={theme ==="dark"}
- disabled={!themeLoaded}
- onCheckedChange={(checked) => setTheme(checked ?"dark" :"light")}
- />
- </label>
- </div>
+ {/* Appearance rimosso: app sempre in tema chiaro */}
 
  {/* Subject Levels & Goals Section */}
  <div className="m3-card-elevated rounded-3xl p-5 space-y-6">
