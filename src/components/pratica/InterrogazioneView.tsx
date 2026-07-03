@@ -9,6 +9,7 @@ import { useToast } from"@/hooks/use-toast";
 import { supabase } from"@/integrations/supabase/client";
 import ReactMarkdown from"react-markdown";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from"@/components/ui/dialog";
+import { currentLanguage } from "@/i18n";
 
 type Mode ="select" |"config" |"structured" |"free" |"report";
 type Phase ="idle" |"question" |"listening" |"evaluating" |"feedback";
@@ -198,7 +199,7 @@ export function InterrogazioneView() {
  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interrogazione`, {
  method:"POST",
  headers: {"Content-Type":"application/json", Authorization: `Bearer ${authToken}` },
- body: JSON.stringify({ userId: currentUser, action, contextId: selectedCourse, ...extraBody }),
+ body: JSON.stringify({ userId: currentUser, action, contextId: selectedCourse, language: currentLanguage(), ...extraBody }),
  });
  if (!response.ok) throw new Error("Errore nella risposta");
  return response.json();
