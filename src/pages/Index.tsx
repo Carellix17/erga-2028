@@ -106,7 +106,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-dot-grid">
       <AppHeader
         onUploadClick={() => setShowUpload(true)}
         hasFiles={hasFiles}
