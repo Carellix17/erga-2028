@@ -11,6 +11,8 @@ import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { writeDemoState, type DemoHexagon } from "@/hooks/useDemoHandoff";
+import { useTranslation, Trans } from "react-i18next";
+import { currentLanguage } from "@/i18n";
 
 type Slide = { part_title: string; content: string };
 type QuizItem = { question: string; options: string[]; correct: number; skill: string };
@@ -51,6 +53,7 @@ function computeHexagon(lessons: Lesson[], completions: CompletionMap): DemoHexa
 }
 
 export function DemoFlow() {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<"input" | "generating" | "course">("input");
   const [topic, setTopic] = useState("");
   const [pdfHint, setPdfHint] = useState("");
@@ -81,7 +84,7 @@ export function DemoFlow() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ topic: finalTopic }),
+          body: JSON.stringify({ topic: finalTopic, language: currentLanguage() }),
         },
       );
       if (!res.ok) throw new Error("gen failed");
@@ -91,7 +94,7 @@ export function DemoFlow() {
       setPhase("course");
     } catch (e) {
       console.error(e);
-      setError("Non riusciamo a generare il percorso. Riprova tra poco.");
+      setError(t("demo.genError"));
       setPhase("input");
     }
   }
@@ -176,6 +179,7 @@ function InputStep({
   onDrop: (e: React.DragEvent) => void;
   onStart: () => void; error: string | null;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-up">
       <div
@@ -192,7 +196,7 @@ function InputStep({
             <Upload className="w-5 h-5 text-slate-500" />
           </div>
           <p className="text-sm text-slate-500">
-            Trascina un <strong className="text-slate-800 font-medium">PDF</strong> qui, oppure scrivi un argomento.
+            <Trans i18nKey="demo.dropHint" components={{ 1: <strong className="text-slate-800 font-medium" /> }} />
           </p>
         </div>
 
@@ -200,7 +204,7 @@ function InputStep({
           <Input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="Es. Lamarck e l'evoluzione"
+            placeholder={t("demo.placeholder")}
             className="h-14 rounded-2xl bg-white border border-slate-200 focus-visible:border-primary/60 pl-5 text-base"
             onKeyDown={(e) => e.key === "Enter" && topic.trim() && onStart()}
           />
@@ -210,27 +214,25 @@ function InputStep({
             className="w-full h-14 rounded-2xl bg-slate-900 text-white text-base font-medium disabled:opacity-40"
           >
             <Brain className="w-4 h-4 mr-2" />
-            Inizia Lezione Demo
+            {t("demo.startButton")}
             <ArrowRight className="w-4 h-4 ml-2" />
           </LiquidButton>
         </div>
 
         {error && <p className="mt-3 text-sm text-destructive text-center">{error}</p>}
 
-        <p className="mt-4 text-center text-xs text-slate-400">
-          Nessuna registrazione richiesta · Percorso di 4 lezioni · 3 gratuite
-        </p>
+        <p className="mt-4 text-center text-xs text-slate-400">{t("demo.noSignup")}</p>
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-6 text-xs text-slate-400">
         <span className="flex items-center gap-1.5 opacity-50 cursor-not-allowed">
-          <Lock className="w-3 h-3" /> Vista Grafo
+          <Lock className="w-3 h-3" /> {t("demo.lockedGraph")}
         </span>
         <span className="flex items-center gap-1.5 opacity-50 cursor-not-allowed">
-          <Lock className="w-3 h-3" /> Storico
+          <Lock className="w-3 h-3" /> {t("demo.lockedHistory")}
         </span>
         <span className="flex items-center gap-1.5 opacity-50 cursor-not-allowed">
-          <Lock className="w-3 h-3" /> File illimitati
+          <Lock className="w-3 h-3" /> {t("demo.lockedFiles")}
         </span>
       </div>
     </div>
@@ -238,13 +240,14 @@ function InputStep({
 }
 
 function GeneratingStep() {
+  const { t } = useTranslation();
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-up flex flex-col items-center justify-center py-16 gap-4">
       <div className="w-16 h-16 rounded-3xl bg-slate-900 flex items-center justify-center shadow-lg">
         <Loader2 className="w-7 h-7 text-white animate-spin" />
       </div>
-      <p className="font-display text-2xl text-slate-900">Sto progettando il tuo percorso…</p>
-      <p className="text-sm text-slate-500">Sto suddividendo l'argomento in 4 lezioni sequenziali.</p>
+      <p className="font-display text-2xl text-slate-900">{t("demo.generating")}</p>
+      <p className="text-sm text-slate-500">{t("demo.generatingSub")}</p>
     </div>
   );
 }
@@ -261,19 +264,20 @@ function CourseStep({
   onOpenAuth: () => void;
   onReset: () => void;
 }) {
+  const { t } = useTranslation();
   const completedCount = Object.keys(completions).length;
   const showHex = completedCount > 0;
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-up">
       <button onClick={onReset} className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
-        <ChevronLeft className="w-4 h-4" /> Nuovo argomento
+        <ChevronLeft className="w-4 h-4" /> {t("demo.newTopic")}
       </button>
 
       <div className="mb-6">
-        <p className="text-xs uppercase tracking-widest text-slate-400 mb-1">Il tuo percorso</p>
+        <p className="text-xs uppercase tracking-widest text-slate-400 mb-1">{t("demo.yourPath")}</p>
         <h2 className="font-display text-2xl sm:text-3xl text-slate-900 tracking-tight">{course.courseTitle}</h2>
         <p className="mt-1 text-sm text-slate-500">
-          {completedCount} / {GUEST_LIMIT} lezioni gratuite completate
+          {t("demo.lessonsProgress", { done: completedCount, total: GUEST_LIMIT })}
         </p>
       </div>
 
@@ -308,10 +312,10 @@ function CourseStep({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] uppercase tracking-widest text-slate-400">Lezione {idx + 1}</span>
+                    <span className="text-[11px] uppercase tracking-widest text-slate-400">{t("demo.lessonLabel", { n: idx + 1 })}</span>
                     {locked && (
                       <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900 text-white">
-                        Account richiesto
+                        {t("demo.accountRequired")}
                       </span>
                     )}
                   </div>
@@ -330,11 +334,11 @@ function CourseStep({
       {showHex && (
         <div className="mt-8 rounded-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.25)] p-5">
           <div className="text-center mb-2">
-            <p className="text-xs uppercase tracking-widest text-slate-400">Il tuo esagono, in tempo reale</p>
+            <p className="text-xs uppercase tracking-widest text-slate-400">{t("demo.hexTitle")}</p>
           </div>
           <CognitiveRadar profile={hexagon} />
           <div className="mt-3 text-center text-xs text-slate-500">
-            Salvalo sul tuo profilo — <button onClick={onOpenAuth} className="underline underline-offset-2 text-slate-800">crea un account</button>.
+            {t("demo.hexSave")} — <button onClick={onOpenAuth} className="underline underline-offset-2 text-slate-800">{t("demo.createAccount")}</button>.
           </div>
         </div>
       )}

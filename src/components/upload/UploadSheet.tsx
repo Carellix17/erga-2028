@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { FileManager } from "./FileManager";
 import { supabase } from "@/integrations/supabase/client";
+import { currentLanguage } from "@/i18n";
 
 
 interface UploadSheetProps {
@@ -153,7 +154,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, topic: webTopic.trim() }),
+          body: JSON.stringify({ userId: currentUser, topic: webTopic.trim(), language: currentLanguage() }),
         }
       );
       const searchData = await searchResponse.json();

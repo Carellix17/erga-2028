@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
 import { callAIStream } from "../_shared/ai.ts";
+import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -10,6 +11,7 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const { messages } = body;
+    const language = normalizeLanguage(body.language);
 
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
@@ -90,7 +92,8 @@ serve(async (req) => {
       profileText += "\n\nAdatta il tuo linguaggio e la difficoltà delle spiegazioni in base al tipo di istituto e ai livelli dello studente.";
     }
 
-    const systemPrompt = `Sei un tutor di studio personale. Rispondi SOLO basandoti sui contenuti di studio forniti e sul diario dello studente.
+    const systemPrompt = `${languageDirective(language)}
+Sei un tutor di studio personale. Rispondi SEMPRE in ${languageName(language)}. Rispondi SOLO basandoti sui contenuti di studio forniti e sul diario dello studente.
 
 REGOLE IMPORTANTI:
 1. Usa ESCLUSIVAMENTE le informazioni dai materiali di studio forniti

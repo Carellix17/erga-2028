@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useTranslation, Trans } from "react-i18next";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export default function Registrati() {
   const [email, setEmail] = useState("");
@@ -18,6 +20,7 @@ export default function Registrati() {
 
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const isLengthValid = password.length >= 8;
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
@@ -36,7 +39,7 @@ export default function Registrati() {
 
     if (error) {
       toast({
-        title: "Errore",
+        title: t("login.errorTitle"),
         description: error.message,
         variant: "destructive",
       });
@@ -53,12 +56,12 @@ export default function Registrati() {
           <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center mx-auto">
             <Mail className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-xl font-semibold text-slate-900">Controlla la tua email</h2>
+          <h2 className="text-xl font-semibold text-slate-900">{t("signup.checkEmail")}</h2>
           <p className="text-slate-500 text-sm">
-            Abbiamo inviato un link di conferma a <strong>{email}</strong>. Clicca sul link per attivare il tuo account.
+            <Trans i18nKey="signup.confirmSent" values={{ email }} components={{ 1: <strong /> }} />
           </p>
           <Button variant="outline" onClick={() => navigate("/login")} className="mt-4">
-            Torna al login
+            {t("signup.backToLogin")}
           </Button>
         </div>
       </div>
@@ -73,25 +76,26 @@ export default function Registrati() {
       </div>
 
       <div className="w-full max-w-sm animate-fade-up relative z-10">
+        <div className="flex justify-end mb-2"><LanguageSwitcher /></div>
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center mb-4">
             <Brain className="w-6 h-6 text-white" />
           </div>
           <h1 className="font-display text-2xl font-semibold tracking-tight text-slate-900 text-center">
-            Crea il tuo account
+            {t("signup.title")}
           </h1>
-          <p className="text-slate-500 text-sm mt-1">Inizia a studiare con l'AI</p>
+          <p className="text-slate-500 text-sm mt-1">{t("signup.subtitle")}</p>
         </div>
 
         <div className="rounded-3xl bg-white border border-slate-200/70 shadow-[0_8px_32px_0_rgba(15,23,42,0.04)] p-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Email</Label>
+              <Label className="text-sm font-medium">{t("signup.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-4 top-3.5 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder="la-tua@email.com"
+                  placeholder={t("login.emailPlaceholder")}
                   className="pl-11 h-12 rounded-xl glass-subtle border-border/30 focus:border-primary/40 transition-all"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -101,7 +105,7 @@ export default function Registrati() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Password</Label>
+              <Label className="text-sm font-medium">{t("signup.password")}</Label>
               <div className="relative">
                 <Lock className="absolute left-4 top-3.5 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -117,12 +121,12 @@ export default function Registrati() {
               </div>
               <div className={cn("flex items-center gap-1 text-xs", isLengthValid ? "text-primary" : "text-muted-foreground")}>
                 {isLengthValid && <Check className="w-3 h-3" />}
-                <span>Minimo 8 caratteri</span>
+                <span>{t("signup.minChars")}</span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Conferma password</Label>
+              <Label className="text-sm font-medium">{t("signup.confirm")}</Label>
               <div className="relative">
                 <Lock className="absolute left-4 top-3.5 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -136,19 +140,19 @@ export default function Registrati() {
               {confirmPassword.length > 0 && (
                 <div className={cn("flex items-center gap-1 text-xs", passwordsMatch ? "text-primary" : "text-destructive")}>
                   {passwordsMatch && <Check className="w-3 h-3" />}
-                  <span>{passwordsMatch ? "Le password corrispondono" : "Le password non corrispondono"}</span>
+                  <span>{passwordsMatch ? t("signup.match") : t("signup.noMatch")}</span>
                 </div>
               )}
             </div>
 
             <Button type="submit" className="w-full h-12 bg-black text-white hover:bg-stone-900 border-0 rounded-xl transition-all duration-300 font-semibold" disabled={!canSubmit || isSubmitting}>
-              {isSubmitting ? "Registrazione..." : "Registrati"}
+              {isSubmitting ? t("signup.submitting") : t("signup.submit")}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Hai già un account?{" "}
+              {t("signup.haveAccount")}{" "}
               <Link to="/login" className="text-primary font-medium hover:underline">
-                Accedi
+                {t("signup.goLogin")}
               </Link>
             </p>
           </form>

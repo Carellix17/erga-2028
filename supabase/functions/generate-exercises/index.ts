@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
+import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 
 function extractJsonArray(raw: string): unknown[] {
   let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
@@ -53,6 +54,7 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const { contextId, lessonIds, count } = body;
+    const language = normalizeLanguage(body.language);
     const requestedCount = Math.min(20, Math.max(1, Math.round(Number(count) || 10)));
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
@@ -204,7 +206,7 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
     const backgroundJob = async () => {
       try {
         const content = await callAIText([
-          { role: "system", content: "Rispondi ESCLUSIVAMENTE con un array JSON valido. Niente markdown, niente ```json, niente testo extra. Tutte le virgolette interne alle stringhe devono essere escape con \\\". Niente virgole finali." },
+          { role: "system", content: `${languageDirective(language)} Rispondi ESCLUSIVAMENTE con un array JSON valido. Niente markdown, niente \`\`\`json, niente testo extra. Tutte le virgolette interne alle stringhe devono essere escape con \\". Niente virgole finali.` },
           { role: "user", content: prompt },
         ], 0.3, 4096);
         const exercises = extractJsonArray(content);

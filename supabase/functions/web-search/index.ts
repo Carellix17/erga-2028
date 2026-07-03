@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
+import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -10,6 +11,7 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const { topic } = body;
+    const language = normalizeLanguage(body.language);
 
     if (!topic || typeof topic !== "string" || topic.trim().length < 3) {
       return errorResponse("Inserisci un argomento valido (almeno 3 caratteri).", 400);
@@ -20,7 +22,8 @@ serve(async (req) => {
 
     console.log(`Web search for user: ${userId}, topic: "${topic}"`);
 
-    const searchPrompt = `Fornisci una spiegazione completa e dettagliata sull'argomento: "${topic}".
+    const searchPrompt = `${languageDirective(language)}
+Fornisci una spiegazione completa e dettagliata sull'argomento: "${topic}".
      
 Includi:
 - Definizioni e concetti fondamentali
@@ -29,12 +32,12 @@ Includi:
 - Date, nomi e fatti importanti
 - Connessioni con altri argomenti correlati
 
-Scrivi in italiano. Sii esaustivo ma chiaro, come un manuale di studio universitario.
+Scrivi in ${languageName(language)}. Sii esaustivo ma chiaro, come un manuale di studio universitario.
 Obiettivo: il testo deve essere sufficientemente ricco da poterci generare 8-15 mini-lezioni.
 Scrivi almeno 3000 parole.`;
 
     const content = await callAIText([
-      { role: "system", content: "Sei un esperto accademico e docente universitario. Fornisci contenuti dettagliati, accurati e ben strutturati per lo studio. Rispondi sempre in italiano. Usa titoli, sottotitoli e punti elenco per organizzare il contenuto." },
+      { role: "system", content: `${languageDirective(language)} Sei un esperto accademico e docente universitario. Fornisci contenuti dettagliati, accurati e ben strutturati per lo studio. Rispondi sempre in ${languageName(language)}. Usa titoli, sottotitoli e punti elenco per organizzare il contenuto.` },
       { role: "user", content: searchPrompt },
     ], 0.4, 8000);
 

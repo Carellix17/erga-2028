@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Slider } from "@/components/ui/slider";
+import { currentLanguage } from "@/i18n";
 
 const MAX_EXERCISES = 20;
 const MIN_PER_LESSON = 2;
@@ -277,6 +278,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const body: Record<string, unknown> = { userId: currentUser, contextId: courseId };
+      body.language = currentLanguage();
       if (lessonIds && lessonIds.length > 0 && lessonIds.length < lessons.length) {
         body.lessonIds = lessonIds;
       }

@@ -6,6 +6,8 @@ import { SubscriptionBadge } from"@/components/subscription/SubscriptionBadge";
 import { SubscriptionSheet } from"@/components/subscription/SubscriptionSheet";
 import { useSubscription } from"@/hooks/useSubscription";
 import { SaveStatusIndicator, SaveStatusDot } from"./SaveStatusIndicator";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 interface AppHeaderProps {
  onUploadClick: () => void;
@@ -15,6 +17,7 @@ interface AppHeaderProps {
 export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
  const [showSubscription, setShowSubscription] = useState(false);
  const { tier } = useSubscription();
+ const { t } = useTranslation();
 
  return (
  <>
@@ -32,6 +35,7 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
  </div>
  
  <div className="flex items-center gap-2.5">
+ <LanguageSwitcher variant="dark" />
  <Button
  variant={hasFiles ?"tonal" :"default"}
  size="sm"
@@ -39,7 +43,7 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
  className="gap-2"
  >
  <FileUp className="w-4 h-4" />
- {hasFiles ?"File" :"Carica"}
+ {hasFiles ? t("header.files") : t("header.upload")}
  </Button>
  <UserMenu />
  </div>

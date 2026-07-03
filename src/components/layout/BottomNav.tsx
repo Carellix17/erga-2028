@@ -1,5 +1,6 @@
 import { BookOpen, CalendarDays, GraduationCap, User } from"lucide-react";
 import { cn } from"@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 type Tab ="studio" |"piano" |"pratica" |"profilo";
 
@@ -9,13 +10,14 @@ interface BottomNavProps {
 }
 
 const tabs = [
- { id:"studio" as Tab, label:"Studio", icon: BookOpen, color:"bg-primary-container text-primary" },
- { id:"piano" as Tab, label:"Piano", icon: CalendarDays, color:"bg-primary-container text-primary" },
- { id:"pratica" as Tab, label:"Pratica", icon: GraduationCap, color:"bg-primary-container text-primary" },
- { id:"profilo" as Tab, label:"Profilo", icon: User, color:"bg-primary-container text-primary" },
+ { id:"studio" as Tab, i18nKey: "nav.studio", icon: BookOpen, color:"bg-primary-container text-primary" },
+ { id:"piano" as Tab, i18nKey: "nav.piano", icon: CalendarDays, color:"bg-primary-container text-primary" },
+ { id:"pratica" as Tab, i18nKey: "nav.pratica", icon: GraduationCap, color:"bg-primary-container text-primary" },
+ { id:"profilo" as Tab, i18nKey: "nav.profilo", icon: User, color:"bg-primary-container text-primary" },
 ];
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
+ const { t } = useTranslation();
  return (
  <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe px-3 sm:px-4 pb-8 sm:pb-6 pointer-events-none">
  <div className="bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto pointer-events-auto rounded-full -translate-y-1 shadow-[0_8px_32px_0_rgba(0,0,0,0.06)] transition-all duration-300 ease-in-out">
@@ -55,7 +57,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
  )}
  style={{ transitionTimingFunction:"cubic-bezier(0.34, 1.56, 0.64, 1)" }}
  >
- {tab.label}
+ {t(tab.i18nKey)}
  </span>
  </button>
  );

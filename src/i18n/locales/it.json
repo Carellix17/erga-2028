@@ -1,0 +1,95 @@
+{
+  "common": {
+    "loading": "Caricamento…",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "close": "Chiudi",
+    "back": "Indietro",
+    "next": "Avanti",
+    "language": "Lingua",
+    "italian": "Italiano",
+    "english": "Inglese"
+  },
+  "nav": {
+    "studio": "Studio",
+    "piano": "Piano",
+    "pratica": "Pratica",
+    "profilo": "Profilo"
+  },
+  "header": {
+    "upload": "Carica",
+    "files": "File"
+  },
+  "landing": {
+    "signIn": "Accedi",
+    "signUp": "Registrati",
+    "tagline": "Il tuo assistente di studio",
+    "titleTop": "Studia qualsiasi cosa.",
+    "titleBottom": "In tre slide.",
+    "subtitle": "Trasforma i tuoi materiali in sessioni di apprendimento attivo. Mappa le tue competenze e colma le lacune in tempo reale.",
+    "footer": "Erga · Impara meglio, non di più."
+  },
+  "demo": {
+    "dropHint": "Trascina un <1>PDF</1> qui, oppure scrivi un argomento.",
+    "placeholder": "Es. Lamarck e l'evoluzione",
+    "startButton": "Inizia Lezione Demo",
+    "noSignup": "Nessuna registrazione richiesta · Percorso di 4 lezioni · 3 gratuite",
+    "lockedGraph": "Vista Grafo",
+    "lockedHistory": "Storico",
+    "lockedFiles": "File illimitati",
+    "generating": "Sto progettando il tuo percorso…",
+    "generatingSub": "Sto suddividendo l'argomento in 4 lezioni sequenziali.",
+    "genError": "Non riusciamo a generare il percorso. Riprova tra poco.",
+    "newTopic": "Nuovo argomento",
+    "yourPath": "Il tuo percorso",
+    "lessonsProgress": "{{done}} / {{total}} lezioni gratuite completate",
+    "lessonLabel": "Lezione {{n}}",
+    "accountRequired": "Account richiesto",
+    "hexTitle": "Il tuo esagono, in tempo reale",
+    "hexSave": "Salvalo sul tuo profilo",
+    "createAccount": "crea un account"
+  },
+  "login": {
+    "welcome": "Accedi per continuare",
+    "title": "Accedi",
+    "subtitle": "Email, Google o Apple",
+    "email": "Email",
+    "emailPlaceholder": "la-tua@email.com",
+    "password": "Password",
+    "submit": "Accedi",
+    "noAccount": "Non hai un account?",
+    "goSignup": "Registrati",
+    "or": "oppure",
+    "google": "Continua con Google",
+    "apple": "Continua con Apple",
+    "errorTitle": "Errore di accesso",
+    "invalidCreds": "Email o password non corretti"
+  },
+  "signup": {
+    "title": "Crea il tuo account",
+    "subtitle": "Inizia a studiare con l'AI",
+    "email": "Email",
+    "password": "Password",
+    "confirm": "Conferma password",
+    "minChars": "Minimo 8 caratteri",
+    "match": "Le password corrispondono",
+    "noMatch": "Le password non corrispondono",
+    "submit": "Registrati",
+    "submitting": "Registrazione...",
+    "haveAccount": "Hai già un account?",
+    "goLogin": "Accedi",
+    "checkEmail": "Controlla la tua email",
+    "confirmSent": "Abbiamo inviato un link di conferma a <1>{{email}}</1>. Clicca sul link per attivare il tuo account.",
+    "backToLogin": "Torna al login"
+  },
+  "chat": {
+    "welcome": "Ciao! Sono il tuo tutor di studio personale. Rispondo alle tue domande basandomi esclusivamente sui materiali che hai caricato. Come posso aiutarti oggi?",
+    "history": "Cronologia",
+    "quick": {
+      "explain": "Spiegami meglio",
+      "example": "Fammi un esempio",
+      "summarize": "Riassumi",
+      "quiz": "Quiz veloce"
+    }
+  }
+}
