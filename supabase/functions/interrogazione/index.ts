@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
+import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -10,6 +11,7 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const { action, contextId, question, answer, history, questionNumber, maxQuestions: maxQuestionsBody, scores } = body;
+    const language = normalizeLanguage(body.language);
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
 
@@ -48,7 +50,8 @@ serve(async (req) => {
     const callAI = async (messages: any[], temperature = 0.7) => {
       // Gemini 2.5 Flash consuma "reasoning tokens" dal budget: serve un margine ampio
       // per evitare risposte troncate a metà frase.
-      return callAIText(messages, temperature, 4096);
+      const injected = [{ role: "system", content: languageDirective(language) }, ...messages];
+      return callAIText(injected, temperature, 4096);
     };
 
     if (action === "ask") {
