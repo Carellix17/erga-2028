@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from"react";
-import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX, Loader2, Trophy, Sparkles, ArrowLeft } from"lucide-react";
+import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX, Loader2, Trophy, Brain, ArrowLeft } from "lucide-react";
 import { Button } from"@/components/ui/button";
 import { LiquidButton } from"@/components/ui/liquid-glass-button";
 import { Slider } from"@/components/ui/slider";
@@ -555,7 +555,7 @@ export function InterrogazioneView() {
 
  <div className="p-5 rounded-3xl bg-primary-container/80 backdrop-blur-md border-[0.5px] border-primary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-3">
  <div className="flex items-center gap-2">
- <Sparkles className="w-5 h-5 text-primary" />
+ <Brain className="w-5 h-5 text-primary" />
  <p className="label-large font-semibold tracking-tight text-on-primary-container">Considerazioni finali del Tutor</p>
  </div>
  <div className="body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold text-on-primary-container">

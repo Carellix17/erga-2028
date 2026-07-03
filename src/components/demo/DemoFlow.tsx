@@ -1,9 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Upload, Sparkles, ArrowRight, Check, Lock, Mail, Eye, EyeOff,
-  ChevronLeft, Loader2, X, CheckCircle2,
-} from "lucide-react";
+import { Upload, Brain, ArrowRight, Check, Lock, Mail, Eye, EyeOff, ChevronLeft, Loader2, X, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -212,7 +209,7 @@ function InputStep({
             disabled={!topic.trim()}
             className="w-full h-14 rounded-2xl bg-slate-900 text-white text-base font-medium disabled:opacity-40"
           >
-            <Sparkles className="w-4 h-4 mr-2" />
+            <Brain className="w-4 h-4 mr-2" />
             Inizia Lezione Demo
             <ArrowRight className="w-4 h-4 ml-2" />
           </LiquidButton>

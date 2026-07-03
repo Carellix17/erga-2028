@@ -7,7 +7,7 @@ import { GenerationProgress } from "./GenerationProgress";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, RefreshCw, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Exercise } from "./exercises/ExerciseRenderer";
@@ -395,7 +395,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
             {isGenerating ? (
               <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Analisi in corso...</>
             ) : (
-              <><Sparkles className="w-4 h-4 mr-2" />Genera percorso</>
+              <><Network className="w-4 h-4 mr-2" />Genera percorso</>
             )}
           </LiquidButton>
         )}

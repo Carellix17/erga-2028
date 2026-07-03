@@ -6,7 +6,7 @@ import { Input } from"@/components/ui/input";
 import { Label } from"@/components/ui/label";
 import { Slider } from"@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from"@/components/ui/radio-group";
-import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Sparkles, Hexagon } from"lucide-react";
+import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Brain, Hexagon } from "lucide-react";
 import { useToast } from"@/hooks/use-toast";
 import { cn } from"@/lib/utils";
 import { NotificationsCard } from"./NotificationsCard";
@@ -315,7 +315,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  variant="outline"
  className="w-full rounded-2xl h-12 backdrop-blur-md border-[0.5px] border-primary/30 bg-primary/[0.06] hover:bg-primary/[0.12] transition-all duration-300"
  >
- <Sparkles className="w-4 h-4 mr-2 text-primary" />
+ <Brain className="w-4 h-4 mr-2 text-primary" />
  {cognitive ?"Ricalcola il tuo Esagono Cognitivo" :"Calcola il tuo Esagono Cognitivo"}
  </UiButton>
  </div>

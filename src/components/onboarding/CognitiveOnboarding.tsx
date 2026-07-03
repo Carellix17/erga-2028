@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Sparkles, ChevronRight, ChevronLeft, Search, Check } from "lucide-react";
+import { Loader2, Brain, ChevronRight, ChevronLeft, Search, Check } from "lucide-react";
 import { COGNITIVE_QUESTIONS, INSTITUTES_LIST, computeAreaScores } from "@/lib/cognitiveQuestions";
 import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
 import { useToast } from "@/hooks/use-toast";
@@ -128,7 +128,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
             {currentSlide === "intro" && (
               <div className="text-center space-y-6 animate-fade-up">
                 <div className="w-16 h-16 mx-auto rounded-2xl bg-black flex items-center justify-center">
-                  <Sparkles className="w-8 h-8 text-white" />
+                  <Brain className="w-8 h-8 text-white" />
                 </div>
                 <div className="space-y-2">
                   <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Costruiamo il tuo Esagono Cognitivo</h1>

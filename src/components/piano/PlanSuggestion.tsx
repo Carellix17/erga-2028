@@ -1,4 +1,4 @@
-import { Sparkles, Check, X } from "lucide-react";
+import { Brain, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PlanSuggestionProps {
@@ -12,7 +12,7 @@ export function PlanSuggestion({ explanation, onAccept, onDecline }: PlanSuggest
     <div className="bg-primary-container rounded-xl p-5 shadow-level-2 animate-scale-in">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-primary-foreground" />
+          <Brain className="w-5 h-5 text-primary-foreground" />
         </div>
         <div>
           <h3 className="title-small">Piano suggerito</h3>

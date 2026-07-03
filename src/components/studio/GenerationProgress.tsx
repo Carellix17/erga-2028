@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, BookOpen, Brain, Check, Zap } from "lucide-react";
+import { Network, BookOpen, Brain, Check, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface GenerationProgressProps {
@@ -77,7 +77,7 @@ export function GenerationProgress({
       {/* Animated orb */}
       <div className="relative mb-8">
         <div className="w-28 h-28 rounded-[2rem] gradient-primary flex items-center justify-center shadow-level-3 animate-float">
-          <Sparkles className="w-12 h-12 text-primary-foreground" />
+          <Network className="w-12 h-12 text-primary-foreground" />
         </div>
         {/* Orbiting dots */}
         <div className="absolute inset-0 animate-spin" style={{ animationDuration: "6s" }}>

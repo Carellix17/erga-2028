@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Loader2, Trash2, Sparkles } from "lucide-react";
+import { Plus, Loader2, Trash2, Network } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import { Button } from "@/components/ui/button";

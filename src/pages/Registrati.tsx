@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, Sparkles, Check } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Brain, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,7 +75,7 @@ export default function Registrati() {
       <div className="w-full max-w-sm animate-fade-up relative z-10">
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center mb-4">
-            <Sparkles className="w-6 h-6 text-white" />
+            <Brain className="w-6 h-6 text-white" />
           </div>
           <h1 className="font-display text-2xl font-semibold tracking-tight text-slate-900 text-center">
             Crea il tuo account

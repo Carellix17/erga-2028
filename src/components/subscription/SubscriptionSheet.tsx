@@ -1,11 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Sparkles, Crown, Check, BookOpen, Brain, Calendar,
-  MessageCircle, FileUp, Camera, Globe, Mic, BarChart3,
-  Zap, Lock
-} from "lucide-react";
+import { Brain, Crown, Check, BookOpen, Calendar, MessageCircle, FileUp, Camera, Globe, Mic, BarChart3, Zap, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PlanTier } from "./SubscriptionBadge";
 
@@ -41,7 +37,7 @@ const plans = [
     name: "Piano Beta",
     price: "Gratis",
     priceNote: "Per i beta tester",
-    icon: Sparkles,
+    icon: Brain,
     gradient: "from-primary via-secondary to-tertiary",
     badgeText: "Attivo",
     badgeClass: "bg-primary/10 text-primary border-primary/20",

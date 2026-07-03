@@ -1,4 +1,4 @@
-import { Crown, Sparkles, Zap } from "lucide-react";
+import { Crown, Brain, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type PlanTier = "free" | "beta" | "pro";
@@ -17,7 +17,7 @@ const tierConfig = {
     ring: "ring-primary/30",
   },
   beta: {
-    icon: Sparkles,
+    icon: Brain,
     label: "Beta",
     gradient: "from-primary via-secondary to-tertiary",
     iconColor: "text-white",
