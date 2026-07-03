@@ -102,7 +102,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
   })();
 
   return (
-    <div className="fixed inset-0 z-[100] bg-gradient-to-br from-background via-primary/5 to-tertiary/10 overflow-y-auto">
+    <div className="fixed inset-0 z-[100] bg-[#FCFCFC] overflow-y-auto">
       <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-lg">
           {/* Progress + close */}
@@ -123,12 +123,12 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
             )}
           </div>
 
-          <div className="bg-white/70 dark:bg-black/40 backdrop-blur-xl border-[0.5px] border-white/40 dark:border-white/10 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] p-6 sm:p-8 transition-all duration-500 ease-out">
+          <div className="bg-white border border-slate-200/70 rounded-3xl shadow-[0_8px_32px_0_rgba(15,23,42,0.05)] p-6 sm:p-8 transition-all duration-500 ease-out">
 
             {currentSlide === "intro" && (
               <div className="text-center space-y-6 animate-fade-up">
-                <div className="w-16 h-16 mx-auto rounded-3xl bg-gradient-to-br from-primary to-tertiary flex items-center justify-center shadow-level-2">
-                  <Sparkles className="w-8 h-8 text-primary-foreground" />
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-slate-900 flex items-center justify-center">
+                  <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <div className="space-y-2">
                   <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Costruiamo il tuo Esagono Cognitivo</h1>
@@ -145,7 +145,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                 <Button
                   onClick={goNext}
                   size="lg"
-                  className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary to-tertiary border-0 shadow-level-2 hover:scale-[1.01] active:scale-[0.98] transition-all duration-300 ease-in-out"
+                  className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white border-0 transition-all duration-300 ease-in-out"
                 >
                   Inizia
                   <ChevronRight className="w-5 h-5 ml-1" />
@@ -303,7 +303,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                   onClick={goNext}
                   disabled={!canProceed}
                   size="lg"
-                  className="rounded-2xl h-12 px-6 bg-gradient-to-r from-primary to-tertiary border-0 shadow-level-1 hover:scale-[1.02] active:scale-[0.97] transition-all duration-300 ease-in-out"
+                  className="rounded-2xl h-12 px-6 bg-slate-900 hover:bg-slate-800 text-white border-0 transition-all duration-300 ease-in-out"
                 >
                   {currentSlide === "question" && questionIndex === totalQuestions - 1 ? "Calcola Esagono" : "Avanti"}
                   <ChevronRight className="w-4 h-4 ml-1" />
