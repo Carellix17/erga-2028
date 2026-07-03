@@ -10,9 +10,9 @@ interface BottomNavProps {
 
 const tabs = [
  { id:"studio" as Tab, label:"Studio", icon: BookOpen, color:"bg-primary-container text-primary" },
- { id:"piano" as Tab, label:"Piano", icon: CalendarDays, color:"bg-secondary-container text-secondary" },
- { id:"pratica" as Tab, label:"Pratica", icon: GraduationCap, color:"bg-tertiary-container text-tertiary" },
- { id:"profilo" as Tab, label:"Profilo", icon: User, color:"bg-surface-container-highest text-foreground" },
+ { id:"piano" as Tab, label:"Piano", icon: CalendarDays, color:"bg-primary-container text-primary" },
+ { id:"pratica" as Tab, label:"Pratica", icon: GraduationCap, color:"bg-primary-container text-primary" },
+ { id:"profilo" as Tab, label:"Profilo", icon: User, color:"bg-primary-container text-primary" },
 ];
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
