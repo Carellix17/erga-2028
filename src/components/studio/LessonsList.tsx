@@ -330,12 +330,13 @@ export function LessonsList({
  return (
  <div
  key={lesson.id}
- className="absolute flex flex-col items-center"
+ className="absolute flex flex-col items-center animate-cinematic-in"
  style={{
  left: `${x}%`,
  top: y,
  transform:"translate(-50%, -50%)",
  zIndex: isCurrent ? 10 : 2,
+ animationDelay: `${Math.min(i * 60, 480)}ms`,
  }}
  >
  <button
