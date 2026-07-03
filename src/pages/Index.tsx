@@ -118,7 +118,7 @@ const Index = () => {
         {activeTab === "studio" && cognitive && [cognitive.log_score, cognitive.mem_score, cognitive.foc_score, cognitive.voc_score, cognitive.ans_score, cognitive.app_score].every((s) => s === 50) && (
           <button
             onClick={() => setShowOnboarding(true)}
-            className="w-full mt-4 mb-2 rounded-3xl bg-gradient-to-r from-primary/15 to-tertiary/15 border-[0.5px] border-primary/30 backdrop-blur-md px-4 py-3 flex items-center gap-3 text-left transition-all duration-300 hover:scale-[1.005]"
+            className="w-full mt-4 mb-2 rounded-3xl bg-white border border-slate-200/70 px-4 py-3 flex items-center gap-3 text-left transition-all duration-300 hover:scale-[1.005] hover:border-slate-300"
           >
             <Sparkles className="w-5 h-5 text-primary shrink-0" />
             <div className="flex-1">

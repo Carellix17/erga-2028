@@ -48,13 +48,13 @@ export default function Registrati() {
 
   if (registered) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#FCFCFC] flex items-center justify-center p-4">
         <div className="w-full max-w-sm text-center animate-fade-up space-y-4">
-          <div className="w-16 h-16 rounded-[1.75rem] gradient-primary flex items-center justify-center mx-auto shadow-glass-xl">
+          <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center mx-auto">
             <Mail className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-xl font-heading font-semibold">Controlla la tua email</h2>
-          <p className="text-muted-foreground text-sm">
+          <h2 className="text-xl font-semibold text-slate-900">Controlla la tua email</h2>
+          <p className="text-slate-500 text-sm">
             Abbiamo inviato un link di conferma a <strong>{email}</strong>. Clicca sul link per attivare il tuo account.
           </p>
           <Button variant="outline" onClick={() => navigate("/login")} className="mt-4">
@@ -66,24 +66,24 @@ export default function Registrati() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="glass-orb glass-orb-primary w-[500px] h-[500px] -top-48 -right-48 animate-float" />
-        <div className="glass-orb glass-orb-tertiary w-[400px] h-[400px] top-1/2 -left-40" style={{ animationDelay: '-3s', animationDuration: '14s' }} />
+    <div className="min-h-screen bg-[#FCFCFC] flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="pointer-events-none fixed inset-0">
+        <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-primary/8 blur-3xl" />
+        <div className="absolute bottom-0 -left-40 w-[420px] h-[420px] rounded-full bg-tertiary/8 blur-3xl" />
       </div>
 
       <div className="w-full max-w-sm animate-fade-up relative z-10">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 rounded-[1.75rem] gradient-primary flex items-center justify-center mb-4 shadow-glass-xl">
-            <Sparkles className="w-9 h-9 text-white" />
+          <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center mb-4">
+            <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent">
-            Erga — Crea il tuo account studente
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-slate-900 text-center">
+            Crea il tuo account
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">Inizia a studiare con l'AI</p>
+          <p className="text-slate-500 text-sm mt-1">Inizia a studiare con l'AI</p>
         </div>
 
-        <div className="glass-card rounded-[1.75rem] p-6 shadow-glass-xl">
+        <div className="rounded-3xl bg-white border border-slate-200/70 shadow-[0_8px_32px_0_rgba(15,23,42,0.04)] p-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label className="text-sm font-medium">Email</Label>
@@ -141,7 +141,7 @@ export default function Registrati() {
               )}
             </div>
 
-            <Button type="submit" className="w-full h-12 gradient-primary text-white border-0 rounded-xl shadow-glass-md hover:shadow-glass-lg hover:scale-[1.02] transition-all duration-300 font-semibold" disabled={!canSubmit || isSubmitting}>
+            <Button type="submit" className="w-full h-12 bg-slate-900 text-white hover:bg-slate-800 border-0 rounded-xl transition-all duration-300 font-semibold" disabled={!canSubmit || isSubmitting}>
               {isSubmitting ? "Registrazione..." : "Registrati"}
             </Button>
 
