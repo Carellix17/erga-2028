@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import ChangePassword from "./pages/ChangePassword";
 import Registrati from "./pages/Registrati";
 import NotFound from "./pages/NotFound";
+import OAuthConsent from "./pages/OAuthConsent";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/registrati" element={<Registrati />} />
             <Route path="/cambia-password" element={<ChangePassword />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="/" element={<Landing />} />
             <Route
               path="/app"

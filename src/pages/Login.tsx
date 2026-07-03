@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
@@ -23,12 +23,15 @@ export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const rawNext = searchParams.get("next");
+  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/app";
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate("/app", { replace: true });
+      navigate(nextPath, { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, nextPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +61,7 @@ export default function Login() {
 
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: `${window.location.origin}/app`,
+        redirect_uri: `${window.location.origin}${nextPath}`,
         extraParams: provider === "google" ? { prompt: "select_account" } : undefined,
       });
 
