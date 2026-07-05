@@ -3,6 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useUserSubjects } from "@/hooks/useUserSubjects";
 
 interface AddEventSheetProps {
   open: boolean;
@@ -20,6 +21,7 @@ export function AddEventSheet({ open, onOpenChange, onAdd }: AddEventSheetProps)
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [type, setType] = useState<"test" | "assignment">("test");
+  const { data: userSubjects = [] } = useUserSubjects();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +65,21 @@ export function AddEventSheet({ open, onOpenChange, onAdd }: AddEventSheetProps)
 
           <div className="space-y-2">
             <Label htmlFor="subject" className="label-large">Materia</Label>
-            <Input id="subject" placeholder="Es. Matematica" value={subject} onChange={(e) => setSubject(e.target.value)} />
+            {userSubjects.length > 0 ? (
+              <select
+                id="subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full h-11 rounded-2xl bg-white border border-slate-200/70 px-3 body-medium outline-none"
+              >
+                <option value="" disabled>Seleziona una materia</option>
+                {userSubjects.map((s) => (
+                  <option key={s.id} value={s.name}>{s.name}</option>
+                ))}
+              </select>
+            ) : (
+              <Input id="subject" placeholder="Es. Matematica" value={subject} onChange={(e) => setSubject(e.target.value)} />
+            )}
           </div>
 
           <div className="space-y-2">
