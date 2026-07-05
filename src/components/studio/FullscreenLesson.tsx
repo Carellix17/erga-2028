@@ -298,6 +298,9 @@ export function FullscreenLesson({
  </div>
 
  {/* XP counter */}
+ {focusActive ? (
+ <FocusPill variant="warning" />
+ ) : (
  <div className="relative flex items-center gap-1 label-medium text-warning bg-warning/10 px-2.5 py-1 rounded-full">
  <Zap className="w-3.5 h-3.5" />
  <span>{xpGained}</span>
@@ -307,6 +310,7 @@ export function FullscreenLesson({
  </span>
  )}
  </div>
+ )}
  </div>
  <p className="body-small text-muted-foreground text-center">
  Lezione {lessonNumber} di {totalLessons} · <span className="text-foreground title-small">{lesson.title}</span>
