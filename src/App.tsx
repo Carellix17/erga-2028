@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SaveStatusProvider } from "@/contexts/SaveStatusContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { FocusProvider } from "@/contexts/FocusContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
@@ -38,9 +39,10 @@ const App = () => (
       <AuthProvider>
         <SaveStatusProvider>
           <ThemeProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+            <FocusProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/registrati" element={<Registrati />} />
@@ -58,7 +60,8 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-            </BrowserRouter>
+              </BrowserRouter>
+            </FocusProvider>
           </ThemeProvider>
         </SaveStatusProvider>
       </AuthProvider>
