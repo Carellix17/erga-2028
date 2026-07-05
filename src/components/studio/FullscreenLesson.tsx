@@ -146,6 +146,7 @@ function buildSteps(lesson: FullscreenLessonProps["lesson"], explanationParts: E
 export function FullscreenLesson({
  lesson, lessonNumber, totalLessons, onClose, onComplete, isLastLesson, nextLessonId,
 }: FullscreenLessonProps) {
+ const { isActive: focusActive } = useFocus();
  const explanationParts = useMemo(() => parseExplanationParts(lesson.explanation), [lesson.explanation]);
  const { figures, loading: figuresLoading } = useLessonFigures(lesson.id);
 
