@@ -478,7 +478,10 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                         const r = seg.routine;
                         const top = pxFromMin(seg.startMin);
                         const rawHeight = pxFromMin(seg.endMin - seg.startMin);
-                        const height = Math.max(32, rawHeight);
+                        const maxHeight = Number.isFinite(seg.maxRenderMin)
+                          ? pxFromMin(seg.maxRenderMin)
+                          : Infinity;
+                        const height = Math.min(Math.max(MIN_BLOCK_PX, rawHeight), maxHeight);
                         const style = KIND_STYLES[r.kind];
                         const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
                         const laneWidth = 100 / seg.laneCount;
@@ -549,7 +552,10 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                     const r = seg.routine;
                     const top = pxFromMin(seg.startMin);
                     const rawHeight = pxFromMin(seg.endMin - seg.startMin);
-                    const height = Math.max(32, rawHeight);
+                    const maxHeight = Number.isFinite(seg.maxRenderMin)
+                      ? pxFromMin(seg.maxRenderMin)
+                      : Infinity;
+                    const height = Math.min(Math.max(MIN_BLOCK_PX, rawHeight), maxHeight);
                     const style = KIND_STYLES[r.kind];
                     const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
                     const laneWidth = 100 / seg.laneCount;
