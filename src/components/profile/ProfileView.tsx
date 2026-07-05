@@ -14,6 +14,8 @@ import { NotificationsCard } from"./NotificationsCard";
 import { useCognitiveProfile } from"@/hooks/useCognitiveProfile";
 import { CognitiveRadar } from"./CognitiveRadar";
 import { Button as UiButton } from"@/components/ui/button";
+import { ScheduleConfigSheet } from"./ScheduleConfigSheet";
+import { CalendarClock } from"lucide-react";
 
 const INSTITUTES = [
  { value:"liceo_scientifico", label:"Liceo Scientifico" },
@@ -44,6 +46,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  const fileInputRef = useRef<HTMLInputElement>(null);
  // (Aspetto/tema rimosso — app sempre in modalità chiara.)
  const { profile: cognitive } = useCognitiveProfile();
+ const [scheduleOpen, setScheduleOpen] = useState(false);
 
  const [firstName, setFirstName] = useState("");
  const [lastName, setLastName] = useState("");
@@ -319,6 +322,18 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  {cognitive ?"Ricalcola il tuo Esagono Cognitivo" :"Calcola il tuo Esagono Cognitivo"}
  </UiButton>
  </div>
+
+     {/* Configura Orari e Materie */}
+     <UiButton
+       onClick={() => setScheduleOpen(true)}
+       variant="outline"
+       className="w-full rounded-2xl h-12 bg-white border border-slate-200/70 hover:bg-slate-50 transition-all duration-300"
+     >
+       <CalendarClock className="w-4 h-4 mr-2 text-foreground" />
+       Configura Orari e Materie
+     </UiButton>
+
+     <ScheduleConfigSheet open={scheduleOpen} onOpenChange={setScheduleOpen} />
 
  {/* Institute Section */}
  <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
