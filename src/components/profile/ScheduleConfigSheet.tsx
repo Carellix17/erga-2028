@@ -4,12 +4,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, BookOpen, CalendarClock, Loader2 } from "lucide-react";
+import { Plus, Trash2, BookOpen, CalendarClock, Loader2, Save } from "lucide-react";
 import {
   useUserSubjects, useAddUserSubject, useDeleteUserSubject,
 } from "@/hooks/useUserSubjects";
 import {
-  useUserRoutines, useAddUserRoutine, useDeleteUserRoutine, type RoutineKind, type UserRoutine,
+  useUserRoutines, useAddUserRoutine, useUpdateUserRoutine, useDeleteUserRoutine,
+  type RoutineKind, type UserRoutine,
 } from "@/hooks/useUserRoutines";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,6 @@ const KINDS: { value: RoutineKind; label: string }[] = [
   { value: "other",  label: "Altro" },
 ];
 
-// Minimal palette (soft, editorial)
 const KIND_STYLES: Record<RoutineKind, { bg: string; border: string; text: string; dot: string }> = {
   school: { bg: "bg-blue-50",    border: "border-blue-200/80",    text: "text-blue-900",    dot: "bg-blue-400" },
   sleep:  { bg: "bg-indigo-50",  border: "border-indigo-200/80",  text: "text-indigo-900",  dot: "bg-indigo-400" },
@@ -29,7 +29,7 @@ const KIND_STYLES: Record<RoutineKind, { bg: string; border: string; text: strin
   other:  { bg: "bg-slate-100",  border: "border-slate-200/80",   text: "text-slate-900",   dot: "bg-slate-400" },
 };
 
-// 1 = Monday ... 7 = Sunday (matches existing default ARRAY[1..5])
+// 1 = Mon ... 7 = Sun
 const DAYS: { n: number; short: string; label: string }[] = [
   { n: 1, short: "L", label: "Lunedì" },
   { n: 2, short: "M", label: "Martedì" },
@@ -40,49 +40,70 @@ const DAYS: { n: number; short: string; label: string }[] = [
   { n: 7, short: "D", label: "Domenica" },
 ];
 
-const HOUR_START = 6;
+const HOUR_START = 0;
 const HOUR_END = 24;
-const HOURS = Array.from({ length: HOUR_END - HOUR_START + 1 }, (_, i) => HOUR_START + i);
-const ROW_H = 44; // px per hour
+const HOURS = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i);
+const ROW_H = 48; // px per hour → exact math (1h = 48px, 2h = 96px)
+const GRID_HEIGHT = (HOUR_END - HOUR_START) * ROW_H;
 
-// "HH:MM(:SS)" -> minutes from 00:00
 const toMin = (t: string) => {
   const [h, m] = t.split(":").map(Number);
   return (h || 0) * 60 + (m || 0);
 };
 const fmt = (t: string) => t.slice(0, 5);
+const pxFromMin = (m: number) => (m / 60) * ROW_H;
 
 interface Props { open: boolean; onOpenChange: (o: boolean) => void; }
+
+interface Segment {
+  routine: UserRoutine;
+  day: number;
+  startMin: number; // minutes from 00:00 of that day
+  endMin: number;   // minutes from 00:00 of that day
+}
+
+const nextDay = (d: number) => (d === 7 ? 1 : d + 1);
 
 export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
   const { toast } = useToast();
 
-  // Subjects
   const subjects = useUserSubjects();
   const addSubject = useAddUserSubject();
   const delSubject = useDeleteUserSubject();
   const [newSubject, setNewSubject] = useState("");
 
-  // Routines
   const routines = useUserRoutines();
   const addRoutine = useAddUserRoutine();
+  const updateRoutine = useUpdateUserRoutine();
   const delRoutine = useDeleteUserRoutine();
 
-  // Modal state
+  // Modal state (create + edit)
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [rKind, setRKind] = useState<RoutineKind>("school");
   const [rLabel, setRLabel] = useState("");
   const [rStart, setRStart] = useState("08:00");
   const [rEnd, setREnd] = useState("13:00");
   const [rDays, setRDays] = useState<number[]>([1, 2, 3, 4, 5]);
 
-  const openNewRoutine = (prefill?: { day?: number; hour?: number }) => {
+  const openCreate = (prefill?: { day?: number; hour?: number }) => {
+    setEditingId(null);
     setRKind("school");
     setRLabel("");
     const startHour = prefill?.hour ?? 8;
     setRStart(`${String(startHour).padStart(2, "0")}:00`);
-    setREnd(`${String(Math.min(startHour + 1, HOUR_END)).padStart(2, "0")}:00`);
+    setREnd(`${String(Math.min(startHour + 1, 23)).padStart(2, "0")}:00`);
     setRDays(prefill?.day ? [prefill.day] : [1, 2, 3, 4, 5]);
+    setModalOpen(true);
+  };
+
+  const openEdit = (r: UserRoutine) => {
+    setEditingId(r.id);
+    setRKind(r.kind);
+    setRLabel(r.label ?? "");
+    setRStart(fmt(r.start_time));
+    setREnd(fmt(r.end_time));
+    setRDays([...(r.days_of_week ?? [])].sort());
     setModalOpen(true);
   };
 
@@ -101,41 +122,66 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
   };
 
   const handleSaveRoutine = async () => {
-    if (toMin(rEnd) <= toMin(rStart)) {
-      toast({ title: "Orario non valido", description: "La fine deve essere dopo l'inizio.", variant: "destructive" });
-      return;
-    }
     if (rDays.length === 0) {
       toast({ title: "Seleziona almeno un giorno", variant: "destructive" });
       return;
     }
+    if (toMin(rStart) === toMin(rEnd)) {
+      toast({ title: "Orario non valido", description: "Inizio e fine coincidono.", variant: "destructive" });
+      return;
+    }
     try {
-      await addRoutine.mutateAsync({
+      const payload = {
         kind: rKind,
         label: rLabel.trim() || null,
         start_time: rStart,
         end_time: rEnd,
         days_of_week: rDays,
-      });
+      };
+      if (editingId) {
+        await updateRoutine.mutateAsync({ id: editingId, ...payload });
+      } else {
+        await addRoutine.mutateAsync(payload);
+      }
       setModalOpen(false);
     } catch (e: any) {
       toast({ title: "Errore", description: e?.message ?? "Impossibile salvare", variant: "destructive" });
     }
   };
 
-  // Group routines by day for grid rendering
-  const byDay = useMemo(() => {
-    const map: Record<number, UserRoutine[]> = {};
+  const handleDeleteRoutine = async () => {
+    if (!editingId) return;
+    try {
+      await delRoutine.mutateAsync(editingId);
+      setModalOpen(false);
+    } catch (e: any) {
+      toast({ title: "Errore", description: e?.message ?? "Impossibile eliminare", variant: "destructive" });
+    }
+  };
+
+  // Compute segments per day, splitting overnight blocks (end <= start).
+  const segmentsByDay = useMemo(() => {
+    const map: Record<number, Segment[]> = {};
     for (const d of DAYS) map[d.n] = [];
     for (const r of routines.data ?? []) {
-      for (const d of r.days_of_week ?? []) if (map[d]) map[d].push(r);
+      const s = toMin(r.start_time);
+      const e = toMin(r.end_time);
+      for (const d of r.days_of_week ?? []) {
+        if (!map[d]) continue;
+        if (e > s) {
+          map[d].push({ routine: r, day: d, startMin: s, endMin: e });
+        } else {
+          // crosses midnight → split into two visual segments
+          map[d].push({ routine: r, day: d, startMin: s, endMin: 24 * 60 });
+          const nd = nextDay(d);
+          if (map[nd]) map[nd].push({ routine: r, day: nd, startMin: 0, endMin: e });
+        }
+      }
     }
+    // sort for stability
+    for (const d of DAYS) map[d.n].sort((a, b) => a.startMin - b.startMin);
     return map;
   }, [routines.data]);
-
-  const gridHeight = HOURS.length * ROW_H;
-  const minutesFromStart = (t: string) => toMin(t) - HOUR_START * 60;
-  const pxFromMin = (m: number) => (m / 60) * ROW_H;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -199,7 +245,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
               <h3 className="title-medium font-display">Settimana</h3>
             </div>
             <Button
-              onClick={() => openNewRoutine()}
+              onClick={() => openCreate()}
               size="sm"
               className="h-9 rounded-full px-3"
             >
@@ -208,96 +254,93 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
           </div>
 
           <div className="rounded-3xl bg-white border border-slate-200/70 overflow-hidden">
-            {/* Header giorni */}
-            <div className="grid" style={{ gridTemplateColumns: "44px repeat(7, minmax(0, 1fr))" }}>
-              <div className="border-b border-slate-100" />
-              {DAYS.map((d) => (
-                <div
-                  key={d.n}
-                  className="text-center py-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-slate-100"
-                >
-                  {d.short}
-                </div>
-              ))}
-            </div>
-
-            {/* Griglia oraria */}
+            {/* Header giorni (allineato alla griglia) */}
             <div className="overflow-x-auto">
-              <div
-                className="grid relative"
-                style={{
-                  gridTemplateColumns: "44px repeat(7, minmax(0, 1fr))",
-                  minWidth: 560,
-                }}
-              >
-                {/* Colonna ore */}
-                <div className="relative" style={{ height: gridHeight }}>
-                  {HOURS.slice(0, -1).map((h, i) => (
+              <div className="min-w-[560px]">
+                <div className="grid" style={{ gridTemplateColumns: "44px repeat(7, minmax(0, 1fr))" }}>
+                  <div className="border-b border-slate-100" />
+                  {DAYS.map((d) => (
                     <div
-                      key={h}
-                      className="absolute left-0 right-0 text-[10px] text-muted-foreground tabular-nums pr-1 text-right"
-                      style={{ top: i * ROW_H - 6 }}
+                      key={d.n}
+                      className="text-center py-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-slate-100"
                     >
-                      {String(h).padStart(2, "0")}:00
+                      {d.short}
                     </div>
                   ))}
                 </div>
 
-                {/* Colonne giorni */}
-                {DAYS.map((d) => (
-                  <div
-                    key={d.n}
-                    className="relative border-l border-slate-100"
-                    style={{ height: gridHeight }}
-                  >
-                    {/* Righe orarie cliccabili */}
-                    {HOURS.slice(0, -1).map((h, i) => (
-                      <button
-                        key={h}
-                        onClick={() => openNewRoutine({ day: d.n, hour: h })}
-                        className="absolute left-0 right-0 border-b border-slate-100/80 hover:bg-slate-50/70 transition-colors"
-                        style={{ top: i * ROW_H, height: ROW_H }}
-                        aria-label={`Aggiungi blocco ${d.label} ${h}:00`}
-                      />
-                    ))}
-
-                    {/* Blocchi routine */}
-                    {byDay[d.n].map((r) => {
-                      const top = pxFromMin(minutesFromStart(r.start_time));
-                      const height = Math.max(24, pxFromMin(toMin(r.end_time) - toMin(r.start_time)));
-                      const style = KIND_STYLES[r.kind];
-                      const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
-                      return (
+                {/* Griglia oraria */}
+                <div
+                  className="grid relative"
+                  style={{ gridTemplateColumns: "44px repeat(7, minmax(0, 1fr))" }}
+                >
+                  {/* Colonna ore */}
+                  <div className="relative" style={{ height: GRID_HEIGHT }}>
+                    {HOURS.map((h, i) => (
+                      i === 0 ? null : (
                         <div
-                          key={`${r.id}-${d.n}`}
-                          className={cn(
-                            "absolute left-1 right-1 rounded-xl border px-1.5 py-1 text-[10px] leading-tight overflow-hidden shadow-sm animate-scale-in group",
-                            style.bg, style.border, style.text,
-                          )}
-                          style={{
-                            top: top + 1,
-                            height: height - 2,
-                            transition: "transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms",
-                          }}
+                          key={h}
+                          className="absolute left-0 right-0 text-[10px] text-muted-foreground tabular-nums pr-1 text-right"
+                          style={{ top: i * ROW_H - 6 }}
                         >
-                          <div className="flex items-start justify-between gap-1">
-                            <div className="min-w-0">
-                              <div className="font-semibold truncate">{r.label || kindLabel}</div>
-                              <div className="opacity-70 tabular-nums">{fmt(r.start_time)}–{fmt(r.end_time)}</div>
-                            </div>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); delRoutine.mutate(r.id); }}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity rounded-full p-0.5 hover:bg-white/60"
-                              aria-label="Rimuovi routine"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
+                          {String(h).padStart(2, "0")}:00
                         </div>
-                      );
-                    })}
+                      )
+                    ))}
                   </div>
-                ))}
+
+                  {/* Colonne giorni */}
+                  {DAYS.map((d) => (
+                    <div
+                      key={d.n}
+                      className="relative border-l border-slate-100"
+                      style={{ height: GRID_HEIGHT }}
+                    >
+                      {/* Righe orarie cliccabili */}
+                      {HOURS.map((h, i) => (
+                        <button
+                          key={h}
+                          onClick={() => openCreate({ day: d.n, hour: h })}
+                          className="absolute left-0 right-0 border-b border-slate-100/80 hover:bg-slate-50/70 transition-colors"
+                          style={{ top: i * ROW_H, height: ROW_H }}
+                          aria-label={`Aggiungi blocco ${d.label} ${h}:00`}
+                        />
+                      ))}
+
+                      {/* Segmenti routine (già splittati per overnight) */}
+                      {segmentsByDay[d.n].map((seg, idx) => {
+                        const r = seg.routine;
+                        const top = pxFromMin(seg.startMin);
+                        const height = Math.max(20, pxFromMin(seg.endMin - seg.startMin) - 2);
+                        const style = KIND_STYLES[r.kind];
+                        const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
+                        return (
+                          <button
+                            key={`${r.id}-${d.n}-${idx}`}
+                            onClick={(e) => { e.stopPropagation(); openEdit(r); }}
+                            className={cn(
+                              "absolute left-1 right-1 rounded-xl border px-1.5 py-1 text-[10px] leading-tight overflow-hidden shadow-sm text-left animate-scale-in",
+                              "hover:shadow-md hover:-translate-y-[1px]",
+                              style.bg, style.border, style.text,
+                            )}
+                            style={{
+                              top: top + 1,
+                              height,
+                              transition: "transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms, height 300ms ease, top 300ms ease",
+                            }}
+                          >
+                            <div className="font-semibold truncate">{r.label || kindLabel}</div>
+                            {height > 24 && (
+                              <div className="opacity-70 tabular-nums">
+                                {fmt(r.start_time)}–{fmt(r.end_time)}
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -310,11 +353,13 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
         <div className="h-6" />
       </SheetContent>
 
-      {/* Modale creazione routine */}
+      {/* Modale creazione / modifica routine */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="rounded-3xl bg-[#FCFCFC] border border-slate-200/70 max-w-md p-6">
           <DialogHeader>
-            <DialogTitle className="title-medium font-display">Nuovo blocco</DialogTitle>
+            <DialogTitle className="title-medium font-display">
+              {editingId ? "Modifica blocco" : "Nuovo blocco"}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 mt-2">
@@ -344,7 +389,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
             </div>
 
             <div>
-              <Label className="label-medium text-muted-foreground">Nome routine (opzionale)</Label>
+              <Label className="label-medium text-muted-foreground">Nome attività (opzionale)</Label>
               <Input
                 value={rLabel}
                 onChange={(e) => setRLabel(e.target.value)}
@@ -365,6 +410,9 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                   className="rounded-2xl h-11 mt-1.5 bg-white border border-slate-200/70" />
               </div>
             </div>
+            <p className="text-[11px] text-muted-foreground -mt-2">
+              Se la fine è prima dell'inizio (es. 22:00 → 06:00), il blocco attraversa la mezzanotte.
+            </p>
 
             <div>
               <Label className="label-medium text-muted-foreground">Ripeti nei giorni</Label>
@@ -391,7 +439,19 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            {editingId && (
+              <Button
+                variant="outline"
+                onClick={handleDeleteRoutine}
+                disabled={delRoutine.isPending}
+                className="w-full h-11 rounded-2xl bg-white border-red-200/80 text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                {delRoutine.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                Elimina blocco
+              </Button>
+            )}
+
+            <div className="flex gap-2 pt-1">
               <Button
                 variant="outline"
                 onClick={() => setModalOpen(false)}
@@ -401,11 +461,13 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
               </Button>
               <Button
                 onClick={handleSaveRoutine}
-                disabled={addRoutine.isPending}
+                disabled={addRoutine.isPending || updateRoutine.isPending}
                 className="flex-1 h-11 rounded-2xl"
               >
-                {addRoutine.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-                Salva
+                {(addRoutine.isPending || updateRoutine.isPending)
+                  ? <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  : <Save className="w-4 h-4 mr-2" />}
+                {editingId ? "Aggiorna" : "Salva"}
               </Button>
             </div>
           </div>
