@@ -174,6 +174,12 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
   const [rEnd, setREnd] = useState("13:00");
   const [rDays, setRDays] = useState<number[]>([1, 2, 3, 4, 5]);
 
+  // Mobile single-day view: which day is active
+  const [mobileDay, setMobileDay] = useState<number>(() => {
+    const js = new Date().getDay(); // 0=Sun..6=Sat
+    return js === 0 ? 7 : js;
+  });
+
   const openCreate = (prefill?: { day?: number; hour?: number }) => {
     setEditingId(null);
     setRKind("school");
@@ -366,8 +372,31 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
           </div>
 
           <div className="rounded-3xl bg-white border border-slate-200/70 overflow-hidden">
-            {/* Header giorni (allineato alla griglia) */}
-            <div className="overflow-x-auto">
+            {/* Mobile: day selector pills */}
+            <div className="md:hidden flex items-center justify-between gap-1 px-3 pt-3 pb-2 border-b border-slate-100">
+              {DAYS.map((d) => {
+                const active = mobileDay === d.n;
+                return (
+                  <button
+                    key={d.n}
+                    onClick={() => setMobileDay(d.n)}
+                    aria-label={d.label}
+                    aria-pressed={active}
+                    className={cn(
+                      "flex-1 h-9 rounded-full text-xs font-semibold transition-all duration-300",
+                      active
+                        ? "bg-foreground text-background scale-[1.04] shadow-sm"
+                        : "text-muted-foreground hover:bg-slate-50"
+                    )}
+                  >
+                    {d.short}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Desktop/Tablet: full 7-column grid */}
+            <div className="hidden md:block overflow-x-auto">
               <div className="min-w-[560px]">
                 <div className="grid" style={{ gridTemplateColumns: "44px repeat(7, minmax(0, 1fr))" }}>
                   <div className="border-b border-slate-100" />
@@ -423,7 +452,8 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                       {laidOutSegmentsByDay[d.n].map((seg, idx) => {
                         const r = seg.routine;
                         const top = pxFromMin(seg.startMin);
-                        const height = Math.max(2, pxFromMin(seg.endMin - seg.startMin));
+                        const rawHeight = pxFromMin(seg.endMin - seg.startMin);
+                        const height = Math.max(32, rawHeight);
                         const style = KIND_STYLES[r.kind];
                         const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
                         const laneWidth = 100 / seg.laneCount;
@@ -446,7 +476,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                             }}
                           >
                             <div className="font-semibold truncate">{r.label || kindLabel}</div>
-                            {height >= 28 && (
+                            {height >= 40 && (
                               <div className="opacity-70 tabular-nums">
                                 {minToTime(seg.startMin)}–{minToTime(seg.endMin)}
                               </div>
@@ -456,6 +486,75 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                       })}
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile: single-day agenda column */}
+            <div className="md:hidden">
+              <div className="grid relative" style={{ gridTemplateColumns: "44px minmax(0, 1fr)" }}>
+                {/* Colonna ore */}
+                <div className="relative" style={{ height: GRID_HEIGHT }}>
+                  {HOURS.map((h, i) => (
+                    i === 0 ? null : (
+                      <div
+                        key={h}
+                        className="absolute left-0 right-0 text-[10px] text-muted-foreground tabular-nums pr-1 text-right"
+                        style={{ top: i * ROW_H - 6 }}
+                      >
+                        {String(h).padStart(2, "0")}:00
+                      </div>
+                    )
+                  ))}
+                </div>
+
+                {/* Colonna giorno attivo */}
+                <div className="relative border-l border-slate-100" style={{ height: GRID_HEIGHT }}>
+                  {HOURS.map((h, i) => (
+                    <button
+                      key={h}
+                      onClick={() => openCreate({ day: mobileDay, hour: h })}
+                      className="absolute left-0 right-0 border-b border-slate-100/80 hover:bg-slate-50/70 transition-colors"
+                      style={{ top: i * ROW_H, height: ROW_H }}
+                      aria-label={`Aggiungi blocco ${dayName(mobileDay)} ${h}:00`}
+                    />
+                  ))}
+
+                  {laidOutSegmentsByDay[mobileDay].map((seg, idx) => {
+                    const r = seg.routine;
+                    const top = pxFromMin(seg.startMin);
+                    const rawHeight = pxFromMin(seg.endMin - seg.startMin);
+                    const height = Math.max(32, rawHeight);
+                    const style = KIND_STYLES[r.kind];
+                    const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
+                    const laneWidth = 100 / seg.laneCount;
+                    return (
+                      <button
+                        key={`m-${r.id}-${mobileDay}-${idx}`}
+                        onClick={(e) => { e.stopPropagation(); openEdit(r); }}
+                        className={cn(
+                          "absolute rounded-xl border px-2.5 py-1.5 text-xs leading-tight overflow-hidden shadow-sm text-left animate-scale-in",
+                          "hover:shadow-md hover:-translate-y-[1px]",
+                          style.bg, style.border, style.text,
+                        )}
+                        style={{
+                          top,
+                          height,
+                          left: `calc(${seg.lane * laneWidth}% + 6px)`,
+                          width: `calc(${laneWidth}% - 12px)`,
+                          boxSizing: "border-box",
+                          transition: "transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms, height 300ms ease, top 300ms ease",
+                        }}
+                      >
+                        <div className="font-semibold truncate">{r.label || kindLabel}</div>
+                        {height >= 40 && (
+                          <div className="opacity-70 tabular-nums text-[11px]">
+                            {minToTime(seg.startMin)}–{minToTime(seg.endMin)}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
