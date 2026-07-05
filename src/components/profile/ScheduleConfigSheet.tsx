@@ -69,6 +69,8 @@ interface Segment {
 interface LaidOutSegment extends Segment {
   lane: number;
   laneCount: number;
+  /** Max visual height in minutes so short forced-height blocks don't overflow into the next one. */
+  maxRenderMin: number;
 }
 
 interface TimeWindow {
@@ -111,10 +113,9 @@ const windowsOverlap = (a: TimeWindow, b: TimeWindow) =>
   a.day === b.day && a.startMin < b.endMin && b.startMin < a.endMin;
 
 const layoutSegments = (segments: Segment[]): LaidOutSegment[] => {
-  // Use an effective end that accounts for the visual minimum height so short
-  // blocks (e.g. 15 min forced to 32px) don't visually overlap the next one.
-  const effEnd = (s: Segment) => Math.max(s.endMin, s.startMin + MIN_BLOCK_MIN);
-  const sorted = [...segments].sort((a, b) => a.startMin - b.startMin || effEnd(a) - effEnd(b));
+  // Strict time overlap only: two segments collide iff (startA < endB) AND (startB < endA).
+  // Consecutive segments (endA === startB) do NOT collide and must span full width.
+  const sorted = [...segments].sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
   const laidOut: LaidOutSegment[] = [];
 
   let group: Segment[] = [];
@@ -128,8 +129,8 @@ const layoutSegments = (segments: Segment[]): LaidOutSegment[] => {
     for (const seg of group) {
       const lane = lanes.findIndex((end) => end <= seg.startMin);
       const assignedLane = lane === -1 ? lanes.length : lane;
-      lanes[assignedLane] = effEnd(seg);
-      groupLayout.push({ ...seg, lane: assignedLane, laneCount: 1 });
+      lanes[assignedLane] = seg.endMin;
+      groupLayout.push({ ...seg, lane: assignedLane, laneCount: 1, maxRenderMin: Infinity });
     }
 
     const laneCount = Math.max(1, lanes.length);
@@ -141,21 +142,38 @@ const layoutSegments = (segments: Segment[]): LaidOutSegment[] => {
   for (const seg of sorted) {
     if (!group.length) {
       group = [seg];
-      groupEnd = effEnd(seg);
+      groupEnd = seg.endMin;
       continue;
     }
 
     if (seg.startMin < groupEnd) {
       group.push(seg);
-      groupEnd = Math.max(groupEnd, effEnd(seg));
+      groupEnd = Math.max(groupEnd, seg.endMin);
     } else {
       flushGroup();
       group = [seg];
-      groupEnd = effEnd(seg);
+      groupEnd = seg.endMin;
     }
   }
 
   flushGroup();
+
+  // Cap visual height so a min-height-inflated short block cannot bleed into
+  // the next block sitting in the same lane below it.
+  for (let i = 0; i < laidOut.length; i++) {
+    const seg = laidOut[i];
+    let cap = Infinity;
+    for (let j = i + 1; j < laidOut.length; j++) {
+      const other = laidOut[j];
+      if (other.lane !== seg.lane) continue;
+      if (other.startMin >= seg.endMin) {
+        cap = other.startMin - seg.startMin;
+        break;
+      }
+    }
+    seg.maxRenderMin = cap;
+  }
+
   return laidOut;
 };
 
