@@ -69,8 +69,10 @@ interface Segment {
 interface LaidOutSegment extends Segment {
   lane: number;
   laneCount: number;
-  /** Max visual height in minutes so short forced-height blocks don't overflow into the next one. */
-  maxRenderMin: number;
+  /** Actual rendered top (px), pushed down if a previous inflated block would overlap. */
+  renderTopPx: number;
+  /** Actual rendered height (px), respects MIN_BLOCK_PX. */
+  renderHeightPx: number;
 }
 
 interface TimeWindow {
@@ -130,7 +132,13 @@ const layoutSegments = (segments: Segment[]): LaidOutSegment[] => {
       const lane = lanes.findIndex((end) => end <= seg.startMin);
       const assignedLane = lane === -1 ? lanes.length : lane;
       lanes[assignedLane] = seg.endMin;
-      groupLayout.push({ ...seg, lane: assignedLane, laneCount: 1, maxRenderMin: Infinity });
+      groupLayout.push({
+        ...seg,
+        lane: assignedLane,
+        laneCount: 1,
+        renderTopPx: 0,
+        renderHeightPx: 0,
+      });
     }
 
     const laneCount = Math.max(1, lanes.length);
@@ -158,20 +166,26 @@ const layoutSegments = (segments: Segment[]): LaidOutSegment[] => {
 
   flushGroup();
 
-  // Cap visual height so a min-height-inflated short block cannot bleed into
-  // the next block sitting in the same lane below it.
-  for (let i = 0; i < laidOut.length; i++) {
-    const seg = laidOut[i];
-    let cap = Infinity;
-    for (let j = i + 1; j < laidOut.length; j++) {
-      const other = laidOut[j];
-      if (other.lane !== seg.lane) continue;
-      if (other.startMin >= seg.endMin) {
-        cap = other.startMin - seg.startMin;
-        break;
-      }
+  // Compute rendered top/height per lane. Each block honors MIN_BLOCK_PX and is
+  // pushed down so it never visually overlaps the previous block in its lane.
+  const byLane = new Map<number, LaidOutSegment[]>();
+  for (const seg of laidOut) {
+    const arr = byLane.get(seg.lane) ?? [];
+    arr.push(seg);
+    byLane.set(seg.lane, arr);
+  }
+  for (const arr of byLane.values()) {
+    arr.sort((a, b) => a.startMin - b.startMin);
+    let prevBottom = 0;
+    for (const seg of arr) {
+      const chronologicalTop = pxFromMin(seg.startMin);
+      const rawHeight = pxFromMin(seg.endMin - seg.startMin);
+      const top = Math.max(chronologicalTop, prevBottom);
+      const height = Math.max(MIN_BLOCK_PX, rawHeight);
+      seg.renderTopPx = top;
+      seg.renderHeightPx = height;
+      prevBottom = top + height;
     }
-    seg.maxRenderMin = cap;
   }
 
   return laidOut;
@@ -476,12 +490,8 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                       {/* Segmenti routine: splittati per overnight e disposti in corsie per evitare sovrapposizioni visive */}
                       {laidOutSegmentsByDay[d.n].map((seg, idx) => {
                         const r = seg.routine;
-                        const top = pxFromMin(seg.startMin);
-                        const rawHeight = pxFromMin(seg.endMin - seg.startMin);
-                        const maxHeight = Number.isFinite(seg.maxRenderMin)
-                          ? pxFromMin(seg.maxRenderMin)
-                          : Infinity;
-                        const height = Math.min(Math.max(MIN_BLOCK_PX, rawHeight), maxHeight);
+                        const top = seg.renderTopPx;
+                        const height = seg.renderHeightPx;
                         const style = KIND_STYLES[r.kind];
                         const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
                         const laneWidth = 100 / seg.laneCount;
@@ -550,12 +560,8 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
 
                   {laidOutSegmentsByDay[mobileDay].map((seg, idx) => {
                     const r = seg.routine;
-                    const top = pxFromMin(seg.startMin);
-                    const rawHeight = pxFromMin(seg.endMin - seg.startMin);
-                    const maxHeight = Number.isFinite(seg.maxRenderMin)
-                      ? pxFromMin(seg.maxRenderMin)
-                      : Infinity;
-                    const height = Math.min(Math.max(MIN_BLOCK_PX, rawHeight), maxHeight);
+                    const top = seg.renderTopPx;
+                    const height = seg.renderHeightPx;
                     const style = KIND_STYLES[r.kind];
                     const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
                     const laneWidth = 100 / seg.laneCount;
