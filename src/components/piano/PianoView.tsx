@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Loader2, Trash2, Network } from "lucide-react";
+import { Plus, Loader2, Trash2, Network, Timer } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { useFocus } from "@/contexts/FocusContext";
 
 interface PianoViewProps { hasFiles: boolean; onUploadClick: () => void; }
 interface PlanSuggestionData { explanation: string; studySessions: { subject: string; title: string; date: string; time?: string; }[]; }
@@ -30,6 +31,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const [eventToDelete, setEventToDelete] = useState<StudyEvent | null>(null);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const focus = useFocus();
 
   const eventsQuery = useStudyEventsQuery(hasFiles);
   const addEvents = useAddStudyEvents();
@@ -126,12 +128,13 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       )}
 
       {!suggestion && (
-        <LiquidButton
-          size="lg"
-          onClick={generatePlan}
-          disabled={isGeneratingPlan}
-          className="w-full h-14 gap-2.5 rounded-2xl bg-primary text-primary-foreground shadow-level-1 hover:shadow-level-2 hover:scale-[1.02] transition-all duration-400 ease-m3-emphasized"
-        >
+        <div className="flex flex-row gap-3 w-full">
+          <LiquidButton
+            size="lg"
+            onClick={generatePlan}
+            disabled={isGeneratingPlan}
+            className="flex-[2] h-14 gap-2.5 rounded-2xl bg-primary text-primary-foreground shadow-level-1 hover:shadow-level-2 hover:scale-[1.02] transition-all duration-400 ease-m3-emphasized"
+          >
             {isGeneratingPlan ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -141,6 +144,18 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
               <span className="font-display font-semibold">Genera piano di studio AI</span>
             )}
           </LiquidButton>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => (focus.isActive ? focus.openFullscreen() : focus.openSetup())}
+            className="flex-[1] h-14 gap-1.5 rounded-2xl border-outline-variant bg-surface-container-low hover:bg-surface-container-high hover:scale-[1.02] transition-all duration-400 ease-m3-emphasized"
+          >
+            <Timer className="w-4 h-4" />
+            <span className="font-display font-semibold">
+              {focus.isActive ? "Riprendi" : "Focus"}
+            </span>
+          </Button>
+        </div>
       )}
 
       {/* Calendar */}

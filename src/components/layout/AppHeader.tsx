@@ -8,6 +8,8 @@ import { useSubscription } from"@/hooks/useSubscription";
 import { SaveStatusIndicator, SaveStatusDot } from"./SaveStatusIndicator";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { FocusPill } from "@/components/focus/FocusPill";
+import { useFocus } from "@/contexts/FocusContext";
 
 interface AppHeaderProps {
  onUploadClick: () => void;
@@ -18,6 +20,7 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
  const [showSubscription, setShowSubscription] = useState(false);
  const { tier } = useSubscription();
  const { t } = useTranslation();
+  const { isActive: focusActive } = useFocus();
 
  return (
  <>
@@ -35,7 +38,7 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
  </div>
  
  <div className="flex items-center gap-2.5">
- <LanguageSwitcher variant="dark" />
+      {focusActive ? <FocusPill /> : <LanguageSwitcher variant="dark" />}
  <Button
  variant={hasFiles ?"tonal" :"default"}
  size="sm"
