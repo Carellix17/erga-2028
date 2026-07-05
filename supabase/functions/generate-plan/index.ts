@@ -69,16 +69,23 @@ ${contextSummary}`;
 
     console.log("Calling AI for plan generation");
 
-    const responseContent = await callAIText([{ role: "user", content: prompt }], 0.7, 2048);
+    const responseContent = await callAIText([{ role: "user", content: prompt }], 0.7, 4096);
     if (!responseContent) throw new Error("Risposta AI vuota");
 
     console.log("AI response:", responseContent.substring(0, 500));
 
     let plan;
     try {
-      const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
-      plan = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(responseContent);
-    } catch {
+      const cleaned = responseContent.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
+      try {
+        plan = JSON.parse(cleaned);
+      } catch {
+        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("no json");
+        plan = JSON.parse(jsonMatch[0]);
+      }
+    } catch (e) {
+      console.error("Parse error, raw response:", responseContent);
       throw new Error("Errore nel parsing del piano generato");
     }
 
