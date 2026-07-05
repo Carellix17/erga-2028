@@ -55,6 +55,36 @@ export default function Registrati() {
     }
   };
 
+  const handleOAuthSignIn = async (provider: "google" | "apple") => {
+    setIsSubmitting(true);
+    const providerLabel = provider === "google" ? "Google" : "Apple";
+
+    try {
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: `${window.location.origin}${nextPath}`,
+        extraParams: provider === "google" ? { prompt: "select_account" } : undefined,
+      });
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (result.redirected) {
+        return;
+      }
+    } catch (error: unknown) {
+      toast({
+        title: `Errore ${providerLabel}`,
+        description:
+          error instanceof Error
+            ? error.message
+            : `Impossibile collegarsi a ${providerLabel}`,
+        variant: "destructive",
+      });
+    }
+    setIsSubmitting(false);
+  };
+
   if (registered) {
     return (
       <div className="min-h-screen bg-dot-grid flex items-center justify-center p-4">
