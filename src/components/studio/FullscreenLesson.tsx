@@ -10,6 +10,8 @@ import { fireCelebration, fireStarBurst } from"@/lib/confetti";
 import { PdfCrop } from"./PdfCrop";
 import { useLessonFigures, prefetchLessonFigures, type LessonFigure } from"@/hooks/useLessonFigures";
 import { LessonFigureGallery } from"./LessonFigureGallery";
+import { useFocus } from "@/contexts/FocusContext";
+import { FocusPill } from "@/components/focus/FocusPill";
 
 /**
  * Stile Finanz: i blockquote che iniziano con un'emoji tematica vengono
