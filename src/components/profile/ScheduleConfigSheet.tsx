@@ -62,7 +62,95 @@ interface Segment {
   endMin: number;   // minutes from 00:00 of that day
 }
 
+interface LaidOutSegment extends Segment {
+  lane: number;
+  laneCount: number;
+}
+
+interface TimeWindow {
+  day: number;
+  startMin: number;
+  endMin: number;
+  routine?: UserRoutine;
+}
+
 const nextDay = (d: number) => (d === 7 ? 1 : d + 1);
+
+const dayName = (n: number) => DAYS.find((d) => d.n === n)?.label ?? "giorno selezionato";
+const minToTime = (m: number) => {
+  if (m >= 24 * 60) return "24:00";
+  return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+};
+
+const splitWindows = (
+  startTime: string,
+  endTime: string,
+  days: number[],
+  routine?: UserRoutine,
+): TimeWindow[] => {
+  const s = toMin(startTime);
+  const e = toMin(endTime);
+  const windows: TimeWindow[] = [];
+  for (const d of days) {
+    if (!DAYS.some((day) => day.n === d)) continue;
+    if (e > s) {
+      windows.push({ day: d, startMin: s, endMin: e, routine });
+    } else {
+      windows.push({ day: d, startMin: s, endMin: 24 * 60, routine });
+      windows.push({ day: nextDay(d), startMin: 0, endMin: e, routine });
+    }
+  }
+  return windows;
+};
+
+const windowsOverlap = (a: TimeWindow, b: TimeWindow) =>
+  a.day === b.day && a.startMin < b.endMin && b.startMin < a.endMin;
+
+const layoutSegments = (segments: Segment[]): LaidOutSegment[] => {
+  const sorted = [...segments].sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
+  const laidOut: LaidOutSegment[] = [];
+
+  let group: Segment[] = [];
+  let groupEnd = 0;
+
+  const flushGroup = () => {
+    if (!group.length) return;
+    const lanes: number[] = [];
+    const groupLayout: LaidOutSegment[] = [];
+
+    for (const seg of group) {
+      const lane = lanes.findIndex((end) => end <= seg.startMin);
+      const assignedLane = lane === -1 ? lanes.length : lane;
+      lanes[assignedLane] = seg.endMin;
+      groupLayout.push({ ...seg, lane: assignedLane, laneCount: 1 });
+    }
+
+    const laneCount = Math.max(1, lanes.length);
+    laidOut.push(...groupLayout.map((seg) => ({ ...seg, laneCount })));
+    group = [];
+    groupEnd = 0;
+  };
+
+  for (const seg of sorted) {
+    if (!group.length) {
+      group = [seg];
+      groupEnd = seg.endMin;
+      continue;
+    }
+
+    if (seg.startMin < groupEnd) {
+      group.push(seg);
+      groupEnd = Math.max(groupEnd, seg.endMin);
+    } else {
+      flushGroup();
+      group = [seg];
+      groupEnd = seg.endMin;
+    }
+  }
+
+  flushGroup();
+  return laidOut;
+};
 
 export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
   const { toast } = useToast();
@@ -126,10 +214,38 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
       toast({ title: "Seleziona almeno un giorno", variant: "destructive" });
       return;
     }
+    if (!rStart || !rEnd) {
+      toast({ title: "Orario non valido", description: "Inserisci un orario di inizio e fine.", variant: "destructive" });
+      return;
+    }
     if (toMin(rStart) === toMin(rEnd)) {
       toast({ title: "Orario non valido", description: "Inizio e fine coincidono.", variant: "destructive" });
       return;
     }
+
+    const candidateWindows = splitWindows(rStart, rEnd, rDays);
+    const existingWindows = (routines.data ?? [])
+      .filter((r) => r.id !== editingId)
+      .flatMap((r) => splitWindows(r.start_time, r.end_time, r.days_of_week ?? [], r));
+    const conflict = candidateWindows
+      .map((candidate) => ({
+        candidate,
+        existing: existingWindows.find((existing) => windowsOverlap(candidate, existing)),
+      }))
+      .find(({ existing }) => existing);
+
+    if (conflict?.existing) {
+      const routineName = conflict.existing.routine?.label
+        || KINDS.find((k) => k.value === conflict.existing?.routine?.kind)?.label
+        || "un altro blocco";
+      toast({
+        title: "Routine sovrapposta",
+        description: `${dayName(conflict.candidate.day)}, ${minToTime(conflict.candidate.startMin)}–${minToTime(conflict.candidate.endMin)} si sovrappone a ${routineName} (${minToTime(conflict.existing.startMin)}–${minToTime(conflict.existing.endMin)}).`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const payload = {
         kind: rKind,
@@ -164,24 +280,20 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
     const map: Record<number, Segment[]> = {};
     for (const d of DAYS) map[d.n] = [];
     for (const r of routines.data ?? []) {
-      const s = toMin(r.start_time);
-      const e = toMin(r.end_time);
-      for (const d of r.days_of_week ?? []) {
-        if (!map[d]) continue;
-        if (e > s) {
-          map[d].push({ routine: r, day: d, startMin: s, endMin: e });
-        } else {
-          // crosses midnight → split into two visual segments
-          map[d].push({ routine: r, day: d, startMin: s, endMin: 24 * 60 });
-          const nd = nextDay(d);
-          if (map[nd]) map[nd].push({ routine: r, day: nd, startMin: 0, endMin: e });
-        }
+      for (const w of splitWindows(r.start_time, r.end_time, r.days_of_week ?? [], r)) {
+        if (map[w.day]) map[w.day].push({ routine: r, day: w.day, startMin: w.startMin, endMin: w.endMin });
       }
     }
     // sort for stability
     for (const d of DAYS) map[d.n].sort((a, b) => a.startMin - b.startMin);
     return map;
   }, [routines.data]);
+
+  const laidOutSegmentsByDay = useMemo(() => {
+    const map: Record<number, LaidOutSegment[]> = {};
+    for (const d of DAYS) map[d.n] = layoutSegments(segmentsByDay[d.n] ?? []);
+    return map;
+  }, [segmentsByDay]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -307,32 +419,36 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                         />
                       ))}
 
-                      {/* Segmenti routine (già splittati per overnight) */}
-                      {segmentsByDay[d.n].map((seg, idx) => {
+                      {/* Segmenti routine: splittati per overnight e disposti in corsie per evitare sovrapposizioni visive */}
+                      {laidOutSegmentsByDay[d.n].map((seg, idx) => {
                         const r = seg.routine;
                         const top = pxFromMin(seg.startMin);
-                        const height = Math.max(20, pxFromMin(seg.endMin - seg.startMin) - 2);
+                        const height = Math.max(2, pxFromMin(seg.endMin - seg.startMin));
                         const style = KIND_STYLES[r.kind];
                         const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
+                        const laneWidth = 100 / seg.laneCount;
                         return (
                           <button
                             key={`${r.id}-${d.n}-${idx}`}
                             onClick={(e) => { e.stopPropagation(); openEdit(r); }}
                             className={cn(
-                              "absolute left-1 right-1 rounded-xl border px-1.5 py-1 text-[10px] leading-tight overflow-hidden shadow-sm text-left animate-scale-in",
+                              "absolute rounded-xl border px-1.5 py-1 text-[10px] leading-tight overflow-hidden shadow-sm text-left animate-scale-in",
                               "hover:shadow-md hover:-translate-y-[1px]",
                               style.bg, style.border, style.text,
                             )}
                             style={{
-                              top: top + 1,
+                              top,
                               height,
+                              left: `calc(${seg.lane * laneWidth}% + 4px)`,
+                              width: `calc(${laneWidth}% - 8px)`,
+                              boxSizing: "border-box",
                               transition: "transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms, height 300ms ease, top 300ms ease",
                             }}
                           >
                             <div className="font-semibold truncate">{r.label || kindLabel}</div>
-                            {height > 24 && (
+                            {height >= 28 && (
                               <div className="opacity-70 tabular-nums">
-                                {fmt(r.start_time)}–{fmt(r.end_time)}
+                                {minToTime(seg.startMin)}–{minToTime(seg.endMin)}
                               </div>
                             )}
                           </button>
