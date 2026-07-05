@@ -490,12 +490,8 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                       {/* Segmenti routine: splittati per overnight e disposti in corsie per evitare sovrapposizioni visive */}
                       {laidOutSegmentsByDay[d.n].map((seg, idx) => {
                         const r = seg.routine;
-                        const top = pxFromMin(seg.startMin);
-                        const rawHeight = pxFromMin(seg.endMin - seg.startMin);
-                        const maxHeight = Number.isFinite(seg.maxRenderMin)
-                          ? pxFromMin(seg.maxRenderMin)
-                          : Infinity;
-                        const height = Math.min(Math.max(MIN_BLOCK_PX, rawHeight), maxHeight);
+                        const top = seg.renderTopPx;
+                        const height = seg.renderHeightPx;
                         const style = KIND_STYLES[r.kind];
                         const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
                         const laneWidth = 100 / seg.laneCount;
@@ -564,12 +560,8 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
 
                   {laidOutSegmentsByDay[mobileDay].map((seg, idx) => {
                     const r = seg.routine;
-                    const top = pxFromMin(seg.startMin);
-                    const rawHeight = pxFromMin(seg.endMin - seg.startMin);
-                    const maxHeight = Number.isFinite(seg.maxRenderMin)
-                      ? pxFromMin(seg.maxRenderMin)
-                      : Infinity;
-                    const height = Math.min(Math.max(MIN_BLOCK_PX, rawHeight), maxHeight);
+                    const top = seg.renderTopPx;
+                    const height = seg.renderHeightPx;
                     const style = KIND_STYLES[r.kind];
                     const kindLabel = KINDS.find(k => k.value === r.kind)?.label ?? r.kind;
                     const laneWidth = 100 / seg.laneCount;
