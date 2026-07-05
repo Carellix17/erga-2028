@@ -50,6 +50,21 @@ export function useAddUserRoutine() {
   });
 }
 
+export function useUpdateUserRoutine() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { id: string } & Partial<Omit<UserRoutine, "id" | "user_id">>) => {
+      const { id, ...rest } = payload;
+      const { error } = await (supabase as any)
+        .from("user_routines")
+        .update(rest)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["user_routines"] }),
+  });
+}
+
 export function useDeleteUserRoutine() {
   const qc = useQueryClient();
   return useMutation({
