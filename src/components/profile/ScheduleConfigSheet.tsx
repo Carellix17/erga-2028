@@ -45,6 +45,10 @@ const HOUR_END = 24;
 const HOURS = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i);
 const ROW_H = 48; // px per hour → exact math (1h = 48px, 2h = 96px)
 const GRID_HEIGHT = (HOUR_END - HOUR_START) * ROW_H;
+// Visual minimum block height (px) — must match the min-height used in rendering.
+const MIN_BLOCK_PX = 32;
+// Convert that to "minutes" so short blocks reserve a matching slot for lane packing.
+const MIN_BLOCK_MIN = Math.ceil((MIN_BLOCK_PX / ROW_H) * 60); // 40 min
 
 const toMin = (t: string) => {
   const [h, m] = t.split(":").map(Number);
@@ -107,7 +111,10 @@ const windowsOverlap = (a: TimeWindow, b: TimeWindow) =>
   a.day === b.day && a.startMin < b.endMin && b.startMin < a.endMin;
 
 const layoutSegments = (segments: Segment[]): LaidOutSegment[] => {
-  const sorted = [...segments].sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
+  // Use an effective end that accounts for the visual minimum height so short
+  // blocks (e.g. 15 min forced to 32px) don't visually overlap the next one.
+  const effEnd = (s: Segment) => Math.max(s.endMin, s.startMin + MIN_BLOCK_MIN);
+  const sorted = [...segments].sort((a, b) => a.startMin - b.startMin || effEnd(a) - effEnd(b));
   const laidOut: LaidOutSegment[] = [];
 
   let group: Segment[] = [];
@@ -121,7 +128,7 @@ const layoutSegments = (segments: Segment[]): LaidOutSegment[] => {
     for (const seg of group) {
       const lane = lanes.findIndex((end) => end <= seg.startMin);
       const assignedLane = lane === -1 ? lanes.length : lane;
-      lanes[assignedLane] = seg.endMin;
+      lanes[assignedLane] = effEnd(seg);
       groupLayout.push({ ...seg, lane: assignedLane, laneCount: 1 });
     }
 
@@ -134,17 +141,17 @@ const layoutSegments = (segments: Segment[]): LaidOutSegment[] => {
   for (const seg of sorted) {
     if (!group.length) {
       group = [seg];
-      groupEnd = seg.endMin;
+      groupEnd = effEnd(seg);
       continue;
     }
 
     if (seg.startMin < groupEnd) {
       group.push(seg);
-      groupEnd = Math.max(groupEnd, seg.endMin);
+      groupEnd = Math.max(groupEnd, effEnd(seg));
     } else {
       flushGroup();
       group = [seg];
-      groupEnd = seg.endMin;
+      groupEnd = effEnd(seg);
     }
   }
 
