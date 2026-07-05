@@ -21,8 +21,12 @@ export default function Registrati() {
   const [registered, setRegistered] = useState(false);
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { t } = useTranslation();
+
+  const rawNext = searchParams.get("next");
+  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/app";
 
   const isLengthValid = password.length >= 8;
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
