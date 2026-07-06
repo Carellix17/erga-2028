@@ -230,9 +230,6 @@ export function LessonsList({
  </Button>
  )}
  <div className="flex-1 min-w-0">
- <h2 className="text-lg font-display font-bold text-foreground truncate">
- {contextFileName ||"Percorso di studio"}
- </h2>
  <p className="text-xs text-muted-foreground">
  {completedCount}/{lessons.length} lezioni completate
  </p>
