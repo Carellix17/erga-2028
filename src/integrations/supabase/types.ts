@@ -405,6 +405,63 @@ export type Database = {
         }
         Relationships: []
       }
+      study_sessions_logs: {
+        Row: {
+          actual_duration: number
+          completed_at: string
+          created_at: string
+          estimated_duration: number | null
+          event_id: string | null
+          id: string
+          source_type: string
+          subject_id: string | null
+          subject_name: string | null
+          task_label: string | null
+          user_id: string
+        }
+        Insert: {
+          actual_duration: number
+          completed_at?: string
+          created_at?: string
+          estimated_duration?: number | null
+          event_id?: string | null
+          id?: string
+          source_type: string
+          subject_id?: string | null
+          subject_name?: string | null
+          task_label?: string | null
+          user_id: string
+        }
+        Update: {
+          actual_duration?: number
+          completed_at?: string
+          created_at?: string
+          estimated_duration?: number | null
+          event_id?: string | null
+          id?: string
+          source_type?: string
+          subject_id?: string | null
+          subject_name?: string | null
+          task_label?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "study_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_sessions_logs_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "user_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
