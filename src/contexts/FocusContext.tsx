@@ -8,6 +8,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { FocusSetupDialog } from "@/components/focus/FocusSetupDialog";
 import { FocusFullscreen } from "@/components/focus/FocusFullscreen";
 
@@ -17,6 +20,9 @@ export interface FocusTask {
   label: string;
   subject?: string;
   eventId?: string;
+  subjectId?: string;
+  estimatedDuration?: number; // minutes, from AI plan
+  sourceType?: "planned" | "adhoc";
 }
 
 const DURATIONS: Record<FocusPhase, number> = {
@@ -48,6 +54,7 @@ interface FocusContextValue {
 const FocusContext = createContext<FocusContextValue | null>(null);
 
 export function FocusProvider({ children }: { children: ReactNode }) {
+  const { session } = useAuth();
   const [setupOpen, setSetupOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [task, setTask] = useState<FocusTask | null>(null);
@@ -57,6 +64,10 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   const [isRunning, setIsRunning] = useState(false);
   const [awaitingChoice, setAwaitingChoice] = useState(false);
   const tickRef = useRef<number | null>(null);
+  // Total seconds actually spent in "focus" phases (excludes breaks)
+  const focusSecondsRef = useRef(0);
+  const phaseRef = useRef<FocusPhase>("focus");
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
 
   const isActive = task !== null;
 
@@ -78,8 +89,10 @@ export function FocusProvider({ children }: { children: ReactNode }) {
           stopTick();
           setIsRunning(false);
           setAwaitingChoice(true);
+          if (phaseRef.current === "focus") focusSecondsRef.current += 1;
           return 0;
         }
+        if (phaseRef.current === "focus") focusSecondsRef.current += 1;
         return r - 1;
       });
     }, 1000);
@@ -87,11 +100,12 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   }, [isRunning]);
 
   const startSession = useCallback((t: FocusTask) => {
-    setTask(t);
+    setTask({ sourceType: t.eventId ? "planned" : "adhoc", ...t });
     setPhase("focus");
     setCycle(0);
     setRemaining(DURATIONS.focus);
     setAwaitingChoice(false);
+    focusSecondsRef.current = 0;
     setIsRunning(true);
     setSetupOpen(false);
     setFullscreen(true);
@@ -112,16 +126,42 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     setIsRunning(true);
   }, [phase]);
 
-  const end = useCallback(() => {
+  const end = useCallback(async () => {
     stopTick();
     setIsRunning(false);
-    setTask(null);
+    const currentTask = task;
+    const actualMinutes = Math.max(1, Math.round(focusSecondsRef.current / 60));
+    const userId = session?.user?.id;
+
+    // Close UI first for a fluid animation
     setFullscreen(false);
+    setTask(null);
     setAwaitingChoice(false);
     setPhase("focus");
     setCycle(0);
     setRemaining(DURATIONS.focus);
-  }, []);
+    focusSecondsRef.current = 0;
+
+    if (currentTask && userId && actualMinutes > 0) {
+      try {
+        const { error } = await supabase.from("study_sessions_logs").insert({
+          user_id: userId,
+          subject_id: currentTask.subjectId ?? null,
+          subject_name: currentTask.subject ?? null,
+          task_label: currentTask.label,
+          event_id: currentTask.eventId ?? null,
+          source_type: currentTask.sourceType ?? (currentTask.eventId ? "planned" : "adhoc"),
+          estimated_duration: currentTask.estimatedDuration ?? null,
+          actual_duration: actualMinutes,
+        });
+        if (error) throw error;
+        toast.success("Sessione registrata! Erga sta calibrando il tuo algoritmo.");
+      } catch (e) {
+        console.error("Failed to log study session:", e);
+        toast.error("Non è stato possibile salvare la sessione.");
+      }
+    }
+  }, [task, session]);
 
   const nextPhase = useCallback(() => {
     let nextPhaseVal: FocusPhase;

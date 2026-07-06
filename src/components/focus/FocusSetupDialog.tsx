@@ -47,12 +47,22 @@ export function FocusSetupDialog({ open, onOpenChange, onStart }: Props) {
     if (selection.startsWith("event:")) {
       const id = selection.slice("event:".length);
       const ev = todayEvents.find((e) => e.id === id);
-      if (ev) onStart({ label: ev.title, subject: ev.subject, eventId: ev.id });
+      if (ev) {
+        const match = subjects.find((s) => s.name === ev.subject);
+        onStart({
+          label: ev.title,
+          subject: ev.subject,
+          subjectId: match?.id,
+          eventId: ev.id,
+          sourceType: "planned",
+        });
+      }
     } else if (selection.startsWith("subject:")) {
-      const name = selection.slice("subject:".length);
-      onStart({ label: name, subject: name });
+      const id = selection.slice("subject:".length);
+      const s = subjects.find((x) => x.id === id);
+      if (s) onStart({ label: s.name, subject: s.name, subjectId: s.id, sourceType: "adhoc" });
     } else if (selection === "free") {
-      onStart({ label: "Studio libero" });
+      onStart({ label: "Studio libero", sourceType: "adhoc" });
     }
     setSelection("");
   };
@@ -95,7 +105,7 @@ export function FocusSetupDialog({ open, onOpenChange, onStart }: Props) {
                     Materie
                   </div>
                   {subjects.map((s) => (
-                    <SelectItem key={s.id} value={`subject:${s.name}`}>
+                    <SelectItem key={s.id} value={`subject:${s.id}`}>
                       {s.name}
                     </SelectItem>
                   ))}
