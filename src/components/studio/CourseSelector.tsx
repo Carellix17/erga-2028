@@ -1,5 +1,6 @@
-import { BookOpen, Globe, FileText, Pencil, Loader2, ChevronDown, Check } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { BookOpen, Globe, FileText, Pencil, Loader2, ChevronDown, Check, MoreHorizontal, RefreshCw, Trash2, FolderOpen } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { getStableSubjectColor } from "@/lib/subjectColors";
 import {
@@ -10,6 +11,10 @@ import {
   DrawerDescription,
   DrawerFooter,
 } from "@/components/ui/drawer";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -24,6 +29,10 @@ interface CourseSelectorProps {
   activeContextId: string | null;
   onSelectCourse: (contextId: string) => void;
   onRenameCourse?: (contextId: string, newName: string) => Promise<void> | void;
+  onRegenerateCourse?: (contextId: string) => Promise<void> | void;
+  onDeleteCourse?: (contextId: string) => Promise<void> | void;
+  onOpenMaterials?: (contextId: string) => void;
+  isRegenerating?: boolean;
 }
 
 const getIcon = (name: string) => {
@@ -35,13 +44,27 @@ const getIcon = (name: string) => {
 const cleanName = (name: string) =>
   name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "");
 
-export function CourseSelector({ courses, activeContextId, onSelectCourse, onRenameCourse }: CourseSelectorProps) {
+export function CourseSelector({
+  courses,
+  activeContextId,
+  onSelectCourse,
+  onRenameCourse,
+  onRegenerateCourse,
+  onDeleteCourse,
+  onOpenMaterials,
+  isRegenerating,
+}: CourseSelectorProps) {
   if (courses.length === 0) return null;
 
   const [open, setOpen] = useState(false);
   const [renameCourse, setRenameCourse] = useState<Course | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const moreBtnRef = useRef<HTMLButtonElement | null>(null);
   const longPressTimer = useRef<number | null>(null);
   const longPressTriggered = useRef(false);
 
@@ -62,6 +85,31 @@ export function CourseSelector({ courses, activeContextId, onSelectCourse, onRen
       document.body.style.overflow = prev;
     };
   }, [open]);
+
+  // Position the floating iOS-style menu right below the "more" button.
+  useLayoutEffect(() => {
+    if (!menuOpen) return;
+    const update = () => {
+      const el = moreBtnRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      setMenuPos({ top: r.bottom + 8, right: Math.max(8, window.innerWidth - r.right) });
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   const clearLongPress = () => {
     if (longPressTimer.current) {
@@ -105,9 +153,36 @@ export function CourseSelector({ courses, activeContextId, onSelectCourse, onRen
 
   const multi = courses.length > 1;
 
+  const openRename = () => {
+    setRenameValue(cleanName(active.file_name));
+    setRenameCourse(active);
+  };
+  const handleRegenerate = async () => {
+    if (!onRegenerateCourse) return;
+    await onRegenerateCourse(active.id);
+  };
+  const handleOpenMaterials = () => onOpenMaterials?.(active.id);
+  const handleDelete = async () => {
+    if (!onDeleteCourse) return;
+    setIsDeleting(true);
+    try {
+      await onDeleteCourse(active.id);
+      setConfirmDelete(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const actions = [
+    { key: "rename", label: "Rinomina", icon: Pencil, onClick: openRename, show: !!onRenameCourse },
+    { key: "regen", label: "Rigenera", icon: RefreshCw, onClick: handleRegenerate, show: !!onRegenerateCourse, loading: isRegenerating },
+    { key: "material", label: "Materiale", icon: FolderOpen, onClick: handleOpenMaterials, show: !!onOpenMaterials },
+    { key: "delete", label: "Elimina", icon: Trash2, onClick: () => setConfirmDelete(true), show: !!onDeleteCourse, danger: true },
+  ].filter((a) => a.show);
+
   return (
     <>
-      <div className="px-4 pt-5 pb-2 flex justify-center animate-fade-up">
+      <div className="px-4 pt-5 pb-2 flex justify-center items-center gap-2 animate-fade-up flex-wrap">
         <button
           onClick={() => {
             if (longPressTriggered.current) {
@@ -122,7 +197,7 @@ export function CourseSelector({ courses, activeContextId, onSelectCourse, onRen
           onPointerCancel={clearLongPress}
           onContextMenu={(e) => e.preventDefault()}
           className={cn(
-            "flex items-center gap-3 px-6 py-3.5 rounded-full shadow-level-2 select-none touch-none max-w-full",
+            "h-12 flex items-center gap-3 px-6 rounded-full shadow-level-2 select-none touch-none max-w-full",
             "transition-all duration-500 ease-m3-emphasized",
             "active:scale-[0.96] hover:scale-[1.02] hover:shadow-level-3",
             activeColor.bgActive,
@@ -142,7 +217,118 @@ export function CourseSelector({ courses, activeContextId, onSelectCourse, onRen
             />
           )}
         </button>
+
+        {actions.length > 0 && (
+          <>
+            {/* Mobile: single "more" button */}
+            <button
+              ref={moreBtnRef}
+              aria-label="Azioni corso"
+              onClick={() => setMenuOpen((v) => !v)}
+              className={cn(
+                "md:hidden h-12 w-12 flex items-center justify-center rounded-2xl shadow-level-2",
+                "transition-all duration-300 active:scale-[0.94] hover:shadow-level-3",
+                activeColor.bgActive,
+                activeColor.textActive,
+              )}
+            >
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+
+            {/* Desktop: full toolbar */}
+            <div className="hidden md:flex items-center gap-2">
+              {actions.map((a) => {
+                const Icon = a.icon;
+                const danger = a.danger;
+                return (
+                  <button
+                    key={a.key}
+                    onClick={a.onClick}
+                    disabled={a.loading}
+                    className={cn(
+                      "h-12 px-4 flex items-center gap-2 rounded-full border bg-white/70 backdrop-blur transition-all duration-300",
+                      "active:scale-[0.96] hover:shadow-level-2 label-large",
+                      danger
+                        ? "border-red-200 text-red-600 hover:bg-red-50"
+                        : cn(activeColor.border, activeColor.text, `hover:${activeColor.bg}`),
+                    )}
+                  >
+                    {a.loading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Icon className="w-4 h-4" />
+                    )}
+                    <span className="text-sm font-semibold">{a.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
+
+      {/* Floating iOS-style context menu (mobile) */}
+      {menuOpen && menuPos && createPortal(
+        <>
+          <div className="fixed inset-0 z-[85]" onClick={() => setMenuOpen(false)} />
+          <div
+            role="menu"
+            style={{ top: menuPos.top, right: menuPos.right }}
+            className={cn(
+              "fixed z-[86] min-w-[200px] rounded-2xl bg-white/90 backdrop-blur-xl shadow-level-3 border border-black/5 p-1.5",
+              "animate-in fade-in-0 zoom-in-95 duration-200 ease-m3-emphasized-decel origin-top-right",
+            )}
+          >
+            {actions.map((a) => {
+              const Icon = a.icon;
+              const danger = a.danger;
+              return (
+                <button
+                  key={a.key}
+                  role="menuitem"
+                  disabled={a.loading}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    a.onClick();
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors",
+                    "active:scale-[0.98]",
+                    danger
+                      ? "text-red-600 hover:bg-red-50"
+                      : "text-foreground hover:bg-black/5",
+                  )}
+                >
+                  {a.loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Icon className={cn("w-4 h-4", !danger && activeColor.text)} />
+                  )}
+                  <span className="text-sm font-medium">{a.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </>,
+        document.body,
+      )}
+
+      <AlertDialog open={confirmDelete} onOpenChange={(o) => !isDeleting && setConfirmDelete(o)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminare "{cleanName(active.file_name)}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Verranno rimosse anche tutte le lezioni e gli esercizi collegati a questo corso. L'azione non può essere annullata.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Annulla</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Elimina"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {open && (
         <div
