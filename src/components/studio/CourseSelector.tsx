@@ -250,7 +250,7 @@ export function CourseSelector({
                       "active:scale-[0.96] hover:shadow-level-2 label-large",
                       danger
                         ? "border-red-200 text-red-600 hover:bg-red-50"
-                        : cn(activeColor.border, activeColor.text, `hover:${activeColor.bg}`),
+                        : cn(activeColor.border, activeColor.text, "hover:bg-black/5"),
                     )}
                   >
                     {a.loading ? (
