@@ -27,6 +27,7 @@ import {
   FREE_LIMIT_MESSAGE,
 } from "@/hooks/useGenerationUsage";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useDeleteFileContext } from "@/hooks/useFileContexts";
 
 interface StudioViewProps {
   hasFiles: boolean;
@@ -52,6 +53,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const push = usePushNotifications();
+  const deleteContextMutation = useDeleteFileContext();
 
   // Rate limiting beta: 5 mini-lezioni gratuite per utente.
   // Le lezioni dei contesti demo NON contano nel limite.
@@ -424,6 +426,21 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         courses={allContexts}
         activeContextId={activeContextId}
         onSelectCourse={handleSelectCourse}
+        isRegenerating={isGenerating || generationBlocked}
+        onRegenerateCourse={async () => { await handleGenerateLessons(); }}
+        onOpenMaterials={() => onUploadClick()}
+        onDeleteCourse={async (contextId) => {
+          try {
+            await deleteContextMutation.mutateAsync(contextId);
+            toast({ title: "Corso eliminato" });
+            if (activeContextId === contextId) {
+              setActiveContextId(null);
+              onClearContext?.();
+            }
+          } catch (err) {
+            toast({ title: "Errore", description: err instanceof Error ? err.message : "Impossibile eliminare", variant: "destructive" });
+          }
+        }}
         onRenameCourse={async (contextId, newName) => {
           const ctx = allContexts.find((c) => c.id === contextId);
           if (!ctx) return;
