@@ -14,7 +14,7 @@ const VERIFICA_MODES: { value: Exclude<EvaluationType, "compito">; label: string
   { value: "orale", label: "Orale" },
   { value: "scritta", label: "Scritta" },
   { value: "pratica", label: "Pratica" },
-  { value: "interrogazione", label: "Interrogazione" },
+  { value: "interrogazione", label: "Presentazione" },
 ];
 
 interface AddEventSheetProps {
