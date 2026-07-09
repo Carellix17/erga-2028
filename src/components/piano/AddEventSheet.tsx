@@ -92,7 +92,7 @@ export function AddEventSheet({ open, onOpenChange, onAdd }: AddEventSheetProps)
                 category === "verifica" ? "bg-black text-white shadow-level-1" : "text-slate-700"
               }`}
             >
-              Verifica / Interrogazione
+              Verifica
             </button>
             <button
               type="button"
