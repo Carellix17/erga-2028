@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Loader2, Trash2, Network, Timer, ClipboardCheck, Mic, PencilLine, Hammer, BookOpen } from "lucide-react";
+import { Plus, Loader2, Trash2, Timer, ClipboardCheck, Mic, PencilLine, Hammer, BookOpen } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { PlanItem } from "./PlanItem";
 import { PlanSuggestion } from "./PlanSuggestion";
 import { AddEventSheet } from "./AddEventSheet";
-import { AddEvaluationSheet } from "./AddEvaluationSheet";
 import { useEvaluations, useAddEvaluation, useDeleteEvaluation, type Evaluation, type EvaluationType } from "@/hooks/useEvaluations";
 import { useUserSubjects } from "@/hooks/useUserSubjects";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -28,7 +27,6 @@ interface PlanSuggestionData { explanation: string; studySessions: { subject: st
 
 export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const [showAddSheet, setShowAddSheet] = useState(false);
-  const [showEvalSheet, setShowEvalSheet] = useState(false);
   const [suggestion, setSuggestion] = useState<PlanSuggestionData | null>(null);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -78,15 +76,6 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       await addEvents.mutateAsync(studyEvents);
       toast({ title: "Piano accettato!", description: "Le sessioni di studio sono state aggiunte al tuo calendario." });
       setSuggestion(null);
-    } catch (error) {
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel salvataggio", variant: "destructive" });
-    }
-  };
-
-  const handleAddEvent = async (event: { subject: string; title: string; date: string; type: "test" | "assignment"; }) => {
-    try {
-      await addEvents.mutateAsync([event]);
-      toast({ title: "Evento aggiunto", description: `${event.title} è stato aggiunto al calendario.` });
     } catch (error) {
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel salvataggio", variant: "destructive" });
     }
@@ -222,9 +211,6 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           {selectedDate ? format(selectedDate, "d MMMM yyyy", { locale: it }) : "Prossimi eventi"}
         </h1>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowEvalSheet(true)} aria-label="Aggiungi scadenza o verifica">
-            <ClipboardCheck className="w-4 h-4 mr-1" />Scadenza
-          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowAddSheet(true)} aria-label="Aggiungi nuovo evento">
             <Plus className="w-4 h-4 mr-1" />Evento
           </Button>
@@ -291,14 +277,13 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         )
       )}
 
-      <AddEventSheet open={showAddSheet} onOpenChange={setShowAddSheet} onAdd={handleAddEvent} />
-      <AddEvaluationSheet
-        open={showEvalSheet}
-        onOpenChange={setShowEvalSheet}
+      <AddEventSheet
+        open={showAddSheet}
+        onOpenChange={setShowAddSheet}
         onAdd={async (input) => {
           try {
             await addEvaluation.mutateAsync(input);
-            toast({ title: "Scadenza salvata", description: `${input.title} aggiunta al calendario.` });
+            toast({ title: "Evento salvato", description: `${input.title} aggiunto al calendario.` });
             if (input.date) setSelectedDate(new Date(input.date));
           } catch (err) {
             toast({ title: "Errore", description: err instanceof Error ? err.message : "Errore nel salvataggio", variant: "destructive" });
