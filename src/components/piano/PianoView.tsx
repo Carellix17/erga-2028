@@ -145,7 +145,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
                 <span className="font-display font-semibold">Generazione piano...</span>
               </>
             ) : (
-              <span className="font-display font-semibold">Genera piano di studio AI</span>
+              <span className="font-display font-semibold">Genera piano di studio</span>
             )}
           </LiquidButton>
           <Button
