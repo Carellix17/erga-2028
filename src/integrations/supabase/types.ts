@@ -121,6 +121,66 @@ export type Database = {
         }
         Relationships: []
       }
+      evaluations: {
+        Row: {
+          created_at: string
+          date: string
+          description: string | null
+          free_topic_title: string | null
+          id: string
+          subject_id: string | null
+          title: string
+          topic_id: string | null
+          topic_type: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          description?: string | null
+          free_topic_title?: string | null
+          id?: string
+          subject_id?: string | null
+          title: string
+          topic_id?: string | null
+          topic_type?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string | null
+          free_topic_title?: string | null
+          id?: string
+          subject_id?: string | null
+          title?: string
+          topic_id?: string | null
+          topic_type?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "user_subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "mini_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_jobs: {
         Row: {
           context_id: string | null

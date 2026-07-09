@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Loader2, Trash2, Network, Timer } from "lucide-react";
+import { Plus, Loader2, Trash2, Network, Timer, ClipboardCheck, Mic, PencilLine, Hammer, BookOpen } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { PlanItem } from "./PlanItem";
 import { PlanSuggestion } from "./PlanSuggestion";
 import { AddEventSheet } from "./AddEventSheet";
+import { AddEvaluationSheet } from "./AddEvaluationSheet";
+import { useEvaluations, useAddEvaluation, useDeleteEvaluation, type Evaluation, type EvaluationType } from "@/hooks/useEvaluations";
+import { useUserSubjects } from "@/hooks/useUserSubjects";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -25,10 +28,12 @@ interface PlanSuggestionData { explanation: string; studySessions: { subject: st
 
 export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const [showAddSheet, setShowAddSheet] = useState(false);
+  const [showEvalSheet, setShowEvalSheet] = useState(false);
   const [suggestion, setSuggestion] = useState<PlanSuggestionData | null>(null);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [eventToDelete, setEventToDelete] = useState<StudyEvent | null>(null);
+  const [evalToDelete, setEvalToDelete] = useState<Evaluation | null>(null);
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const focus = useFocus();
@@ -37,6 +42,12 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const addEvents = useAddStudyEvents();
   const deleteEvent = useDeleteStudyEvent();
   const events = eventsQuery.data ?? [];
+  const evaluationsQuery = useEvaluations(hasFiles);
+  const evaluations = evaluationsQuery.data ?? [];
+  const addEvaluation = useAddEvaluation();
+  const deleteEvaluation = useDeleteEvaluation();
+  const { data: userSubjects = [] } = useUserSubjects();
+  const subjectById = new Map(userSubjects.map((s) => [s.id, s]));
   // Loading visivo solo al primo caricamento; tra le tab è istantaneo
   const isLoading = eventsQuery.isLoading && events.length === 0;
   const isDeleting = deleteEvent.isPending;
@@ -95,19 +106,23 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const formatDate = (dateString: string) => format(new Date(dateString), "d MMM", { locale: it });
 
   const selectedDateEvents = selectedDate ? events.filter(event => isSameDay(new Date(event.event_date), selectedDate)) : [];
+  const selectedDateEvaluations = selectedDate ? evaluations.filter(ev => isSameDay(new Date(ev.date), selectedDate)) : [];
   const eventDates = events.map(e => new Date(e.event_date));
+  const evaluationDates = evaluations.map(ev => new Date(ev.date));
 
   const modifiers = {
     hasEvent: eventDates,
     hasTest: events.filter(e => e.event_type === "test").map(e => new Date(e.event_date)),
     hasAssignment: events.filter(e => e.event_type === "assignment").map(e => new Date(e.event_date)),
     hasStudy: events.filter(e => e.event_type === "study").map(e => new Date(e.event_date)),
+    hasEvaluation: evaluationDates,
   };
 
   const modifiersStyles = {
     hasTest: { backgroundColor: "hsl(var(--secondary-container))", borderRadius: "50%" },
     hasAssignment: { backgroundColor: "hsl(var(--tertiary-container))", borderRadius: "50%" },
     hasStudy: { backgroundColor: "hsl(var(--primary-container))", borderRadius: "50%" },
+    hasEvaluation: { boxShadow: "inset 0 0 0 2px hsl(var(--foreground))", borderRadius: "50%" },
   };
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
@@ -206,17 +221,40 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         <h1 className="title-medium font-display font-semibold">
           {selectedDate ? format(selectedDate, "d MMMM yyyy", { locale: it }) : "Prossimi eventi"}
         </h1>
-        <Button variant="outline" size="sm" onClick={() => setShowAddSheet(true)} aria-label="Aggiungi nuovo evento">
-          <Plus className="w-4 h-4 mr-1" />Aggiungi
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowEvalSheet(true)} aria-label="Aggiungi scadenza o verifica">
+            <ClipboardCheck className="w-4 h-4 mr-1" />Scadenza
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowAddSheet(true)} aria-label="Aggiungi nuovo evento">
+            <Plus className="w-4 h-4 mr-1" />Evento
+          </Button>
+        </div>
       </div>
+
+      {/* Evaluations for selected date */}
+      {selectedDate && selectedDateEvaluations.length > 0 && (
+        <div className="space-y-3">
+          {selectedDateEvaluations.map((ev, i) => (
+            <div key={ev.id} className={`relative group animate-fade-up animate-stagger-${Math.min(i + 1, 5)}`}>
+              <EvaluationItem evaluation={ev} subjectName={ev.subject_id ? subjectById.get(ev.subject_id)?.name : undefined} />
+              <Button variant="destructive" size="icon" aria-label="Elimina scadenza"
+                className="absolute -right-2 -top-2 w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-level-2 scale-0 group-hover:scale-100"
+                onClick={(e) => { e.stopPropagation(); setEvalToDelete(ev); }}>
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Events */}
       {selectedDate && selectedDateEvents.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground m3-card-elevated rounded-xl">
-          <p className="body-large font-medium">Nessun evento per questa data.</p>
-          <Button variant="link" onClick={() => setShowAddSheet(true)} className="mt-2 text-primary">Aggiungi un evento</Button>
-        </div>
+        selectedDateEvaluations.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground m3-card-elevated rounded-xl">
+            <p className="body-large font-medium">Nessun evento per questa data.</p>
+            <Button variant="link" onClick={() => setShowAddSheet(true)} className="mt-2 text-primary">Aggiungi un evento</Button>
+          </div>
+        ) : null
       ) : selectedDate && selectedDateEvents.length > 0 ? (
         <div className="space-y-3">
           {selectedDateEvents.map((event, i) => (
@@ -254,6 +292,20 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       )}
 
       <AddEventSheet open={showAddSheet} onOpenChange={setShowAddSheet} onAdd={handleAddEvent} />
+      <AddEvaluationSheet
+        open={showEvalSheet}
+        onOpenChange={setShowEvalSheet}
+        onAdd={async (input) => {
+          try {
+            await addEvaluation.mutateAsync(input);
+            toast({ title: "Scadenza salvata", description: `${input.title} aggiunta al calendario.` });
+            if (input.date) setSelectedDate(new Date(input.date));
+          } catch (err) {
+            toast({ title: "Errore", description: err instanceof Error ? err.message : "Errore nel salvataggio", variant: "destructive" });
+            throw err;
+          }
+        }}
+      />
 
       <AlertDialog open={!!eventToDelete} onOpenChange={() => setEventToDelete(null)}>
         <AlertDialogContent>
@@ -271,6 +323,83 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!evalToDelete} onOpenChange={() => setEvalToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Elimina scadenza</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sei sicuro di voler eliminare "{evalToDelete?.title}"? Questa azione non può essere annullata.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteEvaluation.isPending}>Annulla</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!evalToDelete) return;
+                try {
+                  await deleteEvaluation.mutateAsync(evalToDelete.id);
+                  toast({ title: "Scadenza eliminata" });
+                  setEvalToDelete(null);
+                } catch (err) {
+                  toast({ title: "Errore", description: err instanceof Error ? err.message : "", variant: "destructive" });
+                }
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deleteEvaluation.isPending}
+            >
+              {deleteEvaluation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Elimina"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+const EVAL_ICONS: Record<EvaluationType, typeof Mic> = {
+  orale: Mic,
+  interrogazione: Mic,
+  scritta: PencilLine,
+  compito: BookOpen,
+  pratica: Hammer,
+};
+
+const EVAL_LABELS: Record<EvaluationType, string> = {
+  orale: "Orale",
+  scritta: "Scritta",
+  pratica: "Pratica",
+  interrogazione: "Interrogazione",
+  compito: "Compito",
+};
+
+function EvaluationItem({ evaluation, subjectName }: { evaluation: Evaluation; subjectName?: string }) {
+  const Icon = EVAL_ICONS[evaluation.type] ?? ClipboardCheck;
+  const topic = evaluation.topic_type === "free" ? evaluation.free_topic_title : null;
+  return (
+    <div className="rounded-xl p-4 bg-white border-l-4 border-l-foreground border border-slate-200 shadow-level-1">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-xl bg-foreground text-background flex items-center justify-center shrink-0">
+          <Icon className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="label-small px-2.5 py-0.5 rounded-full bg-foreground text-background">
+              {EVAL_LABELS[evaluation.type]}
+            </span>
+            {subjectName && (
+              <span className="label-small px-2.5 py-0.5 rounded-full bg-surface-container text-muted-foreground">
+                {subjectName}
+              </span>
+            )}
+          </div>
+          <p className="title-small">{evaluation.title}</p>
+          {topic && <p className="body-small text-muted-foreground mt-0.5">Argomento: {topic}</p>}
+          {evaluation.description && (
+            <p className="body-small text-muted-foreground mt-1 line-clamp-2">{evaluation.description}</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
