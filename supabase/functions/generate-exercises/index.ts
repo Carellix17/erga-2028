@@ -6,7 +6,20 @@ import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 
 function extractJsonArray(raw: string): unknown[] {
   let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
-  try { const p = JSON.parse(cleaned); if (Array.isArray(p)) return p; } catch { /* continue */ }
+  // Direct parse: array or { exercises: [...] }
+  try {
+    const p = JSON.parse(cleaned);
+    if (Array.isArray(p)) return p;
+    if (p && typeof p === "object" && Array.isArray((p as { exercises?: unknown[] }).exercises)) {
+      return (p as { exercises: unknown[] }).exercises;
+    }
+  } catch { /* continue */ }
+  // Try to extract "exercises": [ ... ] from a wrapping object
+  const exKey = cleaned.match(/"exercises"\s*:\s*(\[[\s\S]*\])/);
+  if (exKey) {
+    try { const p = JSON.parse(exKey[1]); if (Array.isArray(p)) return p; } catch { /* continue */ }
+    cleaned = exKey[1];
+  }
   const arrMatch = cleaned.match(/\[[\s\S]*\]/);
   if (arrMatch) {
     try { const p = JSON.parse(arrMatch[0]); if (Array.isArray(p)) return p; } catch { /* continue */ }
@@ -208,8 +221,14 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
         const content = await callAIText([
           { role: "system", content: `${languageDirective(language)} Rispondi ESCLUSIVAMENTE con un array JSON valido. Niente markdown, niente \`\`\`json, niente testo extra. Tutte le virgolette interne alle stringhe devono essere escape con \\". Niente virgole finali.` },
           { role: "user", content: prompt },
-        ], 0.3, 4096);
-        const exercises = extractJsonArray(content);
+        ], 0.3, 8192);
+        let exercises: unknown[];
+        try {
+          exercises = extractJsonArray(content);
+        } catch (parseErr) {
+          console.error(`[generate-exercises] parse failed. Raw AI response (first 2000 chars):`, content.slice(0, 2000));
+          throw parseErr;
+        }
         if (!Array.isArray(exercises) || exercises.length === 0) throw new Error("Risposta AI non valida");
         await supabase.from("exercise_jobs").update({
           status: "completed",
