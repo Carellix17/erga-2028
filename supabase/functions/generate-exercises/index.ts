@@ -6,7 +6,20 @@ import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 
 function extractJsonArray(raw: string): unknown[] {
   let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
-  try { const p = JSON.parse(cleaned); if (Array.isArray(p)) return p; } catch { /* continue */ }
+  // Direct parse: array or { exercises: [...] }
+  try {
+    const p = JSON.parse(cleaned);
+    if (Array.isArray(p)) return p;
+    if (p && typeof p === "object" && Array.isArray((p as { exercises?: unknown[] }).exercises)) {
+      return (p as { exercises: unknown[] }).exercises;
+    }
+  } catch { /* continue */ }
+  // Try to extract "exercises": [ ... ] from a wrapping object
+  const exKey = cleaned.match(/"exercises"\s*:\s*(\[[\s\S]*\])/);
+  if (exKey) {
+    try { const p = JSON.parse(exKey[1]); if (Array.isArray(p)) return p; } catch { /* continue */ }
+    cleaned = exKey[1];
+  }
   const arrMatch = cleaned.match(/\[[\s\S]*\]/);
   if (arrMatch) {
     try { const p = JSON.parse(arrMatch[0]); if (Array.isArray(p)) return p; } catch { /* continue */ }
