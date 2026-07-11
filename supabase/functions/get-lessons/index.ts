@@ -12,30 +12,25 @@ serve(async (req) => {
 
     // Validate authentication and get userId
     const auth = await validateAuth(req, body);
-    const { userId, userEmail, supabase } = auth;
-    const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
+    const { userId, supabase } = auth;
 
     console.log(`Get lessons for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
 
     if (action === "get") {
       // Get all lessons, optionally filtered by context.
-      // Ownership is always enforced: when contextId is supplied we additionally
-      // allow it if the context is flagged as demo (is_demo = true).
-      let allowAnyOwner = false;
+      // Ownership is strict: users can only read rows whose user_id is their auth uid.
       if (contextId) {
         const { data: ctx } = await supabase
           .from("study_contexts")
-          .select("user_id, is_demo")
+          .select("user_id")
           .eq("id", contextId)
           .maybeSingle();
         if (!ctx) {
           return successResponse({ success: true, lessons: [], currentIndex: 0 });
         }
-        const isOwner = ctx.user_id === userId || (legacyUserId && ctx.user_id === legacyUserId);
-        if (!isOwner && !ctx.is_demo) {
+        if (ctx.user_id !== userId) {
           return errorResponse("Not authorized", 403);
         }
-        allowAnyOwner = !!ctx.is_demo;
       }
 
       let lessonsQuery = supabase
@@ -45,27 +40,12 @@ serve(async (req) => {
 
       if (contextId) {
         lessonsQuery = lessonsQuery.eq("context_id", contextId);
-        if (!allowAnyOwner) {
-          lessonsQuery = lessonsQuery.eq("user_id", userId);
-        }
+        lessonsQuery = lessonsQuery.eq("user_id", userId);
       } else {
         lessonsQuery = lessonsQuery.eq("user_id", userId);
       }
 
       const { data: lessons, error: lessonsError } = await lessonsQuery;
-      let legacyLessonsQuery = legacyUserId
-        ? supabase
-            .from("mini_lessons")
-            .select("*")
-            .eq("user_id", legacyUserId)
-            .order("lesson_order", { ascending: true })
-        : null;
-      if (legacyLessonsQuery && contextId) {
-        legacyLessonsQuery = legacyLessonsQuery.eq("context_id", contextId);
-      }
-      const { data: legacyLessons } = legacyLessonsQuery
-        ? await legacyLessonsQuery
-        : { data: null };
 
       // Get progress (per-context when contextId provided, else global)
       let progressQuery = supabase
@@ -82,13 +62,9 @@ serve(async (req) => {
         throw new Error("Errore nel caricamento delle lezioni");
       }
 
-      const mergedLessons = [...(lessons || []), ...(legacyLessons || [])].sort(
-        (a: { lesson_order: number }, b: { lesson_order: number }) =>
-          (a.lesson_order ?? 0) - (b.lesson_order ?? 0)
-      );
       return successResponse({
         success: true,
-        lessons: mergedLessons,
+        lessons: lessons || [],
         currentIndex: progress?.current_lesson_index || 0,
       });
     }
@@ -158,88 +134,36 @@ serve(async (req) => {
         .select("id")
         .eq("user_id", userId)
         .limit(1);
-      const { data: legacyContexts } = legacyUserId
-        ? await supabase
-            .from("study_contexts")
-            .select("id")
-            .eq("user_id", legacyUserId)
-            .limit(1)
-        : { data: null };
 
       return successResponse({ 
         success: true, 
-        hasContent: (contexts && contexts.length > 0) || (legacyContexts && legacyContexts.length > 0)
+        hasContent: !!contexts && contexts.length > 0,
       });
     }
 
     if (action === "listContexts") {
       // List all contexts with lesson counts and processing status.
-      // Include sia i contesti dell'utente sia tutti i contesti demo (di chiunque).
+      // Strictly include only contexts owned by the authenticated user.
       const ctxFields = "id, file_name, created_at, processing_status, error_message, is_demo, generation_status, generation_progress, generation_error, generation_started_at";
       const { data: contexts } = await supabase
         .from("study_contexts")
         .select(ctxFields)
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
-      const { data: legacyContexts } = legacyUserId
-        ? await supabase
-            .from("study_contexts")
-            .select(ctxFields)
-            .eq("user_id", legacyUserId)
-            .order("created_at", { ascending: false })
-        : { data: null };
-
-      // Contesti demo (di chiunque) — RLS lo permette.
-      const { data: demoContexts } = await supabase
-        .from("study_contexts")
-        .select(ctxFields)
-        .eq("is_demo", true)
-        .order("created_at", { ascending: false });
 
       const { data: lessons } = await supabase
         .from("mini_lessons")
         .select("context_id")
         .eq("user_id", userId);
-      const { data: legacyLessons } = legacyUserId
-        ? await supabase
-            .from("mini_lessons")
-            .select("context_id")
-            .eq("user_id", legacyUserId)
-        : { data: null };
-      // Conta anche le lezioni dei contesti demo
-      const demoCtxIds = (demoContexts || []).map((c: { id: string }) => c.id);
-      const { data: demoLessons } = demoCtxIds.length
-        ? await supabase
-            .from("mini_lessons")
-            .select("context_id")
-            .in("context_id", demoCtxIds)
-        : { data: null };
 
       const lessonCounts: Record<string, number> = {};
-      const allLessons = [
-        ...(lessons || []),
-        ...(legacyLessons || []),
-        ...(demoLessons || []),
-      ];
-      for (const l of allLessons) {
+      for (const l of lessons || []) {
         if (l.context_id) {
           lessonCounts[l.context_id] = (lessonCounts[l.context_id] || 0) + 1;
         }
       }
 
-      // Merge + dedup (il proprio contesto può essere anche demo)
-      const merged = [
-        ...(contexts || []),
-        ...(legacyContexts || []),
-        ...(demoContexts || []),
-      ];
-      const seenIds = new Set<string>();
-      const allContexts = merged.filter((c: { id: string }) => {
-        if (seenIds.has(c.id)) return false;
-        seenIds.add(c.id);
-        return true;
-      });
-      const contextsWithCounts = allContexts.map((c: { 
+      const contextsWithCounts = (contexts || []).map((c: { 
         id: string; 
         file_name: string; 
         created_at: string;
@@ -262,14 +186,13 @@ serve(async (req) => {
         .select("generation_count")
         .eq("user_id", userId)
         .maybeSingle();
-      const isAdmin = (userEmail || "").toLowerCase() === "alecare2025@gmail.com";
       const used = profile?.generation_count ?? 0;
       return successResponse({
         success: true,
         used,
         limit: FREE_LIMIT,
         remaining: Math.max(0, FREE_LIMIT - used),
-        unlimited: isAdmin,
+        unlimited: false,
       });
     }
 
