@@ -15,7 +15,7 @@ export default function ChangePassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { currentUser, isGoogleUser } = useAuth();
+  const { currentEmail, isGoogleUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -54,7 +54,7 @@ export default function ChangePassword() {
           </div>
           <h1 className="text-xl font-bold">Cambia password</h1>
           <p className="text-muted-foreground text-sm mt-1 text-center">
-            Ciao <span className="font-medium text-foreground">{currentUser}</span>!
+            Ciao <span className="font-medium text-foreground">{currentEmail}</span>!
           </p>
         </div>
 
