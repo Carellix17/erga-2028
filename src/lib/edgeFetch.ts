@@ -7,7 +7,15 @@ export async function edgeFetch<T = unknown>(
   fnName: string,
   body: Record<string, unknown>
 ): Promise<T> {
-  const { data: { session } } = await supabase.auth.getSession();
+  // Proactively refresh if the access token is expired or about to expire.
+  // getSession() returns the cached session even if it's expired, which
+  // causes edge functions to reject the JWT with 401 "Sessione scaduta".
+  let { data: { session } } = await supabase.auth.getSession();
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (session?.expires_at && session.expires_at - nowSec < 60) {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (!error && data.session) session = data.session;
+  }
   const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
   const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fnName}`;
@@ -37,6 +45,11 @@ export async function edgeFetch<T = unknown>(
         if (TRANSIENT_STATUSES.has(res.status) && attempt < maxAttempts) {
           await sleep(300 * Math.pow(2, attempt - 1));
           continue;
+        }
+        if (res.status === 401) {
+          // Session is truly dead — clear it so the app redirects to /login
+          // instead of looping on an expired token.
+          try { await supabase.auth.signOut(); } catch { /* ignore */ }
         }
         const msg = (parsed && typeof parsed === "object" && "error" in parsed && typeof (parsed as { error?: unknown }).error === "string")
           ? (parsed as { error: string }).error
