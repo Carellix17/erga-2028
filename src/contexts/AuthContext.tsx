@@ -5,6 +5,7 @@ import { Session } from "@supabase/supabase-js";
 interface AuthContextType {
   isAuthenticated: boolean;
   currentUser: string | null;
+  currentEmail: string | null;
   isLoading: boolean;
   isGoogleUser: boolean;
   session: Session | null;
@@ -51,7 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [syncSession]);
 
   const isAuthenticated = !!session;
-  const currentUser = session?.user?.email ?? null;
+  const currentUser = session?.user?.id ?? null;
+  const currentEmail = session?.user?.email ?? null;
   const isGoogleUser = session?.user?.app_metadata?.provider === "google";
 
   const logout = useCallback(async () => {
@@ -61,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, currentUser, isLoading, isGoogleUser, session, logout }}
+      value={{ isAuthenticated, currentUser, currentEmail, isLoading, isGoogleUser, session, logout }}
     >
       {children}
     </AuthContext.Provider>

@@ -84,11 +84,7 @@ serve(async (req) => {
     REQUEST_LANGUAGE = normalizeLanguage(body.language);
 
     const auth = await validateAuth(req, body);
-    const { userId, supabase, userEmail: authEmail } = auth;
-
-    // Account demo/admin: nessun limite, e i contesti che crea sono marcati come demo
-    // così tutti gli altri utenti possono visualizzarli senza che contino nel limite.
-    const isDemoAdmin = (authEmail || "").toLowerCase() === "alecare2025@gmail.com";
+    const { userId, supabase, userEmail } = auth;
 
     // Fetch user profile for personalization
     const { data: userProfile } = await supabase
@@ -116,7 +112,6 @@ serve(async (req) => {
     const cognitiveAddon = buildCognitivePromptAddon(cognitive);
     profileContext += cognitiveAddon;
 
-    const { userEmail } = auth;
     const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
 
     console.log(`Generate lessons for user: ${userId} (legacy: ${legacyUserId}) (authenticated: ${auth.isAuthenticated})`);
@@ -152,8 +147,8 @@ serve(async (req) => {
         lessonIsDemo = !!ctxFlag?.is_demo;
       }
 
-      // Se NON è demo e NON è l'admin → applica il limite gratuito
-      if (!lessonIsDemo && !isDemoAdmin) {
+      // Se NON è demo → applica il limite gratuito
+      if (!lessonIsDemo) {
         const { data: profileForLimit } = await supabase
           .from("user_profiles")
           .select("generation_count")
@@ -402,8 +397,8 @@ ${studyContent}`;
         is_generated: true,
       }).eq("id", lessons.id);
 
-      // ── INCREMENTA il contatore (solo per lezioni "vere", non demo, non admin) ──
-      if (!lessonIsDemo && !isDemoAdmin) {
+      // ── INCREMENTA il contatore (solo per lezioni "vere", non demo) ──
+      if (!lessonIsDemo) {
         const { data: existingProfile } = await supabase
           .from("user_profiles")
           .select("id, generation_count")
@@ -616,10 +611,6 @@ ${combinedContent}`;
         }));
         const { error: insertError } = await supabase.from("mini_lessons").insert(lessonsToInsert);
         if (insertError) throw new Error("Errore durante il salvataggio delle lezioni");
-
-        if (isDemoAdmin) {
-          await supabase.from("study_contexts").update({ is_demo: true }).eq("id", contextId);
-        }
 
         await supabase.from("study_contexts").update({
           generation_status: "completed",

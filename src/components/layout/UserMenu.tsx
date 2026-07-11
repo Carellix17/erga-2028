@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function UserMenu() {
-  const { currentUser, logout } = useAuth();
+  const { currentEmail, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -35,7 +35,7 @@ export function UserMenu() {
         <Button variant="ghost" size="icon-sm" className="relative">
           <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
             <span className="label-medium text-primary">
-              {currentUser ? getInitials(currentUser) : <User className="w-4 h-4" />}
+              {currentEmail ? getInitials(currentEmail) : <User className="w-4 h-4" />}
             </span>
           </div>
         </Button>
@@ -45,7 +45,7 @@ export function UserMenu() {
           <div className="flex flex-col space-y-1">
             <p className="title-small">Account</p>
             <p className="body-small text-muted-foreground">
-              {currentUser}
+              {currentEmail}
             </p>
           </div>
         </DropdownMenuLabel>
