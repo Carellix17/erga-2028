@@ -106,13 +106,13 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-dot-grid">
+    <div className="min-h-screen bg-dot-grid flex flex-col md:flex-row">
       <AppHeader
         onUploadClick={() => setShowUpload(true)}
         hasFiles={hasFiles}
       />
 
-      <main className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-4 sm:px-6 pb-24">
+      <main className="max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-4 sm:px-6 pb-24 md:pb-6">
         <h1 className="sr-only">Erga — Il tuo assistente di studio intelligente</h1>
         {/* Banner ricalcola Esagono se per qualche motivo i punteggi sono tutti default */}
         {activeTab === "studio" && cognitive && [cognitive.log_score, cognitive.mem_score, cognitive.foc_score, cognitive.voc_score, cognitive.ans_score, cognitive.app_score].every((s) => s === 50) && (
