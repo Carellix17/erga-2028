@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { useLessonFigures } from "@/hooks/useLessonFigures";
 import { LessonFigureGallery } from "./LessonFigureGallery";
+import { LessonChat } from "./LessonChat";
 
 interface MiniLessonProps {
   lesson: {
@@ -265,6 +266,11 @@ export function MiniLesson({
           <Dumbbell className="w-5 h-5 ml-2" />
         </Button>
       ) : null}
+
+      <LessonChat
+        lessonTitle={lesson.title}
+        lessonContent={[lesson.concept, lesson.explanation, lesson.example].filter(Boolean).join("\n\n")}
+      />
     </div>
   );
 }
