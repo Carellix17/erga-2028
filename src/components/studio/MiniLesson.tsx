@@ -266,6 +266,11 @@ export function MiniLesson({
           <Dumbbell className="w-5 h-5 ml-2" />
         </Button>
       ) : null}
+
+      <LessonChat
+        lessonTitle={lesson.title}
+        lessonContent={[lesson.concept, lesson.explanation, lesson.example].filter(Boolean).join("\n\n")}
+      />
     </div>
   );
 }
