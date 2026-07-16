@@ -401,6 +401,27 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       setCurrentIndex(prev => prev + 1);
     } else {
       setIsFinished(true);
+      // Aggiornamento dinamico del profilo cognitivo (APP) basato sulle
+      // performance reali. Solo esercizi a valutazione deterministica.
+      (async () => {
+        try {
+          const scorable = results.filter(
+            (r) => r.exercise.type === "multiple_choice" || r.exercise.type === "true_false"
+          );
+          if (scorable.length === 0) return;
+          const correct = scorable.filter((r) => r.isCorrect).length;
+          const total = scorable.length;
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) return;
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cognitive-profile`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+            body: JSON.stringify({ action: "updateFromPerformance", userId: currentUser, correct, total, area: "APP" }),
+          });
+        } catch {
+          /* fire-and-forget */
+        }
+      })();
     }
   };
 
