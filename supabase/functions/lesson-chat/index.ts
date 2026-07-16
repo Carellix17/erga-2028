@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
-import { callAIStream } from "../_shared/ai.ts";
+import { callAIText } from "../_shared/ai.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 
@@ -68,41 +68,30 @@ Rispondi SEMPRE in ${languageName(language)}.`;
       ...trimmedHistory,
     ];
 
-    const aiResponse = await callAIStream(apiMessages, 0.65, 512);
-    const reader = aiResponse.body?.getReader();
-    if (!reader) throw new Error("No response body");
+    // Non-streaming call for reliability: Gemini's OpenAI-compatible
+    // streaming occasionally emits [DONE] with no content deltas, which
+    // made the chat appear to freeze after a few tokens. We fetch the
+    // full text through the same 4-tier fallback and then chunk it out
+    // as SSE so the client keeps the typing effect.
+    const fullText = await callAIText(apiMessages, 0.65, 2048);
 
     const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-
     const stream = new ReadableStream({
       async start(controller) {
-        let buffer = "";
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) {
-            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-            controller.close();
-            break;
-          }
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
-          for (const line of lines) {
-            if (!line.startsWith("data: ")) continue;
-            const jsonStr = line.slice(6).trim();
-            if (!jsonStr || jsonStr === "[DONE]") continue;
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const text = parsed.choices?.[0]?.delta?.content;
-              if (text) {
-                controller.enqueue(
-                  encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`)
-                );
-              }
-            } catch { /* skip malformed */ }
-          }
+        const text = fullText || "Non sono riuscito a generare una risposta. Riprova tra poco.";
+        const CHUNK = 24; // characters per SSE tick
+        for (let i = 0; i < text.length; i += CHUNK) {
+          const piece = text.slice(i, i + CHUNK);
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ choices: [{ delta: { content: piece } }] })}\n\n`,
+            ),
+          );
+          // small pacing so the UI shows progressive typing
+          await new Promise((r) => setTimeout(r, 15));
         }
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
       },
     });
 
