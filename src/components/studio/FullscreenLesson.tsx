@@ -1,5 +1,8 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from"react";
-import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, ImageIcon } from"lucide-react";
+import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, ImageIcon, Sparkles, Minus, Send, Bot, User as UserIcon } from"lucide-react";
+import { motion } from"framer-motion";
+import { supabase } from"@/integrations/supabase/client";
+import { currentLanguage } from"@/i18n";
 import { Button } from"@/components/ui/button";
 import { LiquidButton } from"@/components/ui/liquid-glass-button";
 import { ExerciseRenderer, Exercise } from"./exercises/ExerciseRenderer";
@@ -184,10 +187,31 @@ export function FullscreenLesson({
  const [xpGained, setXpGained] = useState(0);
  const [showXpFloat, setShowXpFloat] = useState(false);
  const contentRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
  const step = steps[currentStep];
  const progress = ((currentStep + 1) / steps.length) * 100;
  const exercises = lesson.exercises || [];
+
+  // Testo della slide attualmente visibile — passato all'assistente AI.
+  const currentSlideText = useMemo(() => {
+    switch (step.type) {
+      case"concept":
+        return `Concetto chiave:\n${lesson.concept}`;
+      case"explanation_part": {
+        const p = explanationParts[step.explanationPartIndex ?? 0];
+        return p ? `${p.part_title}\n\n${p.content}` :"";
+      }
+      case"example":
+        return `Esempio pratico:\n${lesson.example ??""}`;
+      case"exercise": {
+        const ex = exercises[step.exerciseIndex ?? 0] as any;
+        return ex ? `Esercizio corrente:\n${ex.question ?? ex.prompt ?? JSON.stringify(ex)}` :"";
+      }
+      default:
+        return `Riepilogo lezione: ${lesson.title}`;
+    }
+  }, [step, lesson, explanationParts, exercises]);
 
  const gainXp = useCallback((amount: number) => {
  setXpGained(prev => prev + amount);
@@ -243,7 +267,7 @@ export function FullscreenLesson({
  const segments = steps.length;
 
  return (
- <div className="fixed inset-0 z-50 bg-dot-grid flex flex-col animate-cinematic-in">
+    <div ref={rootRef} className="fixed inset-0 z-50 bg-dot-grid flex flex-col animate-cinematic-in">
  {/* Top bar */}
  <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
  <div className="flex items-center gap-2 mb-2">
@@ -375,6 +399,14 @@ export function FullscreenLesson({
  {(canContinue || step.type !=="exercise") && <ChevronRight className="w-5 h-5 ml-1" />}
  </LiquidButton>
  </div>
+
+      {/* Assistente AI fluttuante — visibile solo dentro alla slide */}
+      <SlideAIAssistant
+        containerRef={rootRef}
+        slideText={currentSlideText}
+        lessonTitle={lesson.title}
+        stepKey={currentStep}
+      />
  </div>
  );
 }
