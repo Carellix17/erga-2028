@@ -91,6 +91,42 @@ serve(async (req) => {
       return successResponse({ success: true });
     }
 
+    if (action === "updateFromPerformance") {
+      const { correct, total, area } = body as { correct?: unknown; total?: unknown; area?: unknown };
+      const totalN = Number(total);
+      const correctN = Number(correct);
+      if (!Number.isInteger(totalN) || totalN <= 0 || totalN > 1000) {
+        return errorResponse("Parametri non validi", 400);
+      }
+      if (!Number.isInteger(correctN) || correctN < 0 || correctN > totalN) {
+        return errorResponse("Parametri non validi", 400);
+      }
+      const targetArea = area === "APP" || area === undefined ? "app_score" : null;
+      if (!targetArea) return errorResponse("Area non supportata", 400);
+
+      const { data: current } = await supabase
+        .from("cognitive_profiles")
+        .select("app_score")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!current) {
+        return successResponse({ skipped: true, reason: "no_profile" });
+      }
+
+      const oldScore = Number(current.app_score) || 0;
+      const perf = (correctN / totalN) * 100;
+      const alpha = 0.1;
+      const raw = oldScore * (1 - alpha) + perf * alpha;
+      const newScore = Math.max(0, Math.min(100, Math.round(raw)));
+
+      await supabase
+        .from("cognitive_profiles")
+        .update({ app_score: newScore, updated_at: new Date().toISOString() })
+        .eq("user_id", userId);
+
+      return successResponse({ success: true, oldScore, newScore, perf: Math.round(perf) });
+    }
+
     return errorResponse("Azione non valida", 400);
   } catch (error) {
     console.error("cognitive-profile error:", error);
