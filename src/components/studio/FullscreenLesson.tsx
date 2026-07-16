@@ -624,3 +624,322 @@ function SummaryStep({ correctCount, totalExercises, isLastLesson, xpGained, orp
  </div>
  );
 }
+
+/* ── Assistente AI fluttuante (solo dentro la slide) ── */
+
+interface SlideAIMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
+
+function SlideAIAssistant({
+  containerRef,
+  slideText,
+  lessonTitle,
+  stepKey,
+}: {
+  containerRef: React.RefObject<HTMLDivElement>;
+  slideText: string;
+  lessonTitle: string;
+  stepKey: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const [minimized, setMinimized] = useState(false);
+  const [messages, setMessages] = useState<SlideAIMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const bootstrappedFor = useRef<number | null>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, open, minimized]);
+
+  useEffect(() => {
+    if (open && !minimized) setTimeout(() => inputRef.current?.focus(), 120);
+  }, [open, minimized]);
+
+  const callAI = useCallback(
+    async (history: SlideAIMessage[]) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const apiMessages = history.map((m) => ({ role: m.role, content: m.content }));
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lesson-chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            messages: apiMessages,
+            lessonContent: slideText,
+            lessonTitle,
+            language: currentLanguage(),
+          }),
+        }
+      );
+      if (!response.ok) throw new Error(`Errore ${response.status}`);
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No body");
+      const decoder = new TextDecoder();
+      const assistantId = String(Date.now() + Math.random());
+      let assistantText = "";
+      let buf = "";
+
+      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, idx);
+          buf = buf.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) {
+              assistantText += delta;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === assistantId ? { ...m, content: assistantText } : m))
+              );
+            }
+          } catch { /* skip */ }
+        }
+      }
+    },
+    [slideText, lessonTitle]
+  );
+
+  // Bootstrap: quando la chat viene aperta (o la slide cambia mentre è aperta),
+  // genera automaticamente una spiegazione approfondita della slide corrente.
+  useEffect(() => {
+    if (!open) return;
+    if (bootstrappedFor.current === stepKey) return;
+    bootstrappedFor.current = stepKey;
+
+    setMessages([]);
+    setIsLoading(true);
+    const seed: SlideAIMessage = {
+      id: "seed-" + stepKey,
+      role: "user",
+      content:
+        "Fornisci una spiegazione approfondita, chiara e con esempi del contenuto della slide qui sopra. Struttura la risposta in paragrafi brevi.",
+    };
+    callAI([seed])
+      .catch(() =>
+        setMessages([
+          {
+            id: "err",
+            role: "assistant",
+            content: "Non sono riuscito a generare la spiegazione. Riprova tra poco.",
+          },
+        ])
+      )
+      .finally(() => setIsLoading(false));
+  }, [open, stepKey, callAI]);
+
+  const handleSend = useCallback(async () => {
+    const text = input.trim();
+    if (!text || isLoading) return;
+    const userMsg: SlideAIMessage = { id: String(Date.now()), role: "user", content: text };
+    const next = [...messages, userMsg];
+    setMessages(next);
+    setInput("");
+    setIsLoading(true);
+    try {
+      await callAI(next);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { id: String(Date.now() + 1), role: "assistant", content: "Errore nella risposta. Riprova." },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [input, isLoading, messages, callAI]);
+
+  return (
+    <>
+      {/* FAB trascinabile — colore del corso attivo (primary) */}
+      {(!open || minimized) && (
+        <motion.div
+          drag
+          dragElastic={0.1}
+          dragMomentum={false}
+          dragConstraints={containerRef}
+          initial={{ x: 0, y: 0 }}
+          className="fixed bottom-28 right-4 z-[60] cursor-grab active:cursor-grabbing touch-none"
+        >
+          <button
+            onClick={() => {
+              setOpen(true);
+              setMinimized(false);
+            }}
+            className={cn(
+              "w-14 h-14 rounded-full bg-primary text-primary-foreground",
+              "flex items-center justify-center shadow-level-4",
+              "hover:scale-105 active:scale-95 transition-transform",
+              "border border-white/30"
+            )}
+            aria-label="Apri assistente AI"
+          >
+            <Sparkles className="w-6 h-6" />
+          </button>
+        </motion.div>
+      )}
+
+      {/* Pannello chat semitrasparente */}
+      {open && !minimized && (
+        <div
+          className={cn(
+            "fixed z-[60] flex flex-col",
+            "bg-white/80 backdrop-blur-xl border-[0.5px] border-white/40",
+            "shadow-[0_20px_60px_-10px_rgba(0,0,0,0.25)]",
+            // Mobile: bottom sheet; md+: half screen right
+            "inset-x-3 bottom-3 top-24 rounded-3xl",
+            "md:inset-y-4 md:right-4 md:left-auto md:top-4 md:bottom-4 md:w-[46vw] md:max-w-xl md:rounded-3xl",
+            "animate-cinematic-in"
+          )}
+        >
+          {/* Header */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-white/40 flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-sm">
+              <Sparkles className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="label-medium font-semibold text-foreground truncate">Tutor AI</p>
+              <p className="label-small text-muted-foreground truncate">{lessonTitle}</p>
+            </div>
+            <button
+              onClick={() => setMinimized(true)}
+              className="w-9 h-9 rounded-full hover:bg-foreground/10 flex items-center justify-center transition-colors"
+              aria-label="Riduci a icona"
+            >
+              <Minus className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button
+              onClick={() => {
+                setOpen(false);
+                setMinimized(false);
+                bootstrappedFor.current = null;
+                setMessages([]);
+              }}
+              className="w-9 h-9 rounded-full hover:bg-foreground/10 flex items-center justify-center transition-colors"
+              aria-label="Chiudi"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+
+          {/* Messaggi */}
+          <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3 scrollbar-thin">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={cn(
+                  "flex gap-2 animate-fade-up",
+                  msg.role === "user" ? "flex-row-reverse" : "flex-row"
+                )}
+              >
+                <div
+                  className={cn(
+                    "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
+                    msg.role === "assistant" ? "bg-primary/15" : "bg-secondary/20"
+                  )}
+                >
+                  {msg.role === "assistant" ? (
+                    <Bot className="w-3.5 h-3.5 text-primary" />
+                  ) : (
+                    <UserIcon className="w-3.5 h-3.5 text-secondary-foreground" />
+                  )}
+                </div>
+                <div
+                  className={cn(
+                    "max-w-[82%] px-3.5 py-2.5 rounded-2xl text-[14px] leading-relaxed",
+                    msg.role === "assistant"
+                      ? "bg-white/70 text-foreground rounded-bl-md prose prose-sm max-w-none prose-p:my-2"
+                      : "bg-primary text-primary-foreground rounded-br-md whitespace-pre-wrap"
+                  )}
+                >
+                  {msg.role === "assistant" ? (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content || "…"}</ReactMarkdown>
+                  ) : (
+                    msg.content
+                  )}
+                </div>
+              </div>
+            ))}
+            {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
+              <div className="flex gap-2">
+                <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                  <Bot className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <div className="bg-white/70 rounded-2xl rounded-bl-md px-3 py-2.5">
+                  <div className="flex gap-1">
+                    {[0, 150, 300].map((d) => (
+                      <div
+                        key={d}
+                        className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce"
+                        style={{ animationDelay: `${d}ms` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="px-3 pt-2 pb-3 border-t border-white/40 flex-shrink-0">
+            <div className="flex gap-2 items-end">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Chiedi qualcosa su questa slide…"
+                rows={1}
+                disabled={isLoading}
+                className={cn(
+                  "flex-1 resize-none rounded-2xl px-3 py-2.5 text-sm",
+                  "bg-white/70 border border-white/50",
+                  "focus:outline-none focus:ring-2 focus:ring-primary/30",
+                  "placeholder:text-muted-foreground max-h-28 overflow-y-auto",
+                  "disabled:opacity-50"
+                )}
+                style={{ minHeight: "42px" }}
+              />
+              <Button
+                size="icon"
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                className="w-10 h-10 rounded-2xl flex-shrink-0"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
