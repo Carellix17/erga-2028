@@ -208,7 +208,15 @@ export function computeAreaScores(answers: Record<string, number>): Record<Cogni
     const qs = COGNITIVE_QUESTIONS.filter((q) => q.area === area);
     const pts = qs.map((q) => answers[q.id] ?? 0);
     const avg = pts.reduce((a, b) => a + b, 0) / qs.length; // 0-10
-    out[area] = Math.round(avg * 10); // 0-100
+    let score = avg * 10; // 0-100
+    // Consistency-check: risposta "troppo perfetta" (tutte 10, varianza zero)
+    // è un segnale di desiderabilità sociale → sconto del 10%.
+    const mean = avg;
+    const variance = pts.reduce((s, p) => s + (p - mean) ** 2, 0) / pts.length;
+    if (variance === 0 && mean === 10) {
+      score = score * 0.9;
+    }
+    out[area] = Math.max(0, Math.min(100, Math.round(score)));
   }
   return out;
 }
