@@ -1,53 +1,109 @@
-## Obiettivo
 
-Eliminare del tutto la dark mode dall'app: un solo look, sempre chiaro e coerente con la landing (`bg-[#FCFCFC]`, testi slate, accenti colore materia solo su nodi lezione/badge).
+# Piano — Evoluzione Esagono Cognitivo
 
-## Cosa cambia
+Nessuna modifica allo schema DB, alle 18 domande di onboarding, o alle action `get`/`save`. Le firme delle funzioni esistenti restano compatibili (in particolare `buildCognitivePromptAddon(p)` continua a essere pura e a ritornare `string`).
 
-### 1. Runtime tema
-- **`src/contexts/ThemeContext.tsx`** — Semplifico il provider: rimuovo il tipo `"dark"`, rimuovo la lettura da `user_data`, rimuovo `setTheme`. Il provider si limita a garantire che `document.documentElement` non abbia mai la classe `.dark` e imposta il meta `theme-color` fisso a `#FCFCFC`. `useTheme()` continua a esistere ma ritorna sempre `"light"` per non rompere i consumer.
-- **`src/index.css`** — Rimuovo l'intero blocco `.dark { … }` (righe ~123-199) con tutti i token dark. Restano solo i token `:root` chiari già allineati a Erga editorial.
+---
 
-### 2. Toggle UI e chiamate a `setTheme`
-- Trovo e rimuovo qualunque toggle "Aspetto / Tema chiaro-scuro" nelle viste profilo/impostazioni (probabile in `src/components/profile/ProfileView.tsx`).
-- Rimuovo import/uso di `useTheme` dove serve solo per il toggle; lascio dove serve per compat.
+## 1. `src/lib/cognitiveQuestions.ts`
 
-### 3. Pulizia varianti `dark:*` nei componenti /app
-Passo file per file e cancello ogni variante `dark:bg-black/…`, `dark:bg-white/…`, `dark:border-white/…`, `dark:text-…`, `dark:prose-…` così il markup resta pulito e non re-introduce look scuri. Non tocco:
-- la logica JS/TS,
-- le classi light (base),
-- i colori dinamici per materia in `src/lib/subjectColors.ts` (che restano l'unico accento colore, applicato solo su nodi/percorso/badge lezione come richiesto).
+**Modifica a `computeAreaScores`** — aggiungere consistency-check:
 
-File coinvolti (elenco derivato dalla mia ricerca `rg "dark:"`):
-- `src/components/layout/AppHeader.tsx`
-- `src/components/layout/BottomNav.tsx`
-- `src/components/ui/card.tsx`
-- `src/components/onboarding/CognitiveOnboarding.tsx`
-- `src/components/pratica/InterrogazioneView.tsx`
-- `src/components/pratica/EserciziView.tsx`
-- `src/components/pratica/PraticaView.tsx`
-- `src/components/chat/ChatView.tsx`, `ChatMessage.tsx`, `ChatInput.tsx`, `ChatHistory.tsx`, `QuickActions.tsx`
-- `src/components/studio/StudioView.tsx`, `LessonsList.tsx`, `FullscreenLesson.tsx`, `MiniLesson.tsx`, `CourseSelector.tsx`, `FinalTest.tsx`, `GenerationProgress.tsx`, `LessonFigureGallery.tsx`, `PdfCrop.tsx`
-- `src/components/piano/PianoView.tsx`, `PlanItem.tsx`, `PlanSuggestion.tsx`, `AddEventSheet.tsx`
-- `src/components/profile/ProfileView.tsx`, `NotificationsCard.tsx`, `CognitiveRadar.tsx`
-- `src/components/subscription/SubscriptionBadge.tsx`, `SubscriptionSheet.tsx`
-- `src/components/upload/UploadSheet.tsx`, `FileManager.tsx`
-- `src/components/shared/EmptyState.tsx`
-- `src/components/layout/UserMenu.tsx`, `SaveStatusIndicator.tsx`
-- `src/lib/subjectColors.ts` — rimuovo solo le varianti `dark:` interne alle stringhe (i colori base per materia restano).
-- eventuali componenti shadcn con varianti `dark:` non usate.
+- Per ciascuna area, dopo aver calcolato il punteggio 0-100:
+  - Prendere i 3 punti grezzi (0-10) dell'area.
+  - Se `variance == 0` **e** `media == 10` (utente ha selezionato solo le opzioni con il punteggio massimo → risposta "desiderabile"), applicare uno sconto del 10% al punteggio finale.
+  - Clamp finale 0-100, arrotondamento intero.
+- Nessun'altra logica cambia; la funzione resta pura e retro-compatibile per i chiamanti attuali.
 
-### 4. Persistenza
-- **NON tocco** il DB né lo schema `user_data`: la vecchia chiave `theme` resta lì come dato orfano ma innocuo. Al login, se il valore era `"dark"`, viene semplicemente ignorato.
+Esporto anche una piccola utility interna (non pubblica) per il calcolo della varianza, sempre nello stesso file.
 
-### 5. Verifica
-- Screenshot autenticato di `/app` su Studio, Piano, Pratica, Profilo, FullscreenLesson e onboarding cognitivo per confermare che tutto sia chiaro, con accenti materia solo su nodi lezione/badge.
-- Build check.
+---
 
-## Non in scope
-- Nessuna modifica a logiche di quiz, auth Supabase, chiamate AI, upload PDF, edge functions.
-- Nessuna modifica ai colori materia (`subjectColors.ts` mantiene tutte le mappe base).
-- Nessuna nuova libreria/font: resta Inter già configurato.
+## 2. `supabase/functions/_shared/cognitive.ts`
 
-## Rischio
-Basso. Le varianti `dark:` sono puramente CSS additivo: rimuoverle non altera comportamento, solo rendering in dark (che d'ora in poi non esisterà).
+**Riscrittura di `buildCognitivePromptAddon`** mantenendo firma `(p: CognitiveScores | null) => string`.
+
+### 2a. Bandizzazione a 5 livelli continui
+Per ciascuna delle 6 dimensioni (LOG, MEM, FOC, VOC, ANS, APP) mappare il punteggio in una fascia:
+
+```text
+critico    : 0-20
+basso      : 21-40
+medio      : 41-60
+buono      : 61-80
+eccellente : 81-100
+```
+
+Per ogni dimensione definire 5 stringhe di regola (una per livello) che sostituiscono le attuali soglie binarie `>=75` / `<40`. Contenuti indicativi (mantengono il tono e la sostanza delle regole esistenti, estendendoli):
+
+- **LOG** — es. critico: "Guida passo passo, un concetto per frase, evita astrazioni"; medio: "Alterna spiegazioni discorsive a brevi schemi causa-effetto"; eccellente: "Sfrutta scomposizione sistemica e nessi causa-effetto espliciti".
+- **MEM**, **FOC**, **VOC**, **ANS**, **APP** — analogamente 5 livelli ciascuno.
+
+### 2b. Rilevamento profili "paradossali"
+Dopo l'elenco delle 6 regole, controllare **coppie teoricamente correlate**:
+- `LOG ↔ APP` (ragionamento vs applicazione)
+- `MEM ↔ APP` (memoria vs uso pratico)
+- `VOC ↔ LOG` (esposizione vs struttura logica)
+
+Se `|score_a - score_b| > 50`, aggiungere una nota nell'addon del tipo:
+> "⚠️ Profilo paradossale rilevato (es. LOG=90 ma APP=30): non dare per scontato che una buona esposizione teorica implichi comprensione operativa. Verifica esplicitamente l'applicazione con esempi mirati."
+
+La nota è informativa: non blocca nulla, non altera le regole esistenti.
+
+### 2c. Output
+La stringa finale mantiene lo stesso header (`PERSONALIZZAZIONE COGNITIVA…`) più:
+1. le 6 regole di livello (una per dimensione),
+2. l'eventuale sezione `Note aggiuntive:` con i paradossi rilevati.
+
+Restano compatibili i consumer attuali: `generate-lessons/index.ts` e `generate-exercises/index.ts` continuano a fare semplicemente `systemPrompt += addon`.
+
+---
+
+## 3. `supabase/functions/cognitive-profile/index.ts` — nuova action `updateFromPerformance`
+
+Aggiungere un ramo `if (action === "updateFromPerformance")` accanto a `get` / `save`.
+
+**Input atteso** (nel body, in aggiunta a `userId` gestito da `validateAuth`):
+- `correct: number` (numero risposte corrette)
+- `total: number` (numero totale esercizi valutati)
+- opzionale `area: "APP"` (default `"APP"`; per ora solo APP è supportato, ma la struttura è pronta a estensioni future).
+
+**Logica lato server (sicura):**
+1. Validazione: `total` intero > 0, `correct` intero 0..`total`, altrimenti 400 con messaggio generico.
+2. Fetch riga corrente da `cognitive_profiles` per `user_id`. Se manca → 404-like: rispondere `{ skipped: true }` senza errore (l'utente non ha ancora fatto onboarding).
+3. `perf = (correct / total) * 100`
+4. `alpha = 0.1`
+5. `new_score = Math.round(old_app_score * (1 - alpha) + perf * alpha)`, clamp 0-100.
+6. `update` solo del campo `app_score` (+ `updated_at`), scritto con la stessa `supabase` client autenticato dell'utente (RLS enforce che `user_id = auth.uid()`), quindi nessun uso di service role, nessun trust del `user_id` nel body.
+7. Response: `{ success: true, oldScore, newScore, perf }`.
+
+Nessun'altra action viene toccata; nessun cambiamento allo schema.
+
+---
+
+## 4. Aggancio lato client — `src/components/pratica/EserciziView.tsx`
+
+Punto d'aggancio: quando la sessione esercizi si chiude, cioè in `nextExercise()` nel ramo in cui `currentIndex + 1 >= exercises.length` (dove viene settato `setIsFinished(true)`).
+
+- Considerare **solo** i `results` di tipo `multiple_choice` o `true_false` (obiettivi verificabili in modo deterministico).
+- Se `filtered.length === 0`, skip.
+- Calcolare `correct` e `total`, chiamare la nuova action `updateFromPerformance` con `fetch` verso `/functions/v1/cognitive-profile` (stesso pattern già in uso nel file), fire-and-forget con `.catch(() => {})` per non disturbare l'UX.
+- Nessuna modifica visibile all'utente, nessun toast, nessun re-render bloccante.
+
+Nessuna modifica in `MiniLesson.tsx` o in altri componenti (l'utente ha chiesto specificamente il flusso "esercizi di una lezione", che nell'app corrente passa da EserciziView — MiniLesson non salva risultati misurabili).
+
+---
+
+## 5. Nessuna modifica a
+- Schema DB / migrazioni.
+- `useCognitiveProfile.ts` (le action `get`/`save` restano invariate; la nuova action è chiamata direttamente dal componente esercizi, non ha bisogno di stato React lato hook).
+- `generate-lessons/index.ts`, `generate-exercises/index.ts` (continuano a importare `buildCognitivePromptAddon` con la stessa firma).
+- `supabase/config.toml` (la funzione esiste già con `verify_jwt = false` + validazione JWT interna).
+
+---
+
+## Sintesi file toccati
+1. `src/lib/cognitiveQuestions.ts` — consistency-check in `computeAreaScores`.
+2. `supabase/functions/_shared/cognitive.ts` — 5-livelli + paradossi in `buildCognitivePromptAddon`.
+3. `supabase/functions/cognitive-profile/index.ts` — nuova action `updateFromPerformance`.
+4. `src/components/pratica/EserciziView.tsx` — chiamata fire-and-forget a fine sessione esercizi.
