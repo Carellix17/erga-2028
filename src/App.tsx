@@ -8,6 +8,7 @@ import { SaveStatusProvider } from "@/contexts/SaveStatusContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { FocusProvider } from "@/contexts/FocusContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -43,6 +44,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+            <ErrorBoundary>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/registrati" element={<Registrati />} />
@@ -60,6 +62,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+            </ErrorBoundary>
               </BrowserRouter>
             </FocusProvider>
           </ThemeProvider>

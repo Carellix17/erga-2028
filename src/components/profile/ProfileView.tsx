@@ -71,6 +71,8 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  const [isLoading, setIsLoading] = useState(true);
  const [isSaving, setIsSaving] = useState(false);
  const [saved, setSaved] = useState(false);
+ // true quando ci sono modifiche non salvate: mostra il "salvagente" in basso
+ const [dirty, setDirty] = useState(false);
 
  const loadProfile = useCallback(async () => {
  if (!currentUser) return;
@@ -105,6 +107,14 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  }, [currentUser]);
 
  useEffect(() => { loadProfile(); }, [loadProfile]);
+
+ // Se l'utente chiude la pagina/app con modifiche non salvate, il browser avvisa
+ useEffect(() => {
+ if (!dirty) return;
+ const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
+ window.addEventListener("beforeunload", handler);
+ return () => window.removeEventListener("beforeunload", handler);
+ }, [dirty]);
 
  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
  const file = e.target.files?.[0];
@@ -174,6 +184,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  );
  if (response.ok) {
  setSaved(true);
+ setDirty(false);
  toast({ title:"Profilo salvato! ✨", description:"I tuoi dati verranno usati per personalizzare l'esperienza." });
  setTimeout(() => setSaved(false), 2000);
  }
@@ -185,10 +196,12 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
 
  const handleLevelChange = (subject: string, value: number[]) => {
  setSubjectLevels((prev) => ({ ...prev, [subject]: value[0] }));
+ setDirty(true);
  };
 
  const handleGoalChange = (subject: string, value: number[]) => {
  setSubjectGoals((prev) => ({ ...prev, [subject]: value[0] }));
+ setDirty(true);
  };
 
  const getLevelLabel = (level: number) => {
@@ -256,26 +269,26 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Nome</Label>
- <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Mario" className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-2xl h-11 bg-surface-container-high border-0" />
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Cognome</Label>
- <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Rossi" className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-2xl h-11 bg-surface-container-high border-0" />
  </div>
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Nickname <span className="text-primary">(usato dal chatbot)</span></Label>
- <Input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="Il tuo soprannome" className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-2xl h-11 bg-surface-container-high border-0" />
  </div>
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Età</Label>
- <Input type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="16" min={13} max={30} className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-2xl h-11 bg-surface-container-high border-0" />
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Scuola</Label>
  <div className="h-11 rounded-2xl bg-surface-container-high flex items-center px-3">
- <select value={school} onChange={(e) => setSchool(e.target.value)} className="bg-transparent w-full body-medium outline-none">
+ <select value={school} onChange={(e) => { setSchool(e.target.value); setDirty(true); }} className="bg-transparent w-full body-medium outline-none">
  {SCHOOLS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
  </select>
  </div>
@@ -341,7 +354,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  <GraduationCap className="w-5 h-5 text-secondary-foreground" />
  <h2 className="title-medium font-display text-foreground">Tipo di istituto</h2>
  </div>
- <RadioGroup value={institute} onValueChange={setInstitute} className="space-y-1">
+ <RadioGroup value={institute} onValueChange={(v) => { setInstitute(v); setDirty(true); }} className="space-y-1">
  {INSTITUTES.map((inst) => (
  <label
  key={inst.value}
@@ -413,6 +426,19 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
 
  {/* Notifiche push */}
  <NotificationsCard />
+
+ {/* "Salvagente": appare solo se ci sono modifiche non salvate */}
+ {dirty && (
+ <div className="fixed z-40 inset-x-4 bottom-28 md:inset-x-auto md:right-8 md:bottom-8 md:w-96 animate-fade-up">
+ <div className="rounded-2xl px-4 py-3 flex items-center gap-3 shadow-level-3 border border-amber-200 bg-amber-50/95 backdrop-blur-md">
+ <p className="flex-1 body-medium font-medium text-amber-900">Hai modifiche non salvate</p>
+ <Button onClick={handleSave} disabled={isSaving} size="sm" className="rounded-full h-9 shrink-0">
+ {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
+ Salva
+ </Button>
+ </div>
+ </div>
+ )}
  </div>
  );
 }

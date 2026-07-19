@@ -331,6 +331,14 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             evaluations={evaluations}
             routines={routines}
             subjects={userSubjects}
+            onOpenStudyEvent={(id) => {
+              const ev = events.find((e) => e.id === id);
+              if (ev) setEditingStudyEvent(ev);
+            }}
+            onOpenEvaluation={(id) => {
+              const ev = evaluations.find((e) => e.id === id);
+              if (ev) setEditingEval(ev);
+            }}
           />
         )}
       </div>
@@ -371,14 +379,14 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
                 evaluation={ev}
                 subject={ev.subject_id ? subjectById.get(ev.subject_id) : undefined}
               />
-              <div className="absolute -right-2 -top-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
+              <div className="absolute -right-2 -top-2 flex gap-1.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-all duration-300">
                 <Button variant="outline" size="icon" aria-label="Modifica scadenza"
-                  className="w-8 h-8 rounded-full shadow-level-2 bg-white scale-0 group-hover:scale-100 transition-transform"
+                  className="w-8 h-8 rounded-full shadow-level-2 bg-white scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
                   onClick={(e) => { e.stopPropagation(); setEditingEval(ev); }}>
                   <Pencil className="w-3.5 h-3.5" />
                 </Button>
                 <Button variant="destructive" size="icon" aria-label="Elimina scadenza"
-                  className="w-8 h-8 rounded-full shadow-level-2 scale-0 group-hover:scale-100 transition-transform"
+                  className="w-8 h-8 rounded-full shadow-level-2 scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
                   onClick={(e) => { e.stopPropagation(); setEvalToDelete(ev); }}>
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -404,14 +412,14 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
                 item={{ id: event.id, subject: event.subject, title: event.title, date: formatDate(event.event_date), time: event.event_time, type: event.event_type }}
                 subjectColor={colorFor(event.subject)}
               />
-              <div className="absolute -right-2 -top-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
+              <div className="absolute -right-2 -top-2 flex gap-1.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-all duration-300">
                 <Button variant="outline" size="icon" aria-label="Modifica evento"
-                  className="w-8 h-8 rounded-full shadow-level-2 bg-white scale-0 group-hover:scale-100 transition-transform"
+                  className="w-8 h-8 rounded-full shadow-level-2 bg-white scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
                   onClick={(e) => { e.stopPropagation(); setEditingStudyEvent(event); }}>
                   <Pencil className="w-3.5 h-3.5" />
                 </Button>
                 <Button variant="destructive" size="icon" aria-label="Elimina evento"
-                  className="w-8 h-8 rounded-full shadow-level-2 scale-0 group-hover:scale-100 transition-transform"
+                  className="w-8 h-8 rounded-full shadow-level-2 scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
                   onClick={(e) => { e.stopPropagation(); setEventToDelete(event); }}>
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -432,14 +440,14 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
                 <PlanItem item={{ id: event.id, subject: event.subject, title: event.title, date: formatDate(event.event_date), time: event.event_time, type: event.event_type }}
                   subjectColor={colorFor(event.subject)}
                   onClick={() => setSelectedDate(new Date(event.event_date))} />
-                <div className="absolute -right-2 -top-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <div className="absolute -right-2 -top-2 flex gap-1.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-all duration-300">
                   <Button variant="outline" size="icon" aria-label="Modifica evento"
-                    className="w-8 h-8 rounded-full shadow-level-2 bg-white scale-0 group-hover:scale-100 transition-transform"
+                    className="w-8 h-8 rounded-full shadow-level-2 bg-white scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
                     onClick={(e) => { e.stopPropagation(); setEditingStudyEvent(event); }}>
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>
                   <Button variant="destructive" size="icon" aria-label="Elimina evento"
-                    className="w-8 h-8 rounded-full shadow-level-2 scale-0 group-hover:scale-100 transition-transform"
+                    className="w-8 h-8 rounded-full shadow-level-2 scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
                     onClick={(e) => { e.stopPropagation(); setEventToDelete(event); }}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
