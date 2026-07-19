@@ -3,6 +3,12 @@ import { addDays, startOfWeek, format } from "date-fns";
 /**
  * Logica di supporto per la vista "Settimana" del Piano.
  * Tutte funzioni pure (niente React): facili da testare.
+ *
+ * Filosofia: la griglia NON mostra tutta la routine dell'utente.
+ * Mostra solo le FINESTRE LIBERE in cui si puo' studiare.
+ * Gli impegni di routine (scuola, merenda, ...) compaiono solo se
+ * cadono dentro la finestra visibile, per spiegare i "buchi".
+ * Il sonno non viene mai disegnato: e' implicito ai bordi.
  */
 
 /** I 7 giorni (lun-dom) della settimana che contiene `date`. */
@@ -68,24 +74,144 @@ export function routineSegmentsForDay(
   return segments;
 }
 
-// ---- Posizionamento grafico ----
+// ---- Finestre libere (il cuore della nuova vista) ----
 
-export const WEEK_HOUR_START = 6;
-export const WEEK_HOUR_END = 24;
-export const WEEK_ROW_H = 40; // px per ora
-export const WEEK_GRID_HEIGHT = (WEEK_HOUR_END - WEEK_HOUR_START) * WEEK_ROW_H;
+/** Limiti assoluti della griglia: mai prima delle 6:00, mai oltre le 24:00. */
+export const WEEK_DAY_START_MIN = 6 * 60;
+export const WEEK_DAY_END_MIN = 24 * 60;
 
-/** Posizione in pixel dall'alto della griglia per un orario in minuti. */
-export function blockTop(minutes: number): number {
-  const clamped = Math.max(WEEK_HOUR_START * 60, Math.min(WEEK_HOUR_END * 60, minutes));
-  return ((clamped - WEEK_HOUR_START * 60) / 60) * WEEK_ROW_H;
+/** Buchi liberi piu' corti di cosi' non vengono mostrati (troppo piccoli per studiare). */
+export const MIN_FREE_SLOT_MIN = 20;
+
+/** Unisce i blocchi che si sovrappongono o si toccano (es. due routine parzialmente sovrapposte). */
+export function mergeBlocks(blocks: TimeBlock[]): TimeBlock[] {
+  const sorted = blocks
+    .filter((b) => b.end > b.start)
+    .map((b) => ({ ...b }))
+    .sort((a, b) => a.start - b.start);
+  const out: TimeBlock[] = [];
+  for (const b of sorted) {
+    const last = out[out.length - 1];
+    if (last && b.start <= last.end) last.end = Math.max(last.end, b.end);
+    else out.push(b);
+  }
+  return out;
 }
 
-/** Altezza in pixel per durata in minuti (almeno un'altezza minima leggibile). */
+/**
+ * Le finestre LIBERE della giornata dentro [dayStartMin, dayEndMin]:
+ * e' il complemento dei blocchi occupati (routine), filtrato per durata minima.
+ * Esempio: routine scuola 8:00-14:00 e sonno 22:30-7:00
+ *          -> slot 14:00-22:30 (la mattina non conta, prima delle 6:00 e' gia' sonno).
+ */
+export function freeSlots(
+  blocks: TimeBlock[],
+  dayStartMin: number = WEEK_DAY_START_MIN,
+  dayEndMin: number = WEEK_DAY_END_MIN,
+  minSlotMin: number = MIN_FREE_SLOT_MIN,
+): TimeBlock[] {
+  const merged = mergeBlocks(
+    blocks
+      .map((b) => ({ start: Math.max(b.start, dayStartMin), end: Math.min(b.end, dayEndMin) }))
+      .filter((b) => b.end > b.start),
+  );
+  const slots: TimeBlock[] = [];
+  let cur = dayStartMin;
+  for (const b of merged) {
+    if (b.start - cur >= minSlotMin) slots.push({ start: cur, end: b.start });
+    cur = Math.max(cur, b.end);
+  }
+  if (dayEndMin - cur >= minSlotMin) slots.push({ start: cur, end: dayEndMin });
+  return slots;
+}
+
+// ---- Altezze e posizioni ----
+
+export const WEEK_ROW_H = 40; // px per ora
+
+/** Altezza in pixel per una durata in minuti (almeno un'altezza minima leggibile). */
 export function blockHeight(durationMin: number): number {
   const MIN_PX = 26;
   return Math.max(MIN_PX, (durationMin / 60) * WEEK_ROW_H);
 }
+
+/** Posizione in pixel dall'alto della griglia (la griglia parte da `gridStartMin`). */
+export function blockTop(minutes: number, gridStartMin: number): number {
+  const clamped = Math.max(gridStartMin, minutes);
+  return ((clamped - gridStartMin) / 60) * WEEK_ROW_H;
+}
+
+/** Altezza totale della griglia in pixel. */
+export function gridHeightPx(gridStartMin: number, gridEndMin: number): number {
+  return ((gridEndMin - gridStartMin) / 60) * WEEK_ROW_H;
+}
+
+/** Le ore da etichettare nella colonna degli orari (una per ora, [gridStartMin, gridEndMin) ). */
+export function gridHours(gridStartMin: number, gridEndMin: number): number[] {
+  const hs: number[] = [];
+  for (let m = gridStartMin; m < gridEndMin; m += 60) hs.push(m / 60);
+  return hs;
+}
+
+/**
+ * L'intervallo visibile della griglia, calcolato "in modo intelligente":
+ * copre tutte le finestre libere e gli eventi (anche fuori finestra),
+ * arrotondato all'ora intera e con una ampiezza minima leggibile.
+ */
+export function computeGridRange(
+  daySlots: TimeBlock[][],
+  dayEventMinutes: number[][],
+  minSpanMin = 120,
+): { startMin: number; endMin: number } {
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const slots of daySlots) {
+    for (const s of slots) {
+      lo = Math.min(lo, s.start);
+      hi = Math.max(hi, s.end);
+    }
+  }
+  for (const mins of dayEventMinutes) {
+    for (const m of mins) {
+      lo = Math.min(lo, m);
+      // un evento occupa almeno ~1h: il range deve coprire la sua fine
+      hi = Math.max(hi, m + 60);
+    }
+  }
+  if (!Number.isFinite(lo)) {
+    // Nessuna finestra e nessun evento: pomeriggio standard come ripiego
+    return { startMin: 8 * 60, endMin: 20 * 60 };
+  }
+  const startMin = Math.max(WEEK_DAY_START_MIN, Math.floor(lo / 60) * 60);
+  let endMin = Math.min(WEEK_DAY_END_MIN, Math.ceil(hi / 60) * 60);
+  if (endMin - startMin < minSpanMin) {
+    endMin = Math.min(WEEK_DAY_END_MIN, startMin + minSpanMin);
+  }
+  if (endMin <= startMin) endMin = Math.min(WEEK_DAY_END_MIN, startMin + 60);
+  return { startMin, endMin };
+}
+
+/**
+ * I blocchi di routine DA DISEGNARE: solo quelli che cadono dentro la finestra
+ * visibile (clippati ai bordi) e che non sono il sonno.
+ * Spiegano i "buchi" tra una finestra libera e l'altra (es. la merenda).
+ */
+export function visibleRoutineBlocks<T extends TimeBlock & { kind: string }>(
+  segments: T[],
+  gridStartMin: number,
+  gridEndMin: number,
+): T[] {
+  return segments
+    .filter((s) => s.kind !== "sleep")
+    .map((s) => ({
+      ...s,
+      start: Math.max(s.start, gridStartMin),
+      end: Math.min(s.end, gridEndMin),
+    }))
+    .filter((s) => s.end - s.start >= 5); // spiccioli da pochi minuti non si disegnano
+}
+
+// ---- Posizionamento eventi con anti-sovrapposizione ----
 
 export interface PositionedEvent {
   id: string;
@@ -94,35 +220,82 @@ export interface PositionedEvent {
   top: number;
   height: number;
   kind: "study" | "test" | "assignment" | "evaluation";
+  /** Colonna in cui e' stato piazzato dentro il suo gruppo di sovrapposti (0..lanes-1). */
+  lane: number;
+  /** Quante colonne affiancate servono nel suo gruppo (1 = nessuna sovrapposizione). */
+  lanes: number;
+}
+
+export interface DayEventRow {
+  id: string;
+  title: string;
+  subjectName?: string;
+  minutes: number | null;
+  kind: PositionedEvent["kind"];
 }
 
 /**
  * Posiziona gli eventi di UN giorno dentro la griglia.
+ * Eventi che si sovrappongono in orario vengono affiancati in colonne
+ * (come Google Calendar): lane = quale colonnina, lanes = quante sono.
  * Chi stabilisce il colore e' il chiamante (le materie hanno colori loro).
  * Gli eventi senza orario NON vengono restituiti qui: finiscono nella
  * striscia "senza orario" in cima alla colonna.
  */
 export function positionDayEvents(
-  rows: { id: string; title: string; subjectName?: string; minutes: number | null; kind: PositionedEvent["kind"] }[],
+  rows: DayEventRow[],
+  gridStartMin: number,
   defaultDurationMin = 50,
-): { timed: PositionedEvent[]; untimed: { id: string; title: string; subjectName?: string; kind: PositionedEvent["kind"] }[] } {
-  const timed: PositionedEvent[] = [];
-  const untimed: { id: string; title: string; subjectName?: string; kind: PositionedEvent["kind"] }[] = [];
+): { timed: PositionedEvent[]; untimed: Omit<PositionedEvent, "top" | "height" | "lane" | "lanes">[] } {
+  const untimed: Omit<PositionedEvent, "top" | "height" | "lane" | "lanes">[] = [];
+  const prepared: PositionedEvent[] = [];
   for (const r of rows) {
     if (r.minutes === null) {
       untimed.push({ id: r.id, title: r.title, subjectName: r.subjectName, kind: r.kind });
     } else {
-      timed.push({
+      prepared.push({
         id: r.id,
         title: r.title,
         subjectName: r.subjectName,
         kind: r.kind,
-        top: blockTop(r.minutes),
+        top: blockTop(r.minutes, gridStartMin),
         height: blockHeight(defaultDurationMin),
+        lane: 0,
+        lanes: 1,
       });
     }
   }
-  // Gli eventi sovrapposti restano tali: la larghezza intera li rende comunque leggibili
+  prepared.sort((a, b) => a.top - b.top || b.height - a.height);
+
+  // Raggruppo gli eventi che si toccano a catena e assegno le colonnine
+  const timed: PositionedEvent[] = [];
+  let cluster: PositionedEvent[] = [];
+  let laneEnds: number[] = []; // "fondo" (top+height) occupato di ogni colonnina
+  let clusterEnd = -Infinity;
+
+  const flush = () => {
+    for (const e of cluster) e.lanes = laneEnds.length;
+    timed.push(...cluster);
+    cluster = [];
+    laneEnds = [];
+    clusterEnd = -Infinity;
+  };
+
+  for (const e of prepared) {
+    if (e.top >= clusterEnd && cluster.length > 0) flush();
+    let lane = laneEnds.findIndex((end) => end <= e.top);
+    if (lane === -1) {
+      lane = laneEnds.length;
+      laneEnds.push(0);
+    }
+    const bottom = e.top + e.height;
+    laneEnds[lane] = bottom;
+    clusterEnd = Math.max(clusterEnd, bottom);
+    e.lane = lane;
+    cluster.push(e);
+  }
+  flush();
+
   timed.sort((a, b) => a.top - b.top);
   return { timed, untimed };
 }
