@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
@@ -59,11 +59,7 @@ function extractJsonArray(raw: string): unknown[] {
   throw new Error("Impossibile estrarre JSON dalla risposta AI");
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+serve(withCors(async (req) => {
   try {
     const body = await req.json();
     const { contextId, lessonIds, count } = body;
@@ -150,7 +146,7 @@ serve(async (req) => {
       if (JSON.stringify(existingIds) === JSON.stringify(lessonIdsKey)) {
         return new Response(
           JSON.stringify({ success: true, status: "generating", jobId: existingJob.id, alreadyRunning: true }),
-          { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 202, headers: { "Content-Type": "application/json" } }
         );
       }
     }
@@ -264,10 +260,10 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
 
     return new Response(
       JSON.stringify({ success: true, status: "generating", jobId: job.id }),
-      { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 202, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error:", error);
     return errorResponse("Errore nella generazione degli esercizi. Riprova.");
   }
-});
+}));

@@ -1,7 +1,11 @@
 import * as pdfjsLib from "pdfjs-dist";
+// Worker incorporato nell'app: niente piu' dipendenza dal CDN esterno e
+// versione sempre allineata a quella della libreria (prima caricavamo il
+// worker da cdnjs con la versione fissata a mano — fonte di bug e rischio
+// supply-chain).
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-// Use the bundled worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 const MAX_PAGES = 50;
 const RENDER_SCALE = 1.5; // Good quality without being too large

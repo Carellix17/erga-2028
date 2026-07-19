@@ -54,8 +54,8 @@ export function CourseSelector({
   onOpenMaterials,
   isRegenerating,
 }: CourseSelectorProps) {
-  if (courses.length === 0) return null;
-
+  // N.B.: gli hook devono essere chiamati PRIMA di qualunque return anticipato
+  // (regole di React). L'uscita "nessun corso" e' piu' sotto, dopo gli hook.
   const [open, setOpen] = useState(false);
   const [renameCourse, setRenameCourse] = useState<Course | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -67,10 +67,6 @@ export function CourseSelector({
   const moreBtnRef = useRef<HTMLButtonElement | null>(null);
   const longPressTimer = useRef<number | null>(null);
   const longPressTriggered = useRef(false);
-
-  const active = courses.find((c) => c.id === activeContextId) ?? courses[0];
-  const activeColor = getStableSubjectColor(active.file_name);
-  const ActiveIcon = getIcon(active.file_name);
 
   useEffect(() => {
     if (!open) return;
@@ -111,6 +107,13 @@ export function CourseSelector({
     return () => window.removeEventListener("keydown", onKey);
   }, [menuOpen]);
 
+  // Uscita anticipata: da qui in poi tutto assume almeno un corso.
+  if (courses.length === 0) return null;
+
+  const active = courses.find((c) => c.id === activeContextId) ?? courses[0];
+  const activeColor = getStableSubjectColor(active.file_name);
+  const ActiveIcon = getIcon(active.file_name);
+
   const clearLongPress = () => {
     if (longPressTimer.current) {
       window.clearTimeout(longPressTimer.current);
@@ -124,7 +127,7 @@ export function CourseSelector({
     clearLongPress();
     longPressTimer.current = window.setTimeout(() => {
       longPressTriggered.current = true;
-      try { navigator.vibrate?.(20); } catch {}
+      try { navigator.vibrate?.(20); } catch { /* alcune piattaforme non supportano la vibrazione: si ignora */ }
       setRenameValue(cleanName(course.file_name));
       setRenameCourse(course);
     }, 500);

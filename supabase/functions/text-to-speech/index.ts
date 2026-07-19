@@ -1,5 +1,4 @@
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
-import { validateAuth, unauthorizedResponse } from '../_shared/auth.ts';
+import { withCors, validateAuth, unauthorizedResponse } from '../_shared/auth.ts';
 
 // Allowlist of supported Azure neural voices (it-IT + a few EN fallbacks).
 const ALLOWED_VOICES = new Set<string>([
@@ -22,11 +21,7 @@ const escapeXml = (s: string) =>
    .replace(/"/g, '&quot;')
    .replace(/'/g, '&apos;');
 
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
+Deno.serve(withCors(async (req) => {
   try {
     // Require authenticated user — prevents anonymous abuse of Azure credits.
     try {
@@ -39,7 +34,7 @@ Deno.serve(async (req) => {
     if (!text || typeof text !== 'string') {
       return new Response(JSON.stringify({ error: 'Missing text' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -49,7 +44,7 @@ Deno.serve(async (req) => {
       console.error('Azure TTS key not configured');
       return new Response(JSON.stringify({ error: 'TTS service unavailable' }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -76,7 +71,7 @@ Deno.serve(async (req) => {
       console.error('Azure TTS error', azureRes.status, errText);
       return new Response(JSON.stringify({ error: 'TTS service error' }), {
         status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -84,7 +79,6 @@ Deno.serve(async (req) => {
     return new Response(audio, {
       status: 200,
       headers: {
-        ...corsHeaders,
         'Content-Type': 'audio/mpeg',
         'Cache-Control': 'no-store',
       },
@@ -93,7 +87,7 @@ Deno.serve(async (req) => {
     console.error('TTS function error', err);
     return new Response(JSON.stringify({ error: 'TTS service error' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     });
   }
-});
+}));

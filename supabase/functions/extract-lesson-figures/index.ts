@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 
 /**
  * Extract figure crops for a single lesson on-demand — STRATEGY A.
@@ -242,9 +242,7 @@ Rispondi SOLO con JSON valido, senza markdown:
   }
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-
+serve(withCors(async (req) => {
   try {
     const body = await req.json();
     const { lessonId, pages, crops } = body as {
@@ -403,4 +401,4 @@ serve(async (req) => {
     console.error("extract-lesson-figures error:", error);
     return errorResponse("Si è verificato un errore. Riprova.", 500);
   }
-});
+}));

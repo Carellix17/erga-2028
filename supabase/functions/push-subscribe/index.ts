@@ -1,11 +1,9 @@
 // Salva (upsert) o cancella una subscription Web Push dell'utente loggato.
 // POST { subscription: PushSubscriptionJSON } -> upsert
 // DELETE { endpoint } -> cancella
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
-import { validateAuth, unauthorizedResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, unauthorizedResponse } from "../_shared/auth.ts";
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+Deno.serve(withCors(async (req) => {
   try {
     let auth;
     try { auth = await validateAuth(req); }
@@ -17,7 +15,7 @@ Deno.serve(async (req) => {
       const endpoint = body?.endpoint;
       if (!endpoint) {
         return new Response(JSON.stringify({ error: "endpoint mancante" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { "Content-Type": "application/json" },
         });
       }
       await supabase
@@ -26,7 +24,7 @@ Deno.serve(async (req) => {
         .eq("user_id", userId)
         .eq("endpoint", endpoint);
       return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -36,7 +34,7 @@ Deno.serve(async (req) => {
     const authKey = sub?.keys?.auth;
     if (!endpoint || !p256dh || !authKey) {
       return new Response(JSON.stringify({ error: "Subscription invalida" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -57,13 +55,13 @@ Deno.serve(async (req) => {
     if (error) throw error;
 
     return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("push-subscribe error:", err);
     return new Response(
       JSON.stringify({ error: "Si è verificato un errore. Riprova." }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
-});
+}));

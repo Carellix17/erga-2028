@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+serve(withCors(async (req) => {
   try {
     const body = await req.json();
     const { action } = body;
@@ -132,4 +128,4 @@ serve(async (req) => {
     console.error("cognitive-profile error:", error);
     return errorResponse("Errore nel servizio profilo cognitivo. Riprova.");
   }
-});
+}));

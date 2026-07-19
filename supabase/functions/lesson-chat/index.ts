@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
@@ -20,11 +20,7 @@ REGOLE FERREE:
 3. Non inventare esempi, dati o spiegazioni non presenti nella lezione
 4. Se il contenuto della lezione è insufficiente per rispondere, dillo onestamente`;
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+serve(withCors(async (req) => {
   try {
     const body = await req.json();
     const { messages, lessonContent, lessonTitle } = body;
@@ -96,10 +92,10 @@ Rispondi SEMPRE in ${languageName(language)}.`;
     });
 
     return new Response(stream, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: { "Content-Type": "text/event-stream" },
     });
   } catch (error) {
     console.error("[lesson-chat] Error:", error);
     return errorResponse("Errore nella chat della lezione. Riprova.");
   }
-});
+}));
