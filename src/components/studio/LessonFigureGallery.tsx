@@ -12,7 +12,7 @@ interface LessonFigureGalleryProps {
 /**
  * Renders a fallback gallery of all figures extracted for a lesson.
  * Shown when the AI didn't insert [FIG:N] markers in the explanation,
- * or as an inline preview inside the non-fullscreen MiniLesson card.
+ * or as an inline preview inside a lesson slide.
  */
 export function LessonFigureGallery({
   figures,

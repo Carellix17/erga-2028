@@ -67,7 +67,7 @@ serve(withCors(async (req) => {
           return errorResponse(`Formato non supportato: ${img.name}. Usa JPG, PNG o WebP.`, 400);
         }
         if (img.size > MAX_FILE_SIZE) {
-          return errorResponse(`Immagine troppo grande: ${img.name}. Max 20MB.`, 400);
+          return errorResponse(`Immagine troppo grande: ${img.name}. Max 100MB.`, 400);
         }
       }
 

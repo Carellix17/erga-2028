@@ -2,6 +2,21 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 
+/**
+ * Converte byte in base64 a pezzettini. La versione "tutto in un boccone"
+ * (String.fromCharCode(...bytes)) supera il limite di argomenti del motore
+ * e crasha gia' con ~400KB: una foto di telefono pesa 2-8MB, quindi il
+ * caricamento foto falliva SEMPRE prima di questo fix.
+ */
+function uint8ToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
 serve(withCors(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -100,7 +115,7 @@ serve(withCors(async (req) => {
             }
 
             const arrayBuffer = await fileData.arrayBuffer();
-            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+            const base64 = uint8ToBase64(new Uint8Array(arrayBuffer));
             const ext = imgPath.split(".").pop()?.toLowerCase() || "jpg";
             const mimeType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
             imageContents.push({ base64, mimeType });

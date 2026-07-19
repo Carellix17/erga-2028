@@ -144,7 +144,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
   const handleWebSearch = async () => {
     if (!webTopic.trim() || !currentUser) return;
     setIsSearching(true);
-    setUploadStatus("Ricerca sul web...");
+    setUploadStatus("L'AI sta preparando il contenuto...");
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -165,7 +165,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
       onUpload([{ name: `🌐 ${webTopic}`, size: searchData.contentLength || 0 }], contextId);
       setWebTopic("");
       onOpenChange(false);
-      toast({ title: "Contenuto trovato! 🌐", description: "Ora puoi generare le lezioni dal tab Studio." });
+      toast({ title: "Contenuto pronto! 🌐", description: "Ora puoi generare le lezioni dal tab Studio." });
     } catch (error) {
       console.error("Web search error:", error);
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella ricerca", variant: "destructive" });
@@ -278,8 +278,8 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                     <Button type="button" onClick={() => setLoadingTab("web")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40">
                       <Globe className="w-5 h-5 text-primary" />
                       <div className="text-left">
-                        <p className="font-medium">Ricerca web</p>
-                        <p className="body-small text-muted-foreground">Genera lezioni da un argomento</p>
+                        <p className="font-medium">Da un argomento</p>
+                        <p className="body-small text-muted-foreground">L'AI prepara un manuale sul tema che scegli</p>
                       </div>
                     </Button>
                   </div>
@@ -429,8 +429,8 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                     <Globe className="w-8 h-8 text-primary-foreground" />
                   </div>
                   <div>
-                    <p className="font-display font-semibold text-lg">Cerca un argomento</p>
-                    <p className="body-small text-muted-foreground">L'AI cercherà sul web e preparerà i contenuti</p>
+                    <p className="font-display font-semibold text-lg">Scegli un argomento</p>
+                    <p className="body-small text-muted-foreground">L'AI scriverà un manuale su misura dalla sua conoscenza — senza navigare sul web</p>
                   </div>
                 </div>
 
@@ -454,14 +454,14 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                     size="lg"
                   >
                     {isSearching ? (
-                      <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Ricerca in corso...</>
+                      <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Preparazione in corso...</>
                     ) : (
-                      <><Globe className="w-5 h-5 mr-2" />Cerca argomento</>
+                      <><Globe className="w-5 h-5 mr-2" />Prepara l'argomento</>
                     )}
                   </Button>
 
                   <p className="body-small text-muted-foreground text-center">
-                    🔍 Dopo la ricerca potrai generare le lezioni
+                    🔍 Dopo la preparazione potrai generare le lezioni
                   </p>
                 </div>
               </TabsContent>
