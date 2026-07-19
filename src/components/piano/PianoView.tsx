@@ -3,6 +3,7 @@ import { Plus, Loader2, Trash2, Timer, ClipboardCheck, Mic, PencilLine, Hammer, 
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -54,6 +55,8 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const [evalToDelete, setEvalToDelete] = useState<Evaluation | null>(null);
   const [deleteScope, setDeleteScope] = useState<DeleteScope | null>(null);
   const [calendarMode, setCalendarMode] = useState<CalendarMode>("month");
+  // Elementi che si stanno "dissolvendo" prima dell'eliminazione vera
+  const [exitingIds, setExitingIds] = useState<string[]>([]);
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const focus = useFocus();
@@ -141,14 +144,38 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     }
   };
 
+  /** Elimina con dissolvenza: marca l'elemento, lascia partire l'animazione, poi rimuove davvero. */
+  const withExit = async (ids: string[], action: () => Promise<unknown>) => {
+    setExitingIds(ids);
+    await new Promise((r) => setTimeout(r, 280));
+    try {
+      await action();
+    } finally {
+      setExitingIds([]);
+    }
+  };
+
   const handleDeleteEvent = async () => {
     if (!eventToDelete) return;
+    const ev = eventToDelete;
+    setEventToDelete(null); // chiudi subito: l'elemento si dissolve nella lista
     try {
-      await deleteEvent.mutateAsync(eventToDelete.id);
-      toast({ title: "Evento eliminato", description: `${eventToDelete.title} è stato rimosso dal calendario.` });
-      setEventToDelete(null);
+      await withExit([ev.id], () => deleteEvent.mutateAsync(ev.id));
+      toast({ title: "Evento eliminato", description: `${ev.title} è stato rimosso dal calendario.` });
     } catch (error) {
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nell'eliminazione", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteEval = async () => {
+    if (!evalToDelete) return;
+    const ev = evalToDelete;
+    setEvalToDelete(null);
+    try {
+      await withExit([ev.id], () => deleteEvaluation.mutateAsync(ev.id));
+      toast({ title: "Scadenza eliminata" });
+    } catch (err) {
+      toast({ title: "Errore", description: err instanceof Error ? err.message : "Errore nell'eliminazione", variant: "destructive" });
     }
   };
 
@@ -180,15 +207,17 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
 
   const handleBulkDelete = async () => {
     if (!deleteScope) return;
+    const scope = deleteScope;
+    setDeleteScope(null); // chiudi subito: gli elementi si dissolvono nella lista
     try {
-      if (deleteScope === "study") {
-        await deleteByType.mutateAsync("study");
+      if (scope === "study") {
+        await withExit(events.map((e) => e.id), () => deleteByType.mutateAsync("study"));
         toast({ title: "Sessioni di studio eliminate", description: "Verifiche e compiti sono rimasti." });
       } else {
-        await Promise.all([deleteAllEvents.mutateAsync(), deleteAllEvaluations.mutateAsync()]);
+        const allIds = [...events.map((e) => e.id), ...evaluations.map((e) => e.id)];
+        await withExit(allIds, () => Promise.all([deleteAllEvents.mutateAsync(), deleteAllEvaluations.mutateAsync()]));
         toast({ title: "Piano svuotato", description: "Eventi, verifiche e compiti sono stati eliminati." });
       }
-      setDeleteScope(null);
     } catch (err) {
       toast({ title: "Errore", description: err instanceof Error ? err.message : "Errore nell'eliminazione", variant: "destructive" });
     }
@@ -202,11 +231,15 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
   if (isLoading) return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5">
-      <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center shadow-level-3 animate-pulse-soft">
-        <Loader2 className="w-8 h-8 text-primary-foreground animate-spin" />
+    <div className="p-4 pb-28 space-y-4 animate-fade-up">
+      {/* Scheletri: calendario + lista, stessa forma del contenuto reale */}
+      <Skeleton className="h-11 w-56 rounded-full mx-auto" />
+      <Skeleton className="h-72 rounded-xl" />
+      <div className="space-y-3 pt-2">
+        <Skeleton className="h-20 rounded-xl" />
+        <Skeleton className="h-20 rounded-xl" />
+        <Skeleton className="h-20 rounded-xl" />
       </div>
-      <p className="text-muted-foreground font-display font-medium">Caricamento eventi...</p>
     </div>
   );
 
@@ -270,6 +303,8 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           </div>
         </div>
 
+        {/* key = al cambio Mese/Settimana il contenuto si anima invece di tagliare di colpo */}
+        <div key={calendarMode} className="animate-fade-up">
         {calendarMode === "month" ? (
           <>
             <Calendar
@@ -305,7 +340,8 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
                       <span className="flex gap-0.5 h-1.5 mt-0.5 items-center">
                         {dots.map((d, i) =>
                           d.evalDot ? (
-                            <span key={i} className="w-1.5 h-1.5 rounded-full border border-slate-800" />
+                            // Verifiche/compiti: sbarretta scura (piu' leggibile del pallino-anellino)
+                            <span key={i} className="w-3.5 h-[3px] rounded-full bg-slate-800" />
                           ) : (
                             <span key={i} className={cn("w-1.5 h-1.5 rounded-full", d.solid)} />
                           ),
@@ -341,6 +377,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             }}
           />
         )}
+        </div>
       </div>
 
       {/* Section Header */}
@@ -374,7 +411,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       {selectedDate && selectedDateEvaluations.length > 0 && (
         <div className="space-y-3">
           {selectedDateEvaluations.map((ev, i) => (
-            <div key={ev.id} className={`relative group animate-fade-up animate-stagger-${Math.min(i + 1, 5)}`}>
+            <div key={ev.id} className={`relative group animate-fade-up animate-stagger-${Math.min(i + 1, 5)}${exitingIds.includes(ev.id) ? " opacity-0 scale-95 transition-all duration-300" : ""}`}>
               <EvaluationItem
                 evaluation={ev}
                 subject={ev.subject_id ? subjectById.get(ev.subject_id) : undefined}
@@ -407,7 +444,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       ) : selectedDate && selectedDateEvents.length > 0 ? (
         <div className="space-y-3">
           {selectedDateEvents.map((event, i) => (
-            <div key={event.id} className={`relative group animate-fade-up animate-stagger-${Math.min(i + 1, 5)}`}>
+            <div key={event.id} className={`relative group animate-fade-up animate-stagger-${Math.min(i + 1, 5)}${exitingIds.includes(event.id) ? " opacity-0 scale-95 transition-all duration-300" : ""}`}>
               <PlanItem
                 item={{ id: event.id, subject: event.subject, title: event.title, date: formatDate(event.event_date), time: event.event_time, type: event.event_type }}
                 subjectColor={colorFor(event.subject)}
@@ -436,7 +473,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         ) : (
           <div className="space-y-3">
             {events.slice(0, 5).map((event, i) => (
-              <div key={event.id} className={`relative group animate-fade-up animate-stagger-${Math.min(i + 1, 5)}`}>
+              <div key={event.id} className={`relative group animate-fade-up animate-stagger-${Math.min(i + 1, 5)}${exitingIds.includes(event.id) ? " opacity-0 scale-95 transition-all duration-300" : ""}`}>
                 <PlanItem item={{ id: event.id, subject: event.subject, title: event.title, date: formatDate(event.event_date), time: event.event_time, type: event.event_type }}
                   subjectColor={colorFor(event.subject)}
                   onClick={() => setSelectedDate(new Date(event.event_date))} />
@@ -501,16 +538,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleteEvaluation.isPending}>Annulla</AlertDialogCancel>
             <AlertDialogAction
-              onClick={async () => {
-                if (!evalToDelete) return;
-                try {
-                  await deleteEvaluation.mutateAsync(evalToDelete.id);
-                  toast({ title: "Scadenza eliminata" });
-                  setEvalToDelete(null);
-                } catch (err) {
-                  toast({ title: "Errore", description: err instanceof Error ? err.message : "", variant: "destructive" });
-                }
-              }}
+              onClick={handleDeleteEval}
               className="bg-destructive hover:bg-destructive/90"
               disabled={deleteEvaluation.isPending}
             >
