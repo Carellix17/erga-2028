@@ -1,17 +1,83 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withCors, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 
 /**
- * Stateless "demo" course generator for anonymous / guest users.
- * - No auth required, no DB writes, no rate limit tracking.
+ * "Demo" course generator for anonymous / guest users.
+ * - No auth required, no DB writes of user content.
+ * - ANTI-ABUSO: rate limit per impronta IP (max DEMO_RATE_LIMIT generazioni
+ *   ogni 24h) per evitare che bot esterni brucino i crediti AI a pagamento.
  * - Returns a mini "course" of 4 sequential lessons on the given topic.
  *   Each lesson has 3 short slides + 4 multiple-choice questions.
  * - The 4th lesson is intentionally included but the client blocks it
  *   behind an auth wall.
  * - Input: { topic?: string, text?: string }
  */
+
+// Quante generazioni demo gratuite ogni 24 ore per singolo visitatore.
+const DEMO_RATE_LIMIT = 10;
+
+// SALE crittografico: rende impossibile risalire all'IP reale dall'impronta.
+const IP_HASH_SALT = "erga-demo-ratelimit-v1";
+
+/**
+ * Trasforma l'IP in un'impronta SHA-256 (irreversibile): rispetta la privacy
+ * perche' l'IP grezzo non viene mai salvato nel database.
+ */
+async function hashIp(ip: string): Promise<string> {
+  const data = new TextEncoder().encode(`${IP_HASH_SALT}:${ip}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Controlla (e consuma) una generazione demo per questo visitatore.
+ * Restituisce true se la richiesta puo' proseguire, false se il limite
+ * giornaliero e' stato superato. In caso di errore infrastrutturale
+ * lascia passare (fail-open) ma lo segnala nei log: meglio una demo
+ * funzionante che un visitatore reale bloccato.
+ */
+async function tryConsumeDemoGeneration(req: Request): Promise<boolean> {
+  try {
+    const forwarded = req.headers.get("x-forwarded-for") ?? "";
+    const ip =
+      forwarded.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "";
+    if (!ip) {
+      console.warn("rate-limit demo: IP non disponibile, richiesta consentita");
+      return true;
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    const ipHash = await hashIp(ip);
+    const { data, error } = await supabase.rpc(
+      "check_and_increment_demo_usage",
+      { p_ip_hash: ipHash },
+    );
+
+    if (error) {
+      console.error("rate-limit demo: controllo fallito:", error.message);
+      return true; // fail-open, vedi docstring
+    }
+    const count = typeof data === "number" ? data : 1;
+    if (count > DEMO_RATE_LIMIT) {
+      console.warn(`rate-limit demo: limite superato (${count}/${DEMO_RATE_LIMIT}) per hash ${ipHash.slice(0, 12)}…`);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error("rate-limit demo: errore inatteso:", e);
+    return true; // fail-open
+  }
+}
 
 function extractJson(raw: string): unknown {
   const cleaned = raw.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
@@ -21,11 +87,7 @@ function extractJson(raw: string): unknown {
   throw new Error("Invalid AI JSON");
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+serve(withCors(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const topic = typeof body.topic === "string" ? body.topic.trim().slice(0, 240) : "";
@@ -34,6 +96,15 @@ serve(async (req) => {
 
     if (!topic && !text) {
       return errorResponse("Argomento o testo mancante", 400);
+    }
+
+    // ANTI-ABUSO: prima di spendere crediti AI, verifica il limite giornaliero.
+    const allowed = await tryConsumeDemoGeneration(req);
+    if (!allowed) {
+      return errorResponse(
+        "Hai raggiunto il limite di demo gratuite per oggi. Registrati gratis per continuare a studiare con Erga.",
+        429,
+      );
     }
 
     const sourceBlock = text
@@ -127,4 +198,4 @@ REGOLE TASSATIVE:
     console.error("generate-lessons-demo error", err);
     return errorResponse("Errore nella generazione del percorso demo. Riprova.", 500);
   }
-});
+}));

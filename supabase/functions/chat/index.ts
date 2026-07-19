@@ -1,13 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { validateAuth, corsHeaders, errorResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse } from "../_shared/auth.ts";
 import { callAIStream } from "../_shared/ai.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+serve(withCors(async (req) => {
   try {
     const body = await req.json();
     const { messages } = body;
@@ -51,7 +47,7 @@ serve(async (req) => {
     if (mergedContexts.length === 0) {
       return new Response(
         JSON.stringify({ response: "Non ho ancora accesso a nessun materiale di studio. Per poterti aiutare, carica prima dei PDF con i tuoi appunti o dispense usando il pulsante in alto a destra." }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -186,11 +182,11 @@ ${eventsText}`;
     });
 
     return new Response(transformStream, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: { "Content-Type": "text/event-stream" },
     });
 
   } catch (error) {
     console.error("Error:", error);
     return errorResponse("Errore nel servizio chat. Riprova.");
   }
-});
+}));

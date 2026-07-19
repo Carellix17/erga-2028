@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 
@@ -73,11 +73,7 @@ async function callAI(messages: { role: string; content: string }[], temperature
   return callAIText(injected, temperature, maxTokens);
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+serve(withCors(async (req) => {
   try {
     const body = await req.json();
     const { action, lessonIndex, contextId } = body;
@@ -500,7 +496,7 @@ ${studyContent}`;
     if (ctxPre.generation_status === "generating") {
       return new Response(
         JSON.stringify({ success: true, status: "generating", contextId, alreadyRunning: true }),
-        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 202, headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -649,7 +645,7 @@ ${combinedContent}`;
 
     return new Response(
       JSON.stringify({ success: true, status: "generating", contextId }),
-      { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 202, headers: { "Content-Type": "application/json" } }
     );
 
   } catch (error) {
@@ -676,4 +672,4 @@ ${combinedContent}`;
       : "Errore nella generazione delle lezioni. Riprova.";
     return errorResponse(msg);
   }
-});
+}));

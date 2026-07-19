@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
@@ -83,11 +83,7 @@ function safeParseJson(raw: string): unknown {
   return JSON.parse(cleaned);
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+serve(withCors(async (req) => {
   try {
     const body = await req.json();
     const { inputText, contextId } = body;
@@ -142,4 +138,4 @@ serve(async (req) => {
     console.error("[study-tutor] Error:", error);
     return errorResponse("Errore nella generazione del materiale di studio. Riprova.");
   }
-});
+}));

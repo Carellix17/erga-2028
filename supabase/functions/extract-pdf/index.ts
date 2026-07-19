@@ -1,12 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+serve(withCors(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -369,7 +365,7 @@ serve(async (req) => {
     console.error("Error:", error);
     return errorResponse("Errore durante l'elaborazione");
   }
-});
+}));
 
 async function extractTextWithPdfJs(pdfBytes: Uint8Array): Promise<string> {
   const pdfjsModule = await import("https://esm.sh/pdfjs-serverless@0.5.1?bundle");

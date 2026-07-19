@@ -1,11 +1,9 @@
 // Invia una push di test all'utente loggato — utile per verificare
 // che VAPID, service worker e subscription siano configurati correttamente.
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
-import { validateAuth, unauthorizedResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, unauthorizedResponse } from "../_shared/auth.ts";
 import { sendPushToUser } from "../_shared/push.ts";
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+Deno.serve(withCors(async (req) => {
   try {
     let auth;
     try { auth = await validateAuth(req); }
@@ -26,13 +24,13 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, subscriptions: subs?.length ?? 0 }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("push-test error:", err);
     return new Response(
       JSON.stringify({ error: "Si è verificato un errore. Riprova." }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
-});
+}));

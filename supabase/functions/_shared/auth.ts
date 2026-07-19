@@ -1,10 +1,90 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { jwtVerify, createRemoteJWKSet, decodeProtectedHeader } from "https://esm.sh/jose@5.9.6";
 
-export const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+// ============================================================
+// CORS con lista dei domini autorizzati (allowlist)
+// ------------------------------------------------------------
+// Prima: "Access-Control-Allow-Origin: *" => QUALUNQUE sito web poteva
+// leggere le risposte delle nostre API dal browser di un visitatore.
+// Ora rispondiamo solo a richieste provenienti da:
+//   - il dominio ufficiale dell'app (produzione)
+//   - gli ambienti di anteprima Lovable (*.lovable.app / *.lovableproject.com)
+//   - localhost / 127.0.0.1 (sviluppo in locale)
+//   - capacitor://localhost (eventuale futura app nativa)
+// Le chiamate server-to-server (webhook Paddle, client MCP, script)
+// non inviano l'header Origin e NON sono influenzate dal CORS.
+// ============================================================
+
+const PRIMARY_ORIGIN = "https://erga-demo.lovable.app";
+
+const ALLOWED_ORIGINS_EXACT = new Set([
+  PRIMARY_ORIGIN,
+  "capacitor://localhost", // iOS (Capacitor)
+]);
+
+const ALLOWED_HOST_SUFFIXES = [".lovable.app", ".lovableproject.com"];
+const ALLOWED_LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1"]);
+
+/**
+ * Restituisce l'origine se e' autorizzata a chiamare le API, altrimenti null.
+ */
+export function resolveAllowedOrigin(origin: string | null): string | null {
+  if (!origin) return null;
+  if (ALLOWED_ORIGINS_EXACT.has(origin)) return origin;
+  try {
+    const url = new URL(origin);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    const host = url.hostname;
+    if (ALLOWED_LOCAL_HOSTNAMES.has(host)) return origin;
+    if (ALLOWED_HOST_SUFFIXES.some((suffix) => host.endsWith(suffix))) return origin;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+const ALLOW_HEADERS =
+  "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version";
+
+/**
+ * Header CORS completi per un'origine: se l'origine non e' autorizzata,
+ * l'header Access-Control-Allow-Origin non viene incluso (il browser
+ * blocchera' la richiesta).
+ */
+export function corsHeadersFor(origin: string | null): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Headers": ALLOW_HEADERS,
+    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+    Vary: "Origin",
+  };
+  const allowed = resolveAllowedOrigin(origin);
+  if (allowed) headers["Access-Control-Allow-Origin"] = allowed;
+  return headers;
+}
+
+/**
+ * withCors avvolge l'handler di una Edge Function e:
+ *  1. risponde automaticamente alle richieste preflight OPTIONS;
+ *  2. applica gli header CORS corretti a OGNI risposta (ok o errore),
+ *     eliminando un eventuale "*" residuo.
+ * Uso:  serve(withCors(async (req) => { ... }))
+ */
+export function withCors(
+  handler: (req: Request) => Promise<Response> | Response,
+) {
+  return async (req: Request): Promise<Response> => {
+    const origin = req.headers.get("origin");
+    if (req.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeadersFor(origin) });
+    }
+    const res = await handler(req);
+    res.headers.delete("Access-Control-Allow-Origin");
+    const allowed = resolveAllowedOrigin(origin);
+    if (allowed) res.headers.set("Access-Control-Allow-Origin", allowed);
+    res.headers.append("Vary", "Origin");
+    return res;
+  };
+}
 
 export interface AuthResult {
   userId: string;
@@ -108,12 +188,14 @@ export async function validateAuth(
 }
 
 /**
- * Create unauthorized response
+ * Create unauthorized response.
+ * Nota: gli header CORS vengono aggiunti dal wrapper withCors che
+ * avvolge ogni handler, quindi qui serve solo il Content-Type.
  */
 export function unauthorizedResponse(message = "Unauthorized"): Response {
   return new Response(
     JSON.stringify({ error: message }),
-    { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    { status: 401, headers: { "Content-Type": "application/json" } }
   );
 }
 
@@ -123,7 +205,7 @@ export function unauthorizedResponse(message = "Unauthorized"): Response {
 export function errorResponse(message: string, status = 500): Response {
   return new Response(
     JSON.stringify({ error: message }),
-    { status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    { status, headers: { "Content-Type": "application/json" } }
   );
 }
 
@@ -133,6 +215,6 @@ export function errorResponse(message: string, status = 500): Response {
 export function successResponse(data: unknown): Response {
   return new Response(
     JSON.stringify(data),
-    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    { headers: { "Content-Type": "application/json" } }
   );
 }

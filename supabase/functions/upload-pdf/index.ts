@@ -1,16 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { withCors, errorResponse, successResponse } from "../_shared/auth.ts";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const MAX_IMAGES = 20;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+serve(withCors(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -226,4 +222,4 @@ serve(async (req) => {
     console.error("Error:", error);
     return errorResponse("Errore durante il caricamento");
   }
-});
+}));

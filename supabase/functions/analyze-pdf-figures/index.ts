@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { validateAuth, corsHeaders, errorResponse, successResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 
 function uint8ToBase64(bytes: Uint8Array): string {
   let binary = "";
@@ -11,9 +11,7 @@ function uint8ToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-
+serve(withCors(async (req) => {
   try {
     const body = await req.json();
     const { imagePaths } = body;
@@ -150,4 +148,4 @@ Rispondi SOLO con JSON valido:
     console.error("Error:", error);
     return errorResponse("Errore nell'analisi delle figure");
   }
-});
+}));
