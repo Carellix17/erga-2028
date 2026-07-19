@@ -121,12 +121,31 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_rate_limits: {
+        Row: {
+          ip_hash: string
+          request_count: number
+          window_start: string
+        }
+        Insert: {
+          ip_hash: string
+          request_count?: number
+          window_start?: string
+        }
+        Update: {
+          ip_hash?: string
+          request_count?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
       evaluations: {
         Row: {
           created_at: string
           date: string
           description: string | null
           free_topic_title: string | null
+          goal: number | null
           id: string
           subject_id: string | null
           title: string
@@ -141,6 +160,7 @@ export type Database = {
           date: string
           description?: string | null
           free_topic_title?: string | null
+          goal?: number | null
           id?: string
           subject_id?: string | null
           title: string
@@ -155,6 +175,7 @@ export type Database = {
           date?: string
           description?: string | null
           free_topic_title?: string | null
+          goal?: number | null
           id?: string
           subject_id?: string | null
           title?: string
@@ -719,6 +740,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_increment_demo_usage: {
+        Args: { p_ip_hash: string; p_window?: string }
+        Returns: number
+      }
+      cleanup_demo_rate_limits: { Args: never; Returns: undefined }
       has_active_subscription: {
         Args: { check_env?: string; user_text: string }
         Returns: boolean
