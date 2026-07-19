@@ -1,5 +1,6 @@
 import { Calendar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { SubjectColor } from "@/lib/subjectColors";
 
 interface PlanItemProps {
   item: {
@@ -11,34 +12,39 @@ interface PlanItemProps {
     type: "study" | "test" | "assignment";
     completed?: boolean;
   };
+  /** Colore della materia (automatico o scelto dall'utente). */
+  subjectColor?: SubjectColor;
   onClick?: () => void;
 }
 
-const typeConfig = {
-  study: { bg: "bg-primary-container", border: "border-l-primary", badge: "bg-primary-container text-primary", label: "Studio" },
-  test: { bg: "bg-tertiary-container", border: "border-l-tertiary", badge: "bg-tertiary-container text-tertiary", label: "Verifica" },
-  assignment: { bg: "bg-secondary-container", border: "border-l-secondary", badge: "bg-secondary-container text-secondary-foreground", label: "Compito" },
+const TYPE_LABELS: Record<PlanItemProps["item"]["type"], string> = {
+  study: "Studio",
+  test: "Verifica",
+  assignment: "Compito",
 };
 
-export function PlanItem({ item, onClick }: PlanItemProps) {
-  const config = typeConfig[item.type];
+export function PlanItem({ item, subjectColor, onClick }: PlanItemProps) {
+  const border = subjectColor?.border ?? "border-l-slate-300";
+  const subjBadge = subjectColor
+    ? cn(subjectColor.badge, subjectColor.badgeText)
+    : "bg-slate-100 text-slate-600";
 
   return (
     <div
       className={cn(
         "m3-card-elevated rounded-xl border-l-4 cursor-pointer p-4 state-layer",
-        config.border,
+        border,
         item.completed && "opacity-60"
       )}
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className={cn("label-small px-2.5 py-0.5 rounded-full", config.badge)}>
-              {config.label}
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span className="label-small px-2.5 py-0.5 rounded-full bg-surface-container text-muted-foreground">
+              {TYPE_LABELS[item.type]}
             </span>
-            <span className="label-small text-muted-foreground">
+            <span className={cn("label-small px-2.5 py-0.5 rounded-full", subjBadge)}>
               {item.subject}
             </span>
           </div>

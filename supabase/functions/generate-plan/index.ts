@@ -17,7 +17,7 @@ serve(withCors(async (req) => {
       return errorResponse("Nessun contenuto di studio trovato. Carica dei PDF.", 400);
     }
 
-    const { data: userProfile } = await supabase.from("user_profiles").select("institute_type, subject_levels").eq("user_id", userId).maybeSingle();
+    const { data: userProfile } = await supabase.from("user_profiles").select("institute_type, subject_levels, subject_goals").eq("user_id", userId).maybeSingle();
 
     // ============================================================
     // Calibration: compute per-subject load factor from session logs
@@ -71,7 +71,12 @@ ISTRUZIONE OBBLIGATORIA: per ogni sessione, calcola prima il tempo teorico stand
       profileInfo = `\nPROFILO STUDENTE: ${instituteMap[userProfile.institute_type] || userProfile.institute_type}`;
       if (userProfile.subject_levels && typeof userProfile.subject_levels === "object") {
         const levels = userProfile.subject_levels as Record<string, number>;
-        profileInfo += "\nLivelli: " + Object.entries(levels).map(([s, l]) => `${s}: ${l}/10`).join(", ");
+        profileInfo += "\nLivelli attuali: " + Object.entries(levels).map(([s, l]) => `${s}: ${l}/10`).join(", ");
+      }
+      if (userProfile.subject_goals && typeof userProfile.subject_goals === "object") {
+        const goals = userProfile.subject_goals as Record<string, number>;
+        profileInfo += "\nObiettivi di voto: " + Object.entries(goals).map(([s, g]) => `${s}: ${g}/10`).join(", ");
+        profileInfo += "\nREGOLA OBBLIGATORIA sugli obiettivi: confronta per ogni materia il livello attuale con l'obiettivo. Dai MOLTO più tempo alle materie dove il divario (obiettivo - livello) è grande; dai poco tempo di mantenimento a quelle dove il livello raggiunge o supera l'obiettivo. Nell'explanation cita 1-2 materie prioritarie con questo criterio.";
       }
       profileInfo += "\nDai più tempo alle materie dove lo studente ha un livello basso.";
     }
