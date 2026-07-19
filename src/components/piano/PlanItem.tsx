@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Calendar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SubjectColor } from "@/lib/subjectColors";
@@ -17,13 +18,8 @@ interface PlanItemProps {
   onClick?: () => void;
 }
 
-const TYPE_LABELS: Record<PlanItemProps["item"]["type"], string> = {
-  study: "Studio",
-  test: "Verifica",
-  assignment: "Compito",
-};
-
 export function PlanItem({ item, subjectColor, onClick }: PlanItemProps) {
+  const { t } = useTranslation();
   const border = subjectColor?.border ?? "border-l-slate-300";
   const subjBadge = subjectColor
     ? cn(subjectColor.badge, subjectColor.badgeText)
@@ -42,7 +38,7 @@ export function PlanItem({ item, subjectColor, onClick }: PlanItemProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <span className="label-small px-2.5 py-0.5 rounded-full bg-surface-container text-muted-foreground">
-              {TYPE_LABELS[item.type]}
+              {t(`piano.type_${item.type}`)}
             </span>
             <span className={cn("label-small px-2.5 py-0.5 rounded-full", subjBadge)}>
               {item.subject}

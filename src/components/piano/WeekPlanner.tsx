@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CalendarX2 } from "lucide-react";
 import { format, isSameDay, isToday } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS } from "date-fns/locale";
 import type { StudyEvent } from "@/hooks/useStudyEvents";
 import type { Evaluation } from "@/hooks/useEvaluations";
 import type { UserRoutine, RoutineKind } from "@/hooks/useUserRoutines";
@@ -15,6 +16,7 @@ import {
   type DayEventRow, type TimeBlock,
 } from "@/lib/weekPlanner";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Sfondi tenui per i blocchi di routine visibili (spiegano i "buchi" nella finestra)
 const ROUTINE_STYLES: Record<RoutineKind, string> = {
@@ -22,9 +24,6 @@ const ROUTINE_STYLES: Record<RoutineKind, string> = {
   sleep: "bg-indigo-100/60 border-indigo-200 text-indigo-900",
   meal: "bg-amber-100/60 border-amber-200 text-amber-900",
   other: "bg-slate-100/80 border-slate-200 text-slate-800",
-};
-const ROUTINE_LABELS: Record<RoutineKind, string> = {
-  school: "Scuola", sleep: "Sonno", meal: "Pasti", other: "Altro",
 };
 
 interface WeekPlannerProps {
@@ -40,12 +39,13 @@ interface WeekPlannerProps {
   onOpenEvaluation?: (id: string) => void;
 }
 
-const DAY_LETTERS = ["L", "M", "M", "G", "V", "S", "D"];
-
 export function WeekPlanner({
   selectedDate, onSelectDate, events, evaluations, routines, subjects,
   onOpenStudyEvent, onOpenEvaluation,
 }: WeekPlannerProps) {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language.startsWith("en") ? enUS : it;
+
   // Su mobile si vede un giorno alla volta (scelto con i pallini in alto)
   const dayIdxOf = (d: Date) => (d.getDay() === 0 ? 6 : d.getDay() - 1);
   const [mobileDayIdx, setMobileDayIdx] = useState<number>(() => dayIdxOf(selectedDate));
@@ -56,6 +56,12 @@ export function WeekPlanner({
   }, [selectedDate]);
 
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
+
+  // Lettera stretta del giorno presa da date-fns (L/M/M... in italiano, M/T/W... in inglese)
+  const dayLetters = useMemo(
+    () => weekDays.map((d) => format(d, "EEEEE", { locale: dateLocale }).toUpperCase()),
+    [weekDays, dateLocale],
+  );
 
   // Mappa nome materia (minuscolo) -> scelta colore utente
   const colorByName = useMemo(() => {
@@ -108,7 +114,7 @@ export function WeekPlanner({
       routineSegmentsForDay(r.days_of_week, r.start_time, r.end_time, dayN).map((seg, j) => ({
         ...seg,
         kind: r.kind,
-        label: r.label || ROUTINE_LABELS[r.kind],
+        label: r.label || t(`piano.routine_${r.kind}`),
         key: `${r.id}-${dayN}-${j}`,
       })),
     );
@@ -121,7 +127,7 @@ export function WeekPlanner({
     const eventMins = rows.filter((r) => r.minutes !== null).map((r) => r.minutes as number);
     return { day, dayN, segments, slots, rows, eventMins };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [weekDays, routines, events, evaluations, subjectNameById]);
+  }), [weekDays, routines, events, evaluations, subjectNameById, t, i18n.language]);
 
   // Desktop: un intervallo unico per tutta la settimana (colonne allineate).
   // Mobile: intervallo ricalcolato sul solo giorno mostrato.
@@ -156,20 +162,23 @@ export function WeekPlanner({
             {untimed.map((u) => {
               const col = u.kind === "evaluation" ? undefined : colorForSubject(u.subjectName);
               return (
-                <button
-                  type="button"
-                  key={u.id}
-                  title={u.title}
-                  onClick={() => openItem(u.kind, u.id, day)}
-                  className={cn(
-                    "block w-full text-left text-[10px] leading-tight px-1.5 py-0.5 rounded-md truncate border cursor-pointer active:scale-[0.98] transition-transform",
-                    u.kind === "evaluation"
-                      ? "bg-slate-800 text-white border-slate-800"
-                      : cn(col?.bg ?? "bg-slate-100", col?.text ?? "text-slate-800", col?.border ?? "border-slate-200"),
-                  )}
-                >
-                  {u.title}
-                </button>
+                <Tooltip key={u.id}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => openItem(u.kind, u.id, day)}
+                      className={cn(
+                        "block w-full text-left text-[10px] leading-tight px-1.5 py-0.5 rounded-md truncate border cursor-pointer active:scale-[0.98] transition-transform",
+                        u.kind === "evaluation"
+                          ? "bg-slate-800 text-white border-slate-800"
+                          : cn(col?.bg ?? "bg-slate-100", col?.text ?? "text-slate-800", col?.border ?? "border-slate-200"),
+                      )}
+                    >
+                      {u.title}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[220px]">{u.title}</TooltipContent>
+                </Tooltip>
               );
             })}
           </div>
@@ -181,7 +190,7 @@ export function WeekPlanner({
           {slots.length === 0 && rows.length === 0 && (
             <div className="absolute inset-x-0 top-1/3 flex flex-col items-center gap-1 pointer-events-none">
               <CalendarX2 className="w-5 h-5 text-slate-300" />
-              <p className="text-[10px] text-muted-foreground">Giornata piena</p>
+              <p className="text-[10px] text-muted-foreground">{t("piano.fullDay")}</p>
             </div>
           )}
 
@@ -210,42 +219,50 @@ export function WeekPlanner({
           {routineVisible.map((b) => {
             const h = blockHeight(b.end - b.start) - 2;
             return (
-              <div
-                key={b.key}
-                className={cn("absolute left-0.5 right-0.5 rounded-md border text-[9px] px-1 overflow-hidden", ROUTINE_STYLES[b.kind])}
-                style={{ top: blockTop(b.start, gridStart) + 1, height: h }}
-                title={b.label}
-              >
-                {h >= 16 && <span className="font-medium opacity-70 leading-none">{b.label}</span>}
-              </div>
+              <Tooltip key={b.key}>
+                <TooltipTrigger asChild>
+                  <div
+                    className={cn("absolute left-0.5 right-0.5 rounded-md border text-[9px] px-1 overflow-hidden", ROUTINE_STYLES[b.kind])}
+                    style={{ top: blockTop(b.start, gridStart) + 1, height: h }}
+                  >
+                    {h >= 16 && <span className="font-medium opacity-70 leading-none">{b.label}</span>}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top">{b.label}</TooltipContent>
+              </Tooltip>
             );
           })}
 
           {/* eventi con orario (affiancati se si sovrappongono) */}
-          {timed.map((t) => {
-            const col = t.kind === "evaluation" ? undefined : colorForSubject(t.subjectName);
-            const widthPct = 100 / t.lanes;
+          {timed.map((row) => {
+            const col = row.kind === "evaluation" ? undefined : colorForSubject(row.subjectName);
+            const widthPct = 100 / row.lanes;
             return (
-              <button
-                type="button"
-                key={t.id}
-                onClick={() => openItem(t.kind, t.id, day)}
-                className={cn(
-                  "absolute text-left rounded-lg border px-1.5 py-1 overflow-hidden shadow-sm z-10 cursor-pointer active:scale-[0.98] transition-transform",
-                  t.kind === "evaluation"
-                    ? "bg-slate-800 text-white border-slate-800"
-                    : cn(col?.bg ?? "bg-slate-100", col?.text ?? "text-slate-800", col?.border ?? "border-slate-200"),
-                )}
-                style={{
-                  top: t.top + 1,
-                  height: t.height - 2,
-                  left: `calc(${(t.lane * 100) / t.lanes}% + 3px)`,
-                  width: `calc(${widthPct}% - 5px)`,
-                }}
-                title={t.subjectName ? `${t.subjectName}: ${t.title}` : t.title}
-              >
-                <p className="text-[10px] font-semibold leading-tight line-clamp-2">{t.title}</p>
-              </button>
+              <Tooltip key={row.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => openItem(row.kind, row.id, day)}
+                    className={cn(
+                      "absolute text-left rounded-lg border px-1.5 py-1 overflow-hidden shadow-sm z-10 cursor-pointer active:scale-[0.98] transition-transform",
+                      row.kind === "evaluation"
+                        ? "bg-slate-800 text-white border-slate-800"
+                        : cn(col?.bg ?? "bg-slate-100", col?.text ?? "text-slate-800", col?.border ?? "border-slate-200"),
+                    )}
+                    style={{
+                      top: row.top + 1,
+                      height: row.height - 2,
+                      left: `calc(${(row.lane * 100) / row.lanes}% + 3px)`,
+                      width: `calc(${widthPct}% - 5px)`,
+                    }}
+                  >
+                    <p className="text-[10px] font-semibold leading-tight line-clamp-2">{row.title}</p>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[220px]">
+                  {row.subjectName ? `${row.subjectName}: ${row.title}` : row.title}
+                </TooltipContent>
+              </Tooltip>
             );
           })}
         </div>
@@ -276,7 +293,7 @@ export function WeekPlanner({
           <DayHeader
             key={dayKey(day)}
             day={day}
-            letter={DAY_LETTERS[i]}
+            letter={dayLetters[i]}
             selected={isSameDay(day, selectedDate)}
             onClick={() => onSelectDate(day)}
           />
@@ -298,7 +315,7 @@ export function WeekPlanner({
                 isToday(day) && !active && "text-primary",
               )}
             >
-              <span>{DAY_LETTERS[i]}</span>
+              <span>{dayLetters[i]}</span>
               <span className="text-[10px] opacity-80">{format(day, "d")}</span>
             </button>
           );
