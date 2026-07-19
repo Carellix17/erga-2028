@@ -59,6 +59,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [subjectId, setSubjectId] = useState<string>(NONE);
   const [topicMode, setTopicMode] = useState<"linked" | "free">("free");
   const [courseId, setCourseId] = useState<string>("");
@@ -79,6 +80,15 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
       setTitle(initial.title);
       setDescription(initial.description ?? "");
       setDate(initial.date ? initial.date.slice(0, 10) : "");
+      if (initial.date) {
+        const d = new Date(initial.date);
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        // Se l'orario e' 12:00 (default legacy) mostralo vuoto per non forzare un valore
+        setTime(hh === "12" && mm === "00" ? "" : `${hh}:${mm}`);
+      } else {
+        setTime("");
+      }
       setSubjectId(initial.subject_id ?? NONE);
       setTopicMode(initial.topic_type);
       setCourseId(initial.topic_type === "linked" ? (initial.topic_id ?? "") : "");
@@ -86,7 +96,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
       setGoal(initial.goal ?? null);
     } else {
       setCategory("verifica"); setMode("scritta"); setTitle(""); setDescription("");
-      setDate(""); setSubjectId(NONE); setTopicMode("free"); setCourseId(""); setFreeTopic("");
+      setDate(""); setTime(""); setSubjectId(NONE); setTopicMode("free"); setCourseId(""); setFreeTopic("");
       setGoal(null);
     }
   }, [open, initial]);
@@ -101,7 +111,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
         type: resolvedType,
         title: title.trim(),
         description: description.trim() || undefined,
-        date: new Date(date + "T12:00:00").toISOString(),
+        date: new Date(`${date}T${time ? `${time}:00` : "12:00:00"}`).toISOString(),
         subject_id: subjectId === NONE ? null : subjectId,
         topic_type: topicMode,
         topic_id: topicMode === "linked" ? (courseId || null) : null,
@@ -178,6 +188,12 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
             <div className="space-y-2">
               <Label htmlFor="ev-date" className="label-large">Data</Label>
               <Input id="ev-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="ev-time" className="label-large">
+                Orario <span className="text-muted-foreground font-normal">(opzionale)</span>
+              </Label>
+              <Input id="ev-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label className="label-large">Materia</Label>
