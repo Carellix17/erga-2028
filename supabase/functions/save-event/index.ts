@@ -51,6 +51,74 @@ serve(withCors(async (req) => {
       return successResponse({ success: true });
     }
 
+    if (action === "update" && body.event) {
+      // Modifica di un singolo evento esistente, sempre vincolata al proprietario.
+      const ev = body.event;
+      const id = String(ev.id || "");
+      if (!id) return errorResponse("Missing event id", 400);
+
+      // Whitelist dei campi modificabili + validazioni
+      const allowedTypes = ["study", "test", "assignment"];
+      const updateData: Record<string, unknown> = {};
+      if (typeof ev.subject === "string" && ev.subject.trim()) updateData.subject = ev.subject.trim().slice(0, 80);
+      if (typeof ev.title === "string" && ev.title.trim()) updateData.title = ev.title.trim().slice(0, 200);
+      if (typeof ev.date === "string" && !Number.isNaN(Date.parse(ev.date))) updateData.event_date = ev.date;
+      if (typeof ev.time === "string" && /^\d{2}:\d{2}$/.test(ev.time)) updateData.event_time = ev.time;
+      if (ev.time === null) updateData.event_time = null;
+      if (typeof ev.type === "string" && allowedTypes.includes(ev.type)) updateData.event_type = ev.type;
+      if (Object.keys(updateData).length === 0) return errorResponse("Nessuna modifica valida", 400);
+
+      const { error, data } = await supabase
+        .from("study_events")
+        .update(updateData)
+        .eq("id", id)
+        .eq("user_id", userId)   // <-- nessuno puo' modificare eventi altrui
+        .select("id");
+
+      if (error) {
+        console.error("Update error:", error);
+        throw new Error("Errore nella modifica dell'evento");
+      }
+      if (!data || data.length === 0) return errorResponse("Evento non trovato", 404);
+
+      return successResponse({ success: true });
+    }
+
+    if (action === "deleteByType" && typeof body.eventType === "string") {
+      // Elimina tutte le sessioni di un tipo (es. solo quelle "study" generate dall'AI),
+      // sempre e solo quelle dell'utente autenticato.
+      const allowedTypes = ["study", "test", "assignment"];
+      if (!allowedTypes.includes(body.eventType)) return errorResponse("Tipo non valido", 400);
+
+      const { error } = await supabase
+        .from("study_events")
+        .delete()
+        .eq("user_id", userId)
+        .eq("event_type", body.eventType);
+
+      if (error) {
+        console.error("DeleteByType error:", error);
+        throw new Error("Errore nella cancellazione delle sessioni");
+      }
+
+      return successResponse({ success: true });
+    }
+
+    if (action === "deleteAll") {
+      // Elimina TUTTI gli eventi del piano dell'utente (doppia conferma lato UI)
+      const { error } = await supabase
+        .from("study_events")
+        .delete()
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("DeleteAll error:", error);
+        throw new Error("Errore nella cancellazione del piano");
+      }
+
+      return successResponse({ success: true });
+    }
+
     if (action === "list") {
       // List all events for user
       const { data, error } = await supabase

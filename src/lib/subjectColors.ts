@@ -165,3 +165,25 @@ export function getStableSubjectColor(fileName: string): SubjectColor {
  const index = Math.abs(hash) % SUBJECT_COLORS.length;
  return SUBJECT_COLORS[index];
 }
+
+// ============================================================
+// Colori delle materie: automatici + personalizzabili dall'utente
+// ============================================================
+
+/** La palette completa (per il selettore colore nella gestione materie). */
+export const SUBJECT_PALETTE: readonly SubjectColor[] = SUBJECT_COLORS;
+
+/** Restituisce il colore della palette con quella chiave, o null se non esiste. */
+export function getSubjectColorByKey(key: string | null | undefined): SubjectColor | null {
+ if (!key) return null;
+ return SUBJECT_COLORS.find((c) => c.key === key) ?? null;
+}
+
+/**
+ * Colore effettivo di una materia:
+ * - se l'utente ha scelto un colore a mano (customKey valido) vince quello;
+ * - altrimenti il colore automatico stabile derivato dal nome.
+ */
+export function resolveSubjectColor(subjectName: string, customKey?: string | null): SubjectColor {
+ return getSubjectColorByKey(customKey) ?? getStableSubjectColor(subjectName);
+}

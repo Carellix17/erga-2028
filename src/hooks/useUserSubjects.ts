@@ -19,7 +19,7 @@ export function useUserSubjects() {
     queryFn: async () => {
       const uid = await getUid();
       if (!uid) return [] as UserSubject[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("user_subjects")
         .select("*")
         .eq("user_id", uid)
@@ -36,9 +36,27 @@ export function useAddUserSubject() {
     mutationFn: async (name: string) => {
       const uid = await getUid();
       if (!uid) throw new Error("Not authenticated");
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("user_subjects")
         .insert({ user_id: uid, name: name.trim() });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["user_subjects"] }),
+  });
+}
+
+/** Aggiorna il colore scelto a mano per una materia (null = torna all'automatico). */
+export function useUpdateSubjectColor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, color }: { id: string; color: string | null }) => {
+      const uid = await getUid();
+      if (!uid) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("user_subjects")
+        .update({ color, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .eq("user_id", uid);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["user_subjects"] }),
@@ -49,7 +67,7 @@ export function useDeleteUserSubject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("user_subjects").delete().eq("id", id);
+      const { error } = await supabase.from("user_subjects").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["user_subjects"] }),

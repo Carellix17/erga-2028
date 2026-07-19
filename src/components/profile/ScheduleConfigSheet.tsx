@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, BookOpen, CalendarClock, Loader2, Save } from "lucide-react";
 import {
-  useUserSubjects, useAddUserSubject, useDeleteUserSubject,
+  useUserSubjects, useAddUserSubject, useDeleteUserSubject, useUpdateSubjectColor,
 } from "@/hooks/useUserSubjects";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { SUBJECT_PALETTE, resolveSubjectColor } from "@/lib/subjectColors";
 import {
   useUserRoutines, useAddUserRoutine, useUpdateUserRoutine, useDeleteUserRoutine,
   type RoutineKind, type UserRoutine,
@@ -197,6 +199,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
   const subjects = useUserSubjects();
   const addSubject = useAddUserSubject();
   const delSubject = useDeleteUserSubject();
+  const updateColor = useUpdateSubjectColor();
   const [newSubject, setNewSubject] = useState("");
 
   const routines = useUserRoutines();
@@ -249,7 +252,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
     try {
       await addSubject.mutateAsync(n);
       setNewSubject("");
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: "Errore", description: e?.message ?? "Impossibile aggiungere", variant: "destructive" });
     }
   };
@@ -305,7 +308,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
         await addRoutine.mutateAsync(payload);
       }
       setModalOpen(false);
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: "Errore", description: e?.message ?? "Impossibile salvare", variant: "destructive" });
     }
   };
@@ -315,7 +318,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
     try {
       await delRoutine.mutateAsync(editingId);
       setModalOpen(false);
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: "Errore", description: e?.message ?? "Impossibile eliminare", variant: "destructive" });
     }
   };
@@ -374,21 +377,60 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
             </Button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {subjects.data?.length ? subjects.data.map((s) => (
-              <span
-                key={s.id}
-                className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200/70 pl-3 pr-1 py-1 text-sm animate-scale-in"
-              >
-                {s.name}
-                <button
-                  onClick={() => delSubject.mutate(s.id)}
-                  className="rounded-full p-1 hover:bg-slate-100 transition"
-                  aria-label={`Rimuovi ${s.name}`}
+            {subjects.data?.length ? subjects.data.map((s) => {
+              const col = resolveSubjectColor(s.name, s.color);
+              return (
+                <span
+                  key={s.id}
+                  className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200/70 pl-2.5 pr-1 py-1 text-sm animate-scale-in"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
-                </button>
-              </span>
-            )) : (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="flex items-center gap-1.5 rounded-full pr-1 hover:opacity-80 transition"
+                        aria-label={`Cambia colore di ${s.name}`}
+                        title="Cambia colore"
+                      >
+                        <span className={cn("w-3 h-3 rounded-full ring-2 ring-offset-1", col.solid, s.color ? "ring-slate-300" : "ring-transparent")} />
+                        {s.name}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-56 p-3" align="start">
+                      <p className="text-xs font-semibold mb-2">Colore di {s.name}</p>
+                      <div className="grid grid-cols-7 gap-1.5 mb-2">
+                        {SUBJECT_PALETTE.map((c) => (
+                          <button
+                            key={c.key}
+                            onClick={() => updateColor.mutate({ id: s.id, color: c.key })}
+                            aria-label={c.label}
+                            className={cn(
+                              "w-6 h-6 rounded-full transition-transform hover:scale-110",
+                              c.solid,
+                              (s.color === c.key || (!s.color && col.key === c.key)) && "ring-2 ring-offset-2 ring-slate-800",
+                            )}
+                          />
+                        ))}
+                      </div>
+                      {s.color && (
+                        <button
+                          onClick={() => updateColor.mutate({ id: s.id, color: null })}
+                          className="text-xs text-muted-foreground hover:text-foreground transition"
+                        >
+                          ↺ Torna al colore automatico
+                        </button>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                  <button
+                    onClick={() => delSubject.mutate(s.id)}
+                    className="rounded-full p-1 hover:bg-slate-100 transition"
+                    aria-label={`Rimuovi ${s.name}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
+                  </button>
+                </span>
+              );
+            }) : (
               <p className="body-small text-muted-foreground">Nessuna materia aggiunta.</p>
             )}
           </div>

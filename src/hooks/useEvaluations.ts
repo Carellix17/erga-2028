@@ -40,7 +40,7 @@ export function useEvaluations(enabled = true) {
     queryFn: async () => {
       const uid = await getUid();
       if (!uid) return [] as Evaluation[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("evaluations")
         .select("*")
         .eq("user_id", uid)
@@ -57,7 +57,7 @@ export function useAddEvaluation() {
     mutationFn: async (input: EvaluationInput) => {
       const uid = await getUid();
       if (!uid) throw new Error("Not authenticated");
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("evaluations")
         .insert({ ...input, user_id: uid });
       if (error) throw error;
@@ -70,7 +70,41 @@ export function useDeleteEvaluation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("evaluations").delete().eq("id", id);
+      const { error } = await supabase.from("evaluations").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["evaluations"] }),
+  });
+}
+
+export function useUpdateEvaluation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: EvaluationInput & { id: string }) => {
+      const uid = await getUid();
+      if (!uid) throw new Error("Not authenticated");
+      const { id, ...fields } = input;
+      const { error } = await supabase
+        .from("evaluations")
+        .update({ ...fields, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .eq("user_id", uid); // sicurezza: mai righe di altri utenti
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["evaluations"] }),
+  });
+}
+
+export function useDeleteAllEvaluations() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const uid = await getUid();
+      if (!uid) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("evaluations")
+        .delete()
+        .eq("user_id", uid);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["evaluations"] }),
@@ -83,7 +117,7 @@ export function useUserMiniLessons() {
     queryFn: async () => {
       const uid = await getUid();
       if (!uid) return [] as { id: string; title: string; context_id: string | null }[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("mini_lessons")
         .select("id, title, context_id")
         .eq("user_id", uid)
