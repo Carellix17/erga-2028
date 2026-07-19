@@ -49,7 +49,7 @@ export function useEvaluations(enabled = true) {
         .eq("user_id", uid)
         .order("date", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as Evaluation[];
+      return (data ?? []) as unknown as Evaluation[];
     },
   });
 }
