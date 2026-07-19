@@ -8,12 +8,14 @@ import type { UserSubject } from "@/hooks/useUserSubjects";
 import { resolveSubjectColor, type SubjectColor } from "@/lib/subjectColors";
 import {
   getWeekDays, dayKey, timeToMinutes, isoToDayMinutes, routineSegmentsForDay,
-  positionDayEvents, blockTop, blockHeight,
-  WEEK_HOUR_START, WEEK_HOUR_END, WEEK_GRID_HEIGHT, WEEK_ROW_H,
+  positionDayEvents, freeSlots, computeGridRange, visibleRoutineBlocks,
+  blockTop, blockHeight, gridHeightPx, gridHours,
+  WEEK_DAY_START_MIN, WEEK_DAY_END_MIN,
+  type DayEventRow, type TimeBlock,
 } from "@/lib/weekPlanner";
 import { cn } from "@/lib/utils";
 
-// Sfondi tenui per i blocchi di routine: sono contesto, NON eventi
+// Sfondi tenui per i blocchi di routine visibili (spiegano i "buchi" nella finestra)
 const ROUTINE_STYLES: Record<RoutineKind, string> = {
   school: "bg-blue-100/60 border-blue-200 text-blue-900",
   sleep: "bg-indigo-100/60 border-indigo-200 text-indigo-900",
@@ -34,10 +36,6 @@ interface WeekPlannerProps {
 }
 
 const DAY_LETTERS = ["L", "M", "M", "G", "V", "S", "D"];
-const HOURS = Array.from(
-  { length: WEEK_HOUR_END - WEEK_HOUR_START },
-  (_, i) => WEEK_HOUR_START + i,
-);
 
 export function WeekPlanner({
   selectedDate, onSelectDate, events, evaluations, routines, subjects,
@@ -72,9 +70,9 @@ export function WeekPlanner({
   }, [subjects]);
 
   /** Le righe (eventi + scadenze) di un certo giorno, pronte per il posizionamento. */
-  const rowsForDay = (day: Date) => {
+  const rowsForDay = (day: Date): DayEventRow[] => {
     const key = dayKey(day);
-    const rows: { id: string; title: string; subjectName?: string; minutes: number | null; kind: "study" | "test" | "assignment" | "evaluation" }[] = [];
+    const rows: DayEventRow[] = [];
     for (const ev of events) {
       if (dayKey(ev.event_date) === key) {
         rows.push({
@@ -95,20 +93,48 @@ export function WeekPlanner({
     return rows;
   };
 
-  /** I blocchi routine di un giorno della settimana (1 = lun ... 7 = dom). */
-  const routineBlocks = (dayN: number) =>
-    routines.flatMap((r) =>
-      routineSegmentsForDay(r.days_of_week, r.start_time, r.end_time, dayN).map((seg, i) => ({
-        key: `${r.id}-${dayN}-${i}`,
+  interface RoutineSegment extends TimeBlock { kind: RoutineKind; label: string; key: string }
+
+  /** Dati grezzi di ogni giorno: segmenti routine, finestre libere, orari eventi. */
+  const daysData = useMemo(() => weekDays.map((day, i) => {
+    const dayN = i + 1;
+    const segments: RoutineSegment[] = routines.flatMap((r) =>
+      routineSegmentsForDay(r.days_of_week, r.start_time, r.end_time, dayN).map((seg, j) => ({
+        ...seg,
         kind: r.kind,
         label: r.label || ROUTINE_LABELS[r.kind],
-        top: blockTop(seg.start),
-        height: blockHeight(seg.end - seg.start),
+        key: `${r.id}-${dayN}-${j}`,
       })),
     );
+    const slots = freeSlots(
+      segments.map(({ start, end }) => ({ start, end })),
+      WEEK_DAY_START_MIN,
+      WEEK_DAY_END_MIN,
+    );
+    const rows = rowsForDay(day);
+    const eventMins = rows.filter((r) => r.minutes !== null).map((r) => r.minutes as number);
+    return { day, dayN, segments, slots, rows, eventMins };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [weekDays, routines, events, evaluations, subjectNameById]);
 
-  const renderDayColumn = (day: Date, dayN: number) => {
-    const { timed, untimed } = positionDayEvents(rowsForDay(day));
+  // Desktop: un intervallo unico per tutta la settimana (colonne allineate).
+  // Mobile: intervallo ricalcolato sul solo giorno mostrato.
+  const weekRange = useMemo(
+    () => computeGridRange(daysData.map((d) => d.slots), daysData.map((d) => d.eventMins)),
+    [daysData],
+  );
+  const mobileDayData = daysData[mobileDayIdx] ?? daysData[0];
+  const mobileRange = useMemo(
+    () => mobileDayData ? computeGridRange([mobileDayData.slots], [mobileDayData.eventMins]) : weekRange,
+    [mobileDayData, weekRange],
+  );
+
+  const renderDayColumn = (data: (typeof daysData)[number], gridStart: number, gridEnd: number) => {
+    const { day, dayN, segments, slots, rows } = data;
+    const { timed, untimed } = positionDayEvents(rows, gridStart);
+    const routineVisible = visibleRoutineBlocks(segments, gridStart, gridEnd);
+    const height = gridHeightPx(gridStart, gridEnd);
+
     return (
       <div key={dayKey(day)} className="relative flex-1 min-w-[92px] border-l border-slate-100 first:border-l-0">
         {/* Striscia "senza orario" */}
@@ -135,41 +161,62 @@ export function WeekPlanner({
         )}
 
         {/* Griglia oraria della colonna */}
-        <div className="relative" style={{ height: WEEK_GRID_HEIGHT }}>
-          {/* linee orarie */}
-          {HOURS.map((h, i) => (
+        <div className="relative" style={{ height }}>
+          {/* Finestre libere: gli spazi dove si puo' pianificare lo studio */}
+          {slots.map((s) => (
             <div
-              key={h}
-              className="absolute left-0 right-0 border-t border-slate-100/80"
-              style={{ top: i * WEEK_ROW_H }}
+              key={`slot-${s.start}`}
+              className="absolute left-0.5 right-0.5 rounded-md bg-emerald-50/70"
+              style={{
+                top: blockTop(Math.max(s.start, gridStart), gridStart) + 1,
+                height: blockHeight(Math.min(s.end, gridEnd) - Math.max(s.start, gridStart)) - 2,
+              }}
             />
           ))}
 
-          {/* blocchi routine (sfondo, non eventi) */}
-          {routineBlocks(dayN).map((b) => (
+          {/* linee orarie (sopra le finestre, sotto i contenuti) */}
+          {gridHours(gridStart, gridEnd).map((h) => (
             <div
-              key={b.key}
-              className={cn("absolute left-0.5 right-0.5 rounded-md border text-[9px] px-1 py-0.5 overflow-hidden", ROUTINE_STYLES[b.kind])}
-              style={{ top: b.top + 1, height: b.height - 2 }}
-              title={`${b.label} (routine)`}
-            >
-              <span className="font-medium opacity-70">{b.label}</span>
-            </div>
+              key={h}
+              className="absolute left-0 right-0 border-t border-slate-100/70"
+              style={{ top: blockTop(h * 60, gridStart) }}
+            />
           ))}
 
-          {/* eventi con orario */}
+          {/* blocchi routine visibili: spiegano i buchi (es. la merenda) */}
+          {routineVisible.map((b) => {
+            const h = blockHeight(b.end - b.start) - 2;
+            return (
+              <div
+                key={b.key}
+                className={cn("absolute left-0.5 right-0.5 rounded-md border text-[9px] px-1 overflow-hidden", ROUTINE_STYLES[b.kind])}
+                style={{ top: blockTop(b.start, gridStart) + 1, height: h }}
+                title={b.label}
+              >
+                {h >= 16 && <span className="font-medium opacity-70 leading-none">{b.label}</span>}
+              </div>
+            );
+          })}
+
+          {/* eventi con orario (affiancati se si sovrappongono) */}
           {timed.map((t) => {
             const col = t.kind === "evaluation" ? undefined : colorForSubject(t.subjectName);
+            const widthPct = 100 / t.lanes;
             return (
               <div
                 key={t.id}
                 className={cn(
-                  "absolute left-1 right-1 rounded-lg border px-1.5 py-1 overflow-hidden shadow-sm",
+                  "absolute rounded-lg border px-1.5 py-1 overflow-hidden shadow-sm z-10",
                   t.kind === "evaluation"
                     ? "bg-slate-800 text-white border-slate-800"
                     : cn(col?.bg ?? "bg-slate-100", col?.text ?? "text-slate-800", col?.border ?? "border-slate-200"),
                 )}
-                style={{ top: t.top + 1, height: t.height - 2 }}
+                style={{
+                  top: t.top + 1,
+                  height: t.height - 2,
+                  left: `calc(${(t.lane * 100) / t.lanes}% + 3px)`,
+                  width: `calc(${widthPct}% - 5px)`,
+                }}
                 title={t.subjectName ? `${t.subjectName}: ${t.title}` : t.title}
               >
                 <p className="text-[10px] font-semibold leading-tight line-clamp-2">{t.title}</p>
@@ -181,7 +228,19 @@ export function WeekPlanner({
     );
   };
 
-  const mobileDay = weekDays[mobileDayIdx] ?? weekDays[0];
+  const hourAxis = (gridStart: number, gridEnd: number) => (
+    <div className="w-10 shrink-0 relative" style={{ height: gridHeightPx(gridStart, gridEnd) }}>
+      {gridHours(gridStart, gridEnd).map((h) => (
+        <div
+          key={h}
+          className="absolute left-0 right-0 pr-1 text-right text-[10px] text-muted-foreground tabular-nums"
+          style={{ top: blockTop(h * 60, gridStart) - 5 }}
+        >
+          {String(h).padStart(2, "0")}:00
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div>
@@ -224,39 +283,14 @@ export function WeekPlanner({
       {/* Desktop: 7 colonne | Mobile: solo il giorno scelto */}
       <div className="overflow-y-auto max-h-[56vh] rounded-xl border border-slate-100 bg-white/60">
         <div className="hidden md:flex">
-          {/* Colonna delle ore */}
-          <div className="w-10 shrink-0 relative" style={{ height: WEEK_GRID_HEIGHT }}>
-            {HOURS.map((h, i) => (
-              <div
-                key={h}
-                className="absolute left-0 right-0 pr-1 text-right text-[10px] text-muted-foreground tabular-nums"
-                style={{ top: i * WEEK_ROW_H - 5 }}
-              >
-                {String(h).padStart(2, "0")}:00
-              </div>
-            ))}
-          </div>
-          {weekDays.map((day, i) => renderDayColumn(day, i + 1))}
+          {hourAxis(weekRange.startMin, weekRange.endMin)}
+          {daysData.map((d) => renderDayColumn(d, weekRange.startMin, weekRange.endMin))}
         </div>
         <div className="md:hidden flex">
-          <div className="w-10 shrink-0 relative" style={{ height: WEEK_GRID_HEIGHT }}>
-            {HOURS.map((h, i) => (
-              <div
-                key={h}
-                className="absolute left-0 right-0 pr-1 text-right text-[10px] text-muted-foreground tabular-nums"
-                style={{ top: i * WEEK_ROW_H - 5 }}
-              >
-                {String(h).padStart(2, "0")}:00
-              </div>
-            ))}
-          </div>
-          {renderDayColumn(mobileDay, mobileDayIdx + 1)}
+          {hourAxis(mobileRange.startMin, mobileRange.endMin)}
+          {mobileDayData && renderDayColumn(mobileDayData, mobileRange.startMin, mobileRange.endMin)}
         </div>
       </div>
-
-      <p className="text-[11px] text-muted-foreground mt-2 text-center">
-        I blocchi di sfondo (scuola, sonno, pasti) sono la tua routine, non eventi. Tocca un giorno per i dettagli.
-      </p>
     </div>
   );
 }

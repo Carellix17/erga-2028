@@ -127,6 +127,7 @@ export type Database = {
           date: string
           description: string | null
           free_topic_title: string | null
+          goal: number | null
           id: string
           subject_id: string | null
           title: string
@@ -141,6 +142,7 @@ export type Database = {
           date: string
           description?: string | null
           free_topic_title?: string | null
+          goal?: number | null
           id?: string
           subject_id?: string | null
           title: string
@@ -155,6 +157,7 @@ export type Database = {
           date?: string
           description?: string | null
           free_topic_title?: string | null
+          goal?: number | null
           id?: string
           subject_id?: string | null
           title?: string

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Plus, Loader2, Trash2, Timer, ClipboardCheck, Mic, PencilLine, Hammer, BookOpen, Pencil, ChevronDown, CalendarDays, CalendarRange } from "lucide-react";
+import { Plus, Loader2, Trash2, Timer, ClipboardCheck, Mic, PencilLine, Hammer, BookOpen, Pencil, ChevronDown, CalendarDays, CalendarRange, Target } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,6 @@ import { PlanSuggestion } from "./PlanSuggestion";
 import { AddEventSheet, type EvalFormInput } from "./AddEventSheet";
 import { EditStudyEventSheet } from "./EditStudyEventSheet";
 import { WeekPlanner } from "./WeekPlanner";
-import { GoalsCard } from "./GoalsCard";
 import {
   useEvaluations, useAddEvaluation, useUpdateEvaluation, useDeleteEvaluation, useDeleteAllEvaluations,
   type Evaluation, type EvaluationType,
@@ -322,10 +321,6 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
                 <span className="w-2.5 h-2.5 rounded-full bg-primary" />
                 <span className="text-muted-foreground">Pallini = colori delle materie</span>
               </div>
-              <div className="flex items-center gap-1.5 label-small px-2.5 py-1 rounded-full bg-surface-container">
-                <span className="w-2.5 h-2.5 rounded-full border-2 border-slate-800" />
-                <span className="text-muted-foreground">Verifica o compito</span>
-              </div>
             </div>
           </>
         ) : (
@@ -339,9 +334,6 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           />
         )}
       </div>
-
-      {/* Obiettivi di voto */}
-      <GoalsCard subjects={userSubjects} />
 
       {/* Section Header */}
       <div className="flex items-center justify-between">
@@ -585,6 +577,12 @@ function EvaluationItem({ evaluation, subject }: { evaluation: Evaluation; subje
             {subject && subjectColor && (
               <span className={cn("label-small px-2.5 py-0.5 rounded-full", subjectColor.badge, subjectColor.badgeText)}>
                 {subject.name}
+              </span>
+            )}
+            {evaluation.goal != null && (
+              <span className="label-small px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 inline-flex items-center gap-1">
+                <Target className="w-3 h-3" />
+                Obiettivo {evaluation.goal}
               </span>
             )}
           </div>

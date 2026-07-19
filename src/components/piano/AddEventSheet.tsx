@@ -26,6 +26,9 @@ const VERIFICA_MODES: { value: VerificaMode; label: string }[] = [
 // Valore sentinella: Radix Select non accetta stringhe vuote come valore degli item
 const NONE = "__none__";
 
+// Le pillole dell'obiettivo di voto (il voto che lo studente vuole ottenere)
+const GOAL_CHOICES = [6, 7, 8, 9, 10];
+
 export interface EvalFormInput {
   type: EvaluationType;
   title: string;
@@ -35,6 +38,8 @@ export interface EvalFormInput {
   topic_type: "linked" | "free";
   topic_id?: string | null;
   free_topic_title?: string | null;
+  /** Voto che lo studente vuole ottenere (opzionale, 6-10). */
+  goal?: number | null;
 }
 
 interface AddEventSheetProps {
@@ -58,6 +63,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
   const [topicMode, setTopicMode] = useState<"linked" | "free">("free");
   const [courseId, setCourseId] = useState<string>("");
   const [freeTopic, setFreeTopic] = useState("");
+  const [goal, setGoal] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const { data: subjects = [] } = useUserSubjects();
@@ -77,9 +83,11 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
       setTopicMode(initial.topic_type);
       setCourseId(initial.topic_type === "linked" ? (initial.topic_id ?? "") : "");
       setFreeTopic(initial.free_topic_title ?? "");
+      setGoal(initial.goal ?? null);
     } else {
       setCategory("verifica"); setMode("scritta"); setTitle(""); setDescription("");
       setDate(""); setSubjectId(NONE); setTopicMode("free"); setCourseId(""); setFreeTopic("");
+      setGoal(null);
     }
   }, [open, initial]);
 
@@ -98,6 +106,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
         topic_type: topicMode,
         topic_id: topicMode === "linked" ? (courseId || null) : null,
         free_topic_title: topicMode === "free" ? (freeTopic.trim() || null) : null,
+        goal,
       }, editingId);
       onOpenChange(false);
     } finally {
@@ -191,6 +200,28 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
                   })}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="label-large">Obiettivo di voto <span className="text-muted-foreground font-normal">(opzionale)</span></Label>
+            <div className="flex gap-2">
+              {GOAL_CHOICES.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setGoal(goal === g ? null : g)}
+                  aria-pressed={goal === g}
+                  className={cn(
+                    "flex-1 h-10 rounded-full border text-sm font-semibold transition-all",
+                    goal === g
+                      ? "bg-black text-white border-black"
+                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
+                  )}
+                >
+                  {g}
+                </button>
+              ))}
             </div>
           </div>
 

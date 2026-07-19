@@ -19,6 +19,24 @@ serve(withCors(async (req) => {
 
     const { data: userProfile } = await supabase.from("user_profiles").select("institute_type, subject_levels, subject_goals").eq("user_id", userId).maybeSingle();
 
+    // Scadenze (verifiche/compiti) future con l'eventuale obiettivo di voto,
+    // nomi delle materie e impegni fissi settimanali (scuola, sonno, pasti...)
+    const { data: evaluations } = await supabase
+      .from("evaluations")
+      .select("type, title, date, goal, subject_id")
+      .eq("user_id", userId)
+      .gte("date", new Date().toISOString())
+      .order("date", { ascending: true })
+      .limit(25);
+    const { data: subjects } = await supabase
+      .from("user_subjects")
+      .select("id, name")
+      .eq("user_id", userId);
+    const { data: routines } = await supabase
+      .from("user_routines")
+      .select("kind, label, start_time, end_time, days_of_week")
+      .eq("user_id", userId);
+
     // ============================================================
     // Calibration: compute per-subject load factor from session logs
     // Factor = avg(actual_duration) / avg(estimated_duration)
@@ -87,11 +105,42 @@ ISTRUZIONE OBBLIGATORIA: per ogni sessione, calcola prima il tempo teorico stand
 
     const today = new Date().toISOString().split("T")[0];
     const eventsText = events && events.length > 0
-      ? events.map((e: { event_type: string; title: string; subject: string; event_date: string }) => `- ${e.event_type}: ${e.title} (${e.subject}) - ${e.event_date}`).join("\n")
+      ? events.map((e: { event_type: string; title: string; subject: string; event_date: string; event_time?: string | null }) =>
+        `- ${e.event_type}: ${e.title} (${e.subject}) - ${e.event_date.slice(0, 10)}${e.event_time ? ` ore ${e.event_time.slice(0, 5)}` : ""}`).join("\n")
       : "Nessun evento programmato";
 
+    // ---- Scadenze con obiettivo di voto ----
+    const subjectNameById = new Map<string, string>(
+      ((subjects ?? []) as Array<{ id: string; name: string }>).map((s) => [s.id, s.name]),
+    );
+    const todayMs = Date.parse(today + "T00:00:00Z");
+    const deadlinesText = evaluations && evaluations.length > 0
+      ? (evaluations as Array<{ type: string; title: string; date: string; goal: number | null; subject_id: string | null }>)
+        .map((e) => {
+          const daysLeft = Math.max(0, Math.round((Date.parse(e.date) - todayMs) / 86400000));
+          const subject = e.subject_id ? (subjectNameById.get(e.subject_id) ?? "materia non nota") : "materia non nota";
+          const goalTxt = e.goal ? ` OBIETTIVO VOTO: ${e.goal}/10.` : "";
+          return `- tra ${daysLeft} giorni (${e.date.slice(0, 10)}): ${e.type} di ${subject} - "${e.title}".${goalTxt}`;
+        })
+        .join("\n")
+      : "Nessuna scadenza in arrivo.";
+    const evalRules = evaluations && evaluations.length > 0
+      ? `\nREGOLA OBBLIGATORIA scadenze: prepara ogni verifica/compito nei giorni PRIMA della scadenza (lo stesso giorno al massimo un breve ripasso). Piu' la scadenza e' vicina e piu' l'OBIETTIVO VOTO e' alto rispetto al livello attuale della materia, piu' sessioni le dedichi, distribuite su piu' giorni. Nell'explanation cita la scadenza piu' urgente e (se c'e') il suo obiettivo.`
+      : "";
+
+    // ---- Impegni fissi (serve all'AI per NON pianificare sopra quegli orari) ----
+    const DOW = ["Domenica", "Lunedi'", "Martedi'", "Mercoledi'", "Giovedi'", "Venerdi'", "Sabato"]; // days_of_week: 1=lun ... 7=dom
+    const routineText = routines && routines.length > 0
+      ? (routines as Array<{ kind: string; label: string | null; start_time: string; end_time: string; days_of_week: number[] }>)
+        .map((r) => `- ${r.days_of_week.map((d) => DOW[d % 7]).join("/")}: ${r.label ?? r.kind} ${r.start_time.slice(0, 5)}-${r.end_time.slice(0, 5)}`)
+        .join("\n")
+      : "";
+    const routineRules = routineText
+      ? `\nIMPEGNI FISSI dello studente:\n${routineText}\nREGOLA OBBLIGATORIA orari: scegli "time" SOLO nelle fasce libere della giornata, MAI durante questi impegni fissi, MAI in conflitto con gli eventi esistenti e mai in orari irrealistici (es. notte). Controlla il giorno della settimana di ogni data che scegli.`
+      : `\nREGOLA orari: scegli "time" in fasce realistiche di studio (pomeriggio o sera), mai in conflitto con gli eventi esistenti.`;
+
     const prompt = `Sei un tutor esperto che crea piani di studio personalizzati.
-${profileInfo}${calibrationInfo}
+${profileInfo}${calibrationInfo}${routineRules}${evalRules}
 
 IMPORTANTE: Rispondi SOLO con un oggetto JSON valido, senza markdown.
 
@@ -110,6 +159,9 @@ Crea 3-5 sessioni nei prossimi 7 giorni. Data di oggi: ${today}
 
 Eventi esistenti:
 ${eventsText}
+
+Scadenze in arrivo (verifiche e compiti):
+${deadlinesText}
 
 Contenuti di studio:
 ${contextSummary}`;

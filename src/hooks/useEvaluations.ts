@@ -14,6 +14,8 @@ export interface Evaluation {
   topic_type: "linked" | "free";
   topic_id: string | null;
   free_topic_title: string | null;
+  /** Voto che lo studente vuole ottenere (opzionale, guida la priorita' del piano AI). */
+  goal: number | null;
   created_at: string;
 }
 
@@ -26,6 +28,7 @@ export interface EvaluationInput {
   topic_type: "linked" | "free";
   topic_id?: string | null;
   free_topic_title?: string | null;
+  goal?: number | null;
 }
 
 async function getUid(): Promise<string | null> {
