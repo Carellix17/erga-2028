@@ -33,12 +33,17 @@ interface WeekPlannerProps {
   evaluations: Evaluation[];
   routines: UserRoutine[];
   subjects: UserSubject[];
+  /** Tocco/click su un blocco sessione di studio (apre la modifica). */
+  onOpenStudyEvent?: (id: string) => void;
+  /** Tocco/click su un blocco verifica/compito (apre la modifica). */
+  onOpenEvaluation?: (id: string) => void;
 }
 
 const DAY_LETTERS = ["L", "M", "M", "G", "V", "S", "D"];
 
 export function WeekPlanner({
   selectedDate, onSelectDate, events, evaluations, routines, subjects,
+  onOpenStudyEvent, onOpenEvaluation,
 }: WeekPlannerProps) {
   // Su mobile si vede un giorno alla volta (scelto con i pallini in alto)
   const dayIdxOf = (d: Date) => (d.getDay() === 0 ? 6 : d.getDay() - 1);
@@ -129,6 +134,13 @@ export function WeekPlanner({
     [mobileDayData, weekRange],
   );
 
+  /** Tocco su un blocco: seleziona il giorno E apre la relativa scheda di modifica. */
+  const openItem = (kind: string, id: string, day: Date) => {
+    onSelectDate(day);
+    if (kind === "evaluation") onOpenEvaluation?.(id);
+    else onOpenStudyEvent?.(id);
+  };
+
   const renderDayColumn = (data: (typeof daysData)[number], gridStart: number, gridEnd: number) => {
     const { day, dayN, segments, slots, rows } = data;
     const { timed, untimed } = positionDayEvents(rows, gridStart);
@@ -143,18 +155,20 @@ export function WeekPlanner({
             {untimed.map((u) => {
               const col = u.kind === "evaluation" ? undefined : colorForSubject(u.subjectName);
               return (
-                <div
+                <button
+                  type="button"
                   key={u.id}
                   title={u.title}
+                  onClick={() => openItem(u.kind, u.id, day)}
                   className={cn(
-                    "text-[10px] leading-tight px-1.5 py-0.5 rounded-md truncate border",
+                    "block w-full text-left text-[10px] leading-tight px-1.5 py-0.5 rounded-md truncate border cursor-pointer active:scale-[0.98] transition-transform",
                     u.kind === "evaluation"
                       ? "bg-slate-800 text-white border-slate-800"
                       : cn(col?.bg ?? "bg-slate-100", col?.text ?? "text-slate-800", col?.border ?? "border-slate-200"),
                   )}
                 >
                   {u.title}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -203,10 +217,12 @@ export function WeekPlanner({
             const col = t.kind === "evaluation" ? undefined : colorForSubject(t.subjectName);
             const widthPct = 100 / t.lanes;
             return (
-              <div
+              <button
+                type="button"
                 key={t.id}
+                onClick={() => openItem(t.kind, t.id, day)}
                 className={cn(
-                  "absolute rounded-lg border px-1.5 py-1 overflow-hidden shadow-sm z-10",
+                  "absolute text-left rounded-lg border px-1.5 py-1 overflow-hidden shadow-sm z-10 cursor-pointer active:scale-[0.98] transition-transform",
                   t.kind === "evaluation"
                     ? "bg-slate-800 text-white border-slate-800"
                     : cn(col?.bg ?? "bg-slate-100", col?.text ?? "text-slate-800", col?.border ?? "border-slate-200"),
@@ -220,7 +236,7 @@ export function WeekPlanner({
                 title={t.subjectName ? `${t.subjectName}: ${t.title}` : t.title}
               >
                 <p className="text-[10px] font-semibold leading-tight line-clamp-2">{t.title}</p>
-              </div>
+              </button>
             );
           })}
         </div>
