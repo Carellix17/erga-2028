@@ -5,7 +5,6 @@ import { Button } from"@/components/ui/button";
 import { Input } from"@/components/ui/input";
 import { Label } from"@/components/ui/label";
 import { Slider } from"@/components/ui/slider";
-import { Skeleton } from"@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from"@/components/ui/radio-group";
 import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Brain, Hexagon } from "lucide-react";
 import { useToast } from"@/hooks/use-toast";
@@ -222,16 +221,8 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
 
  if (isLoading) {
  return (
- <div className="px-4 pt-6 pb-32 space-y-6 max-w-lg mx-auto animate-fade-up">
- <div className="flex flex-col items-center gap-4 py-4">
- <Skeleton className="w-24 h-24 rounded-[2rem]" />
- <Skeleton className="h-6 w-40 rounded-full" />
- <Skeleton className="h-4 w-56 rounded-full" />
- </div>
- <Skeleton className="h-44 rounded-3xl" />
- <Skeleton className="h-12 rounded-2xl" />
- <Skeleton className="h-52 rounded-3xl" />
- <Skeleton className="h-72 rounded-3xl" />
+ <div className="flex items-center justify-center min-h-[60vh]">
+ <Loader2 className="w-8 h-8 animate-spin text-primary" />
  </div>
  );
  }

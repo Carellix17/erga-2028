@@ -216,11 +216,6 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
                   })}
                 </SelectContent>
               </Select>
-              {subjects.length === 0 && (
-                <p className="text-[11px] text-muted-foreground">
-                  Nessuna materia ancora: creale in Profilo → «Configura Orari e Materie».
-                </p>
-              )}
             </div>
           </div>
 

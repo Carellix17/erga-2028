@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarX2 } from "lucide-react";
 import { format, isSameDay, isToday } from "date-fns";
 import { it } from "date-fns/locale";
 import type { StudyEvent } from "@/hooks/useStudyEvents";
@@ -177,14 +176,6 @@ export function WeekPlanner({
 
         {/* Griglia oraria della colonna */}
         <div className="relative" style={{ height }}>
-          {/* Giornata senza spazi liberi e senza eventi: uno stato vuoto amichevole */}
-          {slots.length === 0 && rows.length === 0 && (
-            <div className="absolute inset-x-0 top-1/3 flex flex-col items-center gap-1 pointer-events-none">
-              <CalendarX2 className="w-5 h-5 text-slate-300" />
-              <p className="text-[10px] text-muted-foreground">Giornata piena</p>
-            </div>
-          )}
-
           {/* Finestre libere: gli spazi dove si puo' pianificare lo studio */}
           {slots.map((s) => (
             <div
