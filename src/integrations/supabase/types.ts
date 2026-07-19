@@ -197,7 +197,7 @@ export type Database = {
             foreignKeyName: "evaluations_topic_id_fkey"
             columns: ["topic_id"]
             isOneToOne: false
-            referencedRelation: "mini_lessons"
+            referencedRelation: "study_contexts"
             referencedColumns: ["id"]
           },
         ]
