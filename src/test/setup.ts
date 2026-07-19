@@ -1,4 +1,9 @@
 import "@testing-library/jest-dom";
+import i18n from "@/i18n";
+
+// Nei test forziamo l'italiano: jsdom dichiara "en-US" nel navigator
+// e il rilevatore di lingua prenderebbe l'app in inglese.
+void i18n.changeLanguage("it");
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,

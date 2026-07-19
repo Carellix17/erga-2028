@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,12 +18,13 @@ interface EditStudyEventSheetProps {
 }
 
 const TYPES = [
-  { value: "study", label: "Studio" },
-  { value: "test", label: "Verifica" },
-  { value: "assignment", label: "Compito" },
+  { value: "study", i18nKey: "type_study" },
+  { value: "test", i18nKey: "type_test" },
+  { value: "assignment", i18nKey: "type_assignment" },
 ] as const;
 
 export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEventSheetProps) {
+  const { t } = useTranslation();
   const [subject, setSubject] = useState("");
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -62,52 +64,52 @@ export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEv
     <Sheet open={!!event} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="rounded-t-xl pb-safe bg-[#FCFCFC] max-h-[92vh] overflow-y-auto">
         <SheetHeader className="mb-5">
-          <SheetTitle className="title-large font-display">Modifica sessione</SheetTitle>
+          <SheetTitle className="title-large font-display">{t("piano.sheet.editTitle")}</SheetTitle>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label className="label-large">Tipo</Label>
+            <Label className="label-large">{t("piano.sheet.type")}</Label>
             <div className="grid grid-cols-3 gap-2 p-1 rounded-full bg-surface-container">
-              {TYPES.map((t) => (
+              {TYPES.map((tp) => (
                 <button
-                  key={t.value}
+                  key={tp.value}
                   type="button"
-                  onClick={() => setType(t.value)}
+                  onClick={() => setType(tp.value)}
                   className={cn(
                     "h-10 rounded-full text-sm font-medium transition-all",
-                    type === t.value ? "bg-black text-white shadow-level-1" : "text-slate-700"
+                    type === tp.value ? "bg-black text-white shadow-level-1" : "text-slate-700"
                   )}
                 >
-                  {t.label}
+                  {t(`piano.${tp.i18nKey}`)}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="se-title" className="label-large">Titolo</Label>
+            <Label htmlFor="se-title" className="label-large">{t("piano.sheet.title")}</Label>
             <Input id="se-title" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="se-subject" className="label-large">Materia</Label>
-            <Input id="se-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Es. Matematica" />
+            <Label htmlFor="se-subject" className="label-large">{t("piano.sheet.subject")}</Label>
+            <Input id="se-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={t("piano.sheet.subjectPlaceholder")} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="se-date" className="label-large">Data</Label>
+              <Label htmlFor="se-date" className="label-large">{t("piano.sheet.date")}</Label>
               <Input id="se-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="se-time" className="label-large">Ora (opzionale)</Label>
+              <Label htmlFor="se-time" className="label-large">{t("piano.sheet.time")} {t("piano.sheet.optional")}</Label>
               <Select value={time || "__none__"} onValueChange={(v) => setTime(v === "__none__" ? "" : v)}>
                 <SelectTrigger className="w-full h-11 rounded-2xl bg-white border border-slate-200/70 px-3 body-medium">
                   <SelectValue placeholder="—" />
                 </SelectTrigger>
                 <SelectContent className="max-h-64">
-                  <SelectItem value="__none__">— Nessuna —</SelectItem>
+                  <SelectItem value="__none__">{t("piano.sheet.none")}</SelectItem>
                   {Array.from({ length: 33 }, (_, i) => {
                     const h = 6 + Math.floor(i / 2);
                     const m = i % 2 === 0 ? "00" : "30";
@@ -120,7 +122,7 @@ export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEv
           </div>
 
           <Button type="submit" className="w-full" size="lg" disabled={submitting || !title.trim() || !date}>
-            {submitting ? "Salvataggio…" : "Salva modifiche"}
+            {submitting ? t("piano.sheet.saving") : t("piano.sheet.saveChanges")}
           </Button>
         </form>
       </SheetContent>

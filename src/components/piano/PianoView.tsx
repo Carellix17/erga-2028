@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { Plus, Loader2, Trash2, Timer, ClipboardCheck, Mic, PencilLine, Hammer, BookOpen, Pencil, ChevronDown, CalendarDays, CalendarRange, Target } from "lucide-react";
 import { format, isSameDay } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
@@ -60,6 +61,8 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const focus = useFocus();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language.startsWith("en") ? enUS : it;
 
   const eventsQuery = useStudyEventsQuery(hasFiles);
   const addEvents = useAddStudyEvents();
@@ -123,10 +126,10 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
           body: JSON.stringify({ userId: currentUser }) });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Errore nella generazione del piano");
+      if (!response.ok) throw new Error(data.error || t("piano.errorGenerate"));
       setSuggestion(data.plan);
     } catch (error) { console.error("Error generating plan:", error);
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella generazione", variant: "destructive" });
+      toast({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorGenerate"), variant: "destructive" });
     } finally { setIsGeneratingPlan(false); }
   };
 
@@ -137,10 +140,10 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         subject: s.subject, title: s.title, date: s.date, time: s.time, type: "study" as const,
       }));
       await addEvents.mutateAsync(studyEvents);
-      toast({ title: "Piano accettato!", description: "Le sessioni di studio sono state aggiunte al tuo calendario." });
+      toast({ title: t("piano.toastAccepted"), description: t("piano.toastAcceptedDesc") });
       setSuggestion(null);
     } catch (error) {
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel salvataggio", variant: "destructive" });
+      toast({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorSave"), variant: "destructive" });
     }
   };
 
@@ -161,9 +164,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     setEventToDelete(null); // chiudi subito: l'elemento si dissolve nella lista
     try {
       await withExit([ev.id], () => deleteEvent.mutateAsync(ev.id));
-      toast({ title: "Evento eliminato", description: `${ev.title} è stato rimosso dal calendario.` });
+      toast({ title: t("piano.toastEventDeleted"), description: t("piano.toastRemovedFromCalendar", { title: ev.title }) });
     } catch (error) {
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nell'eliminazione", variant: "destructive" });
+      toast({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorDelete"), variant: "destructive" });
     }
   };
 
@@ -173,9 +176,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     setEvalToDelete(null);
     try {
       await withExit([ev.id], () => deleteEvaluation.mutateAsync(ev.id));
-      toast({ title: "Scadenza eliminata" });
+      toast({ title: t("piano.toastEvalDeleted") });
     } catch (err) {
-      toast({ title: "Errore", description: err instanceof Error ? err.message : "Errore nell'eliminazione", variant: "destructive" });
+      toast({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorDelete"), variant: "destructive" });
     }
   };
 
@@ -183,14 +186,14 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     try {
       if (editingId) {
         await updateEvaluation.mutateAsync({ id: editingId, ...input });
-        toast({ title: "Modifiche salvate" });
+        toast({ title: t("piano.toastSaved") });
       } else {
         await addEvaluation.mutateAsync(input);
-        toast({ title: "Evento salvato", description: `${input.title} aggiunto al calendario.` });
+        toast({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
       }
       if (input.date) setSelectedDate(new Date(input.date));
     } catch (err) {
-      toast({ title: "Errore", description: err instanceof Error ? err.message : "Errore nel salvataggio", variant: "destructive" });
+      toast({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorSave"), variant: "destructive" });
       throw err;
     }
   };
@@ -198,9 +201,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const handleSaveStudyEvent = async (input: Parameters<typeof updateEvent.mutateAsync>[0]) => {
     try {
       await updateEvent.mutateAsync(input);
-      toast({ title: "Sessione aggiornata" });
+      toast({ title: t("piano.toastSessionUpdated") });
     } catch (err) {
-      toast({ title: "Errore", description: err instanceof Error ? err.message : "Errore nella modifica", variant: "destructive" });
+      toast({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorEdit"), variant: "destructive" });
       throw err;
     }
   };
@@ -212,18 +215,18 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     try {
       if (scope === "study") {
         await withExit(events.map((e) => e.id), () => deleteByType.mutateAsync("study"));
-        toast({ title: "Sessioni di studio eliminate", description: "Verifiche e compiti sono rimasti." });
+        toast({ title: t("piano.toastStudyDeleted"), description: t("piano.toastStudyDeletedDesc") });
       } else {
         const allIds = [...events.map((e) => e.id), ...evaluations.map((e) => e.id)];
         await withExit(allIds, () => Promise.all([deleteAllEvents.mutateAsync(), deleteAllEvaluations.mutateAsync()]));
-        toast({ title: "Piano svuotato", description: "Eventi, verifiche e compiti sono stati eliminati." });
+        toast({ title: t("piano.toastPlanEmptied"), description: t("piano.toastPlanEmptiedDesc") });
       }
     } catch (err) {
-      toast({ title: "Errore", description: err instanceof Error ? err.message : "Errore nell'eliminazione", variant: "destructive" });
+      toast({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorDelete"), variant: "destructive" });
     }
   };
 
-  const formatDate = (dateString: string) => format(new Date(dateString), "d MMM", { locale: it });
+  const formatDate = (dateString: string) => format(new Date(dateString), "d MMM", { locale: dateLocale });
 
   const selectedDateEvents = selectedDate ? events.filter(event => isSameDay(new Date(event.event_date), selectedDate)) : [];
   const selectedDateEvaluations = selectedDate ? evaluations.filter(ev => isSameDay(new Date(ev.date), selectedDate)) : [];
@@ -260,10 +263,10 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             {isGeneratingPlan ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span className="font-display font-semibold">Generazione piano...</span>
+                <span className="font-display font-semibold">{t("piano.generating")}</span>
               </>
             ) : (
-              <span className="font-display font-semibold">Genera piano di studio</span>
+              <span className="font-display font-semibold">{t("piano.generate")}</span>
             )}
           </LiquidButton>
           <Button
@@ -274,7 +277,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           >
             <Timer className="w-4 h-4" />
             <span className="font-display font-semibold">
-              {focus.isActive ? "Riprendi" : "Focus"}
+              {focus.isActive ? t("piano.focusResume") : t("piano.focus")}
             </span>
           </Button>
         </div>
@@ -285,8 +288,8 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         <div className="flex justify-center mb-2">
           <div className="grid grid-cols-2 gap-1 p-1 rounded-full bg-surface-container">
             {([
-              { key: "month", label: "Mese", Icon: CalendarDays },
-              { key: "week", label: "Settimana", Icon: CalendarRange },
+              { key: "month", label: t("piano.month"), Icon: CalendarDays },
+              { key: "week", label: t("piano.week"), Icon: CalendarRange },
             ] as const).map(({ key, label, Icon }) => (
               <button
                 key={key}
@@ -355,7 +358,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-outline-variant justify-center">
               <div className="flex items-center gap-1.5 label-small px-2.5 py-1 rounded-full bg-surface-container">
                 <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-                <span className="text-muted-foreground">Pallini = colori delle materie</span>
+                <span className="text-muted-foreground">{t("piano.dotsLegend")}</span>
               </div>
             </div>
           </>
@@ -383,24 +386,24 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       {/* Section Header */}
       <div className="flex items-center justify-between">
         <h1 className="title-medium font-display font-semibold">
-          {selectedDate ? format(selectedDate, "d MMMM yyyy", { locale: it }) : "Prossimi eventi"}
+          {selectedDate ? format(selectedDate, "d MMMM yyyy", { locale: dateLocale }) : t("piano.upcoming")}
         </h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => { setEditingEval(null); setShowAddSheet(true); }} aria-label="Aggiungi nuovo evento">
-            <Plus className="w-4 h-4 mr-1" />Evento
+            <Plus className="w-4 h-4 mr-1" />{t("piano.addEvent")}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={nothingToDelete} aria-label="Elimina elementi del piano" className="text-red-600 hover:text-red-700">
-                <Trash2 className="w-4 h-4 mr-1" />Elimina<ChevronDown className="w-3 h-3 ml-1" />
+              <Button variant="outline" size="sm" disabled={nothingToDelete} aria-label={t("piano.delete")} className="text-red-600 hover:text-red-700">
+                <Trash2 className="w-4 h-4 mr-1" />{t("piano.delete")}<ChevronDown className="w-3 h-3 ml-1" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onSelect={() => setDeleteScope("study")}>
-                Elimina solo sessioni di studio
+                {t("piano.deleteStudyOnly")}
               </DropdownMenuItem>
               <DropdownMenuItem className="text-red-600 focus:text-red-700" onSelect={() => setDeleteScope("all")}>
-                Elimina tutto il piano
+                {t("piano.deleteEverything")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -437,8 +440,8 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       {selectedDate && selectedDateEvents.length === 0 ? (
         selectedDateEvaluations.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground m3-card-elevated rounded-xl">
-            <p className="body-large font-medium">Nessun evento per questa data.</p>
-            <Button variant="link" onClick={() => { setEditingEval(null); setShowAddSheet(true); }} className="mt-2 text-primary">Aggiungi un evento</Button>
+            <p className="body-large font-medium">{t("piano.noEventsOnDate")}</p>
+            <Button variant="link" onClick={() => { setEditingEval(null); setShowAddSheet(true); }} className="mt-2 text-primary">{t("piano.addEventForDay")}</Button>
           </div>
         ) : null
       ) : selectedDate && selectedDateEvents.length > 0 ? (
@@ -467,8 +470,8 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       ) : (
         events.length === 0 ? (
           <div className="text-center py-10 text-muted-foreground m3-card-elevated rounded-xl">
-            <p className="body-large font-medium">Nessun evento in programma.</p>
-            <p className="body-small mt-1">Aggiungi verifiche e compiti per generare un piano di studio.</p>
+            <p className="body-large font-medium">{t("piano.noEvents")}</p>
+            <p className="body-small mt-1">{t("piano.noEventsHint")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -512,15 +515,15 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       <AlertDialog open={!!eventToDelete} onOpenChange={() => setEventToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Elimina evento</AlertDialogTitle>
+            <AlertDialogTitle>{t("piano.deleteOneTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Sei sicuro di voler eliminare "{eventToDelete?.title}"? Questa azione non può essere annullata.
+              {t("piano.deleteOneDesc", { title: eventToDelete?.title })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Annulla</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t("piano.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteEvent} className="bg-destructive hover:bg-destructive/90" disabled={isDeleting}>
-              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Elimina"}
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : t("piano.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -530,19 +533,19 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       <AlertDialog open={!!evalToDelete} onOpenChange={() => setEvalToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Elimina scadenza</AlertDialogTitle>
+            <AlertDialogTitle>{t("piano.deleteEvalTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Sei sicuro di voler eliminare "{evalToDelete?.title}"? Questa azione non può essere annullata.
+              {t("piano.deleteOneDesc", { title: evalToDelete?.title })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteEvaluation.isPending}>Annulla</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteEvaluation.isPending}>{t("piano.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteEval}
               className="bg-destructive hover:bg-destructive/90"
               disabled={deleteEvaluation.isPending}
             >
-              {deleteEvaluation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Elimina"}
+              {deleteEvaluation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("piano.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -553,23 +556,21 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {deleteScope === "study" ? "Eliminare le sessioni di studio?" : "Eliminare TUTTO il piano?"}
+              {deleteScope === "study" ? t("piano.bulkDeleteStudyTitle") : t("piano.bulkDeleteAllTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteScope === "study"
-                ? "Verranno eliminate solo le sessioni di studio (anche quelle generate dall'AI). Verifiche e compiti resteranno."
-                : "Verranno eliminate TUTTE le sessioni di studio, le verifiche e i compiti. La tua routine settimanale non verrà toccata. L'azione non può essere annullata."}
+              {deleteScope === "study" ? t("piano.bulkDeleteStudyDesc") : t("piano.bulkDeleteAllDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteByType.isPending || deleteAllEvents.isPending || deleteAllEvaluations.isPending}>Annulla</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteByType.isPending || deleteAllEvents.isPending || deleteAllEvaluations.isPending}>{t("piano.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleBulkDelete}
               className="bg-destructive hover:bg-destructive/90"
               disabled={deleteByType.isPending || deleteAllEvents.isPending || deleteAllEvaluations.isPending}
             >
               {(deleteByType.isPending || deleteAllEvents.isPending || deleteAllEvaluations.isPending)
-                ? <Loader2 className="w-4 h-4 animate-spin" /> : "Elimina"}
+                ? <Loader2 className="w-4 h-4 animate-spin" /> : t("piano.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -586,15 +587,8 @@ const EVAL_ICONS: Record<EvaluationType, typeof Mic> = {
   pratica: Hammer,
 };
 
-const EVAL_LABELS: Record<EvaluationType, string> = {
-  orale: "Orale",
-  scritta: "Scritta",
-  pratica: "Pratica",
-  interrogazione: "Interrogazione",
-  compito: "Compito",
-};
-
 function EvaluationItem({ evaluation, subject }: { evaluation: Evaluation; subject?: UserSubject }) {
+  const { t } = useTranslation();
   const Icon = EVAL_ICONS[evaluation.type] ?? ClipboardCheck;
   const topic = evaluation.topic_type === "free" ? evaluation.free_topic_title : null;
   const subjectColor = subject ? resolveSubjectColor(subject.name, subject.color) : undefined;
@@ -608,7 +602,7 @@ function EvaluationItem({ evaluation, subject }: { evaluation: Evaluation; subje
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="label-small px-2.5 py-0.5 rounded-full bg-foreground text-background">
-              {EVAL_LABELS[evaluation.type]}
+              {t(`piano.sheet.evalType_${evaluation.type}`)}
             </span>
             {subject && subjectColor && (
               <span className={cn("label-small px-2.5 py-0.5 rounded-full", subjectColor.badge, subjectColor.badgeText)}>
@@ -618,12 +612,12 @@ function EvaluationItem({ evaluation, subject }: { evaluation: Evaluation; subje
             {evaluation.goal != null && (
               <span className="label-small px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 inline-flex items-center gap-1">
                 <Target className="w-3 h-3" />
-                Obiettivo {evaluation.goal}
+                {t("piano.goalBadge", { goal: evaluation.goal })}
               </span>
             )}
           </div>
           <p className="title-small">{evaluation.title}</p>
-          {topic && <p className="body-small text-muted-foreground mt-0.5">Argomento: {topic}</p>}
+          {topic && <p className="body-small text-muted-foreground mt-0.5">{t("piano.topicPrefix", { topic })}</p>}
           {evaluation.description && (
             <p className="body-small text-muted-foreground mt-1 line-clamp-2">{evaluation.description}</p>
           )}

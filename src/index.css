@@ -638,3 +638,18 @@
 
 /* Safe area */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+
+/* ------------------------------------------------------------------
+   Accessibilità: rispetta "Riduci il movimento" del sistema operativo.
+   Chi attiva questa preferenza vede l'app quasi senza animazioni:
+   usiamo 0.01ms (non 0) così eventuali callback di fine-animazione
+   continuano a scattare e l'app non si inceppa.
+   ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

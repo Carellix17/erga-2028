@@ -1,4 +1,5 @@
 import { Brain, Check, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 interface PlanSuggestionProps {
@@ -8,6 +9,7 @@ interface PlanSuggestionProps {
 }
 
 export function PlanSuggestion({ explanation, onAccept, onDecline }: PlanSuggestionProps) {
+  const { t } = useTranslation();
   return (
     <div className="bg-primary-container rounded-xl p-5 shadow-level-2 animate-scale-in">
       <div className="flex items-center gap-3 mb-4">
@@ -15,8 +17,8 @@ export function PlanSuggestion({ explanation, onAccept, onDecline }: PlanSuggest
           <Brain className="w-5 h-5 text-primary-foreground" />
         </div>
         <div>
-          <h3 className="title-small">Piano suggerito</h3>
-          <p className="body-small text-muted-foreground">Generato dall'AI</p>
+          <h3 className="title-small">{t("piano.suggestionTitle")}</h3>
+          <p className="body-small text-muted-foreground">{t("piano.suggestionAi")}</p>
         </div>
       </div>
       
@@ -32,7 +34,7 @@ export function PlanSuggestion({ explanation, onAccept, onDecline }: PlanSuggest
           className="flex-1"
         >
           <X className="w-4 h-4 mr-1.5" />
-          Modifica
+          {t("piano.modify")}
         </Button>
         <Button
           size="sm"
@@ -40,7 +42,7 @@ export function PlanSuggestion({ explanation, onAccept, onDecline }: PlanSuggest
           className="flex-1"
         >
           <Check className="w-4 h-4 mr-1.5" />
-          Accetta
+          {t("piano.accept")}
         </Button>
       </div>
     </div>

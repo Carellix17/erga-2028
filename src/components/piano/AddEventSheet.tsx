@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,11 +17,11 @@ import { cn } from "@/lib/utils";
 type Category = "verifica" | "compito";
 type VerificaMode = Exclude<EvaluationType, "compito">;
 
-const VERIFICA_MODES: { value: VerificaMode; label: string }[] = [
-  { value: "orale", label: "Orale" },
-  { value: "scritta", label: "Scritta" },
-  { value: "pratica", label: "Pratica" },
-  { value: "interrogazione", label: "Presentazione" },
+const VERIFICA_MODES: { value: VerificaMode; i18nKey: string }[] = [
+  { value: "orale", i18nKey: "modeOrale" },
+  { value: "scritta", i18nKey: "modeScritta" },
+  { value: "pratica", i18nKey: "modePratica" },
+  { value: "interrogazione", i18nKey: "modePresentazione" },
 ];
 
 // Valore sentinella: Radix Select non accetta stringhe vuote come valore degli item
@@ -52,6 +53,7 @@ interface AddEventSheetProps {
 }
 
 export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEventSheetProps) {
+  const { t } = useTranslation();
   const editingId = initial?.id ?? null;
 
   const [category, setCategory] = useState<Category>("verifica");
@@ -129,7 +131,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
       <SheetContent side="bottom" className="rounded-t-xl pb-safe bg-[#FCFCFC] max-h-[92vh] overflow-y-auto">
         <SheetHeader className="mb-5">
           <SheetTitle className="title-large font-display">
-            {editingId ? "Modifica evento" : "Aggiungi evento"}
+            {editingId ? t("piano.sheet.editTitle") : t("piano.sheet.addTitle")}
           </SheetTitle>
         </SheetHeader>
 
@@ -146,14 +148,14 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
                   category === c ? "bg-black text-white shadow-level-1" : "text-slate-700"
                 )}
               >
-                {c}
+                {t(`piano.sheet.${c}`)}
               </button>
             ))}
           </div>
 
           {category === "verifica" && (
             <div className="space-y-2">
-              <Label className="label-large">Modalità</Label>
+              <Label className="label-large">{t("piano.sheet.mode")}</Label>
               <div className="flex flex-wrap gap-2">
                 {VERIFICA_MODES.map((m) => (
                   <button
@@ -167,7 +169,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
                         : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
                     )}
                   >
-                    {m.label}
+                    {t(`piano.sheet.${m.i18nKey}`)}
                   </button>
                 ))}
               </div>
@@ -175,34 +177,34 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="ev-title" className="label-large">Titolo</Label>
-            <Input id="ev-title" placeholder="Es. Verifica sui Promessi Sposi" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Label htmlFor="ev-title" className="label-large">{t("piano.sheet.title")}</Label>
+            <Input id="ev-title" placeholder={t("piano.sheet.titlePlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ev-desc" className="label-large">Note (opzionale)</Label>
-            <Textarea id="ev-desc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Dettagli, capitoli, appunti…" />
+            <Label htmlFor="ev-desc" className="label-large">{t("piano.sheet.notes")}</Label>
+            <Textarea id="ev-desc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("piano.sheet.notesPlaceholder")} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="ev-date" className="label-large">Data</Label>
+              <Label htmlFor="ev-date" className="label-large">{t("piano.sheet.date")}</Label>
               <Input id="ev-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="ev-time" className="label-large">
-                Orario <span className="text-muted-foreground font-normal">(opzionale)</span>
+                {t("piano.sheet.time")} <span className="text-muted-foreground font-normal">{t("piano.sheet.optional")}</span>
               </Label>
               <Input id="ev-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label className="label-large">Materia</Label>
+              <Label className="label-large">{t("piano.sheet.subject")}</Label>
               <Select value={subjectId} onValueChange={setSubjectId}>
                 <SelectTrigger className="w-full h-11 rounded-2xl bg-white border border-slate-200/70 px-3 body-medium">
-                  <SelectValue placeholder="— Nessuna —" />
+                  <SelectValue placeholder={t("piano.sheet.none")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>— Nessuna —</SelectItem>
+                  <SelectItem value={NONE}>{t("piano.sheet.none")}</SelectItem>
                   {subjects.map((s) => {
                     const col = resolveSubjectColor(s.name, s.color);
                     return (
@@ -218,14 +220,14 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
               </Select>
               {subjects.length === 0 && (
                 <p className="text-[11px] text-muted-foreground">
-                  Nessuna materia ancora: creale in Profilo → «Configura Orari e Materie».
+                  {t("piano.sheet.noSubjectsHint")}
                 </p>
               )}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="label-large">Obiettivo di voto <span className="text-muted-foreground font-normal">(opzionale)</span></Label>
+            <Label className="label-large">{t("piano.sheet.goalLabel")} <span className="text-muted-foreground font-normal">{t("piano.sheet.optional")}</span></Label>
             <div className="flex gap-2">
               {GOAL_CHOICES.map((g) => (
                 <button
@@ -247,7 +249,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
           </div>
 
           <div className="space-y-2">
-            <Label className="label-large">Argomento</Label>
+            <Label className="label-large">{t("piano.sheet.topic")}</Label>
             <div className="flex gap-2">
               {(["linked", "free"] as const).map((tm) => (
                 <button
@@ -259,14 +261,14 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
                     topicMode === tm ? "bg-black text-white border-black" : "bg-white border-slate-200 text-slate-700"
                   )}
                 >
-                  {tm === "linked" ? "Da corso" : "Libero"}
+                  {tm === "linked" ? t("piano.sheet.topicLinked") : t("piano.sheet.topicFree")}
                 </button>
               ))}
             </div>
             {topicMode === "linked" ? (
               <Select value={courseId} onValueChange={setCourseId}>
                 <SelectTrigger className="w-full h-11 rounded-2xl bg-white border border-slate-200/70 px-3 body-medium">
-                  <SelectValue placeholder="Seleziona un corso…" />
+                  <SelectValue placeholder={t("piano.sheet.coursePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {courses.map((c) => (
@@ -276,7 +278,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
               </Select>
             ) : (
               <Input
-                placeholder="Scrivi l'argomento (es. Capitolo 5 - Derivate)"
+                placeholder={t("piano.sheet.topicPlaceholder")}
                 value={freeTopic}
                 onChange={(e) => setFreeTopic(e.target.value)}
               />
@@ -284,7 +286,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
           </div>
 
           <Button type="submit" className="w-full" size="lg" disabled={submitting || !title || !date}>
-            {submitting ? "Salvataggio…" : editingId ? "Salva modifiche" : "Salva evento"}
+            {submitting ? t("piano.sheet.saving") : editingId ? t("piano.sheet.saveChanges") : t("piano.sheet.saveEvent")}
           </Button>
         </form>
       </SheetContent>
