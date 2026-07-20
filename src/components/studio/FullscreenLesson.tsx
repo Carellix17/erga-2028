@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from"react";
-import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, ImageIcon, Sparkles, Minus, Send, Bot, User as UserIcon } from"lucide-react";
+import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, Sparkles, Minus, Send, Bot, User as UserIcon } from"lucide-react";
 import { motion } from"framer-motion";
 import { supabase } from"@/integrations/supabase/client";
 import { currentLanguage } from"@/i18n";
@@ -45,8 +45,8 @@ function CalloutBlockquote({ children }: { children?: React.ReactNode }) {
  const flatten = (node: React.ReactNode): string => {
  if (typeof node ==="string") return node;
  if (Array.isArray(node)) return node.map(flatten).join("");
- if (node && typeof node ==="object" &&"props" in (node as any)) {
- return flatten((node as any).props?.children);
+ if (node && typeof node ==="object" &&"props" in node) {
+ return flatten((node as { props?: { children?: React.ReactNode } }).props?.children);
  }
  return"";
  };
@@ -205,8 +205,8 @@ export function FullscreenLesson({
       case"example":
         return `Esempio pratico:\n${lesson.example ??""}`;
       case"exercise": {
-        const ex = exercises[step.exerciseIndex ?? 0] as any;
-        return ex ? `Esercizio corrente:\n${ex.question ?? ex.prompt ?? JSON.stringify(ex)}` :"";
+        const ex = exercises[step.exerciseIndex ?? 0] as (Exercise & { prompt?: string }) | undefined;
+        return ex ? `Esercizio corrente:\n${ex.question ?? ex.prompt ?? JSON.stringify(ex)}` : "";
       }
       default:
         return `Riepilogo lezione: ${lesson.title}`;
@@ -446,12 +446,14 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
  const idx = parseInt(m[1], 10);
  const fig = figures[idx];
  if (fig) out.push({ type:"fig", figure: fig });
- else out.push({ type:"fig-pending", index: idx });
+ else if (figuresLoading) out.push({ type:"fig-pending", index: idx });
+ // Se il caricamento è finito e la figura non c'è, il segnaposto sparisce
+ // in silenzio: mai più riquadri "Figura non disponibile" dentro la slide.
  last = m.index + m[0].length;
  }
  if (last < text.length) out.push({ type:"text", value: text.slice(last) });
  return out.length > 0 ? out : [{ type:"text" as const, value: text }];
- }, [part.content, figures]);
+ }, [part.content, figures, figuresLoading]);
 
  return (
  <div className="space-y-5">
@@ -489,20 +491,11 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
  if (seg.type ==="fig") {
  return <PdfCrop key={i} url={seg.figure.url} bbox={seg.figure.bbox} description={seg.figure.description} />;
  }
- // fig-pending: marker present but figure not yet loaded
+ // fig-pending: il segnaposto esiste solo mentre la figura è in lavorazione
  return (
  <div key={i} className="rounded-2xl bg-surface-container-highest/60 border-2 border-dashed border-outline-variant/60 p-6 flex flex-col items-center justify-center gap-2 min-h-[140px]">
- {figuresLoading ? (
- <>
  <Loader2 className="w-6 h-6 text-primary animate-spin" />
  <p className="body-small text-muted-foreground">Caricamento figura…</p>
- </>
- ) : (
- <>
- <ImageIcon className="w-6 h-6 text-muted-foreground/60" />
- <p className="body-small text-muted-foreground">Figura non disponibile</p>
- </>
- )}
  </div>
  );
  })}

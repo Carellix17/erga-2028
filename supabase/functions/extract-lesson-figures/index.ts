@@ -103,6 +103,12 @@ function normalizeBox(box: FigureBox, page?: IncomingPage): FigureBox | null {
     `raw=${JSON.stringify(before)} → pct=${JSON.stringify({ x: +x.toFixed(2), y: +y.toFixed(2), width: +width.toFixed(2), height: +height.toFixed(2) })}`,
   );
 
+  // Guardrail dimensionale ORA che i valori sono in percentuali (0-100):
+  // un riquadro più stretto o più basso del 5% della pagina non è una figura,
+  // è disturbo (vecchio bug: il controllo avveniva PRIMA della conversione di
+  // scala, quindi a seconda del formato scelto dall'AI veniva scartato tutto).
+  if (width < 5 || height < 5) return null;
+
   // Apply small padding so we never crop too tight.
   const padX = width * 0.04;
   const padY = height * 0.04;
@@ -121,6 +127,44 @@ function normalizeBox(box: FigureBox, page?: IncomingPage): FigureBox | null {
 
   if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(width) || !Number.isFinite(height)) return null;
   return { x, y, width, height, description: box.description || "Figura dal materiale" };
+}
+
+/**
+ * Figura "grezza" come la risponde il modello Vision.
+ * Il formato PREFERITO è quello nativo di Gemini: box_2d [ymin, xmin, ymax, xmax]
+ * in scala 0-1000 (è il formato in cui il modello è più preciso: chiedergli
+ * un altro formato, come faceva il vecchio prompt, produceva riquadri imprecisi).
+ * Accettiamo anche il vecchio formato x/y/width/height per robustezza.
+ */
+interface RawFigure {
+  box_2d?: number[];
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  description?: string;
+}
+
+function boxFromRawFigure(f: RawFigure, page: IncomingPage): FigureBox | null {
+  if (!f || typeof f !== "object") return null;
+
+  // Formato nativo Gemini: lo convertiamo in x/y/width/height e passiamo dal
+  // convertitore di scala unico (che riconosce da solo 0-1 / 0-100 / 0-1000 / pixel).
+  if (Array.isArray(f.box_2d) && f.box_2d.length === 4 && f.box_2d.every((n) => typeof n === "number" && Number.isFinite(n))) {
+    const [ymin, xmin, ymax, xmax] = f.box_2d;
+    if (xmax <= xmin || ymax <= ymin) return null;
+    return normalizeBox(
+      { x: xmin, y: ymin, width: xmax - xmin, height: ymax - ymin, description: f.description || "" },
+      page,
+    );
+  }
+
+  // Formato legacy (se il modello disubbidisce e usa x/y/width/height)
+  if (typeof f.x === "number" && typeof f.y === "number" && typeof f.width === "number" && typeof f.height === "number" && f.width > 0 && f.height > 0) {
+    return normalizeBox({ x: f.x, y: f.y, width: f.width, height: f.height, description: f.description || "" }, page);
+  }
+
+  return null;
 }
 
 async function detectFigures(
@@ -173,23 +217,16 @@ ESCLUDERE TASSATIVAMENTE (blacklist — se in dubbio, ESCLUDI):
 ❌ Linee, righe orizzontali, decorazioni tipografiche
 
 TEST DI VALIDITÀ — una figura passa SOLO se:
-a) Occupa almeno il 10% dell'area pagina (width*height >= 10)
-b) È un elemento grafico VERO E PROPRIO (immagine raster o vettoriale, non testo)
-c) Ha senso anche estratta da sola, fuori contesto
-d) Se la togli, la pagina perde un'informazione visiva (non solo decorativa)
+a) È un elemento grafico VERO E PROPRIO (immagine raster o vettoriale, non testo)
+b) Ha senso anche estratta da sola, fuori contesto
+c) Se la togli, la pagina perde un'informazione visiva (non solo decorativa)
 
-BOUNDING BOX (CRITICO — leggere con attenzione):
-- Sistema di coordinate: PERCENTUALI da 0 a 100 della pagina visibile.
-- Origine (0,0) = angolo IN ALTO A SINISTRA della pagina.
-- Asse X cresce verso DESTRA, asse Y cresce verso il BASSO.
-- x = distanza dal bordo SINISTRO (in % della larghezza pagina).
-- y = distanza dal bordo SUPERIORE (in % dell'altezza pagina).
-- width = larghezza del riquadro (in % della larghezza pagina).
-- height = altezza del riquadro (in % dell'altezza pagina).
-- Vincolo: 0 ≤ x, x+width ≤ 100  e  0 ≤ y, y+height ≤ 100.
-- NON usare pixel. NON usare il formato [ymin, xmin, ymax, xmax]. NON normalizzare 0-1 o 0-1000.
-- Includi SOLO la figura: NIENTE didascalie, titoli adiacenti, testo del paragrafo accanto.
-- Sii preciso: il riquadro deve combaciare col bordo della figura, niente di più, niente di meno.
+FORMATO COORDINATE (CRITICO — usa ESATTAMENTE questo formato nativo):
+- Per ogni figura restituisci il campo "box_2d": [ymin, xmin, ymax, xmax].
+- Quattro numeri da 0 a 1000: 0 = bordo alto/sinistro della pagina, 1000 = bordo basso/destro.
+- ymin = bordo SUPERIORE della figura; xmin = bordo SINISTRO; ymax = bordo INFERIORE; xmax = bordo DESTRO.
+- Il riquadro deve combaciare col bordo ESATTO della figura: NIENTE didascalie, titoli o paragrafi adiacenti, niente di più, niente di meno.
+- NON usare x/y/width/height. NON usare percentuali. NON usare pixel.
 
 REGOLE FINALI:
 - Se la pagina è SOLO testo (anche con titoli grandi), ritorna figures: []
@@ -198,7 +235,7 @@ REGOLE FINALI:
 - description: max 8 parole in italiano, descrivi COSA si vede ("Statua del David", "Grafico vendite 2020", "Mappa dell'Impero Romano")
 
 Rispondi SOLO con JSON valido, senza markdown:
-[{"page_index": 0, "figures": [{"x": 12, "y": 30, "width": 70, "height": 40, "description": "Statua del David di Michelangelo"}]}]`,
+[{"page_index": 0, "figures": [{"box_2d": [180, 300, 640, 900], "description": "Statua del David di Michelangelo"}]}]`,
           },
           ...pageImages.map(p => ({
             type: "image_url",
@@ -223,16 +260,15 @@ Rispondi SOLO con JSON valido, senza markdown:
   try {
     const match = content.match(/\[[\s\S]*\]/);
     if (!match) return [];
-    const parsed = JSON.parse(match[0]) as { page_index: number; figures: FigureBox[] }[];
+    const parsed = JSON.parse(match[0]) as { page_index: number; figures: RawFigure[] }[];
     return parsed
       .map((p) => {
         const img = pageImages[p.page_index];
         if (!img) return null;
         const figs = (p.figures || [])
-          .filter(f => f && typeof f.x === "number" && typeof f.y === "number" && f.width > 5 && f.height > 5)
-          .slice(0, 3)
-          .map(f => normalizeBox(f, img))
-          .filter((f): f is FigureBox => !!f);
+          .map((f) => boxFromRawFigure(f, img))
+          .filter((f): f is FigureBox => !!f)
+          .slice(0, 3);
         return { pageNum: img.pageNum, figures: figs };
       })
       .filter((x): x is { pageNum: number; figures: FigureBox[] } => !!x);
