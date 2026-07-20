@@ -398,10 +398,13 @@ serve(withCors(async (req) => {
     // PHASE 3 — client sent the actually-cropped JPEGs. Upload + DB insert.
     // ========================================================================
     if (crops && Array.isArray(crops) && crops.length > 0) {
-      const result: { id: string; page: number; bbox: FigureBox; url: string; description: string }[] = [];
-
-      for (const crop of crops) {
-        if (!crop || typeof crop.b64Crop !== "string" || !crop.bbox) continue;
+      // 🚚 P6 — nastri paralleli: upload+registrazione di ogni ritaglio partono
+      // INSIEME invece che uno alla volta. Su 4-6 figure il tempo di attesa si
+      // divide quasi per 4-6. Gli indici arrivano dal client, quindi l'ordine
+      // non rischia disallineamenti; i fallimenti restano tollerati come prima.
+      type CropResult = { id: string; page: number; bbox: FigureBox; url: string; description: string };
+      const attempts = await Promise.all(crops.map(async (crop): Promise<CropResult | null> => {
+        if (!crop || typeof crop.b64Crop !== "string" || !crop.bbox) return null;
         const storagePath = `lesson-figures/${lessonId}/p${crop.pageNum}_f${crop.figureIndex}.jpg`;
         const bytes = base64ToBytes(crop.b64Crop);
         const { error: upErr } = await supabase.storage
@@ -409,7 +412,7 @@ serve(withCors(async (req) => {
           .upload(storagePath, bytes, { contentType: "image/jpeg", upsert: true });
         if (upErr) {
           console.error(`Upload crop failed for ${storagePath}:`, upErr);
-          continue;
+          return null;
         }
 
         const { data: inserted, error: insErr } = await supabase
@@ -432,16 +435,17 @@ serve(withCors(async (req) => {
           .single();
         if (insErr || !inserted) {
           console.error("Insert lesson_figure failed:", insErr);
-          continue;
+          return null;
         }
-        result.push({
+        return {
           id: inserted.id,
           page: crop.pageNum,
           bbox: { x: 0, y: 0, width: 100, height: 100, description: crop.description || "" },
           url: `${supabaseUrl}/storage/v1/object/public/study-images/${storagePath}`,
           description: crop.description || "Figura dal materiale",
-        });
-      }
+        };
+      }));
+      const result = attempts.filter((r): r is CropResult => r !== null);
 
       console.log(`Uploaded ${result.length} cropped figures for lesson ${lessonId}`);
       return successResponse({ figures: result, cached: false, phase: "uploaded" });

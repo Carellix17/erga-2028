@@ -266,7 +266,10 @@ serve(withCors(async (req) => {
         console.log(`Cleaned text: ${cleanedText.length} characters`);
 
         // Image extraction is now handled client-side via PDF page rendering
-        const finalContent = cleanedText.substring(0, 200000);
+        // 🗺️ P6 — magazzino più capiente: da 200k a 600k caratteri. Il
+        // cartografo mappa i libri lunghi pagina per pagina e ogni chiamata AI
+        // riceve comunque solo la sua fetta: conservare di più non costa più.
+        const finalContent = cleanedText.substring(0, 600000);
 
         const { error: updateError } = await supabase
           .from("study_contexts")
