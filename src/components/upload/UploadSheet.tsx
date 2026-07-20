@@ -144,7 +144,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
   const handleWebSearch = async () => {
     if (!webTopic.trim() || !currentUser) return;
     setIsSearching(true);
-    setUploadStatus("L'AI sta preparando il contenuto...");
+    setUploadStatus("Preparazione del contenuto...");
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -165,7 +165,13 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
       onUpload([{ name: `🌐 ${webTopic}`, size: searchData.contentLength || 0 }], contextId);
       setWebTopic("");
       onOpenChange(false);
-      toast({ title: "Contenuto pronto! 🌐", description: "Ora puoi generare le lezioni dal tab Studio." });
+      const fromWiki = searchData.source === "wikipedia";
+      toast({
+        title: fromWiki ? "Contenuto da Wikipedia! 🌐" : "Manuale AI pronto 🌐",
+        description: fromWiki
+          ? `${searchData.imagesCount ? `Con ${searchData.imagesCount} immagini vere. ` : ""}Fonte indicata nel materiale. Ora genera le lezioni dal tab Studio.`
+          : "Wikipedia non copre questo tema: l'AI ha scritto dalla sua conoscenza. Ora genera le lezioni dal tab Studio.",
+      });
     } catch (error) {
       console.error("Web search error:", error);
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella ricerca", variant: "destructive" });
@@ -279,7 +285,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                       <Globe className="w-5 h-5 text-primary" />
                       <div className="text-left">
                         <p className="font-medium">Da un argomento</p>
-                        <p className="body-small text-muted-foreground">L'AI prepara un manuale sul tema che scegli</p>
+                        <p className="body-small text-muted-foreground">Contenuti reali da Wikipedia, o un manuale AI</p>
                       </div>
                     </Button>
                   </div>
@@ -430,7 +436,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                   </div>
                   <div>
                     <p className="font-display font-semibold text-lg">Scegli un argomento</p>
-                    <p className="body-small text-muted-foreground">L'AI scriverà un manuale su misura dalla sua conoscenza — senza navigare sul web</p>
+                    <p className="body-small text-muted-foreground">Se Wikipedia copre il tema useremo i suoi contenuti reali (con fonte e immagini); altrimenti prepareremo un manuale AI — e te lo diremo</p>
                   </div>
                 </div>
 

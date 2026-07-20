@@ -73,6 +73,27 @@ async function callAI(messages: { role: string; content: string }[], temperature
   return callAIText(injected, temperature, maxTokens);
 }
 
+/**
+ * Dall'elenco di file_path (immagini sorgente in archivio, separate da virgola)
+ * ricava brevi descrizioni per i token [FIG:n]:
+ *  - immagini Wikipedia: la descrizione vive nello slug del filename
+ *    (es. "...wiki_img_0__statua_del_david.jpg" → "Statua del david")
+ *  - foto caricate: etichetta generica "Foto caricata N".
+ * L'ordine segue file_path: deve restare allineato con figure_index creato da
+ * extract-lesson-figures (numerazione a prefisso).
+ */
+function parseSourceImages(filePath: unknown): { description: string }[] {
+  const paths = String(filePath || "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter((p) => p && !p.toLowerCase().endsWith(".pdf"));
+  return paths.slice(0, 6).map((p, i) => {
+    const m = p.match(/img_\d+__([a-z0-9_]{3,80})\.[a-z0-9]+$/i);
+    const desc = m ? m[1].replace(/_/g, " ") : `Foto caricata ${i + 1}`;
+    return { description: desc.charAt(0).toUpperCase() + desc.slice(1) };
+  });
+}
+
 serve(withCors(async (req) => {
   try {
     const body = await req.json();
@@ -167,11 +188,12 @@ serve(withCors(async (req) => {
       const existingHasImageUrl = existingExplanation.includes('"image_url"');
 
       let studyContent = "";
+      let contextFilePath = "";
       if (lessons.context_id) {
         // Try with UUID first, then legacy email
-        let { data: context } = await supabase.from("study_contexts").select("content, file_name, processing_status, error_message").eq("id", lessons.context_id).eq("user_id", userId).single();
+        let { data: context } = await supabase.from("study_contexts").select("content, file_name, file_path, processing_status, error_message").eq("id", lessons.context_id).eq("user_id", userId).single();
         if (!context && legacyUserId) {
-          const { data: legacyCtx } = await supabase.from("study_contexts").select("content, file_name, processing_status, error_message").eq("id", lessons.context_id).eq("user_id", legacyUserId).single();
+          const { data: legacyCtx } = await supabase.from("study_contexts").select("content, file_name, file_path, processing_status, error_message").eq("id", lessons.context_id).eq("user_id", legacyUserId).single();
           context = legacyCtx;
         }
         if (context?.processing_status === "failed") {
@@ -181,6 +203,7 @@ serve(withCors(async (req) => {
             : "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.");
         }
         if (context?.processing_status !== "completed") throw new Error("Il PDF è ancora in elaborazione. Riprova tra qualche secondo.");
+        contextFilePath = String((context as Record<string, unknown> | null)?.file_path || "");
         if (context?.content) studyContent = `FILE: ${context.file_name}\n${context.content}`.substring(0, MAX_CONTEXT_CHARS);
       } else {
         const { data: contexts } = await supabase.from("study_contexts").select("content, file_name").eq("user_id", userId);
@@ -194,23 +217,41 @@ serve(withCors(async (req) => {
       // The lesson is generated with [FIG:n] tokens that the client replaces with <PdfCrop /> after
       // calling extract-lesson-figures(lessonId).
       const pagesCovered = pageStart != null && pageEnd != null ? (pageEnd - pageStart + 1) : 0;
-      const expectedFigures = Math.min(3, Math.max(0, pagesCovered));
 
-      const figureInstructions = expectedFigures > 0
-        ? `\n\nFIGURE DAL PDF (token speciali):
-Il sistema estrarrà automaticamente fino a ${expectedFigures} figure reali (foto, diagrammi, tabelle, schemi, formule, riquadri grafici) dalle pagine ${pageStart}-${pageEnd} del PDF.
+      // Figure disponibili per i token [FIG:n]:
+      //  (a) PDF → la caccia estrarrà ritagli reali dalle pagine della lezione
+      //  (b) niente pagine (foto caricate / ricerca web Wikipedia) → immagini
+      //      sorgente già in archivio, con descrizioni da dare IN PASTO all'AI
+      //      così piazza ogni token vicino al concetto giusto.
+      const sourceImages = pagesCovered === 0 ? parseSourceImages(contextFilePath).slice(0, 3) : [];
+      const expectedFigures = pagesCovered > 0
+        ? Math.min(3, Math.max(0, pagesCovered))
+        : sourceImages.length;
+
+      const figureRules = `
 
 REGOLE OBBLIGATORIE PER LE FIGURE:
 1. UNICITÀ ASSOLUTA: ogni token [FIG:N] deve apparire UNA SOLA VOLTA in tutta la lezione. MAI ripetere lo stesso indice in più parti.
 2. DISTRIBUZIONE: se inserisci più figure, mettile in "explanation_parts" DIVERSE, distanziate fra loro (es. una alla parte 2 e una alla parte 4). MAI tutte nella stessa parte, MAI tutte all'inizio o tutte in fondo.
-3. PERTINENZA RIGOROSA: inserisci [FIG:N] SOLO se la frase immediatamente precedente parla davvero di ciò che la figura raffigura. Se non c'è un nesso logico chiaro col paragrafo, OMETTI il token — meglio nessuna figura che una figura fuori contesto.
+3. PERTINENZA RIGOROSA: inserisci [FIG:N] SOLO se la frase immediatamente precedente parla davvero di ciò che QUELLA specifica figura raffigura. Se non c'è un nesso logico chiaro col paragrafo, OMETTI il token — meglio nessuna figura che una figura fuori contesto.
 4. Indici da usare: solo da [FIG:0] a [FIG:${expectedFigures - 1}], in ordine crescente, senza saltare numeri intermedi.
 5. Posizionamento: token su una RIGA A SÉ dentro il "content", subito DOPO la frase pertinente.
    Esempio: "content": "Il bosco benedettino è strutturato a filari ordinati.\\n\\n[FIG:0]\\n\\nQuesta organizzazione…"
 6. NON descrivere mai a parole il contenuto dell'immagine ("L'immagine mostra…", "Come si vede in figura…").
 7. NON usare il campo "image_url".
-8. Se nessuna figura è davvero pertinente al testo della lezione, ometti TUTTI i token. Le figure resteranno comunque accessibili altrove.`
-        : "";
+8. Se nessuna figura è davvero pertinente al testo della lezione, ometti TUTTI i token. Le figure resteranno comunque accessibili altrove.`;
+
+      let figureInstructions = "";
+      if (pagesCovered > 0 && expectedFigures > 0) {
+        figureInstructions = `\n\nFIGURE DAL PDF (token speciali):
+Il sistema estrarrà automaticamente fino a ${expectedFigures} figure reali (foto, diagrammi, tabelle, schemi, formule, riquadri grafici) dalle pagine ${pageStart}-${pageEnd} del PDF.` + figureRules;
+      } else if (expectedFigures > 0) {
+        const list = sourceImages.map((img, i) => `[FIG:${i}] → ${img.description}`).join("\n");
+        figureInstructions = `\n\nIMMAGINI REALI DISPONIBILI (token speciali):
+Questa lezione ha già ${expectedFigures} immagini reali allegate al materiale (foto caricate dallo studente o immagini prelevate dal web):
+${list}
+Usa ciascun token [FIG:N] SOLO dove il testo parla proprio di ciò che quell'immagine mostra (vedi elenco sopra).` + figureRules;
+      }
 
       const prompt = `Sei un TUTOR DIDATTICO esperto. Il tuo compito NON è riassumere o riproporre frasi del materiale: devi RIELABORARE e RISTRUTTURARE i concetti da zero, con parole tue, in una lezione didatticamente ottimale.
 ${profileContext}${pageRangeInfo}

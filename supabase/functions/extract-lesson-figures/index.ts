@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { callVisionText } from "../_shared/vision.ts";
 
 /**
  * Extract figure crops for a single lesson on-demand — STRATEGY A.
@@ -169,7 +170,6 @@ function boxFromRawFigure(f: RawFigure, page: IncomingPage): FigureBox | null {
 
 async function detectFigures(
   pageImages: IncomingPage[],
-  apiKey: string,
 ): Promise<{ pageNum: number; figures: FigureBox[] }[]> {
   if (pageImages.length === 0) return [];
 
@@ -179,19 +179,11 @@ async function detectFigures(
 
   console.log(`[detectFigures] sending ${pageImages.length} page(s) to Vision: ${pageList}`);
 
-  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [{
-        role: "user",
-        content: [
-          {
-            type: "text",
+  const messages = [{
+    role: "user",
+    content: [
+      {
+        type: "text",
             text: `Sei un sistema di rilevamento di FIGURE in pagine di libri di testo. Sii ESTREMAMENTE SELETTIVO: meglio zero figure che figure sbagliate.
 
 ${pageList}
@@ -236,25 +228,21 @@ REGOLE FINALI:
 
 Rispondi SOLO con JSON valido, senza markdown:
 [{"page_index": 0, "figures": [{"box_2d": [180, 300, 640, 900], "description": "Statua del David di Michelangelo"}]}]`,
-          },
-          ...pageImages.map(p => ({
-            type: "image_url",
-            image_url: { url: `data:image/jpeg;base64,${p.b64}` },
-          })),
-        ],
-      }],
-      max_tokens: 2500,
-      temperature: 0.0,
-    }),
-  });
+      },
+      ...pageImages.map(p => ({
+        type: "image_url",
+        image_url: { url: `data:image/jpeg;base64,${p.b64}` },
+      })),
+    ],
+  }];
 
-  if (!resp.ok) {
-    console.error("Vision AI error:", resp.status, await resp.text());
+  let content = "";
+  try {
+    content = await callVisionText({ messages, max_tokens: 2500, temperature: 0.0 });
+  } catch (visionErr) {
+    console.error("Vision AI error (tutti i provider):", visionErr);
     return [];
   }
-
-  const data = await resp.json();
-  const content = data.choices?.[0]?.message?.content || "";
   console.log("Vision response (first 600):", content.substring(0, 600));
 
   try {
@@ -276,6 +264,107 @@ Rispondi SOLO con JSON valido, senza markdown:
     console.error("Failed to parse vision JSON:", err);
     return [];
   }
+}
+
+/**
+ * Figure per contesti SENZA pagine PDF (P5):
+ *  - foto caricate dallo studente  → le foto originali diventano figure
+ *  - ricerca web Wikipedia         → le immagini scaricate dalla voce
+ *
+ * Le immagini sorgente vivono nel bucket `study-pdfs` (elencate in
+ * study_contexts.file_path, separate da virgola). Qui le copiamo nel bucket
+ * pubblico `study-images` e le registriamo in lesson_figures, così da quel
+ * momento in poi vale la normale cache. La numerazione è A PREFISSO: al primo
+ * errore ci fermiamo, così gli indici restano allineati con le descrizioni
+ * mostrate al generatore di lezioni (mai figure disallineate).
+ */
+async function figuresFromSourceImages(
+  lesson: { id: string; context_id: string | null },
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+): Promise<{ id: string; page: number; bbox: FigureBox; url: string; description: string }[]> {
+  if (!lesson.context_id) return [];
+
+  const { data: ctx } = await supabase
+    .from("study_contexts")
+    .select("file_path, file_name")
+    .eq("id", lesson.context_id)
+    .maybeSingle();
+
+  const paths = (ctx?.file_path || "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter((p) => p && !p.toLowerCase().endsWith(".pdf"))
+    .slice(0, 6);
+  if (paths.length === 0) return [];
+
+  const isPhotoBatch = (ctx?.file_name || "").startsWith("📷");
+  const fullRect = (description: string): FigureBox => ({ x: 0, y: 0, width: 100, height: 100, description });
+  const result: { id: string; page: number; bbox: FigureBox; url: string; description: string }[] = [];
+
+  for (let i = 0; i < paths.length && result.length < 3; i++) {
+    const src = paths[i];
+
+    // Descrizioni: per le immagini Wikipedia sono nello slug del filename
+    // (es. "...wiki_img_0__statua_del_david.jpg"); per le foto un'etichetta semplice.
+    const slugMatch = src.match(/img_\d+__([a-z0-9_]{3,80})\.[a-z0-9]+$/i);
+    const description = isPhotoBatch
+      ? `Foto caricata ${i + 1}`
+      : slugMatch
+        ? slugMatch[1].replace(/_/g, " ")
+        : (ctx?.file_name || "Immagine dal materiale").replace(/^🌐\s*/, "");
+
+    const { data: fileData, error: dlErr } = await supabase.storage.from("study-pdfs").download(src);
+    if (dlErr || !fileData) {
+      console.warn(`[figuresFromSourceImages] download failed for ${src}:`, dlErr);
+      break;
+    }
+    const bytes = new Uint8Array(await fileData.arrayBuffer());
+    const ext = src.split(".").pop()?.toLowerCase() || "jpg";
+    const contentType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+    const dst = `lesson-figures/${lesson.id}/source_${result.length}.${ext}`;
+
+    const { error: upErr } = await supabase.storage
+      .from("study-images")
+      .upload(dst, bytes, { contentType, upsert: true });
+    if (upErr) {
+      console.warn("[figuresFromSourceImages] copy failed:", upErr);
+      break;
+    }
+
+    const { data: inserted, error: insErr } = await supabase
+      .from("lesson_figures")
+      .insert({
+        lesson_id: lesson.id,
+        user_id: userId,
+        context_id: lesson.context_id,
+        page_number: 0,
+        figure_index: result.length,
+        bbox: fullRect(description),
+        storage_path: dst,
+        description,
+      })
+      .select("id")
+      .single();
+    if (insErr || !inserted) {
+      console.warn("[figuresFromSourceImages] insert failed:", insErr);
+      break;
+    }
+
+    result.push({
+      id: inserted.id,
+      page: 0,
+      bbox: fullRect(description),
+      url: `${supabaseUrl}/storage/v1/object/public/study-images/${dst}`,
+      description,
+    });
+  }
+
+  if (result.length > 0) {
+    console.log(`[figuresFromSourceImages] linked ${result.length} source images to lesson ${lesson.id}`);
+  }
+  return result;
 }
 
 serve(withCors(async (req) => {
@@ -385,6 +474,10 @@ serve(withCors(async (req) => {
       const startPage = lesson.page_start;
       const endPage = lesson.page_end;
       if (startPage == null || endPage == null) {
+        // Niente pagine PDF (foto caricate / ricerca web): se il contesto ha
+        // immagini sorgente in archivio, quelle diventano le figure della lezione.
+        const extFigs = await figuresFromSourceImages(lesson, userId, supabase, supabaseUrl);
+        if (extFigs.length > 0) return successResponse({ figures: extFigs, cached: false });
         return successResponse({ figures: [], cached: false });
       }
       return successResponse({
@@ -403,10 +496,7 @@ serve(withCors(async (req) => {
       return successResponse({ figures: [], cached: false });
     }
 
-    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableKey) return errorResponse("AI non configurato", 500);
-
-    const detection = await detectFigures(limited, lovableKey);
+    const detection = await detectFigures(limited);
 
     if (detection.length === 0 || detection.every(d => d.figures.length === 0)) {
       console.log("No figures detected");
