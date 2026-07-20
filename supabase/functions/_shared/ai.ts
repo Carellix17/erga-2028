@@ -36,7 +36,7 @@ const PROVIDERS: ProviderConfig[] = [
     label: "groq",
     url: "https://api.groq.com/openai/v1/chat/completions",
     keyEnv: "ERGA_GROQ_KEY_APRIL",
-    modelMapper: (_) => "llama-3.1-70b-versatile",
+    modelMapper: (_) => "llama-3.3-70b-versatile",
   },
   {
     label: "lovable-gateway",

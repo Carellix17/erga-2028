@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { callVisionText } from "../_shared/vision.ts";
 
 /**
  * Converte byte in base64 a pezzettini. La versione "tutto in un boccone"
@@ -88,9 +89,6 @@ serve(withCors(async (req) => {
 
         console.log(`Processing ${imagePaths.length} images`);
 
-        const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-        if (!lovableApiKey) throw new Error("AI_CONFIG_ERROR");
-
         // Process images in batches of 5 to avoid token/memory limits
         const BATCH_SIZE = 5;
         const allExtractedTexts: string[] = [];
@@ -139,26 +137,13 @@ serve(withCors(async (req) => {
             }
           ];
 
-          const aiResponse = await fetch("https://ai.lovable.dev/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${lovableApiKey}`,
-            },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash",
-              messages: aiMessages,
-              max_tokens: 16000,
-            }),
-          });
-
-          if (!aiResponse.ok) {
-            console.error("AI response error:", aiResponse.status);
+          let batchText = "";
+          try {
+            batchText = await callVisionText({ messages: aiMessages, max_tokens: 16000 });
+          } catch (visionErr) {
+            console.error("Vision processing error:", visionErr);
             throw new Error("AI_PROCESSING_ERROR");
           }
-
-          const aiData = await aiResponse.json();
-          const batchText = aiData.choices?.[0]?.message?.content || "";
           if (batchText.trim()) {
             allExtractedTexts.push(batchText);
           }
@@ -591,9 +576,12 @@ function cleanPdfText(text: string): string {
 
 function cleanExtractedText(text: string): string {
   return text
-    .replace(/\s+/g, " ")
+    // Spazi e tabulazioni collassano in UNO spazio; gli a-capo RESTANO
+    // (struttura dei paragrafi e marcatori === PAGINA N === servono a valle).
+    // NOTA: una vecchia regola cancellava TUTTE le parole di una lettera —
+    // in italiano "a", "e", "o", "i" sono parole vere: il testo veniva mutilato.
+    .replace(/[^\S\n]+/g, " ")
     .replace(/\n{3,}/g, "\n\n")
-    .replace(/\s[a-zA-Z]\s/g, " ")
     .replace(/[^\x20-\x7E\xA0-\xFF\n]/g, " ")
     .trim();
 }
