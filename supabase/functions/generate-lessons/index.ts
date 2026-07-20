@@ -63,6 +63,14 @@ function extractJson(raw: string): unknown {
 }
 
 import { callAIText } from "../_shared/ai.ts";
+import {
+  parsePages,
+  buildPageOutline,
+  sliceByPageRange,
+  sampleAcrossPages,
+  maxPageNumber,
+  isLongDocument,
+} from "../_shared/pagemap.ts";
 
 let REQUEST_LANGUAGE: "it" | "en" = "it";
 async function callAI(messages: { role: string; content: string }[], temperature = 0.1, maxTokens = 4000): Promise<string> {
@@ -204,7 +212,23 @@ serve(withCors(async (req) => {
         }
         if (context?.processing_status !== "completed") throw new Error("Il PDF è ancora in elaborazione. Riprova tra qualche secondo.");
         contextFilePath = String((context as Record<string, unknown> | null)?.file_path || "");
-        if (context?.content) studyContent = `FILE: ${context.file_name}\n${context.content}`.substring(0, MAX_CONTEXT_CHARS);
+        if (context?.content) {
+          const fullContext = String(context.content);
+          // 🗺️ P6 — lo scaffale giusto: se la lezione ha un intervallo di
+          // pagine e il documento ha i marcatori, all'AI mandiamo SOLO quelle
+          // pagine (prima le mandavamo sempre l'inizio del libro: i capitoli
+          // finali non erano nemmeno nel materiale!). Se la fetta viene vuota
+          // si ricade sulla troncatura classica di sicurezza.
+          if (pageStart != null && pageEnd != null) {
+            const sliced = sliceByPageRange(fullContext, pageStart, pageEnd, MAX_CONTEXT_CHARS);
+            if (sliced.length >= 200) {
+              studyContent = `FILE: ${context.file_name}\n${sliced}`;
+            }
+          }
+          if (!studyContent) {
+            studyContent = `FILE: ${context.file_name}\n${fullContext}`.substring(0, MAX_CONTEXT_CHARS);
+          }
+        }
       } else {
         const { data: contexts } = await supabase.from("study_contexts").select("content, file_name").eq("user_id", userId);
         const { data: legacyCtxs } = legacyUserId ? await supabase.from("study_contexts").select("content, file_name").eq("user_id", legacyUserId) : { data: null };
@@ -385,7 +409,11 @@ ${studyContent}`;
         ? lessonData.explanation_parts.map((part) => ({ ...(part as Record<string, unknown>) }))
         : [];
 
-      const imageDescriptionPatterns = [
+      // 🧽 P6 — la spugna che cancella le "descrizioni a parole" delle figure
+      // (vietate dal prompt: ci sono i token [FIG:n] per quello) ora pulisce
+      // in DUE lingue: prima toglieva solo frasi italiane, quelle inglesi
+      // ("The image shows…", "As shown in the figure…") le lasciava passare.
+      const imageDescriptionPatternsIT = [
         /L['']immagine mostra[^.]*\./gi,
         /Qui c['']è (un'?|l['']?)immagine di[^.]*\./gi,
         /Come si vede (nella|dalla) figura[^.]*\./gi,
@@ -393,9 +421,17 @@ ${studyContent}`;
         /Nell['']immagine[^.]*\./gi,
         /La figura seguente[^.]*\./gi,
       ];
+      const imageDescriptionPatternsEN = [
+        /\b(The|This) (image|picture|figure|table|illustration|diagram) (shows|illustrates|depicts|represents)[^.]*\./gi,
+        /\bIn the (image|picture|figure|illustration)[^.]*\./gi,
+        /\bAs shown in (the )?(image|picture|figure|table|illustration)[^.]*\./gi,
+        /\bThe following (figure|table|image|illustration)[^.]*\./gi,
+      ];
       const sanitizeContent = (text: string): string => {
         let cleaned = text;
-        for (const pattern of imageDescriptionPatterns) cleaned = cleaned.replace(pattern, "").trim();
+        for (const pattern of [...imageDescriptionPatternsIT, ...imageDescriptionPatternsEN]) {
+          cleaned = cleaned.replace(pattern, "").trim();
+        }
         return cleaned;
       };
 
@@ -470,7 +506,15 @@ ${studyContent}`;
       let studyContent = "";
       if (contextId) {
         const { data: ctx } = await supabase.from("study_contexts").select("content, file_name").eq("id", contextId).eq("user_id", userId).single();
-        if (ctx?.content) studyContent = `FILE: ${ctx.file_name}\n${ctx.content}`.substring(0, MAX_CONTEXT_CHARS);
+        if (ctx?.content) {
+          // 🗺️ P6 — il test finale deve coprire TUTTO il libro: un assaggino
+          // per pagina, così entrano nel contesto anche le pagine finali.
+          const fullCtx = String(ctx.content);
+          const sampled = isLongDocument(fullCtx, MAX_CONTEXT_CHARS)
+            ? sampleAcrossPages(fullCtx, MAX_CONTEXT_CHARS - 400)
+            : sampleAcrossPages(fullCtx, MAX_CONTEXT_CHARS);
+          studyContent = `FILE: ${ctx.file_name}\n${sampled}`;
+        }
       } else {
         const { data: ctxs } = await supabase.from("study_contexts").select("content, file_name").eq("user_id", userId);
         if (ctxs) studyContent = ctxs.map((c: { file_name: string; content: string }) => `FILE: ${c.file_name}\n${c.content}`).join("\n\n").substring(0, MAX_CONTEXT_CHARS);
@@ -549,13 +593,31 @@ ${studyContent}`;
       generation_error: null,
     }).eq("id", contextId);
 
-    const combinedContent = `FILE: ${ctxPre.file_name}\n${ctxPre.content}`.substring(0, MAX_CONTEXT_CHARS);
+    // 🗺️ P6 — lavoriamo sul contenuto COMPLETO (la troncatura serve solo per
+    // i payload AI). Marcatori e lunghezza reali guidano la scala delle lezioni.
+    const fullContent = String(ctxPre.content);
+    const combinedContent = `FILE: ${ctxPre.file_name}\n${fullContent}`.substring(0, MAX_CONTEXT_CHARS);
 
     // Stima la complessità del documento per scalare dinamicamente il numero di lezioni
-    const _pageMarkersPre = Array.from(combinedContent.matchAll(/=== PAGINA (\d+) ===/g))
-      .map((m) => parseInt(m[1], 10)).filter((n) => !isNaN(n));
-    const _maxPdfPagePre = _pageMarkersPre.length > 0 ? Math.max(..._pageMarkersPre) : 0;
-    const _charCount = combinedContent.length;
+    // (prima si contavano i marcatori nel testo TRONCATO: per i libri lunghi
+    // l'ultima pagina sembrava molto prima della realtà).
+    const _maxPdfPagePre = maxPageNumber(fullContent);
+    const _charCount = fullContent.length;
+
+    // 🗺️ IL CARTOGRAFO: documento lungo + marcatori → prima si disegna la
+    // mappa pagina-per-pagina (compatta, una riga per pagina) e la si passa
+    // all'AI insieme all'estratto integrale delle prime pagine. Una sola
+    // chiamata extra per documento; i PDF corti seguono la strada classica.
+    const _longDoc = isLongDocument(fullContent, MAX_CONTEXT_CHARS);
+    let _outline = "";
+    let _verbatimHead = "";
+    if (_longDoc) {
+      const pages = parsePages(fullContent);
+      const perPage = Math.max(120, Math.min(240, Math.floor(50000 / Math.max(1, pages.length))));
+      _outline = buildPageOutline(pages, perPage);
+      _verbatimHead = fullContent.substring(0, 6000);
+      console.log(`[cartografo] documento lungo: ${pages.length} pagine, mappa di ${_outline.length} caratteri`);
+    }
     // Heuristica: ~1 lezione ogni ~2500 caratteri o ~1 lezione ogni 0.6 pagine, con bound dinamici
     const _byChars = Math.round(_charCount / 2500);
     const _byPages = _maxPdfPagePre > 0 ? Math.round(_maxPdfPagePre / 0.6) : 0;
@@ -565,9 +627,37 @@ ${studyContent}`;
 
     const backgroundTitles = async () => {
       try {
-        const titlesPrompt = `Analizza il testo fornito e crea un piano di studi strutturato, PROPORZIONATO alla reale complessità del documento.
+        // 🗺️ P6 — due vesti dello stesso prompt: documento corto (testo
+        // integrale, come da tradizione) oppure documento lungo (MAPPA del
+        // cartografo + estratto integrale dell'inizio per calibrare i titoli).
+        const mappingRule = _longDoc
+          ? `8. MAPPING PAGINE (OBBLIGATORIO E CRITICO):
+   - La MAPPA elenca le pagine come "P<numero>: anteprima". Usa SOLO numeri di pagina che compaiono nella mappa.
+   - Per OGNI lezione indica "page_start" e "page_end" con numeri P presenti in mappa.
+   - COPERTURA TOTALE OBBLIGATORIA: distribuisci le lezioni su TUTTO l'arco del documento: la prima parte dalle prime pagine di contenuto, L'ULTIMA pesca dalle pagine FINALI. Nessun capitolo finale può restare scoperto.
+   - In media una lezione copre 2-8 pagine di mappa (manuali densi anche di più).
+   - DIVIETO ASSOLUTO: NON impostare page_start=1 e page_end=1 per tutte le lezioni e NON ammassare le lezioni nella prima metà della mappa. Se lo fai, la richiesta verrà rigettata.`
+          : `8. MAPPING PAGINE (OBBLIGATORIO E CRITICO):
+   - Il testo è suddiviso in blocchi delimitati da marker "=== PAGINA N ===" che indicano l'inizio della pagina N del PDF originale.
+   - Per OGNI lezione devi indicare "page_start" e "page_end" usando ESATTAMENTE i numeri N che appaiono in questi marker.
+   - "page_start" = numero della prima pagina che contiene contenuto della lezione.
+   - "page_end" = numero dell'ultima pagina che contiene contenuto della lezione (può essere uguale a page_start se sta tutto su una pagina; può estendersi su 2-4 pagine).
+   - DIVIETO ASSOLUTO: NON impostare page_start=1 e page_end=1 per tutte le lezioni. Se lo fai, la richiesta verrà rigettata.
+   - Le pagine devono essere DIVERSE e progressive tra lezioni successive (lezione 2 inizia dove finisce la lezione 1, o poco dopo).
+   - Se davvero non riesci a stimarle, distribuisci le lezioni in modo proporzionale tra pagina 1 e l'ultimo marker presente.`;
 
-IMPORTANTE: Rispondi SOLO con un array JSON valido. SOLO JSON puro.
+        const documentSection = _longDoc
+          ? `ESTRATTO INTEGRALE DELLE PRIME PAGINE (calibra stile, lessico e profondità dei titoli):
+${_verbatimHead}
+
+MAPPA DEL DOCUMENTO (una riga per pagina: "P<numero>: prime righe"):
+${_outline}`
+          : `TESTO DA ANALIZZARE:
+${combinedContent}`;
+
+        const titlesPrompt = `Analizza il materiale fornito e crea un piano di studi strutturato, PROPORZIONATO alla reale complessità del documento.
+
+IMPORTANTE: Rispondi SOLO con un array JSON valido. SOLO JSON puro.${_longDoc ? "\n\n⚠️ DOCUMENTO LUNGO: non ricevi il testo integrale ma la MAPPA pagina-per-pagina più l'estratto integrale dell'inizio. Il piano DEVE coprire anche le pagine FINALI del documento." : ""}
 
 REGOLE:
 1. Ogni lezione copre UN SOLO concetto o argomento specifico. MAI raggruppare più concetti diversi nella stessa lezione.
@@ -581,22 +671,14 @@ REGOLE:
 5. Segui l'ordine logico del documento.
 6. Ignora indici, bibliografie, note a piè di pagina, ringraziamenti, copertine.
 7. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato (no titoli generici tipo "Introduzione", "Parte 2").
-8. MAPPING PAGINE (OBBLIGATORIO E CRITICO):
-   - Il testo è suddiviso in blocchi delimitati da marker "=== PAGINA N ===" che indicano l'inizio della pagina N del PDF originale.
-   - Per OGNI lezione devi indicare "page_start" e "page_end" usando ESATTAMENTE i numeri N che appaiono in questi marker.
-   - "page_start" = numero della prima pagina che contiene contenuto della lezione.
-   - "page_end" = numero dell'ultima pagina che contiene contenuto della lezione (può essere uguale a page_start se sta tutto su una pagina; può estendersi su 2-4 pagine).
-   - DIVIETO ASSOLUTO: NON impostare page_start=1 e page_end=1 per tutte le lezioni. Se lo fai, la richiesta verrà rigettata.
-   - Le pagine devono essere DIVERSE e progressive tra lezioni successive (lezione 2 inizia dove finisce la lezione 1, o poco dopo).
-   - Se davvero non riesci a stimarle, distribuisci le lezioni in modo proporzionale tra pagina 1 e l'ultimo marker presente.
+${mappingRule}
 
 ESEMPIO: Se il materiale parla di "La cellula", NON creare una lezione "La cellula e le sue parti". Crea invece: "La membrana cellulare", "Il nucleo", "I mitocondri", "Il reticolo endoplasmatico", etc.
 
 Output richiesto:
 [{"title": "La membrana cellulare", "page_start": 1, "page_end": 3}, {"title": "Il nucleo e il DNA", "page_start": 4, "page_end": 6}]
 
-TESTO DA ANALIZZARE:
-${combinedContent}`;
+${documentSection}`;
 
         const content = await callAI([
           { role: "system", content: "Rispondi ESCLUSIVAMENTE con JSON valido. Solo l'array JSON richiesto." },
@@ -620,9 +702,9 @@ ${combinedContent}`;
 
         if (titles.length === 0) throw new Error("Non sono riuscito a creare un indice valido. Riprova.");
 
-        const pageMarkers = Array.from(combinedContent.matchAll(/=== PAGINA (\d+) ===/g))
-          .map((m) => parseInt(m[1], 10)).filter((n) => !isNaN(n));
-        const maxPdfPage = pageMarkers.length > 0 ? Math.max(...pageMarkers) : 0;
+        // La pagina massima la sappiamo già dal documento COMPLETO (P6): la
+        // distribuzione di emergenza arriva ora davvero fino all'ultima pagina.
+        const maxPdfPage = _maxPdfPagePre;
         const uniqueRanges = new Set(titles.map((t) => `${t.page_start ?? "x"}-${t.page_end ?? "x"}`));
         const allMissing = titles.every((t) => t.page_start == null || t.page_end == null);
         const allCollapsed = titles.length > 1 && uniqueRanges.size === 1 && titles[0].page_start != null;

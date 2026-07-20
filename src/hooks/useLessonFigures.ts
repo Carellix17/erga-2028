@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { renderPdfPagesRangeAsBase64, renderPdfPageCropAsBase64 } from "@/lib/pdfPageRenderer";
+import { renderPdfPagesRangeAsBase64, renderPdfPageCropsAsBase64 } from "@/lib/pdfPageRenderer";
 import { edgeFetch } from "@/lib/edgeFetch";
 
 export interface LessonFigure {
@@ -28,9 +28,24 @@ function enqueue<T>(task: () => Promise<T>): Promise<T> {
   return next;
 }
 
-async function invokeWithRetry(body: Record<string, unknown>): Promise<{ data: any; error: any }> {
+// Risposte possibili delle tre fasi di extract-lesson-figures (tipizzazione
+// onesta: niente più "any" preesistenti, ripuliti durante il passaggio di P6).
+interface DetectedBox {
+  pageNum: number;
+  figureIndex: number;
+  bbox: { x: number; y: number; width: number; height: number };
+  description: string;
+}
+
+interface ExtractFiguresResponse {
+  figures?: LessonFigure[];
+  needPages?: { startPage: number; endPage: number };
+  detectedBoxes?: DetectedBox[];
+}
+
+async function invokeWithRetry(body: Record<string, unknown>): Promise<{ data: ExtractFiguresResponse | null; error: unknown }> {
   try {
-    const data = await edgeFetch<any>("extract-lesson-figures", body);
+    const data = await edgeFetch<ExtractFiguresResponse>("extract-lesson-figures", body);
     return { data, error: null };
   } catch (err) {
     return { data: null, error: err };
@@ -86,6 +101,12 @@ async function loadFiguresFor(lessonId: string): Promise<LessonFigure[]> {
         : [];
       if (detectedBoxes.length === 0) return [];
 
+      // 🚚 P6 — ritaglio in batteria: il PDF viene aperto UNA volta sola per
+      // tutte le figure (prima si riapriva da capo per ogni riquadro).
+      const cropResults = await renderPdfPageCropsAsBase64(
+        pdfBytes,
+        detectedBoxes.map((d) => ({ pageNum: d.pageNum, bbox: d.bbox })),
+      );
       const crops: {
         pageNum: number;
         figureIndex: number;
@@ -93,11 +114,10 @@ async function loadFiguresFor(lessonId: string): Promise<LessonFigure[]> {
         description: string;
         b64Crop: string;
       }[] = [];
-      for (const det of detectedBoxes) {
-        const b64Crop = await renderPdfPageCropAsBase64(pdfBytes, det.pageNum, det.bbox);
-        if (!b64Crop) continue;
-        crops.push({ ...det, b64Crop });
-      }
+      detectedBoxes.forEach((det, i) => {
+        const r = cropResults[i];
+        if (r && r.b64Crop) crops.push({ ...det, b64Crop: r.b64Crop });
+      });
       if (crops.length === 0) return [];
 
       const { data: dataUp, error: fnErr3 } = await enqueue(() =>

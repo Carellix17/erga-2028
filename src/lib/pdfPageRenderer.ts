@@ -103,3 +103,68 @@ export async function renderPdfPageCropAsBase64(
     return null;
   }
 }
+
+/**
+ * 🚚 P6 — versione "in batteria" del ritaglio: il documento PDF viene aperto
+ * UNA VOLTA SOLA per tutti i riquadri (prima veniva riaperto per ogni figura:
+ * con 4-6 figure il caricamento completo del libro si ripeteva 4-6 volte).
+ * Restituisce un array allineato ai riquadri richiesti: null dove fallito.
+ *
+ * I ritagli avvengono in sequenza DENTRO lo stesso documento (niente
+ * duplicati in memoria), quindi è velocissimo E leggero per il telefono.
+ */
+export async function renderPdfPageCropsAsBase64(
+  pdfBytes: ArrayBuffer | Uint8Array,
+  boxes: { pageNum: number; bbox: { x: number; y: number; width: number; height: number } }[],
+  scale = 2.0,
+): Promise<({ pageNum: number; b64Crop: string } | null)[]> {
+  if (boxes.length === 0) return [];
+  let pdf: Awaited<ReturnType<typeof pdfjsLib.getDocument>["promise"]> | null = null;
+  try {
+    pdf = await pdfjsLib.getDocument({ data: clonePdfData(pdfBytes) }).promise;
+    const out: ({ pageNum: number; b64Crop: string } | null)[] = [];
+    for (const box of boxes) {
+      try {
+        if (box.pageNum < 1 || box.pageNum > pdf.numPages) {
+          out.push(null);
+          continue;
+        }
+        const page = await pdf.getPage(box.pageNum);
+        const viewport = page.getViewport({ scale });
+
+        const fullCanvas = document.createElement("canvas");
+        fullCanvas.width = viewport.width;
+        fullCanvas.height = viewport.height;
+        const fullCtx = fullCanvas.getContext("2d")!;
+        await page.render({ canvasContext: fullCtx, viewport }).promise;
+
+        const x = Math.max(0, Math.min(100, box.bbox.x)) / 100 * viewport.width;
+        const y = Math.max(0, Math.min(100, box.bbox.y)) / 100 * viewport.height;
+        const w = Math.max(1, Math.min(100 - box.bbox.x, box.bbox.width)) / 100 * viewport.width;
+        const h = Math.max(1, Math.min(100 - box.bbox.y, box.bbox.height)) / 100 * viewport.height;
+
+        const cropCanvas = document.createElement("canvas");
+        cropCanvas.width = Math.round(w);
+        cropCanvas.height = Math.round(h);
+        const cropCtx = cropCanvas.getContext("2d")!;
+        cropCtx.drawImage(fullCanvas, x, y, w, h, 0, 0, cropCanvas.width, cropCanvas.height);
+
+        const b64Crop = cropCanvas.toDataURL("image/jpeg", 0.88).split(",")[1] || "";
+
+        fullCanvas.width = 0;
+        fullCanvas.height = 0;
+        cropCanvas.width = 0;
+        cropCanvas.height = 0;
+
+        out.push(b64Crop ? { pageNum: box.pageNum, b64Crop } : null);
+      } catch (err) {
+        console.warn(`Failed to crop page ${box.pageNum}:`, err);
+        out.push(null);
+      }
+    }
+    return out;
+  } catch (err) {
+    console.warn("Failed to open PDF for batch crop:", err);
+    return boxes.map(() => null);
+  }
+}
