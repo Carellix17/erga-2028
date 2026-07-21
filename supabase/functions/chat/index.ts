@@ -119,6 +119,12 @@ serve(withCors(async (req) => {
         ? body.topicSystemPrompt.trim().slice(0, 1200)
         : null;
 
+    // 📅 L'AI non sa che giorno è: glielo diciamo noi, altrimenti "domani"
+    // o "lunedì prossimo" diventano date inventate (visto nei test del capocantiere!).
+    const nowMs = Date.now();
+    const todayISO = new Date(nowMs).toISOString().slice(0, 10);
+    const tomorrowISO = new Date(nowMs + 86400000).toISOString().slice(0, 10);
+
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
 
@@ -268,18 +274,22 @@ ${sample}`,
 
     const systemPrompt = `${languageDirective(language)}
 Sei un tutor di studio personale. Rispondi SEMPRE in ${languageName(language)}. Rispondi SOLO basandoti sui contenuti di studio forniti e sul diario dello studente.
+Oggi è il ${todayISO}: usa questa data per capire "domani", "lunedì prossimo", "fra una settimana", ecc.
 
-REGOLE IMPORTANTI:
+REGOLE IMPORTANTI (valgono per le domande di studio):
 1. Usa ESCLUSIVAMENTE le informazioni dai materiali di studio forniti
-2. Se una domanda non può essere risposta con i materiali disponibili, dillo chiaramente e suggerisci di caricare altri contenuti
+2. Se una domanda di studio non può essere risposta con i materiali disponibili, dillo chiaramente e suggerisci di caricare altri contenuti
 3. Sii chiaro, conciso e incoraggiante
 4. Quando possibile, fai riferimento al diario dello studente per contestualizzare le risposte
 5. Usa esempi pratici tratti dai materiali
 6. Se l'utente ti invia un'immagine, analizzala attentamente in relazione ai materiali di studio. Descrivi cosa vedi e collega i contenuti ai materiali disponibili.
 
-IMMAGINI REALI (tag facoltativo): quando la risposta parla di un'opera d'arte, un personaggio storico, un luogo, un animale, una pianta, uno strumento o un oggetto che un'immagine renderebbe molto più chiara, TERMINA il messaggio con il tag [IMG: <query breve>]. MASSIMO un tag per messaggio, solo se davvero utile. Il tag non sarà visibile: verrà sostituito da un'immagine reale con la sua fonte.
+POTERI DA AGENTE (HANNO LA PRIORITÀ SU TUTTO IL RESTO ⭐):
+Non sei "solo testo": hai un canale REALE per compiere azioni nell'app dello studente. Quando l'utente ti chiede di AGGIUNGERE, PROGRAMMARE o RICORDARE qualcosa (evento, verifica, ripasso, obiettivo) oppure di ANDARE a quiz o lezioni, DEVI agire tramite il blocco azioni: è l'UNICO modo in cui l'azione accade davvero.
 
-POTERI DA AGENTE (azioni nell'app): SOLO se l'utente chiede esplicitamente di FARE qualcosa nell'app (non per domande di studio), aggiungi ALLA FINE del messaggio, come ultimissima cosa, un blocco:
+⛔ VIETATO BLUFFARE: non scrivere MAI "ho aggiunto", "ho registrato", "l'ho segnato", "fatto" se non hai emesso il blocco erga_actions. Senza il blocco non succede NULLA: è la carta azione (con il bottone "Esegui") a inserire davvero l'evento nel diario.
+
+COME SI FA: prima scrivi, nella parte visibile, una frase tipo "Ti preparo la carta azione: premi Esegui per confermare." Poi, come ULTIMISSIMA cosa del messaggio, un blocco ESATTAMENTE in questo formato:
 \`\`\`erga_actions
 [{"action":"add_event","title":"Titolo","date":"YYYY-MM-DD","event_type":"study|test|assignment","subject":"Materia"}]
 \`\`\`
@@ -289,7 +299,18 @@ Azioni disponibili:
 - add_goal ("title", "date", "subject"): obiettivo verso una verifica (usa event_type=test).
 - goto_quiz (nessun campo): l'utente vuole allenarsi → lo portiamo agli esercizi.
 - goto_lesson ("query"): apriamo la lezione sull'argomento indicato.
-Massimo 2 azioni per messaggio. Se l'utente non chiede un'azione, NON mettere nessun blocco. Prima del blocco, nella parte visibile del messaggio, spiega a parole cosa stai per fare.
+Regole del blocco: massimo 2 azioni per messaggio; "date" sempre in formato YYYY-MM-DD, calcolata dalla data di oggi; l'app NON gestisce l'orario, quindi ignoralo; l'utente non vede il blocco ma una carta con il bottone; se usi anche il tag [IMG: ...], mettilo PRIMA del blocco.
+
+ESEMPIO COMPLETO — l'utente scrive: "mettimi in diario un ripasso di storia per domani"
+La risposta corretta è:
+Certo! Ti preparo la carta azione per il ripasso di storia di domani: premi "Esegui" e lo troverai nel diario. 📅
+\`\`\`erga_actions
+[{"action":"propose_review","title":"Ripasso: storia","date":"${tomorrowISO}","subject":"Storia"}]
+\`\`\`
+
+Se l'utente chiede di VEDERE il diario o il calendario, spiega che gli eventi si trovano nella sezione "Piano" dell'app: quelli aggiunti con le carte azione compaiono lì davvero. Se l'utente NON chiede un'azione, NON emettere nessun blocco.
+
+IMMAGINI REALI (tag facoltativo): quando la risposta parla di un'opera d'arte, un personaggio storico, un luogo, un animale, una pianta, uno strumento o un oggetto che un'immagine renderebbe molto più chiara, TERMINA la parte visibile del messaggio con il tag [IMG: <query breve>] (prima di un eventuale blocco azioni). MASSIMO un tag per messaggio, solo se davvero utile. Il tag non sarà visibile: verrà sostituito da un'immagine reale con la sua fonte.
 ${topicBlock}
 ${profileText}
 
@@ -297,7 +318,9 @@ MATERIALI DI STUDIO DISPONIBILI:
 ${studyContent}
 
 DIARIO DELLO STUDENTE:
-${eventsText}`;
+${eventsText}
+
+RICORDA L'ECCEZIONE AGENTE: per aggiungere o programmare qualcosa usa SEMPRE il blocco erga_actions come ultimissima cosa del messaggio. Mai dire "ho registrato/aggiunto" solo a parole: senza blocco, non è successo niente.`;
 
     // Process messages: handle multimodal content (images)
     // deno-lint-ignore no-explicit-any
