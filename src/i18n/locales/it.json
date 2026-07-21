@@ -85,6 +85,22 @@
   "chat": {
     "welcome": "Ciao! Sono il tuo tutor di studio personale. Rispondo alle tue domande basandomi esclusivamente sui materiali che hai caricato. Come posso aiutarti oggi?",
     "history": "Cronologia",
+    "topics": { "all": "Tutti i materiali" },
+    "sources": { "title": "Fonti" },
+    "imageCredit": "Immagine da Wikipedia",
+    "interrupted": "Connessione interrotta: risposta parziale.",
+    "stall": { "title": "Il tutor si è fermato", "desc": "La connessione si è interrotta: ti mostro la risposta parziale. Puoi riscrivere tra poco." },
+    "actions": {
+      "addEvent": "Aggiungi al diario",
+      "proposeReview": "Proponi un ripasso",
+      "addGoal": "Obiettivo verifica",
+      "gotoQuiz": "Vai agli esercizi",
+      "gotoLesson": "Apri la lezione",
+      "confirm": "Esegui",
+      "go": "Vai",
+      "eventAdded": "Aggiunto al diario",
+      "failed": "Non sono riuscito a fare l'azione"
+    },
     "quick": {
       "explain": "Spiegami meglio",
       "example": "Fammi un esempio",

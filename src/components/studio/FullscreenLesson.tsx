@@ -1,10 +1,10 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from"react";
-import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, Sparkles, Minus, Send, Bot, User as UserIcon } from"lucide-react";
-import { motion } from"framer-motion";
+import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, Sparkles, Menu, Send, Bot, User as UserIcon } from"lucide-react";
 import { supabase } from"@/integrations/supabase/client";
 import { currentLanguage } from"@/i18n";
 import { Button } from"@/components/ui/button";
 import { LiquidButton } from"@/components/ui/liquid-glass-button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from"@/components/ui/sheet";
 import { ExerciseRenderer, Exercise } from"./exercises/ExerciseRenderer";
 import { cn } from"@/lib/utils";
 import ReactMarkdown from"react-markdown";
@@ -380,11 +380,19 @@ export function FullscreenLesson({
 
  {/* Bottom action */}
  <div className="flex-shrink-0 p-4 pb-8 safe-area-bottom">
+ <div className="flex items-center gap-3">
+ {/* 🔽 P7 — "Spiegami meglio": tastino 3-linee, senza scritte, più piccolo
+     del tasto Continua. Apre la finestra dal basso (stessa di "evento+"). */}
+ <SlideAIAssistant
+ slideText={currentSlideText}
+ lessonTitle={lesson.title}
+ stepKey={currentStep}
+ />
  <LiquidButton
  onClick={handleContinue}
  disabled={!canContinue}
  className={cn(
-"w-full h-12 rounded-xl text-base font-medium tracking-tight transition-all duration-200 border border-white/20",
+"flex-1 h-12 rounded-xl text-base font-medium tracking-tight transition-all duration-200 border border-white/20",
  canContinue
  ?"bg-black text-white shadow-sm hover:bg-stone-900 active:scale-[0.98]"
  :"bg-surface-container-high text-muted-foreground"
@@ -399,14 +407,7 @@ export function FullscreenLesson({
  {(canContinue || step.type !=="exercise") && <ChevronRight className="w-5 h-5 ml-1" />}
  </LiquidButton>
  </div>
-
-      {/* Assistente AI fluttuante — visibile solo dentro alla slide */}
-      <SlideAIAssistant
-        containerRef={rootRef}
-        slideText={currentSlideText}
-        lessonTitle={lesson.title}
-        stepKey={currentStep}
-      />
+ </div>
  </div>
  );
 }
@@ -627,18 +628,15 @@ interface SlideAIMessage {
 }
 
 function SlideAIAssistant({
-  containerRef,
   slideText,
   lessonTitle,
   stepKey,
 }: {
-  containerRef: React.RefObject<HTMLDivElement>;
   slideText: string;
   lessonTitle: string;
   stepKey: number;
 }) {
   const [open, setOpen] = useState(false);
-  const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState<SlideAIMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -648,11 +646,22 @@ function SlideAIAssistant({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, open, minimized]);
+  }, [messages, open]);
 
   useEffect(() => {
-    if (open && !minimized) setTimeout(() => inputRef.current?.focus(), 120);
-  }, [open, minimized]);
+    if (open) setTimeout(() => inputRef.current?.focus(), 250);
+  }, [open]);
+
+  // Alla chiusura della finestra: azzera, così alla prossima apertura parte
+  // una spiegazione fresca della slide su cui sei in quel momento.
+  const handleOpenChange = (v: boolean) => {
+    setOpen(v);
+    if (!v) {
+      bootstrappedFor.current = null;
+      setMessages([]);
+      setInput("");
+    }
+  };
 
   const callAI = useCallback(
     async (history: SlideAIMessage[]) => {
@@ -765,77 +774,35 @@ function SlideAIAssistant({
   }, [input, isLoading, messages, callAI]);
 
   return (
-    <>
-      {/* FAB trascinabile — colore del corso attivo (primary) */}
-      {(!open || minimized) && (
-        <motion.div
-          drag
-          dragElastic={0.1}
-          dragMomentum={false}
-          dragConstraints={containerRef}
-          initial={{ x: 0, y: 0 }}
-          className="fixed bottom-28 right-4 z-[60] cursor-grab active:cursor-grabbing touch-none"
-        >
-          <button
-            onClick={() => {
-              setOpen(true);
-              setMinimized(false);
-            }}
-            className={cn(
-              "w-14 h-14 rounded-full bg-primary text-primary-foreground",
-              "flex items-center justify-center shadow-level-4",
-              "hover:scale-105 active:scale-95 transition-transform",
-              "border border-white/30"
-            )}
-            aria-label="Apri assistente AI"
-          >
-            <Sparkles className="w-6 h-6" />
-          </button>
-        </motion.div>
-      )}
-
-      {/* Pannello chat semitrasparente */}
-      {open && !minimized && (
-        <div
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetTrigger asChild>
+        <button
           className={cn(
-            "fixed z-[60] flex flex-col",
-            "bg-white/80 backdrop-blur-xl border-[0.5px] border-white/40",
-            "shadow-[0_20px_60px_-10px_rgba(0,0,0,0.25)]",
-            // Mobile: bottom sheet; md+: half screen right
-            "inset-x-3 bottom-3 top-24 rounded-3xl",
-            "md:inset-y-4 md:right-4 md:left-auto md:top-4 md:bottom-4 md:w-[46vw] md:max-w-xl md:rounded-3xl",
-            "animate-cinematic-in"
+            "h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0",
+            "bg-surface-container-high text-muted-foreground border border-outline-variant/60",
+            "hover:text-foreground hover:shadow-level-1 active:scale-95 transition-all duration-200"
           )}
+          aria-label="Spiegami meglio questa slide"
+          title="Spiegami meglio"
         >
-          {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-white/40 flex-shrink-0">
-            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-sm">
-              <Sparkles className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="label-medium font-semibold text-foreground truncate">Tutor AI</p>
-              <p className="label-small text-muted-foreground truncate">{lessonTitle}</p>
-            </div>
-            <button
-              onClick={() => setMinimized(true)}
-              className="w-9 h-9 rounded-full hover:bg-foreground/10 flex items-center justify-center transition-colors"
-              aria-label="Riduci a icona"
-            >
-              <Minus className="w-4 h-4 text-muted-foreground" />
-            </button>
-            <button
-              onClick={() => {
-                setOpen(false);
-                setMinimized(false);
-                bootstrappedFor.current = null;
-                setMessages([]);
-              }}
-              className="w-9 h-9 rounded-full hover:bg-foreground/10 flex items-center justify-center transition-colors"
-              aria-label="Chiudi"
-            >
-              <X className="w-4 h-4 text-muted-foreground" />
-            </button>
+          {/* Tre linee orizzontali, stile Google Docs — nessuna scritta (P7) */}
+          <Menu className="w-5 h-5" />
+        </button>
+      </SheetTrigger>
+      <SheetContent
+        side="bottom"
+        className="rounded-t-xl pb-safe bg-[#FCFCFC] max-h-[92vh] h-[85vh] p-0 flex flex-col gap-0"
+      >
+        {/* Header */}
+        <SheetHeader className="flex items-center gap-3 px-4 py-3 border-b border-border/40 flex-shrink-0 space-y-0 text-left">
+          <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-sm flex-shrink-0">
+            <Sparkles className="w-4 h-4 text-primary-foreground" />
           </div>
+          <div className="flex-1 min-w-0">
+            <SheetTitle className="label-medium font-semibold text-foreground truncate">Tutor AI</SheetTitle>
+            <p className="label-small text-muted-foreground truncate">{lessonTitle}</p>
+          </div>
+        </SheetHeader>
 
           {/* Messaggi */}
           <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3 scrollbar-thin">
@@ -897,7 +864,7 @@ function SlideAIAssistant({
           </div>
 
           {/* Input */}
-          <div className="px-3 pt-2 pb-3 border-t border-white/40 flex-shrink-0">
+          <div className="px-3 pt-2 pb-3 border-t border-border/40 flex-shrink-0 bg-[#FCFCFC]">
             <div className="flex gap-2 items-end">
               <textarea
                 ref={inputRef}
@@ -931,8 +898,7 @@ function SlideAIAssistant({
               </Button>
             </div>
           </div>
-        </div>
-      )}
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }

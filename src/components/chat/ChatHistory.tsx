@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquarePlus, Trash2, Clock } from "lucide-react";
+import { MessageSquarePlus, Trash2, Clock, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, isToday, isYesterday } from "date-fns";
 import { it } from "date-fns/locale";
@@ -8,6 +8,10 @@ export interface Conversation {
   id: string;
   title: string;
   updated_at: string;
+  /** Chat d'argomento (P7): il documento a cui è dedicata, null = generale. */
+  context_id?: string | null;
+  topic_title?: string | null;
+  system_prompt?: string | null;
 }
 
 interface ChatHistoryProps {
@@ -59,8 +63,16 @@ export function ChatHistory({ conversations, activeId, onSelect, onNew, onDelete
             )}
           >
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{conv.title}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">{formatDate(conv.updated_at)}</p>
+              <p className="text-sm font-medium truncate flex items-center gap-1.5">
+                {conv.context_id && (
+                  <BookOpen className="w-3 h-3 text-primary flex-shrink-0" />
+                )}
+                {conv.title}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                {conv.context_id && conv.topic_title ? `📂 ${conv.topic_title} · ` : ""}
+                {formatDate(conv.updated_at)}
+              </p>
             </div>
             <button
               onClick={(e) => {

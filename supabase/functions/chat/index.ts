@@ -1,32 +1,200 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { withCors, validateAuth, errorResponse } from "../_shared/auth.ts";
-import { callAIStream } from "../_shared/ai.ts";
+import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { callAIStream, callAIText } from "../_shared/ai.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
+import { parsePages, sampleAcrossPages } from "../_shared/pagemap.ts";
+
+/*
+ * 💬 LA MACCHINA DELLA CHAT — edizione P7.
+ * Novità del pacco:
+ *  1. Tubo anti-pianto: se il rivo dall'AI si rompe a metà risposta, ORA la
+ *     macchina riattacca educatamente (evento "warning") invece di lasciare
+ *     l'app ad aspettare all'infinito.
+ *  2. Fonti: dopo ogni risposta manda, in coda al flusso, da QUALI documenti e
+ *     pagine ha pescato (calcolato qui, coi marcatori di P6).
+ *  3. Chat per argomento: topicContextId → l'AI vede SOLO quel documento, con
+ *     il suo contratto su misura (scritto dall'AI stessa, action "topicPrompt").
+ *  4. Poteri da agente: istruzioni per proporre azioni (```erga_actions).
+ *  5. Immagini reali: istruzioni per il tag [IMG: query] (messa dal client).
+ */
+
+const MAX_HISTORY_MESSAGES = 14;
+const MAX_MESSAGE_CHARS = 2000;
+
+interface SourceCandidate {
+  file: string;
+  num: number | null;
+  text: string;
+}
+
+const STOPWORDS = new Set([
+  "della", "delle", "degli", "dello", "come", "cosa", "quando", "perche", "perché",
+  "sono", "questo", "questa", "queste", "questi", "nella", "nelle", "negli", "sulle",
+  "sullo", "anche", "molto", "puoi", "fare", "hanno", "dove", "quale", "quali",
+  "with", "what", "when", "where", "that", "this", "from", "your", "and", "for",
+  "are", "how", "why", "does", "the",
+]);
+
+/** Le parole forti dell'ultima domanda dell'utente (serve per le fonti). */
+function queryWordsOf(messages: { role: string; content: unknown }[]): string[] {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i];
+    if (m.role !== "user") continue;
+    const txt = Array.isArray(m.content)
+      ? (m.content as { type: string; text?: string }[])
+          .filter((p) => p.type === "text").map((p) => p.text || "").join(" ")
+      : String(m.content ?? "");
+    return txt
+      .toLowerCase()
+      .split(/[^a-zàèéìòù0-9]+/i)
+      .filter((w) => w.length >= 4 && !STOPWORDS.has(w))
+      .slice(0, 12);
+  }
+  return [];
+}
+
+/** Il "bibliotecario": trova le pagine/pezzi più pertinenti alla domanda. */
+function buildSources(
+  contexts: { file_name: string; content: string }[],
+  words: string[],
+): { file: string; pageStart: number | null; pageEnd: number | null; excerpt: string }[] {
+  if (words.length === 0) return [];
+
+  const candidates: SourceCandidate[] = [];
+  for (const ctx of contexts) {
+    if (!ctx?.content) continue;
+    const pages = parsePages(ctx.content);
+    if (pages.length > 0) {
+      for (const p of pages) candidates.push({ file: ctx.file_name, num: p.num, text: p.text });
+    } else {
+      // Documento senza marcatori: lo tagliamo a fette da ~3000 caratteri.
+      for (let off = 0; off < ctx.content.length; off += 3000) {
+        candidates.push({ file: ctx.file_name, num: null, text: ctx.content.slice(off, off + 3000) });
+      }
+    }
+  }
+
+  const scored = candidates.map((c) => {
+    const lc = c.text.toLowerCase();
+    let score = 0;
+    let bestPos = -1;
+    for (const w of words) {
+      let pos = lc.indexOf(w);
+      let count = 0;
+      while (pos !== -1 && count < 6) {
+        count++;
+        if (bestPos === -1) bestPos = pos;
+        pos = lc.indexOf(w, pos + w.length);
+      }
+      score += count;
+    }
+    return { ...c, score, bestPos };
+  }).filter((s) => s.score > 0);
+
+  scored.sort((a, b) => b.score - a.score);
+  const top: { file: string; pageStart: number | null; pageEnd: number | null; excerpt: string }[] = [];
+  const seen = new Set<string>();
+  for (const s of scored) {
+    const key = `${s.file}:${s.num ?? "full"}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const pos = Math.max(0, (s.bestPos === -1 ? 0 : s.bestPos) - 200);
+    const excerpt =
+      (pos > 0 ? "…" : "") + s.text.slice(pos, pos + 420).trim() +
+      (pos + 420 < s.text.length ? "…" : "");
+    top.push({ file: s.file, pageStart: s.num, pageEnd: s.num, excerpt });
+    if (top.length >= 2) break;
+  }
+  return top;
+}
 
 serve(withCors(async (req) => {
   try {
     const body = await req.json();
     const { messages } = body;
     const language = normalizeLanguage(body.language);
+    const topicContextId: string | null = typeof body.topicContextId === "string" ? body.topicContextId : null;
+    const topicSystemPrompt: string | null =
+      typeof body.topicSystemPrompt === "string" && body.topicSystemPrompt.trim()
+        ? body.topicSystemPrompt.trim().slice(0, 1200)
+        : null;
 
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
+
+    console.log(`Chat request for user: ${userId} (authenticated: ${auth.isAuthenticated}, topic: ${topicContextId ?? "generale"})`);
+
+    const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
+
+    // ── ACTION: scrittura del "contratto" personalizzato della chat d'argomento ──
+    if (body.action === "topicPrompt") {
+      if (!topicContextId) return errorResponse("topicContextId richiesto", 400);
+      let { data: ctxP } = await supabase
+        .from("study_contexts")
+        .select("file_name, content")
+        .eq("id", topicContextId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!ctxP && legacyUserId) {
+        const { data: legacyCtxP } = await supabase
+          .from("study_contexts")
+          .select("file_name, content")
+          .eq("id", topicContextId)
+          .eq("user_id", legacyUserId)
+          .maybeSingle();
+        ctxP = legacyCtxP;
+      }
+      if (!ctxP?.content) return errorResponse("Documento non trovato", 404);
+
+      const sample = sampleAcrossPages(String(ctxP.content), 9000);
+      const prompt = await callAIText([
+        { role: "system", content: languageDirective(language) },
+        {
+          role: "user",
+          content: `Sei il configuratore di un tutor personale. Scrivi le ISTRUZIONI OPERATIVE (massimo 110 parole) per un tutor AI che aiuterà lo studente SOLO sul documento "${ctxP.file_name}".
+Comincia ESATTAMENTE con: "In questa chat sei il tutor specializzato su ${ctxP.file_name}." e aggiungi: tono, cosa enfatizzare in base al contenuto, come sfruttare la struttura del documento, cosa proporre quando lo studente è in difficoltà. Solo il testo delle istruzioni, niente preamboli.
+
+CONTENUTO DEL DOCUMENTO (assaggio):
+${sample}`,
+        },
+      ], 0.4, 400);
+      return successResponse({ prompt: prompt.trim().slice(0, 1200) });
+    }
 
     if (!messages) {
       return errorResponse("Missing messages", 400);
     }
 
-    console.log(`Chat request for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
-
-    // Fetch study contexts
-    const { data: contexts } = await supabase
-      .from("study_contexts")
-      .select("content, file_name")
-      .eq("user_id", userId);
-    const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
-    const { data: legacyContexts } = legacyUserId
-      ? await supabase.from("study_contexts").select("content, file_name").eq("user_id", legacyUserId)
-      : { data: null };
+    // ── Contesti di studio: TUTTI (chat generale) O SOLO UNO (chat d'argomento) ──
+    let mergedContexts: { file_name: string; content: string }[] = [];
+    if (topicContextId) {
+      let { data: topicCtx } = await supabase
+        .from("study_contexts")
+        .select("content, file_name")
+        .eq("id", topicContextId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!topicCtx && legacyUserId) {
+        const { data: legacyTopicCtx } = await supabase
+          .from("study_contexts")
+          .select("content, file_name")
+          .eq("id", topicContextId)
+          .eq("user_id", legacyUserId)
+          .maybeSingle();
+        topicCtx = legacyTopicCtx;
+      }
+      if (!topicCtx) return errorResponse("Documento della chat non trovato", 404);
+      mergedContexts = [topicCtx];
+    } else {
+      const { data: contexts } = await supabase
+        .from("study_contexts")
+        .select("content, file_name")
+        .eq("user_id", userId);
+      const { data: legacyContexts } = legacyUserId
+        ? await supabase.from("study_contexts").select("content, file_name").eq("user_id", legacyUserId)
+        : { data: null };
+      mergedContexts = [...(contexts || []), ...(legacyContexts || [])];
+    }
 
     // Fetch study events
     const { data: events } = await supabase
@@ -42,8 +210,6 @@ serve(withCors(async (req) => {
       .eq("user_id", userId)
       .maybeSingle();
 
-    const mergedContexts = [...(contexts || []), ...(legacyContexts || [])];
-
     if (mergedContexts.length === 0) {
       return new Response(
         JSON.stringify({ response: "Non ho ancora accesso a nessun materiale di studio. Per poterti aiutare, carica prima dei PDF con i tuoi appunti o dispense usando il pulsante in alto a destra." }),
@@ -51,17 +217,24 @@ serve(withCors(async (req) => {
       );
     }
 
-    const MAX_STUDY_CHARS = 12000;
+    const MAX_STUDY_CHARS_TOTAL = 24000;
+    const MAX_CHARS_PER_FILE = 8000;
+    const MAX_TOPIC_CHARS = 30000;
     const MAX_EVENTS_CHARS = 1500;
-    const MAX_MESSAGE_CHARS = 2000;
-    const MAX_HISTORY_MESSAGES = 14;
 
     const trimTo = (s: string, max: number) => (s.length > max ? s.slice(0, max) + "\n…" : s);
 
-    const studyContent = trimTo(
-      mergedContexts.map((c: { file_name: string; content: string }) => `--- ${c.file_name} ---\n${c.content}`).join("\n\n"),
-      MAX_STUDY_CHARS
-    );
+    // Con l'assaggio distribuito (P6) anche i libri lunghi danno pezzi dalla fine,
+    // non solo l'inizio — e le fonti possono citare le pagine vere.
+    const studyContent = topicContextId
+      ? `--- ${mergedContexts[0].file_name} ---\n${sampleAcrossPages(String(mergedContexts[0].content), MAX_TOPIC_CHARS)}`
+      : trimTo(
+        mergedContexts.slice(0, 4).map((c) => {
+          const sampled = sampleAcrossPages(String(c.content), MAX_CHARS_PER_FILE);
+          return `--- ${c.file_name} ---\n${sampled}`;
+        }).join("\n\n"),
+        MAX_STUDY_CHARS_TOTAL
+      );
 
     const eventsTextRaw = events && events.length > 0
       ? "Eventi programmati:\n" + events.map((e: { event_type: string; title: string; subject: string; event_date: string }) =>
@@ -76,6 +249,7 @@ serve(withCors(async (req) => {
     };
     let profileText = "";
     if (userProfile) {
+      // deno-lint-ignore no-explicit-any
       const studentName = (userProfile as any).nickname || (userProfile as any).first_name || "";
       if (studentName) {
         profileText += `\nLo studente si chiama "${studentName}". Chiamalo per nome quando interagisci.`;
@@ -88,6 +262,10 @@ serve(withCors(async (req) => {
       profileText += "\n\nAdatta il tuo linguaggio e la difficoltà delle spiegazioni in base al tipo di istituto e ai livelli dello studente.";
     }
 
+    const topicBlock = topicContextId
+      ? `\nQUESTA CHAT RIGUARDA UN SOLO DOCUMENTO: "${mergedContexts[0].file_name}". Rispondi basandoti SOLO su quel documento. Se la domanda esce dal documento, dillo e invita a guardare nella chat generale.\n${topicSystemPrompt ? `\nCONTRATTO PERSONALIZZATO DI QUESTA CHAT (scritto apposta per questo documento, seguilo):\n${topicSystemPrompt}\n` : ""}`
+      : "";
+
     const systemPrompt = `${languageDirective(language)}
 Sei un tutor di studio personale. Rispondi SEMPRE in ${languageName(language)}. Rispondi SOLO basandoti sui contenuti di studio forniti e sul diario dello studente.
 
@@ -98,6 +276,21 @@ REGOLE IMPORTANTI:
 4. Quando possibile, fai riferimento al diario dello studente per contestualizzare le risposte
 5. Usa esempi pratici tratti dai materiali
 6. Se l'utente ti invia un'immagine, analizzala attentamente in relazione ai materiali di studio. Descrivi cosa vedi e collega i contenuti ai materiali disponibili.
+
+IMMAGINI REALI (tag facoltativo): quando la risposta parla di un'opera d'arte, un personaggio storico, un luogo, un animale, una pianta, uno strumento o un oggetto che un'immagine renderebbe molto più chiara, TERMINA il messaggio con il tag [IMG: <query breve>]. MASSIMO un tag per messaggio, solo se davvero utile. Il tag non sarà visibile: verrà sostituito da un'immagine reale con la sua fonte.
+
+POTERI DA AGENTE (azioni nell'app): SOLO se l'utente chiede esplicitamente di FARE qualcosa nell'app (non per domande di studio), aggiungi ALLA FINE del messaggio, come ultimissima cosa, un blocco:
+\`\`\`erga_actions
+[{"action":"add_event","title":"Titolo","date":"YYYY-MM-DD","event_type":"study|test|assignment","subject":"Materia"}]
+\`\`\`
+Azioni disponibili:
+- add_event ("title", "date", "event_type", "subject"): aggiunge un evento al diario dello studente.
+- propose_review ("title", "date", "subject"): propone un ripasso; il titolo DEVE iniziare con "Ripasso:".
+- add_goal ("title", "date", "subject"): obiettivo verso una verifica (usa event_type=test).
+- goto_quiz (nessun campo): l'utente vuole allenarsi → lo portiamo agli esercizi.
+- goto_lesson ("query"): apriamo la lezione sull'argomento indicato.
+Massimo 2 azioni per messaggio. Se l'utente non chiede un'azione, NON mettere nessun blocco. Prima del blocco, nella parte visibile del messaggio, spiega a parole cosa stai per fare.
+${topicBlock}
 ${profileText}
 
 MATERIALI DI STUDIO DISPONIBILI:
@@ -107,19 +300,21 @@ DIARIO DELLO STUDENTE:
 ${eventsText}`;
 
     // Process messages: handle multimodal content (images)
+    // deno-lint-ignore no-explicit-any
     const trimmedHistory = (Array.isArray(messages) ? messages : [])
       .slice(-MAX_HISTORY_MESSAGES)
+      // deno-lint-ignore no-explicit-any
       .map((m: any) => {
-        // If content is an array (multimodal), pass through for vision
         if (Array.isArray(m.content)) {
           return {
             role: m.role,
+            // deno-lint-ignore no-explicit-any
             content: m.content.map((part: any) => {
               if (part.type === "text") {
                 return { type: "text", text: trimTo(String(part.text ?? ""), MAX_MESSAGE_CHARS) };
               }
               if (part.type === "image_url") {
-                return part; // pass image_url through
+                return part;
               }
               return part;
             }),
@@ -137,12 +332,19 @@ ${eventsText}`;
     ];
 
     // Check if any message has image content - use vision model
-    const hasImages = trimmedHistory.some((m: any) => 
+    // deno-lint-ignore no-explicit-any
+    const hasImages = trimmedHistory.some((m: any) =>
+      // deno-lint-ignore no-explicit-any
       Array.isArray(m.content) && m.content.some((p: any) => p.type === "image_url")
     );
     console.log(`Calling AI${hasImages ? " (vision mode)" : ""}`);
 
-    const aiResponse = await callAIStream(apiMessages, 0.7, 1024);
+    const aiResponse = await callAIStream(apiMessages, 0.7, 1600);
+
+    // Le fonti si calcolano QUI, dalla domanda dell'utente (deterministico:
+    // niente dipende da quanto l'AI obbedisce alle istruzioni di citazione).
+    const queryWords = queryWordsOf(trimmedHistory);
+    const sources = buildSources(mergedContexts, queryWords);
 
     // Stream response
     const reader = aiResponse.body?.getReader();
@@ -153,30 +355,45 @@ ${eventsText}`;
 
     const transformStream = new ReadableStream({
       async start(controller) {
-        let buffer = "";
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) {
-            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-            controller.close();
-            break;
-          }
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const jsonStr = line.slice(6).trim();
-              if (!jsonStr || jsonStr === "[DONE]") continue;
-              try {
-                const parsed = JSON.parse(jsonStr);
-                const text = parsed.choices?.[0]?.delta?.content;
-                if (text) {
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`));
-                }
-              } catch { /* skip */ }
+        // 🩹 P7 — il tubo anti-pianto: OGNI errore dentro questo ciclo viene
+        // preso e chiuso educatamente. Prima un'eccezione qui dentro lasciava
+        // il flusso aperto PER SEMPRE e l'app aspettava all'infinito ["si
+        // pianta a metà risposta", segnalato dal capocantiere].
+        try {
+          let buffer = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const jsonStr = line.slice(6).trim();
+                if (!jsonStr || jsonStr === "[DONE]") continue;
+                try {
+                  const parsed = JSON.parse(jsonStr);
+                  const text = parsed.choices?.[0]?.delta?.content;
+                  if (text) {
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`));
+                  }
+                } catch { /* skip */ }
+              }
             }
           }
+          // Coda ricca: prima le FONTI (evento JSON senza choices), poi la fine.
+          if (sources.length > 0) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ sources })}\n\n`));
+          }
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch (streamError) {
+          console.error("Chat stream interrupted mid-response:", streamError);
+          try {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ warning: "interrupted" })}\n\n`));
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+            controller.close();
+          } catch { /* anche la chiusura è impossibile: amen, il client ha la sentinella */ }
         }
       },
     });

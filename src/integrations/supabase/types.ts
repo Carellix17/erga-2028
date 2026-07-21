@@ -16,27 +16,44 @@ export type Database = {
     Tables: {
       chat_conversations: {
         Row: {
+          context_id: string | null
           created_at: string
           id: string
+          system_prompt: string | null
           title: string
+          topic_title: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          context_id?: string | null
           created_at?: string
           id?: string
+          system_prompt?: string | null
           title?: string
+          topic_title?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          context_id?: string | null
           created_at?: string
           id?: string
+          system_prompt?: string | null
           title?: string
+          topic_title?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversations_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "study_contexts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chat_messages: {
         Row: {
@@ -404,6 +421,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      quiz_results: {
+        Row: {
+          context_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          score: number
+          title: string
+          total: number
+          user_id: string
+        }
+        Insert: {
+          context_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          score: number
+          title: string
+          total: number
+          user_id: string
+        }
+        Update: {
+          context_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          score?: number
+          title?: string
+          total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_results_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "study_contexts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       study_contexts: {
         Row: {
