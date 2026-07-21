@@ -355,31 +355,53 @@ ${eventsText}`;
 
     const transformStream = new ReadableStream({
       async start(controller) {
-        // 🩹 P7 — il tubo anti-pianto: OGNI errore dentro questo ciclo viene
-        // preso e chiuso educatamente. Prima un'eccezione qui dentro lasciava
-        // il flusso aperto PER SEMPRE e l'app aspettava all'infinito ["si
-        // pianta a metà risposta", segnalato dal capocantiere].
+        // 🩹 P7 — il tubo anti-pianto, seconda versione.
+        // Il bug trovato dai log del capocantiere (RUNTIME_ERROR riga 0):
+        // il fornitore AI manda il biglietto "[DONE]" ma NON chiude la
+        // connessione (tiene la linea calda). Noi stavamo lì ad aspettare
+        // la riattaccata → risposta arrivata ma flusso mai chiuso → la
+        // sentinella del client segnalava "errore" e il magazziniere
+        // trovava il tubo ancora attaccato. Ora: arrivato "[DONE]",
+        // salutiamo e molliamo la spina SUBITO.
+        const pumpLine = (line: string): boolean => {
+          // true = il fornitore ha detto "ho finito"
+          if (!line.startsWith("data: ")) return false;
+          const jsonStr = line.slice(6).trim();
+          if (!jsonStr) return false;
+          if (jsonStr === "[DONE]") return true;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const text = parsed.choices?.[0]?.delta?.content;
+            if (text) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`));
+            }
+          } catch { /* frammento illeggibile: saltato */ }
+          return false;
+        };
+
+        // 🔌 Molla la spina col fornitore: niente tubi appesi nel magazzino.
+        const releaseUpstream = async () => {
+          try { await reader.cancel(); } catch { /* già staccata: amen */ }
+        };
+
         try {
           let buffer = "";
-          while (true) {
+          let upstreamEnded = false;
+          while (!upstreamEnded) {
             const { done, value } = await reader.read();
             if (done) break;
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split("\n");
             buffer = lines.pop() || "";
             for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const jsonStr = line.slice(6).trim();
-                if (!jsonStr || jsonStr === "[DONE]") continue;
-                try {
-                  const parsed = JSON.parse(jsonStr);
-                  const text = parsed.choices?.[0]?.delta?.content;
-                  if (text) {
-                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`));
-                  }
-                } catch { /* skip */ }
-              }
+              if (pumpLine(line)) { upstreamEnded = true; break; }
             }
+          }
+          // Alcuni fornitori chiudono e basta, senza biglietto: se è rimasta
+          // una riga nella strozzatura finale, la processiamo prima di salutare.
+          if (!upstreamEnded && buffer.trim()) {
+            buffer += decoder.decode(); // svuota eventuali residui multibyte
+            for (const line of buffer.split("\n")) pumpLine(line);
           }
           // Coda ricca: prima le FONTI (evento JSON senza choices), poi la fine.
           if (sources.length > 0) {
@@ -387,6 +409,7 @@ ${eventsText}`;
           }
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
+          await releaseUpstream();
         } catch (streamError) {
           console.error("Chat stream interrupted mid-response:", streamError);
           try {
@@ -394,6 +417,7 @@ ${eventsText}`;
             controller.enqueue(encoder.encode("data: [DONE]\n\n"));
             controller.close();
           } catch { /* anche la chiusura è impossibile: amen, il client ha la sentinella */ }
+          await releaseUpstream();
         }
       },
     });

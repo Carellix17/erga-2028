@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from"react";
-import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, Sparkles, Menu, Send, Bot, User as UserIcon } from"lucide-react";
+import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, Trophy, CheckCircle2, Zap, Star, Loader2, Sparkles, Send, Bot, User as UserIcon } from"lucide-react";
 import { supabase } from"@/integrations/supabase/client";
 import { currentLanguage } from"@/i18n";
 import { Button } from"@/components/ui/button";
@@ -779,14 +779,26 @@ function SlideAIAssistant({
         <button
           className={cn(
             "h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0",
-            "bg-surface-container-high text-muted-foreground border border-outline-variant/60",
-            "hover:text-foreground hover:shadow-level-1 active:scale-95 transition-all duration-200"
+            "bg-black text-white border border-white/20 shadow-sm",
+            "hover:bg-stone-900 active:scale-95 transition-all duration-200"
           )}
           aria-label="Spiegami meglio questa slide"
           title="Spiegami meglio"
         >
-          {/* Tre linee orizzontali, stile Google Docs — nessuna scritta (P7) */}
-          <Menu className="w-5 h-5" />
+          {/* Tre linee orizzontali stile Google Docs, quella di mezzo più corta — nessuna scritta (P7) */}
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            className="w-5 h-5"
+            aria-hidden="true"
+          >
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="14" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+          </svg>
         </button>
       </SheetTrigger>
       <SheetContent
