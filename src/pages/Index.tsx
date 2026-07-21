@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { StudioView } from "@/components/studio/StudioView";
@@ -34,6 +34,20 @@ const Index = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // 🤖 P7 — il citofono dell'agente: la chat può chiedere di cambiare scheda
+  // ("portami agli esercizi", "apri le lezioni") senza conoscere la app.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const tab = (e as CustomEvent<string>).detail;
+      if (tab === "studio" || tab === "piano" || tab === "pratica" || tab === "profilo") {
+        setActiveTab(tab);
+        window.scrollTo({ top: 0 });
+      }
+    };
+    window.addEventListener("erga:goto-tab", handler);
+    return () => window.removeEventListener("erga:goto-tab", handler);
+  }, []);
 
   const { data: uploadedFiles, updateData: setUploadedFiles } = useUserData<UploadedFile[]>(
     "uploaded_files",

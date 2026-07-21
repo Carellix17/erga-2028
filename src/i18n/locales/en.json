@@ -85,6 +85,22 @@
   "chat": {
     "welcome": "Hi! I'm your personal study tutor. I answer your questions based only on the materials you've uploaded. How can I help today?",
     "history": "History",
+    "topics": { "all": "All materials" },
+    "sources": { "title": "Sources" },
+    "imageCredit": "Image from Wikipedia",
+    "interrupted": "Connection interrupted: partial answer.",
+    "stall": { "title": "The tutor stopped", "desc": "The connection was interrupted: showing the partial answer. You can try again shortly." },
+    "actions": {
+      "addEvent": "Add to diary",
+      "proposeReview": "Suggest a review",
+      "addGoal": "Exam goal",
+      "gotoQuiz": "Go to exercises",
+      "gotoLesson": "Open the lesson",
+      "confirm": "Run",
+      "go": "Go",
+      "eventAdded": "Added to diary",
+      "failed": "I couldn't perform the action"
+    },
     "quick": {
       "explain": "Explain better",
       "example": "Give an example",

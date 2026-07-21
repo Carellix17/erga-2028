@@ -61,6 +61,16 @@ interface PastJob {
   contextName: string;
 }
 
+/** 🧾 P7 — il verbale di un quiz finito (tabella quiz_results). */
+interface QuizResultRow {
+  id: string;
+  title: string;
+  score: number;
+  total: number;
+  details: { q: string; ok: boolean; explanation?: string; correctAnswer?: string }[];
+  created_at: string;
+}
+
 function formatGroupLabel(date: Date): string {
   const today = new Date();
   const yest = new Date();
@@ -98,6 +108,8 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const [genCourseName, setGenCourseName] = useState<string>("");
   const [pastJobs, setPastJobs] = useState<PastJob[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [quizResults, setQuizResults] = useState<QuizResultRow[]>([]);
+  const [expandedResultId, setExpandedResultId] = useState<string | null>(null);
   const [view, setView] = useState<"menu" | "generate" | "history">("menu");
   const { currentUser } = useAuth();
   const { supported: pushSupported, permission: pushPermission, subscribe: subscribePush } = usePushNotifications();
@@ -170,6 +182,23 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   }, [currentUser]);
 
   useEffect(() => { loadHistory(); }, [loadHistory]);
+
+  // 🧾 P7 — carica i verbali dei quiz completati (cronologia risultati)
+  const loadQuizResults = useCallback(async () => {
+    if (!currentUser) return;
+    try {
+      const { data } = await supabase
+        .from("quiz_results")
+        .select("id, title, score, total, details, created_at")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (data) setQuizResults(data as QuizResultRow[]);
+    } catch (e) {
+      console.warn("[esercizi] quiz_results load error:", e);
+    }
+  }, [currentUser]);
+
+  useEffect(() => { loadQuizResults(); }, [loadQuizResults]);
 
   const openPastJob = useCallback((job: PastJob) => {
     setSelectedCourse(job.context_id);
@@ -401,6 +430,32 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       setCurrentIndex(prev => prev + 1);
     } else {
       setIsFinished(true);
+      // 🧾 P7 — salva il verbale del quiz in cronologia (punteggio + errori con
+      // spiegazione), così "La tua cronologia" mostra com'è andata davvero.
+      (async () => {
+        try {
+          const details = results.map((r) => ({
+            q: r.exercise.question,
+            ok: r.isCorrect,
+            explanation: r.exercise.explanation,
+            correctAnswer: Array.isArray(r.exercise.correctAnswer)
+              ? r.exercise.correctAnswer.join(", ")
+              : String(r.exercise.correctAnswer ?? ""),
+          }));
+          const { error } = await supabase.from("quiz_results").insert({
+            user_id: currentUser,
+            context_id: selectedCourse ?? null,
+            title: courses.find((c) => c.id === selectedCourse)?.file_name || "Esercizi",
+            score: results.filter((r) => r.isCorrect).length,
+            total: results.length,
+            details,
+          });
+          if (error) throw error;
+          loadQuizResults();
+        } catch (e) {
+          console.warn("[esercizi] quiz_results save failed:", e);
+        }
+      })();
       // Aggiornamento dinamico del profilo cognitivo (APP) basato sulle
       // performance reali. Solo esercizi a valutazione deterministica.
       (async () => {
@@ -435,6 +490,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     setIsFinished(false);
     onFullscreenChange?.(false);
     loadHistory();
+    loadQuizResults();
   };
 
   // Lesson picker view
@@ -668,6 +724,63 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
             </div>
           </div>
 
+          {/* 🧾 P7 — la cronologia risultati: ogni quiz finito lascia un verbale
+              con punteggio e, all'interno, gli errori spiegati ("hai sbagliato
+              qui, ecco perché"). Sotto restano i set rigenerabili di sempre. */}
+          {quizResults.length > 0 && (
+            <div className="space-y-2">
+              <p className="label-small text-muted-foreground uppercase tracking-wide">La tua cronologia risultati</p>
+              <div className="space-y-2">
+                {quizResults.map((r) => {
+                  const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
+                  const wrong = (r.details || []).filter((d) => !d.ok);
+                  const expanded = expandedResultId === r.id;
+                  return (
+                    <div key={r.id} className="rounded-2xl bg-surface-container-high border border-outline-variant/30 shadow-level-1 overflow-hidden">
+                      <button
+                        onClick={() => setExpandedResultId(expanded ? null : r.id)}
+                        className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-foreground/[0.03] transition-colors"
+                      >
+                        <div className={cn(
+                          "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-display font-bold text-sm",
+                          pct >= 70 ? "bg-success-container text-success" : pct >= 50 ? "bg-warning/10 text-warning" : "bg-error-container text-error"
+                        )}>
+                          {pct}%
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="body-small font-semibold text-foreground truncate">{r.title}</p>
+                          <p className="label-small text-muted-foreground">
+                            {formatGroupLabel(new Date(r.created_at))} · {formatTime(new Date(r.created_at))} · {r.score}/{r.total} corrette
+                          </p>
+                        </div>
+                        <ChevronRight className={cn("w-4 h-4 text-muted-foreground transition-transform duration-200", expanded && "rotate-90")} />
+                      </button>
+                      {expanded && (
+                        <div className="px-3.5 pb-3 space-y-2 animate-fade-up">
+                          {wrong.length === 0 ? (
+                            <p className="body-small text-success">Nessun errore: perfetto! ✨</p>
+                          ) : (
+                            wrong.map((d, i) => (
+                              <div key={i} className="p-2.5 rounded-xl bg-error-container/40 border border-error/15 space-y-1">
+                                <p className="body-small font-medium text-foreground">{d.q}</p>
+                                {d.correctAnswer && <p className="body-small text-success font-medium">✓ {d.correctAnswer}</p>}
+                                {d.explanation && (
+                                  <div className="body-small text-muted-foreground prose prose-sm max-w-none prose-p:my-1">
+                                    <ReactMarkdown>{d.explanation}</ReactMarkdown>
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {loadingHistory ? (
             <div className="flex items-center gap-2 text-muted-foreground py-6 justify-center">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -751,6 +864,28 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
             {correctCount}/{results.length} risposte corrette
           </p>
         </div>
+
+        {/* 🧑‍🏫 P7 — la pagella: gli errori con la spiegazione del perché,
+            ripresi subito mentre sono freschi (e salvati in cronologia). */}
+        {results.some((r) => !r.isCorrect) && (
+          <div className="w-full max-w-md max-h-[36vh] overflow-y-auto space-y-2 scrollbar-thin">
+            <p className="label-medium font-semibold text-error text-left">Da ripassare ({results.filter((r) => !r.isCorrect).length}):</p>
+            {results.filter((r) => !r.isCorrect).map((r, i) => (
+              <div key={i} className="text-left p-3 rounded-2xl bg-error-container/50 border border-error/20 space-y-1.5">
+                <p className="body-small font-medium text-foreground">{r.exercise.question}</p>
+                <p className="body-small text-success font-medium">
+                  ✓ {Array.isArray(r.exercise.correctAnswer) ? r.exercise.correctAnswer.join(", ") : r.exercise.correctAnswer}
+                </p>
+                {r.exercise.explanation && (
+                  <div className="body-small text-muted-foreground prose prose-sm max-w-none prose-p:my-1">
+                    <ReactMarkdown>{r.exercise.explanation}</ReactMarkdown>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-3">
           <Button variant="outline" onClick={exitExercises} className="rounded-full">
             Cambia corso
