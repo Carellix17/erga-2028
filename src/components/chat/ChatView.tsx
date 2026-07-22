@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { currentLanguage } from "@/i18n";
 import { edgeFetch } from "@/lib/edgeFetch";
+import { useQueryClient } from "@tanstack/react-query";
+import { studyEventsKeys } from "@/hooks/useStudyEvents";
 import {
   cleanAssistantText,
   parseSpecialEvent,
@@ -54,6 +56,9 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  // 🚪 Il diario del Piano si scrive SOLO passando dal portinaio save-event:
+  // stessa porta per tutti, così gli eventi dell'agente compaiono davvero in Piano.
+  const queryClient = useQueryClient();
 
   const scrollToBottom = () => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); };
   useEffect(() => { scrollToBottom(); }, [messages]);
@@ -399,14 +404,21 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
           : new Date(Date.now() + 86400000).toISOString().slice(0, 10);
         const eventType = action.kind === "add_goal" ? "test"
           : (["study", "test", "assignment"].includes(String(action.event_type)) ? String(action.event_type) : "study");
-        const { error } = await supabase.from("study_events").insert({
-          user_id: currentUser,
-          title: finalTitle.slice(0, 120),
-          subject: String(action.subject || "Generale").slice(0, 60),
-          event_date: date,
-          event_type: eventType,
+        // 🚪 Passiamo dal portinaio save-event (come fa il Piano): scrivere
+        // nel caveau per conto nostro poteva fallire in silenzio per alcuni
+        // utenti, e il Piano non avrebbe mostrato nulla. Trovato dal capocantiere!
+        await edgeFetch("save-event", {
+          userId: currentUser,
+          action: "add",
+          events: [{
+            subject: String(action.subject || "Generale").slice(0, 60),
+            title: finalTitle.slice(0, 120),
+            date,
+            type: eventType,
+          }],
         });
-        if (error) throw error;
+        // 🔄 Avvisiamo il cruscotto del Piano che c'è un evento nuovo da pescare.
+        queryClient.invalidateQueries({ queryKey: studyEventsKeys.all(currentUser) });
         toast({ title: t("chat.actions.eventAdded"), description: `${finalTitle} · ${date}` });
       } else if (action.kind === "goto_quiz") {
         window.dispatchEvent(new CustomEvent("erga:goto-tab", { detail: "pratica" }));
