@@ -270,6 +270,8 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
       let textBuffer = "";
       let assistantContent = "";
       let streamSources: ChatSource[] = [];
+      // 🎯 Piano B: azioni decise dalla MACCHINA, non dalle buone intenzioni dell'AI.
+      let streamForcedActions: AgentAction[] = [];
       let streamInterrupted = false;
 
       // 🐕‍🦺 LA SENTINELLA: ogni pezzetto di testo azzera il timer; se il tubo
@@ -302,6 +304,8 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
           const special = parseSpecialEvent(parsed);
           if (special?.type === "sources") {
             streamSources = special.sources;
+          } else if (special?.type === "forced_actions") {
+            streamForcedActions = special.actions;
           } else if (special?.type === "warning") {
             streamInterrupted = true;
           } else {
@@ -342,6 +346,16 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
       // 🧽 Pulizia finale: azioni e tag immagine spariscono dalla vista
       const { cleanText, actions, imageQuery } = cleanAssistantText(assistantContent);
 
+      // 🎯 Uniamo le azioni PROPOSTE dall'AI con quelle FORZATE dalla macchina
+      // (stesso tipo + stesso titolo = una sola carta, mai doppioni; massimo 2).
+      const mergedActions = [...actions];
+      for (const fa of streamForcedActions) {
+        const isDuplicate = mergedActions.some((a) =>
+          a.kind === fa.kind &&
+          String(a.title ?? "").trim().toLowerCase() === String(fa.title ?? "").trim().toLowerCase());
+        if (!isDuplicate) mergedActions.push(fa);
+      }
+
       // 🖼️ Se l'AI ha chiesto un'immagine, la macchinetta Wikipedia la trova
       let wikiImageUrl: string | undefined;
       if (imageQuery) {
@@ -359,7 +373,7 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
         content: cleanText || "…",
         imageUrl: wikiImageUrl,
         sources: streamSources,
-        actions,
+        actions: mergedActions.slice(0, 2),
         interrupted: streamInterrupted,
       };
       setMessages(prev => {

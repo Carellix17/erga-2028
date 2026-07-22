@@ -1,0 +1,94 @@
+import { describe, it, expect } from "vitest";
+import { detectActionIntent, parseForcedAction } from "../../supabase/functions/_shared/agentintent";
+
+describe("detectActionIntent — il fiuto del Piano B", () => {
+  it("abbaia per richieste diario con verbo + sostantivo", () => {
+    expect(detectActionIntent("mettimi in diario una verifica di storia per domani")).toBe(true);
+    expect(detectActionIntent("aggiungi un evento al calendario")).toBe(true);
+    expect(detectActionIntent("ricordami il compito di matematica")).toBe(true);
+    expect(detectActionIntent("programma un ripasso di biologia")).toBe(true);
+    expect(detectActionIntent("segna l'obiettivo per la verifica")).toBe(true);
+  });
+
+  it("abbaia anche senza verbo, se c'è sostantivo + data ravvicinata", () => {
+    expect(detectActionIntent("ho una verifica di storia per domani")).toBe(true);
+    expect(detectActionIntent("interrogazione lunedì prossimo")).toBe(true);
+    expect(detectActionIntent("esame il 23/07")).toBe(true);
+  });
+
+  it("sta zitto per le normali domande di studio", () => {
+    expect(detectActionIntent("spiegami il fissismo")).toBe(false);
+    expect(detectActionIntent("che cos'è una verifica delle ipotesi?")).toBe(false);
+    expect(detectActionIntent("fammi un riassunto")).toBe(false);
+    expect(detectActionIntent("")).toBe(false);
+  });
+});
+
+describe("parseForcedAction — la cernita che non si fida", () => {
+  const TODAY = "2026-07-21";
+  const TOMORROW = "2026-07-22";
+
+  it("un JSON pulito passa così com'è", () => {
+    const out = parseForcedAction(
+      '{"action":"add_event","title":"Verifica di storia","date":"2026-07-23","event_type":"test","subject":"Storia"}',
+      TODAY,
+    );
+    expect(out).toEqual({
+      action: "add_event",
+      title: "Verifica di storia",
+      date: "2026-07-23",
+      event_type: "test",
+      subject: "Storia",
+    });
+  });
+
+  it("trova il JSON anche se l'AI lo infiocchetta con ```json e chiacchiere", () => {
+    const out = parseForcedAction(
+      'Ecco a te:\n```json\n{"action":"add_event","title":"Ripasso","date":"2026-07-22","subject":"Storia"}\n```\nSpero sia utile!',
+      TODAY,
+    );
+    expect(out?.action).toBe("add_event");
+    expect(out?.title).toBe("Ripasso");
+    expect(out?.event_type).toBe("study"); // mancava: toppe della macchina
+  });
+
+  it('{"action":"none"} e azioni fuori whitelist → niente carta', () => {
+    expect(parseForcedAction('{"action":"none"}', TODAY)).toBeNull();
+    expect(parseForcedAction('{"action":"goto_quiz"}', TODAY)).toBeNull();
+    expect(parseForcedAction('{"action":"delete_everything"}', TODAY)).toBeNull();
+  });
+
+  it("spazzatura totale → null, non un disastro", () => {
+    expect(parseForcedAction("Mi dispiace, non posso aiutarti.", TODAY)).toBeNull();
+    expect(parseForcedAction("{json rotto", TODAY)).toBeNull();
+    expect(parseForcedAction("", TODAY)).toBeNull();
+  });
+
+  it("data mancante o rotta → domani (calcolato, non inventato)", () => {
+    const noDate = parseForcedAction('{"action":"add_event","title":"Verifica"}', TODAY);
+    expect(noDate?.date).toBe(TOMORROW);
+    const badDate = parseForcedAction('{"action":"add_event","title":"Verifica","date":"dopodomani"}', TODAY);
+    expect(badDate?.date).toBe(TOMORROW);
+  });
+
+  it("i ripassi senza prefisso ricevono il cappello 'Ripasso: '", () => {
+    const out = parseForcedAction(
+      '{"action":"propose_review","title":"storia romana"}',
+      TODAY,
+    );
+    expect(out?.title).toBe("Ripasso: storia romana");
+    const already = parseForcedAction('{"action":"propose_review","title":"Ripasso: storia"}', TODAY);
+    expect(already?.title).toBe("Ripasso: storia");
+  });
+
+  it("gli obiettivi puntano sempre alle verifiche (event_type=test)", () => {
+    const out = parseForcedAction('{"action":"add_goal","title":"Promessi Sposi","event_type":"study"}', TODAY);
+    expect(out?.event_type).toBe("test");
+  });
+
+  it("titoli chilometrici vengono potati a 120 caratteri", () => {
+    const long = "x".repeat(300);
+    const out = parseForcedAction(`{"action":"add_event","title":"${long}"}`, TODAY);
+    expect(out?.title).toHaveLength(120);
+  });
+});

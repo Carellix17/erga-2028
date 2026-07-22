@@ -3,6 +3,7 @@ import { withCors, validateAuth, errorResponse, successResponse } from "../_shar
 import { callAIStream, callAIText } from "../_shared/ai.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 import { parsePages, sampleAcrossPages } from "../_shared/pagemap.ts";
+import { detectActionIntent, parseForcedAction } from "../_shared/agentintent.ts";
 
 /*
  * 💬 LA MACCHINA DELLA CHAT — edizione P7.
@@ -51,6 +52,20 @@ function queryWordsOf(messages: { role: string; content: unknown }[]): string[] 
       .slice(0, 12);
   }
   return [];
+}
+
+/** Il testo dell'ultima domanda dell'utente (serve al fiuto del Piano B). */
+function lastUserTextOf(messages: { role: string; content: unknown }[]): string {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role !== "user") continue;
+    const m = messages[i];
+    const txt = Array.isArray(m.content)
+      ? (m.content as { type: string; text?: string }[])
+          .filter((p) => p.type === "text").map((p) => p.text || "").join(" ")
+      : String(m.content ?? "");
+    return txt.trim().slice(0, 600);
+  }
+  return "";
 }
 
 /** Il "bibliotecario": trova le pagine/pezzi più pertinenti alla domanda. */
@@ -272,6 +287,16 @@ ${sample}`,
       ? `\nQUESTA CHAT RIGUARDA UN SOLO DOCUMENTO: "${mergedContexts[0].file_name}". Rispondi basandoti SOLO su quel documento. Se la domanda esce dal documento, dillo e invita a guardare nella chat generale.\n${topicSystemPrompt ? `\nCONTRATTO PERSONALIZZATO DI QUESTA CHAT (scritto apposta per questo documento, seguilo):\n${topicSystemPrompt}\n` : ""}`
       : "";
 
+    // 🎯 PIANO B dell'agente: se la richiesta profuma di "aggiungi al diario",
+    // un secondo AI estrae i SOLI dati dell'evento in JSON, in parallelo alla
+    // risposta. La carta col bottone "Esegui" arriva PER COSTRUZIONE, anche se
+    // il primo AI "bluffa" (beccato due volte dal capocantiere: mai più!).
+    const rawLastUser = lastUserTextOf(Array.isArray(messages) ? messages : []);
+    const intentDetected = detectActionIntent(rawLastUser);
+    const agentNudge = intentDetected
+      ? `\n\nNOTA DI SISTEMA (prioritaria): la richiesta riguarda il diario. Il sistema prepara AUTOMATICAMENTE la carta azione con il bottone "Esegui". Nel testo visibile NON dire "ho aggiunto/annotato/registrato": di' che stai preparando la carta da confermare con "Esegui". (Se emetti anche il blocco erga_actions va bene, ma la carta arriverà comunque.)`
+      : "";
+
     const systemPrompt = `${languageDirective(language)}
 Sei un tutor di studio personale. Rispondi SEMPRE in ${languageName(language)}. Rispondi SOLO basandoti sui contenuti di studio forniti e sul diario dello studente.
 Oggi è il ${todayISO}: usa questa data per capire "domani", "lunedì prossimo", "fra una settimana", ecc.
@@ -320,7 +345,7 @@ ${studyContent}
 DIARIO DELLO STUDENTE:
 ${eventsText}
 
-RICORDA L'ECCEZIONE AGENTE: per aggiungere o programmare qualcosa usa SEMPRE il blocco erga_actions come ultimissima cosa del messaggio. Mai dire "ho registrato/aggiunto" solo a parole: senza blocco, non è successo niente.`;
+RICORDA L'ECCEZIONE AGENTE: per aggiungere o programmare qualcosa usa SEMPRE il blocco erga_actions come ultimissima cosa del messaggio. Mai dire "ho registrato/aggiunto" solo a parole: senza blocco, non è successo niente.${agentNudge}`;
 
     // Process messages: handle multimodal content (images)
     // deno-lint-ignore no-explicit-any
@@ -361,6 +386,27 @@ RICORDA L'ECCEZIONE AGENTE: per aggiungere o programmare qualcosa usa SEMPRE il 
       Array.isArray(m.content) && m.content.some((p: any) => p.type === "image_url")
     );
     console.log(`Calling AI${hasImages ? " (vision mode)" : ""}`);
+
+    // Lanciamo INSIEME il rivo della risposta e (se il fiuto ha abbaiato)
+    // l'estrattore JSON: matura mentre il testo scorre, attesa zero in più.
+    const extractionPromise = intentDetected
+      ? callAIText([
+          { role: "system", content: "Sei un estrattore di dati. Rispondi SOLO con un oggetto JSON, senza una parola prima o dopo." },
+          {
+            role: "user",
+            content: `Oggi è il ${todayISO}. Estrai l'azione per il diario da questa richiesta dello studente; se NON chiede di aggiungere o programmare nulla, rispondi {"action":"none"}.
+
+Richiesta: """${rawLastUser.slice(0, 500)}"""
+
+Formato (UN oggetto, non una lista):
+{"action":"add_event","title":"...","date":"YYYY-MM-DD","event_type":"study|test|assignment","subject":"..."}
+
+Regole: "date" calcolata da oggi ("domani" = ${tomorrowISO}); titolo breve; se parla di RIPASSO usa {"action":"propose_review",...} (il titolo inizierà con "Ripasso:"); se parla di un OBIETTIVO verso una verifica usa {"action":"add_goal",...}; event_type=test per verifiche/interrogazioni/esami, assignment per compiti, study altrimenti; subject = la materia, oppure "Generale".`,
+          },
+        ], 0.1, 250)
+          .then((raw) => parseForcedAction(raw, todayISO))
+          .catch(() => null)
+      : null;
 
     const aiResponse = await callAIStream(apiMessages, 0.7, 1600);
 
@@ -425,6 +471,14 @@ RICORDA L'ECCEZIONE AGENTE: per aggiungere o programmare qualcosa usa SEMPRE il 
           if (!upstreamEnded && buffer.trim()) {
             buffer += decoder.decode(); // svuota eventuali residui multibyte
             for (const line of buffer.split("\n")) pumpLine(line);
+          }
+          // 🎯 PIANO B: la carta azione costruita dalla MACCHINA (non dalle
+          // buone intenzioni dell'AI): viaggia come evento speciale, come le fonti.
+          if (extractionPromise) {
+            const forced = await extractionPromise;
+            if (forced) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ forced_actions: [forced] })}\n\n`));
+            }
           }
           // Coda ricca: prima le FONTI (evento JSON senza choices), poi la fine.
           if (sources.length > 0) {
