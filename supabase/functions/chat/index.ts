@@ -22,6 +22,10 @@ import { detectActionIntent, parseForcedAction } from "../_shared/agentintent.ts
 const MAX_HISTORY_MESSAGES = 14;
 const MAX_MESSAGE_CHARS = 2000;
 
+// 🏷️ Timbro di versione: la macchina firma ogni richiesta nei log, così dal
+// pannellino di controllo si vede SUBITO quale versione sta rispondendo.
+const FN_VERSION = "P7-PLANB-1";
+
 interface SourceCandidate {
   file: string;
   num: number | null;
@@ -143,7 +147,7 @@ serve(withCors(async (req) => {
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
 
-    console.log(`Chat request for user: ${userId} (authenticated: ${auth.isAuthenticated}, topic: ${topicContextId ?? "generale"})`);
+    console.log(`Chat request for user: ${userId} (authenticated: ${auth.isAuthenticated}, topic: ${topicContextId ?? "generale"}) [${FN_VERSION}]`);
 
     const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
 
@@ -296,6 +300,7 @@ ${sample}`,
     const agentNudge = intentDetected
       ? `\n\nNOTA DI SISTEMA (prioritaria): la richiesta riguarda il diario. Il sistema prepara AUTOMATICAMENTE la carta azione con il bottone "Esegui". Nel testo visibile NON dire "ho aggiunto/annotato/registrato": di' che stai preparando la carta da confermare con "Esegui". (Se emetti anche il blocco erga_actions va bene, ma la carta arriverà comunque.)`
       : "";
+    if (intentDetected) console.log(`[PianoB] intenzione da agente fiutata: estrattore lanciato [${FN_VERSION}]`);
 
     const systemPrompt = `${languageDirective(language)}
 Sei un tutor di studio personale. Rispondi SEMPRE in ${languageName(language)}. Rispondi SOLO basandoti sui contenuti di studio forniti e sul diario dello studente.
@@ -476,6 +481,7 @@ Regole: "date" calcolata da oggi ("domani" = ${tomorrowISO}); titolo breve; se p
           // buone intenzioni dell'AI): viaggia come evento speciale, come le fonti.
           if (extractionPromise) {
             const forced = await extractionPromise;
+            console.log(`[PianoB] esito estrattore: ${forced ? forced.action : "none"} [${FN_VERSION}]`);
             if (forced) {
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ forced_actions: [forced] })}\n\n`));
             }
