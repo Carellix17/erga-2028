@@ -116,3 +116,37 @@ describe("cleanAssistantText — la spugna definitiva", () => {
     expect(actions).toHaveLength(1);
   });
 });
+
+describe("parseSpecialEvent — forced_actions, il Piano B della macchina", () => {
+  it("le azioni forzate dalla macchina vengono riconosciute e pulite", () => {
+    const event = parseSpecialEvent({
+      forced_actions: [
+        { action: "add_event", title: "Verifica di storia", date: "2026-07-22", event_type: "test", subject: "Storia" },
+        { action: "azione_inventata", title: "questa si butta" },
+      ],
+    });
+    expect(event?.type).toBe("forced_actions");
+    if (event?.type === "forced_actions") {
+      expect(event.actions).toHaveLength(1);
+      expect(event.actions[0].kind).toBe("add_event");
+      expect(event.actions[0].title).toBe("Verifica di storia");
+    }
+  });
+
+  it("massimo due carte, anche se la macchina esagera", () => {
+    const event = parseSpecialEvent({
+      forced_actions: [
+        { action: "add_event", title: "A" },
+        { action: "add_event", title: "B" },
+        { action: "add_event", title: "C" },
+      ],
+    });
+    if (event?.type === "forced_actions") expect(event.actions).toHaveLength(2);
+  });
+
+  it("la forma degli oggetti combacia con quella delle azioni dell'AI", () => {
+    // stesso "action" del blocco erga_actions → stesso kind della scheda
+    const fromBlock = parseSpecialEvent({ forced_actions: [{ action: "propose_review", title: "Ripasso: storia" }] });
+    if (fromBlock?.type === "forced_actions") expect(fromBlock.actions[0].kind).toBe("propose_review");
+  });
+});

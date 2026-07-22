@@ -72,6 +72,24 @@ export function extractImageTag(text: string): { cleanText: string; imageQuery: 
 
 /* ── Agente: blocco ```erga_actions … ``` ──────────────────────────────── */
 /**
+ * Dal JSON grezzo alle azioni valide: stessa cernita usata sia per il blocco
+ * scritto dall'AI sia per le azioni FORZATE dalla macchina (Piano B): chiavi
+ * sconosciute si buttano, formati strani non rompono mai la chat.
+ */
+function sanitizeActionItems(parsed: unknown): AgentAction[] {
+  const list = Array.isArray(parsed) ? parsed : [parsed];
+  const actions: AgentAction[] = [];
+  for (const raw of list) {
+    if (!raw || typeof raw !== "object") continue;
+    const { action, ...rest } = raw as Record<string, unknown>;
+    if (typeof action === "string" && (ACTION_KINDS as string[]).includes(action)) {
+      actions.push({ kind: action as AgentActionKind, ...rest });
+    }
+  }
+  return actions;
+}
+
+/**
  * Estrae il blocco azioni (sempre alla fine del messaggio, per istruzioni)
  * e lo rimuove dal testo visibile. Azioni sconosciute o un JSON rotto NON
  * rompono la chat: vengono semplicemente ignorate.
@@ -82,15 +100,7 @@ export function extractActions(text: string): { cleanText: string; actions: Agen
   const cleanText = tidyText(
     text.replace(/```erga_actions\s*([\s\S]*?)```/gi, (_full, json: string) => {
       try {
-        const parsed: unknown = JSON.parse(json);
-        const list = Array.isArray(parsed) ? parsed : [parsed];
-        for (const raw of list) {
-          if (!raw || typeof raw !== "object") continue;
-          const { action, ...rest } = raw as Record<string, unknown>;
-          if (typeof action === "string" && (ACTION_KINDS as string[]).includes(action)) {
-            actions.push({ kind: action as AgentActionKind, ...rest });
-          }
-        }
+        actions.push(...sanitizeActionItems(JSON.parse(json)));
       } catch {
         // Blocco malformato: non è un disastro, lo togliamo comunque dalla vista.
       }
@@ -103,16 +113,22 @@ export function extractActions(text: string): { cleanText: string; actions: Agen
 /* ── Eventi SSE speciali ────────────────────────────────────────────────── */
 /**
  * Nel flusso server→client viaggiano anche eventi JSON SENZA choices:
- *  - {"sources": [...]}   subito prima della fine
- *  - {"warning": "interrupted"}  se il tubo si è rotto a metà
+ *  - {"sources": [...]}         subito prima della fine
+ *  - {"forced_actions": [...]}  la carta azione costruita dalla MACCHINA (Piano B)
+ *  - {"warning": "interrupted"} se il tubo si è rotto a metà
  * Questa funzione li distingue dai normali pezzetti di testo.
  */
 export function parseSpecialEvent(parsed: unknown):
   | { type: "sources"; sources: ChatSource[] }
+  | { type: "forced_actions"; actions: AgentAction[] }
   | { type: "warning"; warning: string }
   | null {
   if (!parsed || typeof parsed !== "object") return null;
   const obj = parsed as Record<string, unknown>;
+  if (Array.isArray(obj.forced_actions)) {
+    // 🎯 Piano B: stessa cernita delle azioni scritte dall'AI, massimo 2 carte.
+    return { type: "forced_actions", actions: sanitizeActionItems(obj.forced_actions).slice(0, 2) };
+  }
   if (Array.isArray(obj.sources)) {
     const sources: ChatSource[] = obj.sources
       .filter((s): s is ChatSource =>
