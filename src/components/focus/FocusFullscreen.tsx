@@ -34,7 +34,7 @@ export function FocusFullscreen() {
   const dash = c * progress;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-[#FCFCFC] flex flex-col animate-fade-in">
+    <div className="fixed inset-0 z-[100] bg-background flex flex-col animate-fade-in">
       <div className="flex items-center justify-between px-5 py-4">
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">

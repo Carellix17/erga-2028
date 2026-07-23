@@ -107,7 +107,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
         <div className="w-full max-w-lg">
           {/* Progress + close */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-1.5 rounded-full bg-foreground/10 overflow-hidden backdrop-blur-md">
+            <div className="flex-1 h-1.5 rounded-full bg-foreground/10 overflow-hidden">
               <div
                 className="h-full bg-black transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
@@ -123,7 +123,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
             )}
           </div>
 
-          <div className="bg-white border border-slate-200/70 rounded-3xl shadow-[0_8px_32px_0_rgba(15,23,42,0.05)] p-6 sm:p-8 transition-all duration-500 ease-out">
+          <div className="bg-white border border-slate-200/70 rounded-2xl shadow-level-1 p-6 sm:p-8 transition-all duration-500 ease-out">
 
             {currentSlide === "intro" && (
               <div className="text-center space-y-6 animate-fade-up">
