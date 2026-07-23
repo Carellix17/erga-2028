@@ -19,6 +19,7 @@ import {
   parseSpecialEvent,
   ChatSource,
   AgentAction,
+  AgentFormValues,
 } from "@/lib/chatProtocol";
 
 interface ChatViewProps { hasFiles: boolean; onUploadClick: () => void; }
@@ -404,11 +405,30 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
   };
 
   // 🤖 L'agente propone, l'utente approva: esecuzione vera delle azioni.
-  const handleExecuteAction = async (messageId: string, index: number, action: AgentAction) => {
+  const handleExecuteAction = async (messageId: string, index: number, action: AgentAction, formValues?: AgentFormValues) => {
     const key = `${messageId}:${index}`;
     if (executedActions[key] || !currentUser) return;
     try {
-      if (action.kind === "add_event" || action.kind === "propose_review" || action.kind === "add_goal") {
+      if (formValues) {
+        // 🎓 P8 — la carta-modulo ha raccolto i dettagli: l'evento nasce nel
+        // cassetto RICCO (evaluations), IDENTICO a quelli creati dal tasto +
+        // nel Piano: materia collegata, percorso, voto obiettivo e orario.
+        const { error } = await supabase.from("evaluations").insert({
+          user_id: currentUser,
+          subject_id: formValues.subject_id,
+          type: formValues.type,
+          title: formValues.title.trim().slice(0, 120),
+          description: null,
+          date: new Date(`${formValues.date}T${formValues.time ? `${formValues.time}:00` : "12:00:00"}`).toISOString(),
+          topic_type: formValues.topic_id ? "linked" : "free",
+          topic_id: formValues.topic_id,
+          free_topic_title: null,
+          goal: formValues.goal,
+        });
+        if (error) throw error;
+        queryClient.invalidateQueries({ queryKey: ["evaluations"] });
+        toast({ title: t("chat.actions.eventAdded"), description: `${formValues.title.trim()} · ${formValues.date}` });
+      } else if (action.kind === "add_event" || action.kind === "propose_review" || action.kind === "add_goal") {
         const title = String(action.title || (action.kind === "propose_review" ? "Ripasso" : "Evento di studio"));
         const finalTitle = action.kind === "propose_review" && !title.toLowerCase().startsWith("ripasso")
           ? `Ripasso: ${title}`

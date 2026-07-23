@@ -9,19 +9,12 @@ import {
 } from "@/components/ui/select";
 import type { StudyEvent } from "@/hooks/useStudyEvents";
 import type { UpdateStudyEventInput } from "@/hooks/useStudyEvents";
-import { cn } from "@/lib/utils";
 
 interface EditStudyEventSheetProps {
   event: StudyEvent | null;
   onOpenChange: (open: boolean) => void;
   onSave: (input: UpdateStudyEventInput) => Promise<void> | void;
 }
-
-const TYPES = [
-  { value: "study", i18nKey: "type_study" },
-  { value: "test", i18nKey: "type_test" },
-  { value: "assignment", i18nKey: "type_assignment" },
-] as const;
 
 export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEventSheetProps) {
   const { t } = useTranslation();
@@ -68,25 +61,11 @@ export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEv
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-2">
-            <Label className="label-large">{t("piano.sheet.type")}</Label>
-            <div className="grid grid-cols-3 gap-2 p-1 rounded-full bg-surface-container">
-              {TYPES.map((tp) => (
-                <button
-                  key={tp.value}
-                  type="button"
-                  onClick={() => setType(tp.value)}
-                  className={cn(
-                    "h-10 rounded-full text-sm font-medium transition-all",
-                    type === tp.value ? "bg-black text-white shadow-level-1" : "text-slate-700"
-                  )}
-                >
-                  {t(`piano.${tp.i18nKey}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-
+          {/* 🧹 P8 — niente piu' selettore "tipo" (Studio/Verifica/Compito):
+              gli eventi di studio restano di studio; verifiche e compiti
+              vivono nel cassetto ricco (evaluations) e si modificano da li'.
+              Qui dentro le pillole erano un relitto che non cambiava nulla
+              (segnalato dal capocantiere). Il type resta quello originale. */}
           <div className="space-y-2">
             <Label htmlFor="se-title" className="label-large">{t("piano.sheet.title")}</Label>
             <Input id="se-title" value={title} onChange={(e) => setTitle(e.target.value)} />

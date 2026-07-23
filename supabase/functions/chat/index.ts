@@ -406,7 +406,8 @@ Richiesta: """${rawLastUser.slice(0, 500)}"""
 Formato (UN oggetto, non una lista):
 {"action":"add_event","title":"...","date":"YYYY-MM-DD","event_type":"study|test|assignment","subject":"..."}
 
-Regole: "date" calcolata da oggi ("domani" = ${tomorrowISO}); titolo breve; se parla di RIPASSO usa {"action":"propose_review",...} (il titolo inizierà con "Ripasso:"); se parla di un OBIETTIVO verso una verifica usa {"action":"add_goal",...}; event_type=test per verifiche/interrogazioni/esami, assignment per compiti, study altrimenti; subject = la materia, oppure "Generale".`,
+Regole: "date" calcolata da oggi ("domani" = ${tomorrowISO}); titolo breve; se parla di RIPASSO usa {"action":"propose_review",...} (il titolo inizierà con "Ripasso:"); se parla di un OBIETTIVO verso una verifica usa {"action":"add_goal",...}; event_type=test per verifiche/interrogazioni/esami, assignment per compiti, study altrimenti; subject = la materia, oppure "Generale".
+Campi facoltativi in più: "eval_type" = "interrogazione" se dice interrogazione/orale, "orale" se verifica orale, "pratica" se pratica, "compito" se compito, "scritta" altrimenti per le verifiche; "goal" = numero 1-10 se dice un voto/obiettivo (es. "puntando all'8" → 8).`,
           },
         ], 0.1, 250)
           .then((raw) => parseForcedAction(raw, todayISO))

@@ -101,6 +101,19 @@
       "eventAdded": "Aggiunto al diario",
       "failed": "Non sono riuscito a fare l'azione"
     },
+    "form": {
+      "verifica": "Verifica",
+      "compito": "Compito",
+      "mode": { "scritta": "Scritta", "orale": "Orale", "interrogazione": "Interrogazione", "pratica": "Pratica" },
+      "title": "Titolo",
+      "date": "Data",
+      "time": "Orario (opzionale)",
+      "subject": "Materia",
+      "subjectRequired": "Scegli la materia per continuare",
+      "course": "Percorso (opzionale)",
+      "none": "Nessuno",
+      "goal": "Voto obiettivo (opzionale)"
+    },
     "quick": {
       "explain": "Spiegami meglio",
       "example": "Fammi un esempio",

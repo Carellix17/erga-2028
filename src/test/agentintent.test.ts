@@ -28,7 +28,7 @@ describe("parseForcedAction — la cernita che non si fida", () => {
   const TODAY = "2026-07-21";
   const TOMORROW = "2026-07-22";
 
-  it("un JSON pulito passa così com'è", () => {
+  it("un JSON pulito passa così com'è (e la verifica nasce 'scritta' di default)", () => {
     const out = parseForcedAction(
       '{"action":"add_event","title":"Verifica di storia","date":"2026-07-23","event_type":"test","subject":"Storia"}',
       TODAY,
@@ -39,7 +39,32 @@ describe("parseForcedAction — la cernita che non si fida", () => {
       date: "2026-07-23",
       event_type: "test",
       subject: "Storia",
+      eval_type: "scritta",
     });
+  });
+
+  it("P8: eval_type e goal passano la cernita; quelli rotti si buttano", () => {
+    const ok = parseForcedAction(
+      '{"action":"add_event","title":"Interrogazione di storia","date":"2026-07-23","eval_type":"interrogazione","goal":8}',
+      TODAY,
+    );
+    expect(ok?.eval_type).toBe("interrogazione");
+    expect(ok?.event_type).toBe("test");
+    expect(ok?.goal).toBe(8);
+
+    const broken = parseForcedAction(
+      '{"action":"add_event","title":"Verifica","event_type":"test","eval_type":"esame_di_stato","goal":42}',
+      TODAY,
+    );
+    expect(broken?.eval_type).toBe("scritta"); // rotta → toppe: verifica classica
+    expect(broken?.goal).toBeUndefined();      // 42 non è un voto: via
+  });
+
+  it("P8: 'compito' e assignment sono la stessa cosa, da entrambi i lati", () => {
+    const a = parseForcedAction('{"action":"add_event","title":"Compito di mate","eval_type":"compito"}', TODAY);
+    expect(a?.event_type).toBe("assignment");
+    const b = parseForcedAction('{"action":"add_event","title":"Compito di mate","event_type":"assignment"}', TODAY);
+    expect(b?.eval_type).toBe("compito");
   });
 
   it("trova il JSON anche se l'AI lo infiocchetta con ```json e chiacchiere", () => {

@@ -44,6 +44,34 @@ const ACTION_KINDS: AgentActionKind[] = [
   "goto_lesson",
 ];
 
+/* ── P8: la carta-modulo per le valutazioni ─────────────────────────────── */
+export type AgentEvalType = "scritta" | "orale" | "interrogazione" | "pratica" | "compito";
+
+/** I campi che la CARTA-MODULO raccoglie prima di sbloccare "Esegui". */
+export interface AgentFormValues {
+  type: AgentEvalType;
+  title: string;
+  /** YYYY-MM-DD */
+  date: string;
+  /** "" oppure "HH:MM" */
+  time: string;
+  subject_id: string | null;
+  topic_id: string | null;
+  goal: number | null;
+}
+
+/**
+ * Questa azione nasce come VALUTAZIONE ricca (verifica/interrogazione/compito)?
+ * Se sì: niente esecuzione diretta — la carta chiede prima materia, percorso e
+ * voto obiettivo, come quando l'evento lo crea l'utente dal tasto +.
+ */
+export function isEvaluationAction(a: AgentAction): boolean {
+  if (a.kind === "add_goal") return true;
+  if (a.kind !== "add_event") return false;
+  const et = String(a.event_type || "test");
+  return et === "test" || et === "assignment";
+}
+
 /* ── La scope ───────────────────────────────────────────────────────────── */
 /**
  * Dopo aver tolto un segnale restano spazi orfani ("Roma  e Napoli !"):
