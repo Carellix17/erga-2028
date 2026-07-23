@@ -228,10 +228,10 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  <Skeleton className="h-6 w-40 rounded-full" />
  <Skeleton className="h-4 w-56 rounded-full" />
  </div>
- <Skeleton className="h-44 rounded-3xl" />
+ <Skeleton className="h-44 rounded-2xl" />
  <Skeleton className="h-12 rounded-2xl" />
- <Skeleton className="h-52 rounded-3xl" />
- <Skeleton className="h-72 rounded-3xl" />
+ <Skeleton className="h-52 rounded-2xl" />
+ <Skeleton className="h-72 rounded-2xl" />
  </div>
  );
  }
@@ -252,7 +252,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  ) : (
  <UserCircle2 className="w-12 h-12 text-primary" />
  )}
- <div className="absolute inset-0 bg-slate-500/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+ <div className="absolute inset-0 bg-foreground/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
  {isUploadingAvatar ? (
  <Loader2 className="w-6 h-6 text-white animate-spin" />
  ) : (
@@ -270,33 +270,33 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  </div>
 
  {/* Personal Info */}
- <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
+ <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-shadow duration-300 ease-m3-emphasized hover:shadow-level-2 p-5 space-y-4">
  <div className="flex items-center gap-2 mb-1">
- <User className="w-5 h-5 text-primary" />
+ <User className="w-5 h-5 text-foreground" />
  <h2 className="title-medium font-display text-foreground">Dati personali</h2>
  </div>
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Nome</Label>
- <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-2xl h-11 bg-white border border-slate-200/70" />
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Cognome</Label>
- <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-2xl h-11 bg-white border border-slate-200/70" />
  </div>
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Nickname <span className="text-primary">(usato dal chatbot)</span></Label>
- <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-2xl h-11 bg-white border border-slate-200/70" />
  </div>
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Età</Label>
- <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-2xl h-11 bg-surface-container-high border-0" />
+ <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-2xl h-11 bg-white border border-slate-200/70" />
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Scuola</Label>
- <div className="h-11 rounded-2xl bg-surface-container-high flex items-center px-3">
+ <div className="h-11 rounded-2xl bg-white border border-slate-200/70 flex items-center px-3">
  <select value={school} onChange={(e) => { setSchool(e.target.value); setDirty(true); }} className="bg-transparent w-full body-medium outline-none">
  {SCHOOLS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
  </select>
@@ -306,9 +306,9 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  </div>
 
  {/* Esagono Cognitivo */}
- <div className="m3-card-elevated rounded-3xl p-5 space-y-4 bg-white backdrop-blur-md border-[0.5px] border-slate-200/70">
+ <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-shadow duration-300 ease-m3-emphasized hover:shadow-level-2 p-5 space-y-4">
  <div className="flex items-center gap-2 mb-1">
- <Hexagon className="w-5 h-5 text-primary" />
+ <Hexagon className="w-5 h-5 text-foreground" />
  <h2 className="title-medium font-display text-foreground">Esagono Cognitivo</h2>
  </div>
  {cognitive ? (
@@ -323,7 +323,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  ["Calma", cognitive.ans_score],
  ["Pratica", cognitive.app_score],
  ].map(([label, val]) => (
- <div key={label as string} className="rounded-2xl bg-foreground/[0.04] backdrop-blur-md py-2 text-center">
+ <div key={label as string} className="rounded-xl bg-surface-container-high py-2 text-center">
  <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</div>
  <div className="text-base font-bold text-foreground tabular-nums">{val}</div>
  </div>
@@ -338,9 +338,9 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  <UiButton
  onClick={onOpenCognitive}
  variant="outline"
- className="w-full rounded-2xl h-12 backdrop-blur-md border-[0.5px] border-primary/30 bg-primary/[0.06] hover:bg-primary/[0.12] transition-all duration-300"
+ className="w-full rounded-2xl h-12 border border-outline-variant/60 bg-card hover:bg-surface-container-high shadow-level-1 transition-all duration-300"
  >
- <Brain className="w-4 h-4 mr-2 text-primary" />
+ <Brain className="w-4 h-4 mr-2 text-foreground" />
  {cognitive ?"Ricalcola il tuo Esagono Cognitivo" :"Calcola il tuo Esagono Cognitivo"}
  </UiButton>
  </div>
@@ -358,9 +358,9 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
      <ScheduleConfigSheet open={scheduleOpen} onOpenChange={setScheduleOpen} />
 
  {/* Institute Section */}
- <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
+ <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-shadow duration-300 ease-m3-emphasized hover:shadow-level-2 p-5 space-y-4">
  <div className="flex items-center gap-2 mb-1">
- <GraduationCap className="w-5 h-5 text-secondary-foreground" />
+ <GraduationCap className="w-5 h-5 text-foreground" />
  <h2 className="title-medium font-display text-foreground">Tipo di istituto</h2>
  </div>
  <RadioGroup value={institute} onValueChange={(v) => { setInstitute(v); setDirty(true); }} className="space-y-1">
@@ -379,9 +379,9 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  {/* Appearance rimosso: app sempre in tema chiaro */}
 
  {/* Subject Levels & Goals Section */}
- <div className="m3-card-elevated rounded-3xl p-5 space-y-6">
+ <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-shadow duration-300 ease-m3-emphasized hover:shadow-level-2 p-5 space-y-6">
  <div className="flex items-center gap-2 mb-1">
- <BookOpen className="w-5 h-5 text-tertiary" />
+ <BookOpen className="w-5 h-5 text-foreground" />
  <h2 className="title-medium font-display text-foreground">Voti e obiettivi</h2>
  </div>
  <p className="body-small text-muted-foreground -mt-2">Indica il tuo livello attuale e l'obiettivo che vuoi raggiungere in ogni materia</p>
@@ -422,7 +422,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  </div>
 
  {/* Save Button */}
- <Button onClick={handleSave} disabled={isSaving} className="w-full h-14 gradient-primary border-0 shadow-level-2" size="lg">
+ <Button onClick={handleSave} disabled={isSaving} className="w-full h-14 bg-primary text-primary-foreground shadow-level-2" size="lg">
  {isSaving ? (
  <Loader2 className="w-5 h-5 animate-spin mr-2" />
  ) : saved ? (
@@ -439,8 +439,8 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  {/* "Salvagente": appare solo se ci sono modifiche non salvate */}
  {dirty && (
  <div className="fixed z-40 inset-x-4 bottom-28 md:inset-x-auto md:right-8 md:bottom-8 md:w-96 animate-fade-up">
- <div className="rounded-2xl px-4 py-3 flex items-center gap-3 shadow-level-3 border border-amber-200 bg-amber-50/95 backdrop-blur-md">
- <p className="flex-1 body-medium font-medium text-amber-900">Hai modifiche non salvate</p>
+ <div className="rounded-2xl px-4 py-3 flex items-center gap-3 shadow-level-3 warning-container">
+ <p className="flex-1 body-medium font-medium">Hai modifiche non salvate</p>
  <Button onClick={handleSave} disabled={isSaving} size="sm" className="rounded-full h-9 shrink-0">
  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
  Salva

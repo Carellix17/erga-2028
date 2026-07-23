@@ -19,10 +19,11 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Sfondi tenui per i blocchi di routine visibili (spiegano i "buchi" nella finestra)
+// 🎨 P9c: pastelli soft centralizzati nel kit (index.css .routine-*), come nel foglio orari
 const ROUTINE_STYLES: Record<RoutineKind, string> = {
-  school: "bg-blue-100/60 border-blue-200 text-blue-900",
-  sleep: "bg-indigo-100/60 border-indigo-200 text-indigo-900",
-  meal: "bg-amber-100/60 border-amber-200 text-amber-900",
+  school: "routine-school",
+  sleep: "routine-sleep",
+  meal: "routine-meal",
   other: "bg-slate-100/80 border-slate-200 text-slate-800",
 };
 
