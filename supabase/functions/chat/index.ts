@@ -329,7 +329,7 @@ Azioni disponibili:
 - add_goal ("title", "date", "subject"): obiettivo verso una verifica (usa event_type=test).
 - goto_quiz (nessun campo): l'utente vuole allenarsi → lo portiamo agli esercizi.
 - goto_lesson ("query"): apriamo la lezione sull'argomento indicato.
-Regole del blocco: massimo 2 azioni per messaggio; "date" sempre in formato YYYY-MM-DD, calcolata dalla data di oggi; l'app NON gestisce l'orario, quindi ignoralo; l'utente non vede il blocco ma una carta con il bottone; se usi anche il tag [IMG: ...], mettilo PRIMA del blocco.
+Regole del blocco: massimo 2 azioni per messaggio; "date" sempre in formato YYYY-MM-DD, calcolata dalla data di oggi; l'utente non vede il blocco ma una carta-modulo da completare/confermare; se usi anche il tag [IMG: ...], mettilo PRIMA del blocco. Campi facoltativi che la carta pre-compila se li capisci dal messaggio: "eval_type" (scritta|orale|interrogazione|pratica|compito), "goal" (voto 1-10), "time" ("HH:MM" 24 ore), "course" (nome del percorso).
 
 ESEMPIO COMPLETO — l'utente scrive: "mettimi in diario un ripasso di storia per domani"
 La risposta corretta è:
@@ -407,7 +407,7 @@ Formato (UN oggetto, non una lista):
 {"action":"add_event","title":"...","date":"YYYY-MM-DD","event_type":"study|test|assignment","subject":"..."}
 
 Regole: "date" calcolata da oggi ("domani" = ${tomorrowISO}); titolo breve; se parla di RIPASSO usa {"action":"propose_review",...} (il titolo inizierà con "Ripasso:"); se parla di un OBIETTIVO verso una verifica usa {"action":"add_goal",...}; event_type=test per verifiche/interrogazioni/esami, assignment per compiti, study altrimenti; subject = la materia, oppure "Generale".
-Campi facoltativi in più: "eval_type" = "interrogazione" se dice interrogazione/orale, "orale" se verifica orale, "pratica" se pratica, "compito" se compito, "scritta" altrimenti per le verifiche; "goal" = numero 1-10 se dice un voto/obiettivo (es. "puntando all'8" → 8).`,
+Campi facoltativi in più: "eval_type" = "interrogazione" se dice interrogazione, "orale" se verifica orale, "pratica" se pratica, "compito" se compito, "scritta" altrimenti per le verifiche; "goal" = numero 1-10 se dice un voto/obiettivo (es. "con obiettivo di voto 8" o "puntando al 9"); "time" = orario in formato 24h "HH:MM" se lo dice (es. "alle 9" → "09:00", "per le 14:30" → "14:30"); "course" = nome del percorso/documento a cui la lega (es. "legata a Promessi Sposi" → "Promessi Sposi").`,
           },
         ], 0.1, 250)
           .then((raw) => parseForcedAction(raw, todayISO))

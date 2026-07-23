@@ -101,6 +101,20 @@ const FORM_NONE = "__none__";
 const FORM_GOAL_CHOICES = [6, 7, 8, 9, 10];
 const FORM_MODES: AgentEvalType[] = ["scritta", "orale", "interrogazione", "pratica"];
 
+/** Normalizza per i match morbidi (parole semplici, senza punteggiatura). */
+const softNorm = (s: string) =>
+  s.toLowerCase().replace(/[^a-zàèéìòù0-9]+/gi, " ").replace(/\s+/g, " ").trim();
+
+/** 🧲 Match morbido fra quanto ha detto l'utente e un nome reale (materia/percorso). */
+function softFind<T extends { id: string }>(wanted: string, items: T[], nameOf: (x: T) => string): T | undefined {
+  const w = softNorm(wanted);
+  if (w.length < 3) return undefined;
+  return items.find((x) => {
+    const n = softNorm(nameOf(x));
+    return n === w || n.includes(w) || w.includes(n);
+  });
+}
+
 /**
  * L'agente propone, ma i dettagli importanti li completa chi studia — esattamente
  * come quando crea l'evento dal tasto + nel Piano: materia (obbligatoria se ce ne
@@ -132,20 +146,20 @@ function ActionFormCard({
   const [date, setDate] = useState(
     typeof action.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(action.date) ? action.date : tomorrow,
   );
-  const [time, setTime] = useState("");
+  // ⏰ Orario: se l'utente l'ha detto nel messaggio, la carta lo sa già (P8).
+  const [time, setTime] = useState<string>(() =>
+    typeof action.time === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(action.time) ? action.time : "",
+  );
   // 🧲 Tentativo di indovinare la materia da quanto capita l'AI (match morbido).
   const [subjectId, setSubjectId] = useState<string>(() => {
-    const wanted = String(action.subject || "").trim().toLowerCase();
-    if (wanted.length >= 3) {
-      const hit = subjects.find((s) => {
-        const name = s.name.trim().toLowerCase();
-        return name === wanted || name.includes(wanted) || wanted.includes(name);
-      });
-      if (hit) return hit.id;
-    }
-    return FORM_NONE;
+    const hit = softFind(String(action.subject || ""), subjects, (s) => s.name);
+    return hit ? hit.id : FORM_NONE;
   });
-  const [courseId, setCourseId] = useState<string>(FORM_NONE);
+  // 🎓 Percorso: match morbido sul nome del documento corso ("legata a Promessi Sposi").
+  const [courseId, setCourseId] = useState<string>(() => {
+    const hit = softFind(String(action.course || ""), courses, (c) => c.file_name);
+    return hit ? hit.id : FORM_NONE;
+  });
   const [goal, setGoal] = useState<number | null>(
     typeof action.goal === "number" && action.goal >= 6 && action.goal <= 10 ? action.goal : null,
   );
