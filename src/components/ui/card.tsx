@@ -6,7 +6,10 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
  <div
  ref={ref}
  className={cn(
-"rounded-3xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 text-card-foreground shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.06)] hover:scale-[1.01] active:scale-[0.99]",
+/* 🎨 P9a — il mattone di fabbrica nello STILE NUOVO: superficie piena (niente
+ vetro), angoli della famiglia, ombre ai gradini di casa, sollevamento dolce
+ al passaggio. Chi la usava ereditava il look vecchio gratis: ora eredita quello nuovo. */
+"rounded-2xl bg-card text-card-foreground border border-outline-variant/60 shadow-level-1 transition-shadow duration-300 ease-m3-emphasized hover:shadow-level-2",
  className,
  )}
  {...props}

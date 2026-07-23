@@ -55,7 +55,8 @@ export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEv
 
   return (
     <Sheet open={!!event} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-xl pb-safe bg-[#FCFCFC] max-h-[92vh] overflow-y-auto">
+      {/* 🎨 P9a — sfondo avorio e angoli ora li mette il foglio stesso */}
+      <SheetContent side="bottom" className="pb-safe max-h-[92vh] overflow-y-auto">
         <SheetHeader className="mb-5">
           <SheetTitle className="title-large font-display">{t("piano.sheet.editTitle")}</SheetTitle>
         </SheetHeader>

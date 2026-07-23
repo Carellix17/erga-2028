@@ -801,9 +801,10 @@ function SlideAIAssistant({
           </svg>
         </button>
       </SheetTrigger>
+      {/* 🎨 P9a — sfondo avorio e angoli ora li mette il foglio stesso */}
       <SheetContent
         side="bottom"
-        className="rounded-t-xl pb-safe bg-[#FCFCFC] max-h-[92vh] h-[85vh] p-0 flex flex-col gap-0"
+        className="pb-safe max-h-[92vh] h-[85vh] p-0 flex flex-col gap-0"
       >
         {/* Header */}
         <SheetHeader className="flex items-center gap-3 px-4 py-3 border-b border-border/40 flex-shrink-0 space-y-0 text-left">

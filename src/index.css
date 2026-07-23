@@ -451,31 +451,63 @@
     will-change: opacity;
   }
   .animate-bounce-in {
-    animation: m3-fade-in 250ms cubic-bezier(0.2, 0, 0, 1) both;
+    /* 🎨 P9a — riaccesa: entra con un piccolo sobbalzo elegante (fine quiz!) */
+    animation: erga-bounce-in 320ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
     will-change: transform, opacity;
   }
   .animate-pop {
-    animation: m3-fade-in 220ms cubic-bezier(0.2, 0, 0, 1) both;
+    /* 🎨 P9a — riaccesa: "pop" di festa per i completamenti (evento creato ✓) */
+    animation: erga-pop 240ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
     will-change: transform, opacity;
   }
   .animate-wiggle {
-    animation: m3-fade-in 220ms ease both;
-    will-change: opacity;
+    /* 🎨 P9a — riaccesa: scrollonata gentile per gli avvisi */
+    animation: erga-wiggle 380ms ease both;
   }
   .animate-pulse-soft {
-    animation: m3-fade-in 250ms ease both;
-    will-change: opacity;
+    /* 🎨 P9a — riaccesa: respiro dolce per l'orbe del tutor che parla/ascolta */
+    animation: erga-pulse-soft 2.1s ease-in-out infinite;
+    will-change: transform, opacity;
   }
   .animate-float {
-    animation: none;
+    /* 🎨 P9a — riaccesa: galleggiamento gentile (icone in primo piano) */
+    animation: bounce-gentle 3.2s ease-in-out infinite;
   }
   .animate-bounce-gentle {
-    animation: none;
+    animation: bounce-gentle 2.6s ease-in-out infinite;
   }
   @keyframes bounce-gentle {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-4px); }
   }
+  @keyframes erga-bounce-in {
+    0% { opacity: 0; transform: scale(0.7); }
+    70% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes erga-pop {
+    0% { opacity: 0; transform: scale(0.85); }
+    70% { opacity: 1; transform: scale(1.04); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes erga-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-2.5deg); }
+    60% { transform: rotate(2deg); }
+  }
+  @keyframes erga-pulse-soft {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.04); }
+  }
+
+  /* 🎨 P9a — pastelli semantici della routine (scuola/sonno/pasti):
+     la tinta ha un senso (distingue i blocchi), ma addolcita sul tono di casa. */
+  .routine-school { background: hsl(214 80% 94% / 0.75); border: 1px solid hsl(214 70% 87% / 0.85); color: hsl(222 25% 22%); }
+  .routine-school-dot { background: hsl(214 60% 64%); }
+  .routine-sleep { background: hsl(243 60% 95% / 0.85); border: 1px solid hsl(243 50% 89% / 0.85); color: hsl(222 25% 22%); }
+  .routine-sleep-dot { background: hsl(243 45% 70%); }
+  .routine-meal { background: hsl(38 85% 94% / 0.8); border: 1px solid hsl(38 70% 86% / 0.9); color: hsl(222 25% 22%); }
+  .routine-meal-dot { background: hsl(38 70% 60%); }
   .animate-stagger-1 { animation-delay: 60ms; animation-fill-mode: both; }
   .animate-stagger-2 { animation-delay: 120ms; animation-fill-mode: both; }
   .animate-stagger-3 { animation-delay: 180ms; animation-fill-mode: both; }

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { useUserSubjects } from "@/hooks/useUserSubjects";
 import { useFileContextsQuery } from "@/hooks/useFileContexts";
+import { PillToggle } from "@/components/ui/pill-toggle";
 import { resolveSubjectColor } from "@/lib/subjectColors";
 import type { Evaluation, EvaluationType } from "@/hooks/useEvaluations";
 import { cn } from "@/lib/utils";
@@ -128,7 +129,8 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-xl pb-safe bg-[#FCFCFC] max-h-[92vh] overflow-y-auto">
+      {/* 🎨 P9a — sfondo avorio e angoli ora li mette il foglio stesso */}
+      <SheetContent side="bottom" className="pb-safe max-h-[92vh] overflow-y-auto">
         <SheetHeader className="mb-5">
           <SheetTitle className="title-large font-display">
             {editingId ? t("piano.sheet.editTitle") : t("piano.sheet.addTitle")}
@@ -136,43 +138,25 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Macro category */}
-          <div className="grid grid-cols-2 gap-2 p-1 rounded-full bg-surface-container">
-            {(["verifica", "compito"] as Category[]).map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCategory(c)}
-                className={cn(
-                  "h-10 rounded-full text-sm font-medium transition-all capitalize",
-                  category === c ? "bg-black text-white shadow-level-1" : "text-slate-700"
-                )}
-              >
-                {t(`piano.sheet.${c}`)}
-              </button>
-            ))}
-          </div>
+          {/* 🎛️ P9a — le scelte a pillola ora usano l'interruttore di casa */}
+          <PillToggle<Category>
+            aria-label={t("piano.sheet.type")}
+            options={(["verifica", "compito"] as Category[]).map((c) => ({ value: c, label: t(`piano.sheet.${c}`) }))}
+            value={category}
+            onChange={setCategory}
+            variant="track"
+          />
 
           {category === "verifica" && (
             <div className="space-y-2">
               <Label className="label-large">{t("piano.sheet.mode")}</Label>
-              <div className="flex flex-wrap gap-2">
-                {VERIFICA_MODES.map((m) => (
-                  <button
-                    key={m.value}
-                    type="button"
-                    onClick={() => setMode(m.value)}
-                    className={cn(
-                      "px-3 h-9 rounded-full border text-sm transition-all",
-                      mode === m.value
-                        ? "bg-black text-white border-black"
-                        : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
-                    )}
-                  >
-                    {t(`piano.sheet.${m.i18nKey}`)}
-                  </button>
-                ))}
-              </div>
+              <PillToggle<VerificaMode>
+                aria-label={t("piano.sheet.mode")}
+                options={VERIFICA_MODES.map((m) => ({ value: m.value, label: t(`piano.sheet.${m.i18nKey}`) }))}
+                value={mode}
+                onChange={setMode}
+                size="sm"
+              />
             </div>
           )}
 
@@ -228,43 +212,28 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
 
           <div className="space-y-2">
             <Label className="label-large">{t("piano.sheet.goalLabel")} <span className="text-muted-foreground font-normal">{t("piano.sheet.optional")}</span></Label>
-            <div className="flex gap-2">
-              {GOAL_CHOICES.map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setGoal(goal === g ? null : g)}
-                  aria-pressed={goal === g}
-                  className={cn(
-                    "flex-1 h-10 rounded-full border text-sm font-semibold transition-all",
-                    goal === g
-                      ? "bg-black text-white border-black"
-                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
-                  )}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
+            <PillToggle<number>
+              aria-label={t("piano.sheet.goalLabel")}
+              options={GOAL_CHOICES.map((g) => ({ value: g, label: String(g) }))}
+              value={goal ?? 0}
+              onChange={(g) => setGoal(goal === g ? null : g)}
+              grow
+            />
           </div>
 
           <div className="space-y-2">
             <Label className="label-large">{t("piano.sheet.topic")}</Label>
-            <div className="flex gap-2">
-              {(["linked", "free"] as const).map((tm) => (
-                <button
-                  key={tm}
-                  type="button"
-                  onClick={() => setTopicMode(tm)}
-                  className={cn(
-                    "flex-1 h-9 rounded-full border text-sm transition-all",
-                    topicMode === tm ? "bg-black text-white border-black" : "bg-white border-slate-200 text-slate-700"
-                  )}
-                >
-                  {tm === "linked" ? t("piano.sheet.topicLinked") : t("piano.sheet.topicFree")}
-                </button>
-              ))}
-            </div>
+            <PillToggle<"linked" | "free">
+              aria-label={t("piano.sheet.topic")}
+              options={[
+                { value: "linked", label: t("piano.sheet.topicLinked") },
+                { value: "free", label: t("piano.sheet.topicFree") },
+              ]}
+              value={topicMode}
+              onChange={setTopicMode}
+              size="sm"
+              grow
+            />
             {topicMode === "linked" ? (
               <Select value={courseId} onValueChange={setCourseId}>
                 <SelectTrigger className="w-full h-11 rounded-2xl bg-white border border-slate-200/70 px-3 body-medium">
