@@ -14,6 +14,8 @@ const liquidbuttonVariants = cva(
         outline: "border border-input bg-background hover:bg-accent text-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
         ghost: "hover:bg-accent text-foreground",
+        // 🎨 P9a — il bottone pericolo di casa (cancellazioni), stesso stampo
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
       },
       size: {
         default: "h-10 px-5 py-2",
