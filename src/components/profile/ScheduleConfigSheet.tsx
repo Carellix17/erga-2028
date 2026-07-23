@@ -24,11 +24,12 @@ const KINDS: { value: RoutineKind; label: string }[] = [
   { value: "other",  label: "Altro" },
 ];
 
-const KIND_STYLES: Record<RoutineKind, { bg: string; border: string; text: string; dot: string }> = {
-  school: { bg: "bg-blue-50",    border: "border-blue-200/80",    text: "text-blue-900",    dot: "bg-blue-400" },
-  sleep:  { bg: "bg-indigo-50",  border: "border-indigo-200/80",  text: "text-indigo-900",  dot: "bg-indigo-400" },
-  meal:   { bg: "bg-amber-50",   border: "border-amber-200/80",   text: "text-amber-900",   dot: "bg-amber-400" },
-  other:  { bg: "bg-slate-100",  border: "border-slate-200/80",   text: "text-slate-900",   dot: "bg-slate-400" },
+// 🎨 P9c: pastelli soft centralizzati nel kit (index.css .routine-*) — fuori i saturi blue/indigo/amber
+const KIND_STYLES: Record<RoutineKind, { chip: string; dot: string }> = {
+  school: { chip: "routine-school", dot: "routine-school-dot" },
+  sleep:  { chip: "routine-sleep",  dot: "routine-sleep-dot" },
+  meal:   { chip: "routine-meal",   dot: "routine-meal-dot" },
+  other:  { chip: "bg-slate-100 border-slate-200/80 text-slate-900", dot: "bg-slate-400" },
 };
 
 // 1 = Mon ... 7 = Sun
@@ -452,7 +453,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
             </Button>
           </div>
 
-          <div className="rounded-3xl bg-white border border-slate-200/70 overflow-hidden">
+          <div className="rounded-2xl bg-white border border-slate-200/70 overflow-hidden">
             {/* Mobile: day selector pills */}
             <div className="md:hidden flex items-center justify-between gap-1 px-3 pt-3 pb-2 border-b border-slate-100">
               {DAYS.map((d) => {
@@ -544,7 +545,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                             className={cn(
                               "absolute rounded-xl border px-1.5 py-1 text-[10px] leading-tight overflow-hidden shadow-sm text-left animate-scale-in",
                               "hover:shadow-md hover:-translate-y-[1px]",
-                              style.bg, style.border, style.text,
+                              style.chip,
                             )}
                             style={{
                               top,
@@ -614,7 +615,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                         className={cn(
                           "absolute rounded-xl border px-2.5 py-1.5 text-xs leading-tight overflow-hidden shadow-sm text-left animate-scale-in",
                           "hover:shadow-md hover:-translate-y-[1px]",
-                          style.bg, style.border, style.text,
+                          style.chip,
                         )}
                         style={{
                           top,
@@ -649,7 +650,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
 
       {/* Modale creazione / modifica routine */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="rounded-3xl bg-[#FCFCFC] border border-slate-200/70 max-w-md p-6">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="title-medium font-display">
               {editingId ? "Modifica blocco" : "Nuovo blocco"}
@@ -670,7 +671,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                       className={cn(
                         "px-3 py-1.5 rounded-full text-sm border transition-all duration-300",
                         active
-                          ? `${st.bg} ${st.border} ${st.text} shadow-sm scale-105`
+                          ? `${st.chip} shadow-sm scale-105`
                           : "bg-white text-foreground border-slate-200 hover:bg-slate-50"
                       )}
                     >

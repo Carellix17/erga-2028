@@ -49,6 +49,9 @@
     /* Warning — Muted Amber */
     --warning: 32 60% 48%;
     --warning-foreground: 0 0% 100%;
+    /* 🎨 P9c: contenitore warning (il "salvagente" del profilo), gemello di error/success */
+    --warning-container: 36 88% 94%;
+    --on-warning-container: 30 65% 24%;
 
     /* Surface / Background — near-white, Apple-grade */
     --background: 0 0% 99%;
@@ -364,6 +367,7 @@
   .tertiary-container { background-color: hsl(var(--tertiary-container)); color: hsl(var(--on-tertiary-container)); }
   .error-container { background-color: hsl(var(--error-container)); color: hsl(var(--on-error-container)); }
   .success-container { background-color: hsl(var(--success-container)); color: hsl(var(--success)); }
+  .warning-container { background-color: hsl(var(--warning-container)); color: hsl(var(--on-warning-container)); border: 1px solid hsl(var(--warning) / 0.35); }
 
   /* ═══════ M3 CHIPS — Expressive ═══════ */
   .m3-chip {
