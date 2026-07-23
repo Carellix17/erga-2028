@@ -473,7 +473,7 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
       {/* History sidebar - mobile overlay / desktop panel */}
       {showHistory && (
         <>
-          <div className="absolute inset-0 bg-slate-500/10 backdrop-blur-sm z-20 md:hidden" onClick={() => setShowHistory(false)} />
+          <div className="absolute inset-0 bg-foreground/32 z-20 md:hidden" onClick={() => setShowHistory(false)} />
           <div className="absolute left-0 top-0 bottom-0 w-[280px] z-30 md:relative md:w-[260px] md:z-auto animate-fade-up">
             <div className="h-full relative">
               <button
@@ -503,7 +503,7 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
             className={cn(
               "flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-200",
               showHistory
-                ? "bg-primary-container text-primary"
+                ? "bg-primary text-primary-foreground shadow-level-1"
                 : "hover:bg-surface-container-high text-muted-foreground hover:text-foreground"
             )}
           >
@@ -552,14 +552,14 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
           ))}
           {isLoading && (
             <div className="flex gap-3 animate-fade-up">
-              <div className="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center shadow-level-1">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-level-1">
+                <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
               </div>
               <div className="bg-surface-container-high rounded-2xl rounded-bl-md px-4 py-3 shadow-level-1">
                 <div className="flex gap-1.5">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <div className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <div className="w-2 h-2 bg-tertiary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <div className="w-2 h-2 bg-foreground/80 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <div className="w-2 h-2 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
               </div>
             </div>
