@@ -373,8 +373,8 @@ export function InterrogazioneView() {
  return (
  <div className="flex flex-col h-full px-4 sm:px-6 py-6 space-y-6 overflow-y-auto">
  <div className="text-center space-y-3">
- <div className="w-16 h-16 mx-auto rounded-3xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex items-center justify-center">
- <Mic className="w-8 h-8 text-tertiary" />
+ <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-bounce-in">
+ <Mic className="w-8 h-8" />
  </div>
  <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Interrogazione</h2>
  <p className="body-medium text-muted-foreground">Scegli un corso e la modalità</p>
@@ -391,13 +391,13 @@ export function InterrogazioneView() {
  key={course.id}
  onClick={() => setSelectedCourse(course.id)}
  className={cn(
-"w-full flex items-center gap-3 p-5 rounded-3xl border-[0.5px] backdrop-blur-md transition-all duration-300 ease-in-out hover:scale-[1.01] shadow-[0_8px_32px_0_rgba(0,0,0,0.04)]",
+"w-full flex items-center gap-3 p-5 rounded-2xl border transition-all duration-300 ease-m3-emphasized hover:scale-[1.01] shadow-level-1 hover:shadow-level-2",
  selectedCourse === course.id
- ?"bg-tertiary-container/80 border-tertiary/30"
- :"bg-white/70 border-white/40 hover:bg-white/80"
+ ?"bg-primary/5 border-primary/60"
+ :"bg-card border-outline-variant/60 hover:bg-surface-container-high"
  )}
  >
- <BookOpen className="w-5 h-5 text-tertiary flex-shrink-0" />
+ <BookOpen className="w-5 h-5 text-foreground flex-shrink-0" />
  <span className="label-large font-semibold tracking-tight text-foreground truncate">
  {course.file_name.replace(/^🌐\s*/,"").replace(/\.pdf$/i,"")}
  </span>
@@ -409,7 +409,7 @@ export function InterrogazioneView() {
 
  <Dialog open={!!selectedCourse} onOpenChange={(open) => { if (!open) setSelectedCourse(null); }}>
  <DialogContent
- className="max-w-md rounded-3xl bg-white/80 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] duration-500 ease-m3-emphasized data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95 data-[state=open]:slide-in-from-bottom-4 data-[state=closed]:slide-out-to-bottom-4"
+ className="max-w-md"
  onOpenAutoFocus={(e) => {
  e.preventDefault();
  const el = e.currentTarget as HTMLElement | null;
@@ -428,18 +428,18 @@ export function InterrogazioneView() {
  <div className="grid grid-cols-2 gap-4 pt-3">
  <button
  onClick={() => { if (selectedCourse) { setMode("config"); } }}
- className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-primary-container/80 backdrop-blur-md border-[0.5px] border-primary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+ className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-all duration-300 ease-m3-emphasized hover:shadow-level-2 hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
  >
- <MessageSquare className="w-10 h-10 text-primary" />
- <span className="label-large text-primary font-semibold tracking-tight">Domande</span>
+ <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-level-1"><MessageSquare className="w-7 h-7" /></div>
+ <span className="label-large text-foreground font-semibold tracking-tight">Domande</span>
  <span className="label-small text-muted-foreground text-center">Il tutor ti fa domande</span>
  </button>
  <button
  onClick={() => selectedCourse && startInterrogazione(selectedCourse,"free")}
- className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-secondary-container/80 backdrop-blur-md border-[0.5px] border-secondary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2"
+ className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-all duration-300 ease-m3-emphasized hover:shadow-level-2 hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2"
  >
- <Volume2 className="w-10 h-10 text-secondary-foreground" />
- <span className="label-large text-secondary-foreground font-semibold tracking-tight">Esposizione</span>
+ <div className="w-14 h-14 rounded-full bg-tertiary text-tertiary-foreground flex items-center justify-center shadow-level-1"><Volume2 className="w-7 h-7" /></div>
+ <span className="label-large text-foreground font-semibold tracking-tight">Esposizione</span>
  <span className="label-small text-muted-foreground text-center">Esponi l'argomento</span>
  </button>
  </div>
@@ -464,8 +464,8 @@ export function InterrogazioneView() {
  </button>
 
  <div className="text-center space-y-3">
- <div className="w-16 h-16 mx-auto rounded-3xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex items-center justify-center">
- <MessageSquare className="w-8 h-8 text-primary" />
+ <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-bounce-in">
+ <MessageSquare className="w-8 h-8" />
  </div>
  <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Configura sessione</h2>
  {selectedCourseObj && (
@@ -475,7 +475,7 @@ export function InterrogazioneView() {
  )}
  </div>
 
- <div className="p-6 rounded-3xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-5">
+ <div className="p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-5">
  <div className="flex items-baseline justify-between">
  <span className="label-large font-semibold tracking-tight text-foreground">Numero di domande</span>
  <span className="font-display text-4xl font-bold text-primary tabular-nums">{maxQuestions}</span>
@@ -494,7 +494,7 @@ export function InterrogazioneView() {
  </div>
  </div>
 
- <div className="px-4 sm:px-6 py-4 bg-white/70 backdrop-blur-md border-t-[0.5px] border-white/40">
+ <div className="px-4 sm:px-6 py-4 bg-background border-t border-outline-variant/60">
  <LiquidButton
  onClick={() => selectedCourse && startInterrogazione(selectedCourse,"structured")}
  className="w-full h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
@@ -516,15 +516,15 @@ export function InterrogazioneView() {
  <div className="flex flex-col h-full">
  <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-5">
  <div className="text-center space-y-3">
- <div className="w-16 h-16 mx-auto rounded-3xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex items-center justify-center">
- <Trophy className="w-8 h-8 text-primary" />
+ <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-bounce-in">
+ <Trophy className="w-8 h-8" />
  </div>
  <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Report finale</h2>
  <p className="body-medium text-muted-foreground">La tua interrogazione è terminata</p>
  </div>
 
  <div className={cn(
-"p-8 rounded-3xl backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] text-center space-y-2",
+"p-8 rounded-2xl border border-outline-variant/60 shadow-level-1 text-center space-y-2",
  avgBg
  )}>
  <p className="label-medium text-muted-foreground uppercase tracking-wider">Voto complessivo</p>
@@ -534,7 +534,7 @@ export function InterrogazioneView() {
  <p className="label-small text-muted-foreground">media su {finalReport.scores.length} domande</p>
  </div>
 
- <div className="p-5 rounded-3xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-3">
+ <div className="p-5 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-3">
  <p className="label-large font-semibold tracking-tight text-foreground">Voti per domanda</p>
  <ul className="space-y-2">
  {finalReport.scores.map((s) => {
@@ -542,7 +542,7 @@ export function InterrogazioneView() {
  return (
  <li
  key={s.question}
- className="flex items-center justify-between p-3 rounded-2xl bg-white/60 border-[0.5px] border-white/40"
+ className="flex items-center justify-between p-3 rounded-xl bg-surface-container-high border border-outline-variant/60"
  >
  <span className="label-medium text-foreground">Domanda {s.question}</span>
  <span className={cn("font-display font-bold tabular-nums", c)}>
@@ -554,18 +554,18 @@ export function InterrogazioneView() {
  </ul>
  </div>
 
- <div className="p-5 rounded-3xl bg-primary-container/80 backdrop-blur-md border-[0.5px] border-primary/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] space-y-3">
+ <div className="p-5 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-3">
  <div className="flex items-center gap-2">
- <Brain className="w-5 h-5 text-primary" />
- <p className="label-large font-semibold tracking-tight text-on-primary-container">Considerazioni finali del Tutor</p>
+ <Brain className="w-5 h-5 text-foreground" />
+ <p className="label-large font-semibold tracking-tight text-foreground">Considerazioni finali del Tutor</p>
  </div>
- <div className="body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold text-on-primary-container">
+ <div className="body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold text-foreground">
  <ReactMarkdown>{finalReport.considerations}</ReactMarkdown>
  </div>
  </div>
  </div>
 
- <div className="px-4 sm:px-6 py-4 bg-white/70 backdrop-blur-md border-t-[0.5px] border-white/40">
+ <div className="px-4 sm:px-6 py-4 bg-background border-t border-outline-variant/60">
  <Button
  onClick={resetInterrogazione}
  className="w-full h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
@@ -582,7 +582,7 @@ export function InterrogazioneView() {
  return (
  <div className="flex flex-col h-full">
  {/* Header */}
- <div className="flex items-center justify-between px-5 py-3.5 bg-white/70 backdrop-blur-md border-b-[0.5px] border-white/40">
+ <div className="flex items-center justify-between px-5 py-3.5 bg-background border-b border-outline-variant/60">
  <div className="flex items-center gap-2">
  <span className="label-large font-semibold tracking-tight text-foreground">
  {mode ==="structured" ? `Domanda ${questionCount} di ${maxQuestions}` :"Esposizione libera"}
@@ -603,7 +603,7 @@ export function InterrogazioneView() {
  variant="ghost"
  size="icon"
  onClick={() => { if (isSpeaking || isLoadingVoice) { stopSpeaking(); setIsSpeaking(false); setIsLoadingVoice(false); } setTtsEnabled(!ttsEnabled); }}
- className={cn("rounded-full", ttsEnabled ?"text-tertiary" :"text-muted-foreground")}
+ className={cn("rounded-full", ttsEnabled ? "text-foreground" : "text-muted-foreground")}
  title={ttsEnabled ?"Disattiva voce" :"Attiva voce"}
  >
  {isLoadingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : ttsEnabled ? <Volume2 className={cn("w-4 h-4", isSpeaking &&"animate-pulse")} /> : <VolumeX className="w-4 h-4" />}
@@ -620,23 +620,23 @@ export function InterrogazioneView() {
  <div
  key={i}
  className={cn(
-"rounded-3xl px-5 py-4 backdrop-blur-md border-[0.5px] shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out animate-fade-up",
- item.type ==="question" &&"bg-tertiary-container/80 text-on-tertiary-container border-white/40",
- item.type ==="answer" &&"bg-white/70 text-foreground ml-8 border-white/40",
- item.type ==="feedback" &&"bg-primary-container/80 text-on-primary-container border-primary/10"
+"rounded-2xl px-5 py-4 border shadow-level-1 transition-all duration-300 ease-m3-emphasized animate-fade-up",
+ item.type ==="question" &&"bg-surface-container-high text-foreground border-outline-variant/60",
+ item.type ==="answer" &&"bg-primary text-primary-foreground ml-8 border-primary",
+ item.type ==="feedback" &&"bg-card text-foreground border-outline-variant/60"
  )}
  >
- <div className="label-small text-muted-foreground mb-1">
+ <div className={cn("label-small mb-1", item.type === "answer" ? "text-primary-foreground/70" : "text-muted-foreground")}>
  <span className="inline-flex items-center gap-1.5">
  {item.type ==="question" ?"🎓 Tutor" : item.type ==="answer" ?"🎤 Tu" :"📝 Valutazione"}
  {item.type !=="answer" && i === exchanges.length - 1 && (isLoadingVoice || isSpeaking) && (
  isLoadingVoice
- ? <Loader2 className="w-3 h-3 animate-spin text-tertiary" />
- : <Volume2 className="w-3 h-3 text-tertiary animate-pulse" />
+ ? <Loader2 className="w-3 h-3 animate-spin text-foreground/60" />
+ : <Volume2 className="w-3 h-3 text-foreground animate-pulse" />
  )}
  </span>
  </div>
- <div className="body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold prose-strong:text-foreground prose-em:italic prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5">
+ <div className={cn("body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold prose-strong:text-inherit prose-em:italic prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5", item.type === "answer" && "text-primary-foreground")}>
  <ReactMarkdown
  components={{
  p: ({ children }) => <p className="my-1.5 whitespace-pre-wrap">{children}</p>,
@@ -662,9 +662,9 @@ export function InterrogazioneView() {
  {phase ==="evaluating" && (
  <div className="flex justify-center py-4">
  <div className="flex gap-1.5">
- <div className="w-2 h-2 bg-tertiary rounded-full animate-bounce" style={{ animationDelay:"0ms" }} />
- <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay:"150ms" }} />
- <div className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay:"300ms" }} />
+ <div className="w-2 h-2 bg-foreground/80 rounded-full animate-bounce" style={{ animationDelay:"0ms" }} />
+ <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay:"150ms" }} />
+ <div className="w-2 h-2 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay:"300ms" }} />
  </div>
  </div>
  )}
@@ -674,9 +674,9 @@ export function InterrogazioneView() {
 
  {/* Voice input */}
  {phase ==="question" && (
- <div className="px-5 pb-5 pt-3 space-y-3 bg-white/70 backdrop-blur-md border-t-[0.5px] border-white/40">
+ <div className="px-5 pb-5 pt-3 space-y-3 bg-background border-t border-outline-variant/60">
  {transcript && (
- <div className="p-4 rounded-2xl bg-white/60 backdrop-blur-md border-[0.5px] border-white/40 text-foreground body-small max-h-24 overflow-y-auto">
+ <div className="p-4 rounded-xl bg-surface-container-high border border-outline-variant/60 text-foreground body-small max-h-24 overflow-y-auto">
  {transcript}
  </div>
  )}
@@ -689,7 +689,7 @@ export function InterrogazioneView() {
 "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-level-2 disabled:opacity-50 disabled:cursor-not-allowed",
  isListening
  ?"bg-destructive text-destructive-foreground animate-pulse-soft scale-110"
- :"bg-tertiary text-tertiary-foreground hover:scale-105"
+ :"bg-primary text-primary-foreground hover:scale-105"
  )}
  title={isSpeaking || isLoadingVoice ?"Microfono disattivato mentre il tutor parla" : undefined}
  >
