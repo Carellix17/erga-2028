@@ -117,3 +117,44 @@ describe("parseForcedAction — la cernita che non si fida", () => {
     expect(out?.title).toHaveLength(120);
   });
 });
+
+describe("parseForcedAction — orecchie fine P8: orario e percorso", () => {
+  const TODAY = "2026-07-21";
+
+  it("l'orario valido passa, quello rotto si butta", () => {
+    const ok = parseForcedAction('{"action":"add_event","title":"Verifica","time":"14:30"}', TODAY);
+    expect(ok?.time).toBe("14:30");
+    const pad = parseForcedAction('{"action":"add_event","title":"Verifica","time":"9:05"}', TODAY);
+    expect(pad?.time).toBe("09:05"); // normalizzato a 24h con due cifre
+    const broken = parseForcedAction('{"action":"add_event","title":"Verifica","time":"alle 9"}', TODAY);
+    expect(broken?.time).toBeUndefined();
+    const nonsense = parseForcedAction('{"action":"add_event","title":"Verifica","time":"28:70"}', TODAY);
+    expect(nonsense?.time).toBeUndefined();
+  });
+
+  it("il percorso passa come testo; quelli infiniti vengono potati", () => {
+    const ok = parseForcedAction('{"action":"add_event","title":"Verifica","course":"Promessi Sposi"}', TODAY);
+    expect(ok?.course).toBe("Promessi Sposi");
+    const long = "y".repeat(200);
+    const trimmed = parseForcedAction(`{"action":"add_event","title":"Verifica","course":"${long}"}`, TODAY);
+    expect(trimmed?.course).toHaveLength(80);
+  });
+
+  it("messaggio ricco completo: tipo + voto + orario + percorso tutti insieme", () => {
+    const ok = parseForcedAction(
+      '{"action":"add_event","title":"Interrogazione di storia","event_type":"test","subject":"Storia","date":"2026-07-23","eval_type":"interrogazione","goal":8,"time":"09:00","course":"Storia moderna"}',
+      TODAY,
+    );
+    expect(ok).toEqual({
+      action: "add_event",
+      title: "Interrogazione di storia",
+      date: "2026-07-23",
+      event_type: "test",
+      subject: "Storia",
+      eval_type: "interrogazione",
+      goal: 8,
+      time: "09:00",
+      course: "Storia moderna",
+    });
+  });
+});

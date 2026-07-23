@@ -39,6 +39,10 @@ export interface ForcedActionItem {
   eval_type?: EvalType;
   /** Voto obiettivo 1-10, se lo studente l'ha detto ("...puntando al 9"). */
   goal?: number;
+  /** Orario "HH:MM" (24h), se detto ("alle 9", "per le 14:30"). */
+  time?: string;
+  /** Nome del percorso a cui legare l'evento ("legata a Promessi Sposi"). */
+  course?: string;
 }
 
 /* Verbo d'azione + sostantivo da diario, vicini ("mettimi in diario una
@@ -138,6 +142,18 @@ export function parseForcedAction(raw: string, todayISO: string): ForcedActionIt
     if (g >= 1 && g <= 10) goal = g;
   }
 
+  // ⏰🎓 P8 — orario e percorso detti a parole: la carta-modulo li pre-riempie,
+  // allo studente resta solo il gusto di premere "Esegui".
+  let time: string | undefined;
+  if (typeof obj.time === "string") {
+    const tm = obj.time.trim().match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+    if (tm) time = `${tm[1].padStart(2, "0")}:${tm[2]}`;
+  }
+  const course =
+    typeof obj.course === "string" && obj.course.trim()
+      ? obj.course.trim().slice(0, 80)
+      : undefined;
+
   const item: ForcedActionItem = {
     action: action as ForcedActionItem["action"],
     title,
@@ -147,5 +163,7 @@ export function parseForcedAction(raw: string, todayISO: string): ForcedActionIt
   };
   if (evalType) item.eval_type = evalType;
   if (goal !== undefined) item.goal = goal;
+  if (time) item.time = time;
+  if (course) item.course = course;
   return item;
 }
