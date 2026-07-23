@@ -609,8 +609,8 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       return (
         <div className="flex flex-col h-full px-4 py-6 space-y-6 overflow-y-auto">
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 mx-auto rounded-3xl bg-primary/10 flex items-center justify-center">
-              <Dumbbell className="w-8 h-8 text-primary" />
+            <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center animate-bounce-in shadow-level-2">
+              <Dumbbell className="w-8 h-8" />
             </div>
             <h2 className="font-display text-xl font-bold text-foreground">Esercizi Mirati</h2>
             <p className="body-medium text-muted-foreground">Allenati con esercizi creati dai tuoi materiali</p>
@@ -619,11 +619,11 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
               onClick={() => setView("generate")}
-              className="group relative overflow-hidden text-left p-5 rounded-3xl bg-black text-white shadow-level-2 hover:shadow-level-3 transition-all duration-400 ease-m3-emphasized active:scale-[0.98]"
+              className="group relative overflow-hidden text-left p-5 rounded-2xl bg-black text-white shadow-level-2 hover:shadow-level-3 transition-all duration-400 ease-m3-emphasized active:scale-[0.98]"
             >
               <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary-foreground/10 blur-2xl" />
               <div className="relative space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-primary-foreground/15 backdrop-blur flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-primary-foreground/15 flex items-center justify-center">
                   <Cpu className="w-6 h-6" />
                 </div>
                 <div>
@@ -638,7 +638,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
 
             <button
               onClick={() => setView("history")}
-              className="group relative overflow-hidden text-left p-5 rounded-3xl bg-tertiary-container text-foreground shadow-level-1 hover:shadow-level-2 transition-all duration-400 ease-m3-emphasized active:scale-[0.98] border border-outline-variant/30"
+              className="group relative overflow-hidden text-left p-5 rounded-2xl bg-tertiary-container text-foreground shadow-level-1 hover:shadow-level-2 transition-all duration-400 ease-m3-emphasized active:scale-[0.98] border border-outline-variant/60"
             >
               <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-tertiary/10 blur-2xl" />
               <div className="relative space-y-3">
@@ -788,7 +788,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
             </div>
           ) : pastJobs.length === 0 ? (
             <div className="text-center py-8 space-y-3">
-              <div className="w-14 h-14 mx-auto rounded-3xl bg-tertiary-container flex items-center justify-center">
+              <div className="w-14 h-14 mx-auto rounded-full bg-tertiary-container flex items-center justify-center">
                 <History className="w-6 h-6 text-tertiary" />
               </div>
               <p className="body-medium text-muted-foreground">
@@ -1110,7 +1110,7 @@ function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: Ge
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 animate-fade-up">
       <div className="relative mb-8">
-        <div className="w-28 h-28 rounded-[2rem] gradient-primary flex items-center justify-center shadow-level-3 animate-float">
+        <div className="w-28 h-28 rounded-[2rem] bg-primary text-primary-foreground flex items-center justify-center shadow-level-3 animate-float">
           <Dumbbell className="w-12 h-12 text-primary-foreground" />
         </div>
         <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">

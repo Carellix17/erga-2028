@@ -76,15 +76,15 @@ export function GenerationProgress({
     <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 animate-fade-up">
       {/* Animated orb */}
       <div className="relative mb-8">
-        <div className="w-28 h-28 rounded-[2rem] gradient-primary flex items-center justify-center shadow-level-3 animate-float">
+        <div className="w-28 h-28 rounded-[2rem] bg-primary text-primary-foreground flex items-center justify-center shadow-level-3 animate-float">
           <Network className="w-12 h-12 text-primary-foreground" />
         </div>
         {/* Orbiting dots */}
         <div className="absolute inset-0 animate-spin" style={{ animationDuration: "6s" }}>
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-secondary opacity-70" />
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-foreground/50 opacity-80" />
         </div>
         <div className="absolute inset-0 animate-spin" style={{ animationDuration: "8s", animationDirection: "reverse" }}>
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-tertiary opacity-60" />
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-foreground/40 opacity-60" />
         </div>
         {/* Progress ring */}
         <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">

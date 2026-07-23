@@ -249,7 +249,7 @@ export function CourseSelector({
                     onClick={a.onClick}
                     disabled={a.loading}
                     className={cn(
-                      "h-12 px-4 flex items-center gap-2 rounded-full border bg-white/70 backdrop-blur transition-all duration-300",
+                      "h-12 px-4 flex items-center gap-2 rounded-full border bg-card transition-all duration-300",
                       "active:scale-[0.96] hover:shadow-level-2 label-large",
                       danger
                         ? "border-red-200 text-red-600 hover:bg-red-50"
@@ -278,7 +278,7 @@ export function CourseSelector({
             role="menu"
             style={{ top: menuPos.top, right: menuPos.right }}
             className={cn(
-              "fixed z-[86] min-w-[200px] rounded-2xl bg-white/90 backdrop-blur-xl shadow-level-3 border border-black/5 p-1.5",
+              "fixed z-[86] min-w-[200px] rounded-2xl bg-popover shadow-level-3 border border-outline-variant/60 p-1.5",
               "animate-in fade-in-0 zoom-in-95 duration-200 ease-m3-emphasized-decel origin-top-right",
             )}
           >
@@ -335,7 +335,7 @@ export function CourseSelector({
 
       {open && (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-foreground/20 backdrop-blur-lg animate-fade-in"
+          className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-foreground/32 animate-fade-in"
           onClick={() => setOpen(false)}
         >
           <div
