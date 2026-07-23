@@ -132,7 +132,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   return (
     <form onSubmit={handleSubmit}>
       <div className={cn(
-        "relative rounded-[28px] shadow-level-2 transition-all duration-300 ease-m3-standard",
+        "relative rounded-2xl shadow-level-2 transition-all duration-300 ease-m3-standard",
         "bg-surface-container-high",
         "focus-within:shadow-level-3",
         isListening && "ring-2 ring-destructive/50 shadow-level-3"

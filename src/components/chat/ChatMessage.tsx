@@ -266,7 +266,7 @@ function ActionFormCard({
         </SelectContent>
       </Select>
       {missingSubject && (
-        <p className="text-[10px] text-amber-600 font-medium">{t("chat.form.subjectRequired")}</p>
+        <p className="text-[10px] text-warning font-medium">{t("chat.form.subjectRequired")}</p>
       )}
 
       {/* Percorso (opzionale) */}
@@ -348,7 +348,7 @@ export function ChatMessage({ message, onExecuteAction, executedActions }: ChatM
         )}
       >
         {!isUser && (
-          <div className="w-9 h-9 rounded-2xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-level-1">
+          <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-level-1">
             <Brain className="w-4 h-4 text-white" />
           </div>
         )}
@@ -357,8 +357,8 @@ export function ChatMessage({ message, onExecuteAction, executedActions }: ChatM
           className={cn(
             "max-w-[85%] overflow-hidden transition-all duration-300 ease-m3-emphasized",
             isUser
-              ? "gradient-cool text-white rounded-3xl rounded-br-lg shadow-level-2"
-              : "bg-surface-container-high text-foreground rounded-3xl rounded-bl-lg shadow-level-1"
+              ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md shadow-level-2"
+              : "bg-surface-container-high text-foreground rounded-2xl rounded-bl-md shadow-level-1"
           )}
         >
           {message.imageUrl && (
@@ -384,7 +384,7 @@ export function ChatMessage({ message, onExecuteAction, executedActions }: ChatM
                 {message.content}
               </p>
             ) : (
-              <div className="body-medium leading-relaxed prose prose-sm max-w-none prose-p:my-1.5 prose-headings:font-display prose-headings:mt-3 prose-headings:mb-1.5 prose-strong:text-foreground prose-em:text-foreground/90 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5">
+              <div className={cn("body-medium leading-relaxed prose prose-sm max-w-none prose-p:my-1.5 prose-headings:font-display prose-headings:mt-3 prose-headings:mb-1.5 prose-strong:text-inherit prose-em:text-inherit prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5", isUser && "text-primary-foreground")}>
                 <ReactMarkdown
                   components={{
                     p: ({ children }) => <p className="my-1.5">{children}</p>,

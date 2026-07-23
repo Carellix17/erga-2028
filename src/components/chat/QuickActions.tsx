@@ -7,11 +7,13 @@ interface QuickActionsProps {
 
 export function QuickActions({ onAction }: QuickActionsProps) {
   const { t } = useTranslation();
+  // 🎨 P9d: una sola veste monocromatica — la personalita' la porta l'emoji, non i pastelli
+  const CHIP = "bg-card text-foreground border-outline-variant/60";
   const quickActions = [
-    { label: t("chat.quick.explain"), emoji: "💡", cls: "bg-primary-container text-primary border-primary/20" },
-    { label: t("chat.quick.example"), emoji: "📝", cls: "bg-secondary-container text-secondary-foreground border-secondary/20" },
-    { label: t("chat.quick.summarize"), emoji: "📋", cls: "bg-tertiary-container text-tertiary border-tertiary/20" },
-    { label: t("chat.quick.quiz"), emoji: "⚡", cls: "bg-warning/10 text-warning border-warning/20" },
+    { label: t("chat.quick.explain"), emoji: "💡", cls: CHIP },
+    { label: t("chat.quick.example"), emoji: "📝", cls: CHIP },
+    { label: t("chat.quick.summarize"), emoji: "📋", cls: CHIP },
+    { label: t("chat.quick.quiz"), emoji: "⚡", cls: CHIP },
   ];
   return (
     <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
