@@ -25,7 +25,7 @@ const CALLOUT_VARIANTS = {
  yellow:"bg-amber-100/80 border-amber-300/70 text-amber-950",
  pink:"bg-rose-100/80 border-rose-300/70 text-rose-950",
  blue:"bg-sky-100/80 border-sky-300/70 text-sky-950",
- neutral:"bg-surface-container-high/80 border-outline-variant/40 text-foreground",
+ neutral:"bg-surface-container-high border-outline-variant/60 text-foreground",
 } as const;
 
 const YELLOW_EMOJI = ["💡","⭐","🎯","⚡","🌟","✨"];
@@ -54,7 +54,7 @@ function CalloutBlockquote({ children }: { children?: React.ReactNode }) {
  return (
  <div
  className={cn(
-"my-3 px-4 py-3 rounded-2xl border-[0.5px] backdrop-blur-md shadow-[0_4px_16px_0_rgba(0,0,0,0.04)] body-medium leading-relaxed [&>p]:m-0 [&_strong]:font-semibold",
+"my-3 px-4 py-3 rounded-2xl border shadow-level-1 body-medium leading-relaxed [&>p]:m-0 [&_strong]:font-semibold",
  CALLOUT_VARIANTS[variant]
  )}
  >
@@ -421,11 +421,11 @@ function ConceptStep({ concept }: { concept: string }) {
  <Lightbulb className="w-5 h-5 text-primary" />
  </div>
  <div>
- <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 text-primary label-medium mb-4 shadow-[0_4px_16px_0_rgba(0,0,0,0.04)]">
+ <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card border border-outline-variant/60 text-primary label-medium mb-4 shadow-level-1">
  <Star className="w-3.5 h-3.5" />
  Concetto chiave
  </div>
- <div className="text-xl font-normal tracking-tight leading-[1.7] prose prose-sm max-w-none mx-auto px-2 prose-p:font-normal prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-primary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30">
+ <div className="text-xl font-normal tracking-tight leading-[1.7] prose prose-sm max-w-none mx-auto px-2 prose-p:font-normal prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-primary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
  <ReactMarkdown remarkPlugins={[remarkGfm]}>{concept}</ReactMarkdown>
  </div>
  </div>
@@ -476,15 +476,15 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
  </div>
  </div>
  <div className={cn(
-"p-6 sm:p-7 rounded-2xl backdrop-blur-md border-[0.5px] shadow-[0_4px_20px_0_rgba(0,0,0,0.03)] space-y-4 transition-all duration-300 ease-in-out",
+"p-6 sm:p-7 rounded-2xl border shadow-level-1 space-y-4 transition-all duration-300 ease-in-out",
  isExample
  ?"bg-tertiary-container/60 border-tertiary/30 border-l-4 border-l-tertiary"
- :"bg-white/70 border-white/40"
+ :"bg-card border-outline-variant/60"
  )}>
  {segments.map((seg, i) => {
  if (seg.type ==="text") {
  return seg.value.trim() ? (
- <div key={i} className="text-[15px] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:text-foreground/80 prose-p:leading-[1.7] prose-p:my-3 prose-strong:font-semibold prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-white/40 prose-table:backdrop-blur-md prose-th:bg-secondary-container/60 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30 prose-hr:my-4 prose-hr:border-white/30">
+ <div key={i} className="text-[15px] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:text-foreground/80 prose-p:leading-[1.7] prose-p:my-3 prose-strong:font-semibold prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-outline-variant/60 prose-th:bg-secondary-container/60 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60 prose-hr:my-4 prose-hr:border-outline-variant/60">
  <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ blockquote: CalloutBlockquote }}>{seg.value}</ReactMarkdown>
  </div>
  ) : null;
@@ -514,8 +514,8 @@ function ExampleStep({ example }: { example: string }) {
  </div>
  <span className="label-large text-foreground">Esempio pratico</span>
  </div>
- <div className="p-6 sm:p-7 rounded-2xl bg-tertiary-container/60 backdrop-blur-md border-[0.5px] border-tertiary/30 border-l-4 border-l-tertiary shadow-[0_4px_20px_0_rgba(0,0,0,0.03)] transition-all duration-300 ease-in-out">
- <div className="text-[15px] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-white/30">
+ <div className="p-6 sm:p-7 rounded-2xl bg-tertiary-container/60 border border-tertiary/30 border-l-4 border-l-tertiary shadow-level-1 transition-all duration-300 ease-in-out">
+ <div className="text-[15px] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
  <ReactMarkdown remarkPlugins={[remarkGfm]}>{example}</ReactMarkdown>
  </div>
  </div>
@@ -533,7 +533,7 @@ function ExerciseStep({
  <div className="space-y-5">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-[0_8px_24px_0_rgba(0,0,0,0.12)] border-[0.5px] border-white/30">
+ <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-level-2">
  <Dumbbell className="w-6 h-6 text-primary-foreground" />
  </div>
  <div>
@@ -553,7 +553,7 @@ function ExerciseStep({
  ))}
  </div>
  </div>
- <div className="p-5 rounded-3xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] transition-all duration-300 ease-in-out">
+ <div className="p-5 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-all duration-300 ease-in-out">
  <ExerciseRenderer exercise={exercise} onComplete={onComplete} isCompleted={isCompleted} />
  </div>
  </div>
@@ -843,7 +843,7 @@ function SlideAIAssistant({
                   className={cn(
                     "max-w-[82%] px-3.5 py-2.5 rounded-2xl text-[14px] leading-relaxed",
                     msg.role === "assistant"
-                      ? "bg-white/70 text-foreground rounded-bl-md prose prose-sm max-w-none prose-p:my-2"
+                      ? "bg-surface-container-high text-foreground rounded-bl-md prose prose-sm max-w-none prose-p:my-2"
                       : "bg-primary text-primary-foreground rounded-br-md whitespace-pre-wrap"
                   )}
                 >
@@ -860,7 +860,7 @@ function SlideAIAssistant({
                 <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
                   <Bot className="w-3.5 h-3.5 text-primary" />
                 </div>
-                <div className="bg-white/70 rounded-2xl rounded-bl-md px-3 py-2.5">
+                <div className="bg-surface-container-high rounded-2xl rounded-bl-md px-3 py-2.5">
                   <div className="flex gap-1">
                     {[0, 150, 300].map((d) => (
                       <div
@@ -877,7 +877,7 @@ function SlideAIAssistant({
           </div>
 
           {/* Input */}
-          <div className="px-3 pt-2 pb-3 border-t border-border/40 flex-shrink-0 bg-[#FCFCFC]">
+          <div className="px-3 pt-2 pb-3 border-t border-border/40 flex-shrink-0 bg-background">
             <div className="flex gap-2 items-end">
               <textarea
                 ref={inputRef}
@@ -894,7 +894,7 @@ function SlideAIAssistant({
                 disabled={isLoading}
                 className={cn(
                   "flex-1 resize-none rounded-2xl px-3 py-2.5 text-sm",
-                  "bg-white/70 border border-white/50",
+                  "bg-surface-container-high border border-outline-variant/60",
                   "focus:outline-none focus:ring-2 focus:ring-primary/30",
                   "placeholder:text-muted-foreground max-h-28 overflow-y-auto",
                   "disabled:opacity-50"

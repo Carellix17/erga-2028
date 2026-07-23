@@ -222,7 +222,7 @@ export function LessonsList({
  return (
  <div className="pb-32 animate-fade-in">
  {/* Header */}
- <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-xl border-b border-outline-variant/30 px-4 pt-4 pb-3">
+ <div className="sticky top-0 z-20 bg-background border-b border-outline-variant/60 px-4 pt-4 pb-3">
  <div className="flex items-center gap-3 mb-3">
  {showBackButton && (
  <Button variant="ghost" size="icon" onClick={onBack} aria-label="Torna indietro" className="rounded-full -ml-2">
@@ -268,7 +268,7 @@ export function LessonsList({
  {/* Module header */}
  <div className="flex items-center gap-2 mb-4 px-2">
  <div className={cn(
-"h-8 px-3 rounded-xl flex items-center gap-1.5 text-xs font-bold text-white shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] backdrop-blur-md border-[0.5px] border-white/50 transition-all duration-300 ease-in-out",
+"h-8 px-3 rounded-xl flex items-center gap-1.5 text-xs font-bold text-white shadow-level-1 transition-all duration-300 ease-in-out",
  color.solid
  )}>
  <Crown className="w-3.5 h-3.5" />
@@ -376,7 +376,7 @@ export function LessonsList({
  {/* Pulse ring for current */}
  {isCurrent && (
  <span
- className={cn("absolute animate-pulse opacity-20 backdrop-blur-sm border-[0.5px] border-white/30", color.solid)}
+ className={cn("absolute animate-pulse opacity-20", color.solid)}
  style={{
  inset: -6,
  borderRadius: radius + 4,
@@ -388,10 +388,10 @@ export function LessonsList({
  <span
  className={cn(
 "absolute inset-0 flex items-center justify-center transition-all duration-300",
- isCompleted && cn("shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] backdrop-blur-md border-[0.5px] border-white/50 opacity-90", color.solid),
- isCurrent && cn("shadow-[0_8px_32px_0_rgba(0,0,0,0.15)] backdrop-blur-md border-[0.5px] border-white/50", color.solid),
- !isCurrent && !isCompleted && !isLocked &&"bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)]",
- isLocked &&"bg-white/40 backdrop-blur-sm border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.02)] opacity-45",
+ isCompleted && cn("shadow-level-2 opacity-90", color.solid),
+ isCurrent && cn("shadow-level-3", color.solid),
+ !isCurrent && !isCompleted && !isLocked &&"bg-card border border-outline-variant/60 shadow-level-1",
+ isLocked &&"bg-card border border-outline-variant/60 opacity-45",
  )}
  style={{ borderRadius: radius }}
  >
@@ -411,7 +411,7 @@ export function LessonsList({
  {/* Badge for current */}
  {isCurrent && !isGenerating && (
  <span
- className="absolute w-6 h-6 bg-warning flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] backdrop-blur-md border-[0.5px] border-white/40 animate-bounce-gentle"
+ className="absolute w-6 h-6 bg-warning flex items-center justify-center shadow-level-2 animate-bounce-gentle"
  style={{ top: -4, right: -4, borderRadius: 8 }}
  >
  <Star className="w-3 h-3 text-warning-foreground fill-warning-foreground" />
@@ -444,11 +444,11 @@ export function LessonsList({
  }}
  disabled={isGenerating}
  className={cn(
-"mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 ease-in-out px-2 py-1 rounded-xl backdrop-blur-md border-[0.5px] border-white/30 active:scale-[0.97] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.04)]",
- isCompleted && cn(color.text,"font-semibold","bg-white/50"),
- isCurrent && cn(color.text,"font-semibold text-xs","bg-white/60"),
- isLocked &&"text-muted-foreground/40 bg-white/20",
- !isCurrent && !isCompleted && !isLocked &&"text-foreground/70 bg-white/50",
+"mt-2 max-w-[120px] text-center text-[11px] leading-tight font-medium line-clamp-2 transition-all duration-300 ease-in-out px-2 py-1 rounded-xl active:scale-[0.97] hover:shadow-level-1",
+ isCompleted && cn(color.text,"font-semibold","bg-card border border-outline-variant/60"),
+ isCurrent && cn(color.text,"font-semibold text-xs","bg-card border border-outline-variant/60"),
+ isLocked &&"text-muted-foreground/40 bg-transparent",
+ !isCurrent && !isCompleted && !isLocked &&"text-foreground/70 bg-card border border-outline-variant/60",
  )}
  style={{ touchAction:"manipulation", WebkitUserSelect:"none", userSelect:"none" }}
  >
@@ -476,7 +476,7 @@ export function LessonsList({
  />
  <span
  className={cn(
-"w-20 h-20 flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] backdrop-blur-md border-[0.5px] border-white/50 text-white group-hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.16)] group-hover:scale-[1.02] transition-all duration-300 ease-in-out",
+"w-20 h-20 flex items-center justify-center shadow-level-2 text-white group-hover:shadow-level-3 group-hover:scale-[1.02] transition-all duration-300 ease-in-out",
  color.solid,
  )}
  style={{ borderRadius: 24 }}
@@ -556,10 +556,10 @@ export function LessonsList({
  onClick={handleRegenerate}
  disabled={actionLoading !== null || !onRegenerateLesson}
  className={cn(
-"flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50",
+"flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 hover:shadow-level-2 transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50",
  )}
  >
- <span className={cn("w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] backdrop-blur-md border-[0.5px] border-white/40", color.solid)}>
+ <span className={cn("w-10 h-10 rounded-xl flex items-center justify-center shadow-level-1", color.solid)}>
  {actionLoading ==="regen" ? (
  <Loader2 className="w-5 h-5 text-white animate-spin" />
  ) : (
@@ -572,9 +572,9 @@ export function LessonsList({
  <button
  onClick={() => { setRenameValue(menuLesson.lesson.title); setIsRenaming(true); }}
  disabled={actionLoading !== null || !onRenameLesson}
- className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50"
+ className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 hover:shadow-level-2 transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50"
  >
- <span className="w-10 h-10 rounded-xl bg-tertiary-container text-tertiary flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] backdrop-blur-md border-[0.5px] border-white/30">
+ <span className="w-10 h-10 rounded-xl bg-tertiary-container text-tertiary flex items-center justify-center">
  <Pencil className="w-5 h-5" />
  </span>
  <span className="text-xs font-semibold text-foreground">Rinomina</span>
@@ -583,9 +583,9 @@ export function LessonsList({
  <button
  onClick={handleDelete}
  disabled={actionLoading !== null || !onDeleteLesson}
- className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-white/70 backdrop-blur-md border-[0.5px] border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] hover:bg-error-container/30 transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50"
+ className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 hover:shadow-level-2 hover:bg-error-container/30 transition-all duration-300 ease-in-out active:scale-[0.97] disabled:opacity-50"
  >
- <span className="w-10 h-10 rounded-xl bg-error-container text-destructive flex items-center justify-center shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] backdrop-blur-md border-[0.5px] border-white/30">
+ <span className="w-10 h-10 rounded-xl bg-error-container text-destructive flex items-center justify-center">
  {actionLoading ==="delete" ? (
  <Loader2 className="w-5 h-5 animate-spin" />
  ) : (

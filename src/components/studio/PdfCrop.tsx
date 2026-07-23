@@ -72,7 +72,7 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
         {!loaded && (
           <div className="absolute inset-0 rounded-2xl bg-surface-container animate-pulse pointer-events-none" />
         )}
-        <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-level-1">
+        <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background shadow-level-1 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-level-1">
           <ZoomIn className="w-4 h-4 text-foreground" />
         </div>
       </button>
@@ -83,7 +83,7 @@ export function PdfCrop({ url, bbox, description, className }: PdfCropProps) {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center shadow-level-2 hover:bg-surface-container-high transition-colors"
+              className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-background flex items-center justify-center shadow-level-2 hover:bg-surface-container-high transition-colors"
               aria-label="Chiudi"
             >
               <X className="w-5 h-5" />
