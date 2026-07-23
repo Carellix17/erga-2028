@@ -101,6 +101,19 @@
       "eventAdded": "Added to diary",
       "failed": "I couldn't perform the action"
     },
+    "form": {
+      "verifica": "Test",
+      "compito": "Homework",
+      "mode": { "scritta": "Written", "orale": "Oral", "interrogazione": "Oral exam", "pratica": "Practical" },
+      "title": "Title",
+      "date": "Date",
+      "time": "Time (optional)",
+      "subject": "Subject",
+      "subjectRequired": "Pick a subject to continue",
+      "course": "Path (optional)",
+      "none": "None",
+      "goal": "Target grade (optional)"
+    },
     "quick": {
       "explain": "Explain better",
       "example": "Give an example",

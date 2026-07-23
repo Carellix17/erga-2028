@@ -25,12 +25,20 @@
 const FORCED_KINDS = new Set(["add_event", "propose_review", "add_goal"] as const);
 const EVENT_TYPES = new Set(["study", "test", "assignment"] as const);
 
+const EVAL_TYPES = new Set(["scritta", "orale", "interrogazione", "pratica", "compito"] as const);
+
+export type EvalType = "scritta" | "orale" | "interrogazione" | "pratica" | "compito";
+
 export interface ForcedActionItem {
   action: "add_event" | "propose_review" | "add_goal";
   title: string;
   date: string; // YYYY-MM-DD
   event_type: "study" | "test" | "assignment";
   subject: string;
+  /** Tipo preciso della valutazione (P8): "interrogazione" per le interrogazioni, ecc. */
+  eval_type?: EvalType;
+  /** Voto obiettivo 1-10, se lo studente l'ha detto ("...puntando al 9"). */
+  goal?: number;
 }
 
 /* Verbo d'azione + sostantivo da diario, vicini ("mettimi in diario una
@@ -110,11 +118,34 @@ export function parseForcedAction(raw: string, todayISO: string): ForcedActionIt
       ? obj.subject.trim().slice(0, 60)
       : "Generale";
 
-  return {
+  // 🎓 P8 — tipo di valutazione preciso (verifica scritta/orale, interrogazione,
+  // compito) e voto obiettivo: la carta-modulo li usera' per precompilare i campi.
+  let evalType = typeof obj.eval_type === "string" && EVAL_TYPES.has(obj.eval_type as EvalType)
+    ? (obj.eval_type as EvalType)
+    : undefined;
+  // Incroci di coerenza: "compito" e l'evento assignment sono la stessa cosa;
+  // qualsiasi valutazione (scritta/orale/…) e' una verifica (event_type=test).
+  if (evalType === "compito") eventType = "assignment";
+  else if (evalType) eventType = "test";
+  if (eventType === "assignment" && !evalType) evalType = "compito";
+  else if (eventType === "test" && !evalType && action === "add_event") {
+    evalType = "scritta"; // una "verifica" generica nasce come scritta; la carta la fa cambiare
+  }
+
+  let goal: number | undefined;
+  if (typeof obj.goal === "number" && Number.isFinite(obj.goal)) {
+    const g = Math.round(obj.goal);
+    if (g >= 1 && g <= 10) goal = g;
+  }
+
+  const item: ForcedActionItem = {
     action: action as ForcedActionItem["action"],
     title,
     date,
     event_type: eventType,
     subject,
   };
+  if (evalType) item.eval_type = evalType;
+  if (goal !== undefined) item.goal = goal;
+  return item;
 }
