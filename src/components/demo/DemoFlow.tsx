@@ -187,7 +187,7 @@ function InputStep({
         onDragLeave={() => setIsDragging(false)}
         onDrop={onDrop}
         className={cn(
-          "rounded-3xl border-[1.5px] border-dashed transition-all duration-300 p-6 sm:p-8 bg-white/70 backdrop-blur-md shadow-[0_20px_60px_-30px_rgba(0,0,0,0.25)]",
+          "rounded-2xl border-[1.5px] border-dashed transition-all duration-300 p-6 sm:p-8 bg-card shadow-level-2",
           isDragging ? "border-primary/60 bg-primary/5 scale-[1.01]" : "border-slate-200",
         )}
       >
@@ -332,7 +332,7 @@ function CourseStep({
       </ol>
 
       {showHex && (
-        <div className="mt-8 rounded-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.25)] p-5">
+        <div className="mt-8 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5">
           <div className="text-center mb-2">
             <p className="text-xs uppercase tracking-widest text-slate-400">{t("demo.hexTitle")}</p>
           </div>
@@ -387,7 +387,7 @@ function FullscreenLesson({
   return (
     <div className="fixed inset-0 top-0 left-0 w-screen h-screen z-50 bg-dot-grid overflow-y-auto animate-fade-up">
       {/* Top bar */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-100">
+      <div className="sticky top-0 z-10 bg-background border-b border-outline-variant/60">
         <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 sm:px-6 h-14">
           <button
             onClick={onClose}
@@ -600,8 +600,8 @@ function AuthWallModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-up p-4">
-      <div className="w-full max-w-md rounded-3xl bg-white/90 backdrop-blur-2xl border border-white/70 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.5)] p-6 sm:p-8">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-foreground/32 backdrop-blur-sm animate-fade-up p-4">
+      <div className="w-full max-w-md rounded-2xl bg-card border border-outline-variant/60 shadow-level-3 p-6 sm:p-8">
         <div className="flex items-center justify-between mb-1">
           <h3 className="font-display text-xl text-slate-900">
             {mode === "signup" ? "Consolida la tua conoscenza" : "Bentornato"}

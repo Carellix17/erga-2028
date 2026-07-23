@@ -386,12 +386,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                           <img src={preview} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
                           <button
                             onClick={() => removeImage(index)}
-                            className="absolute top-1 right-1 w-7 h-7 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center"
+                            className="absolute top-1 right-1 w-7 h-7 bg-background shadow-level-1 rounded-full flex items-center justify-center"
                             disabled={isUploading}
                           >
                             <X className="w-4 h-4" />
                           </button>
-                          <div className="absolute bottom-1 left-1 bg-background/80 backdrop-blur-sm rounded-full px-2 py-0.5">
+                          <div className="absolute bottom-1 left-1 bg-background shadow-level-1 rounded-full px-2 py-0.5">
                             <span className="body-small text-xs">{(selectedImages[index]?.size / 1024 / 1024).toFixed(1)}MB</span>
                           </div>
                         </div>
@@ -413,7 +413,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                   </div>
                 )}
 
-                <div className="sticky bottom-0 bg-surface-container-high/95 backdrop-blur-sm pt-3 pb-2 -mx-1 px-1 mt-auto">
+                <div className="sticky bottom-0 bg-surface-container-high pt-3 pb-2 -mx-1 px-1 mt-auto">
                   <Button onClick={handleUploadImages} disabled={selectedImages.length === 0 || isUploading} className="w-full h-14 text-base" size="lg">
                     {isUploading ? (
                       <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{uploadStatus || "Elaborazione..."}</>

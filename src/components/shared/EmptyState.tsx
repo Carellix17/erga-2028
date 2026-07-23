@@ -19,16 +19,16 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
 
         {/* Icon composition */}
         <div className="relative mb-10 flex items-center justify-center">
-          <div className="w-28 h-28 rounded-[2rem] gradient-primary flex items-center justify-center shadow-level-4 animate-bounce-in rotate-3">
+          <div className="w-28 h-28 rounded-[2rem] bg-primary flex items-center justify-center shadow-level-4 animate-bounce-in rotate-3">
             <Brain className="w-14 h-14 text-white animate-wiggle" />
           </div>
-          <div className="absolute -right-5 -top-5 w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center shadow-level-2 animate-bounce-in animate-stagger-2 -rotate-6">
+          <div className="absolute -right-5 -top-5 w-14 h-14 rounded-2xl bg-foreground/70 flex items-center justify-center shadow-level-2 animate-bounce-in animate-stagger-2 -rotate-6">
             <BookOpen className="w-7 h-7 text-white" />
           </div>
           <div className="absolute -left-5 -bottom-5 w-14 h-14 rounded-2xl bg-tertiary flex items-center justify-center shadow-level-2 animate-bounce-in animate-stagger-3 rotate-6">
             <Brain className="w-7 h-7 text-white" />
           </div>
-          <div className="absolute right-2 -bottom-6 w-10 h-10 rounded-xl bg-warning flex items-center justify-center shadow-level-2 animate-bounce-in animate-stagger-4 rotate-12">
+          <div className="absolute right-2 -bottom-6 w-10 h-10 rounded-xl bg-foreground/45 flex items-center justify-center shadow-level-2 animate-bounce-in animate-stagger-4 rotate-12">
             <Zap className="w-5 h-5 text-white" />
           </div>
         </div>
@@ -42,7 +42,7 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
         </p>
         
         <div className="animate-fade-up animate-stagger-4">
-          <Button onClick={onUploadClick} size="lg" className="h-14 px-8 text-base shadow-level-3 gradient-primary border-0 hover:shadow-level-4">
+          <Button onClick={onUploadClick} size="lg" className="h-14 px-8 text-base shadow-level-3 bg-primary text-primary-foreground border-0 hover:shadow-level-4">
             <FileUp className="w-5 h-5 mr-2" />
             Inizia ora
           </Button>
@@ -50,7 +50,7 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
         
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade-up animate-stagger-5">
           {[
-            { label: "📄 PDF", cls: "bg-primary-container text-primary" },
+            { label: "📄 PDF", cls: "bg-surface-container-high text-foreground" },
             { label: "🌐 Ricerca web", cls: "bg-secondary-container text-secondary-foreground" },
             { label: "🧠 AI Tutor", cls: "bg-tertiary-container text-tertiary" },
           ].map((item) => (
