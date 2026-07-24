@@ -10,6 +10,12 @@ const MODULE_SIZE = 4;
 const LIMIT_REACHED_MESSAGE =
   "Hai raggiunto il limite di 5 lezioni gratuite per la beta. Per continuare a usare Erga senza limiti contattaci!";
 
+// 🚧 P12 — RECINTO APERTO: il limite delle 5 lezioni gratuite è DISATTIVATO
+// (richiesta del capo-cantiere: "elimina questo limite per ora"). Per
+// riaccenderlo: BETA_LIMIT_ENABLED = true (qui e in get-lessons/getUsage).
+// Il contatore generation_count continua a salire: serve per la statistica.
+const BETA_LIMIT_ENABLED = false;
+
 function extractJson(raw: string): unknown {
   let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
   try { return JSON.parse(cleaned); } catch { /* continue */ }
@@ -513,7 +519,7 @@ ${studyContent}`;
           .eq("user_id", userId)
           .maybeSingle();
         const currentCount = profileForLimit?.generation_count ?? 0;
-        if (currentCount >= FREE_GENERATION_LIMIT) {
+        if (BETA_LIMIT_ENABLED && currentCount >= FREE_GENERATION_LIMIT) {
           return errorResponse(LIMIT_REACHED_MESSAGE, 403);
         }
       }
@@ -582,7 +588,7 @@ ${studyContent}`;
       // Pre-check limite beta (i percorsi demo non consumano crediti).
       if (!ctx.is_demo) {
         const { data: prof } = await supabase.from("user_profiles").select("generation_count").eq("user_id", userId).maybeSingle();
-        if ((prof?.generation_count ?? 0) >= FREE_GENERATION_LIMIT) {
+        if (BETA_LIMIT_ENABLED && (prof?.generation_count ?? 0) >= FREE_GENERATION_LIMIT) {
           return errorResponse(LIMIT_REACHED_MESSAGE, 403);
         }
       }
@@ -621,7 +627,7 @@ ${studyContent}`;
             // Il contatore sale a ogni lezione tornita: controllo il limite a ogni giro.
             if (!ctx.is_demo) {
               const { data: prof } = await supabase.from("user_profiles").select("generation_count").eq("user_id", userId).maybeSingle();
-              if ((prof?.generation_count ?? 0) >= FREE_GENERATION_LIMIT) {
+              if (BETA_LIMIT_ENABLED && (prof?.generation_count ?? 0) >= FREE_GENERATION_LIMIT) {
                 console.warn(`[P10b] limite beta raggiunto dentro il modulo ${moduleIndex}: stop a ${done}/${missing.length}`);
                 break;
               }
@@ -975,7 +981,7 @@ ${documentSection}`;
           for (const warmRow of warmRows ?? []) {
             if (!ctxPre.is_demo) {
               const { data: prof } = await supabase.from("user_profiles").select("generation_count").eq("user_id", userId).maybeSingle();
-              if ((prof?.generation_count ?? 0) >= FREE_GENERATION_LIMIT) {
+              if (BETA_LIMIT_ENABLED && (prof?.generation_count ?? 0) >= FREE_GENERATION_LIMIT) {
                 console.warn("[P10b] limite beta raggiunto durante il primo modulo caldo: stop");
                 break;
               }

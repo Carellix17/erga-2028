@@ -177,6 +177,10 @@ serve(withCors(async (req) => {
     if (action === "getUsage") {
       // Restituisce l'uso corrente del piano gratuito per il rate limiting beta.
       const FREE_LIMIT = 5;
+      // 🚧 P12 — RECINTO APERTO: il limite beta è DISATTIVATO (richiesta del
+      // capo-cantiere). unlimited:true → il client non mostra più blocchi né
+      // banner. Per riaccenderlo: rimetti true qui e in generate-lessons.
+      const BETA_LIMIT_ENABLED = false;
       const { data: profile } = await supabase
         .from("user_profiles")
         .select("generation_count")
@@ -188,7 +192,7 @@ serve(withCors(async (req) => {
         used,
         limit: FREE_LIMIT,
         remaining: Math.max(0, FREE_LIMIT - used),
-        unlimited: false,
+        unlimited: !BETA_LIMIT_ENABLED,
       });
     }
 
