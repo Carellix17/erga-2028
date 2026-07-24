@@ -723,6 +723,18 @@ ${documentSection}`;
           .eq("user_id", userId).eq("context_id", contextId);
         if (deleteError) throw new Error("Errore durante la pulizia delle vecchie lezioni");
 
+        // 🧹 P10a TABULA RASA: rigenerando il percorso si azzera anche il contatore
+        // dei progressi, altrimenti le nuove lezioni "eredita(va)no" i completamenti
+        // del percorso vecchio (bug segnalato dall'utente).
+        const { error: progressResetError } = await supabase
+          .from("lesson_progress")
+          .update({ current_lesson_index: 0 })
+          .eq("user_id", userId).eq("context_id", contextId);
+        if (progressResetError) {
+          // Non fatale: per un percorso appena caricato la riga può non esistere ancora.
+          console.warn("[P10a] reset progressi non applicato (se la riga non esiste è normale):", progressResetError);
+        }
+
         const lessonsToInsert = titles.map((t, i: number) => ({
           user_id: userId, context_id: contextId, title: t.title,
           lesson_order: i, is_generated: false, concept: "", explanation: "",
