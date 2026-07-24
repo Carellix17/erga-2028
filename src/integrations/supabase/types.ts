@@ -685,7 +685,6 @@ export type Database = {
           institute_type: string
           is_beta_tester: boolean
           last_name: string | null
-          last_studio_context_id: string | null
           nickname: string | null
           school: string | null
           subject_goals: Json
@@ -704,7 +703,6 @@ export type Database = {
           institute_type?: string
           is_beta_tester?: boolean
           last_name?: string | null
-          last_studio_context_id?: string | null
           nickname?: string | null
           school?: string | null
           subject_goals?: Json
@@ -723,7 +721,6 @@ export type Database = {
           institute_type?: string
           is_beta_tester?: boolean
           last_name?: string | null
-          last_studio_context_id?: string | null
           nickname?: string | null
           school?: string | null
           subject_goals?: Json
