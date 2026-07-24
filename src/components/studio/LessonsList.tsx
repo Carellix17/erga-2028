@@ -4,7 +4,7 @@ import { cn } from"@/lib/utils";
 import { Exercise } from"./exercises/ExerciseRenderer";
 import { getStableSubjectColor } from"@/lib/subjectColors";
 import { useMemo, useRef as useReactRef, useState } from"react";
-import { MODULE_SIZE, isInGatedModule, isGateLesson } from"@/lib/lessonModules";
+import { MODULE_SIZE, isInGatedModule, isGateLesson, moduleTitleFor } from"@/lib/lessonModules";
 import { Drawer, DrawerContent } from"@/components/ui/drawer";
 import { Input } from"@/components/ui/input";
 
@@ -34,6 +34,8 @@ interface LessonsListProps {
  contextFileName?: string | null;
  // 🏭 P10c: modulo in fabbrica (cancello del vagone); null = nessun cantiere attivo
  gatedModuleIndex?: number | null;
+ // 🏷️ P11d: titoli AI dei moduli dal cloud (0-based); senza → derivati dalla prima lezione
+ moduleTitles?: (string | null)[] | null;
  onRegenerateLesson?: (lessonIndex: number) => Promise<void> | void;
  onDeleteLesson?: (lessonId: string) => Promise<void> | void;
  onRenameLesson?: (lessonId: string, newTitle: string) => Promise<void> | void;
@@ -59,6 +61,7 @@ export function LessonsList({
  isLoadingFinalTest,
  contextFileName,
  gatedModuleIndex,
+ moduleTitles,
  onRegenerateLesson,
  onDeleteLesson,
  onRenameLesson,
@@ -165,16 +168,18 @@ export function LessonsList({
 
  // Group lessons into modules
  const modules = useMemo(() => {
+ // 🏷️ P11d: il cartello del vagone prende il titolo AI (dal cloud) se c'è,
+ // altrimenti quello della prima lezione (percorsi nati prima dei titoli AI).
  const result: { title: string; lessons: { lesson: Lesson; globalIndex: number }[] }[] = [];
  for (let i = 0; i < lessons.length; i += MODULE_SIZE) {
  const chunk = lessons.slice(i, i + MODULE_SIZE);
  result.push({
- title: `Modulo ${result.length + 1}`,
+ title: moduleTitleFor(result.length, moduleTitles, chunk[0]?.title),
  lessons: chunk.map((l, j) => ({ lesson: l, globalIndex: i + j })),
  });
  }
  return result;
- }, [lessons]);
+ }, [lessons, moduleTitles]);
 
  // Zigzag X positions (percentage)
  const getX = (indexInModule: number): number => {
@@ -275,7 +280,7 @@ export function LessonsList({
  color.solid
  )}>
  <Crown className="w-3.5 h-3.5" />
- {mod.title}
+ <span className="truncate max-w-[240px]">{mod.title}</span>
  </div>
  <div className="flex-1 h-px bg-outline-variant/30" />
  </div>

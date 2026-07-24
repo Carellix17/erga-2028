@@ -10,6 +10,7 @@ import {
   isModuleFullyMissing,
   isInGatedModule,
   isGateLesson,
+  moduleTitleFor,
   type ModuleLessonLike,
 } from "@/lib/lessonModules";
 
@@ -111,5 +112,23 @@ describe("lessonModules — la libreria dei moduli (P10b)", () => {
     expect(isGateLesson(0, 0)).toBe(true);
     expect(isGateLesson(4, null)).toBe(false);
     expect(isGateLesson(4, 2)).toBe(false);
+  });
+
+  it("moduleTitleFor: il titolo AI batte tutto", () => {
+    expect(moduleTitleFor(0, ["Le basi della cellula"], "I mitocondri")).toBe("Modulo 1 · Le basi della cellula");
+  });
+
+  it("moduleTitleFor: senza AI si deriva dalla prima lezione", () => {
+    expect(moduleTitleFor(1, undefined, "I mitocondri")).toBe("Modulo 2 · I mitocondri");
+    expect(moduleTitleFor(1, null, "I mitocondri")).toBe("Modulo 2 · I mitocondri");
+  });
+
+  it("moduleTitleFor: slot AI vuoto → derivato", () => {
+    expect(moduleTitleFor(2, ["A", "B", "  ", "D"], "Il nucleo")).toBe("Modulo 3 · Il nucleo");
+  });
+
+  it("moduleTitleFor: senza nulla resta solo 'Modulo N'", () => {
+    expect(moduleTitleFor(3, null, null)).toBe("Modulo 4");
+    expect(moduleTitleFor(0, [], " ")).toBe("Modulo 1");
   });
 });

@@ -160,9 +160,12 @@ serve(withCors(async (req) => {
       // Extract page range from lesson record
       const pageStart = (lessons as Record<string, unknown>).page_start as number | null;
       const pageEnd = (lessons as Record<string, unknown>).page_end as number | null;
-      const pageRangeInfo = pageStart != null && pageEnd != null 
-        ? `\nQuesta lezione copre le pagine ${pageStart}-${pageEnd} del PDF originale. Concentrati SOLO sul contenuto di queste pagine.`
-        : "";
+      // 🌐 P11b SORGENTE SENZA PAGINE: docHasPages diventa VERO solo se il
+      // testo della fonte ha davvero i marcatori "=== PAGINA N ===". I range
+      // inventati dall'AI su testi web/foto (senza marcatori) NON contano —
+      // altrimenti la caccia-figure andrebbe in un PDF fantasma.
+      let docHasPages = false;
+      let pageRangeInfo = "";
       
       const existingExplanation = typeof lessons.explanation === "string" ? lessons.explanation : "";
       const existingHasImageUrl = existingExplanation.includes('"image_url"');
@@ -186,12 +189,13 @@ serve(withCors(async (req) => {
         contextFilePath = String((context as Record<string, unknown> | null)?.file_path || "");
         if (context?.content) {
           const fullContext = String(context.content);
+          docHasPages = maxPageNumber(fullContext) > 0;
           // 🗺️ P6 — lo scaffale giusto: se la lezione ha un intervallo di
           // pagine e il documento ha i marcatori, all'AI mandiamo SOLO quelle
           // pagine (prima le mandavamo sempre l'inizio del libro: i capitoli
           // finali non erano nemmeno nel materiale!). Se la fetta viene vuota
           // si ricade sulla troncatura classica di sicurezza.
-          if (pageStart != null && pageEnd != null) {
+          if (docHasPages && pageStart != null && pageEnd != null) {
             const sliced = sliceByPageRange(fullContext, pageStart, pageEnd, MAX_CONTEXT_CHARS);
             if (sliced.length >= 200) {
               studyContent = `FILE: ${context.file_name}\n${sliced}`;
@@ -209,10 +213,15 @@ serve(withCors(async (req) => {
       }
       if (!studyContent) throw new Error("Contenuto vuoto. Caricamento fallito?");
 
+      // Il consiglio "concentrati sulle pagine X-Y" vale solo per fonti con marcatori reali.
+      if (docHasPages && pageStart != null && pageEnd != null) {
+        pageRangeInfo = `\nQuesta lezione copre le pagine ${pageStart}-${pageEnd} del PDF originale. Concentrati SOLO sul contenuto di queste pagine.`;
+      }
+
       // ── NEW: figures are extracted on-demand by extract-lesson-figures, not embedded here ──
       // The lesson is generated with [FIG:n] tokens that the client replaces with <PdfCrop /> after
       // calling extract-lesson-figures(lessonId).
-      const pagesCovered = pageStart != null && pageEnd != null ? (pageEnd - pageStart + 1) : 0;
+      const pagesCovered = docHasPages && pageStart != null && pageEnd != null ? (pageEnd - pageStart + 1) : 0;
 
       // Figure disponibili per i token [FIG:n]:
       //  (a) PDF → la caccia estrarrà ritagli reali dalle pagine della lezione
@@ -855,11 +864,12 @@ REGOLE:
 6. Ignora indici, bibliografie, note a piè di pagina, ringraziamenti, copertine.
 7. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato (no titoli generici tipo "Introduzione", "Parte 2").
 ${mappingRule}
+9. TITOLI DEI MODULI (OBBLIGATORIO): il percorso è diviso in MODULI da 4 lezioni consecutive (l'ultimo può essere più corto). Per OGNI lezione indica anche "module_title": un nome breve del modulo tematico cui appartiene (2-5 parole, stile capitolo, es. "Le basi della cellula"). RAGGRUPPA le lezioni per AFFINITÀ tematica: le lezioni dello stesso modulo DEVONO avere LO STESSO module_title.
 
 ESEMPIO: Se il materiale parla di "La cellula", NON creare una lezione "La cellula e le sue parti". Crea invece: "La membrana cellulare", "Il nucleo", "I mitocondri", "Il reticolo endoplasmatico", etc.
 
 Output richiesto:
-[{"title": "La membrana cellulare", "page_start": 1, "page_end": 3}, {"title": "Il nucleo e il DNA", "page_start": 4, "page_end": 6}]
+[{"title": "La membrana cellulare", "page_start": 1, "page_end": 3, "module_title": "Le basi della cellula"}, {"title": "Il nucleo e il DNA", "page_start": 4, "page_end": 6, "module_title": "Le basi della cellula"}]
 
 ${documentSection}`;
 
@@ -874,14 +884,19 @@ ${documentSection}`;
 
         const titles = parsedTitles
           .map((t) => {
-            if (typeof t === "string") return { title: t, page_start: null, page_end: null };
+            if (typeof t === "string") return { title: t, page_start: null, page_end: null, module_title: null as string | null };
             if (t && typeof t === "object" && "title" in t && typeof (t as { title?: unknown }).title === "string") {
-              const obj = t as { title: string; page_start?: number; page_end?: number };
-              return { title: obj.title, page_start: typeof obj.page_start === "number" ? obj.page_start : null, page_end: typeof obj.page_end === "number" ? obj.page_end : null };
+              const obj = t as { title: string; page_start?: number; page_end?: number; module_title?: string };
+              return {
+                title: obj.title,
+                page_start: typeof obj.page_start === "number" ? obj.page_start : null,
+                page_end: typeof obj.page_end === "number" ? obj.page_end : null,
+                module_title: typeof obj.module_title === "string" ? obj.module_title : null,
+              };
             }
             return null;
           })
-          .filter((t): t is { title: string; page_start: number | null; page_end: number | null } => !!t && !!t.title);
+          .filter((t): t is { title: string; page_start: number | null; page_end: number | null; module_title: string | null } => !!t && !!t.title);
 
         if (titles.length === 0) throw new Error("Non sono riuscito a creare un indice valido. Riprova.");
 
@@ -899,6 +914,24 @@ ${documentSection}`;
             t.page_start = start;
             t.page_end = Math.max(start, end);
           });
+        }
+
+        // 🌐 P11b — SORGENTE SENZA PAGINE (ricerca web Wikipedia / foto caricate):
+        // il testo non ha marcatori, quindi qualunque range scritto dall'AI è
+        // falso. Azzeriamo TUTTI i range: questi percorsi pescheranno le figure
+        // dalle immagini sorgente archiviate (come le foto), non da un PDF fantasma.
+        if (maxPdfPage === 0) {
+          titles.forEach((t) => { t.page_start = null; t.page_end = null; });
+        }
+
+        // 🏷️ P11d — TITOLI DEI MODULI: l'AI battezza i vagoni (nomi brevi tipo
+        // capitoli). Per ogni gruppo da MODULE_SIZE prendiamo il primo module_title valido;
+        // il client usera' un titolo derivato quando manca (percorsi vecchi).
+        const moduleTitles: string[] = [];
+        const _moduleTotal = Math.ceil(titles.length / MODULE_SIZE);
+        for (let m = 0; m < _moduleTotal; m++) {
+          const withTitle = titles.slice(m * MODULE_SIZE, m * MODULE_SIZE + MODULE_SIZE).find((t) => t.module_title && t.module_title.trim());
+          moduleTitles.push(withTitle && withTitle.module_title ? withTitle.module_title.trim().slice(0, 80) : "");
         }
 
         const { error: deleteError } = await supabase
@@ -965,6 +998,7 @@ ${documentSection}`;
           generation_status: "completed",
           generation_progress: { step: "complete", generatedCount: titles.length, totalLessons: titles.length },
           generation_error: null,
+          module_titles: moduleTitles,
         }).eq("id", contextId);
 
         console.log(`✅ Background generation complete for context ${contextId}: ${titles.length} lessons`);

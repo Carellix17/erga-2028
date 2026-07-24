@@ -107,6 +107,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   useEffect(() => {
     if (allContexts.length === 0) return;
+    // 🔖 P11a CORSIA DEL SEGNALIBRO: l'elenco dei percorsi arriva dalla cache
+    // (istantaneo) ma il segnalibro dal cloud arriva dopo. Scegliere il default
+    // ORA farebbe vincere sempre "il primo della lista" = l'ultimo GENERATO
+    // (è il bug che hai visto): aspettiamo che il segnalibro sia arrivato.
+    if (!lastViewedLoaded) return;
     const availableIds = new Set(allContexts.map((c) => c.id));
     if (selectedContextId && !availableIds.has(selectedContextId)) {
       onClearContext?.();
@@ -123,7 +128,8 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const effectiveContextId =
     (selectedContextId && allContexts.some((c) => c.id === selectedContextId) && selectedContextId) ||
     (activeContextId && allContexts.some((c) => c.id === activeContextId) && activeContextId) ||
-    allContexts[0]?.id ||
+    // 🔖 P11a: niente ripiego "ultimo generato" prima che il segnalibro sia arrivato
+    (lastViewedLoaded ? allContexts[0]?.id : null) ||
     null;
 
   const activeContext = allContexts.find((c) => c.id === effectiveContextId) || null;
@@ -581,6 +587,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         currentIndex={currentLessonIndex}
         contextFileName={contextFileName}
         gatedModuleIndex={moduleJob ? moduleJob.moduleIndex : null}
+        moduleTitles={activeContext?.module_titles ?? null}
         onSelectLesson={async (index) => {
           const lesson = lessons[index];
           if (!lesson) return;
@@ -733,6 +740,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       {moduleScreen && (
         <ModuleGenerationScreen
           moduleIndex={moduleScreen.moduleIndex}
+          moduleTitle={(activeContext?.module_titles?.[moduleScreen.moduleIndex] || null) ?? null}
           generatedCount={moduleJob && moduleJob.moduleIndex === moduleScreen.moduleIndex ? (moduleJob.generatedCount ?? 0) : 0}
           totalLessons={moduleJob && moduleJob.moduleIndex === moduleScreen.moduleIndex ? (moduleJob.totalLessons ?? MODULE_SIZE) : MODULE_SIZE}
           fileName={contextFileName}

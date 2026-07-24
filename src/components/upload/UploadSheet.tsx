@@ -284,7 +284,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                     <Button type="button" onClick={() => setLoadingTab("web")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40">
                       <Globe className="w-5 h-5 text-primary" />
                       <div className="text-left">
-                        <p className="font-medium">Da un argomento</p>
+                        <p className="font-medium">Ricerca web</p>
                         <p className="body-small text-muted-foreground">Contenuti reali da Wikipedia, o un manuale AI</p>
                       </div>
                     </Button>

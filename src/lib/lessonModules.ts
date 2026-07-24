@@ -62,3 +62,18 @@ export const isInGatedModule = (lessonIndex: number, gatedModuleIndex: number | 
 /** La "porta" del vagone in fabbrica: la prima lezione del modulo (unica apribile). */
 export const isGateLesson = (lessonIndex: number, gatedModuleIndex: number | null | undefined): boolean =>
   isInGatedModule(lessonIndex, gatedModuleIndex) && isFirstOfModule(lessonIndex);
+
+// ── 🏷️ P11d I TITOLI DEI MODULI ──
+// Nome mostrato sul cartello del vagone: il titolo inventato dall'AI (salvato
+// nel cloud per i percorsi nuovi) ha la precedenza; altrimenti si deriva dalla
+// PRIMA lezione del modulo (percorsi nati prima). Senza neanche quello: "Modulo N".
+export const moduleTitleFor = (
+  moduleIndex: number,
+  aiTitles?: (string | null)[] | null,
+  derived?: string | null,
+): string => {
+  const ai = aiTitles?.[moduleIndex]?.trim();
+  const der = derived?.trim();
+  const suffix = ai || der || "";
+  return suffix ? `Modulo ${moduleIndex + 1} · ${suffix}` : `Modulo ${moduleIndex + 1}`;
+};

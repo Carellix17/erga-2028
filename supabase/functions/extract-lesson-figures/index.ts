@@ -477,7 +477,18 @@ serve(withCors(async (req) => {
     if (!pages || !Array.isArray(pages) || pages.length === 0) {
       const startPage = lesson.page_start;
       const endPage = lesson.page_end;
-      if (startPage == null || endPage == null) {
+      // 🌐 P11b — il bivio guarda l'ARCHIVIO, non il range (l'AI può averlo
+      // inventato su testi senza marcatori): se il contesto contiene immagini
+      // sorgente e NESSUN PDF vero (ricerca web / foto caricate), le figure
+      // arrivano dalle immagini anche se la lezione ha page_start/page_end.
+      const { data: ctxFlag } = lesson.context_id
+        ? await supabase.from("study_contexts").select("file_path").eq("id", lesson.context_id).maybeSingle()
+        : { data: null };
+      const ctxFilePath = String((ctxFlag as { file_path?: string } | null)?.file_path || "");
+      const ctxPaths = ctxFilePath.split(",").map((p) => p.trim()).filter(Boolean);
+      const ctxHasPdf = ctxPaths.some((p) => p.toLowerCase().endsWith(".pdf"));
+      const ctxHasSourceImages = ctxPaths.some((p) => !p.toLowerCase().endsWith(".pdf"));
+      if (startPage == null || endPage == null || (!ctxHasPdf && ctxHasSourceImages)) {
         // Niente pagine PDF (foto caricate / ricerca web): se il contesto ha
         // immagini sorgente in archivio, quelle diventano le figure della lezione.
         const extFigs = await figuresFromSourceImages(lesson, userId, supabase, supabaseUrl);

@@ -67,29 +67,43 @@ async function wikiFetchJson(url: string): Promise<any> {
 async function searchWikipedia(topic: string, lang: "it" | "en"): Promise<WikiResult | null> {
   const base = `https://${lang}.wikipedia.org/w/api.php`;
 
-  // 1. Trova la voce più pertinente
+  // 1. Trova la voce più pertinente: guardiamo i primi 3 candidati e SALTIAMO
+  // le pagine di disambiguazione ("Disambiguazione"/"disambiguation"): portano
+  // a elenchi di significati, non a un articolo studiabile.
   const search = await wikiFetchJson(
     `${base}?action=query&list=search&srsearch=${encodeURIComponent(topic)}&srlimit=3&srnamespace=0&format=json`,
   );
-  const title: string | undefined = search?.query?.search?.[0]?.title;
+  // deno-lint-ignore no-explicit-any
+  const candidates: any[] = search?.query?.search ?? [];
+  const isDisambig = (c: { title?: string; snippet?: string }) =>
+    /disambigu/i.test(stripTags(c?.snippet || "")) ||
+    /\((disambigua|disambiguation)\)\s*$/i.test(c?.title || "");
+  const chosen = candidates.find((c) => c?.title && !isDisambig(c)) ?? candidates[0];
+  const title: string | undefined = chosen?.title;
   if (!title) return null;
 
   // 2. Testo integrale + data ultima revisione (una chiamata sola)
+  // 🌐 P11b BUG RINVIO: senza "redirects=1" Wikipedia risponde con l'estratto
+  // VUOTO per i titoli-traghetto (es. "II Guerra Mondiale" → "Seconda guerra
+  // mondiale") e la ricerca ripiegava silenziosamente sul manuale AI.
   const pageData = await wikiFetchJson(
-    `${base}?action=query&prop=extracts%7Crevisions&explaintext=1&exsectionformat=plain&rvprop=timestamp&titles=${encodeURIComponent(title)}&format=json`,
+    `${base}?action=query&prop=extracts%7Crevisions&explaintext=1&exsectionformat=plain&rvprop=timestamp&redirects=1&titles=${encodeURIComponent(title)}&format=json`,
   );
   // deno-lint-ignore no-explicit-any
   const page: any = Object.values(pageData?.query?.pages || {})[0];
   const extract: string = page?.extract || "";
   if (!extract || extract.length < 500) return null;
   const revTs: string | undefined = page?.revisions?.[0]?.timestamp;
+  // Dopo il rinvio il titolo VERO è quello della pagina risolta (lo usiamo per
+  // la didascalia dell'immagine principale e per l'intestazione della fonte).
+  const resolvedTitle: string = page?.title || title;
 
   const images: WikiImage[] = [];
 
   // 3. Immagine principale della voce (quasi sempre la più significativa)
   try {
     const mainImg = await wikiFetchJson(
-      `${base}?action=query&prop=pageimages&piprop=original&titles=${encodeURIComponent(title)}&format=json`,
+      `${base}?action=query&prop=pageimages&piprop=original&redirects=1&titles=${encodeURIComponent(title)}&format=json`,
     );
     // deno-lint-ignore no-explicit-any
     const mpage: any = Object.values(mainImg?.query?.pages || {})[0];
@@ -100,7 +114,7 @@ async function searchWikipedia(topic: string, lang: "it" | "en"): Promise<WikiRe
         width: orig.width,
         height: orig.height,
         mime: /\.png(\?|$)/i.test(orig.source) ? "image/png" : "image/jpeg",
-        description: title,
+        description: resolvedTitle,
       });
     }
   } catch (e) {
@@ -110,7 +124,7 @@ async function searchWikipedia(topic: string, lang: "it" | "en"): Promise<WikiRe
   // 4. Altre immagini della voce (dimensioni decenti, niente loghi/icone)
   try {
     const more = await wikiFetchJson(
-      `${base}?action=query&generator=images&gimlimit=30&prop=imageinfo&iiprop=url%7Csize%7Cmime%7Cextmetadata&titles=${encodeURIComponent(title)}&format=json`,
+      `${base}?action=query&generator=images&gimlimit=30&prop=imageinfo&iiprop=url%7Csize%7Cmime%7Cextmetadata&redirects=1&titles=${encodeURIComponent(title)}&format=json`,
     );
     // deno-lint-ignore no-explicit-any
     const gpages: Record<string, any> = more?.query?.pages || {};
@@ -140,7 +154,7 @@ async function searchWikipedia(topic: string, lang: "it" | "en"): Promise<WikiRe
   }
 
   return {
-    title,
+    title: resolvedTitle,
     extract: extract.slice(0, MAX_WIKI_CHARS),
     revTs,
     images: images.slice(0, MAX_IMAGES),

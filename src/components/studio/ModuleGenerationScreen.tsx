@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 interface ModuleGenerationScreenProps {
   /** Indice del modulo in lavorazione (0-based: la UI mostra +1). */
   moduleIndex: number;
+  /** 🏷️ P11d: nome parlante del vagone (titolo AI o derivato), se c'è. */
+  moduleTitle?: string | null;
   /** Lezioni del modulo già tornite (arriva dal polling su generation_progress). */
   generatedCount: number;
   /** Lezioni totali di questo giro di fabbrica. */
@@ -29,6 +31,7 @@ const tips = [
 
 export function ModuleGenerationScreen({
   moduleIndex,
+  moduleTitle,
   generatedCount,
   totalLessons,
   fileName,
@@ -85,6 +88,11 @@ export function ModuleGenerationScreen({
       <h2 className="font-display text-2xl font-bold text-foreground text-center mb-1">
         Sto preparando il modulo {moduleIndex + 1}
       </h2>
+      {moduleTitle && (
+        <p className="body-medium text-foreground/80 font-semibold mb-1 text-center max-w-[85vw] truncate">
+          «{moduleTitle}»
+        </p>
+      )}
       {fileName && (
         <p className="body-small text-primary font-medium mb-6 bg-primary-container px-3 py-1 rounded-full inline-block max-w-[90vw] truncate">
           {fileName}

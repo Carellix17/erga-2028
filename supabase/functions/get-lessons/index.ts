@@ -140,7 +140,7 @@ serve(withCors(async (req) => {
     if (action === "listContexts") {
       // List all contexts with lesson counts and processing status.
       // Strictly include only contexts owned by the authenticated user.
-      const ctxFields = "id, file_name, created_at, processing_status, error_message, is_demo, generation_status, generation_progress, generation_error, generation_started_at";
+      const ctxFields = "id, file_name, created_at, processing_status, error_message, is_demo, generation_status, generation_progress, generation_error, generation_started_at, module_titles";
       const { data: contexts } = await supabase
         .from("study_contexts")
         .select(ctxFields)
