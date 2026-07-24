@@ -8,6 +8,8 @@ import {
   lessonsInModule,
   missingInModule,
   isModuleFullyMissing,
+  isInGatedModule,
+  isGateLesson,
   type ModuleLessonLike,
 } from "@/lib/lessonModules";
 
@@ -89,5 +91,25 @@ describe("lessonModules — la libreria dei moduli (P10b)", () => {
 
   it("isModuleFullyMissing: modulo finale corto tutto mancante", () => {
     expect(isModuleFullyMissing([lesson(8, false), lesson(9, false)])).toBe(true);
+  });
+
+  it("isInGatedModule: dentro/fuori dal vagone in fabbrica", () => {
+    expect(isInGatedModule(5, 1)).toBe(true);
+    expect(isInGatedModule(4, 1)).toBe(true);
+    expect(isInGatedModule(3, 1)).toBe(false);
+    expect(isInGatedModule(8, 1)).toBe(false);
+  });
+
+  it("isInGatedModule: senza fabbrica attiva nessun modulo è chiuso", () => {
+    expect(isInGatedModule(5, null)).toBe(false);
+    expect(isInGatedModule(5, undefined)).toBe(false);
+  });
+
+  it("isGateLesson: solo la porta del vagone in fabbrica", () => {
+    expect(isGateLesson(4, 1)).toBe(true);
+    expect(isGateLesson(5, 1)).toBe(false);
+    expect(isGateLesson(0, 0)).toBe(true);
+    expect(isGateLesson(4, null)).toBe(false);
+    expect(isGateLesson(4, 2)).toBe(false);
   });
 });

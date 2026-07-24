@@ -49,3 +49,16 @@ export const missingInModule = <T extends ModuleLessonLike>(moduleLessons: T[]):
 /** Vero se NESSUNA lezione del modulo è stata generata (vagone tutto da costruire). */
 export const isModuleFullyMissing = <T extends ModuleLessonLike>(moduleLessons: T[]): boolean =>
   moduleLessons.length > 0 && moduleLessons.every((l) => !l.is_generated);
+
+// ── 🔒 P10c IL CANCELLO DEL VAGONE ──
+// Mentre la fabbrica costruisce un modulo (moduleIndex != null), SOLO la prima
+// lezione di quel modulo resta apribile e conduce alla sala d'attesa; le altre
+// restano chiuse anche se già tornite, finché TUTTO il vagone non è pronto.
+
+/** Vero se la lezione appartiene al modulo attualmente in fabbrica. */
+export const isInGatedModule = (lessonIndex: number, gatedModuleIndex: number | null | undefined): boolean =>
+  gatedModuleIndex != null && moduleIndexOf(lessonIndex) === gatedModuleIndex;
+
+/** La "porta" del vagone in fabbrica: la prima lezione del modulo (unica apribile). */
+export const isGateLesson = (lessonIndex: number, gatedModuleIndex: number | null | undefined): boolean =>
+  isInGatedModule(lessonIndex, gatedModuleIndex) && isFirstOfModule(lessonIndex);

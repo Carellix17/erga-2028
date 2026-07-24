@@ -1,10 +1,10 @@
-import { ChevronLeft, CheckCircle2, Lock, Loader2, RefreshCw, Target, Star, Crown, Brain, Trash2, Pencil, Check, X } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Lock, Loader2, RefreshCw, Target, Star, Crown, Brain, Trash2, Pencil, Check, X, Factory } from "lucide-react";
 import { Button } from"@/components/ui/button";
 import { cn } from"@/lib/utils";
 import { Exercise } from"./exercises/ExerciseRenderer";
 import { getStableSubjectColor } from"@/lib/subjectColors";
 import { useMemo, useRef as useReactRef, useState } from"react";
-import { MODULE_SIZE } from"@/lib/lessonModules";
+import { MODULE_SIZE, isInGatedModule, isGateLesson } from"@/lib/lessonModules";
 import { Drawer, DrawerContent } from"@/components/ui/drawer";
 import { Input } from"@/components/ui/input";
 
@@ -32,6 +32,8 @@ interface LessonsListProps {
  onStartFinalTest?: () => void;
  isLoadingFinalTest?: boolean;
  contextFileName?: string | null;
+ // 🏭 P10c: modulo in fabbrica (cancello del vagone); null = nessun cantiere attivo
+ gatedModuleIndex?: number | null;
  onRegenerateLesson?: (lessonIndex: number) => Promise<void> | void;
  onDeleteLesson?: (lessonId: string) => Promise<void> | void;
  onRenameLesson?: (lessonId: string, newTitle: string) => Promise<void> | void;
@@ -56,6 +58,7 @@ export function LessonsList({
  onStartFinalTest,
  isLoadingFinalTest,
  contextFileName,
+ gatedModuleIndex,
  onRegenerateLesson,
  onDeleteLesson,
  onRenameLesson,
@@ -322,7 +325,12 @@ export function LessonsList({
  const { lesson, globalIndex } = item;
  const isCompleted = globalIndex < currentIndex;
  const isCurrent = globalIndex === currentIndex;
- const isLocked = !lesson.is_generated && globalIndex > currentIndex;
+ // 🏭 P10c CANCELLO DEL VAGONE: nel modulo in fabbrica SOLO la porta resta
+ // apribile (conduce alla sala d'attesa); le altre restano chiuse anche se già tornite.
+ const lessonOrder = lesson.lesson_order ?? globalIndex;
+ const inGatedModule = isInGatedModule(lessonOrder, gatedModuleIndex);
+ const isGatePorta = isGateLesson(lessonOrder, gatedModuleIndex);
+ const isLocked = (!lesson.is_generated && globalIndex > currentIndex) || (inGatedModule && !isGatePorta);
  const x = getX(i);
  const y = getY(i);
  const size = isCurrent ? NODE_SIZE_CURRENT : NODE_SIZE;
@@ -359,7 +367,7 @@ export function LessonsList({
  setIsRenaming(false);
  setRenameValue(lesson.title);
  }}
- disabled={isGenerating || isLocked}
+ disabled={isGenerating || (isLocked && !inGatedModule)}
  className={cn(
 "relative flex items-center justify-center transition-all duration-300 ease-in-out",
  !isGenerating && !isLocked &&"active:scale-[0.97] hover:scale-[1.02]",
@@ -392,6 +400,7 @@ export function LessonsList({
  isCurrent && cn("shadow-level-3", color.solid),
  !isCurrent && !isCompleted && !isLocked &&"bg-card border border-outline-variant/60 shadow-level-1",
  isLocked &&"bg-card border border-outline-variant/60 opacity-45",
+ isGatePorta &&"ring-2 ring-primary/70 animate-pulse-soft",
  )}
  style={{ borderRadius: radius }}
  >
@@ -417,6 +426,16 @@ export function LessonsList({
  <Star className="w-3 h-3 text-warning-foreground fill-warning-foreground" />
  </span>
  )}
+
+ {/* 🏭 P10c: badge fabbrichetta sul vagone in lavorazione (porta e chiuse) */}
+ {inGatedModule && !isCurrent && (
+ <span
+ className="absolute w-5 h-5 bg-card border border-outline-variant/60 flex items-center justify-center shadow-level-1 animate-pulse-soft"
+ style={{ top: -5, right: -5, borderRadius: 7 }}
+ >
+ <Factory className="w-3 h-3 text-muted-foreground" />
+ </span>
+ )}
  </button>
 
  {/* Label */}
@@ -440,7 +459,7 @@ export function LessonsList({
  longPressTriggeredRef.current = false;
  return;
  }
- if (!isGenerating && !isLocked) onSelectLesson(globalIndex);
+ if (!isGenerating && (!isLocked || inGatedModule)) onSelectLesson(globalIndex);
  }}
  disabled={isGenerating}
  className={cn(

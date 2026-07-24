@@ -48,17 +48,27 @@ export function ModuleGenerationScreen({
     ? Math.min(100, Math.max(8, (generatedCount / totalLessons) * 100))
     : 8;
 
-  // Animazione eased, specchio di GenerationProgress: l'ago rincorre il valore.
+  // 🌊 P10c: stesso "caricamento unico" dell'orbe — tra un paletto reale e
+  // l'altro l'ago striscia verso il paletto successivo, senza mai fermarsi.
+  const capProgress = totalLessons > 0
+    ? Math.min(97, ((generatedCount + 1) / totalLessons) * 100)
+    : 30;
+
   useEffect(() => {
     const timer = setInterval(() => {
       setAnimatedProgress((prev) => {
         const diff = targetProgress - prev;
-        if (Math.abs(diff) < 0.3) return targetProgress;
-        return prev + diff * 0.08;
+        if (diff < -0.3) return targetProgress;
+        if (diff >= 0.3) return prev + diff * 0.08;
+        if (prev < capProgress) {
+          const nudge = Math.max(0.015, (capProgress - prev) * 0.004);
+          return Math.min(capProgress, prev + nudge);
+        }
+        return prev;
       });
     }, 40);
     return () => clearInterval(timer);
-  }, [targetProgress]);
+  }, [targetProgress, capProgress]);
 
   return (
     <div className="fixed inset-0 z-[90] bg-background flex flex-col items-center justify-center p-6 animate-fade-up overflow-y-auto">

@@ -15,7 +15,7 @@ import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
 import { edgeFetch } from "@/lib/edgeFetch";
-import { MODULE_SIZE, moduleIndexOf, moduleRange, lessonsInModule, isModuleFullyMissing, isFirstOfModule } from "@/lib/lessonModules";
+import { MODULE_SIZE, moduleIndexOf, moduleRange, lessonsInModule, isModuleFullyMissing, isFirstOfModule, isInGatedModule, isGateLesson } from "@/lib/lessonModules";
 import { currentLanguage } from "@/i18n";
 import {
   useLessonsQuery,
@@ -580,9 +580,21 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         lessons={lessons}
         currentIndex={currentLessonIndex}
         contextFileName={contextFileName}
+        gatedModuleIndex={moduleJob ? moduleJob.moduleIndex : null}
         onSelectLesson={async (index) => {
           const lesson = lessons[index];
           if (!lesson) return;
+          // 🔒 P10c CANCELLO DEL VAGONE: finché la fabbrica lavora su QUESTO modulo,
+          // solo la porta si apre → sala d'attesa. Le altre avvisano con un messaggino,
+          // anche se la macchina le ha già tornite: si sbloccano TUTTE insieme alla fine.
+          if (moduleJob && isInGatedModule(index, moduleJob.moduleIndex)) {
+            if (isGateLesson(index, moduleJob.moduleIndex)) {
+              setModuleScreen({ moduleIndex: moduleJob.moduleIndex });
+            } else {
+              toast({ title: "Modulo in preparazione 🏭", description: "Questa si sblocca quando TUTTO il modulo è pronto: ti avvisiamo noi con una notifica!" });
+            }
+            return;
+          }
           if (lesson.is_generated) {
             setActiveLessonIndex(index);
             if (index > cachedCurrentIndex) updateProgress.mutate(index);

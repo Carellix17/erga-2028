@@ -57,16 +57,34 @@ export function GenerationProgress({
     currentStep === "generating-lessons" ? 35 + ((generatedCount / Math.max(totalLessons, 1)) * 60) :
     100;
 
+  // 🌊 P10c CARICAMENTO UNICO: la barra non si ferma MAI tra un paletto reale
+  // e l'altro. Ogni fase ha un "soffitto" (il paletto successivo) verso cui
+  // l'ago striscia in continuo; quando arrivano i dati veri, il paletto avanza
+  // e la rincorsa riprende esattamente da dove si era fermata.
+  const capProgress =
+    currentStep === "analyzing" ? 33 :
+    currentStep === "creating-index" ? 50 :
+    currentStep === "generating-lessons" ? Math.min(97, 35 + (((generatedCount + 1) / Math.max(totalLessons, 1)) * 60)) :
+    100;
+
   useEffect(() => {
     const timer = setInterval(() => {
       setAnimatedProgress((prev) => {
         const diff = targetProgress - prev;
-        if (Math.abs(diff) < 0.3) return targetProgress;
-        return prev + diff * 0.08;
+        // Fase nuova di zecca → la barra riparte di scatto dal paletto giusto.
+        if (diff < -0.3) return targetProgress;
+        // Rincorsa verso i paletti reali (li serve il server): scattante.
+        if (diff >= 0.3) return prev + diff * 0.08;
+        // Strisciata continua verso il soffitto: asintotica, mai ferma a metà segmento.
+        if (prev < capProgress) {
+          const nudge = Math.max(0.015, (capProgress - prev) * 0.004);
+          return Math.min(capProgress, prev + nudge);
+        }
+        return prev;
       });
     }, 40);
     return () => clearInterval(timer);
-  }, [targetProgress]);
+  }, [targetProgress, capProgress]);
 
   if (!isGenerating && currentStep !== "complete") return null;
 
