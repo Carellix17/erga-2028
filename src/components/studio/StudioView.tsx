@@ -4,6 +4,7 @@ import { FinalTest } from "./FinalTest";
 import { LessonsList } from "./LessonsList";
 import { CourseSelector } from "./CourseSelector";
 import { GenerationProgress } from "./GenerationProgress";
+import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -47,6 +48,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const [showList, setShowList] = useState(true);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
   const [activeContextId, setActiveContextId] = useState<string | null>(null);
+  // 🔖 P10a: segnalibro nel cloud — l'app ricorda l'ultimo percorso VISTO
+  // (non solo l'ultimo generato), condiviso fra tutti i dispositivi.
+  const [lastViewedStored, setLastViewedStored] = useState<string | null>(null);
+  const [lastViewedLoaded, setLastViewedLoaded] = useState(false);
   const [showFinalTest, setShowFinalTest] = useState(false);
   const [finalTestExercises, setFinalTestExercises] = useState<Exercise[]>([]);
   const [isLoadingFinalTest, setIsLoadingFinalTest] = useState(false);
@@ -75,6 +80,24 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     if (selectedContextId) setActiveContextId(selectedContextId);
   }, [selectedContextId]);
 
+  // 🔖 P10a: carica il segnalibro dal profilo (una volta sola)
+  useEffect(() => {
+    if (!currentUser) return;
+    let alive = true;
+    supabase
+      .from("user_profiles")
+      .select("last_studio_context_id")
+      .eq("user_id", currentUser)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!alive) return;
+        if (error) console.error("[P10a] lettura segnalibro fallita:", error);
+        setLastViewedStored((data?.last_studio_context_id as string | null) ?? null);
+        setLastViewedLoaded(true);
+      });
+    return () => { alive = false; };
+  }, [currentUser]);
+
   useEffect(() => {
     if (allContexts.length === 0) return;
     const availableIds = new Set(allContexts.map((c) => c.id));
@@ -82,9 +105,13 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       onClearContext?.();
     }
     if (!selectedContextId && (!activeContextId || !availableIds.has(activeContextId))) {
-      setActiveContextId(allContexts[0].id);
+      // 🔖 P10a: riparti dall'ultimo percorso VISTO (se esiste ancora), non dal più recente
+      const remembered = lastViewedLoaded && lastViewedStored && availableIds.has(lastViewedStored)
+        ? lastViewedStored
+        : null;
+      setActiveContextId(remembered ?? allContexts[0].id);
     }
-  }, [allContexts, selectedContextId, activeContextId, onClearContext]);
+  }, [allContexts, selectedContextId, activeContextId, onClearContext, lastViewedLoaded, lastViewedStored]);
 
   const effectiveContextId =
     (selectedContextId && allContexts.some((c) => c.id === selectedContextId) && selectedContextId) ||
@@ -93,6 +120,18 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     null;
 
   const activeContext = allContexts.find((c) => c.id === effectiveContextId) || null;
+
+  // 🔖 P10a: salva il segnalibro quando cambia il percorso aperto (silenzioso)
+  useEffect(() => {
+    if (!currentUser || !lastViewedLoaded || !effectiveContextId) return;
+    if (effectiveContextId === lastViewedStored) return;
+    setLastViewedStored(effectiveContextId);
+    supabase
+      .from("user_profiles")
+      .update({ last_studio_context_id: effectiveContextId })
+      .eq("user_id", currentUser)
+      .then(({ error }) => { if (error) console.error("[P10a] salvataggio segnalibro fallito:", error); });
+  }, [currentUser, effectiveContextId, lastViewedLoaded, lastViewedStored]);
   const contextFileName = activeContext?.file_name || null;
   const contextStatus = activeContext?.processing_status || null;
   const contextErrorMessage = activeContext?.error_message || "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.";
@@ -330,7 +369,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
-  if (isGenerating || (postCompleteSettling && lessons.length === 0)) {
+  if (isGenerating) {
     return (
       <GenerationProgress
         isGenerating={isGenerating}
@@ -342,18 +381,15 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     );
   }
 
+  // 🦴 P10a: l'orbe è SOLO per la generazione vera. L'attesa di un percorso già
+  // esistente mostra lo scheletro del sentiero, come fanno Piano e Profilo.
+  if (postCompleteSettling && lessons.length === 0) {
+    return <LessonsListSkeleton />;
+  }
+
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 p-4">
-        <div className="w-20 h-20 rounded-xl bg-primary flex items-center justify-center animate-pulse-soft shadow-level-3">
-          <Loader2 className="w-9 h-9 text-primary-foreground animate-spin" />
-        </div>
-        <p className="text-muted-foreground font-display font-medium animate-fade-up">Caricamento lezioni...</p>
-        <div className="w-32 h-1.5 m3-progress-track overflow-hidden">
-          <div className="h-full m3-progress-indicator w-2/3 animate-pulse-soft" />
-        </div>
-      </div>
-    );
+    // 🦴 P10a: scheletro del sentiero anche per il primo caricamento del percorso
+    return <LessonsListSkeleton />;
   }
 
   if (lessons.length === 0) {
