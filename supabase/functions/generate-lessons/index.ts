@@ -5,6 +5,8 @@ import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 
 const MAX_CONTEXT_CHARS = 80000;
 const FREE_GENERATION_LIMIT = 5;
+// 🏭 P10b: i percorsi sono divisi in MODULI da 4 lezioni (come in LessonsList/MODULE_SIZE).
+const MODULE_SIZE = 4;
 const LIMIT_REACHED_MESSAGE =
   "Hai raggiunto il limite di 5 lezioni gratuite per la beta. Per continuare a usare Erga senza limiti contattaci!";
 
@@ -141,27 +143,11 @@ serve(withCors(async (req) => {
 
     console.log(`Generate lessons for user: ${userId} (legacy: ${legacyUserId}) (authenticated: ${auth.isAuthenticated})`);
 
-    // ── GENERATE A SINGLE LESSON ──
-    if (action === "generateLesson" && lessonIndex !== undefined) {
-      let lessonsQuery = supabase.from("mini_lessons").select("*").eq("user_id", userId).eq("lesson_order", lessonIndex);
-      if (contextId) lessonsQuery = lessonsQuery.eq("context_id", contextId);
-
-      let { data: lessons } = await lessonsQuery.maybeSingle();
-
-      // Fallback: try legacy user_id (email)
-      if (!lessons && legacyUserId) {
-        let legacyQuery = supabase.from("mini_lessons").select("*").eq("user_id", legacyUserId).eq("lesson_order", lessonIndex);
-        if (contextId) legacyQuery = legacyQuery.eq("context_id", contextId);
-        const { data: legacyLesson } = await legacyQuery.maybeSingle();
-        lessons = legacyLesson;
-      }
-
-      if (!lessons) throw new Error("Lezione non trovata");
-
-      // ── RATE LIMIT (BETA) ──
-      // Verifica se la lezione appartiene a un contesto demo: in tal caso la
-      // generazione è gratuita e NON conta nel limite (le demo sono di sola lettura
-      // e già preparate dall'account admin).
+    // 🏭 P10b IL TORNIO: la generazione del CONTENUTO di una lezione, estratta
+    // dall'azione "generateLesson" e resa macchina riutilizzabile — così la
+    // fabbrica dei moduli (e il primo modulo caldo) tornisce con lo stesso stampo.
+    const generateOneLessonInternal = async (lessons: any): Promise<any> => {
+      // Demo-check interno (serve per NON contare le demo nel limite beta).
       let lessonIsDemo = false;
       if (lessons.context_id) {
         const { data: ctxFlag } = await supabase
@@ -171,20 +157,6 @@ serve(withCors(async (req) => {
           .maybeSingle();
         lessonIsDemo = !!ctxFlag?.is_demo;
       }
-
-      // Se NON è demo → applica il limite gratuito
-      if (!lessonIsDemo) {
-        const { data: profileForLimit } = await supabase
-          .from("user_profiles")
-          .select("generation_count")
-          .eq("user_id", userId)
-          .maybeSingle();
-        const currentCount = profileForLimit?.generation_count ?? 0;
-        if (currentCount >= FREE_GENERATION_LIMIT) {
-          return errorResponse(LIMIT_REACHED_MESSAGE, 403);
-        }
-      }
-      
       // Extract page range from lesson record
       const pageStart = (lessons as Record<string, unknown>).page_start as number | null;
       const pageEnd = (lessons as Record<string, unknown>).page_end as number | null;
@@ -490,7 +462,212 @@ ${studyContent}`;
       }
 
       const { data: updated } = await supabase.from("mini_lessons").select("*").eq("id", lessons.id).single();
+      return updated;
+    };
+
+    // ── GENERATE A SINGLE LESSON ──
+    if (action === "generateLesson" && lessonIndex !== undefined) {
+      let lessonsQuery = supabase.from("mini_lessons").select("*").eq("user_id", userId).eq("lesson_order", lessonIndex);
+      if (contextId) lessonsQuery = lessonsQuery.eq("context_id", contextId);
+
+      let { data: lessons } = await lessonsQuery.maybeSingle();
+
+      // Fallback: try legacy user_id (email)
+      if (!lessons && legacyUserId) {
+        let legacyQuery = supabase.from("mini_lessons").select("*").eq("user_id", legacyUserId).eq("lesson_order", lessonIndex);
+        if (contextId) legacyQuery = legacyQuery.eq("context_id", contextId);
+        const { data: legacyLesson } = await legacyQuery.maybeSingle();
+        lessons = legacyLesson;
+      }
+
+      if (!lessons) throw new Error("Lezione non trovata");
+
+      // ── RATE LIMIT (BETA) ──
+      // Verifica se la lezione appartiene a un contesto demo: in tal caso la
+      // generazione è gratuita e NON conta nel limite (le demo sono di sola lettura
+      // e già preparate dall'account admin).
+      let lessonIsDemo = false;
+      if (lessons.context_id) {
+        const { data: ctxFlag } = await supabase
+          .from("study_contexts")
+          .select("is_demo")
+          .eq("id", lessons.context_id)
+          .maybeSingle();
+        lessonIsDemo = !!ctxFlag?.is_demo;
+      }
+
+      // Se NON è demo → applica il limite gratuito
+      if (!lessonIsDemo) {
+        const { data: profileForLimit } = await supabase
+          .from("user_profiles")
+          .select("generation_count")
+          .eq("user_id", userId)
+          .maybeSingle();
+        const currentCount = profileForLimit?.generation_count ?? 0;
+        if (currentCount >= FREE_GENERATION_LIMIT) {
+          return errorResponse(LIMIT_REACHED_MESSAGE, 403);
+        }
+      }
+      
+
+      // 🛡️ P10b: se il modulo di questa lezione è in fabbrica, non accavallare lavori.
+      if (lessons.context_id) {
+        const { data: ctxJob } = await supabase
+          .from("study_contexts")
+          .select("generation_progress")
+          .eq("id", lessons.context_id)
+          .maybeSingle();
+        const mg = ((ctxJob as any)?.generation_progress as any)?.moduleGeneration as { moduleIndex?: number } | undefined;
+        if (mg && typeof mg.moduleIndex === "number" && Math.floor(lessonIndex / MODULE_SIZE) === mg.moduleIndex) {
+          return errorResponse("Questo modulo è già in generazione. Ti avvisiamo noi con una notifica! ⏳", 409);
+        }
+      }
+
+      const updated = await generateOneLessonInternal(lessons);
       return successResponse({ success: true, lesson: updated });
+    }
+
+    // ── 🏭 P10b GENERATE MODULE: la fabbrica dei moduli ──
+    // Crea IN BACKGROUND tutte le lezioni mancanti di un modulo (gruppi da
+    // MODULE_SIZE) e avvisa con una push quando è pronto. Risponde subito 202,
+    // così l'app può mostrare la schermata d'attesa con la barra di avanzamento.
+    if (action === "generateModule") {
+      if (!contextId) return errorResponse("contextId richiesto per la generazione del modulo", 400);
+      const moduleIndex = typeof body.moduleIndex === "number"
+        ? body.moduleIndex
+        : Math.floor((typeof lessonIndex === "number" ? lessonIndex : 0) / MODULE_SIZE);
+
+      const { data: ctx } = await supabase
+        .from("study_contexts")
+        .select("file_name, is_demo, generation_status, generation_progress")
+        .eq("id", contextId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!ctx) throw new Error("Contesto non trovato");
+
+      // 🛡️ Cancelli della fabbrica: un cantiere alla volta per percorso.
+      if (ctx.generation_status === "generating") {
+        return errorResponse("Il percorso è ancora in costruzione. Ti avvisiamo noi quando è pronto! ⏳", 409);
+      }
+      const gp = ((ctx as { generation_progress?: unknown }).generation_progress ?? {}) as Record<string, unknown>;
+      if (gp.moduleGeneration) {
+        return errorResponse("Un modulo è già in generazione. Ti avvisiamo noi con una notifica! ⏳", 409);
+      }
+
+      // Le lezioni mancanti del modulo (quelle già pronte non si ritoccano).
+      const moduleStart = moduleIndex * MODULE_SIZE;
+      const moduleEnd = moduleStart + MODULE_SIZE - 1;
+      const { data: missing } = await supabase
+        .from("mini_lessons")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("context_id", contextId)
+        .gte("lesson_order", moduleStart)
+        .lte("lesson_order", moduleEnd)
+        .eq("is_generated", false)
+        .order("lesson_order");
+      if (!missing || missing.length === 0) {
+        return successResponse({ success: true, status: "already-generated", moduleIndex });
+      }
+
+      // Pre-check limite beta (i percorsi demo non consumano crediti).
+      if (!ctx.is_demo) {
+        const { data: prof } = await supabase.from("user_profiles").select("generation_count").eq("user_id", userId).maybeSingle();
+        if ((prof?.generation_count ?? 0) >= FREE_GENERATION_LIMIT) {
+          return errorResponse(LIMIT_REACHED_MESSAGE, 403);
+        }
+      }
+
+      // Alzo la saracinesca: il cantiere vive su generation_progress.moduleGeneration
+      // (il client lo legge col polling e anima la barra di avanzamento).
+      const jobStartedAt = new Date().toISOString();
+      await supabase.from("study_contexts").update({
+        generation_progress: {
+          ...gp,
+          moduleGeneration: {
+            moduleIndex,
+            totalLessons: missing.length,
+            generatedCount: 0,
+            startedAt: jobStartedAt,
+          },
+        },
+      }).eq("id", contextId);
+
+      const backgroundModule = async () => {
+        let done = 0;
+        const finish = async () => {
+          // Abbasso la saracinesca: tolgo moduleGeneration qualunque cosa sia
+          // successo, così il client esce dalla schermata d'attesa.
+          try {
+            const { data: ctxNow } = await supabase.from("study_contexts").select("generation_progress").eq("id", contextId).maybeSingle();
+            const gpNow = ((ctxNow as { generation_progress?: unknown } | null)?.generation_progress ?? {}) as Record<string, unknown>;
+            delete gpNow.moduleGeneration;
+            await supabase.from("study_contexts").update({ generation_progress: gpNow }).eq("id", contextId);
+          } catch (cleanupErr) {
+            console.error("[P10b] pulizia moduleGeneration fallita:", cleanupErr);
+          }
+        };
+        try {
+          for (const row of missing) {
+            // Il contatore sale a ogni lezione tornita: controllo il limite a ogni giro.
+            if (!ctx.is_demo) {
+              const { data: prof } = await supabase.from("user_profiles").select("generation_count").eq("user_id", userId).maybeSingle();
+              if ((prof?.generation_count ?? 0) >= FREE_GENERATION_LIMIT) {
+                console.warn(`[P10b] limite beta raggiunto dentro il modulo ${moduleIndex}: stop a ${done}/${missing.length}`);
+                break;
+              }
+            }
+            try {
+              await generateOneLessonInternal(row);
+            } catch (lessonErr) {
+              // Resilienza: ciò che è tornito resta buono; il resto si rifà on demand.
+              console.error(`[P10b] lezione ${row.lesson_order} del modulo ${moduleIndex} fallita:`, lessonErr);
+              break;
+            }
+            done++;
+            const { data: ctxTick } = await supabase.from("study_contexts").select("generation_progress, generation_status").eq("id", contextId).maybeSingle();
+            // Se nel frattempo è partita una RIGENERA del percorso, la fabbrica
+            // si ferma: il sentiero sta per essere ridisegnato da zero.
+            if ((ctxTick as { generation_status?: string } | null)?.generation_status === "generating") {
+              console.warn("[P10b] rigenera percorso rilevata a fabbrica attiva: stop");
+              break;
+            }
+            const gpTick = ((ctxTick as { generation_progress?: unknown } | null)?.generation_progress ?? {}) as Record<string, unknown>;
+            await supabase.from("study_contexts").update({
+              generation_progress: {
+                ...gpTick,
+                moduleGeneration: { moduleIndex, totalLessons: missing.length, generatedCount: done, startedAt: jobStartedAt },
+              },
+            }).eq("id", contextId);
+          }
+          await finish();
+          console.log(`[P10b] modulo ${moduleIndex} completato per contesto ${contextId}: ${done}/${missing.length} lezioni`);
+          try {
+            const { sendPushToUser } = await import("../_shared/push.ts");
+            const cleanName = String(ctx.file_name || "il tuo materiale").replace(/\.[^.]+$/, "");
+            await sendPushToUser(supabase, userId, {
+              title: `Modulo ${moduleIndex + 1} pronto 📚`,
+              body: `Le nuove lezioni di «${cleanName}» ti aspettano sul sentiero: apri e riparti da dove eri!`,
+              url: "/?tab=studio",
+              tag: `module-${contextId}-${moduleIndex}`,
+            });
+          } catch (e) { console.error("[push] notify module failed:", e); }
+        } catch (moduleErr) {
+          console.error(`[P10b] fabbrica del modulo ${moduleIndex} in errore:`, moduleErr);
+          await finish();
+        }
+      };
+
+      const moduleJob = backgroundModule();
+      // @ts-ignore — EdgeRuntime è iniettato da Supabase Edge Runtime
+      if (typeof EdgeRuntime !== "undefined" && typeof EdgeRuntime.waitUntil === "function") {
+        // @ts-ignore
+        EdgeRuntime.waitUntil(moduleJob);
+      }
+      return new Response(
+        JSON.stringify({ success: true, status: "generating-module", moduleIndex, totalLessons: missing.length }),
+        { status: 202, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     // ── GENERATE FINAL TEST ──
@@ -564,7 +741,7 @@ ${studyContent}`;
 
     const { data: ctxPre } = await supabase
       .from("study_contexts")
-      .select("content, file_name, processing_status, error_message, generation_status")
+      .select("content, file_name, processing_status, error_message, generation_status, generation_progress, is_demo")
       .eq("id", contextId)
       .eq("user_id", userId)
       .single();
@@ -583,6 +760,12 @@ ${studyContent}`;
         JSON.stringify({ success: true, status: "generating", contextId, alreadyRunning: true }),
         { status: 202, headers: { "Content-Type": "application/json" } }
       );
+    }
+
+    // 🛡️ P10b: se la fabbrica sta tornendo un modulo, non resettare il sentiero
+    // sotto i suoi piedi (le righe che sta scrivendo sparirebbero a metà lavoro).
+    if (((ctxPre.generation_progress ?? {}) as Record<string, unknown>).moduleGeneration) {
+      return errorResponse("Un modulo è in preparazione. Attendi la notifica, poi potrai rigenerare il percorso. ⏳", 409);
     }
 
     // Segna subito lo stato come "generating" prima di rispondere
@@ -743,6 +926,41 @@ ${documentSection}`;
         const { error: insertError } = await supabase.from("mini_lessons").insert(lessonsToInsert);
         if (insertError) throw new Error("Errore durante il salvataggio delle lezioni");
 
+        // 🏭 P10b PRIMO MODULO CALDO: tornisco subito le lezioni del primo
+        // modulo, così chi apre il percorso nuovo trova l'inizio già pronto
+        // (niente rotellina sul quadratino). Se qualcosa fallisce o scatta il
+        // limite beta, mi fermo: il percorso resta valido e la fabbrica dei
+        // moduli completerà il lavoro on demand.
+        const warmCount = Math.min(MODULE_SIZE, titles.length);
+        if (warmCount > 0) {
+          const { data: warmRows } = await supabase
+            .from("mini_lessons").select("*")
+            .eq("user_id", userId).eq("context_id", contextId)
+            .gte("lesson_order", 0).lt("lesson_order", warmCount)
+            .order("lesson_order");
+          let warmDone = 0;
+          for (const warmRow of warmRows ?? []) {
+            if (!ctxPre.is_demo) {
+              const { data: prof } = await supabase.from("user_profiles").select("generation_count").eq("user_id", userId).maybeSingle();
+              if ((prof?.generation_count ?? 0) >= FREE_GENERATION_LIMIT) {
+                console.warn("[P10b] limite beta raggiunto durante il primo modulo caldo: stop");
+                break;
+              }
+            }
+            try {
+              await generateOneLessonInternal(warmRow);
+              warmDone++;
+            } catch (warmErr) {
+              console.error(`[P10b] primo modulo caldo: lezione ${warmRow.lesson_order} fallita:`, warmErr);
+              break;
+            }
+            await supabase.from("study_contexts").update({
+              generation_progress: { step: "generating-lessons", generatedCount: warmDone, totalLessons: warmCount },
+            }).eq("id", contextId);
+          }
+          console.log(`[P10b] primo modulo caldo: ${warmDone}/${warmCount} lezioni pronte per contesto ${contextId}`);
+        }
+
         await supabase.from("study_contexts").update({
           generation_status: "completed",
           generation_progress: { step: "complete", generatedCount: titles.length, totalLessons: titles.length },
@@ -753,8 +971,8 @@ ${documentSection}`;
         try {
           const { sendPushToUser } = await import("../_shared/push.ts");
           await sendPushToUser(supabase, userId, {
-            title: "Lezione pronta 🚀",
-            body: `La tua lezione su ${ctxPre?.file_name || "il tuo materiale"} è pronta!`,
+            title: "Percorso pronto 🚀",
+            body: `Il sentiero di «${String(ctxPre?.file_name || "il tuo materiale").replace(/\\.[^.]+$/, "")}» è pronto e le prime lezioni sono già calde: inizia subito!`,
             url: "/?tab=studio",
             tag: `lessons-${contextId}`,
           });

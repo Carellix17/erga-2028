@@ -4,6 +4,7 @@ import { cn } from"@/lib/utils";
 import { Exercise } from"./exercises/ExerciseRenderer";
 import { getStableSubjectColor } from"@/lib/subjectColors";
 import { useMemo, useRef as useReactRef, useState } from"react";
+import { MODULE_SIZE } from"@/lib/lessonModules";
 import { Drawer, DrawerContent } from"@/components/ui/drawer";
 import { Input } from"@/components/ui/input";
 
@@ -36,7 +37,6 @@ interface LessonsListProps {
  onRenameLesson?: (lessonId: string, newTitle: string) => Promise<void> | void;
 }
 
-const MODULE_SIZE = 4;
 const NODE_SPACING = 120;
 const NODE_SIZE = 56;
 const NODE_SIZE_CURRENT = 64;

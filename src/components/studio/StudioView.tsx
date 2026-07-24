@@ -5,6 +5,7 @@ import { LessonsList } from "./LessonsList";
 import { CourseSelector } from "./CourseSelector";
 import { GenerationProgress } from "./GenerationProgress";
 import { LessonsListSkeleton } from "./LessonsListSkeleton";
+import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +15,7 @@ import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
 import { edgeFetch } from "@/lib/edgeFetch";
+import { MODULE_SIZE, moduleIndexOf, moduleRange, lessonsInModule, isModuleFullyMissing, isFirstOfModule } from "@/lib/lessonModules";
 import { currentLanguage } from "@/i18n";
 import {
   useLessonsQuery,
@@ -44,6 +46,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   // di `generation_status='generating'` da parte del backend. Lo stato vero
   // arriva via Realtime dalla riga di `study_contexts`.
   const [localStarting, setLocalStarting] = useState(false);
+
+  // 🏭 P10b: la sala d'attesa della fabbrica dei moduli (null = chiusa).
+  // Il lavoro vero vive sul cloud (generation_progress.moduleGeneration);
+  // questo stato decide solo se la FINESTRA è aperta su questa scheda.
+  const [moduleScreen, setModuleScreen] = useState<{ moduleIndex: number } | null>(null);
   const [isGeneratingLesson, setIsGeneratingLesson] = useState(false);
   const [showList, setShowList] = useState(true);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
@@ -150,6 +157,8 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     | "complete") || "creating-index";
   const generationTotalLessons = generationProgress.totalLessons ?? 0;
   const generationLessonCount = generationProgress.generatedCount ?? 0;
+  // 🏭 P10b: il cantiere del modulo in lavorazione (null = fabbrica ferma).
+  const moduleJob = generationProgress.moduleGeneration ?? null;
 
   // Quando il backend completa, ricarica le lezioni e mostra un toast.
   useEffect(() => {
@@ -202,7 +211,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   //   - quando l'utente apre una lezione (handleSelectLesson)
   //   - quando l'utente passa alla "prossima" (handleNext), max 1 in anticipo
   // Concorrenza: massimo UNA richiesta in volo (vedi inflightLessonsRef + isGeneratingLesson).
-  useEffect(() => { onFullscreenChange?.(activeLessonIndex !== null || showFinalTest); }, [activeLessonIndex, showFinalTest, onFullscreenChange]);
+  useEffect(() => { onFullscreenChange?.(activeLessonIndex !== null || showFinalTest || moduleScreen !== null); }, [activeLessonIndex, showFinalTest, moduleScreen, onFullscreenChange]);
 
   const refetchLessons = async () => {
     invalidateContexts();
@@ -220,14 +229,16 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   // comunque il refresh del contesto + lista lezioni così l'UI si aggiorna sulla
   // stessa scheda senza dover ricaricare.
   useEffect(() => {
-    if (!isGenerating) return;
+    // 🏭 P10b: il polling gira anche a fabbrica attiva (moduleJob), così la
+    // barra della sala d'attesa avanza e i quadratini si accendono uno a uno.
+    if (!isGenerating && !moduleJob) return;
     const timer = window.setInterval(() => {
       invalidateContexts();
       invalidateList(effectiveContextId);
     }, 2500);
     return () => window.clearInterval(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isGenerating, effectiveContextId]);
+  }, [isGenerating, moduleJob, effectiveContextId]);
 
   const handleGenerateLessons = async () => {
     if (!currentUser) return;
@@ -326,6 +337,68 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       setIsGeneratingLesson(false);
     }
   };
+
+  // 🏭 P10b: avvia la fabbrica del modulo (lavoro SERVER in background).
+  // silent = niente sala d'attesa (auto-partenza a fine modulo).
+  // Ritorna true se il modulo è (o era già) in lavorazione.
+  const startModuleGeneration = async (moduleIndex: number, opts?: { silent?: boolean }): Promise<boolean> => {
+    if (!currentUser) return false;
+    if (generationBlocked) {
+      toast({ title: "Limite raggiunto", description: FREE_LIMIT_MESSAGE, variant: "destructive" });
+      return false;
+    }
+    // Un cantiere è già attivo: niente accavalli, al massimo apri la sala d'attesa.
+    if (moduleJob) {
+      if (!opts?.silent) setModuleScreen({ moduleIndex });
+      return true;
+    }
+    try {
+      // Pre-registra le notifiche (best-effort): a fine modulo arriva la push.
+      if (push.supported) push.subscribe().catch(() => {});
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const contextId = selectedContextId || activeContextId;
+      if (!contextId) return false;
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
+        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+          body: JSON.stringify({ userId: currentUser, action: "generateModule", moduleIndex, contextId, language: currentLanguage() }) });
+      const data = await response.json().catch(() => ({}));
+      // 409 = la fabbrica sta già lavorando: non è un errore, apri la sala d'attesa.
+      if (!response.ok && response.status !== 409) {
+        throw new Error((data as { error?: string }).error || "Errore nella generazione del modulo");
+      }
+      if (!opts?.silent) setModuleScreen({ moduleIndex });
+      invalidateContexts();
+      return true;
+    } catch (error) {
+      console.error("Error starting module generation:", error);
+      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella generazione del modulo", variant: "destructive" });
+      return false;
+    }
+  };
+
+  // 🏭 P10b: la fabbrica ha FINITO → chiudi la sala d'attesa e apri la prima
+  // lezione del modulo (ora tornita). Se non c'è (es. limite beta scattato a
+  // metà lavoro), spiega perché invece di aprire una lezione vuota.
+  useEffect(() => {
+    if (!moduleScreen || moduleJob) return;
+    const target = moduleScreen.moduleIndex;
+    setModuleScreen(null);
+    void (async () => {
+      const fresh = await lessonsQuery.refetch();
+      const freshLessons = fresh.data?.lessons ?? [];
+      const firstIdx = moduleRange(target).start;
+      const first = freshLessons[firstIdx];
+      if (first?.is_generated) {
+        setActiveLessonIndex(firstIdx);
+        if (firstIdx > cachedCurrentIndex) updateProgress.mutate(firstIdx);
+        toast({ title: `Modulo ${target + 1} pronto! 📚`, description: "Le nuove lezioni ti aspettano: buono studio!" });
+      } else {
+        toast({ title: "Modulo non completato", description: "Non tutte le lezioni sono state create. Riprova dalla prima lezione del modulo.", variant: "destructive" });
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moduleJob, moduleScreen]);
 
   const handleNext = async () => {
     if (currentLessonIndex < lessons.length - 1) {
@@ -462,7 +535,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         courses={allContexts}
         activeContextId={activeContextId}
         onSelectCourse={handleSelectCourse}
-        isRegenerating={isGenerating || generationBlocked}
+        isRegenerating={isGenerating || generationBlocked || !!moduleJob}
         onRegenerateCourse={async () => { await handleGenerateLessons(); }}
         onOpenMaterials={() => onUploadClick()}
         onDeleteCourse={async (contextId) => {
@@ -510,15 +583,35 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         onSelectLesson={async (index) => {
           const lesson = lessons[index];
           if (!lesson) return;
-          if (!lesson.is_generated) await generateLessonContent(index);
-          setActiveLessonIndex(index);
-          if (index > cachedCurrentIndex) updateProgress.mutate(index);
+          if (lesson.is_generated) {
+            setActiveLessonIndex(index);
+            if (index > cachedCurrentIndex) updateProgress.mutate(index);
+            return;
+          }
+          // 🏭 P10b: la lezione non è pronta → ragiona a MODULI, non a singola.
+          const mIdx = moduleIndexOf(index);
+          if (moduleJob) {
+            // Cantiere già attivo: apri la sala d'attesa (mostra il modulo in lavorazione).
+            setModuleScreen({ moduleIndex: moduleJob.moduleIndex });
+            return;
+          }
+          if (isModuleFullyMissing(lessonsInModule(lessons, mIdx))) {
+            // Vagone tutto da costruire → la fabbrica lavora in background e tu
+            // aspetti nella sala con barra e messaggini (o esci: arriva la push).
+            await startModuleGeneration(mIdx);
+          } else {
+            // Vagone parzialmente pronto (es. lavoro interrotto a metà):
+            // ripara solo il buco, come abbiamo sempre fatto.
+            await generateLessonContent(index);
+            setActiveLessonIndex(index);
+            if (index > cachedCurrentIndex) updateProgress.mutate(index);
+          }
         }}
         onBack={() => {}}
         isGenerating={isGeneratingLesson}
         showBackButton={false}
         onRegenerate={handleGenerateLessons}
-        isRegenerating={isGenerating || generationBlocked}
+        isRegenerating={isGenerating || generationBlocked || !!moduleJob}
         showFinalTest={allGenerated}
         onStartFinalTest={handleStartFinalTest}
         isLoadingFinalTest={isLoadingFinalTest}
@@ -601,6 +694,19 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
             setCurrentLessonIndex(nextIndex);
             setActiveLessonIndex(null);
             if (nextIndex > cachedCurrentIndex) updateProgress.mutate(nextIndex);
+            // 🏭 P10b IBRIDO: hai appena messo piede sul cancello di un vagone
+            // tutto da costruire → la fabbrica parte DA SOLA (silenziosa: se poi
+            // clicchi la lezione e non è pronta, si apre la sala d'attesa).
+            if (
+              nextIndex < lessons.length &&
+              isFirstOfModule(nextIndex) &&
+              !moduleJob &&
+              !generationBlocked &&
+              isModuleFullyMissing(lessonsInModule(lessons, moduleIndexOf(nextIndex)))
+            ) {
+              toast({ title: "Modulo in preparazione 🏭", description: `Sto già costruendo il modulo ${moduleIndexOf(nextIndex) + 1}: ti avviso con una notifica quando è pronto!` });
+              void startModuleGeneration(moduleIndexOf(nextIndex), { silent: true });
+            }
           }}
           isLastLesson={activeLessonIndex === lessons.length - 1}
           nextLessonId={
@@ -608,6 +714,17 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
               ? lessons[activeLessonIndex + 1]?.id ?? null
               : null
           }
+        />
+      )}
+
+      {/* 🏭 P10b: la sala d'attesa della fabbrica (sovrasta tutto, z-[90]) */}
+      {moduleScreen && (
+        <ModuleGenerationScreen
+          moduleIndex={moduleScreen.moduleIndex}
+          generatedCount={moduleJob && moduleJob.moduleIndex === moduleScreen.moduleIndex ? (moduleJob.generatedCount ?? 0) : 0}
+          totalLessons={moduleJob && moduleJob.moduleIndex === moduleScreen.moduleIndex ? (moduleJob.totalLessons ?? MODULE_SIZE) : MODULE_SIZE}
+          fileName={contextFileName}
+          onCancel={() => setModuleScreen(null)}
         />
       )}
 

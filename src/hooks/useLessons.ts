@@ -31,6 +31,14 @@ export interface StudyContextSummary {
     step?: "analyzing" | "creating-index" | "generating-lessons" | "complete";
     generatedCount?: number;
     totalLessons?: number;
+    // 🏭 P10b: cantiere della fabbrica dei moduli — presente solo mentre un
+    // modulo è in lavorazione (viene tolto a lavoro finito, bene o male che sia).
+    moduleGeneration?: {
+      moduleIndex: number;
+      totalLessons?: number;
+      generatedCount?: number;
+      startedAt?: string;
+    } | null;
   } | null;
   generation_error?: string | null;
   generation_started_at?: string | null;
