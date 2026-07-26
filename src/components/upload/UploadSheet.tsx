@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FileManager } from "./FileManager";
 import { supabase } from "@/integrations/supabase/client";
 import { currentLanguage } from "@/i18n";
+import { WikiCandidatePicker, type WikiCandidate } from "./WikiCandidatePicker";
 
 
 interface UploadSheetProps {
@@ -34,6 +35,10 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
   const [loadingTab, setLoadingTab] = useState<string>("menu");
   const [webTopic, setWebTopic] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  // 🎯 P13 IL PICKER DELLE VOCI: i candidati mostrati dopo la ricerca
+  // (null = ancora nessuna ricerca; pickingTitle = carta in creazione).
+  const [candidates, setCandidates] = useState<WikiCandidate[] | null>(null);
+  const [pickingTitle, setPickingTitle] = useState<string | null>(null);
   const { currentUser } = useAuth();
   const { toast } = useToast();
 
@@ -141,10 +146,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     }
   };
 
-  const handleWebSearch = async () => {
+  // 🎯 P13: crea il contesto dalla voce SCELTA (title) o dal manuale AI (forceAI).
+  const createWebContext = async (payload: { title?: string; forceAI?: boolean }) => {
     if (!webTopic.trim() || !currentUser) return;
     setIsSearching(true);
-    setUploadStatus("Preparazione del contenuto...");
+    if (payload.title) setPickingTitle(payload.title);
+    setUploadStatus(payload.forceAI ? "Preparazione del manuale AI..." : "Preparazione del contenuto dalla voce scelta...");
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -154,26 +161,60 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, topic: webTopic.trim(), language: currentLanguage() }),
+          body: JSON.stringify({ userId: currentUser, topic: webTopic.trim(), title: payload.title, forceAI: payload.forceAI, language: currentLanguage() }),
         }
       );
       const searchData = await searchResponse.json();
       if (!searchResponse.ok) throw new Error(searchData.error || "Errore nella ricerca");
 
-      const contextId = searchData.contextId;
-
-      onUpload([{ name: `🌐 ${webTopic}`, size: searchData.contentLength || 0 }], contextId);
+      onUpload([{ name: `🌐 ${webTopic}`, size: searchData.contentLength || 0 }], searchData.contextId);
       setWebTopic("");
+      setCandidates(null);
       onOpenChange(false);
       const fromWiki = searchData.source === "wikipedia";
+      const imgNote = searchData.imagesCount
+        ? `con ${searchData.imagesCount} immagini vere 📷. `
+        : (fromWiki ? "nessuna immagine utile nella voce (icone o assenti). " : "");
       toast({
         title: fromWiki ? "Contenuto da Wikipedia! 🌐" : "Manuale AI pronto 🌐",
         description: fromWiki
-          ? `${searchData.imagesCount ? `Con ${searchData.imagesCount} immagini vere. ` : ""}Fonte indicata nel materiale. Ora genera le lezioni dal tab Studio.`
-          : "Wikipedia non copre questo tema: l'AI ha scritto dalla sua conoscenza. Ora genera le lezioni dal tab Studio.",
+          ? `${searchData.pageTitle ? `Voce: «${searchData.pageTitle}», ` : ""}${imgNote}Ora genera le lezioni dal tab Studio.`
+          : (payload.forceAI
+            ? "Come hai chiesto tu: manuale scritto dall'AI dalla sua conoscenza. Ora genera le lezioni dal tab Studio."
+            : "Wikipedia non copre questo tema: l'AI ha scritto dalla sua conoscenza. Ora genera le lezioni dal tab Studio."),
       });
     } catch (error) {
       console.error("Web search error:", error);
+      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella ricerca", variant: "destructive" });
+    } finally {
+      setIsSearching(false);
+      setPickingTitle(null);
+      setUploadStatus("");
+    }
+  };
+
+  // 🎯 P13: prima si CERCANO le voci candidate; la creazione parte al tocco sulla carta.
+  const handleWebSearch = async () => {
+    if (!webTopic.trim() || !currentUser) return;
+    setIsSearching(true);
+    setUploadStatus("Cerco le voci su Wikipedia...");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/web-search`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+          body: JSON.stringify({ userId: currentUser, action: "search", topic: webTopic.trim(), language: currentLanguage() }),
+        }
+      );
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Errore nella ricerca");
+      setCandidates(data.candidates ?? []);
+    } catch (error) {
+      console.error("Web candidates error:", error);
       toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella ricerca", variant: "destructive" });
     } finally {
       setIsSearching(false);
@@ -445,7 +486,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input
                       value={webTopic}
-                      onChange={(e) => setWebTopic(e.target.value)}
+                      onChange={(e) => { setWebTopic(e.target.value); if (candidates !== null) setCandidates(null); }}
                       placeholder="Es: La Rivoluzione Francese, Derivate, DNA..."
                       className="pl-10 h-14 text-base rounded-xl bg-surface-container border-outline-variant"
                       onKeyDown={(e) => { if (e.key === "Enter" && webTopic.trim()) handleWebSearch(); }}
@@ -459,12 +500,23 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                     className="w-full h-14 text-base"
                     size="lg"
                   >
-                    {isSearching ? (
-                      <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Preparazione in corso...</>
+                    {isSearching && pickingTitle === null ? (
+                      <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Ricerca in corso...</>
                     ) : (
-                      <><Globe className="w-5 h-5 mr-2" />Prepara l'argomento</>
+                      <><Search className="w-5 h-5 mr-2" />Cerca le voci</>
                     )}
                   </Button>
+
+                  {/* 🎯 P13: il picker delle voci — niente più roulette del primo risultato */}
+                  {candidates !== null && (
+                    <WikiCandidatePicker
+                      candidates={candidates}
+                      pickingTitle={pickingTitle}
+                      disabled={isSearching}
+                      onPick={(title) => { void createWebContext({ title }); }}
+                      onManualAI={() => { void createWebContext({ forceAI: true }); }}
+                    />
+                  )}
 
                   <p className="body-small text-muted-foreground text-center">
                     🔍 Dopo la preparazione potrai generare le lezioni
