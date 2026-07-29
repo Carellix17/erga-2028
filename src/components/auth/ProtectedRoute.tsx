@@ -1,13 +1,16 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { SplashScreen } from "@/components/shared/SplashScreen";
+import { useSplashGate } from "@/hooks/useSplashGate";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
-    // Mostra uno spinner o niente mentre controlla
-    return <div className="min-h-screen bg-background flex items-center justify-center">Caricamento...</div>;
+  // 🎬 P14: il sipario condivide il cronometro con Landing e Index
+  const splash = useSplashGate(isLoading);
+  if (splash.showSplash) {
+    return <SplashScreen leaving={splash.leaving} />;
   }
 
   if (!isAuthenticated) {

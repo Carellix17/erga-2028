@@ -32,12 +32,13 @@ export function WikiCandidatePicker({ candidates, pickingTitle, disabled, onPick
           <p className="body-small text-muted-foreground text-center">
             Ho trovato queste voci: <strong>toccala per creare il materiale</strong> 👇
           </p>
-          {candidates.map((c) => (
+          {candidates.map((c, i) => (
             <button
               key={c.title}
               type="button"
               onClick={() => onPick(c.title)}
               disabled={disabled}
+              style={{ animationDelay: `${i * 70}ms` }}
               className="w-full flex items-start gap-3 p-3 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 text-left transition-all hover:shadow-level-2 active:scale-[0.98] disabled:opacity-50 animate-cinematic-in"
             >
               {c.thumb ? (

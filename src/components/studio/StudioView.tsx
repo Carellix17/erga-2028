@@ -460,6 +460,13 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     );
   }
 
+  // 🔖 P14: finché il segnalibro non è arrivato dal cloud NON si mostra la
+  // lista "all" — era il flash di mezzo secondo dell'ultimo corso GENERATO.
+  // Al suo posto: lo scheletro del sentiero, poi si apre quello giusto.
+  if (hasFiles && !selectedContextId && !lastViewedLoaded && allContexts.length > 0) {
+    return <LessonsListSkeleton />;
+  }
+
   // 🦴 P10a: l'orbe è SOLO per la generazione vera. L'attesa di un percorso già
   // esistente mostra lo scheletro del sentiero, come fanno Piano e Profilo.
   if (postCompleteSettling && lessons.length === 0) {

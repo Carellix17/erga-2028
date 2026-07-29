@@ -9,7 +9,8 @@ import { UploadSheet } from "@/components/upload/UploadSheet";
 import { useUserData } from "@/hooks/useUserData";
 import { useHasContentQuery, useLessonsCacheControls } from "@/hooks/useLessons";
 import { useGenerationRealtime } from "@/hooks/useGenerationRealtime";
-import { Loader2 } from "lucide-react";
+import { SplashScreen } from "@/components/shared/SplashScreen";
+import { useSplashGate } from "@/hooks/useSplashGate";
 import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
 import { CognitiveOnboarding } from "@/components/onboarding/CognitiveOnboarding";
 import { Brain } from "lucide-react";
@@ -63,6 +64,8 @@ const Index = () => {
 
   // Loading iniziale: solo il primo fetch, mai più tra le tab
   const initialLoading = hasContentQuery.isLoading || !cognitiveLoaded;
+  // 🎬 P14: terzo e ultimo cancello del sipario (cronometro condiviso)
+  const splash = useSplashGate(initialLoading);
   const hasCloudContent = hasContentQuery.data ?? false;
   const hasFiles = uploadedFiles.length > 0 || hasCloudContent;
 
@@ -96,15 +99,8 @@ const Index = () => {
     size: f.size,
   }));
 
-  if (initialLoading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-level-3 animate-pulse">
-          <Loader2 className="w-8 h-8 text-primary-foreground animate-spin" />
-        </div>
-        <p className="text-muted-foreground font-medium text-sm">Caricamento...</p>
-      </div>
-    );
+  if (splash.showSplash) {
+    return <SplashScreen leaving={splash.leaving} />;
   }
 
   // Onboarding bloccante: se l'utente non ha completato il test cognitivo,
@@ -144,6 +140,8 @@ const Index = () => {
             </div>
           </button>
         )}
+        {/* 🎞️ P14: il cambio scheda entra in scena piano, non più a schiaffo */}
+        <div key={activeTab} className="animate-fade-up">
         {activeTab === "studio" && (
           <StudioView
             hasFiles={hasFiles}
@@ -169,6 +167,7 @@ const Index = () => {
         {activeTab === "profilo" && (
           <ProfileView onOpenCognitive={() => setShowOnboarding(true)} />
         )}
+        </div>
         </main>
       </div>
 

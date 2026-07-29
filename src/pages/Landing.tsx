@@ -1,6 +1,8 @@
 import { Navigate, Link } from "react-router-dom";
 import { Brain } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { SplashScreen } from "@/components/shared/SplashScreen";
+import { useSplashGate } from "@/hooks/useSplashGate";
 import { DemoFlow } from "@/components/demo/DemoFlow";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
@@ -8,13 +10,11 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 export default function Landing() {
   const { isAuthenticated, isLoading } = useAuth();
   const { t } = useTranslation();
+  // 🎬 P14: il sipario d'apertura — un solo spettacolo per tutti i cancelli
+  const splash = useSplashGate(isLoading);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-dot-grid flex items-center justify-center">
-        <div className="w-10 h-10 rounded-2xl bg-slate-900 animate-pulse" />
-      </div>
-    );
+  if (splash.showSplash) {
+    return <SplashScreen leaving={splash.leaving} />;
   }
 
   if (isAuthenticated) return <Navigate to="/app" replace />;
