@@ -40,7 +40,7 @@ export function SplashScreen({ leaving = false }: { leaving?: boolean }) {
   return (
     <div
       className={cn(
-        "min-h-screen bg-dot-grid flex items-center justify-center transition-opacity duration-500 ease-out",
+        "min-h-screen bg-dot-grid flex flex-col items-center justify-center transition-opacity duration-500 ease-out",
         leaving && "opacity-0",
       )}
       role="status"
@@ -72,6 +72,22 @@ export function SplashScreen({ leaving = false }: { leaving?: boolean }) {
             </span>
           ))}
         </p>
+      </div>
+
+      {/* i tre puntini di "qualcuno sta ancora scrivendo": compaiono quando la
+          scritta è completa e la capsula aspetta che i dati arrivino dal cloud */}
+      <div
+        aria-hidden
+        className="mt-6 flex h-2 items-center justify-center gap-1.5 transition-opacity duration-300"
+        style={{ opacity: typed >= TAGLINE.length ? 1 : 0 }}
+      >
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="h-1.5 w-1.5 rounded-full bg-slate-400"
+            style={{ animation: `erga-pulse-soft 1.1s ease-in-out ${i * 0.18}s infinite` }}
+          />
+        ))}
       </div>
     </div>
   );

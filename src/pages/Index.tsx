@@ -141,7 +141,7 @@ const Index = () => {
           </button>
         )}
         {/* 🎞️ P14: il cambio scheda entra in scena piano, non più a schiaffo */}
-        <div key={activeTab} className="animate-fade-up">
+        <div key={activeTab} className="animate-fade-in-soft">
         {activeTab === "studio" && (
           <StudioView
             hasFiles={hasFiles}

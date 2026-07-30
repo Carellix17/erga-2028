@@ -302,7 +302,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
 
           <TabsContent value="loading" className="flex-1 min-h-0 mt-0 overflow-hidden">
             <Tabs value={loadingTab} onValueChange={setLoadingTab} className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-              <TabsContent value="menu" className="flex-1 min-h-0 overflow-y-auto mt-0 pb-4">
+              <TabsContent value="menu" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y mt-0 pb-4">
                 <div className="space-y-4">
                   <p className="body-medium text-muted-foreground text-center">
                     Scegli come vuoi caricare i tuoi materiali
@@ -334,7 +334,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
               </TabsContent>
 
               <TabsContent value="upload" className="flex-1 flex flex-col min-h-0 mt-0">
-                <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pb-4 pr-1">
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-4 pb-4 pr-1">
                   <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")} disabled={isUploading}>
                     <ChevronLeft className="w-4 h-4 mr-1" />
                     Torna a Caricamento
@@ -397,7 +397,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 </div>
               </TabsContent>
 
-              <TabsContent value="photos" className="flex-1 min-h-0 overflow-y-auto space-y-4 mt-0 pb-4">
+              <TabsContent value="photos" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-4 mt-0 pb-4">
                 <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")} disabled={isUploading}>
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Torna a Caricamento
@@ -466,7 +466,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 </div>
               </TabsContent>
 
-              <TabsContent value="web" className="flex-1 min-h-0 overflow-y-auto space-y-5 mt-0 pb-4">
+              <TabsContent value="web" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-5 mt-0 pb-4">
                 <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")}>
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Torna a Caricamento
@@ -526,7 +526,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
             </Tabs>
           </TabsContent>
 
-          <TabsContent value="manage" className="flex-1 min-h-0 mt-0 overflow-y-auto">
+          <TabsContent value="manage" className="flex-1 min-h-0 mt-0 overflow-y-auto overscroll-contain touch-pan-y">
             <FileManager onFileDeleted={handleFileDeleted} onSelectFile={handleFileSelect} />
           </TabsContent>
         </Tabs>
