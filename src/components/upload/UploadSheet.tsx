@@ -300,29 +300,29 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="loading" className="flex-1 min-h-0 mt-0 overflow-hidden">
+          <TabsContent value="loading" className="flex-1 min-h-0 mt-0 overflow-hidden tab-enter">
             <Tabs value={loadingTab} onValueChange={setLoadingTab} className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-              <TabsContent value="menu" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y mt-0 pb-4">
+              <TabsContent value="menu" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y mt-0 pb-4 tab-enter">
                 <div className="space-y-4">
                   <p className="body-medium text-muted-foreground text-center">
                     Scegli come vuoi caricare i tuoi materiali
                   </p>
                   <div className="grid gap-3">
-                    <Button type="button" onClick={() => setLoadingTab("upload")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40">
+                    <Button type="button" style={{ animationDelay: "80ms" }} onClick={() => setLoadingTab("upload")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40 leaf-rise">
                       <FileText className="w-5 h-5 text-primary" />
                       <div className="text-left">
                         <p className="font-medium">Carica PDF</p>
                         <p className="body-small text-muted-foreground">Appunti, dispense o documenti</p>
                       </div>
                     </Button>
-                    <Button type="button" onClick={() => setLoadingTab("photos")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40">
+                    <Button type="button" style={{ animationDelay: "160ms" }} onClick={() => setLoadingTab("photos")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40 leaf-rise">
                       <Camera className="w-5 h-5 text-primary" />
                       <div className="text-left">
                         <p className="font-medium">Carica foto</p>
                         <p className="body-small text-muted-foreground">Scatta o scegli immagini</p>
                       </div>
                     </Button>
-                    <Button type="button" onClick={() => setLoadingTab("web")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40">
+                    <Button type="button" style={{ animationDelay: "240ms" }} onClick={() => setLoadingTab("web")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40 leaf-rise">
                       <Globe className="w-5 h-5 text-primary" />
                       <div className="text-left">
                         <p className="font-medium">Ricerca web</p>
@@ -333,7 +333,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 </div>
               </TabsContent>
 
-              <TabsContent value="upload" className="flex-1 flex flex-col min-h-0 mt-0">
+              <TabsContent value="upload" className="flex-1 flex flex-col min-h-0 mt-0 tab-enter">
                 <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-4 pb-4 pr-1">
                   <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")} disabled={isUploading}>
                     <ChevronLeft className="w-4 h-4 mr-1" />
@@ -397,7 +397,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 </div>
               </TabsContent>
 
-              <TabsContent value="photos" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-4 mt-0 pb-4">
+              <TabsContent value="photos" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-4 mt-0 pb-4 tab-enter">
                 <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")} disabled={isUploading}>
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Torna a Caricamento
@@ -466,12 +466,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                 </div>
               </TabsContent>
 
-              <TabsContent value="web" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-5 mt-0 pb-4">
+              <TabsContent value="web" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-5 mt-0 pb-4 tab-enter">
                 <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")}>
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Torna a Caricamento
                 </Button>
-                <div className="text-center space-y-3">
+                <div className="text-center space-y-3 leaf-rise">
                   <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto shadow-level-2">
                     <Globe className="w-8 h-8 text-primary-foreground" />
                   </div>
@@ -526,7 +526,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
             </Tabs>
           </TabsContent>
 
-          <TabsContent value="manage" className="flex-1 min-h-0 mt-0 overflow-y-auto overscroll-contain touch-pan-y">
+          <TabsContent value="manage" className="flex-1 min-h-0 mt-0 overflow-y-auto overscroll-contain touch-pan-y tab-enter">
             <FileManager onFileDeleted={handleFileDeleted} onSelectFile={handleFileSelect} />
           </TabsContent>
         </Tabs>

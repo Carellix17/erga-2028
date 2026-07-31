@@ -447,6 +447,30 @@
      creano uno stacking context che stacca le finestre dallo schermo e le fa
      passare sotto gli elementi esterni. Si animano solo le "foglie" (bottoni,
      carte), mai il tavolo. Imparato a spese del cambio-scheda animato: rimosso. */
+
+  /* ═══════ P15 — VERNICI PER PANNELLI E FOGLIE (sicure, senza will-change) ═══════
+     .tab-enter  → per i pannelli dei tab: entra in scena quando il pannello
+                   diventa attivo (data-state="active"). Contiene transform:
+                   usarla SOLO su pannelli senza finestre fixed al loro interno.
+     .leaf-rise  → stessa scivolata per singole foglie (bottoni, carte).
+     .leaf-fade  → dissolvenza di sola luce, sicura quasi ovunque. */
+  @keyframes tab-enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .tab-enter[data-state="active"] {
+    animation: tab-enter 340ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+  .leaf-rise {
+    animation: tab-enter 380ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+  }
+  @keyframes leaf-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .leaf-fade {
+    animation: leaf-fade 420ms ease-out both;
+  }
   .animate-scale-in {
     animation: m3-scale-in 550ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
     will-change: transform, opacity;
