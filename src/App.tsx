@@ -1,7 +1,9 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SaveStatusProvider } from "@/contexts/SaveStatusContext";
@@ -34,8 +36,27 @@ const queryClient = new QueryClient({
   },
 });
 
+// 🗄️ P16: la dispensa nel telefono — lezioni e contesti già scaricati restano
+// sul dispositivo 24 ore. Cambiare percorso o riaprire l'app mostra SUBITO
+// quello che c'è, e il cloud aggiorna in silenzio sullo sfondo.
+const persister = createSyncStoragePersister({
+  storage: window.localStorage,
+  key: "erga-query-dispensa-v1",
+});
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
+  <PersistQueryClientProvider
+    client={queryClient}
+    persistOptions={{
+      persister,
+      maxAge: 24 * 60 * 60 * 1000,
+      dehydrateOptions: {
+        // Solo il dominio "lessons" (liste, contesti, singole lezioni, scorte):
+        // le chiavi contengono già l'id utente → niente mescolamenti tra persone.
+        shouldDehydrateQuery: (q) => q.queryKey[0] === "lessons",
+      },
+    }}
+  >
     <TooltipProvider>
       <AuthProvider>
         <SaveStatusProvider>
@@ -69,7 +90,7 @@ const App = () => (
         </SaveStatusProvider>
       </AuthProvider>
     </TooltipProvider>
-  </QueryClientProvider>
+  </PersistQueryClientProvider>
 );
 
 export default App;

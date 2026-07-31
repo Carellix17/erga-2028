@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { FullscreenLesson } from "./FullscreenLesson";
+import { FullscreenLessonGate } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
 import { LessonsList } from "./LessonsList";
 import { CourseSelector } from "./CourseSelector";
@@ -22,8 +22,13 @@ import {
   useStudyContextsQuery,
   useUpdateLessonProgress,
   useLessonsCacheControls,
+  fetchLessonsList,
+  fetchLessonFull,
+  lessonsKeys,
   type Lesson,
+  type LessonMeta,
 } from "@/hooks/useLessons";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useGenerationUsage,
   useInvalidateGenerationUsage,
@@ -182,10 +187,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   }, [generationStatus, effectiveContextId]);
 
   const lessonsQuery = useLessonsQuery(effectiveContextId);
-  const lessons: Lesson[] = lessonsQuery.data?.lessons ?? [];
+  const lessons: LessonMeta[] = lessonsQuery.data?.lessons ?? [];
   const cachedCurrentIndex = lessonsQuery.data?.currentIndex ?? 0;
   const updateProgress = useUpdateLessonProgress(effectiveContextId);
   const { invalidateList, invalidateContexts, setLessonsList } = useLessonsCacheControls();
+  const queryClient = useQueryClient(); // ⚡ P16: la manopola della dispensa
 
   // 🚦 Bridging: dopo che il backend segna 'completed', le lezioni potrebbero
   // non essere ancora arrivate al client. Manteniamo uno stato "settling" per
@@ -325,6 +331,14 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           };
         });
       }
+      // ⚡ P16: la lezione appena tornita va dritta anche sullo scaffale
+      // della singola — riaprirla non costa nemmeno un viaggio.
+      if (data.lesson && effectiveContextId) {
+        queryClient.setQueryData(
+          lessonsKeys.lesson(currentUser, effectiveContextId, lessonIndex),
+          data.lesson,
+        );
+      }
       // Aggiorna il contatore d'uso lato client (anche se demo per rinfrescare).
       invalidateUsage();
       return data.lesson ?? null;
@@ -441,6 +455,14 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     const selectedLesson = lessons[index];
     if (!selectedLesson) return;
     if (!selectedLesson.is_generated) await generateLessonContent(index);
+    // ⚡ P16: scaldi il pacco di QUELLA lezione mentre la vista cambia —
+    // quando il tornello le chiede il contenuto, è (quasi) già sul bancone.
+    if (effectiveContextId) {
+      void queryClient.prefetchQuery({
+        queryKey: lessonsKeys.lesson(currentUser, effectiveContextId, index),
+        queryFn: () => fetchLessonFull(currentUser as string, effectiveContextId, index),
+      });
+    }
     setCurrentLessonIndex(index); setShowList(false);
     // Aggiorna i progressi solo in avanti: tornare indietro non riduce il completamento.
     if (index > cachedCurrentIndex) updateProgress.mutate(index);
@@ -475,7 +497,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   if (isLoading) {
     // 🦴 P10a: scheletro del sentiero anche per il primo caricamento del percorso
-    return <LessonsListSkeleton />;
+    // ⚡ P16: con la LUNGHEZZA VERA — il numero di lezioni lo sappiamo già
+    // dalla lista contesti, è un dato leggero che viaggia gratis.
+    return <LessonsListSkeleton count={activeContext?.lesson_count} />;
   }
 
   if (lessons.length === 0) {
@@ -540,6 +564,12 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     setActiveContextId(contextId);
     setActiveLessonIndex(null);
     setCurrentLessonIndex(0);
+    // ⚡ P16: il furgoncino parte SUBITO, prima ancora di ridisegnare:
+    // quando Studio torna su questo percorso, la lista è quasi sempre pronta.
+    void queryClient.prefetchQuery({
+      queryKey: lessonsKeys.list(currentUser, contextId),
+      queryFn: () => fetchLessonsList(currentUser, contextId),
+    });
   };
 
   return (
@@ -710,8 +740,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       />
 
       {activeLessonIndex !== null && currentLesson && currentLesson.is_generated && !isGeneratingLesson && (
-        <FullscreenLesson
-          lesson={{ ...currentLesson, duration: 5 }}
+        <FullscreenLessonGate
+          meta={currentLesson}
+          contextId={effectiveContextId ?? null}
           lessonNumber={activeLessonIndex + 1}
           totalLessons={lessons.length}
           onClose={() => setActiveLessonIndex(null)}

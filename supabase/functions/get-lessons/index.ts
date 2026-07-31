@@ -29,9 +29,13 @@ serve(withCors(async (req) => {
         }
       }
 
+      // ⚡ P16: la corsia LEGGERA — la lista viaggia con i soli metadati
+      // (titoli, ordine, stato, pagine). I contenuti pesanti (concept,
+      // explanation, example, exercises) si prendono UNO ALLA VOLTA con
+      // "getLesson", solo quando l'utente apre davvero quella lezione.
       let lessonsQuery = supabase
         .from("mini_lessons")
-        .select("*")
+        .select("id, title, is_generated, lesson_order, context_id, page_start, page_end")
         .order("lesson_order", { ascending: true });
 
       if (contextId) {

@@ -4,18 +4,24 @@ import { edgeFetch } from "@/lib/edgeFetch";
 import { useTrackedMutation } from "./useTrackedMutation";
 import type { Exercise } from "@/components/studio/exercises/ExerciseRenderer";
 
-export interface Lesson {
+// ⚡ P16: la corsia leggera — quello che serve per DISEGNARE il sentiero.
+// I contenuti pesanti (concept, explanation, example, exercises) arrivano
+// dopo, una lezione alla volta, solo quando la apri (useLessonQuery).
+export interface LessonMeta {
   id: string;
   title: string;
-  concept: string;
-  explanation: string;
-  example?: string;
-  exercises?: Exercise[];
   is_generated: boolean;
   lesson_order: number;
   context_id?: string;
   page_start?: number | null;
   page_end?: number | null;
+}
+
+export interface Lesson extends LessonMeta {
+  concept?: string;
+  explanation?: string;
+  example?: string;
+  exercises?: Exercise[];
 }
 
 export interface StudyContextSummary {
@@ -53,20 +59,49 @@ export const lessonsKeys = {
     ["lessons", userId, "list", contextId ?? "all"] as const,
   contexts: (userId: string | null) => ["lessons", userId, "contexts"] as const,
   hasContent: (userId: string | null) => ["lessons", userId, "hasContent"] as const,
+  lesson: (userId: string | null, contextId: string | null | undefined, lessonIndex: number) =>
+    ["lessons", userId, "one", contextId ?? "all", lessonIndex] as const,
   progress: (userId: string | null) => ["lessons", userId, "progress"] as const,
 };
 
+// La dispensa tiene i pacchi un giorno intero (abbraccia la persistenza P16).
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// ⚡ P16: il fattorino della lista — ora porta solo il plico LEGGERO.
+export async function fetchLessonsList(userId: string | null, contextId: string | null | undefined) {
+  const body: Record<string, unknown> = { userId, action: "get" };
+  if (contextId) body.contextId = contextId;
+  const data = await edgeFetch<{ lessons?: LessonMeta[]; currentIndex?: number }>("get-lessons", body);
+  return { lessons: data.lessons ?? [], currentIndex: data.currentIndex ?? 0 };
+}
+
+// ⚡ P16: il contenuto completo di UNA lezione — si chiede solo quando serve.
+export async function fetchLessonFull(userId: string, contextId: string, lessonIndex: number) {
+  const data = await edgeFetch<{ lesson?: Lesson }>("get-lessons", {
+    userId, action: "getLesson", contextId, lessonIndex,
+  });
+  return data.lesson ?? null;
+}
+
 export function useLessonsQuery(contextId: string | null | undefined) {
   const { currentUser } = useAuth();
-  return useQuery<{ lessons: Lesson[]; currentIndex: number }>({
+  return useQuery<{ lessons: LessonMeta[]; currentIndex: number }>({
     queryKey: lessonsKeys.list(currentUser, contextId),
-    queryFn: async () => {
-      const body: Record<string, unknown> = { userId: currentUser, action: "get" };
-      if (contextId) body.contextId = contextId;
-      const data = await edgeFetch<{ lessons?: Lesson[]; currentIndex?: number }>("get-lessons", body);
-      return { lessons: data.lessons ?? [], currentIndex: data.currentIndex ?? 0 };
-    },
+    queryFn: () => fetchLessonsList(currentUser, contextId),
     enabled: !!currentUser,
+    gcTime: DAY_MS,
+  });
+}
+
+// ⚡ P16: la singola lezione a schermo intero — caricamento mirato,
+// mai tutta la pagina. In cache anche lei, così riaprirla è gratis.
+export function useLessonQuery(contextId: string | null | undefined, lessonIndex: number, enabled = true) {
+  const { currentUser } = useAuth();
+  return useQuery<Lesson | null>({
+    queryKey: lessonsKeys.lesson(currentUser, contextId, lessonIndex),
+    queryFn: () => fetchLessonFull(currentUser as string, contextId as string, lessonIndex),
+    enabled: !!currentUser && !!contextId && enabled,
+    gcTime: DAY_MS,
   });
 }
 
@@ -82,6 +117,7 @@ export function useStudyContextsQuery() {
       return data.contexts ?? [];
     },
     enabled: !!currentUser,
+    gcTime: DAY_MS,
   });
 }
 
@@ -97,6 +133,7 @@ export function useHasContentQuery() {
       return !!data.hasContent;
     },
     enabled: !!currentUser,
+    gcTime: DAY_MS,
   });
 }
 

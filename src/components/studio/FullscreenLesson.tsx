@@ -6,6 +6,7 @@ import { Button } from"@/components/ui/button";
 import { LiquidButton } from"@/components/ui/liquid-glass-button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from"@/components/ui/sheet";
 import { ExerciseRenderer, Exercise } from"./exercises/ExerciseRenderer";
+import { useLessonQuery, type LessonMeta } from"@/hooks/useLessons";
 import { cn } from"@/lib/utils";
 import ReactMarkdown from"react-markdown";
 import remarkGfm from"remark-gfm";
@@ -913,5 +914,57 @@ function SlideAIAssistant({
           </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+
+// ⚡ P16 — Il TORNELLO della singola lezione.
+// La struttura del percorso è già disegnata (metadati leggeri); qui carichiamo
+// SOLO il contenuto della lezione che stai aprendo — caricamento mirato su di
+// lei, mai su tutta la pagina. In cache 24h: riaprirla è gratis.
+export function FullscreenLessonGate({
+  meta,
+  contextId,
+  ...props
+}: Omit<FullscreenLessonProps, "lesson"> & {
+  meta: LessonMeta;
+  contextId: string | null;
+}) {
+  const lessonQuery = useLessonQuery(contextId, meta.lesson_order);
+  const full = lessonQuery.data;
+
+  if (!full) {
+    return (
+      <div className="fixed inset-0 z-50 bg-dot-grid flex flex-col items-center justify-center gap-4 animate-cinematic-in">
+        <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-level-3 animate-pulse-soft">
+          <Loader2 className="w-8 h-8 text-primary-foreground animate-spin" />
+        </div>
+        <p className="font-display font-semibold text-lg text-foreground text-center px-8 max-w-sm">
+          {meta.title}
+        </p>
+        <p className="text-sm text-muted-foreground">Apro la lezione…</p>
+        <button
+          onClick={props.onClose}
+          className="text-sm text-muted-foreground underline underline-offset-2 mt-2"
+        >
+          chiudi
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <FullscreenLesson
+      lesson={{
+        id: full.id,
+        title: full.title,
+        concept: full.concept ?? "",
+        explanation: full.explanation ?? "",
+        example: full.example,
+        exercises: full.exercises,
+        duration: 5,
+      }}
+      {...props}
+    />
   );
 }

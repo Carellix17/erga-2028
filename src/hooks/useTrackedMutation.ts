@@ -12,18 +12,18 @@ export function useTrackedMutation<TData, TError, TVariables, TContext = unknown
 
   return useMutation<TData, TError, TVariables, TContext>({
     ...options,
-    onMutate: async (vars) => {
+    onMutate: async (vars, mutateCtx) => {
       reportSaving();
-      return options.onMutate ? await options.onMutate(vars) : (undefined as unknown as TContext);
+      return options.onMutate ? await options.onMutate(vars, mutateCtx) : (undefined as unknown as TContext);
     },
-    onSuccess: (data, vars, ctx) => {
+    onSuccess: (data, vars, ctx, mutation) => {
       reportSaved();
-      return options.onSuccess?.(data, vars, ctx);
+      return options.onSuccess?.(data, vars, ctx, mutation);
     },
-    onError: (err, vars, ctx) => {
+    onError: (err, vars, ctx, mutation) => {
       const message = err instanceof Error ? err.message : undefined;
       reportError(message);
-      return options.onError?.(err, vars, ctx);
+      return options.onError?.(err, vars, ctx, mutation);
     },
   });
 }
