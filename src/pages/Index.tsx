@@ -33,6 +33,7 @@ const Index = () => {
   useDemoHandoff();
   const [activeTab, setActiveTab] = useState<Tab>("studio");
   const [showUpload, setShowUpload] = useState(false);
+  const [manageFocusContextId, setManageFocusContextId] = useState<string | null>(null);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -148,6 +149,10 @@ const Index = () => {
             onUploadClick={() => setShowUpload(true)}
             selectedContextId={selectedContextId}
             onClearContext={() => setSelectedContextId(null)}
+            onOpenCourseMaterials={(contextId) => {
+              setManageFocusContextId(contextId);
+              setShowUpload(true);
+            }}
             onFullscreenChange={setIsFullscreen}
           />
         )}
@@ -172,11 +177,15 @@ const Index = () => {
 
       <UploadSheet
         open={showUpload}
-        onOpenChange={setShowUpload}
+        onOpenChange={(o) => {
+          setShowUpload(o);
+          if (!o) setManageFocusContextId(null);
+        }}
         onUpload={handleUpload}
         uploadedFiles={displayFiles}
         onSelectFile={handleSelectFile}
         onFileDeleted={handleFileDeleted}
+        initialManageContextId={manageFocusContextId}
       />
 
       {showOnboarding && (

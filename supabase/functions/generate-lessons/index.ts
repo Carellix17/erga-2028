@@ -789,6 +789,7 @@ ${studyContent}`;
       generation_started_at: new Date().toISOString(),
       generation_progress: { step: "creating-index", generatedCount: 0, totalLessons: 0 },
       generation_error: null,
+      new_material_pending: false, // 📦 P17: rigenerare = il materiale nuovo entra nelle lezioni
     }).eq("id", contextId);
 
     // 🗺️ P6 — lavoriamo sul contenuto COMPLETO (la troncatura serve solo per

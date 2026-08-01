@@ -17,13 +17,13 @@ serve(withCors(async (req) => {
     if (action === "list") {
       const { data: contexts, error } = await supabase
         .from("study_contexts")
-        .select("id, file_name, created_at")
+        .select("id, file_name, created_at, file_path, new_material_pending")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
       const { data: legacyContexts } = legacyUserId
         ? await supabase
             .from("study_contexts")
-            .select("id, file_name, created_at")
+            .select("id, file_name, created_at, file_path, new_material_pending")
             .eq("user_id", legacyUserId)
             .order("created_at", { ascending: false })
         : { data: null };
@@ -92,6 +92,45 @@ serve(withCors(async (req) => {
       console.log(`Successfully deleted context ${contextId}`);
 
       return successResponse({ success: true });
+    }
+
+    // 🗑️ P17 — Togli UN file dal ripostiglio di un percorso.
+    // Se era l'ultimo file, il percorso sparisce con le sue lezioni.
+    if (action === "removeFile" && contextId) {
+      const filePath = body.filePath as string | undefined;
+      if (!filePath) return errorResponse("filePath mancante", 400);
+
+      const { data: ctxRows } = await supabase
+        .from("study_contexts")
+        .select("id, user_id, file_path")
+        .eq("id", contextId);
+      const ctx = (ctxRows || []).find((c: { user_id: string }) =>
+        c.user_id === userId || (legacyUserId && c.user_id === legacyUserId));
+      if (!ctx) return errorResponse("Percorso non trovato", 404);
+
+      const paths = ((ctx.file_path as string | null) ?? "").split(",").filter(Boolean);
+      if (!paths.includes(filePath)) return errorResponse("File non trovato nel percorso", 404);
+
+      await supabase.storage.from("study-pdfs").remove([filePath]);
+      const remaining = paths.filter((p: string) => p !== filePath);
+
+      if (remaining.length === 0) {
+        await supabase.from("mini_lessons").delete()
+          .in("user_id", legacyUserId ? [userId, legacyUserId] : [userId])
+          .eq("context_id", contextId);
+        await supabase.from("study_contexts").delete()
+          .eq("id", contextId)
+          .in("user_id", legacyUserId ? [userId, legacyUserId] : [userId]);
+        console.log(`Ultimo file tolto: percorso ${contextId} eliminato con le sue lezioni`);
+        return successResponse({ success: true, removed: true, contextDeleted: true });
+      }
+
+      await supabase.from("study_contexts").update({
+        file_path: remaining.join(","),
+        new_material_pending: true, // il testo estratto e' rimasto vecchio: avvisa di rigenerare
+      }).eq("id", contextId);
+      console.log(`File tolto dal percorso ${contextId}: restano ${remaining.length} file`);
+      return successResponse({ success: true, removed: true, contextDeleted: false });
     }
 
     return errorResponse("Invalid action", 400);

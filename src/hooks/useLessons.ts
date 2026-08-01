@@ -51,6 +51,8 @@ export interface StudyContextSummary {
   // 🏷️ P11d: titoli AI dei moduli (0-based). Manca sui percorsi vecchi →
   // il client deriva il nome dalla prima lezione del modulo.
   module_titles?: string[] | null;
+  // 📦 P17: il cartellino "c'è materiale nuovo non ancora nelle lezioni"
+  new_material_pending?: boolean;
 }
 
 export const lessonsKeys = {

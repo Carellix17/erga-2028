@@ -9,6 +9,8 @@ export interface FileContext {
   file_name: string;
   created_at: string;
   lesson_count: number;
+  file_path?: string | null;
+  new_material_pending?: boolean;
 }
 
 export const fileContextsKey = (userId: string | null) =>
@@ -51,6 +53,27 @@ export function useDeleteFileContext() {
     onError: (_e, _v, ctx) => {
       if (ctx?.previous) qc.setQueryData(fileContextsKey(currentUser), ctx.previous);
     },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: fileContextsKey(currentUser) });
+      qc.invalidateQueries({ queryKey: lessonsKeys.all(currentUser) });
+    },
+  });
+}
+
+// 🗑️ P17 — togli UN file dal ripostiglio di un percorso.
+// Se era l'ultimo, il server elimina il percorso con le sue lezioni
+// (il client lo scopre dal flag contextDeleted della risposta).
+export function useRemoveFileFromContext() {
+  const { currentUser } = useAuth();
+  const qc = useQueryClient();
+  return useTrackedMutation<{ contextDeleted?: boolean }, Error, { contextId: string; filePath: string }, unknown>({
+    mutationFn: async ({ contextId, filePath }) =>
+      edgeFetch<{ contextDeleted?: boolean }>("delete-context", {
+        userId: currentUser,
+        contextId,
+        filePath,
+        action: "removeFile",
+      }),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: fileContextsKey(currentUser) });
       qc.invalidateQueries({ queryKey: lessonsKeys.all(currentUser) });

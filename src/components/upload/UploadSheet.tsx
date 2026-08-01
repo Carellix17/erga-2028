@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { FileUp, X, FileText, Loader2, Brain, Globe, Search, Camera, ImageIcon, ChevronLeft } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { FileManager } from "./FileManager";
+import { useQueryClient } from "@tanstack/react-query";
+import { fileContextsKey } from "@/hooks/useFileContexts";
 import { supabase } from "@/integrations/supabase/client";
 import { currentLanguage } from "@/i18n";
 import { WikiCandidatePicker, type WikiCandidate } from "./WikiCandidatePicker";
@@ -20,11 +22,12 @@ interface UploadSheetProps {
   uploadedFiles: { name: string; size: number }[];
   onSelectFile?: (contextId: string) => void;
   onFileDeleted?: () => void;
+  initialManageContextId?: string | null;
 }
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
-export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSelectFile, onFileDeleted }: UploadSheetProps) {
+export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFileDeleted, initialManageContextId }: UploadSheetProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
@@ -41,6 +44,14 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
   const [pickingTitle, setPickingTitle] = useState<string | null>(null);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const qc = useQueryClient();
+  const [isAttaching, setIsAttaching] = useState(false);
+  const [courseName, setCourseName] = useState("");
+
+  // 🎯 P17: il menù ⋯ di Studio manda dritti nello scaffale di QUEL percorso
+  useEffect(() => {
+    if (open && initialManageContextId) setActiveTab("manage");
+  }, [open, initialManageContextId]);
 
   const handleMainTabChange = (value: string) => {
     setActiveTab(value);
@@ -58,12 +69,20 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation(); setDragActive(false);
-    const files = Array.from(e.dataTransfer.files).filter(f => f.type === "application/pdf");
+    const files = Array.from(e.dataTransfer.files).filter(isDocFile);
     if (files.length > 0) setSelectedFiles(prev => [...prev, ...files]);
   }, []);
 
+  // 📄 P17: il lettore universale — PDF, DOCX, TXT e MD (per tipo o per estensione)
+  const isDocFile = (f: File) => {
+    const n = f.name.toLowerCase();
+    return f.type === "application/pdf" || f.type.startsWith("text/") ||
+      f.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      /\.(pdf|txt|md|markdown|docx)$/.test(n);
+  };
+
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []).filter(f => f.type === "application/pdf");
+    const files = Array.from(e.target.files || []).filter(isDocFile);
     if (files.length > 0) setSelectedFiles(prev => [...prev, ...files]);
   };
 
@@ -233,8 +252,13 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-      for (const file of selectedFiles) {
-        setUploadStatus(`Caricamento ${file.name}...`);
+      // 📚 P17: più file insieme = UN percorso unico che li mescola tutti.
+      // Il primo APRE il percorso col nome scelto, gli altri si ALLEGANO.
+      const singleCourse = selectedFiles.length >= 2;
+      const finalCourseName = courseName.trim() || stripExt(selectedFiles[0]?.name ?? "Il mio percorso");
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        setUploadStatus(singleCourse && i > 0 ? `Aggiungo ${file.name} al percorso...` : `Caricamento ${file.name}...`);
         if (file.size > MAX_FILE_SIZE) {
           toast({ title: "File troppo grande", description: `${file.name} supera il limite di 100MB`, variant: "destructive" });
           continue;
@@ -243,6 +267,10 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         const formData = new FormData();
         formData.append("file", file);
         formData.append("userId", currentUser);
+        if (singleCourse) {
+          if (i > 0 && latestContextId) formData.append("contextId", latestContextId);
+          else formData.append("contextName", finalCourseName);
+        }
 
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, {
           method: "POST",
@@ -262,7 +290,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
         onUpload(uploadedFileInfos, latestContextId);
         setSelectedFiles([]);
         onOpenChange(false);
-        toast({ title: "File caricato! 📄", description: "Vai su Studio per generare le lezioni." });
+        toast({ title: singleCourse ? "Percorso creato! 📚" : "File caricato! 📄", description: "Vai su Studio per generare le lezioni." });
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -273,8 +301,52 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
     }
   };
 
-  const handleFileSelect = (contextId: string) => { onSelectFile?.(contextId); onOpenChange(false); };
+
   const handleFileDeleted = () => { onFileDeleted?.(); };
+
+  const stripExt = (name: string) => name.replace(/\.[^.]+$/, "");
+
+  // ➕ P17 — l'addetto alle aggiunte: carica file DENTRO un percorso esistente
+  const handleAttachFiles = async (contextId: string, files: File[]) => {
+    if (!currentUser || files.length === 0) return;
+    setIsAttaching(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      for (const file of files) {
+        if (file.size > MAX_FILE_SIZE) {
+          toast({ title: "File troppo grande", description: `${file.name} supera il limite di 100MB`, variant: "destructive" });
+          continue;
+        }
+        setUploadStatus(`Aggiunta di ${file.name}...`);
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("userId", currentUser);
+        formData.append("contextId", contextId);
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${authToken}` },
+          body: formData,
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `Errore con ${file.name}`);
+      }
+      toast({
+        title: "Materiale aggiunto 📥",
+        description: files.length === 1
+          ? "Rigenera il percorso per includerlo nelle lezioni."
+          : `${files.length} file aggiunti: rigenera per includerli.`,
+      });
+      qc.invalidateQueries({ queryKey: fileContextsKey(currentUser) });
+      onFileDeleted?.();
+    } catch (error) {
+      console.error("Attach error:", error);
+      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nell'aggiunta", variant: "destructive" });
+    } finally {
+      setIsAttaching(false);
+      setUploadStatus("");
+    }
+  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -347,12 +419,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                     )}
                     onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
                   >
-                    <input type="file" accept=".pdf" multiple onChange={handleFileInput} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploading} />
+                    <input type="file" accept=".pdf,.txt,.md,.markdown,.docx,application/pdf,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple onChange={handleFileInput} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploading} />
                     <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2 animate-float">
                       <FileUp className="w-8 h-8 text-primary-foreground" />
                     </div>
-                    <p className="font-display font-semibold text-lg mb-1">Trascina qui i tuoi PDF</p>
-                    <p className="body-small text-muted-foreground">oppure tocca per selezionare (max 100MB)</p>
+                    <p className="font-display font-semibold text-lg mb-1">Trascina qui i tuoi documenti</p>
+                    <p className="body-small text-muted-foreground">PDF, DOCX, TXT o MD — tocca per selezionare (max 100MB)</p>
                   </div>
 
                   {selectedFiles.length > 0 && (
@@ -381,6 +453,23 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
                           </div>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {selectedFiles.length >= 2 && (
+                    <div className="pt-1 animate-fade-up">
+                      <label htmlFor="course-name" className="label-small text-muted-foreground">Nome del percorso unico</label>
+                      <Input
+                        id="course-name"
+                        value={courseName}
+                        onChange={(e) => setCourseName(e.target.value)}
+                        placeholder={stripExt(selectedFiles[0]?.name ?? "Il mio percorso")}
+                        className="mt-1"
+                        disabled={isUploading}
+                      />
+                      <p className="body-small text-muted-foreground mt-1">
+                        📚 I {selectedFiles.length} file finiranno in UN percorso che li studia tutti insieme.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -527,7 +616,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onSel
           </TabsContent>
 
           <TabsContent value="manage" className="flex-1 min-h-0 mt-0 overflow-y-auto overscroll-contain touch-pan-y tab-enter">
-            <FileManager onFileDeleted={handleFileDeleted} onSelectFile={handleFileSelect} />
+            <FileManager onFileDeleted={handleFileDeleted} onAttachFiles={handleAttachFiles} attaching={isAttaching} focusContextId={initialManageContextId} />
           </TabsContent>
         </Tabs>
       </SheetContent>

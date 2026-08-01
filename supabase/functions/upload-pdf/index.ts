@@ -6,6 +6,53 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const MAX_IMAGES = 20;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
+// 📄 P17 — il lettore universale: oltre al PDF, anche DOCX, TXT e MD.
+type FileKind = "pdf" | "docx" | "text";
+
+function fileKind(file: File): FileKind | null {
+  const name = file.name.toLowerCase();
+  if (file.type === "application/pdf" || name.endsWith(".pdf")) return "pdf";
+  if (name.endsWith(".docx") || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") return "docx";
+  if (file.type.startsWith("text/") || name.endsWith(".txt") || name.endsWith(".md") || name.endsWith(".markdown")) return "text";
+  return null;
+}
+
+async function extractDocxText(file: File): Promise<string> {
+  const JSZip = (await import("https://esm.sh/jszip@3.10.1")).default;
+  const zip = await JSZip.loadAsync(await file.arrayBuffer());
+  const xmlFile = zip.file("word/document.xml");
+  if (!xmlFile) throw new Error("DOCX non valido: document.xml mancante");
+  const xml = await xmlFile.async("string");
+  const text = xml
+    .replace(/<w:tab[^>]*\/>/g, "\t")
+    .replace(/<w:br[^>]*\/>/g, "\n")
+    .replace(/<\/w:p>/g, "\n")
+    .replace(/<[^>]+>/g, "");
+  return text
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+    .replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+// Stessa tecnica del worker extract-pdf: pdfjs-serverless, pagina per pagina.
+async function extractPdfText(bytes: Uint8Array): Promise<string> {
+  const pdfjsModule = await import("https://esm.sh/pdfjs-serverless@0.5.1?bundle");
+  const pdfjs = await pdfjsModule.resolvePDFJS();
+  const doc = await pdfjs.getDocument({ data: bytes, useSystemFonts: true }).promise;
+  const pages: string[] = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    try {
+      const page = await doc.getPage(i);
+      const textContent = await page.getTextContent();
+      // deno-lint-ignore no-explicit-any
+      pages.push(textContent.items.map((it: any) => (it && typeof it.str === "string" ? it.str : "")).join(" "));
+    } catch (e) {
+      console.error(`pdfjs: pagina ${i} saltata a piè pari:`, e);
+    }
+  }
+  return pages.join("\n").trim();
+}
+
 serve(withCors(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -151,25 +198,134 @@ serve(withCors(async (req) => {
       return errorResponse("File mancante", 400);
     }
 
-    if (file.type !== "application/pdf") {
-      return errorResponse("Solo file PDF sono accettati", 400);
+    const kind = fileKind(file);
+    if (!kind) {
+      return errorResponse(`Formato non supportato: ${file.name}. Accetto PDF, DOCX, TXT e MD.`, 400);
     }
 
     if (file.size > MAX_FILE_SIZE) {
       return errorResponse(`File troppo grande. Dimensione massima: 100MB`, 400);
     }
 
-    console.log(`Uploading PDF: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB) for user: ${userId}`);
+    console.log(`Uploading ${kind}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB) for user: ${userId}`);
+
+    const contextName = ((formData.get("contextName") as string | null) ?? "").trim() || null;
+    const attachId = (formData.get("contextId") as string | null) ?? null;
 
     const timestamp = Date.now();
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
     const filePath = `${userId}/${timestamp}_${sanitizedName}`;
+    const contentTypes: Record<FileKind, string> = {
+      pdf: "application/pdf",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      text: "text/plain; charset=utf-8",
+    };
+
+    async function extractText(f: File, k: FileKind): Promise<string> {
+      if (k === "text") return (await f.text()).trim();
+      if (k === "docx") return await extractDocxText(f);
+      return await extractPdfText(new Uint8Array(await f.arrayBuffer()));
+    }
+
+    // ➕ P17 — ALLEGA a un percorso esistente (il tasto "+" del ripostiglio):
+    // testo estratto qui e appeso al contenuto, cartellino "materiale nuovo" acceso.
+    if (attachId) {
+      const { data: ctx, error: ctxErr } = await supabase
+        .from("study_contexts")
+        .select("id, user_id, file_path, content, processing_status")
+        .eq("id", attachId)
+        .maybeSingle();
+      if (ctxErr || !ctx || ctx.user_id !== userId) return errorResponse("Percorso non trovato", 404);
+      if (ctx.processing_status === "pending" || ctx.processing_status === "processing") {
+        return errorResponse("Questo percorso si sta ancora preparando: riprova tra poco.", 409);
+      }
+
+      let newText: string;
+      try {
+        newText = await extractText(file, kind);
+      } catch (e) {
+        console.error("estrazione allegato fallita:", e);
+        return errorResponse(`Non riesco a leggere "${file.name}". Prova con un altro file.`, 422);
+      }
+      if (!newText) return errorResponse(`"${file.name}" sembra vuoto o illeggibile.`, 422);
+
+      const { error: attachUploadError } = await supabase
+        .storage.from("study-pdfs")
+        .upload(filePath, file, { contentType: contentTypes[kind], upsert: false });
+      if (attachUploadError) {
+        console.error("errore storage allegato:", attachUploadError);
+        return errorResponse("Errore durante il caricamento del file");
+      }
+
+      const oldPaths = ((ctx.file_path as string | null) ?? "").split(",").filter(Boolean);
+      const mergedContent = `${(ctx.content as string) ?? ""}\n\n=== FILE: ${file.name} ===\n\n${newText}`.substring(0, 200000);
+      const { error: updErr } = await supabase
+        .from("study_contexts")
+        .update({
+          file_path: [...oldPaths, filePath].join(","),
+          content: mergedContent,
+          new_material_pending: true,
+          processing_status: "completed",
+        })
+        .eq("id", attachId);
+      if (updErr) {
+        await supabase.storage.from("study-pdfs").remove([filePath]);
+        return errorResponse("Errore nel salvataggio");
+      }
+      console.log(`File ${file.name} allegato al percorso ${attachId} (+${newText.length} caratteri)`);
+      return successResponse({ success: true, contextId: attachId, attached: true, fileName: file.name });
+    }
+
+    // 🆕 P17 — CREATE da documento testuale (DOCX/TXT/MD): il testo è pronto
+    // SUBITO, senza passare dal worker. Cartellino spento: è il primo materiale.
+    if (kind !== "pdf") {
+      let text: string;
+      try {
+        text = await extractText(file, kind);
+      } catch (e) {
+        console.error("estrazione documento fallita:", e);
+        return errorResponse(`Non riesco a leggere "${file.name}". Prova con un altro file.`, 422);
+      }
+      if (!text) return errorResponse(`"${file.name}" sembra vuoto o illeggibile.`, 422);
+
+      const { error: textUploadError } = await supabase
+        .storage.from("study-pdfs")
+        .upload(filePath, file, { contentType: contentTypes[kind], upsert: false });
+      if (textUploadError) {
+        console.error("errore storage documento:", textUploadError);
+        return errorResponse("Errore durante il caricamento del file");
+      }
+
+      const { data: context, error: dbError } = await supabase
+        .from("study_contexts")
+        .insert({
+          user_id: userId,
+          file_name: contextName || file.name,
+          file_path: filePath,
+          content: text.substring(0, 200000),
+          processing_status: "completed",
+        })
+        .select()
+        .single();
+      if (dbError) {
+        await supabase.storage.from("study-pdfs").remove([filePath]);
+        return errorResponse("Errore nel salvataggio");
+      }
+      console.log(`Percorso testuale creato: ${context.id} (${text.length} caratteri, tipo ${kind})`);
+      return successResponse({
+        success: true,
+        contextId: context.id,
+        fileName: contextName || file.name,
+        fileSize: file.size,
+        status: "completed",
+      });
+    }
 
     const { error: uploadError } = await supabase
       .storage
       .from("study-pdfs")
       .upload(filePath, file, {
-        contentType: "application/pdf",
+        contentType: contentTypes[kind],
         upsert: false,
       });
 
@@ -184,7 +340,7 @@ serve(withCors(async (req) => {
       .from("study_contexts")
       .insert({
         user_id: userId,
-        file_name: file.name,
+        file_name: contextName || file.name,
         file_path: filePath,
         content: "",
         processing_status: "pending"

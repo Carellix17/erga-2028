@@ -42,10 +42,11 @@ interface StudioViewProps {
   onUploadClick: () => void;
   selectedContextId?: string | null;
   onClearContext?: () => void;
+  onOpenCourseMaterials?: (contextId: string) => void;
   onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
-export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClearContext, onFullscreenChange }: StudioViewProps) {
+export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClearContext, onOpenCourseMaterials, onFullscreenChange }: StudioViewProps) {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   // `localStarting` copre la finestra tra il click "Genera" e la prima scrittura
   // di `generation_status='generating'` da parte del backend. Lo stato vero
@@ -561,6 +562,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const allGenerated = lessons.length > 0 && lessons.every(l => l.is_generated);
 
   const handleSelectCourse = (contextId: string) => {
+    // 📌 P17: lo spillo del "vai a quel corso" vale solo per l'arrivo —
+    // toccare un altro corso a mano lo stacca SUBITO (era il bug del comando ignorato).
+    onClearContext?.();
     setActiveContextId(contextId);
     setActiveLessonIndex(null);
     setCurrentLessonIndex(0);
@@ -574,13 +578,20 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   return (
     <>
+      {/* 📦 P17: il cartellino "materiale nuovo" — le lezioni non lo sanno ancora */}
+      {activeContext?.new_material_pending && (
+        <div className="mx-4 mt-4 mb-1 rounded-2xl border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 animate-fade-up">
+          📥 Hai aggiunto nuovo materiale a questo percorso — non è ancora nelle lezioni.
+          Rigenera dal menù ⋯ per includerlo.
+        </div>
+      )}
       <CourseSelector
         courses={allContexts}
         activeContextId={activeContextId}
         onSelectCourse={handleSelectCourse}
         isRegenerating={isGenerating || generationBlocked || !!moduleJob}
         onRegenerateCourse={async () => { await handleGenerateLessons(); }}
-        onOpenMaterials={() => onUploadClick()}
+        onOpenMaterials={(contextId) => onOpenCourseMaterials?.(contextId)}
         onDeleteCourse={async (contextId) => {
           try {
             await deleteContextMutation.mutateAsync(contextId);
