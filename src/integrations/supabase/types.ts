@@ -477,7 +477,6 @@ export type Database = {
           id: string
           is_demo: boolean
           module_titles: string[] | null
-          new_material_pending: boolean
           processing_status: string | null
           user_id: string
         }
@@ -494,7 +493,6 @@ export type Database = {
           id?: string
           is_demo?: boolean
           module_titles?: string[] | null
-          new_material_pending?: boolean
           processing_status?: string | null
           user_id: string
         }
@@ -511,7 +509,6 @@ export type Database = {
           id?: string
           is_demo?: boolean
           module_titles?: string[] | null
-          new_material_pending?: boolean
           processing_status?: string | null
           user_id?: string
         }
