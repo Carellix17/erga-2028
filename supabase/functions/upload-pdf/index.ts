@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, errorResponse, successResponse } from "../_shared/auth.ts";
+import { mammothHtmlToMarkdown } from "../_shared/docxMarkdown.ts";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const MAX_IMAGES = 20;
@@ -17,7 +18,32 @@ function fileKind(file: File): FileKind | null {
   return null;
 }
 
-async function extractDocxText(file: File): Promise<string> {
+// 🥇 P18 — il DOCX letto "da nobile": mammoth (via esm.sh) ricostruisce la
+// STRUTTURA vera (titoli, elenchi, tabelle) in HTML, e il nostro traduttore
+// puro (_shared/docxMarkdown) la rende Markdown per il caveau. Se mammoth non
+// risponde o il file lo manda in crisi, si apre il paracadute: il frullatore
+// regex di P17, che perde l'eleganza ma porta a casa il testo.
+async function extractDocxMarkdown(file: File): Promise<string> {
+  try {
+    const mod = await import("https://esm.sh/mammoth@1.12.0");
+    // deno-lint-ignore no-explicit-any
+    const mammoth: any = (mod as any).default ?? mod;
+    const result = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
+    if (result?.messages?.length) {
+      console.log("mammoth, avvisi di conversione:", JSON.stringify(result.messages).substring(0, 300));
+    }
+    const md = mammothHtmlToMarkdown(String(result?.value ?? ""));
+    if (md.trim().length < 2) throw new Error("markdown vuoto");
+    return md;
+  } catch (e) {
+    console.warn("mammoth non disponibile o DOCX ostico: apro il paracadute regex:", e);
+    return await extractDocxTextLegacy(file);
+  }
+}
+
+// 🪂 P17 — il "frullatore" originale: apre word/document.xml e spazza via i
+// tag col machete. Ora fa da paracadute di mammoth.
+async function extractDocxTextLegacy(file: File): Promise<string> {
   const JSZip = (await import("https://esm.sh/jszip@3.10.1")).default;
   const zip = await JSZip.loadAsync(await file.arrayBuffer());
   const xmlFile = zip.file("word/document.xml");
@@ -223,7 +249,7 @@ serve(withCors(async (req) => {
 
     async function extractText(f: File, k: FileKind): Promise<string> {
       if (k === "text") return (await f.text()).trim();
-      if (k === "docx") return await extractDocxText(f);
+      if (k === "docx") return await extractDocxMarkdown(f);
       return await extractPdfText(new Uint8Array(await f.arrayBuffer()));
     }
 
