@@ -1,73 +1,48 @@
-# Welcome to your Lovable project
+<div align="center">
 
-## Project info
+# 🧠 Erga
+### La piattaforma educativa che si adatta a come pensi
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**Erga** combina intelligenza artificiale, gamification e analisi cognitiva per offrire un'esperienza di apprendimento personalizzata — sul tuo telefono, sul tuo tablet, ovunque tu sia.
 
-## How can I edit this code?
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-latest-000000?logo=shadcnui&logoColor=white)](https://ui.shadcn.com/)
+[![Lovable](https://img.shields.io/badge/Built%20with-Lovable-FF6B6B)](https://lovable.dev/)
 
-There are several ways of editing your application.
+</div>
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## ✨ Cos'è Erga
 
-Changes made via Lovable will be committed automatically to this repo.
+Erga non è un semplice aggregatore di contenuti didattici. È una piattaforma che **capisce come apprendi** e costruisce attorno a te un percorso su misura, grazie a un motore di intelligenza artificiale integrato e a un sistema di valutazione cognitiva proprietario.
 
-**Use your preferred IDE**
+Disponibile su **iOS**, **Android** e **Web**.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🛠️ Stack Tecnologico
 
-Follow these steps:
+| Layer | Tecnologia |
+|---|---|
+| Framework UI | React 18 + Vite |
+| Styling | Tailwind CSS + shadcn/ui |
+| AI Layer | Integrazione modelli LLM |
+| Platform | Lovable |
+| Target | iOS · Android · Web |
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 📄 Licenza
 
-# Step 3: Install the necessary dependencies.
-npm i
+Questo progetto è proprietario. Tutti i diritti riservati © 2026 Erga. Non è consentita la copia, la distribuzione o la modifica del codice senza esplicita autorizzazione scritta degli autori.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+---
 
-**Edit a file directly in GitHub**
+<div align="center">
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+**Fatto con ❤️ per chi vuole imparare meglio.**
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+</div>
