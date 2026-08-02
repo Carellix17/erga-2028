@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
+import { originalUrlFromThumb, shortImageLabel } from "../_shared/wikimediaThumb.ts";
 
 /**
  * RICERCA WEB VERA (P5, rifatta P11b e P13).
@@ -295,39 +296,80 @@ serve(withCors(async (req) => {
     }
 
     // ── 3. Scarica le miniature Wikipedia nell'archivio (bucket study-pdfs, come le foto) ──
+    // ── 3. Scarica le miniature Wikipedia nell'archivio (bucket study-pdfs, come le foto) ──
+    // 🪜 P19 — la "scala": miniatura → (sonda HEAD di taglia) → originale entro
+    // il recinto. E ogni salto lascia una MOTIVAZIONE che viaggia fino al
+    // fumetto in app (niente più caccia ai log: il registro cloud è vuoto).
     const storedPaths: string[] = [];
+    const skipReasons: string[] = [];
     let imagesSkipped = 0;
+
+    const recordSkip = (url: string, reason: string) => {
+      imagesSkipped++;
+      if (skipReasons.length < 5) skipReasons.push(`${shortImageLabel(url)} → ${reason}`);
+      console.warn(`image skipped (${reason}): ${url}`);
+    };
+
+    type ImgGot = { bytes: Uint8Array; mime: string } | { reason: string };
+    const tryDownload = async (url: string): Promise<ImgGot> => {
+      try {
+        const resp = await fetch(url, { headers: UA });
+        if (!resp.ok) return { reason: `HTTP ${resp.status} dal server immagini` };
+        const bytes = new Uint8Array(await resp.arrayBuffer());
+        if (bytes.length < MIN_IMAGE_BYTES) return { reason: `troppo piccola (${Math.round(bytes.length / 1024)}KB)` };
+        if (bytes.length > MAX_IMAGE_BYTES) return { reason: `troppo grande (${(bytes.length / 1048576).toFixed(1)}MB)` };
+        return { bytes, mime: /\.png(\?|$)/i.test(url) ? "image/png" : "image/jpeg" };
+      } catch (e) {
+        return { reason: `rete: ${String(e).slice(0, 60)}` };
+      }
+    };
+    const headLength = async (url: string): Promise<number | null> => {
+      try {
+        const r = await fetch(url, { method: "HEAD", headers: UA });
+        await r.body?.cancel();
+        const n = Number(r.headers.get("content-length"));
+        return Number.isFinite(n) && n > 0 ? n : null;
+      } catch { return null; }
+    };
+
     if (wiki?.images?.length) {
       const ts = Date.now();
       for (let i = 0; i < wiki.images.length && storedPaths.length < MAX_IMAGES; i++) {
         const img = wiki.images[i];
-        try {
-          const resp = await fetch(img.url, { headers: UA });
-          if (!resp.ok) { console.warn(`image HTTP ${resp.status} for ${img.url}`); imagesSkipped++; continue; }
-          const bytes = new Uint8Array(await resp.arrayBuffer());
-          if (bytes.length < MIN_IMAGE_BYTES || bytes.length > MAX_IMAGE_BYTES) {
-            console.warn(`image skipped (size ${bytes.length}): ${img.url}`);
-            imagesSkipped++;
-            continue;
+
+        let got: ImgGot = await tryDownload(img.url);
+        if ("reason" in got) {
+          const firstReason = got.reason;
+          const origUrl = originalUrlFromThumb(img.url);
+          if (origUrl) {
+            const len = await headLength(origUrl);
+            if (len !== null && (len < MIN_IMAGE_BYTES || len > MAX_IMAGE_BYTES)) {
+              got = { reason: `${firstReason}; originale fuori recinto (${(len / 1048576).toFixed(1)}MB)` };
+            } else {
+              const second = await tryDownload(origUrl);
+              got = "reason" in second ? { reason: `${firstReason}; originale: ${second.reason}` } : second;
+            }
+          } else {
+            got = { reason: firstReason };
           }
-          const slug = slugify(img.description || wiki.title) || "immagine";
-          const ext = img.mime === "image/png" ? "png" : "jpg";
-          const path = `${userId}/${ts}_wiki_img_${i}__${slug}.${ext}`;
-          const { error: upErr } = await supabase.storage
-            .from("study-pdfs")
-            .upload(path, bytes, { contentType: img.mime, upsert: false });
-          if (upErr) {
-            console.warn("image storage upload failed:", upErr);
-            imagesSkipped++;
-            continue;
-          }
-          storedPaths.push(path);
-        } catch (e) {
-          console.warn("image download/store failed:", e);
-          imagesSkipped++;
         }
+        if ("reason" in got) { recordSkip(img.url, got.reason); continue; }
+
+        const slug = slugify(img.description || wiki.title) || "immagine";
+        const ext = got.mime === "image/png" ? "png" : "jpg";
+        const path = `${userId}/${ts}_wiki_img_${i}__${slug}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("study-pdfs")
+          .upload(path, got.bytes, { contentType: got.mime, upsert: false });
+        if (upErr) {
+          console.warn("image storage upload failed:", upErr);
+          recordSkip(img.url, `il caveau rifiuta il salvataggio (${(upErr.message ?? "?").slice(0, 60)})`);
+          continue;
+        }
+        storedPaths.push(path);
       }
       console.log(`Stored ${storedPaths.length}/${wiki.images.length} wikipedia images (skipped: ${imagesSkipped})`);
+      if (skipReasons.length) console.log("image skip reasons:", JSON.stringify(skipReasons));
     }
 
     // ── 4. Salva il contesto (file_path elenca le immagini, come per le foto) ──
@@ -357,6 +399,7 @@ serve(withCors(async (req) => {
       source,              // "wikipedia" | "ai" — il client lo usa per un toast onesto
       imagesCount: storedPaths.length,
       imagesSkipped,
+      imagesSkippedReasons: skipReasons,   // 🪧 P19 — il "perché" va fino al fumetto
       pageTitle: wiki?.title ?? null,   // voce davvero usata (per la trasparenza)
       topic: topicLabel,
     });

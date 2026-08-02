@@ -191,9 +191,13 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       setCandidates(null);
       onOpenChange(false);
       const fromWiki = searchData.source === "wikipedia";
+      // 🪧 P19 — se le immagini sono state saltate, la macchina racconta IL PERCHE'.
+      const wikiSkipReasons: string[] = Array.isArray(searchData.imagesSkippedReasons) ? searchData.imagesSkippedReasons : [];
       const imgNote = searchData.imagesCount
         ? `con ${searchData.imagesCount} immagini vere 📷. `
-        : (fromWiki ? "nessuna immagine utile nella voce (icone o assenti). " : "");
+        : (fromWiki
+          ? `nessuna immagine salvata${wikiSkipReasons.length ? ` (${wikiSkipReasons[0].slice(0, 90)})` : " (niente immagini utili nella voce)"}. `
+          : "");
       toast({
         title: fromWiki ? "Contenuto da Wikipedia! 🌐" : "Manuale AI pronto 🌐",
         description: fromWiki

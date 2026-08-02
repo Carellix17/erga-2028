@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { renderPdfPagesRangeAsBase64, renderPdfPageCropsAsBase64 } from "@/lib/pdfPageRenderer";
 import { edgeFetch } from "@/lib/edgeFetch";
+import { pickPdfPath } from "@/lib/sourcePaths";
 
 export interface LessonFigure {
   id: string;
@@ -76,10 +77,15 @@ async function loadFiguresFor(lessonId: string): Promise<LessonFigure[]> {
         .select("file_path")
         .eq("id", lessonRow.context_id)
         .maybeSingle();
-      if (!ctx?.file_path || !ctx.file_path.toLowerCase().endsWith(".pdf")) return [];
+      // 🛤️ P19 — il ripostiglio può avere PIÙ file separati da virgola: si
+      // pesca il PDF vero. Prima il controllo "finisce con .pdf" sulla stringa
+      // intera falliva (PDF non in coda → rinuncia silenziosa) e il download
+      // chiedeva un oggetto chiamato "a.pdf,b.txt" (PDF in coda → 404).
+      const pdfPath = pickPdfPath(ctx?.file_path);
+      if (!pdfPath) return [];
       const { data: blob, error: dlErr } = await supabase.storage
         .from("study-pdfs")
-        .download(ctx.file_path);
+        .download(pdfPath);
       if (dlErr || !blob) throw dlErr || new Error("PDF download failed");
       const pdfBytes = new Uint8Array(await blob.arrayBuffer());
 
