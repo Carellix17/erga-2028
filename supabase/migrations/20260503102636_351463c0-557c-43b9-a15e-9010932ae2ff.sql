@@ -1,0 +1,1 @@
+ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS subject_goals jsonb NOT NULL DEFAULT '{}'::jsonb;

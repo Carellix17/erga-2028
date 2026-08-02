@@ -1,0 +1,545 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { callVisionText } from "../_shared/vision.ts";
+
+/**
+ * Extract figure crops for a single lesson on-demand — STRATEGY A.
+ *
+ * Three-phase flow (orchestrated with the client):
+ *   Phase 1 — probe: client sends only { lessonId }.
+ *     - Cache hit on lesson_figures → return figures, done.
+ *     - Otherwise return { needPages: { startPage, endPage } } so the client
+ *       renders those pages via pdfjs-dist in the browser.
+ *   Phase 2 — detection: client sends { lessonId, pages: [{pageNum, b64}] }
+ *     where each b64 is a JPEG of the FULL page.
+ *     - We run Gemini Vision (permissive prompt: photos, diagrams, tables,
+ *       schemes, charts, formulas, framed graphics).
+ *     - Return { detectedBoxes: [{pageNum, bbox, description}] } so the client
+ *       can do the physical crop via Canvas.
+ *   Phase 3 — upload: client sends { lessonId, crops: [{pageNum, figureIndex,
+ *     bbox, description, b64Crop}] } where each b64Crop is the ALREADY
+ *     CROPPED JPEG (just the figure, not the page).
+ *     - We upload each crop to study-images/lesson-figures/<lessonId>/...
+ *     - Insert rows with bbox stored as the original % rect for fullscreen
+ *       highlight, but the URL points to the real cropped file.
+ */
+
+interface FigureBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  description: string;
+}
+
+interface IncomingPage {
+  pageNum: number;
+  b64: string; // raw base64 (no data: prefix)
+  width?: number;
+  height?: number;
+}
+
+interface IncomingCrop {
+  pageNum: number;
+  figureIndex: number;
+  bbox: FigureBox;
+  description?: string;
+  b64Crop: string; // raw base64 of the ALREADY-cropped JPEG
+}
+
+function base64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+function normalizeBox(box: FigureBox, page?: IncomingPage): FigureBox | null {
+  const pageWidth = page?.width || 0;
+  const pageHeight = page?.height || 0;
+
+  let x = box.x;
+  let y = box.y;
+  let width = box.width;
+  let height = box.height;
+
+  // Auto-detect coordinate scale used by the model.
+  // Possible scales: 0-1 (normalized), 0-100 (percent), 0-1000 (Gemini default),
+  // or absolute pixels matching pageWidth/pageHeight.
+  const maxVal = Math.max(
+    Math.abs(x), Math.abs(y),
+    Math.abs(x + width), Math.abs(y + height),
+  );
+
+  let scale: "unit" | "percent" | "thousand" | "pixels";
+  if (maxVal <= 1.5) scale = "unit";
+  else if (maxVal <= 100.5) scale = "percent";
+  else if (maxVal <= 1000.5) scale = "thousand";
+  else scale = "pixels";
+
+  const before = { x, y, width, height };
+
+  if (scale === "unit") {
+    x *= 100; y *= 100; width *= 100; height *= 100;
+  } else if (scale === "thousand") {
+    x = (x / 1000) * 100;
+    y = (y / 1000) * 100;
+    width = (width / 1000) * 100;
+    height = (height / 1000) * 100;
+  } else if (scale === "pixels") {
+    if (pageWidth > 0 && pageHeight > 0) {
+      x = (x / pageWidth) * 100;
+      y = (y / pageHeight) * 100;
+      width = (width / pageWidth) * 100;
+      height = (height / pageHeight) * 100;
+    } else {
+      console.warn(`[normalizeBox] pixel coords but no page dims for page ${page?.pageNum}`);
+      return null;
+    }
+  }
+
+  console.log(
+    `[normalizeBox] page=${page?.pageNum} dims=${pageWidth}x${pageHeight} scale=${scale} ` +
+    `raw=${JSON.stringify(before)} → pct=${JSON.stringify({ x: +x.toFixed(2), y: +y.toFixed(2), width: +width.toFixed(2), height: +height.toFixed(2) })}`,
+  );
+
+  // Guardrail dimensionale ORA che i valori sono in percentuali (0-100):
+  // un riquadro più stretto o più basso del 5% della pagina non è una figura,
+  // è disturbo (vecchio bug: il controllo avveniva PRIMA della conversione di
+  // scala, quindi a seconda del formato scelto dall'AI veniva scartato tutto).
+  if (width < 5 || height < 5) return null;
+
+  // Apply small padding so we never crop too tight.
+  const padX = width * 0.04;
+  const padY = height * 0.04;
+  x = x - padX;
+  y = y - padY;
+  width = width + padX * 2;
+  height = height + padY * 2;
+
+  // Clamp to page (allow full 0-100 range now that we pad)
+  if (x < 0) { width += x; x = 0; }
+  if (y < 0) { height += y; y = 0; }
+  if (x + width > 100) width = 100 - x;
+  if (y + height > 100) height = 100 - y;
+  width = Math.max(5, width);
+  height = Math.max(5, height);
+
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(width) || !Number.isFinite(height)) return null;
+  return { x, y, width, height, description: box.description || "Figura dal materiale" };
+}
+
+/**
+ * Figura "grezza" come la risponde il modello Vision.
+ * Il formato PREFERITO è quello nativo di Gemini: box_2d [ymin, xmin, ymax, xmax]
+ * in scala 0-1000 (è il formato in cui il modello è più preciso: chiedergli
+ * un altro formato, come faceva il vecchio prompt, produceva riquadri imprecisi).
+ * Accettiamo anche il vecchio formato x/y/width/height per robustezza.
+ */
+interface RawFigure {
+  box_2d?: number[];
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  description?: string;
+}
+
+function boxFromRawFigure(f: RawFigure, page: IncomingPage): FigureBox | null {
+  if (!f || typeof f !== "object") return null;
+
+  // Formato nativo Gemini: lo convertiamo in x/y/width/height e passiamo dal
+  // convertitore di scala unico (che riconosce da solo 0-1 / 0-100 / 0-1000 / pixel).
+  if (Array.isArray(f.box_2d) && f.box_2d.length === 4 && f.box_2d.every((n) => typeof n === "number" && Number.isFinite(n))) {
+    const [ymin, xmin, ymax, xmax] = f.box_2d;
+    if (xmax <= xmin || ymax <= ymin) return null;
+    return normalizeBox(
+      { x: xmin, y: ymin, width: xmax - xmin, height: ymax - ymin, description: f.description || "" },
+      page,
+    );
+  }
+
+  // Formato legacy (se il modello disubbidisce e usa x/y/width/height)
+  if (typeof f.x === "number" && typeof f.y === "number" && typeof f.width === "number" && typeof f.height === "number" && f.width > 0 && f.height > 0) {
+    return normalizeBox({ x: f.x, y: f.y, width: f.width, height: f.height, description: f.description || "" }, page);
+  }
+
+  return null;
+}
+
+async function detectFigures(
+  pageImages: IncomingPage[],
+): Promise<{ pageNum: number; figures: FigureBox[] }[]> {
+  if (pageImages.length === 0) return [];
+
+  const pageList = pageImages
+    .map((p, i) => `Immagine ${i + 1} = pagina ${p.pageNum} (${p.width || "?"}x${p.height || "?"} px)`)
+    .join(", ");
+
+  console.log(`[detectFigures] sending ${pageImages.length} page(s) to Vision: ${pageList}`);
+
+  const messages = [{
+    role: "user",
+    content: [
+      {
+        type: "text",
+            text: `Sei un sistema di rilevamento di FIGURE in pagine di libri di testo. Sii ESTREMAMENTE SELETTIVO: meglio zero figure che figure sbagliate.
+
+${pageList}
+
+ESTRARRE SOLO (whitelist tassativa):
+1. FOTOGRAFIE (di opere d'arte, persone, luoghi, oggetti reali)
+2. ILLUSTRAZIONI / DISEGNI / RITRATTI / DIPINTI completi
+3. GRAFICI (a barre, a torta, istogrammi, line chart)
+4. DIAGRAMMI e SCHEMI strutturati (flowchart, alberi, mappe concettuali)
+5. MAPPE geografiche / cartine / piante architettoniche
+6. TABELLE con righe e colonne ben definite
+
+ESCLUDERE TASSATIVAMENTE (blacklist — se in dubbio, ESCLUDI):
+❌ Titoli di capitolo o paragrafo (anche se grandi o decorati)
+❌ Numeri di pagina, header, footer, intestazioni
+❌ DIDASCALIE isolate (es. "Fig. 12 — Il David di Michelangelo") quando non c'è un'immagine sopra/sotto
+❌ Note a margine, citazioni, virgolette decorative
+❌ Spazi bianchi, margini vuoti, separatori grafici
+❌ Box di SOLO testo (anche se incorniciati o colorati)
+❌ Lettere capitali decorate (drop cap)
+❌ Frammenti di paragrafo
+❌ Loghi della casa editrice, marchi, watermark
+❌ Linee, righe orizzontali, decorazioni tipografiche
+
+TEST DI VALIDITÀ — una figura passa SOLO se:
+a) È un elemento grafico VERO E PROPRIO (immagine raster o vettoriale, non testo)
+b) Ha senso anche estratta da sola, fuori contesto
+c) Se la togli, la pagina perde un'informazione visiva (non solo decorativa)
+
+FORMATO COORDINATE (CRITICO — usa ESATTAMENTE questo formato nativo):
+- Per ogni figura restituisci il campo "box_2d": [ymin, xmin, ymax, xmax].
+- Quattro numeri da 0 a 1000: 0 = bordo alto/sinistro della pagina, 1000 = bordo basso/destro.
+- ymin = bordo SUPERIORE della figura; xmin = bordo SINISTRO; ymax = bordo INFERIORE; xmax = bordo DESTRO.
+- Il riquadro deve combaciare col bordo ESATTO della figura: NIENTE didascalie, titoli o paragrafi adiacenti, niente di più, niente di meno.
+- NON usare x/y/width/height. NON usare percentuali. NON usare pixel.
+
+REGOLE FINALI:
+- Se la pagina è SOLO testo (anche con titoli grandi), ritorna figures: []
+- MASSIMO 2 figure per pagina (solo le più significative)
+- Non inventare. Se non sei sicuro al 90%, ESCLUDI.
+- description: max 8 parole in italiano, descrivi COSA si vede ("Statua del David", "Grafico vendite 2020", "Mappa dell'Impero Romano")
+
+Rispondi SOLO con JSON valido, senza markdown:
+[{"page_index": 0, "figures": [{"box_2d": [180, 300, 640, 900], "description": "Statua del David di Michelangelo"}]}]`,
+      },
+      ...pageImages.map(p => ({
+        type: "image_url",
+        image_url: { url: `data:image/jpeg;base64,${p.b64}` },
+      })),
+    ],
+  }];
+
+  let content = "";
+  try {
+    content = await callVisionText({ messages, max_tokens: 2500, temperature: 0.0 });
+  } catch (visionErr) {
+    console.error("Vision AI error (tutti i provider):", visionErr);
+    return [];
+  }
+  console.log("Vision response (first 600):", content.substring(0, 600));
+
+  try {
+    const match = content.match(/\[[\s\S]*\]/);
+    if (!match) return [];
+    const parsed = JSON.parse(match[0]) as { page_index: number; figures: RawFigure[] }[];
+    return parsed
+      .map((p) => {
+        const img = pageImages[p.page_index];
+        if (!img) return null;
+        const figs = (p.figures || [])
+          .map((f) => boxFromRawFigure(f, img))
+          .filter((f): f is FigureBox => !!f)
+          .slice(0, 3);
+        return { pageNum: img.pageNum, figures: figs };
+      })
+      .filter((x): x is { pageNum: number; figures: FigureBox[] } => !!x);
+  } catch (err) {
+    console.error("Failed to parse vision JSON:", err);
+    return [];
+  }
+}
+
+/**
+ * Figure per contesti SENZA pagine PDF (P5):
+ *  - foto caricate dallo studente  → le foto originali diventano figure
+ *  - ricerca web Wikipedia         → le immagini scaricate dalla voce
+ *
+ * Le immagini sorgente vivono nel bucket `study-pdfs` (elencate in
+ * study_contexts.file_path, separate da virgola). Qui le copiamo nel bucket
+ * pubblico `study-images` e le registriamo in lesson_figures, così da quel
+ * momento in poi vale la normale cache. La numerazione è A PREFISSO: al primo
+ * errore ci fermiamo, così gli indici restano allineati con le descrizioni
+ * mostrate al generatore di lezioni (mai figure disallineate).
+ */
+async function figuresFromSourceImages(
+  lesson: { id: string; context_id: string | null },
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+): Promise<{ id: string; page: number; bbox: FigureBox; url: string; description: string }[]> {
+  if (!lesson.context_id) return [];
+
+  const { data: ctx } = await supabase
+    .from("study_contexts")
+    .select("file_path, file_name")
+    .eq("id", lesson.context_id)
+    .maybeSingle();
+
+  const paths = (ctx?.file_path || "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter((p) => p && !p.toLowerCase().endsWith(".pdf"))
+    .slice(0, 6);
+  if (paths.length === 0) return [];
+
+  const isPhotoBatch = (ctx?.file_name || "").startsWith("📷");
+  const fullRect = (description: string): FigureBox => ({ x: 0, y: 0, width: 100, height: 100, description });
+  const result: { id: string; page: number; bbox: FigureBox; url: string; description: string }[] = [];
+
+  for (let i = 0; i < paths.length && result.length < 3; i++) {
+    const src = paths[i];
+
+    // Descrizioni: per le immagini Wikipedia sono nello slug del filename
+    // (es. "...wiki_img_0__statua_del_david.jpg"); per le foto un'etichetta semplice.
+    const slugMatch = src.match(/img_\d+__([a-z0-9_]{3,80})\.[a-z0-9]+$/i);
+    const description = isPhotoBatch
+      ? `Foto caricata ${i + 1}`
+      : slugMatch
+        ? slugMatch[1].replace(/_/g, " ")
+        : (ctx?.file_name || "Immagine dal materiale").replace(/^🌐\s*/, "");
+
+    const { data: fileData, error: dlErr } = await supabase.storage.from("study-pdfs").download(src);
+    if (dlErr || !fileData) {
+      console.warn(`[figuresFromSourceImages] download failed for ${src}:`, dlErr);
+      break;
+    }
+    const bytes = new Uint8Array(await fileData.arrayBuffer());
+    const ext = src.split(".").pop()?.toLowerCase() || "jpg";
+    const contentType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+    const dst = `lesson-figures/${lesson.id}/source_${result.length}.${ext}`;
+
+    const { error: upErr } = await supabase.storage
+      .from("study-images")
+      .upload(dst, bytes, { contentType, upsert: true });
+    if (upErr) {
+      console.warn("[figuresFromSourceImages] copy failed:", upErr);
+      break;
+    }
+
+    const { data: inserted, error: insErr } = await supabase
+      .from("lesson_figures")
+      .insert({
+        lesson_id: lesson.id,
+        user_id: userId,
+        context_id: lesson.context_id,
+        page_number: 0,
+        figure_index: result.length,
+        bbox: fullRect(description),
+        storage_path: dst,
+        description,
+      })
+      .select("id")
+      .single();
+    if (insErr || !inserted) {
+      console.warn("[figuresFromSourceImages] insert failed:", insErr);
+      break;
+    }
+
+    result.push({
+      id: inserted.id,
+      page: 0,
+      bbox: fullRect(description),
+      url: `${supabaseUrl}/storage/v1/object/public/study-images/${dst}`,
+      description,
+    });
+  }
+
+  if (result.length > 0) {
+    console.log(`[figuresFromSourceImages] linked ${result.length} source images to lesson ${lesson.id}`);
+  }
+  return result;
+}
+
+serve(withCors(async (req) => {
+  try {
+    const body = await req.json();
+    const { lessonId, pages, crops } = body as {
+      lessonId?: string;
+      pages?: IncomingPage[];
+      crops?: IncomingCrop[];
+    };
+    if (!lessonId) return errorResponse("lessonId mancante", 400);
+
+    const auth = await validateAuth(req, body);
+    const { userId } = auth;
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // 1. Load lesson (ownership check)
+    const { data: lesson, error: lessonErr } = await supabase
+      .from("mini_lessons")
+      .select("id, user_id, context_id, page_start, page_end, title")
+      .eq("id", lessonId)
+      .maybeSingle();
+
+    if (lessonErr || !lesson) return errorResponse("Lezione non trovata", 404);
+    if (lesson.user_id !== userId) return errorResponse("Non autorizzato", 403);
+
+    // ========================================================================
+    // PHASE 3 — client sent the actually-cropped JPEGs. Upload + DB insert.
+    // ========================================================================
+    if (crops && Array.isArray(crops) && crops.length > 0) {
+      // 🚚 P6 — nastri paralleli: upload+registrazione di ogni ritaglio partono
+      // INSIEME invece che uno alla volta. Su 4-6 figure il tempo di attesa si
+      // divide quasi per 4-6. Gli indici arrivano dal client, quindi l'ordine
+      // non rischia disallineamenti; i fallimenti restano tollerati come prima.
+      type CropResult = { id: string; page: number; bbox: FigureBox; url: string; description: string };
+      const attempts = await Promise.all(crops.map(async (crop): Promise<CropResult | null> => {
+        if (!crop || typeof crop.b64Crop !== "string" || !crop.bbox) return null;
+        const storagePath = `lesson-figures/${lessonId}/p${crop.pageNum}_f${crop.figureIndex}.jpg`;
+        const bytes = base64ToBytes(crop.b64Crop);
+        const { error: upErr } = await supabase.storage
+          .from("study-images")
+          .upload(storagePath, bytes, { contentType: "image/jpeg", upsert: true });
+        if (upErr) {
+          console.error(`Upload crop failed for ${storagePath}:`, upErr);
+          return null;
+        }
+
+        const { data: inserted, error: insErr } = await supabase
+          .from("lesson_figures")
+          .insert({
+            lesson_id: lessonId,
+            user_id: userId,
+            context_id: lesson.context_id,
+            page_number: crop.pageNum,
+            figure_index: crop.figureIndex,
+            // bbox stored for reference (original % coords on the source page),
+            // but the file at storage_path is ALREADY cropped → PdfCrop will
+            // receive bbox 0/0/100/100 from the URL (see below) so it shows
+            // the file as-is. We override here with full-rect for renderer.
+            bbox: { x: 0, y: 0, width: 100, height: 100, description: crop.description || "" },
+            storage_path: storagePath,
+            description: crop.description || "Figura dal materiale",
+          })
+          .select("id")
+          .single();
+        if (insErr || !inserted) {
+          console.error("Insert lesson_figure failed:", insErr);
+          return null;
+        }
+        return {
+          id: inserted.id,
+          page: crop.pageNum,
+          bbox: { x: 0, y: 0, width: 100, height: 100, description: crop.description || "" },
+          url: `${supabaseUrl}/storage/v1/object/public/study-images/${storagePath}`,
+          description: crop.description || "Figura dal materiale",
+        };
+      }));
+      const result = attempts.filter((r): r is CropResult => r !== null);
+
+      console.log(`Uploaded ${result.length} cropped figures for lesson ${lessonId}`);
+      return successResponse({ figures: result, cached: false, phase: "uploaded" });
+    }
+
+    // 2. Check cache
+    const { data: cached } = await supabase
+      .from("lesson_figures")
+      .select("id, page_number, figure_index, bbox, storage_path, description")
+      .eq("lesson_id", lessonId)
+      .order("page_number")
+      .order("figure_index");
+
+    if (cached && cached.length > 0) {
+      console.log(`Cache hit: ${cached.length} figures for lesson ${lessonId}`);
+      const figures = cached.map(c => ({
+        id: c.id,
+        page: c.page_number,
+        bbox: c.bbox,
+        url: `${supabaseUrl}/storage/v1/object/public/study-images/${c.storage_path}`,
+        description: c.description || "Figura dal materiale",
+      }));
+      return successResponse({ figures, cached: true });
+    }
+
+    // ========================================================================
+    // PHASE 1 — probe: no pages yet, ask client to render the page range.
+    // ========================================================================
+    if (!pages || !Array.isArray(pages) || pages.length === 0) {
+      const startPage = lesson.page_start;
+      const endPage = lesson.page_end;
+      // 🌐 P11b — il bivio guarda l'ARCHIVIO, non il range (l'AI può averlo
+      // inventato su testi senza marcatori): se il contesto contiene immagini
+      // sorgente e NESSUN PDF vero (ricerca web / foto caricate), le figure
+      // arrivano dalle immagini anche se la lezione ha page_start/page_end.
+      const { data: ctxFlag } = lesson.context_id
+        ? await supabase.from("study_contexts").select("file_path").eq("id", lesson.context_id).maybeSingle()
+        : { data: null };
+      const ctxFilePath = String((ctxFlag as { file_path?: string } | null)?.file_path || "");
+      const ctxPaths = ctxFilePath.split(",").map((p) => p.trim()).filter(Boolean);
+      const ctxHasPdf = ctxPaths.some((p) => p.toLowerCase().endsWith(".pdf"));
+      const ctxHasSourceImages = ctxPaths.some((p) => !p.toLowerCase().endsWith(".pdf"));
+      if (startPage == null || endPage == null || (!ctxHasPdf && ctxHasSourceImages)) {
+        // Niente pagine PDF (foto caricate / ricerca web): se il contesto ha
+        // immagini sorgente in archivio, quelle diventano le figure della lezione.
+        const extFigs = await figuresFromSourceImages(lesson, userId, supabase, supabaseUrl);
+        if (extFigs.length > 0) return successResponse({ figures: extFigs, cached: false });
+        return successResponse({ figures: [], cached: false });
+      }
+      return successResponse({
+        figures: [],
+        cached: false,
+        needPages: { startPage, endPage: Math.min(endPage, startPage + 5) },
+      });
+    }
+
+    // ========================================================================
+    // PHASE 2 — detection: client sent full pages. Run Vision and return
+    // the bounding boxes. Client will perform the physical crop and resend.
+    // ========================================================================
+    const limited = pages.slice(0, 6).filter(p => p && typeof p.pageNum === "number" && typeof p.b64 === "string");
+    if (limited.length === 0) {
+      return successResponse({ figures: [], cached: false });
+    }
+
+    const detection = await detectFigures(limited);
+
+    if (detection.length === 0 || detection.every(d => d.figures.length === 0)) {
+      console.log("No figures detected");
+      return successResponse({ figures: [], cached: false });
+    }
+
+    // Flatten boxes for the client (no upload yet — client will crop & resend)
+    const detectedBoxes: { pageNum: number; figureIndex: number; bbox: FigureBox; description: string }[] = [];
+    for (const det of detection) {
+      det.figures.forEach((fig, idx) => {
+        detectedBoxes.push({
+          pageNum: det.pageNum,
+          figureIndex: idx,
+          bbox: fig,
+          description: fig.description,
+        });
+      });
+    }
+
+    console.log(`Detected ${detectedBoxes.length} bounding boxes for lesson ${lessonId}`);
+    return successResponse({
+      figures: [],
+      cached: false,
+      detectedBoxes,
+      phase: "detection",
+    });
+  } catch (error) {
+    console.error("extract-lesson-figures error:", error);
+    return errorResponse("Si è verificato un errore. Riprova.", 500);
+  }
+}));

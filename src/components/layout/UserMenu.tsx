@@ -1,0 +1,60 @@
+import { LogOut, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+
+export function UserMenu() {
+  const { currentEmail, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const getInitials = (email: string) => {
+    const name = email.split("@")[0];
+    const parts = name.split(/[._-]/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon-sm" className="relative">
+          <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+            <span className="label-medium text-primary">
+              {currentEmail ? getInitials(currentEmail) : <User className="w-4 h-4" />}
+            </span>
+          </div>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56 rounded-md bg-surface-container shadow-level-2">
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="title-small">Account</p>
+            <p className="body-small text-muted-foreground">
+              {currentEmail}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-outline-variant" />
+        <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer rounded-sm">
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Esci</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

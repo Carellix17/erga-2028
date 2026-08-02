@@ -1,0 +1,720 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════
+   Material You (Material Design 3 — Expressive)
+   Design System — Vibrant & Bouncy
+   ═══════════════════════════════════════════════════════ */
+
+@layer base {
+  :root {
+    /* ─── Erga — Editorial Premium Palette ─── */
+    /* Inspired by NotebookLM editorial calm + Apple hardware neutrals */
+
+    /* Primary — Refined Indigo (less neon, more ink) */
+    --primary: 222 47% 11%;
+    --primary-foreground: 0 0% 100%;
+    --primary-container: 235 40% 94%;
+    --on-primary-container: 235 55% 18%;
+
+    /* Secondary — Quiet Slate (was hot pink) */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
+    --secondary-container: 220 14% 95%;
+    --on-secondary-container: 220 14% 18%;
+
+    /* Tertiary — Neutralized to graphite (was antique gold). Kept as token
+       so existing `bg-tertiary*` usages render as a quiet neutral instead of gold. */
+    --tertiary: 220 10% 35%;
+    --tertiary-foreground: 0 0% 100%;
+    --tertiary-container: 220 8% 95%;
+    --on-tertiary-container: 220 14% 18%;
+
+    /* Neutralized gold tokens — now soft warm grays */
+    --gold-antique: 220 8% 60%;
+    --gold-antique-soft: 220 8% 94%;
+
+    /* Error */
+    --destructive: 4 60% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --error-container: 4 60% 95%;
+    --on-error-container: 4 50% 22%;
+
+    /* Success — Muted Sage */
+    --success: 158 35% 38%;
+    --success-foreground: 0 0% 100%;
+    --success-container: 158 35% 94%;
+
+    /* Warning — Muted Amber */
+    --warning: 32 60% 48%;
+    --warning-foreground: 0 0% 100%;
+    /* 🎨 P9c: contenitore warning (il "salvagente" del profilo), gemello di error/success */
+    --warning-container: 36 88% 94%;
+    --on-warning-container: 30 65% 24%;
+
+    /* Surface / Background — near-white, Apple-grade */
+    --background: 0 0% 99%;
+    --foreground: 222 18% 12%;
+
+    --surface-dim: 0 0% 97%;
+    --surface-bright: 0 0% 100%;
+    --surface-container-lowest: 0 0% 100%;
+    --surface-container-low: 0 0% 99.5%;
+    --surface-container: 0 0% 100%;
+    --surface-container-high: 0 0% 98%;
+    --surface-container-highest: 0 0% 96%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 18% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 18% 12%;
+
+    --muted: 240 6% 96%;
+    --muted-foreground: 222 10% 42%;
+
+    --accent: 235 40% 96%;
+    --accent-foreground: 235 55% 22%;
+
+    --outline: 222 12% 86%;
+    --outline-variant: 222 12% 92%;
+
+    --border: 222 12% 91%;
+    --input: 222 12% 88%;
+    --ring: 235 45% 38%;
+
+    --inverse-surface: 222 18% 14%;
+    --inverse-on-surface: 240 12% 92%;
+    --inverse-primary: 235 50% 72%;
+
+    /* ─── Shape Scale — calmer, premium radii ─── */
+    --radius-xs: 0.375rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.5rem;
+    --radius-full: 9999px;
+    --radius: 0.75rem;
+
+    /* ─── Elevation — softer, more diffused ─── */
+    --shadow-level-0: none;
+    --shadow-level-1: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(15, 23, 42, 0.03);
+    --shadow-level-2: 0 2px 8px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-level-3: 0 6px 18px rgba(15, 23, 42, 0.07), 0 1px 4px rgba(15, 23, 42, 0.04);
+    --shadow-level-4: 0 10px 28px rgba(15, 23, 42, 0.09), 0 2px 6px rgba(15, 23, 42, 0.05);
+    --shadow-level-5: 0 16px 40px rgba(15, 23, 42, 0.11), 0 4px 10px rgba(15, 23, 42, 0.06);
+
+    /* ─── M3 State Layer Opacities ─── */
+    --state-hover: 0.08;
+    --state-focus: 0.10;
+    --state-pressed: 0.10;
+    --state-dragged: 0.16;
+
+    /* Sidebar */
+    --sidebar-background: 240 6% 97%;
+    --sidebar-foreground: 222 18% 12%;
+    --sidebar-primary: 235 45% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 6% 95%;
+    --sidebar-accent-foreground: 222 18% 12%;
+    --sidebar-border: 222 12% 91%;
+    --sidebar-ring: 235 45% 38%;
+  }
+
+  /* Dark mode rimossa: app light-only, coerente con la landing. */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, 'SF Pro Text', sans-serif;
+    font-feature-settings: 'ss01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Type Scale — Inter everywhere, semibold titles (Apple-grade) */
+  h1, .display-large {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 3rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  h2, .headline-large {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 1.875rem;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    font-weight: 600;
+  }
+
+  h3, .headline-medium {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 1.375rem;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+
+  .title-large {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    font-weight: 600;
+  }
+
+  .title-medium {
+    font-family: 'Google Sans Text', system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    letter-spacing: 0.15px;
+    font-weight: 500;
+  }
+
+  .title-small {
+    font-family: 'Google Sans Text', system-ui, sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    letter-spacing: 0.1px;
+    font-weight: 500;
+  }
+
+  .body-large {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+  }
+
+  .body-medium {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    letter-spacing: 0.25px;
+    font-weight: 400;
+  }
+
+  .body-small {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.4px;
+    font-weight: 400;
+  }
+
+  .label-large {
+    font-family: 'Google Sans Text', system-ui, sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    letter-spacing: 0.1px;
+    font-weight: 500;
+  }
+
+  .label-medium {
+    font-family: 'Google Sans Text', system-ui, sans-serif;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+
+  .label-small {
+    font-family: 'Google Sans Text', system-ui, sans-serif;
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  /* ═══════ GRADIENT ACCENTS ═══════ */
+  .gradient-primary {
+    background: hsl(var(--primary));
+  }
+
+  /* ═══════ DOT GRID BACKGROUND ═══════
+     Vercel/Linear inspired subtle dot pattern. Non-invasive depth cue. */
+  .bg-dot-grid {
+    background-color: #FCFCFC;
+    background-image: radial-gradient(hsl(215 20% 60% / 0.18) 1px, transparent 1px);
+    background-size: 22px 22px;
+    background-position: 0 0;
+  }
+
+  /* ═══════ CINEMATIC ENTER ═══════
+     Soft fade + micro scale-up. No bounce. */
+  @keyframes cinematic-enter {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .animate-cinematic-in {
+    animation: cinematic-enter 480ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+  .gradient-warm {
+    background: hsl(var(--surface-container));
+  }
+  .gradient-cool {
+    /* was black→blue: now pure black per design directive */
+    background: #000;
+    color: #fff;
+  }
+  .gradient-surface {
+    background: hsl(var(--background));
+  }
+
+  /* ═══════ FOCUS BLOCK — solid neutral card (was glass + gold) ═══════ */
+  .editorial-focus {
+    background: hsl(var(--surface-container));
+    border: 1px solid hsl(var(--outline-variant));
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-level-1);
+    padding: 1.25rem 1.5rem;
+    color: hsl(var(--foreground));
+  }
+  .editorial-focus-title {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ═══════ M3 SURFACE CONTAINERS ═══════ */
+  .surface-default { background-color: hsl(var(--background)); }
+  .surface-dim { background-color: hsl(var(--surface-dim)); }
+  .surface-bright { background-color: hsl(var(--surface-bright)); }
+  .surface-container-lowest { background-color: hsl(var(--surface-container-lowest)); }
+  .surface-container-low { background-color: hsl(var(--surface-container-low)); }
+  .surface-container { background-color: hsl(var(--surface-container)); }
+  .surface-container-high { background-color: hsl(var(--surface-container-high)); }
+  .surface-container-highest { background-color: hsl(var(--surface-container-highest)); }
+
+  /* ═══════ M3 ELEVATION ═══════ */
+  .elevation-0 { box-shadow: var(--shadow-level-0); }
+  .elevation-1 { box-shadow: var(--shadow-level-1); background-color: hsl(var(--surface-container-low)); }
+  .elevation-2 { box-shadow: var(--shadow-level-2); background-color: hsl(var(--surface-container)); }
+  .elevation-3 { box-shadow: var(--shadow-level-3); background-color: hsl(var(--surface-container-high)); }
+  .elevation-4 { box-shadow: var(--shadow-level-4); background-color: hsl(var(--surface-container-high)); }
+  .elevation-5 { box-shadow: var(--shadow-level-5); background-color: hsl(var(--surface-container-highest)); }
+
+  /* ═══════ M3 CARDS — Expressive ═══════ */
+  .m3-card-elevated {
+    background-color: hsl(var(--surface-container-low));
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-level-1);
+    transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1),
+                background-color 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .m3-card-elevated:hover {
+    box-shadow: var(--shadow-level-2);
+  }
+  .m3-card-elevated:active { box-shadow: var(--shadow-level-1); }
+
+  .m3-card-filled {
+    background-color: hsl(var(--surface-container-highest));
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-level-0);
+    transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .m3-card-filled:hover { box-shadow: var(--shadow-level-1); }
+
+  .m3-card-outlined {
+    background-color: hsl(var(--background));
+    border: 1px solid hsl(var(--outline-variant));
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-level-0);
+    transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .m3-card-outlined:hover { box-shadow: var(--shadow-level-1); }
+
+  /* ═══════ M3 STATE LAYERS ═══════ */
+  .state-layer {
+    position: relative;
+    overflow: hidden;
+  }
+  .state-layer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    background-color: currentColor;
+    transition: opacity 200ms cubic-bezier(0, 0, 0, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .state-layer:hover::before { opacity: var(--state-hover); }
+  .state-layer:focus-visible::before { opacity: var(--state-focus); }
+  .state-layer:active::before { opacity: var(--state-pressed); }
+
+  /* ═══════ M3 CONTAINERS ═══════ */
+  .primary-container { background-color: hsl(var(--primary-container)); color: hsl(var(--on-primary-container)); }
+  .secondary-container { background-color: hsl(var(--secondary-container)); color: hsl(var(--on-secondary-container)); }
+  .tertiary-container { background-color: hsl(var(--tertiary-container)); color: hsl(var(--on-tertiary-container)); }
+  .error-container { background-color: hsl(var(--error-container)); color: hsl(var(--on-error-container)); }
+  .success-container { background-color: hsl(var(--success-container)); color: hsl(var(--success)); }
+  .warning-container { background-color: hsl(var(--warning-container)); color: hsl(var(--on-warning-container)); border: 1px solid hsl(var(--warning) / 0.35); }
+
+  /* ═══════ M3 CHIPS — Expressive ═══════ */
+  .m3-chip {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium;
+    border-radius: var(--radius-full);
+    transition: background-color 200ms ease, box-shadow 200ms ease;
+  }
+  .m3-chip:hover { box-shadow: var(--shadow-level-1); }
+
+  .m3-chip-assist {
+    background-color: hsl(var(--background));
+    border: 1px solid hsl(var(--outline-variant));
+    color: hsl(var(--foreground));
+  }
+  .m3-chip-filter {
+    background-color: hsl(var(--secondary-container));
+    color: hsl(var(--on-secondary-container));
+  }
+  .m3-chip-suggestion {
+    background-color: hsl(var(--surface-container-low));
+    border: 1px solid hsl(var(--outline-variant));
+    color: hsl(var(--foreground));
+  }
+
+  /* ═══════ M3 FAB — Expressive ═══════ */
+  .m3-fab {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-level-3);
+    transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .m3-fab:hover { box-shadow: var(--shadow-level-4); }
+  .m3-fab-primary { background-color: hsl(var(--primary-container)); color: hsl(var(--on-primary-container)); }
+  .m3-fab-secondary { background-color: hsl(var(--secondary-container)); color: hsl(var(--on-secondary-container)); }
+  .m3-fab-tertiary { background-color: hsl(var(--tertiary-container)); color: hsl(var(--on-tertiary-container)); }
+
+  /* ═══════ M3 NAVIGATION BAR — Expressive ═══════ */
+  .m3-nav-bar {
+    background-color: hsl(var(--surface-container));
+    box-shadow: var(--shadow-level-2);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+  .m3-nav-indicator {
+    background-color: hsl(var(--secondary-container));
+    border-radius: var(--radius-full);
+    width: 4rem;
+    height: 2rem;
+    transition: all 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* ═══════ M3 TOP APP BAR ═══════ */
+  .m3-top-app-bar {
+    background-color: hsl(var(--background));
+    transition: background-color 200ms cubic-bezier(0.2, 0, 0, 1),
+                box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .m3-top-app-bar-scrolled {
+    background-color: hsl(var(--surface-container));
+    box-shadow: var(--shadow-level-2);
+  }
+
+  /* ═══════ M3 MOTION — Ultra-smooth ═══════ */
+  .motion-emphasized { transition-timing-function: cubic-bezier(0.2, 0, 0, 1); transition-duration: 600ms; }
+  .motion-emphasized-decel { transition-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1); transition-duration: 500ms; }
+  .motion-emphasized-accel { transition-timing-function: cubic-bezier(0.3, 0, 0.8, 0.15); transition-duration: 250ms; }
+  .motion-standard { transition-timing-function: cubic-bezier(0.2, 0, 0, 1); transition-duration: 400ms; }
+  .motion-standard-decel { transition-timing-function: cubic-bezier(0, 0, 0, 1); transition-duration: 350ms; }
+  .motion-standard-accel { transition-timing-function: cubic-bezier(0.3, 0, 1, 1); transition-duration: 250ms; }
+  .smooth-transition { transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1); will-change: transform, opacity; }
+
+  /* ═══════ M3 FLUID ENTRANCE ANIMATIONS ═══════ */
+  .animate-fade-up {
+    animation: m3-fade-up 600ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    will-change: transform, opacity;
+  }
+  /* ⚠️ REGOLA DEL PALCO (P14c): MAI animare (transform, opacity o will-change)
+     i contenitori che racchiudono finestre a schermo intero (position: fixed):
+     creano uno stacking context che stacca le finestre dallo schermo e le fa
+     passare sotto gli elementi esterni. Si animano solo le "foglie" (bottoni,
+     carte), mai il tavolo. Imparato a spese del cambio-scheda animato: rimosso. */
+
+  /* ═══════ P15 — VERNICI PER PANNELLI E FOGLIE (sicure, senza will-change) ═══════
+     .tab-enter  → per i pannelli dei tab: entra in scena quando il pannello
+                   diventa attivo (data-state="active"). Contiene transform:
+                   usarla SOLO su pannelli senza finestre fixed al loro interno.
+     .leaf-rise  → stessa scivolata per singole foglie (bottoni, carte).
+     .leaf-fade  → dissolvenza di sola luce, sicura quasi ovunque. */
+  @keyframes tab-enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .tab-enter[data-state="active"] {
+    animation: tab-enter 340ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+  .leaf-rise {
+    animation: tab-enter 380ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+  }
+  @keyframes leaf-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .leaf-fade {
+    animation: leaf-fade 420ms ease-out both;
+  }
+  .animate-scale-in {
+    animation: m3-scale-in 550ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    will-change: transform, opacity;
+  }
+  .animate-slide-up {
+    animation: m3-slide-up 700ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    will-change: transform, opacity;
+  }
+  .animate-fade-in {
+    animation: m3-fade-in 500ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    will-change: opacity;
+  }
+  .animate-bounce-in {
+    /* 🎨 P9a — riaccesa: entra con un piccolo sobbalzo elegante (fine quiz!) */
+    animation: erga-bounce-in 320ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+    will-change: transform, opacity;
+  }
+  .animate-pop {
+    /* 🎨 P9a — riaccesa: "pop" di festa per i completamenti (evento creato ✓) */
+    animation: erga-pop 240ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+    will-change: transform, opacity;
+  }
+  .animate-wiggle {
+    /* 🎨 P9a — riaccesa: scrollonata gentile per gli avvisi */
+    animation: erga-wiggle 380ms ease both;
+  }
+  .animate-pulse-soft {
+    /* 🎨 P9a — riaccesa: respiro dolce per l'orbe del tutor che parla/ascolta */
+    animation: erga-pulse-soft 2.1s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+  .animate-float {
+    /* 🎨 P9a — riaccesa: galleggiamento gentile (icone in primo piano) */
+    animation: bounce-gentle 3.2s ease-in-out infinite;
+  }
+  .animate-bounce-gentle {
+    animation: bounce-gentle 2.6s ease-in-out infinite;
+  }
+  @keyframes bounce-gentle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  @keyframes erga-bounce-in {
+    0% { opacity: 0; transform: scale(0.7); }
+    70% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes erga-pop {
+    0% { opacity: 0; transform: scale(0.85); }
+    70% { opacity: 1; transform: scale(1.04); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes erga-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-2.5deg); }
+    60% { transform: rotate(2deg); }
+  }
+  @keyframes erga-pulse-soft {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.04); }
+  }
+
+  /* 🎨 P9a — pastelli semantici della routine (scuola/sonno/pasti):
+     la tinta ha un senso (distingue i blocchi), ma addolcita sul tono di casa. */
+  .routine-school { background: hsl(214 80% 94% / 0.75); border: 1px solid hsl(214 70% 87% / 0.85); color: hsl(222 25% 22%); }
+  .routine-school-dot { background: hsl(214 60% 64%); }
+  .routine-sleep { background: hsl(243 60% 95% / 0.85); border: 1px solid hsl(243 50% 89% / 0.85); color: hsl(222 25% 22%); }
+  .routine-sleep-dot { background: hsl(243 45% 70%); }
+  .routine-meal { background: hsl(38 85% 94% / 0.8); border: 1px solid hsl(38 70% 86% / 0.9); color: hsl(222 25% 22%); }
+  .routine-meal-dot { background: hsl(38 70% 60%); }
+  .animate-stagger-1 { animation-delay: 60ms; animation-fill-mode: both; }
+  .animate-stagger-2 { animation-delay: 120ms; animation-fill-mode: both; }
+  .animate-stagger-3 { animation-delay: 180ms; animation-fill-mode: both; }
+  .animate-stagger-4 { animation-delay: 240ms; animation-fill-mode: both; }
+  .animate-stagger-5 { animation-delay: 300ms; animation-fill-mode: both; }
+
+  /* ═══════ M3 PROGRESS ═══════ */
+  .m3-progress-track {
+    background-color: hsl(var(--surface-container-highest));
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+  .m3-progress-indicator {
+    background-color: hsl(var(--primary));
+    border-radius: var(--radius-full);
+    transition: width 700ms cubic-bezier(0.05, 0.7, 0.1, 1);
+    will-change: width;
+  }
+
+  /* ═══════ M3 DIVIDER ═══════ */
+  .m3-divider { border-color: hsl(var(--outline-variant)); }
+
+  /* ═══════ M3 TEXT FIELD — Expressive ═══════ */
+  .m3-text-field-filled {
+    background-color: hsl(var(--surface-container-highest));
+    border-radius: var(--radius-lg) var(--radius-lg) var(--radius-xs) var(--radius-xs);
+    border-bottom: 2px solid hsl(var(--outline-variant));
+    transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, border-color;
+  }
+  .m3-text-field-filled:focus-within {
+    border-bottom: 2px solid hsl(var(--primary));
+    transform: scale(1.01);
+  }
+  .m3-text-field-outlined {
+    border: 1.5px solid hsl(var(--outline-variant));
+    border-radius: var(--radius-lg);
+    transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, border-color, box-shadow;
+  }
+  .m3-text-field-outlined:focus-within {
+    border: 2px solid hsl(var(--primary));
+    transform: scale(1.01);
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.12);
+  }
+}
+
+/* ═══════ KEYFRAMES ═══════ */
+@keyframes m3-fade-up {
+  0% { opacity: 0; transform: translateY(24px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes m3-scale-in {
+  0% { opacity: 0; transform: scale(0.7); }
+  70% { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes m3-slide-up {
+  0% { transform: translateY(100%); opacity: 0; }
+  60% { transform: translateY(-5%); }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes m3-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes m3-bounce-in {
+  0% { opacity: 0; transform: scale(0.3); }
+  40% { transform: scale(1.12); }
+  70% { transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes m3-pop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.15); }
+  75% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes m3-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(-8deg); }
+  30% { transform: rotate(6deg); }
+  45% { transform: rotate(-4deg); }
+  60% { transform: rotate(2deg); }
+  75% { transform: rotate(-1deg); }
+}
+
+@keyframes m3-pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.04); }
+}
+
+@keyframes m3-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ═══════ SCROLLBAR STYLING ═══════ */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--outline-variant)) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background-color: hsl(var(--outline-variant)); border-radius: 20px; }
+
+/* ═══════ LESSON STEP ANIMATIONS ═══════ */
+@keyframes lesson-slide-in {
+  0% { opacity: 0; transform: translateX(60px) scale(0.95); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes lesson-slide-out {
+  0% { opacity: 1; transform: translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateX(-60px) scale(0.95); }
+}
+@keyframes feedback-correct {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.05); }
+  60% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+@keyframes feedback-wrong {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-4px); }
+  30%, 70% { transform: translateX(4px); }
+}
+@keyframes option-pop {
+  0% { transform: scale(0.92); opacity: 0; }
+  70% { transform: scale(1.03); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes xp-float {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
+}
+@keyframes progress-glow {
+  0%, 100% { box-shadow: 0 0 4px hsl(var(--primary) / 0.3); }
+  50% { box-shadow: 0 0 12px hsl(var(--primary) / 0.6); }
+}
+
+.animate-lesson-in { animation: lesson-slide-in 500ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
+.animate-lesson-out { animation: lesson-slide-out 350ms cubic-bezier(0.3, 0, 0.8, 0.15) both; will-change: transform, opacity; }
+.animate-feedback-correct { animation: feedback-correct 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both; will-change: transform; }
+.animate-feedback-wrong { animation: m3-fade-in 200ms ease both; }
+.animate-option-pop { animation: option-pop 450ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
+.animate-xp-float { animation: xp-float 900ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
+.animate-progress-glow { animation: none; }
+
+/* Safe area */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+
+/* ------------------------------------------------------------------
+   Accessibilità: rispetta "Riduci il movimento" del sistema operativo.
+   Chi attiva questa preferenza vede l'app quasi senza animazioni:
+   usiamo 0.01ms (non 0) così eventuali callback di fine-animazione
+   continuano a scattare e l'app non si inceppa.
+   ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

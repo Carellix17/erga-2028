@@ -1,0 +1,955 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
+  }
+  public: {
+    Tables: {
+      chat_conversations: {
+        Row: {
+          context_id: string | null
+          created_at: string
+          id: string
+          system_prompt: string | null
+          title: string
+          topic_title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_id?: string | null
+          created_at?: string
+          id?: string
+          system_prompt?: string | null
+          title?: string
+          topic_title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_id?: string | null
+          created_at?: string
+          id?: string
+          system_prompt?: string | null
+          title?: string
+          topic_title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversations_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "study_contexts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          image_url: string | null
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cognitive_profiles: {
+        Row: {
+          ans_score: number
+          app_score: number
+          created_at: string
+          eta: number | null
+          foc_score: number
+          id: string
+          istituto: string | null
+          log_score: number
+          mem_score: number
+          nome: string | null
+          updated_at: string
+          user_id: string
+          voc_score: number
+        }
+        Insert: {
+          ans_score?: number
+          app_score?: number
+          created_at?: string
+          eta?: number | null
+          foc_score?: number
+          id?: string
+          istituto?: string | null
+          log_score?: number
+          mem_score?: number
+          nome?: string | null
+          updated_at?: string
+          user_id: string
+          voc_score?: number
+        }
+        Update: {
+          ans_score?: number
+          app_score?: number
+          created_at?: string
+          eta?: number | null
+          foc_score?: number
+          id?: string
+          istituto?: string | null
+          log_score?: number
+          mem_score?: number
+          nome?: string | null
+          updated_at?: string
+          user_id?: string
+          voc_score?: number
+        }
+        Relationships: []
+      }
+      demo_rate_limits: {
+        Row: {
+          ip_hash: string
+          request_count: number
+          window_start: string
+        }
+        Insert: {
+          ip_hash: string
+          request_count?: number
+          window_start?: string
+        }
+        Update: {
+          ip_hash?: string
+          request_count?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
+      evaluations: {
+        Row: {
+          created_at: string
+          date: string
+          description: string | null
+          free_topic_title: string | null
+          goal: number | null
+          id: string
+          subject_id: string | null
+          title: string
+          topic_id: string | null
+          topic_type: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          description?: string | null
+          free_topic_title?: string | null
+          goal?: number | null
+          id?: string
+          subject_id?: string | null
+          title: string
+          topic_id?: string | null
+          topic_type?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string | null
+          free_topic_title?: string | null
+          goal?: number | null
+          id?: string
+          subject_id?: string | null
+          title?: string
+          topic_id?: string | null
+          topic_type?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "user_subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "study_contexts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercise_jobs: {
+        Row: {
+          context_id: string | null
+          created_at: string
+          error: string | null
+          id: string
+          lesson_ids: Json
+          result: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          lesson_ids?: Json
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          lesson_ids?: Json
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lesson_figures: {
+        Row: {
+          bbox: Json
+          context_id: string | null
+          created_at: string
+          description: string | null
+          figure_index: number
+          id: string
+          lesson_id: string
+          page_number: number
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          bbox?: Json
+          context_id?: string | null
+          created_at?: string
+          description?: string | null
+          figure_index?: number
+          id?: string
+          lesson_id: string
+          page_number: number
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          bbox?: Json
+          context_id?: string | null
+          created_at?: string
+          description?: string | null
+          figure_index?: number
+          id?: string
+          lesson_id?: string
+          page_number?: number
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_figures_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "study_contexts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_figures_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "mini_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_progress: {
+        Row: {
+          context_id: string | null
+          current_lesson_index: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_id?: string | null
+          current_lesson_index?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_id?: string | null
+          current_lesson_index?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mini_lessons: {
+        Row: {
+          concept: string
+          context_id: string | null
+          created_at: string
+          example: string | null
+          exercises: Json
+          explanation: string
+          id: string
+          is_generated: boolean
+          lesson_order: number
+          page_end: number | null
+          page_start: number | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          concept: string
+          context_id?: string | null
+          created_at?: string
+          example?: string | null
+          exercises?: Json
+          explanation: string
+          id?: string
+          is_generated?: boolean
+          lesson_order?: number
+          page_end?: number | null
+          page_start?: number | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          concept?: string
+          context_id?: string | null
+          created_at?: string
+          example?: string | null
+          exercises?: Json
+          explanation?: string
+          id?: string
+          is_generated?: boolean
+          lesson_order?: number
+          page_end?: number | null
+          page_start?: number | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mini_lessons_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "study_contexts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_results: {
+        Row: {
+          context_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          score: number
+          title: string
+          total: number
+          user_id: string
+        }
+        Insert: {
+          context_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          score: number
+          title: string
+          total: number
+          user_id: string
+        }
+        Update: {
+          context_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          score?: number
+          title?: string
+          total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_results_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "study_contexts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_contexts: {
+        Row: {
+          content: string
+          created_at: string
+          error_message: string | null
+          file_name: string
+          file_path: string | null
+          generation_error: string | null
+          generation_progress: Json
+          generation_started_at: string | null
+          generation_status: string
+          id: string
+          is_demo: boolean
+          module_titles: string[] | null
+          new_material_pending: boolean
+          processing_status: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          error_message?: string | null
+          file_name: string
+          file_path?: string | null
+          generation_error?: string | null
+          generation_progress?: Json
+          generation_started_at?: string | null
+          generation_status?: string
+          id?: string
+          is_demo?: boolean
+          module_titles?: string[] | null
+          new_material_pending?: boolean
+          processing_status?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          error_message?: string | null
+          file_name?: string
+          file_path?: string | null
+          generation_error?: string | null
+          generation_progress?: Json
+          generation_started_at?: string | null
+          generation_status?: string
+          id?: string
+          is_demo?: boolean
+          module_titles?: string[] | null
+          new_material_pending?: boolean
+          processing_status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_events: {
+        Row: {
+          created_at: string
+          event_date: string
+          event_time: string | null
+          event_type: string
+          id: string
+          subject: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          event_time?: string | null
+          event_type: string
+          id?: string
+          subject: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          event_time?: string | null
+          event_type?: string
+          id?: string
+          subject?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_sessions_logs: {
+        Row: {
+          actual_duration: number
+          completed_at: string
+          created_at: string
+          estimated_duration: number | null
+          event_id: string | null
+          id: string
+          source_type: string
+          subject_id: string | null
+          subject_name: string | null
+          task_label: string | null
+          user_id: string
+        }
+        Insert: {
+          actual_duration: number
+          completed_at?: string
+          created_at?: string
+          estimated_duration?: number | null
+          event_id?: string | null
+          id?: string
+          source_type: string
+          subject_id?: string | null
+          subject_name?: string | null
+          task_label?: string | null
+          user_id: string
+        }
+        Update: {
+          actual_duration?: number
+          completed_at?: string
+          created_at?: string
+          estimated_duration?: number | null
+          event_id?: string | null
+          id?: string
+          source_type?: string
+          subject_id?: string | null
+          subject_name?: string | null
+          task_label?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "study_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_sessions_logs_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "user_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          paddle_customer_id: string
+          paddle_subscription_id: string
+          price_id: string
+          product_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          paddle_customer_id: string
+          paddle_subscription_id: string
+          price_id: string
+          product_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          paddle_customer_id?: string
+          paddle_subscription_id?: string
+          price_id?: string
+          product_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_data: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          user_id: string
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          user_id: string
+          value?: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          user_id?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          age: number | null
+          avatar_url: string | null
+          created_at: string
+          first_name: string | null
+          generation_count: number
+          has_completed_onboarding: boolean
+          id: string
+          institute_type: string
+          is_beta_tester: boolean
+          last_name: string | null
+          last_studio_context_id: string | null
+          nickname: string | null
+          school: string | null
+          subject_goals: Json
+          subject_levels: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          generation_count?: number
+          has_completed_onboarding?: boolean
+          id?: string
+          institute_type?: string
+          is_beta_tester?: boolean
+          last_name?: string | null
+          last_studio_context_id?: string | null
+          nickname?: string | null
+          school?: string | null
+          subject_goals?: Json
+          subject_levels?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          generation_count?: number
+          has_completed_onboarding?: boolean
+          id?: string
+          institute_type?: string
+          is_beta_tester?: boolean
+          last_name?: string | null
+          last_studio_context_id?: string | null
+          nickname?: string | null
+          school?: string | null
+          subject_goals?: Json
+          subject_levels?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_routines: {
+        Row: {
+          created_at: string
+          days_of_week: number[]
+          end_time: string
+          id: string
+          kind: string
+          label: string | null
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          days_of_week?: number[]
+          end_time: string
+          id?: string
+          kind: string
+          label?: string | null
+          start_time: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          days_of_week?: number[]
+          end_time?: string
+          id?: string
+          kind?: string
+          label?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_subjects: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      check_and_increment_demo_usage: {
+        Args: { p_ip_hash: string; p_window?: string }
+        Returns: number
+      }
+      cleanup_demo_rate_limits: { Args: never; Returns: undefined }
+      has_active_subscription: {
+        Args: { check_env?: string; user_text: string }
+        Returns: boolean
+      }
+      is_demo_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_pro_user: {
+        Args: { check_env?: string; user_text: string }
+        Returns: boolean
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const
