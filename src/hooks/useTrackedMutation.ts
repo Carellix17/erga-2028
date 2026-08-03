@@ -4,6 +4,15 @@ import { useSaveStatus } from "@/contexts/SaveStatusContext";
 /**
  * Wrapper sopra useMutation che riporta automaticamente lo stato
  * (saving / saved / error) al SaveStatusContext per l'indicatore globale.
+ *
+ * 🔩 P19c — I BULLONI UNIVERSALI: le firme delle callback di react-query
+ * cambiano tra la 5.83 (il tornio di Lovable) e la 5.101 (il nostro):
+ * mutateCtx in onMutate, mutation in onSuccess/onError. Con parametri
+ * "espliciti" il bullone avvita da una parte e si spana dall'altra
+ * (e infatti il typecheck di Lovable protestava!). Qui i callback
+ * prendono SOLO gli argomenti di sempre e catturano gli extra con
+ * ...rest: una forma accettata dal typecheck in ENTRAMBE le versioni,
+ * che a runtime inoltra comunque tutto ai callback del chiamante.
  */
 export function useTrackedMutation<TData, TError, TVariables, TContext = unknown>(
   options: UseMutationOptions<TData, TError, TVariables, TContext>
@@ -12,18 +21,23 @@ export function useTrackedMutation<TData, TError, TVariables, TContext = unknown
 
   return useMutation<TData, TError, TVariables, TContext>({
     ...options,
-    onMutate: async (vars, mutateCtx) => {
+    onMutate: async (vars, ...rest) => {
       reportSaving();
-      return options.onMutate ? await options.onMutate(vars, mutateCtx) : (undefined as unknown as TContext);
+      const fn = options.onMutate as unknown as ((...args: unknown[]) => unknown) | undefined;
+      return fn
+        ? ((await fn(vars, ...rest)) as TContext)
+        : (undefined as unknown as TContext);
     },
-    onSuccess: (data, vars, ctx, mutation) => {
+    onSuccess: (data, vars, ctx, ...rest) => {
       reportSaved();
-      return options.onSuccess?.(data, vars, ctx, mutation);
+      const fn = options.onSuccess as unknown as ((...args: unknown[]) => unknown) | undefined;
+      return fn?.(data, vars, ctx, ...rest);
     },
-    onError: (err, vars, ctx, mutation) => {
+    onError: (err, vars, ctx, ...rest) => {
       const message = err instanceof Error ? err.message : undefined;
       reportError(message);
-      return options.onError?.(err, vars, ctx, mutation);
+      const fn = options.onError as unknown as ((...args: unknown[]) => unknown) | undefined;
+      return fn?.(err, vars, ctx, ...rest);
     },
   });
 }
