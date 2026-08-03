@@ -201,6 +201,16 @@ export const COGNITIVE_QUESTIONS: CognitiveQuestion[] = [
   },
 ];
 
+/**
+ * Utility interna (non pubblica): varianza dei punti grezzi (0-10) di un'area.
+ * Usata dal consistency-check di `computeAreaScores` per rilevare le risposte
+ * "troppo perfette" (tutte le opzioni col punteggio massimo → varianza zero).
+ */
+function computeVariance(values: number[]): number {
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  return values.reduce((s, v) => s + (v - mean) ** 2, 0) / values.length;
+}
+
 export function computeAreaScores(answers: Record<string, number>): Record<CognitiveArea, number> {
   const areas: CognitiveArea[] = ["LOG", "MEM", "FOC", "VOC", "ANS", "APP"];
   const out = {} as Record<CognitiveArea, number>;
@@ -211,9 +221,7 @@ export function computeAreaScores(answers: Record<string, number>): Record<Cogni
     let score = avg * 10; // 0-100
     // Consistency-check: risposta "troppo perfetta" (tutte 10, varianza zero)
     // è un segnale di desiderabilità sociale → sconto del 10%.
-    const mean = avg;
-    const variance = pts.reduce((s, p) => s + (p - mean) ** 2, 0) / pts.length;
-    if (variance === 0 && mean === 10) {
+    if (computeVariance(pts) === 0 && avg === 10) {
       score = score * 0.9;
     }
     out[area] = Math.max(0, Math.min(100, Math.round(score)));

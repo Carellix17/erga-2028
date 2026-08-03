@@ -97,19 +97,22 @@ serve(withCors(async (req) => {
       if (!Number.isInteger(correctN) || correctN < 0 || correctN > totalN) {
         return errorResponse("Parametri non validi", 400);
       }
-      const targetArea = area === "APP" || area === undefined ? "app_score" : null;
-      if (!targetArea) return errorResponse("Area non supportata", 400);
+      // Mappa area → colonna di cognitive_profiles. Oggi è supportata solo
+      // APP (default), ma la struttura è pronta a estensioni future.
+      const AREA_COLUMNS: Record<string, string> = { APP: "app_score" };
+      const column = AREA_COLUMNS[area === undefined ? "APP" : area];
+      if (!column) return errorResponse("Area non supportata", 400);
 
       const { data: current } = await supabase
         .from("cognitive_profiles")
-        .select("app_score")
+        .select(column)
         .eq("user_id", userId)
         .maybeSingle();
       if (!current) {
         return successResponse({ skipped: true, reason: "no_profile" });
       }
 
-      const oldScore = Number(current.app_score) || 0;
+      const oldScore = Number(current[column]) || 0;
       const perf = (correctN / totalN) * 100;
       const alpha = 0.1;
       const raw = oldScore * (1 - alpha) + perf * alpha;
@@ -117,7 +120,7 @@ serve(withCors(async (req) => {
 
       await supabase
         .from("cognitive_profiles")
-        .update({ app_score: newScore, updated_at: new Date().toISOString() })
+        .update({ [column]: newScore, updated_at: new Date().toISOString() })
         .eq("user_id", userId);
 
       return successResponse({ success: true, oldScore, newScore, perf: Math.round(perf) });
