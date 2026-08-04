@@ -1,5 +1,6 @@
-import { FileUp } from"lucide-react";
+import { FileUp, Settings } from"lucide-react";
 import { useState } from"react";
+import { Link } from"react-router-dom";
 import { Button } from"@/components/ui/button";
 import { UserMenu } from"./UserMenu";
 import { SubscriptionBadge } from"@/components/subscription/SubscriptionBadge";
@@ -47,6 +48,11 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
  >
  <FileUp className="w-4 h-4" />
  {hasFiles ? t("header.files") : t("header.upload")}
+ </Button>
+ <Button asChild variant="ghost" size="icon-sm" aria-label="Impostazioni">
+ <Link to="/app/impostazioni">
+ <Settings className="w-5 h-5" />
+ </Link>
  </Button>
  <UserMenu />
  </div>
