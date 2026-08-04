@@ -97,6 +97,13 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "iris-gleam": "#847dff",
+        "cyan-signal": "#00b3dd",
+        "pale-iris": "#d1c9ff",
+        "deep-iris": "#4b49aa",
+        "orchid-bloom": "#dd90d8",
+        "periwinkle": "#90b8f0",
+        silver: "#cacaca",
       },
       borderRadius: {
         xs: "var(--radius-xs)",
@@ -115,9 +122,10 @@ export default {
         "level-5": "var(--shadow-level-5)",
       },
       fontFamily: {
-        sans: ['Inter', '"Google Sans Text"', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        serif: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Playfair Display"', 'Georgia', 'serif'],
+        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+        mono: ['"Roboto Mono"', 'ui-monospace', 'monospace'],
       },
       keyframes: {
         "accordion-down": {

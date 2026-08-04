@@ -9,121 +9,112 @@
 
 @layer base {
   :root {
-    /* ─── Erga — Editorial Premium Palette ─── */
-    /* Inspired by NotebookLM editorial calm + Apple hardware neutrals */
+    /* ─── Erga × Origin — Midnight Study Gallery ─── */
 
-    /* Primary — Refined Indigo (less neon, more ink) */
-    --primary: 222 47% 11%;
-    --primary-foreground: 0 0% 100%;
-    --primary-container: 235 40% 94%;
-    --on-primary-container: 235 55% 18%;
+    /* Primary — Pure white-on-black action (Origin: unica azione primaria) */
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --primary-container: 252 100% 84%;      /* Pale Iris #d1c9ff, per stati soft */
+    --on-primary-container: 243 40% 24%;     /* Deep Iris #4b49aa */
 
-    /* Secondary — Quiet Slate (was hot pink) */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
-    --secondary-container: 220 14% 95%;
-    --on-secondary-container: 220 14% 18%;
+    /* Secondary — Steel hover surface */
+    --secondary: 0 0% 25%;                   /* Steel #3f4041 */
+    --secondary-foreground: 0 0% 100%;
+    --secondary-container: 0 0% 18%;         /* Graphite #2e2e2e */
+    --on-secondary-container: 0 0% 96%;
 
-    /* Tertiary — Neutralized to graphite (was antique gold). Kept as token
-       so existing `bg-tertiary*` usages render as a quiet neutral instead of gold. */
-    --tertiary: 220 10% 35%;
-    --tertiary-foreground: 0 0% 100%;
-    --tertiary-container: 220 8% 95%;
-    --on-tertiary-container: 220 14% 18%;
+    /* Tertiary — Cyan Signal, riservato a dati/grafici/progress, mai a testo o fill larghi */
+    --tertiary: 193 100% 43%;                /* Cyan Signal #00b3dd */
+    --tertiary-foreground: 0 0% 0%;
+    --tertiary-container: 193 100% 14%;
+    --on-tertiary-container: 193 100% 85%;
 
-    /* Neutralized gold tokens — now soft warm grays */
-    --gold-antique: 220 8% 60%;
-    --gold-antique-soft: 220 8% 94%;
+    /* Gold token neutralizzato (già presente in Erga) → resta Fog neutro */
+    --gold-antique: 0 0% 42%;                /* Fog #6a6b6b */
+    --gold-antique-soft: 0 0% 14%;
 
     /* Error */
-    --destructive: 4 60% 48%;
+    --destructive: 4 70% 55%;
     --destructive-foreground: 0 0% 100%;
-    --error-container: 4 60% 95%;
-    --on-error-container: 4 50% 22%;
+    --error-container: 4 60% 16%;
+    --on-error-container: 4 70% 85%;
 
-    /* Success — Muted Sage */
-    --success: 158 35% 38%;
+    /* Success */
+    --success: 158 40% 45%;
     --success-foreground: 0 0% 100%;
-    --success-container: 158 35% 94%;
+    --success-container: 158 35% 14%;
 
-    /* Warning — Muted Amber */
-    --warning: 32 60% 48%;
-    --warning-foreground: 0 0% 100%;
-    /* 🎨 P9c: contenitore warning (il "salvagente" del profilo), gemello di error/success */
-    --warning-container: 36 88% 94%;
-    --on-warning-container: 30 65% 24%;
+    /* Warning */
+    --warning: 32 65% 55%;
+    --warning-foreground: 0 0% 0%;
 
-    /* Surface / Background — near-white, Apple-grade */
-    --background: 0 0% 99%;
-    --foreground: 222 18% 12%;
+    /* Superfici — Origin surface stepping: Obsidian → Graphite → Steel → Silver */
+    --background: 220 4% 6%;                 /* Obsidian #0f1011 */
+    --foreground: 0 0% 100%;                 /* Pure #ffffff */
 
-    --surface-dim: 0 0% 97%;
-    --surface-bright: 0 0% 100%;
-    --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 0 0% 99.5%;
-    --surface-container: 0 0% 100%;
-    --surface-container-high: 0 0% 98%;
-    --surface-container-highest: 0 0% 96%;
+    --surface-dim: 220 8% 3%;                /* Abyss #090a0b */
+    --surface-bright: 0 0% 18%;              /* Graphite */
+    --surface-container-lowest: 220 8% 3%;   /* Abyss */
+    --surface-container-low: 220 4% 6%;      /* Obsidian */
+    --surface-container: 0 0% 18%;           /* Graphite #2e2e2e */
+    --surface-container-high: 0 0% 25%;      /* Steel #3f4041 */
+    --surface-container-highest: 0 0% 25%;   /* Steel */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 18% 12%;
+    --card: 0 0% 18%;                        /* Graphite */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 18% 12%;
+    --popover: 0 0% 18%;
+    --popover-foreground: 0 0% 100%;
 
-    --muted: 240 6% 96%;
-    --muted-foreground: 222 10% 42%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 63%;            /* Ash #9f9fa0 */
 
-    --accent: 235 40% 96%;
-    --accent-foreground: 235 55% 22%;
+    --accent: 243 40% 24%;                   /* Deep Iris, stato soft */
+    --accent-foreground: 0 0% 100%;
 
-    --outline: 222 12% 86%;
-    --outline-variant: 222 12% 92%;
+    --outline: 0 0% 100% / 0.15;
+    --outline-variant: 0 0% 100% / 0.1;
 
-    --border: 222 12% 91%;
-    --input: 222 12% 88%;
-    --ring: 235 45% 38%;
+    --border: 0 0% 100% / 0.1;
+    --input: 0 0% 0%;                        /* Void, sfondo input come da Origin AI Prompt Input */
+    --ring: 243 65% 68%;                     /* Iris Gleam #847dff */
 
-    --inverse-surface: 222 18% 14%;
-    --inverse-on-surface: 240 12% 92%;
-    --inverse-primary: 235 50% 72%;
+    --inverse-surface: 0 0% 96%;             /* Cloud */
+    --inverse-on-surface: 220 4% 6%;
+    --inverse-primary: 243 65% 68%;
 
-    /* ─── Shape Scale — calmer, premium radii ─── */
+    /* ─── Radii — mappati da Origin (cards 16, inputs/buttons 8, pill 9999, feature 30) ─── */
     --radius-xs: 0.375rem;
-    --radius-sm: 0.5rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1rem;
-    --radius-xl: 1.25rem;
-    --radius-2xl: 1.5rem;
+    --radius-sm: 0.5rem;      /* 8px — input/button */
+    --radius-md: 0.625rem;
+    --radius-lg: 1rem;        /* 16px — card standard */
+    --radius-xl: 1.875rem;    /* 30px — feature/category tile */
+    --radius-2xl: 1.875rem;
     --radius-full: 9999px;
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* ─── Elevation — softer, more diffused ─── */
+    /* ─── Elevazione — Origin è quasi piatto: un solo shadow reale, il resto è step di colore ─── */
     --shadow-level-0: none;
-    --shadow-level-1: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(15, 23, 42, 0.03);
-    --shadow-level-2: 0 2px 8px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
-    --shadow-level-3: 0 6px 18px rgba(15, 23, 42, 0.07), 0 1px 4px rgba(15, 23, 42, 0.04);
-    --shadow-level-4: 0 10px 28px rgba(15, 23, 42, 0.09), 0 2px 6px rgba(15, 23, 42, 0.05);
-    --shadow-level-5: 0 16px 40px rgba(15, 23, 42, 0.11), 0 4px 10px rgba(15, 23, 42, 0.06);
+    --shadow-level-1: none;
+    --shadow-level-2: none;
+    --shadow-level-3: none;
+    --shadow-level-4: none;
+    --shadow-level-5: 0px 18px 20px 0px rgba(0, 0, 0, 0.2); /* unico shadow del sistema, riservato a 1 elemento */
 
-    /* ─── M3 State Layer Opacities ─── */
     --state-hover: 0.08;
     --state-focus: 0.10;
     --state-pressed: 0.10;
     --state-dragged: 0.16;
 
-    /* Sidebar */
-    --sidebar-background: 240 6% 97%;
-    --sidebar-foreground: 222 18% 12%;
-    --sidebar-primary: 235 45% 32%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 6% 95%;
-    --sidebar-accent-foreground: 222 18% 12%;
-    --sidebar-border: 222 12% 91%;
-    --sidebar-ring: 235 45% 38%;
+    --sidebar-background: 220 8% 3%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-ring: 243 65% 68%;
   }
-
-  /* Dark mode rimossa: app light-only, coerente con la landing. */
 }
 
 @layer base {
@@ -133,105 +124,67 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, -apple-system, 'SF Pro Text', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Type Scale — Inter everywhere, semibold titles (Apple-grade) */
+  /* Display — voce serif whisper-weight, solo per titoli hero/sezione */
   h1, .display-large {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-size: 3rem;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    font-weight: 600;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 400;
+    font-size: 3.5rem;      /* ~ display-sm Origin, adattato a viewport app */
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    color: hsl(var(--foreground));
   }
 
   h2, .headline-large {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-size: 1.875rem;
-    line-height: 1.2;
-    letter-spacing: -0.015em;
-    font-weight: 600;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 400;
+    font-size: 2.375rem;    /* 38px — heading-lg Origin */
+    line-height: 0.9;
+    letter-spacing: 0;
+    color: hsl(var(--foreground));
   }
 
   h3, .headline-medium {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 300;
     font-size: 1.375rem;
     line-height: 1.25;
-    letter-spacing: -0.01em;
-    font-weight: 600;
+    color: hsl(var(--foreground));
   }
 
   .title-large {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 300;       /* echo della voce display, come da Origin subheading */
     font-size: 1.125rem;
-    line-height: 1.3;
-    letter-spacing: -0.005em;
-    font-weight: 600;
+    line-height: 1.5;
   }
 
-  .title-medium {
-    font-family: 'Google Sans Text', system-ui, sans-serif;
-    font-size: 1rem;
-    line-height: 1.5rem;
-    letter-spacing: 0.15px;
-    font-weight: 500;
-  }
-
-  .title-small {
-    font-family: 'Google Sans Text', system-ui, sans-serif;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    letter-spacing: 0.1px;
-    font-weight: 500;
-  }
-
-  .body-large {
-    font-size: 1rem;
-    line-height: 1.5rem;
-    letter-spacing: 0.5px;
+  .title-medium, .title-small {
+    font-family: 'Inter', system-ui, sans-serif;
     font-weight: 400;
   }
 
-  .body-medium {
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    letter-spacing: 0.25px;
+  .body-large, .body-medium, .body-small {
+    font-family: 'Inter', system-ui, sans-serif;
     font-weight: 400;
+    color: hsl(var(--muted-foreground));  /* Ash — mai testo body in full white */
   }
 
-  .body-small {
-    font-size: 0.75rem;
-    line-height: 1rem;
-    letter-spacing: 0.4px;
-    font-weight: 400;
-  }
-
-  .label-large {
-    font-family: 'Google Sans Text', system-ui, sans-serif;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    letter-spacing: 0.1px;
+  /* Etichette mono uppercase — badge, tag, dati, metriche EXP */
+  .label-large, .label-medium, .label-small {
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     font-weight: 500;
   }
-
-  .label-medium {
-    font-family: 'Google Sans Text', system-ui, sans-serif;
-    font-size: 0.75rem;
-    line-height: 1rem;
-    letter-spacing: 0.5px;
-    font-weight: 500;
-  }
-
-  .label-small {
-    font-family: 'Google Sans Text', system-ui, sans-serif;
-    font-size: 0.6875rem;
-    line-height: 1rem;
-    letter-spacing: 0.5px;
-    font-weight: 500;
-  }
+  .label-large { font-size: 0.75rem; letter-spacing: 0.1em; }
+  .label-medium { font-size: 0.6875rem; letter-spacing: 0.12em; }
+  .label-small { font-size: 0.625rem; letter-spacing: 0.14em; }
 
   html {
     scroll-behavior: smooth;
@@ -428,14 +381,23 @@
     box-shadow: var(--shadow-level-2);
   }
 
-  /* ═══════ M3 MOTION — Ultra-smooth ═══════ */
-  .motion-emphasized { transition-timing-function: cubic-bezier(0.2, 0, 0, 1); transition-duration: 600ms; }
-  .motion-emphasized-decel { transition-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1); transition-duration: 500ms; }
-  .motion-emphasized-accel { transition-timing-function: cubic-bezier(0.3, 0, 0.8, 0.15); transition-duration: 250ms; }
-  .motion-standard { transition-timing-function: cubic-bezier(0.2, 0, 0, 1); transition-duration: 400ms; }
-  .motion-standard-decel { transition-timing-function: cubic-bezier(0, 0, 0, 1); transition-duration: 350ms; }
-  .motion-standard-accel { transition-timing-function: cubic-bezier(0.3, 0, 1, 1); transition-duration: 250ms; }
-  .smooth-transition { transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1); will-change: transform, opacity; }
+  /* ═══════ M3 MOTION — sobrio come Origin (200ms ease) ═══════ */
+  .motion-emphasized { transition-timing-function: ease; transition-duration: 200ms; }
+  .motion-emphasized-decel { transition-timing-function: ease; transition-duration: 200ms; }
+  .motion-emphasized-accel { transition-timing-function: ease; transition-duration: 200ms; }
+  .motion-standard { transition-timing-function: ease; transition-duration: 200ms; }
+  .motion-standard-decel { transition-timing-function: ease; transition-duration: 200ms; }
+  .motion-standard-accel { transition-timing-function: ease; transition-duration: 200ms; }
+  .smooth-transition { transition: all 200ms ease; will-change: transform, opacity; }
+
+  /* ═══════ ORIGIN ATMOSPHERIC REVEAL — solo per hero/sezione, MAI su micro-interazioni ═══════ */
+  @keyframes atmospheric-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .animate-atmospheric-in {
+    animation: atmospheric-in 2500ms cubic-bezier(0.455, 0.03, 0.515, 0.955) both;
+  }
 
   /* ═══════ M3 FLUID ENTRANCE ANIMATIONS ═══════ */
   .animate-fade-up {
