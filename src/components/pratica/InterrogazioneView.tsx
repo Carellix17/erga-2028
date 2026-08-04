@@ -104,7 +104,7 @@ export function InterrogazioneView() {
  const [finalReport, setFinalReport] = useState<FinalReport | null>(null);
  const [isBuildingReport, setIsBuildingReport] = useState(false);
  const [isSpeaking, setIsSpeaking] = useState(false);
- const [ttsEnabled, setTtsEnabled] = useState(true);
+ const [ttsEnabled, setTtsEnabled] = useState(() => readA11ySettings().ttsEnabled);
  const [isLoadingVoice, setIsLoadingVoice] = useState(false);
  const recognitionRef = useRef<any>(null);
  const scrollRef = useRef<HTMLDivElement>(null);
