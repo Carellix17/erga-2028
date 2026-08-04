@@ -113,29 +113,32 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  <div className="flex items-center gap-2 mb-1">
  <User className="w-5 h-5 text-foreground" />
  <h2 className="title-medium font-display text-foreground">Dati personali</h2>
+ <Link to="/app/impostazioni/account" className="ml-auto label-medium text-primary hover:underline">
+ Modifica in Impostazioni →
+ </Link>
  </div>
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Nome</Label>
- <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-2xl h-11 bg-white border border-slate-200/70" />
+ <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-2xl h-11 bg-card border border-outline-variant/60" />
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Cognome</Label>
- <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-2xl h-11 bg-white border border-slate-200/70" />
+ <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-2xl h-11 bg-card border border-outline-variant/60" />
  </div>
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Nickname <span className="text-primary">(usato dal chatbot)</span></Label>
- <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-2xl h-11 bg-white border border-slate-200/70" />
+ <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-2xl h-11 bg-card border border-outline-variant/60" />
  </div>
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Età</Label>
- <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-2xl h-11 bg-white border border-slate-200/70" />
+ <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-2xl h-11 bg-card border border-outline-variant/60" />
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Scuola</Label>
- <div className="h-11 rounded-2xl bg-white border border-slate-200/70 flex items-center px-3">
+ <div className="h-11 rounded-2xl bg-card border border-outline-variant/60 flex items-center px-3">
  <select value={school} onChange={(e) => { setSchool(e.target.value); setDirty(true); }} className="bg-transparent w-full body-medium outline-none">
  {SCHOOLS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
  </select>
@@ -188,7 +191,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
      <UiButton
        onClick={() => setScheduleOpen(true)}
        variant="outline"
-       className="w-full rounded-2xl h-12 bg-white border border-slate-200/70 hover:bg-slate-50 transition-all duration-300"
+       className="w-full rounded-2xl h-12 bg-card border border-outline-variant/60 hover:bg-surface-container-high transition-all duration-300"
      >
        <CalendarClock className="w-4 h-4 mr-2 text-foreground" />
        Configura Orari e Materie
