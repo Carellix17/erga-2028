@@ -18,6 +18,12 @@ import ChangePassword from "./pages/ChangePassword";
 import Registrati from "./pages/Registrati";
 import NotFound from "./pages/NotFound";
 import OAuthConsent from "./pages/OAuthConsent";
+import SettingsIndex from "./pages/settings/SettingsIndex";
+import SettingsAccount from "./pages/settings/SettingsAccount";
+import SettingsAppearance from "./pages/settings/SettingsAppearance";
+import SettingsAccessibility from "./pages/settings/SettingsAccessibility";
+import SettingsTerms from "./pages/settings/SettingsTerms";
+import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,6 +67,7 @@ const App = () => (
       <AuthProvider>
         <SaveStatusProvider>
           <ThemeProvider>
+            <AccessibilityProvider>
             <FocusProvider>
               <Toaster />
               <Sonner />
@@ -80,12 +87,18 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/app/impostazioni" element={<ProtectedRoute><SettingsIndex /></ProtectedRoute>} />
+            <Route path="/app/impostazioni/account" element={<ProtectedRoute><SettingsAccount /></ProtectedRoute>} />
+            <Route path="/app/impostazioni/aspetto" element={<ProtectedRoute><SettingsAppearance /></ProtectedRoute>} />
+            <Route path="/app/impostazioni/accessibilita" element={<ProtectedRoute><SettingsAccessibility /></ProtectedRoute>} />
+            <Route path="/app/impostazioni/termini" element={<ProtectedRoute><SettingsTerms /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
             </ErrorBoundary>
               </BrowserRouter>
             </FocusProvider>
+            </AccessibilityProvider>
           </ThemeProvider>
         </SaveStatusProvider>
       </AuthProvider>
