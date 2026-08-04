@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from"react";
-import { useAuth } from"@/contexts/AuthContext";
-import { supabase } from"@/integrations/supabase/client";
+import { useState } from"react";
 import { Button } from"@/components/ui/button";
 import { Input } from"@/components/ui/input";
 import { Label } from"@/components/ui/label";
@@ -8,7 +6,6 @@ import { Slider } from"@/components/ui/slider";
 import { Skeleton } from"@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from"@/components/ui/radio-group";
 import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Brain, Hexagon } from "lucide-react";
-import { useToast } from"@/hooks/use-toast";
 import { cn } from"@/lib/utils";
 import { NotificationsCard } from"./NotificationsCard";
 // Theme fisso: light-only.
@@ -17,193 +14,35 @@ import { CognitiveRadar } from"./CognitiveRadar";
 import { Button as UiButton } from"@/components/ui/button";
 import { ScheduleConfigSheet } from"./ScheduleConfigSheet";
 import { CalendarClock } from"lucide-react";
+import { useProfileData, INSTITUTES as PROFILE_INSTITUTES, SCHOOLS as PROFILE_SCHOOLS, SUBJECTS as PROFILE_SUBJECTS } from"@/hooks/useProfileData";
+import { Link } from"react-router-dom";
 
-const INSTITUTES = [
- { value:"liceo_scientifico", label:"Liceo Scientifico" },
- { value:"liceo_classico", label:"Liceo Classico" },
- { value:"liceo_linguistico", label:"Liceo Linguistico" },
- { value:"istituto_tecnico", label:"Istituto Tecnico" },
-];
-
-const SCHOOLS = [
- { value:"licei_cartesio", label:"Licei Cartesio" },
-];
-
-const SUBJECTS = [
-"Matematica","Italiano","Storia","Inglese",
-"Fisica","Scienze","Filosofia","Informatica",
-];
-
-interface SubjectLevels { [subject: string]: number; }
-interface SubjectGoals { [subject: string]: number; }
+const INSTITUTES = PROFILE_INSTITUTES;
+const SCHOOLS = PROFILE_SCHOOLS;
+const SUBJECTS = PROFILE_SUBJECTS;
 
 interface ProfileViewProps {
  onOpenCognitive?: () => void;
 }
 
 export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
- const { currentUser } = useAuth();
- const { toast } = useToast();
- const fileInputRef = useRef<HTMLInputElement>(null);
- // (Aspetto/tema rimosso — app sempre in modalità chiara.)
  const { profile: cognitive } = useCognitiveProfile();
  const [scheduleOpen, setScheduleOpen] = useState(false);
 
- const [firstName, setFirstName] = useState("");
- const [lastName, setLastName] = useState("");
- const [nickname, setNickname] = useState("");
- const [age, setAge] = useState<string>("");
- const [school, setSchool] = useState("licei_cartesio");
- const [avatarUrl, setAvatarUrl] = useState("");
- const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
- const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-
- const [institute, setInstitute] = useState("liceo_scientifico");
- const [subjectLevels, setSubjectLevels] = useState<SubjectLevels>(() => {
- const defaults: SubjectLevels = {};
- SUBJECTS.forEach((s) => (defaults[s] = 6));
- return defaults;
- });
- const [subjectGoals, setSubjectGoals] = useState<SubjectGoals>(() => {
- const defaults: SubjectGoals = {};
- SUBJECTS.forEach((s) => (defaults[s] = 8));
- return defaults;
- });
- const [isLoading, setIsLoading] = useState(true);
- const [isSaving, setIsSaving] = useState(false);
- const [saved, setSaved] = useState(false);
- // true quando ci sono modifiche non salvate: mostra il "salvagente" in basso
- const [dirty, setDirty] = useState(false);
-
- const loadProfile = useCallback(async () => {
- if (!currentUser) return;
- try {
- const { data: { session } } = await supabase.auth.getSession();
- const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
- const response = await fetch(
- `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`,
- { method:"POST", headers: {"Content-Type":"application/json", Authorization: `Bearer ${authToken}` },
- body: JSON.stringify({ userId: currentUser, action:"get" }) }
- );
- const data = await response.json();
- if (data.profile) {
- const p = data.profile;
- setInstitute(p.institute_type ||"liceo_scientifico");
- setFirstName(p.first_name ||"");
- setLastName(p.last_name ||"");
- setNickname(p.nickname ||"");
- setAge(p.age ? String(p.age) :"");
- setSchool(p.school ||"licei_cartesio");
- setAvatarUrl(p.avatar_url ||"");
- if (p.avatar_url) setAvatarPreview(p.avatar_url);
- if (p.subject_levels && Object.keys(p.subject_levels).length > 0) {
- setSubjectLevels((prev) => ({ ...prev, ...p.subject_levels }));
- }
- if (p.subject_goals && Object.keys(p.subject_goals).length > 0) {
- setSubjectGoals((prev) => ({ ...prev, ...p.subject_goals }));
- }
- }
- } catch (err) { console.error("Error loading profile:", err); }
- finally { setIsLoading(false); }
- }, [currentUser]);
-
- useEffect(() => { loadProfile(); }, [loadProfile]);
-
- // Se l'utente chiude la pagina/app con modifiche non salvate, il browser avvisa
- useEffect(() => {
- if (!dirty) return;
- const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
- window.addEventListener("beforeunload", handler);
- return () => window.removeEventListener("beforeunload", handler);
- }, [dirty]);
-
- const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
- const file = e.target.files?.[0];
- if (!file || !currentUser) return;
- if (file.size > 2 * 1024 * 1024) { toast({ title:"Errore", description:"L'immagine deve essere inferiore a 2MB", variant:"destructive" }); return; }
-
- setIsUploadingAvatar(true);
- try {
- const { data: { session } } = await supabase.auth.getSession();
-
- // Sanitize the extension client-side too (server enforces this as well).
- const rawExt = (file.name.split(".").pop() ||"jpg").toLowerCase();
- const ext = ["jpg","jpeg","png","webp"].includes(rawExt) ? (rawExt ==="jpeg" ?"jpg" : rawExt) :"jpg";
- const userId = session?.user?.id || currentUser.replace(/[^a-zA-Z0-9]/g,"_");
- const filePath = `${userId}/avatar.${ext}`;
-
- if (session) {
- // Authenticated user: upload directly via Supabase storage
- const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
- if (uploadError) throw uploadError;
- } else {
- // Beta tester: upload via edge function with base64
- const authToken = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
- const reader = new FileReader();
- const base64 = await new Promise<string>((resolve, reject) => {
- reader.onload = () => resolve((reader.result as string).split(",")[1]);
- reader.onerror = reject;
- reader.readAsDataURL(file);
- });
- 
- const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`, {
- method:"POST",
- headers: {"Content-Type":"application/json", Authorization: `Bearer ${authToken}` },
- // filePath is NOT sent: the edge function derives it server-side
- // from the authenticated user's id to prevent overwriting other
- // users' avatars.
- body: JSON.stringify({ userId: currentUser, action:"uploadAvatar", fileData: base64, ext }),
- });
- if (!response.ok) throw new Error("Upload fallito");
- }
-
- const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
- const urlWithCache = `${publicUrl}?t=${Date.now()}`;
- setAvatarUrl(urlWithCache);
- setAvatarPreview(urlWithCache);
- } catch (err) {
- console.error("Error uploading avatar:", err);
- toast({ title:"Errore", description:"Impossibile caricare l'immagine", variant:"destructive" });
- } finally { setIsUploadingAvatar(false); }
- };
-
- const handleSave = async () => {
- if (!currentUser) return;
- setIsSaving(true); setSaved(false);
- try {
- const { data: { session } } = await supabase.auth.getSession();
- const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
- const response = await fetch(
- `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`,
- { method:"POST", headers: {"Content-Type":"application/json", Authorization: `Bearer ${authToken}` },
- body: JSON.stringify({
- userId: currentUser, action:"save",
- institute_type: institute, subject_levels: subjectLevels, subject_goals: subjectGoals,
- first_name: firstName, last_name: lastName, nickname,
- age: age ? parseInt(age) : null, school, avatar_url: avatarUrl,
- }) }
- );
- if (response.ok) {
- setSaved(true);
- setDirty(false);
- toast({ title:"Profilo salvato! ✨", description:"I tuoi dati verranno usati per personalizzare l'esperienza." });
- setTimeout(() => setSaved(false), 2000);
- }
- } catch (err) {
- console.error("Error saving profile:", err);
- toast({ title:"Errore", description:"Impossibile salvare il profilo.", variant:"destructive" });
- } finally { setIsSaving(false); }
- };
-
- const handleLevelChange = (subject: string, value: number[]) => {
- setSubjectLevels((prev) => ({ ...prev, [subject]: value[0] }));
- setDirty(true);
- };
-
- const handleGoalChange = (subject: string, value: number[]) => {
- setSubjectGoals((prev) => ({ ...prev, [subject]: value[0] }));
- setDirty(true);
- };
+ // Logica profilo condivisa con Impostazioni → Account
+ const {
+ fileInputRef,
+ firstName, setFirstName,
+ lastName, setLastName,
+ nickname, setNickname,
+ age, setAge,
+ school, setSchool,
+ avatarPreview, isUploadingAvatar,
+ institute, setInstitute,
+ subjectLevels, subjectGoals,
+ isLoading, isSaving, saved, dirty, setDirty,
+ handleAvatarChange, handleSave, handleLevelChange, handleGoalChange,
+ } = useProfileData();
 
  const getLevelLabel = (level: number) => {
  if (level <= 3) return"Insufficiente";
@@ -274,29 +113,32 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  <div className="flex items-center gap-2 mb-1">
  <User className="w-5 h-5 text-foreground" />
  <h2 className="title-medium font-display text-foreground">Dati personali</h2>
+ <Link to="/app/impostazioni/account" className="ml-auto label-medium text-primary hover:underline">
+ Modifica in Impostazioni →
+ </Link>
  </div>
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Nome</Label>
- <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-2xl h-11 bg-white border border-slate-200/70" />
+ <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-2xl h-11 bg-card border border-outline-variant/60" />
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Cognome</Label>
- <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-2xl h-11 bg-white border border-slate-200/70" />
+ <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-2xl h-11 bg-card border border-outline-variant/60" />
  </div>
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Nickname <span className="text-primary">(usato dal chatbot)</span></Label>
- <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-2xl h-11 bg-white border border-slate-200/70" />
+ <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-2xl h-11 bg-card border border-outline-variant/60" />
  </div>
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Età</Label>
- <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-2xl h-11 bg-white border border-slate-200/70" />
+ <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-2xl h-11 bg-card border border-outline-variant/60" />
  </div>
  <div className="space-y-1.5">
  <Label className="label-medium text-muted-foreground">Scuola</Label>
- <div className="h-11 rounded-2xl bg-white border border-slate-200/70 flex items-center px-3">
+ <div className="h-11 rounded-2xl bg-card border border-outline-variant/60 flex items-center px-3">
  <select value={school} onChange={(e) => { setSchool(e.target.value); setDirty(true); }} className="bg-transparent w-full body-medium outline-none">
  {SCHOOLS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
  </select>
@@ -349,7 +191,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
      <UiButton
        onClick={() => setScheduleOpen(true)}
        variant="outline"
-       className="w-full rounded-2xl h-12 bg-white border border-slate-200/70 hover:bg-slate-50 transition-all duration-300"
+       className="w-full rounded-2xl h-12 bg-card border border-outline-variant/60 hover:bg-surface-container-high transition-all duration-300"
      >
        <CalendarClock className="w-4 h-4 mr-2 text-foreground" />
        Configura Orari e Materie

@@ -10,6 +10,7 @@ import { supabase } from"@/integrations/supabase/client";
 import ReactMarkdown from"react-markdown";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from"@/components/ui/dialog";
 import { currentLanguage } from "@/i18n";
+import { readA11ySettings } from "@/contexts/AccessibilityContext";
 
 type Mode ="select" |"config" |"structured" |"free" |"report";
 type Phase ="idle" |"question" |"listening" |"evaluating" |"feedback";
@@ -104,7 +105,7 @@ export function InterrogazioneView() {
  const [finalReport, setFinalReport] = useState<FinalReport | null>(null);
  const [isBuildingReport, setIsBuildingReport] = useState(false);
  const [isSpeaking, setIsSpeaking] = useState(false);
- const [ttsEnabled, setTtsEnabled] = useState(true);
+ const [ttsEnabled, setTtsEnabled] = useState(() => readA11ySettings().ttsEnabled);
  const [isLoadingVoice, setIsLoadingVoice] = useState(false);
  const recognitionRef = useRef<any>(null);
  const scrollRef = useRef<HTMLDivElement>(null);
