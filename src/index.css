@@ -282,8 +282,8 @@
   /* ═══════ DOT GRID BACKGROUND ═══════
      Vercel/Linear inspired subtle dot pattern. Non-invasive depth cue. */
   .bg-dot-grid {
-    background-color: #FCFCFC;
-    background-image: radial-gradient(hsl(215 20% 60% / 0.18) 1px, transparent 1px);
+    background-color: hsl(var(--background));
+    background-image: radial-gradient(hsl(var(--foreground) / 0.14) 1px, transparent 1px);
     background-size: 22px 22px;
     background-position: 0 0;
   }
