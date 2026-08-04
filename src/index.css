@@ -9,6 +9,86 @@
 
 @layer base {
   :root {
+    /* ─── Erga — Daylight Study Gallery (tema chiaro, default) ─── */
+
+    --primary: 220 4% 6%;
+    --primary-foreground: 0 0% 100%;
+    --primary-container: 252 100% 92%;
+    --on-primary-container: 243 40% 24%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 4% 6%;
+    --secondary-container: 220 16% 93%;
+    --on-secondary-container: 220 4% 10%;
+
+    --tertiary: 193 100% 38%;
+    --tertiary-foreground: 0 0% 100%;
+    --tertiary-container: 193 100% 92%;
+    --on-tertiary-container: 193 100% 16%;
+
+    --gold-antique: 0 0% 42%;
+    --gold-antique-soft: 0 0% 92%;
+
+    --destructive: 4 70% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --error-container: 4 85% 95%;
+    --on-error-container: 4 70% 28%;
+
+    --success: 158 45% 34%;
+    --success-foreground: 0 0% 100%;
+    --success-container: 158 45% 92%;
+
+    --warning: 32 80% 44%;
+    --warning-foreground: 0 0% 100%;
+
+    --background: 0 0% 99%;
+    --foreground: 220 8% 10%;
+
+    --surface-dim: 220 14% 94%;
+    --surface-bright: 0 0% 100%;
+    --surface-container-lowest: 0 0% 100%;
+    --surface-container-low: 0 0% 99%;
+    --surface-container: 220 20% 98%;
+    --surface-container-high: 220 16% 95%;
+    --surface-container-highest: 220 16% 92%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 8% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 8% 10%;
+
+    --muted: 220 16% 95%;
+    --muted-foreground: 220 6% 42%;
+
+    --accent: 252 100% 92%;
+    --accent-foreground: 243 40% 24%;
+
+    --outline: 220 12% 20% / 0.22;
+    --outline-variant: 220 12% 20% / 0.12;
+
+    --border: 220 12% 20% / 0.12;
+    --input: 0 0% 100%;
+    --ring: 243 65% 68%;
+
+    --inverse-surface: 220 4% 6%;
+    --inverse-on-surface: 0 0% 100%;
+    --inverse-primary: 243 65% 68%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 8% 10%;
+    --sidebar-primary: 220 4% 6%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 16% 95%;
+    --sidebar-accent-foreground: 220 8% 10%;
+    --sidebar-border: 220 12% 20% / 0.12;
+    --sidebar-ring: 243 65% 68%;
+
+    /* Scala del testo (Accessibilità) */
+    --text-scale: 1;
+  }
+
+  .dark {
     /* ─── Erga × Origin — Midnight Study Gallery ─── */
 
     /* Primary — Pure white-on-black action (Origin: unica azione primaria) */
@@ -83,6 +163,17 @@
     --inverse-on-surface: 220 4% 6%;
     --inverse-primary: 243 65% 68%;
 
+    --sidebar-background: 220 8% 3%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-ring: 243 65% 68%;
+  }
+
+  :root {
     /* ─── Radii — mappati da Origin (cards 16, inputs/buttons 8, pill 9999, feature 30) ─── */
     --radius-xs: 0.375rem;
     --radius-sm: 0.5rem;      /* 8px — input/button */
@@ -105,15 +196,6 @@
     --state-focus: 0.10;
     --state-pressed: 0.10;
     --state-dragged: 0.16;
-
-    --sidebar-background: 220 8% 3%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 18%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 243 65% 68%;
   }
 }
 
