@@ -762,3 +762,38 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   Accessibilità — preferenze utente (Impostazioni → Accessibilità)
+   ═══════════════════════════════════════════════════════ */
+
+html { font-size: calc(16px * var(--text-scale, 1)); }
+html.text-scale-normal { --text-scale: 1; }
+html.text-scale-lg     { --text-scale: 1.125; }
+html.text-scale-xl     { --text-scale: 1.28; }
+
+html.high-contrast {
+  --outline: 220 12% 10% / 0.55;
+  --outline-variant: 220 12% 10% / 0.38;
+  --border: 220 12% 10% / 0.38;
+  --muted-foreground: 220 10% 26%;
+}
+html.high-contrast.dark {
+  --outline: 0 0% 100% / 0.6;
+  --outline-variant: 0 0% 100% / 0.42;
+  --border: 0 0% 100% / 0.42;
+  --muted-foreground: 0 0% 88%;
+}
+html.high-contrast *:focus-visible {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
