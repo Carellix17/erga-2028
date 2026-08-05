@@ -938,3 +938,25 @@ header {
 /* Motion: slow, confident, never playful */
 .animate-bounce-in, .animate-pop { animation: leaf-fade 520ms ease-out both; }
 .animate-wiggle { animation: none; }
+/* ─── Legacy light-utility remap → dark luxury ───
+   Older screens still carry hardcoded light utilities; map them onto the
+   dark palette so nothing reads as a white slab on near-black. */
+.bg-white, .bg-slate-50, .bg-slate-100, .bg-stone-50, .bg-neutral-50, .bg-gray-50, .bg-gray-100 {
+  background-color: #1a1a1a !important;
+}
+.bg-black, .bg-slate-900, .bg-neutral-900, .bg-stone-900, .bg-gray-900 {
+  background-color: #121212 !important;
+}
+.text-slate-900, .text-slate-800, .text-neutral-900, .text-gray-900, .text-black {
+  color: #f5f5f5 !important;
+}
+.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400,
+.text-gray-600, .text-gray-500, .text-neutral-500 {
+  color: #737373 !important;
+}
+.border-slate-200\/70, .border-slate-200, .border-slate-100, .border-gray-200, .border-neutral-200 {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+.hover\:bg-slate-50:hover, .hover\:bg-gray-50:hover, .hover\:bg-stone-900:hover {
+  background-color: #1f1f1f !important;
+}
