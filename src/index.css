@@ -151,6 +151,14 @@
     --card: 0 0% 18%;                        /* Graphite */
     --card-foreground: 0 0% 100%;
 
+    /* ═══ LIQUID GLASS (dark base) ═══ */
+    --glass-surface-1: rgba(255, 255, 255, 0.05);
+    --glass-surface-2: rgba(255, 255, 255, 0.10);
+    --glass-surface-3: rgba(255, 255, 255, 0.15);
+    --glass-surface-hover: rgba(255, 255, 255, 0.18);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --glass-inset: rgba(255, 255, 255, 0.10);
+
     --popover: 0 0% 18%;
     --popover-foreground: 0 0% 100%;
 
