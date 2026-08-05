@@ -67,7 +67,7 @@ export default function SettingsAccount() {
             </div>
 
             {/* Dati personali */}
-            <section className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-4">
+            <section className="rounded-2xl glass-1 p-5 space-y-4">
               <div className="flex items-center gap-2 mb-1">
                 <User className="w-5 h-5 text-foreground" />
                 <h2 className="title-medium font-display text-foreground">Dati personali</h2>
@@ -108,7 +108,7 @@ export default function SettingsAccount() {
             </section>
 
             {/* Tipo di istituto */}
-            <section className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-4">
+            <section className="rounded-2xl glass-1 p-5 space-y-4">
               <div className="flex items-center gap-2 mb-1">
                 <GraduationCap className="w-5 h-5 text-foreground" />
                 <h2 className="title-medium font-display text-foreground">Tipo di istituto</h2>
