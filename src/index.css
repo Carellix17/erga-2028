@@ -55,6 +55,14 @@
     --card: 0 0% 100%;
     --card-foreground: 220 8% 10%;
 
+    /* ═══ LIQUID GLASS (light base) ═══ */
+    --glass-surface-1: rgba(255, 255, 255, 0.55);
+    --glass-surface-2: rgba(255, 255, 255, 0.68);
+    --glass-surface-3: rgba(255, 255, 255, 0.78);
+    --glass-surface-hover: rgba(255, 255, 255, 0.86);
+    --glass-border: rgba(255, 255, 255, 0.65);
+    --glass-inset: rgba(255, 255, 255, 0.9);
+
     --popover: 0 0% 100%;
     --popover-foreground: 220 8% 10%;
 
@@ -142,6 +150,14 @@
 
     --card: 0 0% 18%;                        /* Graphite */
     --card-foreground: 0 0% 100%;
+
+    /* ═══ LIQUID GLASS (dark base) ═══ */
+    --glass-surface-1: rgba(255, 255, 255, 0.05);
+    --glass-surface-2: rgba(255, 255, 255, 0.10);
+    --glass-surface-3: rgba(255, 255, 255, 0.15);
+    --glass-surface-hover: rgba(255, 255, 255, 0.18);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --glass-inset: rgba(255, 255, 255, 0.10);
 
     --popover: 0 0% 18%;
     --popover-foreground: 0 0% 100%;
@@ -274,6 +290,61 @@
 }
 
 @layer utilities {
+  /* ═══════════════════════════════════════════════════
+     LIQUID GLASS SYSTEM — two-layer model
+     Layer 1 = flat base (page background)
+     Layer 2 = frosted glass surfaces hovering above
+     ═══════════════════════════════════════════════════ */
+  .glass-1,
+  .glass-2,
+  .glass-3 {
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      inset 0 1px 0 var(--glass-inset),
+      0 8px 32px -12px hsl(var(--foreground) / 0.18);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    transition: background-color 240ms ease-out, border-color 240ms ease-out;
+  }
+  .glass-1 { background-color: var(--glass-surface-1); }
+  .glass-2 {
+    background-color: var(--glass-surface-2);
+    -webkit-backdrop-filter: blur(32px) saturate(160%);
+    backdrop-filter: blur(32px) saturate(160%);
+  }
+  .glass-3 {
+    background-color: var(--glass-surface-3);
+    -webkit-backdrop-filter: blur(40px) saturate(170%);
+    backdrop-filter: blur(40px) saturate(170%);
+  }
+  .glass-hover:hover { background-color: var(--glass-surface-hover); }
+  .glass-interactive {
+    will-change: transform;
+    transition: background-color 220ms ease-out, transform 220ms ease-out;
+  }
+
+  /* Text on glass must stay heavy & high contrast */
+  .on-glass { font-weight: 500; color: hsl(var(--foreground)); }
+
+  /* Ambient base layer: soft drifting orbs so glass has something to refract */
+  .bg-ambient { position: relative; isolation: isolate; }
+  .bg-ambient::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(38rem 38rem at 12% 8%, hsl(var(--primary) / 0.16), transparent 60%),
+      radial-gradient(32rem 32rem at 88% 14%, hsl(var(--tertiary) / 0.14), transparent 62%),
+      radial-gradient(34rem 34rem at 70% 92%, hsl(var(--secondary) / 0.14), transparent 60%);
+    animation: ambient-drift 24s ease-in-out infinite alternate;
+  }
+  @keyframes ambient-drift {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(0, -2%, 0) scale(1.06); }
+  }
+
   /* ═══════ GRADIENT ACCENTS ═══════ */
   .gradient-primary {
     background: hsl(var(--primary));
