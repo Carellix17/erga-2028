@@ -11,78 +11,82 @@
   :root {
     /* ─── Erga — Daylight Study Gallery (tema chiaro, default) ─── */
 
-    --primary: 220 4% 6%;
-    --primary-foreground: 0 0% 100%;
-    --primary-container: 252 100% 92%;
-    --on-primary-container: 243 40% 24%;
+    /* ─── NEO-BRUTALISM — raw blocks, black borders, hard shadows ─── */
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 4% 6%;
-    --secondary-container: 220 16% 93%;
-    --on-secondary-container: 220 4% 10%;
+    --primary: 54 100% 50%;                 /* #FFE500 */
+    --primary-foreground: 0 0% 0%;
+    --primary-container: 54 100% 50%;
+    --on-primary-container: 0 0% 0%;
 
-    --tertiary: 193 100% 38%;
+    --secondary: 340 100% 71%;              /* #FF6B9D */
+    --secondary-foreground: 0 0% 0%;
+    --secondary-container: 340 100% 71%;
+    --on-secondary-container: 0 0% 0%;
+
+    --tertiary: 216 100% 50%;               /* #0066FF */
     --tertiary-foreground: 0 0% 100%;
-    --tertiary-container: 193 100% 92%;
-    --on-tertiary-container: 193 100% 16%;
+    --tertiary-container: 216 100% 50%;
+    --on-tertiary-container: 0 0% 100%;
 
-    --gold-antique: 0 0% 42%;
-    --gold-antique-soft: 0 0% 92%;
+    --gold-antique: 0 0% 0%;
+    --gold-antique-soft: 54 100% 50%;
 
-    --destructive: 4 70% 48%;
+    --destructive: 0 100% 55%;
     --destructive-foreground: 0 0% 100%;
-    --error-container: 4 85% 95%;
-    --on-error-container: 4 70% 28%;
+    --error-container: 0 100% 55%;
+    --on-error-container: 0 0% 100%;
 
-    --success: 158 45% 34%;
-    --success-foreground: 0 0% 100%;
-    --success-container: 158 45% 92%;
+    --success: 151 100% 41%;                /* #00D26A */
+    --success-foreground: 0 0% 0%;
+    --success-container: 151 100% 41%;
 
-    --warning: 32 80% 44%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 54 100% 50%;
+    --warning-foreground: 0 0% 0%;
+    --warning-container: 54 100% 50%;
+    --on-warning-container: 0 0% 0%;
 
-    --background: 0 0% 99%;
-    --foreground: 220 8% 10%;
+    --background: 56 100% 97%;              /* #FFFEF0 */
+    --foreground: 0 0% 0%;
 
-    --surface-dim: 220 14% 94%;
+    --surface-dim: 56 100% 94%;
     --surface-bright: 0 0% 100%;
     --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 0 0% 99%;
-    --surface-container: 220 20% 98%;
-    --surface-container-high: 220 16% 95%;
-    --surface-container-highest: 220 16% 92%;
+    --surface-container-low: 0 0% 100%;
+    --surface-container: 56 100% 97%;
+    --surface-container-high: 56 100% 94%;
+    --surface-container-highest: 54 100% 50%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 8% 10%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 8% 10%;
+    --popover-foreground: 0 0% 0%;
 
-    --muted: 220 16% 95%;
-    --muted-foreground: 220 6% 42%;
+    --muted: 56 100% 94%;
+    --muted-foreground: 0 0% 15%;
 
-    --accent: 252 100% 92%;
-    --accent-foreground: 243 40% 24%;
+    --accent: 340 100% 71%;
+    --accent-foreground: 0 0% 0%;
 
-    --outline: 220 12% 20% / 0.22;
-    --outline-variant: 220 12% 20% / 0.12;
+    --outline: 0 0% 0%;
+    --outline-variant: 0 0% 0%;
 
-    --border: 220 12% 20% / 0.12;
+    --border: 0 0% 0%;
     --input: 0 0% 100%;
-    --ring: 243 65% 68%;
+    --ring: 216 100% 50%;
 
-    --inverse-surface: 220 4% 6%;
+    --inverse-surface: 0 0% 0%;
     --inverse-on-surface: 0 0% 100%;
-    --inverse-primary: 243 65% 68%;
+    --inverse-primary: 54 100% 50%;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 8% 10%;
-    --sidebar-primary: 220 4% 6%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 16% 95%;
-    --sidebar-accent-foreground: 220 8% 10%;
-    --sidebar-border: 220 12% 20% / 0.12;
-    --sidebar-ring: 243 65% 68%;
+    --sidebar-background: 56 100% 97%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 54 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 340 100% 71%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 0%;
+    --sidebar-ring: 216 100% 50%;
 
     /* Scala del testo (Accessibilità) */
     --text-scale: 1;
@@ -174,23 +178,23 @@
   }
 
   :root {
-    /* ─── Radii — mappati da Origin (cards 16, inputs/buttons 8, pill 9999, feature 30) ─── */
-    --radius-xs: 0.375rem;
-    --radius-sm: 0.5rem;      /* 8px — input/button */
-    --radius-md: 0.625rem;
-    --radius-lg: 1rem;        /* 16px — card standard */
-    --radius-xl: 1.875rem;    /* 30px — feature/category tile */
-    --radius-2xl: 1.875rem;
-    --radius-full: 9999px;
-    --radius: 0.5rem;
+    /* ─── Radii — brutalism: sharp corners only ─── */
+    --radius-xs: 0px;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
+    --radius-2xl: 0px;
+    --radius-full: 0px;
+    --radius: 0px;
 
-    /* ─── Elevazione — Origin è quasi piatto: un solo shadow reale, il resto è step di colore ─── */
+    /* ─── Hard offset shadows — interactive elements only ─── */
     --shadow-level-0: none;
     --shadow-level-1: none;
-    --shadow-level-2: none;
-    --shadow-level-3: none;
-    --shadow-level-4: none;
-    --shadow-level-5: 0px 18px 20px 0px rgba(0, 0, 0, 0.2); /* unico shadow del sistema, riservato a 1 elemento */
+    --shadow-level-2: 4px 4px 0 #000000;
+    --shadow-level-3: 4px 4px 0 #000000;
+    --shadow-level-4: 6px 6px 0 #000000;
+    --shadow-level-5: 8px 8px 0 #000000;
 
     --state-hover: 0.08;
     --state-focus: 0.10;
@@ -797,3 +801,131 @@ html.reduce-motion *::after {
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   NEO-BRUTALISM — global override layer
+   Thick black borders, zero radius, hard offset shadows.
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  --brutal-border: 3px solid #000000;
+  --brutal-shadow: 4px 4px 0 #000000;
+  --brutal-shadow-hover: 6px 6px 0 #000000;
+  --brutal-shadow-active: 2px 2px 0 #000000;
+}
+
+*, *::before, *::after {
+  border-radius: 0 !important;
+  border-color: #000000;
+}
+
+body {
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif !important;
+  background-color: #FFFEF0;
+  color: #000000;
+}
+
+h1, h2, h3, h4,
+.display-large, .headline-large, .headline-medium,
+.title-large, .title-medium, .title-small {
+  font-family: 'Archivo Black', 'Space Grotesk', system-ui, sans-serif !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.02em;
+  color: #000000;
+}
+h1, .display-large { text-transform: uppercase; }
+
+.body-large, .body-medium, .body-small,
+.label-large, .label-medium, .label-small {
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif !important;
+  font-weight: 600;
+}
+.body-large, .body-medium, .body-small { color: hsl(var(--muted-foreground)); }
+
+/* ─── Static containers: border, no shadow ─── */
+.bg-card, .bg-white, .bg-popover, .bg-background,
+.surface-container, .surface-container-low, .surface-container-high,
+.surface-container-highest, .surface-container-lowest,
+.m3-card-elevated, .m3-card-filled, .m3-card-outlined,
+.editorial-focus,
+.primary-container, .secondary-container, .tertiary-container,
+.error-container, .success-container, .warning-container {
+  border: var(--brutal-border) !important;
+  box-shadow: none;
+}
+.m3-card-elevated:hover, .m3-card-filled:hover, .m3-card-outlined:hover { box-shadow: none; }
+
+/* ─── Interactive elements: border + hard shadow ─── */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+a[class*="bg-"],
+.m3-chip {
+  border: var(--brutal-border) !important;
+  box-shadow: var(--brutal-shadow);
+  transition: box-shadow 150ms ease, transform 150ms ease, background-color 150ms ease !important;
+  font-weight: 700;
+}
+button:not(:disabled):hover,
+[role="button"]:not(:disabled):hover,
+a[class*="bg-"]:hover,
+.m3-chip:hover {
+  box-shadow: var(--brutal-shadow-hover) !important;
+  transform: translate(-2px, -2px);
+}
+button:not(:disabled):active,
+[role="button"]:not(:disabled):active,
+a[class*="bg-"]:active,
+.m3-chip:active {
+  box-shadow: var(--brutal-shadow-active) !important;
+  transform: translate(2px, 2px);
+}
+button:disabled, [role="button"][disabled] {
+  border: var(--brutal-border) !important;
+  box-shadow: none;
+  opacity: 0.5;
+}
+
+/* Bare icon/ghost triggers inside dense bars stay flat-but-framed */
+button[data-state], button[aria-haspopup="menu"] { background-clip: padding-box; }
+
+/* ─── Inputs ─── */
+input, textarea, select,
+[role="textbox"], [contenteditable="true"] {
+  border: var(--brutal-border) !important;
+  background-color: #FFFFFF;
+  color: #000000;
+  box-shadow: none !important;
+  transform: none !important;
+  font-weight: 600;
+}
+input::placeholder, textarea::placeholder { color: #000000; opacity: 0.55; font-weight: 600; }
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: none;
+  box-shadow: var(--brutal-shadow) !important;
+}
+
+/* ─── Dividers ─── */
+hr, [role="separator"] { border-color: #000000 !important; background-color: #000000 !important; height: 3px; border: 0 !important; }
+header, nav, footer { border-color: #000000 !important; }
+header { border-bottom: var(--brutal-border) !important; }
+
+/* ─── Dialogs / sheets / popovers ─── */
+[role="dialog"], [role="menu"], [role="listbox"], [data-radix-popper-content-wrapper] > * {
+  border: var(--brutal-border) !important;
+  box-shadow: 8px 8px 0 #000000 !important;
+}
+
+/* ─── Structural background ─── */
+.bg-dot-grid {
+  background-color: #FFFEF0;
+  background-image: linear-gradient(#00000014 3px, transparent 3px),
+                    linear-gradient(90deg, #00000014 3px, transparent 3px);
+  background-size: 40px 40px;
+}
+.gradient-primary, .gradient-warm, .gradient-surface { background: #FFFEF0; }
+.gradient-cool { background: #FFE500; color: #000; }
+
+/* Kill soft blur decorations */
+[class*="blur-2xl"], [class*="blur-3xl"] { filter: none !important; opacity: 0.25; }
