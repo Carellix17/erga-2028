@@ -25,7 +25,7 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
 
  return (
  <>
- <header className="sticky top-0 z-40 bg-background border-b border-outline-variant/60 transition-all duration-300 ease-in-out">
+ <header className="sticky top-0 z-40 glass-2 border-x-0 border-t-0 rounded-none transition-all duration-300 ease-in-out">
  <div className="flex items-center justify-between h-16 px-4 sm:px-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto">
  <div className="flex items-center gap-3 animate-fade-up">
  <SubscriptionBadge tier={tier} onClick={() => setShowSubscription(true)} />
