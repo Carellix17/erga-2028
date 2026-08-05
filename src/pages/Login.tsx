@@ -145,7 +145,7 @@ export default function Login() {
               </div>
             </div>
 
-            <LiquidButton type="submit" className="w-full h-12 bg-black text-white hover:bg-stone-900 border-0 rounded-xl transition-all duration-300 font-semibold" disabled={isSubmitting}>
+            <LiquidButton type="submit" className="w-full h-12 bg-primary text-primary-foreground hover:opacity-90 border-0 rounded-xl transition-all duration-300 font-semibold" disabled={isSubmitting}>
               {t("login.submit")}
             </LiquidButton>
 

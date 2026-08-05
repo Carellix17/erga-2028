@@ -181,7 +181,7 @@ export default function Registrati() {
               )}
             </div>
 
-            <Button type="submit" className="w-full h-12 bg-black text-white hover:bg-stone-900 border-0 rounded-xl transition-all duration-300 font-semibold" disabled={!canSubmit || isSubmitting}>
+            <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground hover:opacity-90 border-0 rounded-xl transition-all duration-300 font-semibold" disabled={!canSubmit || isSubmitting}>
               {isSubmitting ? t("signup.submitting") : t("signup.submit")}
             </Button>
 
