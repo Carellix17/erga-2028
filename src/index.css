@@ -9,84 +9,82 @@
 
 @layer base {
   :root {
-    /* ─── Erga — Daylight Study Gallery (tema chiaro, default) ─── */
+    /* ─── Erga — DARK LUXURY: near-black surfaces, muted gold, platinum ─── */
 
-    /* ─── NEO-BRUTALISM — raw blocks, black borders, hard shadows ─── */
+    --primary: 41 47% 58%;                  /* Muted gold #C9A961 */
+    --primary-foreground: 0 0% 6%;
+    --primary-container: 41 30% 16%;
+    --on-primary-container: 41 47% 72%;
 
-    --primary: 54 100% 50%;                 /* #FFE500 */
-    --primary-foreground: 0 0% 0%;
-    --primary-container: 54 100% 50%;
-    --on-primary-container: 0 0% 0%;
+    --secondary: 220 9% 65%;                /* Platinum #9CA3AF */
+    --secondary-foreground: 0 0% 8%;
+    --secondary-container: 0 0% 14%;
+    --on-secondary-container: 0 0% 90%;
 
-    --secondary: 340 100% 71%;              /* #FF6B9D */
-    --secondary-foreground: 0 0% 0%;
-    --secondary-container: 340 100% 71%;
-    --on-secondary-container: 0 0% 0%;
+    --tertiary: 26 30% 61%;                 /* Warm bronze #B8977E */
+    --tertiary-foreground: 0 0% 8%;
+    --tertiary-container: 26 20% 15%;
+    --on-tertiary-container: 26 30% 74%;
 
-    --tertiary: 216 100% 50%;               /* #0066FF */
-    --tertiary-foreground: 0 0% 100%;
-    --tertiary-container: 216 100% 50%;
-    --on-tertiary-container: 0 0% 100%;
+    --gold-antique: 41 47% 58%;
+    --gold-antique-soft: 41 30% 20%;
 
-    --gold-antique: 0 0% 0%;
-    --gold-antique-soft: 54 100% 50%;
+    --destructive: 4 55% 52%;
+    --destructive-foreground: 0 0% 96%;
+    --error-container: 4 40% 14%;
+    --on-error-container: 4 60% 80%;
 
-    --destructive: 0 100% 55%;
-    --destructive-foreground: 0 0% 100%;
-    --error-container: 0 100% 55%;
-    --on-error-container: 0 0% 100%;
+    --success: 152 30% 52%;
+    --success-foreground: 0 0% 8%;
+    --success-container: 152 25% 13%;
 
-    --success: 151 100% 41%;                /* #00D26A */
-    --success-foreground: 0 0% 0%;
-    --success-container: 151 100% 41%;
+    --warning: 41 47% 58%;
+    --warning-foreground: 0 0% 8%;
+    --warning-container: 41 30% 14%;
+    --on-warning-container: 41 47% 74%;
 
-    --warning: 54 100% 50%;
-    --warning-foreground: 0 0% 0%;
-    --warning-container: 54 100% 50%;
-    --on-warning-container: 0 0% 0%;
+    --background: 0 0% 4%;                  /* #0A0A0A */
+    --foreground: 0 0% 96%;                 /* #F5F5F5 */
 
-    --background: 56 100% 97%;              /* #FFFEF0 */
-    --foreground: 0 0% 0%;
+    --surface-dim: 0 0% 3%;
+    --surface-bright: 0 0% 14%;
+    --surface-container-lowest: 0 0% 3%;
+    --surface-container-low: 0 0% 7%;       /* #121212 */
+    --surface-container: 0 0% 10%;          /* #1A1A1A */
+    --surface-container-high: 0 0% 12%;     /* #1F1F1F */
+    --surface-container-highest: 0 0% 15%;
 
-    --surface-dim: 56 100% 94%;
-    --surface-bright: 0 0% 100%;
-    --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 0 0% 100%;
-    --surface-container: 56 100% 97%;
-    --surface-container-high: 56 100% 94%;
-    --surface-container-highest: 54 100% 50%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 96%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 45%;           /* #737373 */
 
-    --muted: 56 100% 94%;
-    --muted-foreground: 0 0% 15%;
+    --accent: 41 47% 58%;
+    --accent-foreground: 0 0% 6%;
 
-    --accent: 340 100% 71%;
-    --accent-foreground: 0 0% 0%;
+    --outline: 0 0% 100% / 0.12;
+    --outline-variant: 0 0% 100% / 0.06;
 
-    --outline: 0 0% 0%;
-    --outline-variant: 0 0% 0%;
+    --border: 0 0% 100% / 0.05;
+    --input: 0 0% 10%;
+    --ring: 41 47% 58%;
 
-    --border: 0 0% 0%;
-    --input: 0 0% 100%;
-    --ring: 216 100% 50%;
+    --inverse-surface: 0 0% 96%;
+    --inverse-on-surface: 0 0% 6%;
+    --inverse-primary: 41 47% 58%;
 
-    --inverse-surface: 0 0% 0%;
-    --inverse-on-surface: 0 0% 100%;
-    --inverse-primary: 54 100% 50%;
-
-    --sidebar-background: 56 100% 97%;
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 54 100% 50%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 340 100% 71%;
-    --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 0%;
-    --sidebar-ring: 216 100% 50%;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 41 47% 58%;
+    --sidebar-primary-foreground: 0 0% 6%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 100% / 0.05;
+    --sidebar-ring: 41 47% 58%;
 
     /* Scala del testo (Accessibilità) */
     --text-scale: 1;
@@ -178,28 +176,31 @@
   }
 
   :root {
-    /* ─── Radii — brutalism: sharp corners only ─── */
-    --radius-xs: 0px;
-    --radius-sm: 0px;
-    --radius-md: 0px;
-    --radius-lg: 0px;
-    --radius-xl: 0px;
-    --radius-2xl: 0px;
-    --radius-full: 0px;
-    --radius: 0px;
+    /* ─── Radii — quiet, precise ─── */
+    --radius-xs: 2px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-2xl: 16px;
+    --radius-full: 9999px;
+    --radius: 8px;
 
-    /* ─── Hard offset shadows — interactive elements only ─── */
+    /* ─── Soft, diffused ambient elevation ─── */
     --shadow-level-0: none;
-    --shadow-level-1: none;
-    --shadow-level-2: 4px 4px 0 #000000;
-    --shadow-level-3: 4px 4px 0 #000000;
-    --shadow-level-4: 6px 6px 0 #000000;
-    --shadow-level-5: 8px 8px 0 #000000;
+    --shadow-level-1: 0 1px 2px rgba(0,0,0,0.5);
+    --shadow-level-2: 0 8px 30px rgba(0,0,0,0.55);
+    --shadow-level-3: 0 14px 44px rgba(0,0,0,0.6);
+    --shadow-level-4: 0 22px 64px rgba(0,0,0,0.65), 0 0 60px rgba(201,169,97,0.05);
+    --shadow-level-5: 0 32px 90px rgba(0,0,0,0.7), 0 0 80px rgba(201,169,97,0.06);
 
-    --state-hover: 0.08;
-    --state-focus: 0.10;
-    --state-pressed: 0.10;
-    --state-dragged: 0.16;
+    --glow-gold: 0 0 60px rgba(201,169,97,0.05);
+    --hairline: 1px solid rgba(255,255,255,0.05);
+
+    --state-hover: 0.05;
+    --state-focus: 0.07;
+    --state-pressed: 0.08;
+    --state-dragged: 0.10;
   }
 }
 
