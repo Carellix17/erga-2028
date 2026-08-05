@@ -5,42 +5,42 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium relative overflow-hidden transition-all duration-200 ease focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-38 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.95]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-semibold relative overflow-hidden transition-all duration-200 ease focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-38 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-level-0 hover:opacity-90 rounded-lg state-layer",
+          "bg-primary text-primary-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90 rounded-lg state-layer",
+          "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
         outline:
-          "border border-white bg-transparent text-foreground hover:bg-foreground/[0.08] rounded-lg",
+          "border border-border bg-transparent text-foreground hover:bg-foreground/[0.06] rounded-full",
         secondary:
-          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 rounded-lg state-layer",
+          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
         ghost:
-          "text-foreground hover:bg-foreground/[0.08] rounded-lg",
+          "text-foreground hover:bg-foreground/[0.08] rounded-full",
         link:
           "text-primary underline-offset-4 hover:underline",
         tonal:
-          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 rounded-lg state-layer",
+          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
         fab:
-          "bg-primary-container text-primary shadow-level-0 hover:opacity-90 rounded-lg state-layer",
+          "bg-primary-container text-primary shadow-level-0 hover:opacity-90 rounded-full state-layer",
         "fab-secondary":
-          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 rounded-lg state-layer",
+          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
         "fab-tertiary":
-          "bg-tertiary-container text-tertiary shadow-level-0 hover:opacity-90 rounded-lg state-layer",
+          "bg-tertiary-container text-tertiary shadow-level-0 hover:opacity-90 rounded-full state-layer",
         elevated:
-          "bg-surface-container-low text-primary shadow-level-0 hover:opacity-90 rounded-lg state-layer",
+          "bg-surface-container-low text-primary shadow-level-0 hover:opacity-90 rounded-full state-layer",
       },
       size: {
-        default: "h-11 px-6 rounded-lg",
-        sm: "h-9 px-5 text-xs rounded-lg",
-        lg: "h-14 px-8 text-base rounded-lg",
+        default: "h-11 px-6 rounded-full",
+        sm: "h-9 px-5 text-xs rounded-full",
+        lg: "h-14 px-8 text-base rounded-full",
         icon: "h-11 w-11 rounded-full",
         "icon-sm": "h-9 w-9 rounded-full",
         "icon-lg": "h-12 w-12 rounded-full",
-        fab: "h-14 w-14 rounded-lg",
-        "fab-extended": "h-14 px-7 rounded-lg",
+        fab: "h-14 w-14 rounded-full",
+        "fab-extended": "h-14 px-7 rounded-full",
       },
     },
     defaultVariants: {

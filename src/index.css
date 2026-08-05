@@ -3,204 +3,213 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════
-   Material You (Material Design 3 — Expressive)
-   Design System — Vibrant & Bouncy
+   ERGA OPAL — FONDAMENTA (P21a)
+   Nero pieno / carta avorio, carbone OPACO (vetro abolito),
+   pill-firma, Inter ovunque, UNA goccia di salvia (🌿).
+   REGOLA DEL PALCO: intonsa (vedi sotto, mai toccarla).
    ═══════════════════════════════════════════════════════ */
 
 @layer base {
   :root {
-    /* ─── Erga — DARK LUXURY: near-black surfaces, muted gold, platinum ─── */
+    /* ─── Erga OPAL "Carta" (tema chiaro, default) — avorio editoriale ─── */
 
-    --primary: 41 47% 58%;                  /* Muted gold #C9A961 */
-    --primary-foreground: 0 0% 6%;
-    --primary-container: 41 30% 16%;
-    --on-primary-container: 41 47% 72%;
+    --primary: 28 7% 9%;                    /* Inchiostro — la pill primaria è NERA su carta (firma Opal invertita) */
+    --primary-foreground: 40 24% 98%;
+    --primary-container: 40 16% 93%;
+    --on-primary-container: 28 10% 18%;
 
-    --secondary: 220 9% 65%;                /* Platinum #9CA3AF */
-    --secondary-foreground: 0 0% 8%;
-    --secondary-container: 0 0% 14%;
-    --on-secondary-container: 0 0% 90%;
+    --secondary: 40 12% 95%;
+    --secondary-foreground: 28 7% 12%;
+    --secondary-container: 40 13% 91%;
+    --on-secondary-container: 28 9% 16%;
 
-    --tertiary: 26 30% 61%;                 /* Warm bronze #B8977E */
-    --tertiary-foreground: 0 0% 8%;
-    --tertiary-container: 26 20% 15%;
-    --on-tertiary-container: 26 30% 74%;
+    --tertiary: 125 16% 38%;                /* 🌿 SALVIA — poche gocce, come un profumo */
+    --tertiary-foreground: 0 0% 100%;
+    --tertiary-container: 122 22% 91%;
+    --on-tertiary-container: 124 20% 24%;
 
-    --gold-antique: 41 47% 58%;
-    --gold-antique-soft: 41 30% 20%;
+    --gold-antique: 36 8% 45%;
+    --gold-antique-soft: 40 16% 93%;
 
-    --destructive: 4 55% 52%;
-    --destructive-foreground: 0 0% 96%;
-    --error-container: 4 40% 14%;
-    --on-error-container: 4 60% 80%;
+    --destructive: 4 58% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --error-container: 4 45% 94%;
+    --on-error-container: 4 50% 26%;
 
-    --success: 152 30% 52%;
-    --success-foreground: 0 0% 8%;
-    --success-container: 152 25% 13%;
+    --success: 150 24% 34%;
+    --success-foreground: 0 0% 100%;
+    --success-container: 150 26% 92%;
+    --on-success-container: 150 30% 20%;
 
-    --warning: 41 47% 58%;
-    --warning-foreground: 0 0% 8%;
-    --warning-container: 41 30% 14%;
-    --on-warning-container: 41 47% 74%;
+    --warning: 32 68% 43%;
+    --warning-foreground: 0 0% 100%;
+    --warning-container: 36 60% 93%;
+    --on-warning-container: 32 45% 22%;
 
-    --background: 0 0% 4%;                  /* #0A0A0A */
-    --foreground: 0 0% 96%;                 /* #F5F5F5 */
+    --background: 40 24% 98%;               /* avorio #FAF7F3 */
+    --foreground: 28 7% 10%;
 
-    --surface-dim: 0 0% 3%;
-    --surface-bright: 0 0% 14%;
-    --surface-container-lowest: 0 0% 3%;
-    --surface-container-low: 0 0% 7%;       /* #121212 */
-    --surface-container: 0 0% 10%;          /* #1A1A1A */
-    --surface-container-high: 0 0% 12%;     /* #1F1F1F */
-    --surface-container-highest: 0 0% 15%;
+    --surface-dim: 40 12% 93%;
+    --surface-bright: 0 0% 100%;
+    --surface-container-lowest: 0 0% 100%;
+    --surface-container-low: 40 20% 97%;
+    --surface-container: 40 16% 95%;
+    --surface-container-high: 40 14% 92%;
+    --surface-container-highest: 40 13% 89%;
 
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 96%;
+    --card: 0 0% 100%;
+    --card-foreground: 28 7% 10%;
 
-    --popover: 0 0% 12%;
-    --popover-foreground: 0 0% 96%;
+    /* ═══ token glass PENSIONATI (alias opachi per compatibilità) ═══ */
+    --glass-surface-1: hsl(var(--surface-container-low));
+    --glass-surface-2: hsl(var(--surface-container));
+    --glass-surface-3: hsl(var(--surface-container-high));
+    --glass-surface-hover: hsl(var(--surface-container-highest));
+    --glass-border: hsl(var(--border));
+    --glass-inset: hsl(0 0% 0% / 0);
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 45%;           /* #737373 */
+    --popover: 0 0% 100%;
+    --popover-foreground: 28 7% 10%;
 
-    --accent: 41 47% 58%;
-    --accent-foreground: 0 0% 6%;
+    --muted: 40 12% 93%;
+    --muted-foreground: 36 6% 42%;
 
-    --outline: 0 0% 100% / 0.12;
-    --outline-variant: 0 0% 100% / 0.06;
+    --accent: 122 22% 91%;                  /* salvia-soft per selezioni */
+    --accent-foreground: 124 20% 24%;
 
-    --border: 0 0% 100% / 0.05;
-    --input: 0 0% 10%;
-    --ring: 41 47% 58%;
+    --outline: 36 8% 20% / 0.20;
+    --outline-variant: 36 8% 20% / 0.10;
 
-    --inverse-surface: 0 0% 96%;
-    --inverse-on-surface: 0 0% 6%;
-    --inverse-primary: 41 47% 58%;
+    --border: 36 8% 20% / 0.10;
+    --input: 0 0% 100%;
+    --ring: 125 16% 38%;
 
-    --sidebar-background: 0 0% 4%;
-    --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 41 47% 58%;
-    --sidebar-primary-foreground: 0 0% 6%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 0 0% 100% / 0.05;
-    --sidebar-ring: 41 47% 58%;
+    --inverse-surface: 28 7% 10%;
+    --inverse-on-surface: 40 24% 98%;
+    --inverse-primary: 125 24% 62%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 28 7% 10%;
+    --sidebar-primary: 28 7% 9%;
+    --sidebar-primary-foreground: 40 24% 98%;
+    --sidebar-accent: 40 16% 95%;
+    --sidebar-accent-foreground: 28 7% 10%;
+    --sidebar-border: 36 8% 20% / 0.10;
+    --sidebar-ring: 125 16% 38%;
 
     /* Scala del testo (Accessibilità) */
     --text-scale: 1;
   }
 
   .dark {
-    /* ─── Erga × Origin — Midnight Study Gallery ─── */
+    /* ─── Erga OPAL "Noir" (tema scuro) — nero pieno, carbone, salvia ─── */
 
-    /* Primary — Pure white-on-black action (Origin: unica azione primaria) */
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 0%;
-    --primary-container: 252 100% 84%;      /* Pale Iris #d1c9ff, per stati soft */
-    --on-primary-container: 243 40% 24%;     /* Deep Iris #4b49aa */
+    --primary: 0 0% 96%;                   /* la pill-firma BIANCA, testo nero */
+    --primary-foreground: 0 0% 5%;
+    --primary-container: 0 0% 14%;
+    --on-primary-container: 0 0% 92%;
 
-    /* Secondary — Steel hover surface */
-    --secondary: 0 0% 25%;                   /* Steel #3f4041 */
-    --secondary-foreground: 0 0% 100%;
-    --secondary-container: 0 0% 18%;         /* Graphite #2e2e2e */
-    --on-secondary-container: 0 0% 96%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 96%;
+    --secondary-container: 0 0% 13%;
+    --on-secondary-container: 0 0% 90%;
 
-    /* Tertiary — Cyan Signal, riservato a dati/grafici/progress, mai a testo o fill larghi */
-    --tertiary: 193 100% 43%;                /* Cyan Signal #00b3dd */
-    --tertiary-foreground: 0 0% 0%;
-    --tertiary-container: 193 100% 14%;
-    --on-tertiary-container: 193 100% 85%;
+    --tertiary: 125 22% 68%;               /* 🌿 SALVIA chiara sul nero */
+    --tertiary-foreground: 0 0% 5%;
+    --tertiary-container: 125 14% 15%;
+    --on-tertiary-container: 125 30% 88%;
 
-    /* Gold token neutralizzato (già presente in Erga) → resta Fog neutro */
-    --gold-antique: 0 0% 42%;                /* Fog #6a6b6b */
+    --gold-antique: 0 0% 55%;
     --gold-antique-soft: 0 0% 14%;
 
-    /* Error */
-    --destructive: 4 70% 55%;
+    --destructive: 4 65% 58%;
     --destructive-foreground: 0 0% 100%;
-    --error-container: 4 60% 16%;
-    --on-error-container: 4 70% 85%;
+    --error-container: 4 40% 14%;
+    --on-error-container: 4 60% 88%;
 
-    /* Success */
-    --success: 158 40% 45%;
-    --success-foreground: 0 0% 100%;
-    --success-container: 158 35% 14%;
+    --success: 150 24% 58%;
+    --success-foreground: 0 0% 5%;
+    --success-container: 150 22% 13%;
 
-    /* Warning */
-    --warning: 32 65% 55%;
-    --warning-foreground: 0 0% 0%;
+    --warning: 36 70% 62%;
+    --warning-foreground: 0 0% 5%;
+    --warning-container: 36 30% 13%;
 
-    /* Superfici — Origin surface stepping: Obsidian → Graphite → Steel → Silver */
-    --background: 220 4% 6%;                 /* Obsidian #0f1011 */
-    --foreground: 0 0% 100%;                 /* Pure #ffffff */
+    --background: 0 0% 3%;                 /* nero #080808 */
+    --foreground: 0 0% 96%;
 
-    --surface-dim: 220 8% 3%;                /* Abyss #090a0b */
-    --surface-bright: 0 0% 18%;              /* Graphite */
-    --surface-container-lowest: 220 8% 3%;   /* Abyss */
-    --surface-container-low: 220 4% 6%;      /* Obsidian */
-    --surface-container: 0 0% 18%;           /* Graphite #2e2e2e */
-    --surface-container-high: 0 0% 25%;      /* Steel #3f4041 */
-    --surface-container-highest: 0 0% 25%;   /* Steel */
+    --surface-dim: 0 0% 2%;
+    --surface-bright: 0 0% 16%;
+    --surface-container-lowest: 0 0% 2%;
+    --surface-container-low: 0 0% 5%;
+    --surface-container: 0 0% 8%;          /* carbone #141414 */
+    --surface-container-high: 0 0% 10.5%;  /* #1A1A1B */
+    --surface-container-highest: 0 0% 13%;
 
-    --card: 0 0% 18%;                        /* Graphite */
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 18%;
-    --popover-foreground: 0 0% 100%;
+    /* ═══ token glass PENSIONATI (alias opachi per compatibilità) ═══ */
+    --glass-surface-1: hsl(var(--surface-container-low));
+    --glass-surface-2: hsl(var(--surface-container));
+    --glass-surface-3: hsl(var(--surface-container-high));
+    --glass-surface-hover: hsl(var(--surface-container-highest));
+    --glass-border: hsl(var(--border));
+    --glass-inset: hsl(0 0% 0% / 0);
 
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 63%;            /* Ash #9f9fa0 */
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
 
-    --accent: 243 40% 24%;                   /* Deep Iris, stato soft */
-    --accent-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
 
-    --outline: 0 0% 100% / 0.15;
-    --outline-variant: 0 0% 100% / 0.1;
+    --accent: 125 14% 15%;                 /* salvia-soft su nero */
+    --accent-foreground: 125 30% 88%;
 
-    --border: 0 0% 100% / 0.1;
-    --input: 0 0% 0%;                        /* Void, sfondo input come da Origin AI Prompt Input */
-    --ring: 243 65% 68%;                     /* Iris Gleam #847dff */
+    --outline: 0 0% 100% / 0.14;
+    --outline-variant: 0 0% 100% / 0.07;
 
-    --inverse-surface: 0 0% 96%;             /* Cloud */
-    --inverse-on-surface: 220 4% 6%;
-    --inverse-primary: 243 65% 68%;
+    --border: 0 0% 100% / 0.07;
+    --input: 0 0% 8%;
+    --ring: 125 22% 68%;
 
-    --sidebar-background: 220 8% 3%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 18%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 243 65% 68%;
+    --inverse-surface: 0 0% 96%;
+    --inverse-on-surface: 0 0% 6%;
+    --inverse-primary: 125 16% 38%;
+
+    --sidebar-background: 0 0% 2%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 0 0% 96%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 100% / 0.07;
+    --sidebar-ring: 125 22% 68%;
   }
 
   :root {
-    /* ─── Radii — quiet, precise ─── */
-    --radius-xs: 2px;
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 8px;
-    --radius-xl: 12px;
-    --radius-2xl: 16px;
+    /* ─── Radii Opal — angoli grandi, bottoni sempre a pillola ─── */
+    --radius-xs: 0.375rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.625rem;
+    --radius-lg: 1.125rem;    /* 18px — card standard */
+    --radius-xl: 1.375rem;    /* 22px — feature tile */
+    --radius-2xl: 1.5rem;
     --radius-full: 9999px;
-    --radius: 8px;
+    --radius: 0.75rem;
 
-    /* ─── Soft, diffused ambient elevation ─── */
+    /* ─── Elevazione — sussurri, mai palchi ─── */
     --shadow-level-0: none;
-    --shadow-level-1: 0 1px 2px rgba(0,0,0,0.5);
-    --shadow-level-2: 0 8px 30px rgba(0,0,0,0.55);
-    --shadow-level-3: 0 14px 44px rgba(0,0,0,0.6);
-    --shadow-level-4: 0 22px 64px rgba(0,0,0,0.65), 0 0 60px rgba(201,169,97,0.05);
-    --shadow-level-5: 0 32px 90px rgba(0,0,0,0.7), 0 0 80px rgba(201,169,97,0.06);
+    --shadow-level-1: 0 1px 2px 0 rgba(23, 21, 18, 0.05);
+    --shadow-level-2: 0 2px 10px -2px rgba(23, 21, 18, 0.07);
+    --shadow-level-3: 0 8px 24px -6px rgba(0, 0, 0, 0.10);
+    --shadow-level-4: 0 14px 34px -8px rgba(0, 0, 0, 0.12);
+    --shadow-level-5: 0 18px 40px -8px rgba(0, 0, 0, 0.22);
 
-    --glow-gold: 0 0 60px rgba(201,169,97,0.05);
-    --hairline: 1px solid rgba(255,255,255,0.05);
-
-    --state-hover: 0.05;
-    --state-focus: 0.07;
+    --state-hover: 0.06;
+    --state-focus: 0.08;
     --state-pressed: 0.08;
-    --state-dragged: 0.10;
+    --state-dragged: 0.14;
   }
 }
 
@@ -217,57 +226,60 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Display — voce serif whisper-weight, solo per titoli hero/sezione */
+  /* ═══ Voce tipografica Opal: Inter ovunque, titoli 800, zero serif ═══ */
   h1, .display-large {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-weight: 400;
-    font-size: 3.5rem;      /* ~ display-sm Origin, adattato a viewport app */
-    line-height: 0.95;
-    letter-spacing: -0.01em;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 800;
+    font-size: 2.25rem;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
     color: hsl(var(--foreground));
   }
 
   h2, .headline-large {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-weight: 400;
-    font-size: 2.375rem;    /* 38px — heading-lg Origin */
-    line-height: 0.9;
-    letter-spacing: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 800;
+    font-size: 1.625rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     color: hsl(var(--foreground));
   }
 
   h3, .headline-medium {
     font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 300;
-    font-size: 1.375rem;
+    font-weight: 700;
+    font-size: 1.25rem;
     line-height: 1.25;
+    letter-spacing: -0.01em;
     color: hsl(var(--foreground));
   }
 
   .title-large {
     font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 300;       /* echo della voce display, come da Origin subheading */
+    font-weight: 700;
     font-size: 1.125rem;
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
-  .title-medium, .title-small {
+  .title-medium { font-family: 'Inter', system-ui, sans-serif; font-weight: 600; }
+  .title-small { font-family: 'Inter', system-ui, sans-serif; font-weight: 600; }
+
+  .body-large, .body-medium {
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 400;
+    color: hsl(var(--foreground));
   }
-
-  .body-large, .body-medium, .body-small {
+  .body-small {
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 400;
-    color: hsl(var(--muted-foreground));  /* Ash — mai testo body in full white */
+    color: hsl(var(--muted-foreground));
   }
 
-  /* Etichette mono uppercase — badge, tag, dati, metriche EXP */
+  /* Etichette da registro — piccole, uppercase, tracking */
   .label-large, .label-medium, .label-small {
-    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-family: 'Inter', system-ui, sans-serif;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 500;
+    font-weight: 600;
   }
   .label-large { font-size: 0.75rem; letter-spacing: 0.1em; }
   .label-medium { font-size: 0.6875rem; letter-spacing: 0.12em; }
@@ -279,6 +291,39 @@
 }
 
 @layer utilities {
+  /* ═══════════════════════════════════════════════════
+     EX-LIQUID GLASS (P21a) — superfici OPACHE. Il vetro è
+     abolito: glass-* resta come alias MATTO (i pacchi P21b-d
+     la pensionano file per file), così nessuno schermo resta
+     mai senza pelle nel frattempo. Blur: mai più.
+     ═══════════════════════════════════════════════════ */
+  .glass-1,
+  .glass-2,
+  .glass-3 {
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-level-1);
+    transition: background-color 240ms ease-out, border-color 240ms ease-out;
+  }
+  .glass-1 { background-color: hsl(var(--surface-container-low)); }
+  .glass-2 { background-color: hsl(var(--surface-container)); }
+  .glass-3 { background-color: hsl(var(--surface-container-high)); }
+  .glass-hover:hover { background-color: hsl(var(--surface-container-highest)); }
+  .glass-interactive {
+    transition: background-color 220ms ease-out;
+  }
+
+  /* Text on glass must stay heavy & high contrast */
+  .on-glass { font-weight: 500; color: hsl(var(--foreground)); }
+
+  /* Orb ambient abolite (P21a): classe conservata innocua per i file che
+     ancora la usano; sparirà loro con i pacchi P21b-d. */
+  .bg-ambient { position: relative; isolation: isolate; }
+  .bg-ambient::before { content: none; }
+  @keyframes ambient-drift {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(0, -2%, 0) scale(1.06); }
+  }
+
   /* ═══════ GRADIENT ACCENTS ═══════ */
   .gradient-primary {
     background: hsl(var(--primary));
@@ -450,11 +495,11 @@
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   }
   .m3-nav-indicator {
-    background-color: hsl(var(--secondary-container));
+    background-color: hsl(var(--tertiary-container));   /* 🌿 goccia di salvia */
     border-radius: var(--radius-full);
     width: 4rem;
     height: 2rem;
-    transition: all 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 250ms ease;
   }
 
   /* ═══════ M3 TOP APP BAR ═══════ */
@@ -603,7 +648,7 @@
     overflow: hidden;
   }
   .m3-progress-indicator {
-    background-color: hsl(var(--primary));
+    background-color: hsl(var(--tertiary));             /* 🌿 progressi in salvia */
     border-radius: var(--radius-full);
     transition: width 700ms cubic-bezier(0.05, 0.7, 0.1, 1);
     will-change: width;
@@ -621,8 +666,7 @@
     will-change: transform, border-color;
   }
   .m3-text-field-filled:focus-within {
-    border-bottom: 2px solid hsl(var(--primary));
-    transform: scale(1.01);
+    border-bottom: 2px solid hsl(var(--ring));
   }
   .m3-text-field-outlined {
     border: 1.5px solid hsl(var(--outline-variant));
@@ -631,9 +675,8 @@
     will-change: transform, border-color, box-shadow;
   }
   .m3-text-field-outlined:focus-within {
-    border: 2px solid hsl(var(--primary));
-    transform: scale(1.01);
-    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.12);
+    border: 2px solid hsl(var(--ring));
+    box-shadow: 0 0 0 4px hsl(var(--ring) / 0.15);
   }
 }
 
@@ -801,162 +844,4 @@ html.reduce-motion *::after {
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
-}
-
-
-/* ═══════════════════════════════════════════════════════
-   DARK LUXURY — global refinement layer
-   Near-black surfaces, hairline borders, muted gold accents.
-   ═══════════════════════════════════════════════════════ */
-
-:root {
-  --lux-hairline: 1px solid rgba(255, 255, 255, 0.05);
-  --lux-hairline-strong: 1px solid rgba(255, 255, 255, 0.09);
-  --lux-gold: #c9a961;
-  --lux-ease: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-html { color-scheme: dark; }
-
-body {
-  font-family: 'Inter', -apple-system, system-ui, sans-serif;
-  background-color: #0a0a0a;
-  background-image: radial-gradient(120% 80% at 50% -10%, #151515 0%, #0a0a0a 60%);
-  background-attachment: fixed;
-  color: #f5f5f5;
-  letter-spacing: 0.01em;
-}
-
-h1, h2, h3, h4,
-.display-large, .headline-large, .headline-medium,
-.title-large, .title-medium, .title-small {
-  font-family: 'EB Garamond', 'Inter', Georgia, serif;
-  font-weight: 400;
-  line-height: 1.15;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  color: #f5f5f5;
-}
-h1, .display-large { letter-spacing: 0.04em; }
-
-.body-large, .body-medium, .body-small {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-weight: 300;
-  color: #a3a3a3;
-  line-height: 1.7;
-}
-.label-large, .label-medium, .label-small {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  color: #9ca3af;
-}
-
-/* ─── Surfaces: razor-thin borders, soft ambient depth ─── */
-.bg-card, .bg-popover,
-.surface-container, .surface-container-low, .surface-container-high,
-.surface-container-highest, .surface-container-lowest,
-.m3-card-elevated, .m3-card-filled, .m3-card-outlined,
-.editorial-focus {
-  border: var(--lux-hairline);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
-}
-.bg-white { background-color: #1a1a1a !important; color: #f5f5f5; }
-
-/* ─── Interactive elements: restrained, slow, ambient ─── */
-button, [role="button"], .m3-chip {
-  transition: background-color 420ms var(--lux-ease),
-              border-color 420ms var(--lux-ease),
-              box-shadow 420ms var(--lux-ease),
-              color 420ms var(--lux-ease),
-              opacity 420ms var(--lux-ease);
-  letter-spacing: 0.03em;
-  font-weight: 400;
-}
-button:not(:disabled):hover,
-[role="button"]:not(:disabled):hover,
-.m3-chip:hover {
-  box-shadow: 0 0 60px rgba(201, 169, 97, 0.05);
-}
-button:disabled, [role="button"][disabled] { opacity: 0.35; }
-
-/* ─── Inputs: minimal, subtle border ─── */
-input, textarea, select,
-[role="textbox"], [contenteditable="true"] {
-  background-color: #141414;
-  border: var(--lux-hairline);
-  color: #f5f5f5;
-  font-weight: 300;
-  transition: border-color 420ms var(--lux-ease), box-shadow 420ms var(--lux-ease);
-}
-input::placeholder, textarea::placeholder { color: #525252; font-weight: 300; }
-input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: none;
-  border-color: rgba(201, 169, 97, 0.45);
-  box-shadow: 0 0 40px rgba(201, 169, 97, 0.06);
-}
-
-/* ─── Dividers: hairlines with a whisper of gold ─── */
-hr, [role="separator"] {
-  border: 0 !important;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(201, 169, 97, 0.28), transparent) !important;
-}
-header, nav, footer { border-color: rgba(255, 255, 255, 0.05) !important; }
-header {
-  border-bottom: var(--lux-hairline) !important;
-  background-color: rgba(10, 10, 10, 0.82);
-  backdrop-filter: blur(20px);
-}
-
-/* ─── Dialogs / sheets / popovers ─── */
-[role="dialog"], [role="menu"], [role="listbox"], [data-radix-popper-content-wrapper] > * {
-  border: var(--lux-hairline-strong);
-  background-color: #121212;
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.7), 0 0 80px rgba(201, 169, 97, 0.05);
-}
-
-/* ─── Structural background: barely-there constellation grid ─── */
-.bg-dot-grid {
-  background-color: #0a0a0a;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-  background-size: 34px 34px;
-}
-.gradient-primary { background: linear-gradient(135deg, #c9a961, #b8977e); color: #0a0a0a; }
-.gradient-warm { background: linear-gradient(180deg, #1a1a1a, #121212); }
-.gradient-surface { background: linear-gradient(180deg, #121212, #0a0a0a); }
-.gradient-cool { background: linear-gradient(180deg, #0f0f0f, #0a0a0a); color: #f5f5f5; }
-
-/* Metallic type accent, used sparingly */
-.text-metallic {
-  background: linear-gradient(120deg, #b8977e 0%, #e4d4a8 45%, #c9a961 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Motion: slow, confident, never playful */
-.animate-bounce-in, .animate-pop { animation: leaf-fade 520ms ease-out both; }
-.animate-wiggle { animation: none; }
-/* ─── Legacy light-utility remap → dark luxury ───
-   Older screens still carry hardcoded light utilities; map them onto the
-   dark palette so nothing reads as a white slab on near-black. */
-.bg-white, .bg-slate-50, .bg-slate-100, .bg-stone-50, .bg-neutral-50, .bg-gray-50, .bg-gray-100 {
-  background-color: #1a1a1a !important;
-}
-.bg-black, .bg-slate-900, .bg-neutral-900, .bg-stone-900, .bg-gray-900 {
-  background-color: #121212 !important;
-}
-.text-slate-900, .text-slate-800, .text-neutral-900, .text-gray-900, .text-black {
-  color: #f5f5f5 !important;
-}
-.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400,
-.text-gray-600, .text-gray-500, .text-neutral-500 {
-  color: #737373 !important;
-}
-.border-slate-200\/70, .border-slate-200, .border-slate-100, .border-gray-200, .border-neutral-200 {
-  border-color: rgba(255, 255, 255, 0.05) !important;
-}
-.hover\:bg-slate-50:hover, .hover\:bg-gray-50:hover, .hover\:bg-stone-900:hover {
-  background-color: #1f1f1f !important;
 }
