@@ -55,6 +55,14 @@
     --card: 0 0% 100%;
     --card-foreground: 220 8% 10%;
 
+    /* ═══ LIQUID GLASS (light base) ═══ */
+    --glass-surface-1: rgba(255, 255, 255, 0.55);
+    --glass-surface-2: rgba(255, 255, 255, 0.68);
+    --glass-surface-3: rgba(255, 255, 255, 0.78);
+    --glass-surface-hover: rgba(255, 255, 255, 0.86);
+    --glass-border: rgba(255, 255, 255, 0.65);
+    --glass-inset: rgba(255, 255, 255, 0.9);
+
     --popover: 0 0% 100%;
     --popover-foreground: 220 8% 10%;
 
