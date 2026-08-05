@@ -11,7 +11,7 @@ export function SettingsHeader({ title, subtitle }: SettingsHeaderProps) {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-40 glass-2 border-x-0 border-t-0 rounded-none transition-all duration-300 ease-m3-emphasized">
+    <header className="sticky top-0 z-40 bg-background border-b border-outline-variant/60 transition-all duration-300 ease-m3-emphasized">
       <div className="flex items-center gap-3 h-16 px-4 sm:px-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto">
         <Button
           variant="ghost"
@@ -33,7 +33,7 @@ export function SettingsHeader({ title, subtitle }: SettingsHeaderProps) {
 
 export function SettingsPage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-dot-grid bg-ambient flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <div className="flex-1 w-full">{children}</div>
     </div>
   );

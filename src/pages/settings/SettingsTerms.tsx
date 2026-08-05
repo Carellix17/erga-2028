@@ -25,7 +25,7 @@ export default function SettingsTerms() {
 
         <div className="space-y-3">
           {SECTIONS.map((title) => (
-            <section key={title} className="rounded-2xl glass-1 p-5 space-y-2">
+            <section key={title} className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-2">
               <h2 className="title-medium font-display text-foreground">{title}</h2>
               <p className="body-medium text-muted-foreground">
                 Contenuto in arrivo.

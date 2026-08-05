@@ -16,7 +16,7 @@ export default function SettingsAppearance() {
     <SettingsPage>
       <SettingsHeader title="Aspetto" subtitle="Tema e visualizzazione" />
       <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6 animate-fade-up">
-        <section className="rounded-2xl glass-1 p-5 space-y-3">
+        <section className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-3">
           <h2 className="title-medium font-display text-foreground">Tema</h2>
           <p className="body-small text-muted-foreground -mt-2">Scegli come vuoi vedere Erga.</p>
 

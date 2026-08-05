@@ -117,7 +117,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-dot-grid bg-ambient flex flex-col md:flex-row">
+    <div className="min-h-screen bg-dot-grid flex flex-col md:flex-row">
       {!isFullscreen && <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />}
 
       <div className="flex-1 flex flex-col min-w-0">

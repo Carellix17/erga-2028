@@ -18,7 +18,7 @@ export default function SettingsIndex() {
           <Link
             key={to}
             to={to}
-            className="flex items-center gap-4 rounded-2xl glass-1 p-4 transition-all duration-300 ease-m3-emphasized glass-hover active:scale-[0.99]"
+            className="flex items-center gap-4 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-4 transition-all duration-300 ease-m3-emphasized hover:bg-surface-container-high hover:shadow-level-2 active:scale-[0.99]"
           >
             <div className="w-11 h-11 rounded-2xl bg-surface-container-high flex items-center justify-center shrink-0">
               <Icon className="w-5 h-5 text-foreground" />
