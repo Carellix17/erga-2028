@@ -845,7 +845,7 @@ h1, .display-large { text-transform: uppercase; }
 .body-large, .body-medium, .body-small { color: hsl(var(--muted-foreground)); }
 
 /* ─── Static containers: border, no shadow ─── */
-.bg-card, .bg-white, .bg-popover, .bg-background,
+.bg-card, .bg-white, .bg-popover,
 .surface-container, .surface-container-low, .surface-container-high,
 .surface-container-highest, .surface-container-lowest,
 .m3-card-elevated, .m3-card-filled, .m3-card-outlined,
@@ -929,3 +929,6 @@ header { border-bottom: var(--brutal-border) !important; }
 
 /* Kill soft blur decorations */
 [class*="blur-2xl"], [class*="blur-3xl"] { filter: none !important; opacity: 0.25; }
+
+/* Full-page shells never get a frame */
+body > div, #root, main, .min-h-screen { border: 0 !important; }
