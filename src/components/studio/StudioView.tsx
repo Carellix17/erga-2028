@@ -9,9 +9,8 @@ import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, RefreshCw, Network } from "lucide-react";
+import { Loader2, RefreshCw, Sparkles, FilePlus2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
 import { edgeFetch } from "@/lib/edgeFetch";
@@ -413,7 +412,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       if (first?.is_generated) {
         setActiveLessonIndex(firstIdx);
         if (firstIdx > cachedCurrentIndex) updateProgress.mutate(firstIdx);
-        toast({ title: `Modulo ${target + 1} pronto! 📚`, description: "Le nuove lezioni ti aspettano: buono studio!" });
+        toast({ title: `Modulo ${target + 1} pronto!`, description: "Le nuove lezioni ti aspettano: buono studio!" });
       } else {
         toast({ title: "Modulo non completato", description: "Non tutte le lezioni sono state create. Riprova dalla prima lezione del modulo.", variant: "destructive" });
       }
@@ -509,14 +508,15 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 p-6 text-center animate-fade-up">
-        <div className={`w-20 h-20 rounded-xl flex items-center justify-center shadow-level-3 ${
-          isPdfProcessing ? "bg-primary animate-pulse-soft" : 
-          isPdfFailed ? "bg-error-container" : "bg-tertiary-container"
+        <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
+          isPdfFailed ? "bg-error-container" : "bg-card shadow-level-1"
         }`}>
           {isPdfProcessing ? (
-            <Loader2 className="w-10 h-10 text-primary-foreground animate-spin" />
+            <Loader2 className="w-8 h-8 text-foreground animate-spin" />
+          ) : isPdfFailed ? (
+            <RefreshCw className="w-8 h-8 text-destructive" strokeWidth={1.75} />
           ) : (
-            <RefreshCw className={`w-10 h-10 ${isPdfFailed ? "text-destructive" : "text-tertiary"}`} />
+            <Sparkles className="w-8 h-8 text-foreground" strokeWidth={1.5} />
           )}
         </div>
         <div>
@@ -525,32 +525,32 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
              isPdfFailed ? "Errore nell'elaborazione" :
              "Nessuna lezione disponibile"}
           </h3>
-          <p className="text-muted-foreground max-w-xs body-medium">
+          <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
             {isPdfProcessing ? "Attendi qualche secondo mentre analizziamo il tuo documento." :
              isPdfFailed ? contextErrorMessage :
              "L'AI analizzerà i tuoi materiali e creerà un percorso di mini-lezioni personalizzato."}
           </p>
           {contextFileName && (
-            <p className="text-sm text-primary font-medium mt-2 bg-primary-container inline-block px-3 py-1 rounded-full animate-bounce-in">{contextFileName}</p>
+            <p className="text-xs text-foreground font-medium mt-3 bg-secondary inline-block px-3 py-1.5 rounded-full">{contextFileName}</p>
           )}
         </div>
         
         {isPdfProcessing ? (
-          <Button onClick={refetchLessons} variant="outline" className="h-12 px-6">
+          <Button onClick={refetchLessons} variant="outline" size="lg">
             <RefreshCw className="w-4 h-4 mr-2" />
             Aggiorna stato
           </Button>
         ) : (
-          <LiquidButton onClick={handleGenerateLessons} disabled={isGenerating || generationBlocked} className="h-12 px-6 bg-primary text-primary-foreground">
+          <Button onClick={handleGenerateLessons} disabled={isGenerating || generationBlocked} size="lg">
             {isGenerating ? (
               <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Analisi in corso...</>
             ) : (
-              <><Network className="w-4 h-4 mr-2" />Genera percorso</>
+              <><Sparkles className="w-4 h-4 mr-2" />Genera percorso</>
             )}
-          </LiquidButton>
+          </Button>
         )}
         {generationBlocked && !isPdfProcessing && (
-          <p className="text-sm text-destructive max-w-sm bg-error-container/40 px-4 py-3 rounded-2xl border border-destructive/20">
+          <p className="text-sm text-destructive max-w-sm bg-error-container/40 px-4 py-3 rounded-[18px]">
             {FREE_LIMIT_MESSAGE}
           </p>
         )}
@@ -580,9 +580,13 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     <>
       {/* 📦 P17: il cartellino "materiale nuovo" — le lezioni non lo sanno ancora */}
       {activeContext?.new_material_pending && (
-        <div className="mx-4 mt-4 mb-1 rounded-2xl border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 animate-fade-up">
-          📥 Hai aggiunto nuovo materiale a questo percorso — non è ancora nelle lezioni.
-          Rigenera dal menù ⋯ per includerlo.
+        <div className="mx-4 mt-4 mb-1 rounded-[18px] bg-card px-4 py-3.5 flex items-start gap-3 animate-fade-up">
+          <span className="w-9 h-9 rounded-full bg-warning-container flex items-center justify-center flex-shrink-0">
+            <FilePlus2 className="w-4 h-4 text-warning" strokeWidth={1.75} />
+          </span>
+          <p className="text-sm text-foreground/90 leading-snug pt-2">
+            Hai aggiunto nuovo materiale a questo percorso: non è ancora nelle lezioni. Rigenera dal menù ⋯ per includerlo.
+          </p>
         </div>
       )}
       <CourseSelector
@@ -626,14 +630,16 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         }}
       />
       {generationBlocked && (
-        <div className="mx-4 mt-3 mb-1 px-4 py-3 rounded-2xl bg-error-container/50 border border-destructive/20 text-destructive text-sm font-medium animate-fade-in">
-          {FREE_LIMIT_MESSAGE}
+        <div className="mx-4 mt-3 mb-1 rounded-[18px] bg-card px-4 py-3.5 flex items-start gap-3 animate-fade-in">
+          <span className="w-9 h-9 rounded-full bg-error-container flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-4 h-4 text-destructive" strokeWidth={1.75} />
+          </span>
+          <p className="text-sm text-foreground/90 leading-snug pt-2">{FREE_LIMIT_MESSAGE}</p>
         </div>
       )}
       <LessonsList
         lessons={lessons}
         currentIndex={currentLessonIndex}
-        contextFileName={contextFileName}
         gatedModuleIndex={moduleJob ? moduleJob.moduleIndex : null}
         moduleTitles={activeContext?.module_titles ?? null}
         onSelectLesson={async (index) => {
@@ -646,7 +652,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
             if (isGateLesson(index, moduleJob.moduleIndex)) {
               setModuleScreen({ moduleIndex: moduleJob.moduleIndex });
             } else {
-              toast({ title: "Modulo in preparazione 🏭", description: "Questa si sblocca quando TUTTO il modulo è pronto: ti avvisiamo noi con una notifica!" });
+              toast({ title: "Modulo in preparazione", description: "Questa si sblocca quando TUTTO il modulo è pronto: ti avvisiamo noi con una notifica!" });
             }
             return;
           }
@@ -677,8 +683,6 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         onBack={() => {}}
         isGenerating={isGeneratingLesson}
         showBackButton={false}
-        onRegenerate={handleGenerateLessons}
-        isRegenerating={isGenerating || generationBlocked || !!moduleJob}
         showFinalTest={allGenerated}
         onStartFinalTest={handleStartFinalTest}
         isLoadingFinalTest={isLoadingFinalTest}
@@ -772,7 +776,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
               !generationBlocked &&
               isModuleFullyMissing(lessonsInModule(lessons, moduleIndexOf(nextIndex)))
             ) {
-              toast({ title: "Modulo in preparazione 🏭", description: `Sto già costruendo il modulo ${moduleIndexOf(nextIndex) + 1}: ti avviso con una notifica quando è pronto!` });
+              toast({ title: "Modulo in preparazione", description: `Sto già costruendo il modulo ${moduleIndexOf(nextIndex) + 1}: ti avviso con una notifica quando è pronto!` });
               void startModuleGeneration(moduleIndexOf(nextIndex), { silent: true });
             }
           }}
@@ -802,7 +806,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           exercises={finalTestExercises}
           onClose={() => setShowFinalTest(false)}
           onComplete={() => { setShowFinalTest(false);
-            toast({ title: "Complimenti! 🎉", description: "Hai completato il percorso e il test finale!" }); }}
+            toast({ title: "Complimenti!", description: "Hai completato il percorso e il test finale!" }); }}
         />
       )}
     </>

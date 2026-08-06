@@ -1,64 +1,52 @@
-import { FileUp, Brain, BookOpen, Zap } from "lucide-react";
+import { FileUp, FileText, Globe, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface EmptyStateProps {
   onUploadClick: () => void;
 }
 
+// 🌿 P21b ERGA OPAL: il benvenuto si è fatto serio. Niente blob fluttuanti,
+// niente icone ruotate che ballano: un tondo, un titolo, la pill-firma e tre
+// righine che spiegano cosa sai fare. Vale per Studio, Chat, Piano e Pratica.
+
+const FEATURES = [
+  { icon: FileText, title: "PDF e appunti", desc: "Carica documenti e foto delle pagine" },
+  { icon: Globe, title: "Ricerca web", desc: "Parti da un argomento, al resto pensa l'AI" },
+  { icon: Brain, title: "Mini-lezioni interattive", desc: "Spiegazioni brevi con esercizi su misura" },
+] as const;
+
 export function EmptyState({ onUploadClick }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 text-center relative overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 gradient-surface opacity-60" />
-      
-      <div className="relative z-10">
-        {/* Decorative blobs — colorful */}
-        <div className="absolute -top-24 -left-20 w-48 h-48 rounded-full bg-primary/[0.08] blur-3xl animate-float" />
-        <div className="absolute -top-10 right-0 w-36 h-36 rounded-full bg-secondary/[0.10] blur-3xl animate-float" style={{ animationDelay: "1s" }} />
-        <div className="absolute -bottom-20 -right-16 w-40 h-40 rounded-full bg-tertiary/[0.10] blur-2xl animate-float" style={{ animationDelay: "2s" }} />
+    <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 text-center animate-fade-up">
+      <div className="w-20 h-20 rounded-full bg-card shadow-level-1 flex items-center justify-center mb-7">
+        <Brain className="w-9 h-9 text-foreground" strokeWidth={1.5} />
+      </div>
 
-        {/* Icon composition */}
-        <div className="relative mb-10 flex items-center justify-center">
-          <div className="w-28 h-28 rounded-[2rem] bg-primary flex items-center justify-center shadow-level-4 animate-bounce-in rotate-3">
-            <Brain className="w-14 h-14 text-white animate-wiggle" />
-          </div>
-          <div className="absolute -right-5 -top-5 w-14 h-14 rounded-2xl bg-foreground/70 flex items-center justify-center shadow-level-2 animate-bounce-in animate-stagger-2 -rotate-6">
-            <BookOpen className="w-7 h-7 text-white" />
-          </div>
-          <div className="absolute -left-5 -bottom-5 w-14 h-14 rounded-2xl bg-tertiary flex items-center justify-center shadow-level-2 animate-bounce-in animate-stagger-3 rotate-6">
-            <Brain className="w-7 h-7 text-white" />
-          </div>
-          <div className="absolute right-2 -bottom-6 w-10 h-10 rounded-xl bg-foreground/45 flex items-center justify-center shadow-level-2 animate-bounce-in animate-stagger-4 rotate-12">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
-        </div>
-        
-        <h2 className="font-display text-2xl font-bold mb-3 text-foreground animate-fade-up animate-stagger-2">
-          Inizia il tuo percorso
-        </h2>
-        
-        <p className="body-large text-muted-foreground mb-8 max-w-sm leading-relaxed animate-fade-up animate-stagger-3">
-          Carica i tuoi appunti o cerca un argomento sul web. L'AI creerà un piano di studio personalizzato con mini-lezioni interattive.
-        </p>
-        
-        <div className="animate-fade-up animate-stagger-4">
-          <Button onClick={onUploadClick} size="lg" className="h-14 px-8 text-base shadow-level-3 bg-primary text-primary-foreground border-0 hover:shadow-level-4">
-            <FileUp className="w-5 h-5 mr-2" />
-            Inizia ora
-          </Button>
-        </div>
-        
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade-up animate-stagger-5">
-          {[
-            { label: "📄 PDF", cls: "bg-surface-container-high text-foreground" },
-            { label: "🌐 Ricerca web", cls: "bg-secondary-container text-secondary-foreground" },
-            { label: "🧠 AI Tutor", cls: "bg-tertiary-container text-tertiary" },
-          ].map((item) => (
-            <span key={item.label} className={`m3-chip ${item.cls}`}>
-              {item.label}
+      <h2 className="font-display text-2xl font-bold tracking-tight text-foreground mb-3">
+        Inizia il tuo percorso
+      </h2>
+
+      <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mb-8">
+        Carica i tuoi appunti o cerca un argomento sul web. L'AI creerà un piano di studio personalizzato con mini-lezioni interattive.
+      </p>
+
+      <Button onClick={onUploadClick} size="lg" className="px-8">
+        <FileUp className="w-5 h-5 mr-2" strokeWidth={1.75} />
+        Inizia ora
+      </Button>
+
+      <div className="mt-12 flex flex-col gap-2.5 w-full max-w-xs text-left">
+        {FEATURES.map((f) => (
+          <div key={f.title} className="flex items-center gap-3.5 bg-card rounded-[16px] px-4 py-3">
+            <span className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+              <f.icon className="w-4 h-4 text-foreground" strokeWidth={1.75} />
             </span>
-          ))}
-        </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">{f.title}</p>
+              <p className="text-xs text-muted-foreground">{f.desc}</p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
