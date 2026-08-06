@@ -619,7 +619,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
               onClick={() => setView("generate")}
-              className="group relative overflow-hidden text-left p-5 rounded-2xl bg-black text-white shadow-level-2 hover:shadow-level-3 transition-all duration-400 ease-m3-emphasized active:scale-[0.98]"
+              className="group relative overflow-hidden text-left p-5 rounded-2xl bg-primary text-primary-foreground shadow-level-2 hover:shadow-level-3 transition-all duration-400 ease-m3-emphasized active:scale-[0.98]"
             >
               <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary-foreground/10 blur-2xl" />
               <div className="relative space-y-3">
@@ -758,7 +758,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
                       {expanded && (
                         <div className="px-3.5 pb-3 space-y-2 animate-fade-up">
                           {wrong.length === 0 ? (
-                            <p className="body-small text-success">Nessun errore: perfetto! ✨</p>
+                            <p className="body-small text-success">Nessun errore: perfetto</p>
                           ) : (
                             wrong.map((d, i) => (
                               <div key={i} className="p-2.5 rounded-xl bg-error-container/40 border border-error/15 space-y-1">
@@ -858,7 +858,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
         </div>
         <div className="text-center space-y-1">
           <h3 className="font-display text-xl font-bold text-foreground">
-            {grade >= 8 ? "Ottimo lavoro! 🎉" : grade >= 6 ? "Buon inizio! 💪" : "Continua a studiare! 📚"}
+            {grade >= 8 ? "Ottimo lavoro" : grade >= 6 ? "Buon inizio" : "Continua a studiare"}
           </h3>
           <p className="body-medium text-muted-foreground">
             {correctCount}/{results.length} risposte corrette
@@ -926,7 +926,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         {/* Type badge */}
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full label-small bg-tertiary-container text-tertiary">
+          <span className="px-3 py-1 rounded-full label-small bg-surface-container-high text-muted-foreground">
             {currentExercise.type === "multiple_choice" ? "Scelta multipla" :
              currentExercise.type === "true_false" ? "Vero o Falso" :
              currentExercise.type === "fill_blank" ? "Completa" :
@@ -953,7 +953,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
                     className={cn(
                       "w-full text-left p-4 rounded-xl border transition-all duration-200",
                       userAnswer === opt
-                        ? "bg-primary-container border-primary/30 shadow-level-1"
+                        ? "bg-primary text-primary-foreground border-primary shadow-level-1"
                         : "bg-surface-container border-outline-variant/30 hover:bg-surface-container-high"
                     )}
                   >
@@ -1041,7 +1041,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
                 : <XCircle className="w-5 h-5 text-destructive" />
               }
               <span className="label-large">
-                {results[results.length - 1]?.isCorrect ? "Corretto! ✨" : "Non corretto"}
+                {results[results.length - 1]?.isCorrect ? "Corretto" : "Non corretto"}
               </span>
             </div>
             {!results[results.length - 1]?.isCorrect && (
@@ -1087,10 +1087,10 @@ const STAGE_STEPS: { id: GenStage; label: string; sublabel: string; icon: typeof
 ];
 
 const TIPS = [
-  "Scelgo le domande più utili per te… 🎯",
-  "Mescolo scelta multipla, V/F, abbinamenti… 🧩",
-  "Verifico le risposte e le spiegazioni… 📖",
-  "Ancora qualche secondo, sto rifinendo… ✨",
+  "Scelgo le domande più utili per te…",
+  "Mescolo scelta multipla, V/F, abbinamenti…",
+  "Verifico le risposte e le spiegazioni…",
+  "Ancora qualche secondo, sto rifinendo…",
 ];
 
 function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: GenStage; progress: number; courseName: string }) {
@@ -1110,7 +1110,7 @@ function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: Ge
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 animate-fade-up">
       <div className="relative mb-8">
-        <div className="w-28 h-28 rounded-[2rem] bg-primary text-primary-foreground flex items-center justify-center shadow-level-3 animate-float">
+        <div className="w-28 h-28 rounded-[2rem] bg-primary text-primary-foreground flex items-center justify-center shadow-level-3">
           <Dumbbell className="w-12 h-12 text-primary-foreground" />
         </div>
         <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
@@ -1178,7 +1178,7 @@ function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: Ge
         {TIPS[tipIndex]}
       </p>
       <p className="mt-6 text-center body-small text-muted-foreground/90 max-w-[320px] px-4 py-3 rounded-2xl bg-surface-container-highest/60 border border-outline-variant/20">
-        Puoi anche uscire dall'app: la generazione continua in background e ti avviseremo con una notifica quando è pronta! 🔔
+        Puoi anche uscire dall'app: la generazione continua in background e ti avviseremo con una notifica quando è pronta.
       </p>
     </div>
   );

@@ -47,7 +47,7 @@ export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: Pra
                   className={cn(
                     "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl transition-all duration-400 ease-m3-emphasized",
                     isActive
-                      ? "bg-tertiary text-tertiary-foreground shadow-level-1"
+                      ? "bg-primary text-primary-foreground shadow-level-1"
                       : "text-muted-foreground hover:bg-foreground/[0.05]"
                   )}
                 >

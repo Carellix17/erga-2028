@@ -1,7 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- QUARANTENA P21f: eredita' pre-P21.
+   Il riconoscimento vocale Web Speech usa `any` (SpeechRecognition/webkitSpeechRecognition
+   non hanno tipi DOM standard). Risanarlo richiede tipizzare l'impianto vocale = toccare
+   la logica: fuori perimetro Opal, che ridipinge solo l'estetica. */
+/* eslint-disable no-misleading-character-class, no-useless-escape -- QUARANTENA P21f: eredita'.
+   La regex filtro-emoji del TTS (riga speakIfEnabled) lavora volutamente su code unit:
+   aggiungere il flag `u` cambierebbe il testo parlato = logica. Intatta. */
 import { useState, useRef, useEffect, useCallback } from"react";
-import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX, Loader2, Trophy, Brain, ArrowLeft } from "lucide-react";
+import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX, Loader2, CheckCircle2, Brain, ArrowLeft } from "lucide-react";
 import { Button } from"@/components/ui/button";
-import { LiquidButton } from"@/components/ui/liquid-glass-button";
 import { Slider } from"@/components/ui/slider";
 import { cn } from"@/lib/utils";
 import { useAuth } from"@/contexts/AuthContext";
@@ -257,7 +263,7 @@ export function InterrogazioneView() {
  try {
  const data = await callInterrogazione("topic", { contextId: courseId });
  setCurrentQuestion(data.topic);
- const displayText = `📖 Argomento: ${data.topic}\n\nEsponi liberamente quello che sai su questo argomento. Quando hai finito, premi il pulsante di stop.`;
+ const displayText = `Argomento: ${data.topic}\n\nEsponi liberamente quello che sai su questo argomento. Quando hai finito, premi il pulsante di stop.`;
  setExchanges([{ type:"question", content: displayText }]);
  setPhase("question");
  speakIfEnabled(`Argomento: ${data.topic}. Esponi liberamente quello che sai su questo argomento.`);
@@ -496,13 +502,13 @@ export function InterrogazioneView() {
  </div>
 
  <div className="px-4 sm:px-6 py-4 bg-background border-t border-outline-variant/60">
- <LiquidButton
+ <Button
  onClick={() => selectedCourse && startInterrogazione(selectedCourse,"structured")}
  className="w-full h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
  >
  <Play className="w-5 h-5 mr-2" />
  Avvia Interrogazione
- </LiquidButton>
+ </Button>
  </div>
  </div>
  );
@@ -518,7 +524,7 @@ export function InterrogazioneView() {
  <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-5">
  <div className="text-center space-y-3">
  <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-bounce-in">
- <Trophy className="w-8 h-8" />
+ <CheckCircle2 className="w-8 h-8" />
  </div>
  <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Report finale</h2>
  <p className="body-medium text-muted-foreground">La tua interrogazione è terminata</p>
@@ -629,7 +635,7 @@ export function InterrogazioneView() {
  >
  <div className={cn("label-small mb-1", item.type === "answer" ? "text-primary-foreground/70" : "text-muted-foreground")}>
  <span className="inline-flex items-center gap-1.5">
- {item.type ==="question" ?"🎓 Tutor" : item.type ==="answer" ?"🎤 Tu" :"📝 Valutazione"}
+ {item.type ==="question" ?"Tutor" : item.type ==="answer" ?"Tu" :"Valutazione"}
  {item.type !=="answer" && i === exchanges.length - 1 && (isLoadingVoice || isSpeaking) && (
  isLoadingVoice
  ? <Loader2 className="w-3 h-3 animate-spin text-foreground/60" />
