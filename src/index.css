@@ -331,6 +331,48 @@
 
   /* ═══════ DOT GRID BACKGROUND ═══════
      Vercel/Linear inspired subtle dot pattern. Non-invasive depth cue. */
+/* 🌿 P21d — LA VETRINA AL CHIARO: la Landing resta in abito chiaro (carta
+   avorio) anche quando l'app gira in smoking nero. Uso: la pagina avvolge
+   tutto in <div className="force-light ..."> e i token lì dentro si
+   comportano come in :root. I portali (toast, sheet) restano fuori: giusto. */
+.force-light {
+  color-scheme: light;
+  --primary: 28 7% 9%;
+  --primary-foreground: 40 24% 98%;
+  --primary-container: 40 16% 93%;
+  --secondary: 40 12% 95%;
+  --secondary-foreground: 28 7% 12%;
+  --secondary-container: 40 13% 91%;
+  --tertiary: 125 16% 38%;
+  --tertiary-foreground: 0 0% 100%;
+  --tertiary-container: 122 22% 91%;
+  --destructive: 4 58% 46%;
+  --destructive-foreground: 0 0% 100%;
+  --error-container: 4 45% 94%;
+  --success: 150 24% 34%;
+  --warning: 32 68% 43%;
+  --background: 40 24% 98%;
+  --foreground: 28 7% 10%;
+  --surface-dim: 40 12% 93%;
+  --surface-bright: 0 0% 100%;
+  --surface-container-lowest: 0 0% 100%;
+  --surface-container-low: 40 20% 97%;
+  --surface-container: 40 16% 95%;
+  --surface-container-high: 40 14% 92%;
+  --surface-container-highest: 40 13% 89%;
+  --card: 0 0% 100%;
+  --card-foreground: 28 7% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 28 7% 10%;
+  --muted: 40 12% 93%;
+  --muted-foreground: 36 6% 42%;
+  --accent: 122 22% 91%;
+  --accent-foreground: 124 20% 24%;
+  --outline: 36 8% 20% / 0.20;
+  --outline-variant: 36 8% 20% / 0.10;
+  --border: 36 8% 20% / 0.10;
+  --input: 0 0% 100%;
+}
   .bg-dot-grid {
     background-color: hsl(var(--background));
     background-image: radial-gradient(hsl(var(--foreground) / 0.14) 1px, transparent 1px);

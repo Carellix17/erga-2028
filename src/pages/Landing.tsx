@@ -7,6 +7,11 @@ import { DemoFlow } from "@/components/demo/DemoFlow";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
+// 🌿 P21d ERGA OPAL — LA VETRINA. Resta vestita di chiaro (carta avorio)
+// anche quando l'app è in smoking nero: la magia è `.force-light`.
+// Via blob sfocati, puntini e colori scritti a mano: titolo 800, una goccia
+// di salvia sulla seconda riga, pill-firma in alto a destra.
+
 export default function Landing() {
   const { isAuthenticated, isLoading } = useAuth();
   const { t } = useTranslation();
@@ -20,48 +25,42 @@ export default function Landing() {
   if (isAuthenticated) return <Navigate to="/app" replace />;
 
   return (
-    <div className="min-h-screen bg-dot-grid relative overflow-hidden">
-      {/* Subtle ambient orbs */}
-      <div className="pointer-events-none fixed inset-0">
-        <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-primary/8 blur-3xl" />
-        <div className="absolute bottom-0 -left-40 w-[420px] h-[420px] rounded-full bg-tertiary/8 blur-3xl" />
-      </div>
-
-      <header className="relative z-10 flex items-center justify-between max-w-5xl mx-auto px-5 sm:px-8 h-16">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center">
-            <Brain className="w-4 h-4 text-white" />
+    <div className="force-light min-h-screen bg-background relative">
+      <header className="flex items-center justify-between max-w-5xl mx-auto px-5 sm:px-8 h-16">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+            <Brain className="w-4 h-4 text-primary-foreground" strokeWidth={1.75} />
           </div>
-          <span className="font-display text-lg text-slate-900">Erga</span>
+          <span className="font-display text-lg font-bold tracking-tight text-foreground">Erga</span>
         </div>
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-1.5 text-sm">
           <LanguageSwitcher />
           <Link
             to="/login"
-            className="px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition"
+            className="px-3 py-2 rounded-full text-muted-foreground hover:text-foreground transition-colors"
           >
             {t("landing.signIn")}
           </Link>
           <Link
             to="/registrati"
-            className="px-3 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition"
+            className="px-4 py-2 rounded-full bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity"
           >
             {t("landing.signUp")}
           </Link>
         </div>
       </header>
 
-      <main className="relative z-10 max-w-5xl mx-auto px-5 sm:px-8 pt-8 sm:pt-16 pb-24">
+      <main className="max-w-5xl mx-auto px-5 sm:px-8 pt-10 sm:pt-16 pb-24">
         <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 animate-fade-up">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4">
             {t("landing.tagline")}
           </p>
-          <h1 className="font-display font-semibold text-4xl sm:text-6xl leading-[1.05] text-slate-900 tracking-tight">
+          <h1 className="font-display font-extrabold text-4xl sm:text-6xl leading-[1.05] text-foreground tracking-tight">
             {t("landing.titleTop")}
             <br />
-            <span className="text-slate-400">{t("landing.titleBottom")}</span>
+            <span className="text-tertiary">{t("landing.titleBottom")}</span>
           </h1>
-          <p className="mt-5 text-slate-500 text-base sm:text-lg leading-relaxed">
+          <p className="mt-5 text-muted-foreground text-base sm:text-lg leading-relaxed">
             {t("landing.subtitle")}
           </p>
         </div>
@@ -69,7 +68,7 @@ export default function Landing() {
         <DemoFlow />
       </main>
 
-      <footer className="relative z-10 pb-8 text-center text-xs text-slate-400">
+      <footer className="pb-8 text-center text-xs text-muted-foreground">
         {t("landing.footer")}
       </footer>
     </div>

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +11,10 @@ import { lovable } from "@/integrations/lovable";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+
+// 🌿 P21d ERGA OPAL: la porta di casa parla il dizionario dei temi.
+// Via blob, puntini, vetro e colori scritti a mano: carta carbone/bianca,
+// tondo-firma, campi neutri. Logica (auth, OAuth, i18n) intatta.
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -88,39 +91,34 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-dot-grid flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="pointer-events-none fixed inset-0">
-        <div className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-primary/8 blur-3xl" />
-        <div className="absolute bottom-0 -left-40 w-[420px] h-[420px] rounded-full bg-tertiary/8 blur-3xl" />
-      </div>
-
-      <div className="w-full max-w-sm animate-fade-up relative z-10">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-sm animate-fade-up">
         <div className="flex justify-end mb-2"><LanguageSwitcher /></div>
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center mb-4">
-            <Brain className="w-6 h-6 text-white" />
+          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center mb-4">
+            <Brain className="w-6 h-6 text-primary-foreground" strokeWidth={1.75} />
           </div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-slate-900 text-center">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground text-center">
             Erga
           </h1>
-          <p className="text-slate-500 text-sm mt-1">{t("login.welcome")}</p>
+          <p className="text-muted-foreground text-sm mt-1">{t("login.welcome")}</p>
         </div>
 
-        <div className="rounded-3xl bg-white border border-slate-200/70 shadow-[0_8px_32px_0_rgba(15,23,42,0.04)] p-6">
+        <div className="rounded-[24px] bg-card shadow-level-1 p-6">
           <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-slate-900">{t("login.title")}</h2>
-            <p className="text-sm text-slate-500 mt-1">{t("login.subtitle")}</p>
+            <h2 className="font-display text-xl font-bold tracking-tight text-foreground">{t("login.title")}</h2>
+            <p className="text-sm text-muted-foreground mt-1">{t("login.subtitle")}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-sm font-medium">{t("login.email")}</Label>
+              <Label className="text-sm font-medium text-foreground">{t("login.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-4 top-3.5 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="email"
                   placeholder={t("login.emailPlaceholder")}
-                  className="pl-11 h-12 rounded-xl glass-subtle border-border/30 focus:border-primary/40 transition-all"
+                  className="pl-11 h-12 rounded-2xl bg-secondary/70 border-transparent focus:border-border transition-colors"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -129,12 +127,12 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium">{t("login.password")}</Label>
+              <Label className="text-sm font-medium text-foreground">{t("login.password")}</Label>
               <div className="relative">
                 <Lock className="absolute left-4 top-3.5 w-4 h-4 text-muted-foreground" />
                 <Input
                   type={showPassword ? "text" : "password"}
-                  className="pl-11 pr-12 h-12 rounded-xl glass-subtle border-border/30 focus:border-primary/40 transition-all"
+                  className="pl-11 pr-12 h-12 rounded-2xl bg-secondary/70 border-transparent focus:border-border transition-colors"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -145,9 +143,9 @@ export default function Login() {
               </div>
             </div>
 
-            <LiquidButton type="submit" className="w-full h-12 bg-primary text-primary-foreground hover:opacity-90 border-0 rounded-xl transition-all duration-300 font-semibold" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-12 text-base" disabled={isSubmitting}>
               {t("login.submit")}
-            </LiquidButton>
+            </Button>
 
             <p className="text-center text-sm text-muted-foreground">
               {t("login.noAccount")}{" "}
@@ -157,12 +155,12 @@ export default function Login() {
             </p>
 
             <div className="relative my-5">
-              <Separator className="bg-border/30" />
-              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 glass-subtle px-3 py-0.5 rounded-full text-xs text-muted-foreground">{t("login.or")}</span>
+              <Separator className="bg-border/40" />
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-3 py-0.5 rounded-full text-xs text-muted-foreground">{t("login.or")}</span>
             </div>
 
             <div className="flex flex-col gap-3">
-              <Button type="button" variant="outline" className="w-full h-12 rounded-xl glass-subtle border-border/30 hover:shadow-glass transition-all duration-300" onClick={() => handleOAuthSignIn("google")} disabled={isSubmitting}>
+              <Button type="button" variant="outline" className="w-full h-12 border-border/60 hover:bg-secondary transition-colors" onClick={() => handleOAuthSignIn("google")} disabled={isSubmitting}>
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -172,7 +170,7 @@ export default function Login() {
                 {t("login.google")}
               </Button>
 
-              <Button type="button" variant="outline" className="w-full h-12 rounded-xl bg-surface-container-high text-foreground hover:bg-surface-container-highest border border-outline-variant transition-all duration-500" onClick={() => handleOAuthSignIn("apple")} disabled={isSubmitting}>
+              <Button type="button" variant="outline" className="w-full h-12 border-border/60 hover:bg-secondary transition-colors" onClick={() => handleOAuthSignIn("apple")} disabled={isSubmitting}>
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                 </svg>

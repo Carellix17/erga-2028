@@ -4,7 +4,6 @@ import { Upload, Brain, ArrowRight, Check, Lock, Mail, Eye, EyeOff, ChevronLeft,
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { CognitiveRadar } from "@/components/profile/CognitiveRadar";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -13,6 +12,11 @@ import { cn } from "@/lib/utils";
 import { writeDemoState, type DemoHexagon } from "@/hooks/useDemoHandoff";
 import { useTranslation, Trans } from "react-i18next";
 import { currentLanguage } from "@/i18n";
+
+// 🌿 P21d ERGA OPAL: la vetrina interattiva parla il dizionario dei temi
+// (vive dentro `.force-light` → sempre in abito chiaro). Via slate fissi,
+// vetro e puntini: carte nette, tondi-firma, spunte salvia.
+// LOGICA intatta: generazione demo, esagono, muro di registrazione, i18n.
 
 type Slide = { part_title: string; content: string };
 type QuizItem = { question: string; options: string[]; correct: number; skill: string };
@@ -187,16 +191,16 @@ function InputStep({
         onDragLeave={() => setIsDragging(false)}
         onDrop={onDrop}
         className={cn(
-          "rounded-2xl border-[1.5px] border-dashed transition-all duration-300 p-6 sm:p-8 bg-card shadow-level-2",
-          isDragging ? "border-primary/60 bg-primary/5 scale-[1.01]" : "border-slate-200",
+          "rounded-[24px] border-[1.5px] border-dashed transition-colors duration-300 p-6 sm:p-8 bg-card shadow-level-1",
+          isDragging ? "border-primary/60 bg-primary/5" : "border-border",
         )}
       >
         <div className="flex flex-col items-center text-center gap-4 py-2">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
-            <Upload className="w-5 h-5 text-slate-500" />
+          <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
+            <Upload className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
           </div>
-          <p className="text-sm text-slate-500">
-            <Trans i18nKey="demo.dropHint" components={{ 1: <strong className="text-slate-800 font-medium" /> }} />
+          <p className="text-sm text-muted-foreground">
+            <Trans i18nKey="demo.dropHint" components={{ 1: <strong className="text-foreground font-medium" /> }} />
           </p>
         </div>
 
@@ -205,26 +209,26 @@ function InputStep({
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder={t("demo.placeholder")}
-            className="h-14 rounded-2xl bg-white border border-slate-200 focus-visible:border-primary/60 pl-5 text-base"
+            className="h-14 rounded-2xl bg-secondary/70 border-transparent pl-5 text-base"
             onKeyDown={(e) => e.key === "Enter" && topic.trim() && onStart()}
           />
-          <LiquidButton
+          <Button
             onClick={onStart}
             disabled={!topic.trim()}
-            className="w-full h-14 rounded-2xl bg-slate-900 text-white text-base font-medium disabled:opacity-40"
+            className="w-full h-14 text-base"
           >
             <Brain className="w-4 h-4 mr-2" />
             {t("demo.startButton")}
             <ArrowRight className="w-4 h-4 ml-2" />
-          </LiquidButton>
+          </Button>
         </div>
 
         {error && <p className="mt-3 text-sm text-destructive text-center">{error}</p>}
 
-        <p className="mt-4 text-center text-xs text-slate-400">{t("demo.noSignup")}</p>
+        <p className="mt-4 text-center text-xs text-muted-foreground">{t("demo.noSignup")}</p>
       </div>
 
-      <div className="mt-6 flex items-center justify-center gap-6 text-xs text-slate-400">
+      <div className="mt-6 flex items-center justify-center gap-6 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5 opacity-50 cursor-not-allowed">
           <Lock className="w-3 h-3" /> {t("demo.lockedGraph")}
         </span>
@@ -243,11 +247,11 @@ function GeneratingStep() {
   const { t } = useTranslation();
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-up flex flex-col items-center justify-center py-16 gap-4">
-      <div className="w-16 h-16 rounded-3xl bg-slate-900 flex items-center justify-center shadow-lg">
-        <Loader2 className="w-7 h-7 text-white animate-spin" />
+      <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center">
+        <Loader2 className="w-7 h-7 text-primary-foreground animate-spin" />
       </div>
-      <p className="font-display text-2xl text-slate-900">{t("demo.generating")}</p>
-      <p className="text-sm text-slate-500">{t("demo.generatingSub")}</p>
+      <p className="font-display font-bold text-2xl tracking-tight text-foreground">{t("demo.generating")}</p>
+      <p className="text-sm text-muted-foreground">{t("demo.generatingSub")}</p>
     </div>
   );
 }
@@ -269,14 +273,14 @@ function CourseStep({
   const showHex = completedCount > 0;
   return (
     <div className="w-full max-w-xl mx-auto animate-fade-up">
-      <button onClick={onReset} className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
+      <button onClick={onReset} className="mb-4 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ChevronLeft className="w-4 h-4" /> {t("demo.newTopic")}
       </button>
 
       <div className="mb-6">
-        <p className="text-xs uppercase tracking-widest text-slate-400 mb-1">{t("demo.yourPath")}</p>
-        <h2 className="font-display text-2xl sm:text-3xl text-slate-900 tracking-tight">{course.courseTitle}</h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">{t("demo.yourPath")}</p>
+        <h2 className="font-display font-bold text-2xl sm:text-3xl text-foreground tracking-tight">{course.courseTitle}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
           {t("demo.lessonsProgress", { done: completedCount, total: GUEST_LIMIT })}
         </p>
       </div>
@@ -290,41 +294,45 @@ function CourseStep({
               <button
                 onClick={() => (locked ? onOpenAuth() : onOpen(idx))}
                 className={cn(
-                  "w-full text-left rounded-2xl border p-4 sm:p-5 transition-all duration-300 flex items-start gap-4 group",
+                  "w-full text-left rounded-[20px] p-4 sm:p-5 transition-colors duration-300 flex items-start gap-4 group",
                   locked
-                    ? "bg-slate-50 border-slate-200 hover:border-slate-300"
+                    ? "bg-secondary/50"
                     : done
-                      ? "bg-white border-slate-900/10 shadow-[0_10px_30px_-20px_rgba(0,0,0,0.25)]"
-                      : "bg-white border-slate-200 hover:border-slate-400 hover:shadow-[0_10px_30px_-20px_rgba(0,0,0,0.25)]",
+                      ? "bg-card shadow-level-1"
+                      : "bg-card shadow-level-1 hover:bg-surface-container-high",
                 )}
               >
                 <div
                   className={cn(
-                    "w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-sm font-medium",
+                    "w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-sm font-semibold transition-colors",
                     locked
-                      ? "bg-slate-200 text-slate-500"
+                      ? "bg-secondary text-muted-foreground/60"
                       : done
-                        ? "bg-slate-900 text-white"
-                        : "bg-slate-100 text-slate-700 group-hover:bg-slate-900 group-hover:text-white transition",
+                        ? "bg-secondary"
+                        : "bg-secondary text-foreground group-hover:bg-primary group-hover:text-primary-foreground",
                   )}
                 >
-                  {locked ? <Lock className="w-4 h-4" /> : done ? <Check className="w-4 h-4" /> : idx + 1}
+                  {locked
+                    ? <Lock className="w-4 h-4" strokeWidth={1.75} />
+                    : done
+                      ? <Check className="w-4 h-4 text-tertiary" strokeWidth={2.5} />
+                      : idx + 1}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] uppercase tracking-widest text-slate-400">{t("demo.lessonLabel", { n: idx + 1 })}</span>
+                    <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("demo.lessonLabel", { n: idx + 1 })}</span>
                     {locked && (
-                      <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900 text-white">
+                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-semibold">
                         {t("demo.accountRequired")}
                       </span>
                     )}
                   </div>
-                  <h3 className="mt-0.5 font-display text-base sm:text-lg text-slate-900 truncate">{lesson.title}</h3>
+                  <h3 className="mt-0.5 font-display font-semibold text-base sm:text-lg text-foreground truncate">{lesson.title}</h3>
                   {lesson.subtitle && (
-                    <p className="mt-0.5 text-xs sm:text-sm text-slate-500 line-clamp-2">{lesson.subtitle}</p>
+                    <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground line-clamp-2">{lesson.subtitle}</p>
                   )}
                 </div>
-                <ArrowRight className={cn("w-4 h-4 mt-3 shrink-0", locked ? "text-slate-400" : "text-slate-500")} />
+                <ArrowRight className="w-4 h-4 mt-3 shrink-0 text-muted-foreground" />
               </button>
             </li>
           );
@@ -332,13 +340,13 @@ function CourseStep({
       </ol>
 
       {showHex && (
-        <div className="mt-8 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5">
+        <div className="mt-8 rounded-[20px] bg-card shadow-level-1 p-5">
           <div className="text-center mb-2">
-            <p className="text-xs uppercase tracking-widest text-slate-400">{t("demo.hexTitle")}</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">{t("demo.hexTitle")}</p>
           </div>
           <CognitiveRadar profile={hexagon} />
-          <div className="mt-3 text-center text-xs text-slate-500">
-            {t("demo.hexSave")} — <button onClick={onOpenAuth} className="underline underline-offset-2 text-slate-800">{t("demo.createAccount")}</button>.
+          <div className="mt-3 text-center text-xs text-muted-foreground">
+            {t("demo.hexSave")} — <button onClick={onOpenAuth} className="underline underline-offset-2 text-foreground">{t("demo.createAccount")}</button>.
           </div>
         </div>
       )}
@@ -385,35 +393,35 @@ function FullscreenLesson({
   const correctCount = answers.filter((a, i) => a === lesson.quiz[i].correct).length;
 
   return (
-    <div className="fixed inset-0 top-0 left-0 w-screen h-screen z-50 bg-dot-grid overflow-y-auto animate-fade-up">
+    <div className="fixed inset-0 top-0 left-0 w-screen h-screen z-50 bg-background overflow-y-auto animate-fade-up">
       {/* Top bar */}
       <div className="sticky top-0 z-10 bg-background border-b border-outline-variant/60">
         <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 sm:px-6 h-14">
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             aria-label="Chiudi lezione"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] uppercase tracking-widest text-slate-400">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
               Lezione {lessonIndex + 1} / {totalLessons}
             </p>
-            <p className="text-sm font-medium text-slate-900 truncate">{lesson.title}</p>
+            <p className="text-sm font-medium text-foreground truncate">{lesson.title}</p>
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             aria-label="Esci"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
         {/* Progress */}
-        <div className="h-[2px] bg-slate-100">
+        <div className="h-[2px] bg-secondary">
           <div
-            className="h-full bg-slate-900 transition-all duration-500 ease-out"
+            className="h-full bg-primary transition-all duration-500 ease-out"
             style={{
               width: `${
                 stage === "slide"
@@ -431,15 +439,15 @@ function FullscreenLesson({
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {stage === "slide" && (
           <div className="animate-fade-up">
-            <div className="text-xs uppercase tracking-widest text-slate-400 mb-3">
+            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
               Slide {slideIdx + 1} / {lesson.slides.length}
             </div>
-            <h2 className="font-display text-2xl sm:text-4xl text-slate-900 tracking-tight mb-5">
+            <h2 className="font-display font-bold text-2xl sm:text-4xl text-foreground tracking-tight mb-5">
               {lesson.slides[slideIdx].part_title}
             </h2>
-            <div className="rounded-3xl bg-white border border-slate-100 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.15)] p-6 sm:p-8">
+            <div className="rounded-[24px] bg-card shadow-level-1 p-6 sm:p-8">
               <p
-                className="text-slate-700 leading-relaxed whitespace-pre-line text-[15px] sm:text-base"
+                className="text-foreground/80 leading-relaxed whitespace-pre-line text-[15px] sm:text-base"
                 dangerouslySetInnerHTML={{
                   __html: lesson.slides[slideIdx].content
                     .replace(/&/g, "&amp;")
@@ -449,28 +457,28 @@ function FullscreenLesson({
                     .replace(/'/g, "&#39;")
                     .replace(
                       /\*\*(.+?)\*\*/g,
-                      "<strong class=\"text-slate-900 font-semibold\">$1</strong>",
+                      "<strong class=\"text-foreground font-semibold\">$1</strong>",
                     ),
                 }}
               />
             </div>
-            <LiquidButton
+            <Button
               onClick={nextSlide}
-              className="w-full h-14 mt-6 rounded-2xl bg-slate-900 text-white text-base font-medium"
+              className="w-full h-14 mt-6 text-base"
             >
               {slideIdx < lesson.slides.length - 1 ? "Continua" : "Vai al quiz"}
               <ArrowRight className="w-4 h-4 ml-2" />
-            </LiquidButton>
+            </Button>
           </div>
         )}
 
         {stage === "quiz" && (
           <div className="animate-fade-up">
-            <div className="text-xs uppercase tracking-widest text-slate-400 mb-3 text-center">
+            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3 text-center">
               Domanda {quizIdx + 1} / {lesson.quiz.length}
             </div>
-            <div className="rounded-3xl bg-white border border-slate-100 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.15)] p-6 sm:p-8">
-              <h3 className="font-display text-xl sm:text-2xl text-slate-900 mb-5">
+            <div className="rounded-[24px] bg-card shadow-level-1 p-6 sm:p-8">
+              <h3 className="font-display font-bold text-xl sm:text-2xl text-foreground mb-5">
                 {lesson.quiz[quizIdx].question}
               </h3>
               <div className="space-y-2">
@@ -479,10 +487,10 @@ function FullscreenLesson({
                     key={i}
                     onClick={() => setSelected(i)}
                     className={cn(
-                      "w-full text-left px-4 py-3 rounded-2xl border transition-all",
+                      "w-full text-left px-4 py-3 rounded-2xl transition-colors duration-200",
                       selected === i
-                        ? "border-slate-900 bg-slate-900 text-white"
-                        : "border-slate-200 bg-white hover:border-slate-400 text-slate-800",
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary/70 hover:bg-secondary text-foreground",
                     )}
                   >
                     {opt}
@@ -490,50 +498,50 @@ function FullscreenLesson({
                 ))}
               </div>
             </div>
-            <LiquidButton
+            <Button
               onClick={submitAnswer}
               disabled={selected === null}
-              className="w-full h-14 mt-6 rounded-2xl bg-slate-900 text-white text-base font-medium disabled:opacity-40"
+              className="w-full h-14 mt-6 text-base"
             >
               {quizIdx < lesson.quiz.length - 1 ? "Prossima" : "Vedi risultato"}
               <ArrowRight className="w-4 h-4 ml-2" />
-            </LiquidButton>
+            </Button>
           </div>
         )}
 
         {stage === "result" && (
           <div className="animate-fade-up text-center">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-900 flex items-center justify-center mb-4">
-              <CheckCircle2 className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 mx-auto rounded-full bg-secondary flex items-center justify-center mb-4">
+              <CheckCircle2 className="w-7 h-7 text-tertiary" strokeWidth={1.75} />
             </div>
-            <p className="text-xs uppercase tracking-widest text-slate-400">Lezione completata</p>
-            <h2 className="font-display text-3xl text-slate-900 mt-1 tracking-tight">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Lezione completata</p>
+            <h2 className="font-display font-bold text-3xl text-foreground mt-1 tracking-tight">
               {correctCount} / {lesson.quiz.length} corrette
             </h2>
-            <p className="mt-3 text-sm text-slate-500 max-w-md mx-auto">
-              Le tue risposte hanno aggiornato il tuo <span className="text-slate-800 font-medium">Esagono Cognitivo</span>.
+            <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
+              Le tue risposte hanno aggiornato il tuo <span className="text-foreground font-medium">Esagono Cognitivo</span>.
               Torna al percorso per continuare.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 max-w-sm mx-auto">
               {isLastGuestLesson ? (
-                <LiquidButton
+                <Button
                   onClick={onOpenAuth}
-                  className="w-full h-14 rounded-2xl bg-slate-900 text-white text-base font-medium"
+                  className="w-full h-14 text-base"
                 >
                   Sblocca la prossima lezione
                   <ArrowRight className="w-4 h-4 ml-2" />
-                </LiquidButton>
+                </Button>
               ) : (
-                <LiquidButton
+                <Button
                   onClick={onClose}
-                  className="w-full h-14 rounded-2xl bg-slate-900 text-white text-base font-medium"
+                  className="w-full h-14 text-base"
                 >
                   Torna al percorso
                   <ArrowRight className="w-4 h-4 ml-2" />
-                </LiquidButton>
+                </Button>
               )}
-              <button onClick={onClose} className="text-sm text-slate-500 hover:text-slate-900">
+              <button onClick={onClose} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Chiudi
               </button>
             </div>
@@ -600,81 +608,81 @@ function AuthWallModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-foreground/32 backdrop-blur-sm animate-fade-up p-4">
-      <div className="w-full max-w-md rounded-2xl bg-card border border-outline-variant/60 shadow-level-3 p-6 sm:p-8">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+      <div className="w-full max-w-md rounded-[24px] bg-card shadow-level-3 p-6 sm:p-8">
         <div className="flex items-center justify-between mb-1">
-          <h3 className="font-display text-xl text-slate-900">
+          <h3 className="font-display font-bold text-xl text-foreground">
             {mode === "signup" ? "Consolida la tua conoscenza" : "Bentornato"}
           </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-sm">Chiudi</button>
+          <button onClick={onClose} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Chiudi</button>
         </div>
-        <p className="text-xs text-slate-500 mb-5">
+        <p className="text-xs text-muted-foreground mb-5">
           Per sbloccare le lezioni successive di questo percorso e salvare i tuoi dati, crea un account gratuito.
         </p>
 
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-600">Email</Label>
+            <Label className="text-xs text-muted-foreground">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
+              <Mail className="absolute left-4 top-3.5 w-4 h-4 text-muted-foreground" />
               <Input
                 type="email" required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-11 h-12 rounded-xl bg-white border border-slate-200"
+                className="pl-11 h-12 rounded-2xl bg-secondary/70 border-transparent"
               />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-600">Password</Label>
+            <Label className="text-xs text-muted-foreground">Password</Label>
             <div className="relative">
-              <Lock className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
+              <Lock className="absolute left-4 top-3.5 w-4 h-4 text-muted-foreground" />
               <Input
                 type={showPassword ? "text" : "password"}
                 required minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-11 pr-12 h-12 rounded-xl bg-white border border-slate-200"
+                className="pl-11 pr-12 h-12 rounded-2xl bg-secondary/70 border-transparent"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((s) => !s)}
-                className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-700"
+                className="absolute right-4 top-3.5 text-muted-foreground hover:text-foreground transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
-          <LiquidButton
+          <Button
             type="submit"
             disabled={submitting}
-            className="w-full h-12 rounded-xl bg-slate-900 text-white font-medium disabled:opacity-40"
+            className="w-full h-12"
           >
             {submitting ? "Attendi…" : mode === "signup" ? "Crea account" : "Accedi"}
             <Check className="w-4 h-4 ml-2" />
-          </LiquidButton>
+          </Button>
 
           <Button
             type="button" variant="outline"
             onClick={google} disabled={submitting}
-            className="w-full h-12 rounded-xl border-slate-200 bg-white"
+            className="w-full h-12 border-border/60"
           >
             Continua con Google
           </Button>
 
-          <p className="text-center text-xs text-slate-500">
+          <p className="text-center text-xs text-muted-foreground">
             {mode === "signup" ? "Hai già un account? " : "Nuovo qui? "}
             <button
               type="button"
               onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-              className="text-slate-800 underline underline-offset-2"
+              className="text-foreground underline underline-offset-2"
             >
               {mode === "signup" ? "Accedi" : "Crea account"}
             </button>
           </p>
-          <p className="text-center text-xs text-slate-400">
-            <Link to="/login" className="underline underline-offset-2 hover:text-slate-700">Vai alla pagina di accesso</Link>
+          <p className="text-center text-xs text-muted-foreground">
+            <Link to="/login" className="underline underline-offset-2 hover:text-foreground">Vai alla pagina di accesso</Link>
           </p>
         </form>
       </div>

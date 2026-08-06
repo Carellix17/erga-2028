@@ -7,9 +7,11 @@ const TAGLINE = "Rebuild learning forever";
 // I tre cancelli d'avvio condividono la scena: il cronometro vive in splashState.
 
 /**
- * La scena: il quadratino scuro sui puntini fa capolino con un "pop", si stira
- * in orizzontale come il suggerimento di una tastiera che si espande, e dentro
+ * La scena: il quadratino-firma fa capolino con un "pop", si stira in
+ * orizzontale come il suggerimento di una tastiera che si espande, e dentro
  * si accendono una a una le lettere di "Rebuild learning forever".
+ * 🌿 P21d: capsula e sipario ora parlano il dizionario dei temi (nero su
+ * carta, bianco su nero) — stessa coreografia, vestito nuovo.
  */
 export function SplashScreen({ leaving = false }: { leaving?: boolean }) {
   stampSplashStart();
@@ -40,14 +42,14 @@ export function SplashScreen({ leaving = false }: { leaving?: boolean }) {
   return (
     <div
       className={cn(
-        "min-h-screen bg-dot-grid flex flex-col items-center justify-center transition-opacity duration-500 ease-out",
+        "min-h-screen bg-background flex flex-col items-center justify-center transition-opacity duration-500 ease-out",
         leaving && "opacity-0",
       )}
       role="status"
       aria-label="Erga si sta preparando"
     >
       <div
-        className="flex items-center overflow-hidden bg-slate-900 shadow-level-3"
+        className="flex items-center overflow-hidden bg-primary shadow-level-3"
         style={{
           height: expanded ? 52 : 40,
           maxWidth: expanded ? 360 : 40,
@@ -59,7 +61,7 @@ export function SplashScreen({ leaving = false }: { leaving?: boolean }) {
             : "erga-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both",
         }}
       >
-        <p className="whitespace-nowrap px-5 font-display font-semibold text-[15px] tracking-tight text-white/95 select-none">
+        <p className="whitespace-nowrap px-5 font-display font-semibold text-[15px] tracking-tight text-primary-foreground/95 select-none">
           {TAGLINE.split("").map((ch, i) => (
             <span
               key={i}
@@ -84,7 +86,7 @@ export function SplashScreen({ leaving = false }: { leaving?: boolean }) {
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="h-1.5 w-1.5 rounded-full bg-slate-400"
+            className="h-1.5 w-1.5 rounded-full bg-muted-foreground"
             style={{ animation: `erga-pulse-soft 1.1s ease-in-out ${i * 0.18}s infinite` }}
           />
         ))}
