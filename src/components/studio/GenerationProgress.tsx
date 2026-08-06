@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Network, BookOpen, Brain, Check, Zap } from "lucide-react";
+import { BookOpen, Brain, Check, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface GenerationProgressProps {
@@ -10,12 +10,17 @@ interface GenerationProgressProps {
   fileName?: string;
 }
 
+// 🌿 P21c ERGA OPAL: l'orbe coi satelliti è andato in pensione.
+// Al suo posto "il contachilometri": un anello sottile con la percentuale
+// grande al centro e la fila dei passi sotto. Il motore del caricamento
+// (l'ago che non si ferma MAI) è intatto.
+
 const tips = [
-  "L'AI sta leggendo i tuoi appunti… 📖",
-  "Stiamo trovando i concetti chiave… 🔍",
-  "Creiamo esercizi su misura per te… 🎯",
-  "Quasi pronto, un attimo di pazienza… ⏳",
-  "Il tuo percorso sta prendendo forma… ✨",
+  "L'AI sta leggendo i tuoi appunti…",
+  "Stiamo trovando i concetti chiave…",
+  "Creiamo esercizi su misura per te…",
+  "Quasi pronto, un attimo di pazienza…",
+  "Il tuo percorso sta prendendo forma…",
 ];
 
 const steps = [
@@ -89,48 +94,38 @@ export function GenerationProgress({
   if (!isGenerating && currentStep !== "complete") return null;
 
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
+  const R = 70;
+  const CIRC = 2 * Math.PI * R;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 animate-fade-up">
-      {/* Animated orb */}
-      <div className="relative mb-8">
-        <div className="w-28 h-28 rounded-[2rem] bg-primary text-primary-foreground flex items-center justify-center shadow-level-3 animate-float">
-          <Network className="w-12 h-12 text-primary-foreground" />
-        </div>
-        {/* Orbiting dots */}
-        <div className="absolute inset-0 animate-spin" style={{ animationDuration: "6s" }}>
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-foreground/50 opacity-80" />
-        </div>
-        <div className="absolute inset-0 animate-spin" style={{ animationDuration: "8s", animationDirection: "reverse" }}>
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-foreground/40 opacity-60" />
-        </div>
-        {/* Progress ring */}
-        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r="56" fill="none" stroke="hsl(var(--outline-variant))" strokeWidth="3" opacity="0.3" />
+      {/* Il contachilometri: anello sottile + numero grande */}
+      <div className="relative w-40 h-40 mb-6">
+        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r={R} fill="none" stroke="hsl(var(--secondary))" strokeWidth="6" />
           <circle
-            cx="60" cy="60" r="56" fill="none"
-            stroke="hsl(var(--primary))" strokeWidth="3.5"
+            cx="80" cy="80" r={R} fill="none"
+            stroke="hsl(var(--primary))" strokeWidth="6"
             strokeLinecap="round"
-            strokeDasharray={`${2 * Math.PI * 56}`}
-            strokeDashoffset={`${2 * Math.PI * 56 * (1 - animatedProgress / 100)}`}
+            strokeDasharray={CIRC}
+            strokeDashoffset={CIRC * (1 - animatedProgress / 100)}
             className="transition-all duration-300"
           />
         </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-4xl font-display font-extrabold tracking-tight text-foreground tabular-nums">
+            {Math.round(animatedProgress)}%
+          </span>
+        </div>
       </div>
 
-      {/* Percentage */}
-      <div className="text-center mb-6">
-        <span className="text-4xl font-display font-bold text-foreground">
-          {Math.round(animatedProgress)}%
-        </span>
-        {fileName && (
-          <p className="body-small text-primary font-medium mt-1 bg-primary-container px-3 py-1 rounded-full inline-block">
-            {fileName}
-          </p>
-        )}
-      </div>
+      {fileName && (
+        <p className="text-xs text-foreground font-medium mb-6 bg-secondary px-3 py-1.5 rounded-full max-w-[85vw] truncate">
+          {fileName}
+        </p>
+      )}
 
-      {/* Steps */}
+      {/* Passi */}
       <div className="w-full max-w-xs space-y-1.5 mb-8">
         {steps.map((step, index) => {
           const Icon = step.icon;
@@ -142,29 +137,29 @@ export function GenerationProgress({
             <div
               key={step.id}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-500",
-                isActive && "bg-primary-container scale-[1.02]",
+                "flex items-center gap-3 px-4 py-3 rounded-[18px] transition-colors duration-500",
+                isActive && "bg-surface-container-high",
                 isComplete && "opacity-60",
-                isPending && "opacity-30"
+                isPending && "opacity-40"
               )}
             >
               <div className={cn(
-                "w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-500 flex-shrink-0",
-                isActive && "bg-primary text-primary-foreground shadow-level-1",
-                isComplete && "bg-success text-success-foreground",
-                isPending && "bg-surface-container-highest text-muted-foreground"
+                "w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-500 flex-shrink-0",
+                isActive && "bg-primary text-primary-foreground",
+                isComplete && "bg-secondary",
+                isPending && "bg-secondary text-muted-foreground/60"
               )}>
                 {isComplete ? (
-                  <Check className="w-4 h-4" />
+                  <Check className="w-4 h-4 text-tertiary" strokeWidth={2.5} />
                 ) : (
-                  <Icon className={cn("w-4 h-4", isActive && "animate-pulse")} />
+                  <Icon className="w-4 h-4" strokeWidth={1.75} />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className={cn(
                   "label-large leading-tight",
-                  isActive && "text-primary font-semibold",
-                  isComplete && "text-success"
+                  isActive && "text-foreground font-semibold",
+                  isComplete && "text-muted-foreground"
                 )}>
                   {step.label}
                   {isActive && currentStep !== "complete" && dots}
@@ -189,10 +184,10 @@ export function GenerationProgress({
           >
             {tips[tipIndex]}
           </p>
-          <p className="mt-6 text-center body-small text-muted-foreground/90 max-w-[300px] px-4 py-3 rounded-2xl bg-surface-container-highest/60 border border-outline-variant/20">
-            L'AI sta elaborando la tua lezione personalizzata.
+          <p className="mt-6 text-center text-xs text-muted-foreground leading-relaxed max-w-[300px] px-4 py-3 rounded-[18px] bg-card">
+            L'AI sta elaborando il tuo percorso personalizzato.
             <br />
-            Puoi anche uscire dall'app, ti avviseremo con una notifica appena è pronta! ✨
+            Puoi anche uscire dall'app: ti avvisiamo con una notifica appena è pronto.
           </p>
         </>
       )}

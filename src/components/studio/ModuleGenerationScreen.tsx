@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 // 🏭 P10b — LA SALA D'ATTESA DELLA FABBRICA DEI MODULI.
 // Si apre quando la fabbrica (server, azione "generateModule") sta costruendo
 // un intero vagone di lezioni: barra di avanzamento animata, messaggini che
-// cambiano e il banner che rassicura — puoi anche uscire, arriva la notifica.
+// cambiano e il cartello che rassicura — puoi anche uscire, arriva la notifica.
+// 🌿 P21c ERGA OPAL: vestito sobrio (tondi neutri, niente emoji), motore intatto.
 
 interface ModuleGenerationScreenProps {
   /** Indice del modulo in lavorazione (0-based: la UI mostra +1). */
@@ -22,11 +23,11 @@ interface ModuleGenerationScreenProps {
 }
 
 const tips = [
-  "La fabbrica sta tornendo le tue lezioni… 🏭",
-  "Stiamo scrivendo spiegazioni su misura… ✍️",
-  "Prepariamo esercizi e quiz per te… 🎯",
-  "Controlliamo che ogni slide sia chiara… 🔍",
-  "Quasi fatto, gli ultimi ritocchi… ✨",
+  "La fabbrica sta tornendo le tue lezioni…",
+  "Stiamo scrivendo spiegazioni su misura…",
+  "Prepariamo esercizi e quiz per te…",
+  "Controlliamo che ogni slide sia chiara…",
+  "Quasi fatto, gli ultimi ritocchi…",
 ];
 
 export function ModuleGenerationScreen({
@@ -51,7 +52,7 @@ export function ModuleGenerationScreen({
     ? Math.min(100, Math.max(8, (generatedCount / totalLessons) * 100))
     : 8;
 
-  // 🌊 P10c: stesso "caricamento unico" dell'orbe — tra un paletto reale e
+  // 🌊 P10c: stesso "caricamento unico" dell'anello — tra un paletto reale e
   // l'altro l'ago striscia verso il paletto successivo, senza mai fermarsi.
   const capProgress = totalLessons > 0
     ? Math.min(97, ((generatedCount + 1) / totalLessons) * 100)
@@ -77,57 +78,57 @@ export function ModuleGenerationScreen({
     <div className="fixed inset-0 z-[90] bg-background flex flex-col items-center justify-center p-6 animate-fade-up overflow-y-auto">
       {/* Insegna della fabbrica */}
       <div className="relative mb-8 mt-4">
-        <div className="w-24 h-24 rounded-[1.75rem] bg-primary text-primary-foreground flex items-center justify-center shadow-level-3 animate-pulse-soft">
-          <Factory className="w-11 h-11 text-primary-foreground" />
+        <div className="w-24 h-24 rounded-full bg-card shadow-level-1 flex items-center justify-center">
+          <Factory className="w-10 h-10 text-foreground" strokeWidth={1.5} />
         </div>
-        <div className="absolute -bottom-2 -right-2 bg-card border border-outline-variant/60 rounded-full px-2.5 py-1 text-[11px] font-bold shadow-level-1">
+        <div className="absolute -bottom-1 -right-2 bg-primary text-primary-foreground rounded-full px-2.5 py-1 text-[11px] font-bold">
           Modulo {moduleIndex + 1}
         </div>
       </div>
 
-      <h2 className="font-display text-2xl font-bold text-foreground text-center mb-1">
+      <h2 className="font-display text-2xl font-bold tracking-tight text-foreground text-center mb-1">
         Sto preparando il modulo {moduleIndex + 1}
       </h2>
       {moduleTitle && (
-        <p className="body-medium text-foreground/80 font-semibold mb-1 text-center max-w-[85vw] truncate">
+        <p className="text-sm text-foreground/80 font-semibold mb-1 text-center max-w-[85vw] truncate">
           «{moduleTitle}»
         </p>
       )}
       {fileName && (
-        <p className="body-small text-primary font-medium mb-6 bg-primary-container px-3 py-1 rounded-full inline-block max-w-[90vw] truncate">
+        <p className="text-xs text-foreground font-medium mb-6 bg-secondary px-3 py-1.5 rounded-full max-w-[90vw] truncate">
           {fileName}
         </p>
       )}
 
       {/* Barra di avanzamento */}
       <div className="w-full max-w-xs mb-3">
-        <div className="h-3 rounded-full bg-secondary/60 overflow-hidden border border-outline-variant/40">
+        <div className="h-2 rounded-full bg-secondary overflow-hidden">
           <div
             className="h-full rounded-full bg-primary transition-all duration-300"
             style={{ width: `${animatedProgress}%` }}
           />
         </div>
       </div>
-      <p className="text-sm font-semibold text-foreground mb-1">
+      <p className="text-sm font-semibold text-foreground mb-1 tabular-nums">
         Lezione {Math.min(generatedCount, totalLessons)} di {totalLessons}
       </p>
       <p className="body-small text-muted-foreground mb-8 min-h-[1.5rem] text-center transition-opacity">
         {tips[tipIndex]}
       </p>
 
-      {/* Banner notifica: puoi anche uscire */}
-      <div className="w-full max-w-sm rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-4 mb-6 flex items-start gap-3">
-        <div className="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center shrink-0">
-          <Bell className="w-5 h-5 text-primary" />
+      {/* Cartello notifica: puoi anche uscire */}
+      <div className="w-full max-w-sm rounded-[18px] bg-card p-4 mb-6 flex items-start gap-3">
+        <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+          <Bell className="w-4 h-4 text-foreground" strokeWidth={1.75} />
         </div>
-        <p className="body-small text-foreground leading-relaxed">
+        <p className="body-small text-foreground leading-relaxed pt-1.5">
           Puoi anche uscire da questa schermata o chiudere l'app: ti arriva una
-          <strong> notifica</strong> quando il modulo è pronto. ✅
+          <strong> notifica</strong> quando il modulo è pronto.
         </p>
       </div>
 
       <Button variant="outline" className="h-12 px-6" onClick={onCancel}>
-        Torna al sentiero
+        Torna alle lezioni
       </Button>
     </div>
   );
