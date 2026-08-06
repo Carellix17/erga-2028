@@ -1,9 +1,8 @@
 import { useState, useCallback } from "react";
-import { X, ChevronRight, Trophy, Target, Award } from "lucide-react";
+import { X, ChevronRight, CheckCircle2, Target, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { cn } from "@/lib/utils";
-import { fireCelebration } from "@/lib/confetti";
 
 interface FinalTestProps {
   exercises: Exercise[];
@@ -27,7 +26,6 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
 
   const handleContinue = useCallback(() => {
     if (showResults) {
-      fireCelebration();
       onComplete();
       return;
     }
@@ -36,7 +34,6 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
       setAnswered(false);
     } else {
       setShowResults(true);
-      fireCelebration();
     }
   }, [currentIndex, total, showResults, onComplete]);
 
@@ -137,15 +134,17 @@ function ResultsView({ score, correctCount, total, great }: { score: number; cor
         className="w-24 h-24 rounded-full mx-auto flex items-center justify-center animate-bounce-in shadow-level-3"
         style={{ background: great ? "hsl(var(--success))" : "hsl(var(--warning))" }}
       >
-        <Trophy className="w-12 h-12 text-white" />
+        {/* 🌿 P21h — niente trofeo (decreto P21c) e niente ghost: il colore
+            giusto arriva dai gettoni semantici, che di notte si vestono da soli */}
+        <CheckCircle2 className={cn("w-12 h-12", great ? "text-success-foreground" : "text-warning-foreground")} />
       </div>
 
       <div>
-        <p className="text-5xl font-display font-bold mb-2" style={{ color: great ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
+        <p className={cn("text-5xl font-display font-bold mb-2", great ? "text-success" : "text-warning")}>
           {score}%
         </p>
         <p className={cn("font-display font-bold text-2xl mb-2", great ? "text-success" : "text-warning")}>
-          {great ? "Ottimo risultato! 🎉" : "Puoi migliorare! 💪"}
+          {great ? "Ottimo risultato" : "Puoi migliorare"}
         </p>
         <p className="body-medium text-muted-foreground">
           Hai risposto correttamente a{" "}
