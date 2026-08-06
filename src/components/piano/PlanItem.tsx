@@ -20,10 +20,10 @@ interface PlanItemProps {
 
 export function PlanItem({ item, subjectColor, onClick }: PlanItemProps) {
   const { t } = useTranslation();
-  const border = subjectColor?.border ?? "border-l-slate-300";
+  const border = subjectColor?.border ?? "border-l-foreground/25";
   const subjBadge = subjectColor
     ? cn(subjectColor.badge, subjectColor.badgeText)
-    : "bg-slate-100 text-slate-600";
+    : "bg-secondary text-muted-foreground";
 
   return (
     <div

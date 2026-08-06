@@ -18,90 +18,78 @@ export interface SubjectColor {
  badgeText: string; // badge text
 }
 
-const SUBJECT_COLORS: SubjectColor[] = [
- {
+const SUBJECT_COLORS: SubjectColor[] = [ {
  key:"storia",
  label:"Storia",
- bg:"bg-orchid-bloom/10", bgActive:"bg-orchid-bloom", text:"text-orchid-bloom", textActive:"text-black",
- border:"border-orchid-bloom/30", icon:"bg-orchid-bloom/20", gradient:"from-orchid-bloom to-pink-500", solid:"bg-orchid-bloom",
- badge:"bg-orchid-bloom/15", badgeText:"text-orchid-bloom",
- },
- {
+ bg:"bg-pastel-terracotta/10", bgActive:"bg-pastel-terracotta", text:"text-pastel-terracotta", textActive:"text-primary-foreground",
+ border:"border-pastel-terracotta/40", icon:"bg-pastel-terracotta/20", gradient:"from-pastel-terracotta/40 to-pastel-terracotta/10", solid:"bg-pastel-terracotta",
+ badge:"bg-pastel-terracotta/15", badgeText:"text-pastel-terracotta",
+ }, {
  key:"matematica",
  label:"Matematica",
- bg:"bg-iris-gleam/10", bgActive:"bg-iris-gleam", text:"text-iris-gleam", textActive:"text-white",
- border:"border-iris-gleam/30", icon:"bg-iris-gleam/20", gradient:"from-iris-gleam to-deep-iris", solid:"bg-iris-gleam",
- badge:"bg-iris-gleam/15", badgeText:"text-iris-gleam",
- },
- {
+ bg:"bg-pastel-polvere/10", bgActive:"bg-pastel-polvere", text:"text-pastel-polvere", textActive:"text-primary-foreground",
+ border:"border-pastel-polvere/40", icon:"bg-pastel-polvere/20", gradient:"from-pastel-polvere/40 to-pastel-polvere/10", solid:"bg-pastel-polvere",
+ badge:"bg-pastel-polvere/15", badgeText:"text-pastel-polvere",
+ }, {
  key:"economia",
  label:"Economia",
- bg:"bg-periwinkle/10", bgActive:"bg-periwinkle", text:"text-periwinkle", textActive:"text-black",
- border:"border-periwinkle/30", icon:"bg-periwinkle/20", gradient:"from-periwinkle to-cyan-signal", solid:"bg-periwinkle",
- badge:"bg-periwinkle/15", badgeText:"text-periwinkle",
- },
- {
+ bg:"bg-pastel-ocra/10", bgActive:"bg-pastel-ocra", text:"text-pastel-ocra", textActive:"text-primary-foreground",
+ border:"border-pastel-ocra/40", icon:"bg-pastel-ocra/20", gradient:"from-pastel-ocra/40 to-pastel-ocra/10", solid:"bg-pastel-ocra",
+ badge:"bg-pastel-ocra/15", badgeText:"text-pastel-ocra",
+ }, {
  key:"scienze",
  label:"Scienze",
- bg:"bg-cyan-signal/10", bgActive:"bg-cyan-signal", text:"text-cyan-signal", textActive:"text-black",
- border:"border-cyan-signal/30", icon:"bg-cyan-signal/20", gradient:"from-cyan-signal to-periwinkle", solid:"bg-cyan-signal",
- badge:"bg-cyan-signal/15", badgeText:"text-cyan-signal",
- },
- {
+ bg:"bg-pastel-bosco/10", bgActive:"bg-pastel-bosco", text:"text-pastel-bosco", textActive:"text-primary-foreground",
+ border:"border-pastel-bosco/40", icon:"bg-pastel-bosco/20", gradient:"from-pastel-bosco/40 to-pastel-bosco/10", solid:"bg-pastel-bosco",
+ badge:"bg-pastel-bosco/15", badgeText:"text-pastel-bosco",
+ }, {
  key:"letteratura",
  label:"Letteratura",
- bg:"bg-orchid-bloom/10", bgActive:"bg-orchid-bloom", text:"text-orchid-bloom", textActive:"text-black",
- border:"border-orchid-bloom/30", icon:"bg-orchid-bloom/20", gradient:"from-orchid-bloom to-pale-iris", solid:"bg-orchid-bloom",
- badge:"bg-orchid-bloom/15", badgeText:"text-orchid-bloom",
- },
- {
+ bg:"bg-pastel-prugna/10", bgActive:"bg-pastel-prugna", text:"text-pastel-prugna", textActive:"text-primary-foreground",
+ border:"border-pastel-prugna/40", icon:"bg-pastel-prugna/20", gradient:"from-pastel-prugna/40 to-pastel-prugna/10", solid:"bg-pastel-prugna",
+ badge:"bg-pastel-prugna/15", badgeText:"text-pastel-prugna",
+ }, {
  key:"filosofia",
  label:"Filosofia",
- bg:"bg-deep-iris/15", bgActive:"bg-deep-iris", text:"text-pale-iris", textActive:"text-white",
- border:"border-deep-iris/40", icon:"bg-deep-iris/25", gradient:"from-deep-iris to-iris-gleam", solid:"bg-deep-iris",
- badge:"bg-deep-iris/20", badgeText:"text-pale-iris",
- },
- {
+ bg:"bg-pastel-crepuscolo/10", bgActive:"bg-pastel-crepuscolo", text:"text-pastel-crepuscolo", textActive:"text-primary-foreground",
+ border:"border-pastel-crepuscolo/40", icon:"bg-pastel-crepuscolo/20", gradient:"from-pastel-crepuscolo/40 to-pastel-crepuscolo/10", solid:"bg-pastel-crepuscolo",
+ badge:"bg-pastel-crepuscolo/15", badgeText:"text-pastel-crepuscolo",
+ }, {
  key:"fisica",
  label:"Fisica",
- bg:"bg-periwinkle/10", bgActive:"bg-periwinkle", text:"text-periwinkle", textActive:"text-black",
- border:"border-periwinkle/30", icon:"bg-periwinkle/20", gradient:"from-periwinkle to-iris-gleam", solid:"bg-periwinkle",
- badge:"bg-periwinkle/15", badgeText:"text-periwinkle",
- },
- {
+ bg:"bg-pastel-mare/10", bgActive:"bg-pastel-mare", text:"text-pastel-mare", textActive:"text-primary-foreground",
+ border:"border-pastel-mare/40", icon:"bg-pastel-mare/20", gradient:"from-pastel-mare/40 to-pastel-mare/10", solid:"bg-pastel-mare",
+ badge:"bg-pastel-mare/15", badgeText:"text-pastel-mare",
+ }, {
  key:"informatica",
  label:"Informatica",
- bg:"bg-cyan-signal/10", bgActive:"bg-cyan-signal", text:"text-cyan-signal", textActive:"text-black",
- border:"border-cyan-signal/30", icon:"bg-cyan-signal/20", gradient:"from-cyan-signal to-deep-iris", solid:"bg-cyan-signal",
- badge:"bg-cyan-signal/15", badgeText:"text-cyan-signal",
- },
- {
+ bg:"bg-pastel-violetto/10", bgActive:"bg-pastel-violetto", text:"text-pastel-violetto", textActive:"text-primary-foreground",
+ border:"border-pastel-violetto/40", icon:"bg-pastel-violetto/20", gradient:"from-pastel-violetto/40 to-pastel-violetto/10", solid:"bg-pastel-violetto",
+ badge:"bg-pastel-violetto/15", badgeText:"text-pastel-violetto",
+ }, {
  key:"arte",
  label:"Arte",
- bg:"bg-orchid-bloom/10", bgActive:"bg-orchid-bloom", text:"text-orchid-bloom", textActive:"text-black",
- border:"border-orchid-bloom/30", icon:"bg-orchid-bloom/20", gradient:"from-orchid-bloom to-deep-iris", solid:"bg-orchid-bloom",
- badge:"bg-orchid-bloom/15", badgeText:"text-orchid-bloom",
- },
- {
+ bg:"bg-pastel-cipria/10", bgActive:"bg-pastel-cipria", text:"text-pastel-cipria", textActive:"text-primary-foreground",
+ border:"border-pastel-cipria/40", icon:"bg-pastel-cipria/20", gradient:"from-pastel-cipria/40 to-pastel-cipria/10", solid:"bg-pastel-cipria",
+ badge:"bg-pastel-cipria/15", badgeText:"text-pastel-cipria",
+ }, {
  key:"geografia",
  label:"Geografia",
- bg:"bg-cyan-signal/10", bgActive:"bg-cyan-signal", text:"text-cyan-signal", textActive:"text-black",
- border:"border-cyan-signal/30", icon:"bg-cyan-signal/20", gradient:"from-cyan-signal to-periwinkle", solid:"bg-cyan-signal",
- badge:"bg-cyan-signal/15", badgeText:"text-cyan-signal",
- },
- {
+ bg:"bg-pastel-oliva/10", bgActive:"bg-pastel-oliva", text:"text-pastel-oliva", textActive:"text-primary-foreground",
+ border:"border-pastel-oliva/40", icon:"bg-pastel-oliva/20", gradient:"from-pastel-oliva/40 to-pastel-oliva/10", solid:"bg-pastel-oliva",
+ badge:"bg-pastel-oliva/15", badgeText:"text-pastel-oliva",
+ }, {
  key:"diritto",
  label:"Diritto",
- bg:"bg-white/5", bgActive:"bg-white", text:"text-white", textActive:"text-black",
- border:"border-white/20", icon:"bg-white/10", gradient:"from-white to-silver", solid:"bg-white",
- badge:"bg-white/10", badgeText:"text-white",
- },
- {
+ bg:"bg-pastel-grafite/10", bgActive:"bg-pastel-grafite", text:"text-pastel-grafite", textActive:"text-primary-foreground",
+ border:"border-pastel-grafite/40", icon:"bg-pastel-grafite/20", gradient:"from-pastel-grafite/40 to-pastel-grafite/10", solid:"bg-pastel-grafite",
+ badge:"bg-pastel-grafite/15", badgeText:"text-pastel-grafite",
+ }, {
  key:"lingue",
  label:"Lingue",
- bg:"bg-orchid-bloom/10", bgActive:"bg-orchid-bloom", text:"text-orchid-bloom", textActive:"text-black",
- border:"border-orchid-bloom/30", icon:"bg-orchid-bloom/20", gradient:"from-orchid-bloom to-periwinkle", solid:"bg-orchid-bloom",
- badge:"bg-orchid-bloom/15", badgeText:"text-orchid-bloom",
+ bg:"bg-pastel-miele/10", bgActive:"bg-pastel-miele", text:"text-pastel-miele", textActive:"text-primary-foreground",
+ border:"border-pastel-miele/40", icon:"bg-pastel-miele/20", gradient:"from-pastel-miele/40 to-pastel-miele/10", solid:"bg-pastel-miele",
+ badge:"bg-pastel-miele/15", badgeText:"text-pastel-miele",
  },
 ];
 
@@ -121,13 +109,14 @@ const SUBJECT_KEYWORDS: Record<string, string[]> = {
  lingue: ["inglese","francese","tedesco","spagnolo","latino","greco","lingua","grammatica","traduzione"],
 };
 
-// Default fallback color (the primary indigo)
+// 🌿 P21e — ripiego generale: pastello neutro di casa (il solid era bg-white:
+// bianco-su-bianco di giorno! ora e' inchiostro).
 const DEFAULT_COLOR: SubjectColor = {
  key:"default",
  label:"Generale",
- bg:"bg-iris-gleam/10", bgActive:"bg-primary", text:"text-iris-gleam", textActive:"text-primary-foreground",
- border:"border-iris-gleam/30", icon:"bg-iris-gleam/20", gradient:"from-iris-gleam to-deep-iris", solid:"bg-white",
- badge:"bg-iris-gleam/15", badgeText:"text-iris-gleam",
+ bg:"bg-pastel-neutro/10", bgActive:"bg-pastel-neutro", text:"text-pastel-neutro", textActive:"text-primary-foreground",
+ border:"border-pastel-neutro/40", icon:"bg-pastel-neutro/20", gradient:"from-pastel-neutro/40 to-pastel-neutro/10", solid:"bg-foreground",
+ badge:"bg-pastel-neutro/15", badgeText:"text-pastel-neutro",
 };
 
 /**

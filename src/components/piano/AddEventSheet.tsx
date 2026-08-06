@@ -184,7 +184,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
             <div className="space-y-2">
               <Label className="label-large">{t("piano.sheet.subject")}</Label>
               <Select value={subjectId} onValueChange={setSubjectId}>
-                <SelectTrigger className="w-full h-11 rounded-2xl bg-white border border-slate-200/70 px-3 body-medium">
+                <SelectTrigger className="w-full h-11 rounded-2xl bg-secondary/70 border border-transparent px-3 body-medium transition-colors">
                   <SelectValue placeholder={t("piano.sheet.none")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -236,7 +236,7 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
             />
             {topicMode === "linked" ? (
               <Select value={courseId} onValueChange={setCourseId}>
-                <SelectTrigger className="w-full h-11 rounded-2xl bg-white border border-slate-200/70 px-3 body-medium">
+                <SelectTrigger className="w-full h-11 rounded-2xl bg-secondary/70 border border-transparent px-3 body-medium transition-colors">
                   <SelectValue placeholder={t("piano.sheet.coursePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>

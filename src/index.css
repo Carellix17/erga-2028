@@ -46,6 +46,24 @@
     --warning-container: 36 60% 93%;
     --on-warning-container: 32 45% 22%;
 
+    /* 🌿 P21e — PASTELLI DOMATI delle materie: la vecchia famiglia orchidea/iride
+       (accesa e cieca al buio) va in pensione. Ogni materia ha un pastello smorzato
+       Opal; la versione notturna vive in .dark, cosi' badge, bordi e pallini si
+       vestono da soli sia di giorno che di notte. Chiavi delle materie INVARIATE. */
+    --pastel-terracotta: 18 45% 45%;       /* storia 🧱 */
+    --pastel-polvere: 210 36% 42%;         /* matematica */
+    --pastel-ocra: 38 55% 36%;             /* economia */
+    --pastel-bosco: 145 28% 34%;           /* scienze */
+    --pastel-prugna: 320 28% 44%;          /* letteratura */
+    --pastel-crepuscolo: 230 22% 44%;      /* filosofia */
+    --pastel-mare: 185 38% 35%;            /* fisica */
+    --pastel-violetto: 250 28% 47%;        /* informatica */
+    --pastel-cipria: 350 30% 50%;          /* arte */
+    --pastel-oliva: 85 26% 34%;            /* geografia */
+    --pastel-grafite: 220 8% 34%;          /* diritto (prima era BIANCO-su-bianco!) */
+    --pastel-miele: 28 50% 42%;            /* lingue */
+    --pastel-neutro: 36 6% 46%;            /* generale (ripiego) */
+
     --background: 40 24% 98%;               /* avorio #FAF7F3 */
     --foreground: 28 7% 10%;
 
@@ -134,6 +152,22 @@
     --warning: 36 70% 62%;
     --warning-foreground: 0 0% 5%;
     --warning-container: 36 30% 13%;
+
+    /* 🌿 P21e — pastelli domati, VERSIONE NOTTURNA: stessi nomi, luminosita' alta
+       e saturazione gentile per leggere sul carbone senza accecare. */
+    --pastel-terracotta: 18 40% 66%;
+    --pastel-polvere: 210 34% 70%;
+    --pastel-ocra: 40 48% 64%;
+    --pastel-bosco: 140 24% 66%;
+    --pastel-prugna: 322 30% 72%;
+    --pastel-crepuscolo: 230 22% 72%;
+    --pastel-mare: 185 30% 64%;
+    --pastel-violetto: 250 26% 74%;
+    --pastel-cipria: 350 28% 72%;
+    --pastel-oliva: 85 24% 62%;
+    --pastel-grafite: 220 8% 70%;
+    --pastel-miele: 28 44% 66%;
+    --pastel-neutro: 36 6% 68%;
 
     --background: 0 0% 3%;                 /* nero #080808 */
     --foreground: 0 0% 96%;
@@ -677,6 +711,7 @@
   .routine-sleep-dot { background: hsl(243 45% 70%); }
   .routine-meal { background: hsl(38 85% 94% / 0.8); border: 1px solid hsl(38 70% 86% / 0.9); color: hsl(222 25% 22%); }
   .routine-meal-dot { background: hsl(38 70% 60%); }
+  .routine-other { background: hsl(var(--surface-container) / 0.85); border: 1px solid hsl(var(--outline-variant)); color: hsl(var(--muted-foreground)); }  /* 🌿 P21e — il quarto mattone routine parla in gettoni: va anche di notte */
   .animate-stagger-1 { animation-delay: 60ms; animation-fill-mode: both; }
   .animate-stagger-2 { animation-delay: 120ms; animation-fill-mode: both; }
   .animate-stagger-3 { animation-delay: 180ms; animation-fill-mode: both; }

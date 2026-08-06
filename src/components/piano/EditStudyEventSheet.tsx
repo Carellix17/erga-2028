@@ -85,7 +85,7 @@ export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEv
             <div className="space-y-2">
               <Label htmlFor="se-time" className="label-large">{t("piano.sheet.time")} {t("piano.sheet.optional")}</Label>
               <Select value={time || "__none__"} onValueChange={(v) => setTime(v === "__none__" ? "" : v)}>
-                <SelectTrigger className="w-full h-11 rounded-2xl bg-white border border-slate-200/70 px-3 body-medium">
+                <SelectTrigger className="w-full h-11 rounded-2xl bg-secondary/70 border border-transparent px-3 body-medium transition-colors">
                   <SelectValue placeholder="—" />
                 </SelectTrigger>
                 <SelectContent className="max-h-64">

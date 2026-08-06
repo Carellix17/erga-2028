@@ -24,7 +24,7 @@ const ROUTINE_STYLES: Record<RoutineKind, string> = {
   school: "routine-school",
   sleep: "routine-sleep",
   meal: "routine-meal",
-  other: "bg-slate-100/80 border-slate-200 text-slate-800",
+  other: "routine-other",
 };
 
 interface WeekPlannerProps {
@@ -156,10 +156,10 @@ export function WeekPlanner({
     const height = gridHeightPx(gridStart, gridEnd);
 
     return (
-      <div key={dayKey(day)} className="relative flex-1 min-w-[92px] border-l border-slate-100 first:border-l-0">
+      <div key={dayKey(day)} className="relative flex-1 min-w-[92px] border-l border-outline-variant first:border-l-0">
         {/* Striscia "senza orario" */}
         {untimed.length > 0 && (
-          <div className="border-b border-slate-100 bg-slate-50/60 px-1 py-1 space-y-1">
+          <div className="border-b border-outline-variant bg-secondary/50 px-1 py-1 space-y-1">
             {untimed.map((u) => {
               const col = u.kind === "evaluation" ? undefined : colorForSubject(u.subjectName);
               return (
@@ -171,8 +171,8 @@ export function WeekPlanner({
                       className={cn(
                         "block w-full text-left text-[10px] leading-tight px-1.5 py-0.5 rounded-md truncate border cursor-pointer active:scale-[0.98] transition-transform",
                         u.kind === "evaluation"
-                          ? "bg-slate-800 text-white border-slate-800"
-                          : cn(col?.bg ?? "bg-slate-100", col?.text ?? "text-slate-800", col?.border ?? "border-slate-200"),
+                          ? "bg-foreground text-background border-foreground"
+                          : cn(col?.bg ?? "bg-secondary", col?.text ?? "text-secondary-foreground", col?.border ?? "border-border"),
                       )}
                     >
                       {u.title}
@@ -190,7 +190,7 @@ export function WeekPlanner({
           {/* Giornata senza spazi liberi e senza eventi: uno stato vuoto amichevole */}
           {slots.length === 0 && rows.length === 0 && (
             <div className="absolute inset-x-0 top-1/3 flex flex-col items-center gap-1 pointer-events-none">
-              <CalendarX2 className="w-5 h-5 text-slate-300" />
+              <CalendarX2 className="w-5 h-5 text-muted-foreground/50" />
               <p className="text-[10px] text-muted-foreground">{t("piano.fullDay")}</p>
             </div>
           )}
@@ -199,7 +199,7 @@ export function WeekPlanner({
           {slots.map((s) => (
             <div
               key={`slot-${s.start}`}
-              className="absolute left-0.5 right-0.5 rounded-md bg-emerald-50/70"
+              className="absolute left-0.5 right-0.5 rounded-md bg-tertiary-container/70"
               style={{
                 top: blockTop(Math.max(s.start, gridStart), gridStart) + 1,
                 height: blockHeight(Math.min(s.end, gridEnd) - Math.max(s.start, gridStart)) - 2,
@@ -211,7 +211,7 @@ export function WeekPlanner({
           {gridHours(gridStart, gridEnd).map((h) => (
             <div
               key={h}
-              className="absolute left-0 right-0 border-t border-slate-100/70"
+              className="absolute left-0 right-0 border-t border-outline-variant"
               style={{ top: blockTop(h * 60, gridStart) }}
             />
           ))}
@@ -247,8 +247,8 @@ export function WeekPlanner({
                     className={cn(
                       "absolute text-left rounded-lg border px-1.5 py-1 overflow-hidden shadow-sm z-10 cursor-pointer active:scale-[0.98] transition-transform",
                       row.kind === "evaluation"
-                        ? "bg-slate-800 text-white border-slate-800"
-                        : cn(col?.bg ?? "bg-slate-100", col?.text ?? "text-slate-800", col?.border ?? "border-slate-200"),
+                        ? "bg-foreground text-background border-foreground"
+                        : cn(col?.bg ?? "bg-secondary", col?.text ?? "text-secondary-foreground", col?.border ?? "border-border"),
                     )}
                     style={{
                       top: row.top + 1,
@@ -312,7 +312,7 @@ export function WeekPlanner({
               aria-pressed={active}
               className={cn(
                 "flex-1 h-10 rounded-full text-xs font-semibold transition-all flex flex-col items-center justify-center",
-                active ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:bg-slate-50",
+                active ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:bg-secondary",
                 isToday(day) && !active && "text-primary",
               )}
             >
@@ -324,7 +324,7 @@ export function WeekPlanner({
       </div>
 
       {/* Desktop: 7 colonne | Mobile: solo il giorno scelto */}
-      <div className="overflow-y-auto max-h-[56vh] rounded-xl border border-slate-100 bg-white/60">
+      <div className="overflow-y-auto max-h-[56vh] rounded-xl border border-outline-variant bg-card">
         <div className="hidden md:flex">
           {hourAxis(weekRange.startMin, weekRange.endMin)}
           {daysData.map((d) => renderDayColumn(d, weekRange.startMin, weekRange.endMin))}
@@ -343,7 +343,7 @@ function DayHeader({ day, letter, selected, onClick }: { day: Date; letter: stri
     <button
       onClick={onClick}
       aria-pressed={selected}
-      className="flex-1 min-w-[92px] py-2 flex flex-col items-center gap-0.5 rounded-t-xl transition-colors hover:bg-slate-50"
+      className="flex-1 min-w-[92px] py-2 flex flex-col items-center gap-0.5 rounded-t-xl transition-colors hover:bg-secondary"
     >
       <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{letter}</span>
       <span

@@ -5,7 +5,6 @@ import { it, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -107,7 +106,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       map.set(key, arr.slice(0, 3));
     };
     for (const e of events) {
-      push(dayKey(e.event_date), colorFor(e.subject)?.solid ?? "bg-slate-300");
+      push(dayKey(e.event_date), colorFor(e.subject)?.solid ?? "bg-muted-foreground/40");
     }
     for (const ev of evaluations) {
       push(dayKey(new Date(ev.date)), null, true);
@@ -254,7 +253,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
 
       {!suggestion && (
         <div className="flex flex-row gap-3 w-full">
-          <LiquidButton
+          <Button
             size="lg"
             onClick={generatePlan}
             disabled={isGeneratingPlan}
@@ -268,7 +267,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             ) : (
               <span className="font-display font-semibold">{t("piano.generate")}</span>
             )}
-          </LiquidButton>
+          </Button>
           <Button
             type="button"
             variant="outline"
@@ -297,7 +296,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
                 aria-pressed={calendarMode === key}
                 className={cn(
                   "h-9 px-4 rounded-full text-sm font-medium transition-all flex items-center gap-1.5",
-                  calendarMode === key ? "bg-black text-white shadow-level-1" : "text-slate-700",
+                  calendarMode === key ? "bg-primary text-primary-foreground shadow-level-1" : "text-muted-foreground",
                 )}
               >
                 <Icon className="w-4 h-4" />{label}
@@ -344,7 +343,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
                         {dots.map((d, i) =>
                           d.evalDot ? (
                             // Verifiche/compiti: sbarretta scura (piu' leggibile del pallino-anellino)
-                            <span key={i} className="w-3.5 h-[3px] rounded-full bg-slate-800" />
+                            <span key={i} className="w-3.5 h-[3px] rounded-full bg-foreground" />
                           ) : (
                             <span key={i} className={cn("w-1.5 h-1.5 rounded-full", d.solid)} />
                           ),
@@ -394,7 +393,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={nothingToDelete} aria-label={t("piano.delete")} className="text-red-600 hover:text-red-700">
+              <Button variant="outline" size="sm" disabled={nothingToDelete} aria-label={t("piano.delete")} className="text-destructive hover:text-destructive">
                 <Trash2 className="w-4 h-4 mr-1" />{t("piano.delete")}<ChevronDown className="w-3 h-3 ml-1" />
               </Button>
             </DropdownMenuTrigger>
@@ -402,7 +401,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
               <DropdownMenuItem onSelect={() => setDeleteScope("study")}>
                 {t("piano.deleteStudyOnly")}
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600 focus:text-red-700" onSelect={() => setDeleteScope("all")}>
+              <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setDeleteScope("all")}>
                 {t("piano.deleteEverything")}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -421,7 +420,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
               />
               <div className="absolute -right-2 -top-2 flex gap-1.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-all duration-300">
                 <Button variant="outline" size="icon" aria-label="Modifica scadenza"
-                  className="w-8 h-8 rounded-full shadow-level-2 bg-white scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
+                  className="w-8 h-8 rounded-full shadow-level-2 bg-card scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
                   onClick={(e) => { e.stopPropagation(); setEditingEval(ev); }}>
                   <Pencil className="w-3.5 h-3.5" />
                 </Button>
@@ -454,7 +453,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
               />
               <div className="absolute -right-2 -top-2 flex gap-1.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-all duration-300">
                 <Button variant="outline" size="icon" aria-label="Modifica evento"
-                  className="w-8 h-8 rounded-full shadow-level-2 bg-white scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
+                  className="w-8 h-8 rounded-full shadow-level-2 bg-card scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
                   onClick={(e) => { e.stopPropagation(); setEditingStudyEvent(event); }}>
                   <Pencil className="w-3.5 h-3.5" />
                 </Button>
@@ -482,7 +481,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
                   onClick={() => setSelectedDate(new Date(event.event_date))} />
                 <div className="absolute -right-2 -top-2 flex gap-1.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-all duration-300">
                   <Button variant="outline" size="icon" aria-label="Modifica evento"
-                    className="w-8 h-8 rounded-full shadow-level-2 bg-white scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
+                    className="w-8 h-8 rounded-full shadow-level-2 bg-card scale-0 group-hover:scale-100 [@media(hover:none)]:scale-100 transition-transform"
                     onClick={(e) => { e.stopPropagation(); setEditingStudyEvent(event); }}>
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>
@@ -593,10 +592,10 @@ function EvaluationItem({ evaluation, subject }: { evaluation: Evaluation; subje
   const topic = evaluation.topic_type === "free" ? evaluation.free_topic_title : null;
   const subjectColor = subject ? resolveSubjectColor(subject.name, subject.color) : undefined;
   return (
-    <div className={cn("rounded-xl p-4 bg-white border border-slate-200 shadow-level-1 border-l-4", subjectColor?.border ?? "border-l-foreground")}>
+    <div className={cn("rounded-xl p-4 bg-card border border-border shadow-level-1 border-l-4", subjectColor?.border ?? "border-l-foreground")}>
       <div className="flex items-start gap-3">
         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-          subjectColor ? cn(subjectColor.solid, "text-white") : "bg-foreground text-background")}>
+          subjectColor ? cn(subjectColor.solid, "text-primary-foreground") : "bg-foreground text-background")}>
           <Icon className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
@@ -610,7 +609,7 @@ function EvaluationItem({ evaluation, subject }: { evaluation: Evaluation; subje
               </span>
             )}
             {evaluation.goal != null && (
-              <span className="label-small px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 inline-flex items-center gap-1">
+              <span className="label-small px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200 inline-flex items-center gap-1">
                 <Target className="w-3 h-3" />
                 {t("piano.goalBadge", { goal: evaluation.goal })}
               </span>
