@@ -70,13 +70,13 @@ export function PillToggle<T extends string | number>({
               grow && "flex-1",
               track
                 ? active
-                  ? "bg-black text-white shadow-level-1"
-                  : "text-slate-700 hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-level-1"
+                  : "text-muted-foreground hover:text-foreground"
                 : cn(
                     "border",
                     active
-                      ? "bg-black text-white border-black"
-                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-400",
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card border-border text-muted-foreground hover:border-foreground/40",
                   ),
             )}
           >

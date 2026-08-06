@@ -117,7 +117,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-dot-grid flex flex-col md:flex-row">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row">
       {!isFullscreen && <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />}
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -134,7 +134,7 @@ const Index = () => {
         {activeTab === "studio" && cognitive && [cognitive.log_score, cognitive.mem_score, cognitive.foc_score, cognitive.voc_score, cognitive.ans_score, cognitive.app_score].every((s) => s === 50) && (
           <button
             onClick={() => setShowOnboarding(true)}
-            className="w-full mt-4 mb-2 rounded-3xl bg-white border border-slate-200/70 px-4 py-3 flex items-center gap-3 text-left transition-all duration-300 hover:scale-[1.005] hover:border-slate-300"
+            className="w-full mt-4 mb-2 rounded-3xl bg-card border border-border px-4 py-3 flex items-center gap-3 text-left transition-all duration-300 hover:scale-[1.005] hover:border-foreground/25"
           >
             <Brain className="w-5 h-5 text-primary shrink-0" />
             <div className="flex-1">

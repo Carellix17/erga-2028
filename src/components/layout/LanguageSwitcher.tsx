@@ -5,10 +5,9 @@ import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 
 interface LanguageSwitcherProps {
   className?: string;
-  variant?: "light" | "dark";
 }
 
-export function LanguageSwitcher({ className, variant = "light" }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
   const { i18n } = useTranslation();
   const current = (i18n.resolvedLanguage || i18n.language || "it").slice(0, 2) as SupportedLanguage;
 
@@ -21,9 +20,10 @@ export function LanguageSwitcher({ className, variant = "light" }: LanguageSwitc
       aria-label={`Switch language to ${next.toUpperCase()}`}
       className={cn(
         "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors",
-        variant === "light"
-          ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-          : "text-muted-foreground hover:text-foreground hover:bg-surface-container-high",
+        // 🌿 P21i — una sola veste a gettoni per tutte le stagioni:
+        // dentro .force-light (Landing) i gettoni sono gia' chiari; nelle pagine
+        // theme-aware si vestono da soli. (Prima c'era una variante "light" in ardesia.)
+        "text-muted-foreground hover:text-foreground hover:bg-surface-container-high",
         className,
       )}
     >

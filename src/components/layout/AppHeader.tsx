@@ -39,7 +39,7 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
  </div>
  
  <div className="flex items-center gap-2.5">
-      {focusActive ? <FocusPill /> : <LanguageSwitcher variant="dark" />}
+      {focusActive ? <FocusPill /> : <LanguageSwitcher />}
  <Button
  variant={hasFiles ?"tonal" :"default"}
  size="sm"

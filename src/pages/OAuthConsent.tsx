@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- QUARANTENA P21i: eredita'.
+   Il wrapper dell'API OAuth (beta di Supabase, "not fully typed") usa `any` per le
+   risposte: tipizzarla = toccare la logica di autorizzazione = FUORI perimetro Opal. */
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,9 +58,9 @@ export default function OAuthConsent() {
   if (error) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-3xl bg-white border border-slate-200 p-6 text-center">
-          <h1 className="text-lg font-semibold text-slate-900">Autorizzazione non disponibile</h1>
-          <p className="text-sm text-slate-500 mt-2">{error}</p>
+        <div className="max-w-md w-full rounded-3xl bg-card border border-border p-6 text-center">
+          <h1 className="text-lg font-semibold text-foreground">Autorizzazione non disponibile</h1>
+          <p className="text-sm text-muted-foreground mt-2">{error}</p>
         </div>
       </main>
     );
@@ -65,7 +68,7 @@ export default function OAuthConsent() {
   if (!details) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-sm text-slate-500">Caricamento…</div>
+        <div className="text-sm text-muted-foreground">Caricamento…</div>
       </main>
     );
   }
@@ -73,12 +76,12 @@ export default function OAuthConsent() {
   const clientName = details.client?.name ?? "un'app esterna";
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6 bg-dot-grid">
-      <div className="max-w-md w-full rounded-3xl bg-white border border-slate-200 shadow-[0_8px_32px_0_rgba(15,23,42,0.06)] p-6">
-        <h1 className="text-xl font-semibold text-slate-900">
+    <main className="min-h-screen flex items-center justify-center p-6 bg-background">
+      <div className="max-w-md w-full rounded-3xl bg-card border border-border shadow-level-2 p-6">
+        <h1 className="text-xl font-semibold text-foreground">
           Collega {clientName} a Erga
         </h1>
-        <p className="text-sm text-slate-500 mt-2">
+        <p className="text-sm text-muted-foreground mt-2">
           {clientName} potrà accedere ai tuoi materiali di studio (contesti e mini-lezioni)
           agendo come te tramite l'MCP di Erga. Puoi revocare l'accesso in qualsiasi momento.
         </p>
@@ -86,7 +89,7 @@ export default function OAuthConsent() {
           <Button variant="outline" className="flex-1 h-11 rounded-xl" disabled={busy} onClick={() => decide(false)}>
             Nega
           </Button>
-          <Button className="flex-1 h-11 rounded-xl bg-black text-white hover:bg-stone-900" disabled={busy} onClick={() => decide(true)}>
+          <Button className="flex-1 h-11 rounded-xl" disabled={busy} onClick={() => decide(true)}>
             Autorizza
           </Button>
         </div>

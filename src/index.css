@@ -363,8 +363,6 @@
     background: hsl(var(--primary));
   }
 
-  /* ═══════ DOT GRID BACKGROUND ═══════
-     Vercel/Linear inspired subtle dot pattern. Non-invasive depth cue. */
 /* 🌿 P21d — LA VETRINA AL CHIARO: la Landing resta in abito chiaro (carta
    avorio) anche quando l'app gira in smoking nero. Uso: la pagina avvolge
    tutto in <div className="force-light ..."> e i token lì dentro si
@@ -407,13 +405,6 @@
   --border: 36 8% 20% / 0.10;
   --input: 0 0% 100%;
 }
-  .bg-dot-grid {
-    background-color: hsl(var(--background));
-    background-image: radial-gradient(hsl(var(--foreground) / 0.14) 1px, transparent 1px);
-    background-size: 22px 22px;
-    background-position: 0 0;
-  }
-
   /* ═══════ CINEMATIC ENTER ═══════
      Soft fade + micro scale-up. No bounce. */
   @keyframes cinematic-enter {

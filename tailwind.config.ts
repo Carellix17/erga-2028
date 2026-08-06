@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- QUARANTENA P21i: eredita'.
+   I plugin Tailwind si registrano con require() (forma ufficiale dei config). */
 import type { Config } from "tailwindcss";
 
 export default {
@@ -97,13 +99,6 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        "iris-gleam": "#847dff",
-        "cyan-signal": "#00b3dd",
-        "pale-iris": "#d1c9ff",
-        "deep-iris": "#4b49aa",
-        "orchid-bloom": "#dd90d8",
-        "periwinkle": "#90b8f0",
-        silver: "#cacaca",
         // 🌿 P21e — pastelli materia domati (i valori vivono in index.css, dual-theme)
         "pastel-terracotta": "hsl(var(--pastel-terracotta))",
         "pastel-polvere": "hsl(var(--pastel-polvere))",
