@@ -720,7 +720,8 @@
   .routine-sleep-dot { background: hsl(243 45% 70%); }
   .routine-meal { background: hsl(38 85% 94% / 0.8); border: 1px solid hsl(38 70% 86% / 0.9); color: hsl(222 25% 22%); }
   .routine-meal-dot { background: hsl(38 70% 60%); }
-  .routine-other { background: hsl(var(--surface-container) / 0.85); border: 1px solid hsl(var(--outline-variant)); color: hsl(var(--muted-foreground)); }  /* 🌿 P21e — il quarto mattone routine parla in gettoni: va anche di notte */
+  .routine-other { background: hsl(var(--surface-container) / 0.85); border: 1px solid hsl(var(--outline-variant)); color: hsl(var(--muted-foreground)); }
+  .routine-other-dot { background: hsl(var(--muted-foreground)); }  /* 🌿 P21j — anche il puntino del mattone Altro parla in gettoni */  /* 🌿 P21e — il quarto mattone routine parla in gettoni: va anche di notte */
   .animate-stagger-1 { animation-delay: 60ms; animation-fill-mode: both; }
   .animate-stagger-2 { animation-delay: 120ms; animation-fill-mode: both; }
   .animate-stagger-3 { animation-delay: 180ms; animation-fill-mode: both; }

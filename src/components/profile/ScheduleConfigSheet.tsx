@@ -29,7 +29,7 @@ const KIND_STYLES: Record<RoutineKind, { chip: string; dot: string }> = {
   school: { chip: "routine-school", dot: "routine-school-dot" },
   sleep:  { chip: "routine-sleep",  dot: "routine-sleep-dot" },
   meal:   { chip: "routine-meal",   dot: "routine-meal-dot" },
-  other:  { chip: "bg-slate-100 border-slate-200/80 text-slate-900", dot: "bg-slate-400" },
+  other:  { chip: "routine-other", dot: "routine-other-dot" },
 };
 
 // 1 = Mon ... 7 = Sun
@@ -348,7 +348,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-[2rem] pb-safe bg-[#FCFCFC] max-h-[94vh] overflow-y-auto p-4"
+        className="rounded-t-[2rem] pb-safe bg-background max-h-[94vh] overflow-y-auto p-4"
       >
         <SheetHeader className="mb-4">
           <SheetTitle className="title-large font-display">Orari e Materie</SheetTitle>
@@ -366,7 +366,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
               onChange={(e) => setNewSubject(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddSubject(); } }}
               placeholder="Es. Matematica"
-              className="rounded-2xl h-11 bg-white border border-slate-200/70"
+              className="rounded-2xl h-11 bg-card border border-border"
             />
             <Button
               onClick={handleAddSubject}
@@ -383,7 +383,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
               return (
                 <span
                   key={s.id}
-                  className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200/70 pl-2.5 pr-1 py-1 text-sm animate-scale-in"
+                  className="inline-flex items-center gap-2 rounded-full bg-card border border-border pl-2.5 pr-1 py-1 text-sm animate-scale-in"
                 >
                   <Popover>
                     <PopoverTrigger asChild>
@@ -392,7 +392,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                         aria-label={`Cambia colore di ${s.name}`}
                         title="Cambia colore"
                       >
-                        <span className={cn("w-3 h-3 rounded-full ring-2 ring-offset-1", col.solid, s.color ? "ring-slate-300" : "ring-transparent")} />
+                        <span className={cn("w-3 h-3 rounded-full ring-2 ring-offset-1", col.solid, s.color ? "ring-border" : "ring-transparent")} />
                         {s.name}
                       </button>
                     </PopoverTrigger>
@@ -407,7 +407,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                             className={cn(
                               "w-6 h-6 rounded-full transition-transform hover:scale-110",
                               c.solid,
-                              (s.color === c.key || (!s.color && col.key === c.key)) && "ring-2 ring-offset-2 ring-slate-800",
+                              (s.color === c.key || (!s.color && col.key === c.key)) && "ring-2 ring-offset-2 ring-foreground",
                             )}
                           />
                         ))}
@@ -424,7 +424,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                   </Popover>
                   <button
                     onClick={() => delSubject.mutate(s.id)}
-                    className="rounded-full p-1 hover:bg-slate-100 transition"
+                    className="rounded-full p-1 hover:bg-muted transition"
                     aria-label={`Rimuovi ${s.name}`}
                   >
                     <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
@@ -453,9 +453,9 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
             </Button>
           </div>
 
-          <div className="rounded-2xl bg-white border border-slate-200/70 overflow-hidden">
+          <div className="rounded-2xl bg-card border border-border overflow-hidden">
             {/* Mobile: day selector pills */}
-            <div className="md:hidden flex items-center justify-between gap-1 px-3 pt-3 pb-2 border-b border-slate-100">
+            <div className="md:hidden flex items-center justify-between gap-1 px-3 pt-3 pb-2 border-b border-muted">
               {DAYS.map((d) => {
                 const active = mobileDay === d.n;
                 return (
@@ -468,7 +468,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                       "flex-1 h-9 rounded-full text-xs font-semibold transition-all duration-300",
                       active
                         ? "bg-foreground text-background scale-[1.04] shadow-sm"
-                        : "text-muted-foreground hover:bg-slate-50"
+                        : "text-muted-foreground hover:bg-muted/50"
                     )}
                   >
                     {d.short}
@@ -481,11 +481,11 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
             <div className="hidden md:block overflow-x-auto">
               <div className="min-w-[560px]">
                 <div className="grid" style={{ gridTemplateColumns: "44px repeat(7, minmax(0, 1fr))" }}>
-                  <div className="border-b border-slate-100" />
+                  <div className="border-b border-muted" />
                   {DAYS.map((d) => (
                     <div
                       key={d.n}
-                      className="text-center py-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-slate-100"
+                      className="text-center py-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-muted"
                     >
                       {d.short}
                     </div>
@@ -516,7 +516,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                   {DAYS.map((d) => (
                     <div
                       key={d.n}
-                      className="relative border-l border-slate-100"
+                      className="relative border-l border-muted"
                       style={{ height: GRID_HEIGHT }}
                     >
                       {/* Righe orarie cliccabili */}
@@ -524,7 +524,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                         <button
                           key={h}
                           onClick={() => openCreate({ day: d.n, hour: h })}
-                          className="absolute left-0 right-0 border-b border-slate-100/80 hover:bg-slate-50/70 transition-colors"
+                          className="absolute left-0 right-0 border-b border-muted hover:bg-muted/60 transition-colors"
                           style={{ top: i * ROW_H, height: ROW_H }}
                           aria-label={`Aggiungi blocco ${d.label} ${h}:00`}
                         />
@@ -590,12 +590,12 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                 </div>
 
                 {/* Colonna giorno attivo */}
-                <div className="relative border-l border-slate-100" style={{ height: GRID_HEIGHT }}>
+                <div className="relative border-l border-muted" style={{ height: GRID_HEIGHT }}>
                   {HOURS.map((h, i) => (
                     <button
                       key={h}
                       onClick={() => openCreate({ day: mobileDay, hour: h })}
-                      className="absolute left-0 right-0 border-b border-slate-100/80 hover:bg-slate-50/70 transition-colors"
+                      className="absolute left-0 right-0 border-b border-muted hover:bg-muted/60 transition-colors"
                       style={{ top: i * ROW_H, height: ROW_H }}
                       aria-label={`Aggiungi blocco ${dayName(mobileDay)} ${h}:00`}
                     />
@@ -672,7 +672,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                         "px-3 py-1.5 rounded-full text-sm border transition-all duration-300",
                         active
                           ? `${st.chip} shadow-sm scale-105`
-                          : "bg-white text-foreground border-slate-200 hover:bg-slate-50"
+                          : "bg-card text-foreground border-border hover:bg-muted/50"
                       )}
                     >
                       <span className={cn("inline-block w-2 h-2 rounded-full mr-1.5 align-middle", st.dot)} />
@@ -689,7 +689,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                 value={rLabel}
                 onChange={(e) => setRLabel(e.target.value)}
                 placeholder="Es. Scuola mattina"
-                className="rounded-2xl h-11 mt-1.5 bg-white border border-slate-200/70"
+                className="rounded-2xl h-11 mt-1.5 bg-card border border-border"
               />
             </div>
 
@@ -697,12 +697,12 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
               <div>
                 <Label className="label-medium text-muted-foreground">Inizio</Label>
                 <Input type="time" value={rStart} onChange={(e) => setRStart(e.target.value)}
-                  className="rounded-2xl h-11 mt-1.5 bg-white border border-slate-200/70" />
+                  className="rounded-2xl h-11 mt-1.5 bg-card border border-border" />
               </div>
               <div>
                 <Label className="label-medium text-muted-foreground">Fine</Label>
                 <Input type="time" value={rEnd} onChange={(e) => setREnd(e.target.value)}
-                  className="rounded-2xl h-11 mt-1.5 bg-white border border-slate-200/70" />
+                  className="rounded-2xl h-11 mt-1.5 bg-card border border-border" />
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground -mt-2">
@@ -724,7 +724,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                         "flex-1 h-10 rounded-xl text-sm font-semibold border transition-all duration-300",
                         active
                           ? "bg-foreground text-background border-foreground scale-[1.03]"
-                          : "bg-white text-muted-foreground border-slate-200 hover:bg-slate-50"
+                          : "bg-card text-muted-foreground border-border hover:bg-muted/50"
                       )}
                     >
                       {d.short}
@@ -739,7 +739,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                 variant="outline"
                 onClick={handleDeleteRoutine}
                 disabled={delRoutine.isPending}
-                className="w-full h-11 rounded-2xl bg-white border-red-200/80 text-red-600 hover:bg-red-50 hover:text-red-700"
+                className="w-full h-11 rounded-2xl bg-card border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
                 {delRoutine.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
                 Elimina blocco
@@ -750,7 +750,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
               <Button
                 variant="outline"
                 onClick={() => setModalOpen(false)}
-                className="flex-1 h-11 rounded-2xl bg-white border-slate-200/70"
+                className="flex-1 h-11 rounded-2xl"
               >
                 Annulla
               </Button>
