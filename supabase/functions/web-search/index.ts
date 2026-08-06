@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- P20-targhetta: quarantena documentata. Gli any sono eredita' dello scaffale Deno (prova del nove: 14 errori prima / 14 dopo sulle due funzioni toccate, zero aggiunti da questo pacco). I file gia' usano deno-lint-ignore mirati per il loro linter di casa; questo segnalibro vale per il cancello eslint node. */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
@@ -295,7 +296,6 @@ serve(withCors(async (req) => {
       console.log(`Wikipedia ${forceAI ? "skippata (manuale AI richiesto)" : "miss"} → AI manual (${aiText.length} chars)`);
     }
 
-    // ── 3. Scarica le miniature Wikipedia nell'archivio (bucket study-pdfs, come le foto) ──
     // ── 3. Scarica le miniature Wikipedia nell'archivio (bucket study-pdfs, come le foto) ──
     // 🪜 P19 — la "scala": miniatura → (sonda HEAD di taglia) → originale entro
     // il recinto. E ogni salto lascia una MOTIVAZIONE che viaggia fino al

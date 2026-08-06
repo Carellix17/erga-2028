@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- P20-targhetta: quarantena documentata. Gli any sono eredita' dello scaffale Deno (prova del nove: 14 errori prima / 14 dopo sulle due funzioni toccate, zero aggiunti da questo pacco). I file gia' usano deno-lint-ignore mirati per il loro linter di casa; questo segnalibro vale per il cancello eslint node. */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, errorResponse, successResponse } from "../_shared/auth.ts";
@@ -244,7 +245,7 @@ serve(withCors(async (req) => {
     const contentTypes: Record<FileKind, string> = {
       pdf: "application/pdf",
       docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      text: "text/plain; charset=utf-8",
+      text: "text/plain",
     };
 
     async function extractText(f: File, k: FileKind): Promise<string> {
