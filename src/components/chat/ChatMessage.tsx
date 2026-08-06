@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Brain, BookOpen, ChevronDown, Zap, Check, ImageOff, GraduationCap } from "lucide-react";
+import { Brain, BookOpen, ChevronDown, Zap, Check, ImageOff, GraduationCap, TriangleAlert } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useTranslation } from "react-i18next";
 import { ChatSource, AgentAction, AgentFormValues, AgentEvalType, isEvaluationAction } from "@/lib/chatProtocol";
@@ -185,7 +185,7 @@ function ActionFormCard({
   const pill = (on: boolean) =>
     cn(
       "px-3 h-8 rounded-full border text-[11px] font-medium transition-all",
-      on ? "bg-black text-white border-black" : "bg-white border-slate-200 text-slate-700 hover:border-slate-400",
+      on ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:border-foreground/40",
     );
 
   return (
@@ -224,7 +224,7 @@ function ActionFormCard({
         placeholder={t("chat.form.title")}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="h-9 rounded-xl bg-white border-slate-200/70 text-[12px]"
+        className="h-9 rounded-xl bg-card border-border text-[12px]"
       />
 
       {/* Data + orario */}
@@ -234,20 +234,20 @@ function ActionFormCard({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="h-9 rounded-xl bg-white border-slate-200/70 text-[12px]"
+          className="h-9 rounded-xl bg-card border-border text-[12px]"
         />
         <Input
           aria-label={t("chat.form.time")}
           type="time"
           value={time}
           onChange={(e) => setTime(e.target.value)}
-          className="h-9 rounded-xl bg-white border-slate-200/70 text-[12px]"
+          className="h-9 rounded-xl bg-card border-border text-[12px]"
         />
       </div>
 
       {/* Materia (obbligatoria se lo studente ne ha) */}
       <Select value={subjectId} onValueChange={setSubjectId}>
-        <SelectTrigger aria-label={t("chat.form.subject")} className="w-full h-9 rounded-xl bg-white border border-slate-200/70 px-3 text-[12px]">
+        <SelectTrigger aria-label={t("chat.form.subject")} className="w-full h-9 rounded-xl bg-card border border-border px-3 text-[12px]">
           <SelectValue placeholder={t("chat.form.subject")} />
         </SelectTrigger>
         <SelectContent>
@@ -272,7 +272,7 @@ function ActionFormCard({
       {/* Percorso (opzionale) */}
       {courses.length > 0 && (
         <Select value={courseId} onValueChange={setCourseId}>
-          <SelectTrigger aria-label={t("chat.form.course")} className="w-full h-9 rounded-xl bg-white border border-slate-200/70 px-3 text-[12px]">
+          <SelectTrigger aria-label={t("chat.form.course")} className="w-full h-9 rounded-xl bg-card border border-border px-3 text-[12px]">
             <SelectValue placeholder={t("chat.form.course")} />
           </SelectTrigger>
           <SelectContent>
@@ -349,7 +349,7 @@ export function ChatMessage({ message, onExecuteAction, executedActions }: ChatM
       >
         {!isUser && (
           <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-level-1">
-            <Brain className="w-4 h-4 text-white" />
+            <Brain className="w-4 h-4" />
           </div>
         )}
 
@@ -420,7 +420,7 @@ export function ChatMessage({ message, onExecuteAction, executedActions }: ChatM
 
             {message.interrupted && !isUser && (
               <p className="mt-2 text-[11px] text-warning flex items-center gap-1">
-                ⚠️ {t("chat.interrupted")}
+                <TriangleAlert className="w-3.5 h-3.5" aria-hidden="true" /> {t("chat.interrupted")}
               </p>
             )}
           </div>

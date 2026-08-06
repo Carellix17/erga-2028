@@ -70,7 +70,7 @@ export function ChatHistory({ conversations, activeId, onSelect, onNew, onDelete
                 {conv.title}
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                {conv.context_id && conv.topic_title ? `📂 ${conv.topic_title} · ` : ""}
+                {conv.context_id && conv.topic_title ? `${conv.topic_title} · ` : ""}
                 {formatDate(conv.updated_at)}
               </p>
             </div>
