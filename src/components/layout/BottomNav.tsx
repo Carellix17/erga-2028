@@ -20,7 +20,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const { t } = useTranslation();
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe px-3 sm:px-4 pb-8 sm:pb-6 pointer-events-none md:static md:z-auto md:pb-0 md:px-0 md:sm:px-0 md:sm:pb-0 md:w-64 md:h-screen md:sticky md:top-0 md:left-0 md:self-start md:pointer-events-auto md:shrink-0">
-      <div className="bg-background border border-border max-w-lg mx-auto pointer-events-auto rounded-full -translate-y-1 shadow-level-2 transition-colors duration-200 md:max-w-none md:mx-0 md:w-full md:h-full md:rounded-none md:translate-y-0 md:border-0 md:border-r">
+      <div className="bg-background border border-border max-w-lg mx-auto pointer-events-auto rounded-full -translate-y-1 shadow-level-3 transition-all duration-200 md:max-w-none md:mx-0 md:w-full md:h-full md:rounded-none md:translate-y-0 md:border-0 md:border-r">
         <div className="flex items-center justify-around h-[4.5rem] sm:px-6 rounded-full opacity-100 px-[10px] pb-0 md:shadow-none md:rounded-none md:flex-col md:items-stretch md:justify-start md:gap-1 md:h-full md:px-3 md:py-6 md:pb-6">
           <div className="hidden md:flex items-center gap-2 px-3 pb-6">
             <span className="font-display font-bold text-xl text-foreground tracking-tight">Erga</span>

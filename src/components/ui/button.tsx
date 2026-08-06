@@ -10,9 +10,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
+          "bg-primary text-primary-foreground shadow-level-0 hover:opacity-90 hover:shadow-level-1 hover:-translate-y-px rounded-full state-layer",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
+          "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90 hover:shadow-level-1 hover:-translate-y-px rounded-full state-layer",
         outline:
           "border border-border bg-transparent text-foreground hover:bg-foreground/[0.06] rounded-full",
         secondary:
