@@ -27,7 +27,7 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
  <>
  <header className="sticky top-0 z-40 bg-background border-b border-border shadow-level-1 transition-all duration-200">
  <div className="flex items-center justify-between h-16 px-4 sm:px-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto">
- <div className="flex items-center gap-3 animate-fade-up">
+ <div className="flex items-center gap-2 sm:gap-3 animate-fade-up min-w-0">
  <SubscriptionBadge tier={tier} onClick={() => setShowSubscription(true)} />
  <div>
  <span className="font-display font-bold text-xl text-foreground tracking-tight">
@@ -38,16 +38,17 @@ export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
  <SaveStatusDot />
  </div>
  
- <div className="flex items-center gap-2.5">
+ <div className="flex items-center gap-1.5 sm:gap-2.5">
       {focusActive ? <FocusPill /> : <LanguageSwitcher />}
  <Button
  variant={hasFiles ?"tonal" :"default"}
  size="sm"
  onClick={onUploadClick}
+ aria-label={hasFiles ? t("header.files") : t("header.upload")}
  className="gap-2"
  >
  <FileUp className="w-4 h-4" />
- {hasFiles ? t("header.files") : t("header.upload")}
+ <span className="hidden min-[400px]:inline">{hasFiles ? t("header.files") : t("header.upload")}</span>
  </Button>
  <Button asChild variant="ghost" size="icon-sm" aria-label="Impostazioni">
  <Link to="/app/impostazioni">

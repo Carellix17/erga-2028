@@ -335,6 +335,14 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* 🧷 P23a — cintura anti-straripo: la pagina non si trascina piu' di lato.
+     overflow-x: clip NON crea un contenitore di scroll (le testate sticky
+     continuano a funzionare); dove il browser non lo conosce viene ignorato
+     e tutto resta come prima (nessun rischio, solo assicurazione). */
+  html, body {
+    overflow-x: clip;
+  }
 }
 
 @layer utilities {
