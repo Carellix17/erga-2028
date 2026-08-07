@@ -383,8 +383,8 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       </div>
 
       {/* Section Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="title-medium font-display font-semibold">
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+        <h1 className="title-medium font-display font-semibold min-w-0 break-words">
           {selectedDate ? format(selectedDate, "d MMMM yyyy", { locale: dateLocale }) : t("piano.upcoming")}
         </h1>
         <div className="flex gap-2">
