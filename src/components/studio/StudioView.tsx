@@ -2,15 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { FullscreenLessonGate } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
 import { LessonsList } from "./LessonsList";
-import { CourseSelector } from "./CourseSelector";
 import { GenerationProgress } from "./GenerationProgress";
 import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
 import { PathHero } from "./PathHero";
+import { cleanCourseName } from "@/lib/courseName";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, RefreshCw, Sparkles, FilePlus2, AlertTriangle } from "lucide-react";
+import { Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
@@ -476,16 +476,70 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     if (index > cachedCurrentIndex) updateProgress.mutate(index);
   };
 
+  // ── 🌲 P24: comandi del corso, usati dal banner (PathHero) ──
+  const handleSelectCourse = (contextId: string) => {
+    // 📌 P17: lo spillo del "vai a quel corso" vale solo per l'arrivo —
+    // toccare un altro corso a mano lo stacca SUBITO (era il bug del comando ignorato).
+    onClearContext?.();
+    setActiveContextId(contextId);
+    setActiveLessonIndex(null);
+    setCurrentLessonIndex(0);
+    // ⚡ P16: il furgoncino parte SUBITO, prima ancora di ridisegnare:
+    // quando Studio torna su questo percorso, la lista è quasi sempre pronta.
+    void queryClient.prefetchQuery({
+      queryKey: lessonsKeys.list(currentUser, contextId),
+      queryFn: () => fetchLessonsList(currentUser, contextId),
+    });
+  };
+
+  const activeCourseId = activeContextId ?? effectiveContextId;
+
+  const handleRegenerateCourse = async () => {
+    await handleGenerateLessons();
+  };
+
+  const handleOpenMaterials = () => {
+    if (effectiveContextId) onOpenCourseMaterials?.(effectiveContextId);
+  };
+
+  const handleRenameCourse = async (newName: string) => {
+    const ctx = allContexts.find((c) => c.id === activeCourseId);
+    if (!ctx) return;
+    const original = ctx.file_name || "";
+    const prefix = original.startsWith("🌐") ? "🌐 " : "";
+    const suffix = /\.pdf$/i.test(original) ? ".pdf" : "";
+    const finalName = `${prefix}${newName}${suffix}`;
+    try {
+      const { error } = await supabase
+        .from("study_contexts")
+        .update({ file_name: finalName })
+        .eq("id", ctx.id);
+      if (error) throw error;
+      invalidateContexts();
+      toast({ title: "Corso rinominato" });
+    } catch (err) {
+      console.error("Error renaming course:", err);
+      toast({ title: "Errore", description: "Impossibile rinominare il corso", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteCourse = async () => {
+    if (!activeCourseId) return;
+    try {
+      await deleteContextMutation.mutateAsync(activeCourseId);
+      toast({ title: "Corso eliminato" });
+      setActiveContextId(null);
+      onClearContext?.();
+    } catch (err) {
+      toast({ title: "Errore", description: err instanceof Error ? err.message : "Impossibile eliminare", variant: "destructive" });
+    }
+  };
+
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
   // 🌲 P24 — la generazione NON sostituisce più la schermata: vive nello spazio.
   // Nome del percorso senza estensione né prefissi emoji (per l'eroe).
-  const heroTitle = contextFileName
-    ? contextFileName
-        .replace(/\.(pdf|docx|doc|txt|md|pptx?|xlsx?|jpe?g|png|webp|heic|heif)$/i, "")
-        .replace(/^🌐\s*/, "")
-        .trim() || null
-    : null;
+  const heroTitle = contextFileName ? cleanCourseName(contextFileName) || null : null;
 
   // Prima generazione (nessuna lezione ancora): eroe-fabbrica + pannello fasi.
   if (isGenerating && lessons.length === 0) {
@@ -497,6 +551,17 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           totalLessons={0}
           isGenerating
           progressPercent={generationPercent}
+          courses={allContexts}
+          activeCourseId={activeCourseId}
+          onSelectCourse={handleSelectCourse}
+          onRegenerate={handleRegenerateCourse}
+          onOpenMaterials={handleOpenMaterials}
+          onRenameCourse={handleRenameCourse}
+          onDeleteCourse={handleDeleteCourse}
+          hasNewMaterial={!!activeContext?.new_material_pending}
+          generationBlocked={generationBlocked}
+          freeLimitMessage={FREE_LIMIT_MESSAGE}
+          isRegenerating={isGenerating || !!moduleJob}
         />
         <GenerationProgress
           compact
@@ -592,26 +657,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   const currentLesson = activeLessonIndex !== null ? lessons[activeLessonIndex] : null;
   const allGenerated = lessons.length > 0 && lessons.every(l => l.is_generated);
 
-  const handleSelectCourse = (contextId: string) => {
-    // 📌 P17: lo spillo del "vai a quel corso" vale solo per l'arrivo —
-    // toccare un altro corso a mano lo stacca SUBITO (era il bug del comando ignorato).
-    onClearContext?.();
-    setActiveContextId(contextId);
-    setActiveLessonIndex(null);
-    setCurrentLessonIndex(0);
-    // ⚡ P16: il furgoncino parte SUBITO, prima ancora di ridisegnare:
-    // quando Studio torna su questo percorso, la lista è quasi sempre pronta.
-    void queryClient.prefetchQuery({
-      queryKey: lessonsKeys.list(currentUser, contextId),
-      queryFn: () => fetchLessonsList(currentUser, contextId),
-    });
-  };
-
   return (
     <>
-      {/* 🌲 P24 — l'eroe del percorso: la card ad arco in cima a Studio.
-          La lezione corrente resta il punto di ripresa; durante la
-          generazione l'eroe mostra la barra di trasformazione. */}
+      {/* 🌲 P24 — il banner è il "cappello completo" della stanza: avanzamento
+          con barra, Riprendi + Cambia corso, menù ⋯ (rigenera/materiali/rinomina/
+          elimina). Sotto restano solo le lezioni: niente più doppioni. */}
       <PathHero
         title={heroTitle}
         completedCount={Math.max(0, Math.min(currentLessonIndex, lessons.length))}
@@ -624,81 +674,24 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           if (!l) return;
           if (l.is_generated) setActiveLessonIndex(currentLessonIndex);
         }}
-      />
-      {isGenerating && (
-        <GenerationProgress
-          compact
-          isGenerating={isGenerating}
-          currentStep={generationStep}
-          totalLessons={generationTotalLessons}
-          generatedCount={generationLessonCount}
-          fileName={contextFileName || undefined}
-        />
-      )}
-      {/* 📦 P17: il cartellino "materiale nuovo" — le lezioni non lo sanno ancora */}
-      {activeContext?.new_material_pending && (
-        <div className="mx-4 mt-4 mb-1 rounded-[18px] bg-card px-4 py-3.5 flex items-start gap-3 animate-fade-up">
-          <span className="w-9 h-9 rounded-full bg-warning-container flex items-center justify-center flex-shrink-0">
-            <FilePlus2 className="w-4 h-4 text-warning" strokeWidth={1.75} />
-          </span>
-          <p className="text-sm text-foreground/90 leading-snug pt-2">
-            Hai aggiunto nuovo materiale a questo percorso: non è ancora nelle lezioni. Rigenera dal menù ⋯ per includerlo.
-          </p>
-        </div>
-      )}
-      <CourseSelector
         courses={allContexts}
-        activeContextId={activeContextId}
+        activeCourseId={activeCourseId}
         onSelectCourse={handleSelectCourse}
-        isRegenerating={isGenerating || generationBlocked || !!moduleJob}
-        onRegenerateCourse={async () => { await handleGenerateLessons(); }}
-        onOpenMaterials={(contextId) => onOpenCourseMaterials?.(contextId)}
-        onDeleteCourse={async (contextId) => {
-          try {
-            await deleteContextMutation.mutateAsync(contextId);
-            toast({ title: "Corso eliminato" });
-            if (activeContextId === contextId) {
-              setActiveContextId(null);
-              onClearContext?.();
-            }
-          } catch (err) {
-            toast({ title: "Errore", description: err instanceof Error ? err.message : "Impossibile eliminare", variant: "destructive" });
-          }
-        }}
-        onRenameCourse={async (contextId, newName) => {
-          const ctx = allContexts.find((c) => c.id === contextId);
-          if (!ctx) return;
-          const original = ctx.file_name || "";
-          const prefix = original.startsWith("🌐") ? "🌐 " : "";
-          const suffix = /\.pdf$/i.test(original) ? ".pdf" : "";
-          const finalName = `${prefix}${newName}${suffix}`;
-          try {
-            const { error } = await supabase
-              .from("study_contexts")
-              .update({ file_name: finalName })
-              .eq("id", contextId);
-            if (error) throw error;
-            invalidateContexts();
-            toast({ title: "Corso rinominato" });
-          } catch (err) {
-            console.error("Error renaming course:", err);
-            toast({ title: "Errore", description: "Impossibile rinominare il corso", variant: "destructive" });
-          }
-        }}
+        onRegenerate={handleRegenerateCourse}
+        onOpenMaterials={handleOpenMaterials}
+        onRenameCourse={handleRenameCourse}
+        onDeleteCourse={handleDeleteCourse}
+        hasNewMaterial={!!activeContext?.new_material_pending}
+        generationBlocked={generationBlocked}
+        freeLimitMessage={FREE_LIMIT_MESSAGE}
+        isRegenerating={isGenerating || !!moduleJob}
       />
-      {generationBlocked && (
-        <div className="mx-4 mt-3 mb-1 rounded-[18px] bg-card px-4 py-3.5 flex items-start gap-3 animate-fade-in">
-          <span className="w-9 h-9 rounded-full bg-error-container flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-4 h-4 text-destructive" strokeWidth={1.75} />
-          </span>
-          <p className="text-sm text-foreground/90 leading-snug pt-2">{FREE_LIMIT_MESSAGE}</p>
-        </div>
-      )}
       <LessonsList
         lessons={lessons}
         currentIndex={currentLessonIndex}
         gatedModuleIndex={moduleJob ? moduleJob.moduleIndex : null}
         moduleTitles={activeContext?.module_titles ?? null}
+        showProgressHeader={false}
         onSelectLesson={async (index) => {
           const lesson = lessons[index];
           if (!lesson) return;

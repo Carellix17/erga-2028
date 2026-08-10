@@ -25,6 +25,8 @@ interface LessonsListProps {
   onBack: () => void;
   isGenerating: boolean;
   showBackButton?: boolean;
+  /** 🌲 P24 — nasconde la testata "X di Y completate + barra": ora vive nel banner (PathHero). */
+  showProgressHeader?: boolean;
   showFinalTest?: boolean;
   onStartFinalTest?: () => void;
   isLoadingFinalTest?: boolean;
@@ -50,6 +52,7 @@ export function LessonsList({
   onBack,
   isGenerating,
   showBackButton = true,
+  showProgressHeader = true,
   showFinalTest,
   onStartFinalTest,
   isLoadingFinalTest,
@@ -175,7 +178,10 @@ export function LessonsList({
 
   return (
     <div className="pb-32 animate-fade-in">
-      {/* ── Testata di percorso: statica, sobria, scorre con la pagina ── */}
+      {/* ── Testata di percorso: statica, sobria, scorre con la pagina.
+          🌲 P24: in Studio è nascosta (il progresso vive nel banner); resta
+          disponibile per altri usi della lista. ── */}
+      {showProgressHeader && (
       <div className="px-4 pt-6">
         {showBackButton && (
           <Button
@@ -202,6 +208,7 @@ export function LessonsList({
           />
         </div>
       </div>
+      )}
 
       {/* ── Moduli: una sezione pulita per vagone ── */}
       <div className="px-4 pt-7 flex flex-col gap-8">
