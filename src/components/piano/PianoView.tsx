@@ -257,7 +257,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             size="lg"
             onClick={generatePlan}
             disabled={isGeneratingPlan}
-            className="flex-[2] h-14 gap-2.5 rounded-2xl bg-primary text-primary-foreground shadow-level-1 hover:shadow-level-2 hover:scale-[1.02] transition-all duration-400 ease-m3-emphasized"
+            className="flex-[2] h-14 gap-2.5 rounded-2xl bg-primary text-primary-foreground shadow-level-1 hover:opacity-95 active:scale-[0.98] transition-all duration-200 ease-m3-emphasized"
           >
             {isGeneratingPlan ? (
               <>
@@ -272,7 +272,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             type="button"
             variant="outline"
             onClick={() => (focus.isActive ? focus.openFullscreen() : focus.openSetup())}
-            className="flex-[1] h-14 gap-1.5 rounded-2xl border-outline-variant bg-surface-container-low hover:bg-surface-container-high hover:scale-[1.02] transition-all duration-400 ease-m3-emphasized"
+            className="flex-[1] h-14 gap-1.5 rounded-2xl border-outline-variant bg-surface-container-low hover:bg-surface-container-high active:scale-[0.98] transition-all duration-200 ease-m3-emphasized"
           >
             <Timer className="w-4 h-4" />
             <span className="font-display font-semibold">

@@ -37,7 +37,7 @@ export function ChatHistory({ conversations, activeId, onSelect, onNew, onDelete
       {/* New chat button */}
       <button
         onClick={onNew}
-        className="flex items-center gap-2.5 px-4 py-3 m-2 rounded-2xl bg-primary text-primary-foreground font-medium text-sm hover:shadow-level-2 active:scale-[0.98] transition-all duration-200"
+        className="flex items-center gap-2.5 px-4 py-3 m-2 rounded-2xl bg-primary text-primary-foreground font-medium text-sm active:scale-[0.98] transition-all duration-200"
       >
         <MessageSquarePlus className="w-4.5 h-4.5" />
         Nuova chat

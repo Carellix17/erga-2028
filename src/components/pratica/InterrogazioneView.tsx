@@ -398,7 +398,7 @@ export function InterrogazioneView() {
  key={course.id}
  onClick={() => setSelectedCourse(course.id)}
  className={cn(
-"w-full flex items-center gap-3 p-5 rounded-2xl border transition-all duration-300 ease-m3-emphasized hover:scale-[1.01] shadow-level-1 hover:shadow-level-2",
+"w-full flex items-center gap-3 p-5 rounded-2xl border transition-all duration-200 ease-m3-emphasized shadow-level-1 active:scale-[0.98]",
  selectedCourse === course.id
  ?"bg-primary/5 border-primary/60"
  :"bg-card border-outline-variant/60 hover:bg-surface-container-high"
@@ -435,7 +435,7 @@ export function InterrogazioneView() {
  <div className="grid grid-cols-2 gap-4 pt-3">
  <button
  onClick={() => { if (selectedCourse) { setMode("config"); } }}
- className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-all duration-300 ease-m3-emphasized hover:shadow-level-2 hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+ className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-all duration-200 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
  >
  <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-level-1"><MessageSquare className="w-7 h-7" /></div>
  <span className="label-large text-foreground font-semibold tracking-tight">Domande</span>
@@ -443,7 +443,7 @@ export function InterrogazioneView() {
  </button>
  <button
  onClick={() => selectedCourse && startInterrogazione(selectedCourse,"free")}
- className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-all duration-300 ease-m3-emphasized hover:shadow-level-2 hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2"
+ className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-all duration-200 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2"
  >
  <div className="w-14 h-14 rounded-full bg-tertiary text-tertiary-foreground flex items-center justify-center shadow-level-1"><Volume2 className="w-7 h-7" /></div>
  <span className="label-large text-foreground font-semibold tracking-tight">Esposizione</span>
@@ -504,7 +504,7 @@ export function InterrogazioneView() {
  <div className="px-4 sm:px-6 py-4 bg-background border-t border-outline-variant/60">
  <Button
  onClick={() => selectedCourse && startInterrogazione(selectedCourse,"structured")}
- className="w-full h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
+ className="w-full h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-200 active:scale-[0.98]"
  >
  <Play className="w-5 h-5 mr-2" />
  Avvia Interrogazione
@@ -575,7 +575,7 @@ export function InterrogazioneView() {
  <div className="px-4 sm:px-6 py-4 bg-background border-t border-outline-variant/60">
  <Button
  onClick={resetInterrogazione}
- className="w-full h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-300 hover:scale-[1.01]"
+ className="w-full h-14 rounded-full bg-primary text-primary-foreground shadow-level-2 transition-all duration-200 active:scale-[0.98]"
  >
  <RotateCcw className="w-5 h-5 mr-2" />
  Nuova interrogazione

@@ -4,9 +4,9 @@ import { useTheme, type Theme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 
 const OPTIONS: { value: Theme; label: string; desc: string; icon: typeof Sun; swatch: string }[] = [
-  { value: "light", label: "Chiaro", desc: "Sfondo bianco, testo scuro", icon: Sun, swatch: "bg-[#fcfcfc]" },
-  { value: "dark", label: "Scuro", desc: "Sfondo notte, testo chiaro", icon: Moon, swatch: "bg-[#0f1011]" },
-  { value: "system", label: "Automatico", desc: "Segue il tuo dispositivo", icon: Monitor, swatch: "bg-gradient-to-r from-[#fcfcfc] to-[#0f1011]" },
+  { value: "light", label: "Chiaro", desc: "Sfondo menta, testo scuro", icon: Sun, swatch: "bg-[#f3f7f4]" },
+  { value: "dark", label: "Scuro", desc: "Bosco di notte, testo chiaro", icon: Moon, swatch: "bg-[#0f2014]" },
+  { value: "system", label: "Automatico", desc: "Segue il tuo dispositivo", icon: Monitor, swatch: "bg-gradient-to-r from-[#f3f7f4] to-[#0f2014]" },
 ];
 
 export default function SettingsAppearance() {

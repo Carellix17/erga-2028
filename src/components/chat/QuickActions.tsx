@@ -24,7 +24,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
         <button
           key={action.label}
           onClick={() => onAction(action.label)}
-          className={`whitespace-nowrap flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-full border label-large hover:shadow-level-1 hover:scale-[1.04] active:scale-95 transition-all duration-400 ease-m3-emphasized ${action.cls}`}
+          className={`whitespace-nowrap flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-full border label-large hover:bg-surface-container-high active:scale-[0.97] transition-all duration-200 ease-m3-emphasized ${action.cls}`}
         >
           <action.Icon className="w-4 h-4" strokeWidth={2} />
           {action.label}

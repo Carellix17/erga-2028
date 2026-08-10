@@ -16,7 +16,7 @@ export function FocusPill({ variant = "default", className }: Props) {
       onClick={openFullscreen}
       aria-label="Apri timer focus"
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold tabular-nums shadow-level-1 transition-all hover:-translate-y-px hover:shadow-level-2",
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold tabular-nums shadow-level-1 transition-all active:scale-[0.97]",
         variant === "warning"
           ? "bg-warning/10 text-warning hover:bg-warning/20"
           : "bg-primary/10 text-primary hover:bg-primary/20",

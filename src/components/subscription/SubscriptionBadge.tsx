@@ -12,22 +12,22 @@ const tierConfig = {
   free: {
     icon: Zap,
     label: "Free",
-    solid: "bg-black",
-    iconColor: "text-white",
+    solid: "bg-primary",
+    iconColor: "text-primary-foreground",
     ring: "ring-primary/30",
   },
   beta: {
     icon: Brain,
     label: "Beta",
-    solid: "bg-black",
-    iconColor: "text-white",
+    solid: "bg-primary",
+    iconColor: "text-primary-foreground",
     ring: "ring-primary/30",
   },
   pro: {
     icon: Crown,
     label: "Pro",
     solid: "bg-warning",
-    iconColor: "text-white",
+    iconColor: "text-warning-foreground",
     ring: "ring-warning/30",
   },
 };

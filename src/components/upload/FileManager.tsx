@@ -140,7 +140,7 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
         </div>
 
         {openContext.new_material_pending && (
-          <div className="mx-1 rounded-2xl border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 animate-fade-up">
+          <div className="mx-1 rounded-2xl border border-warning/40 bg-warning-container px-4 py-3 text-sm text-on-warning-container animate-fade-up">
             📥 Hai materiale nuovo che non è ancora nelle lezioni: rigenera il percorso
             dal menù ⋯ nella home di Studio per includerlo.
           </div>
@@ -262,7 +262,7 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setOpenContextId(context.id); }}
               className={cn(
                 "w-full flex items-center gap-3 p-3 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1",
-                "cursor-pointer hover:shadow-level-2 hover:border-primary/40 active:scale-[0.99]",
+                "cursor-pointer hover:border-primary/40 active:scale-[0.99]",
                 "transition-all duration-300 animate-fade-up",
               )}
               style={{ animationDelay: `${i * 60}ms` }}
@@ -277,7 +277,7 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
                   {context.lesson_count > 0 ? ` · ${context.lesson_count} lezioni` : ""}
                 </p>
                 {context.new_material_pending && (
-                  <p className="body-small font-medium text-amber-700 mt-0.5">📥 Materiale nuovo da includere</p>
+                  <p className="body-small font-medium text-warning mt-0.5">📥 Materiale nuovo da includere</p>
                 )}
               </div>
               <Button

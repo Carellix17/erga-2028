@@ -544,7 +544,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                             onClick={(e) => { e.stopPropagation(); openEdit(r); }}
                             className={cn(
                               "absolute rounded-xl border px-1.5 py-1 text-[10px] leading-tight overflow-hidden shadow-sm text-left animate-scale-in",
-                              "hover:shadow-md hover:-translate-y-[1px]",
+                              "hover:shadow-level-1 active:scale-[0.98]",
                               style.chip,
                             )}
                             style={{
@@ -614,7 +614,7 @@ export function ScheduleConfigSheet({ open, onOpenChange }: Props) {
                         onClick={(e) => { e.stopPropagation(); openEdit(r); }}
                         className={cn(
                           "absolute rounded-xl border px-2.5 py-1.5 text-xs leading-tight overflow-hidden shadow-sm text-left animate-scale-in",
-                          "hover:shadow-md hover:-translate-y-[1px]",
+                          "hover:shadow-level-1 active:scale-[0.98]",
                           style.chip,
                         )}
                         style={{

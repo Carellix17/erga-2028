@@ -84,7 +84,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  <button
  onClick={() => fileInputRef.current?.click()}
  disabled={isUploadingAvatar}
- className="w-24 h-24 rounded-[2rem] overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-400 ease-m3-emphasized hover:scale-105 hover:shadow-level-3 active:scale-95 relative group"
+ className="w-24 h-24 rounded-[2rem] overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-200 ease-m3-emphasized active:scale-95 relative group"
  >
  {avatarPreview ? (
  <img src={avatarPreview} alt="Foto profilo utente" className="w-full h-full object-cover" />
@@ -109,7 +109,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  </div>
 
  {/* Personal Info */}
- <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-shadow duration-300 ease-m3-emphasized hover:shadow-level-2 p-5 space-y-4">
+ <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-colors duration-200 hover:bg-surface-container-low p-5 space-y-4">
  <div className="flex items-center gap-2 mb-1">
  <User className="w-5 h-5 text-foreground" />
  <h2 className="title-medium font-display text-foreground">Dati personali</h2>
@@ -148,7 +148,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  </div>
 
  {/* Esagono Cognitivo */}
- <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-shadow duration-300 ease-m3-emphasized hover:shadow-level-2 p-5 space-y-4">
+ <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-colors duration-200 hover:bg-surface-container-low p-5 space-y-4">
  <div className="flex items-center gap-2 mb-1">
  <Hexagon className="w-5 h-5 text-foreground" />
  <h2 className="title-medium font-display text-foreground">Esagono Cognitivo</h2>
@@ -200,7 +200,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
      <ScheduleConfigSheet open={scheduleOpen} onOpenChange={setScheduleOpen} />
 
  {/* Institute Section */}
- <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-shadow duration-300 ease-m3-emphasized hover:shadow-level-2 p-5 space-y-4">
+ <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-colors duration-200 hover:bg-surface-container-low p-5 space-y-4">
  <div className="flex items-center gap-2 mb-1">
  <GraduationCap className="w-5 h-5 text-foreground" />
  <h2 className="title-medium font-display text-foreground">Tipo di istituto</h2>
@@ -221,7 +221,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  {/* Appearance rimosso: app sempre in tema chiaro */}
 
  {/* Subject Levels & Goals Section */}
- <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-shadow duration-300 ease-m3-emphasized hover:shadow-level-2 p-5 space-y-6">
+ <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-colors duration-200 hover:bg-surface-container-low p-5 space-y-6">
  <div className="flex items-center gap-2 mb-1">
  <BookOpen className="w-5 h-5 text-foreground" />
  <h2 className="title-medium font-display text-foreground">Voti e obiettivi</h2>

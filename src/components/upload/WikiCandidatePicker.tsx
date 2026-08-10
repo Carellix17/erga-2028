@@ -39,7 +39,7 @@ export function WikiCandidatePicker({ candidates, pickingTitle, disabled, onPick
               onClick={() => onPick(c.title)}
               disabled={disabled}
               style={{ animationDelay: `${i * 70}ms` }}
-              className="w-full flex items-start gap-3 p-3 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 text-left transition-all hover:shadow-level-2 active:scale-[0.98] disabled:opacity-50 animate-cinematic-in"
+              className="w-full flex items-start gap-3 p-3 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 text-left transition-all active:scale-[0.98] disabled:opacity-50 animate-cinematic-in"
             >
               {c.thumb ? (
                 <img src={c.thumb} alt="" className="w-11 h-11 rounded-lg object-cover shrink-0 bg-surface-container" />
