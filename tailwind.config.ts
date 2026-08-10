@@ -113,6 +113,12 @@ export default {
         "pastel-grafite": "hsl(var(--pastel-grafite))",
         "pastel-miele": "hsl(var(--pastel-miele))",
         "pastel-neutro": "hsl(var(--pastel-neutro))",
+        // 🌲 P24 — firme del guscio: nav a pillola (bosco) e puntino lime
+        nav: {
+          DEFAULT: "hsl(var(--nav-surface))",
+          foreground: "hsl(var(--nav-foreground))",
+        },
+        lime: { DEFAULT: "hsl(var(--lime))" },
       },
       borderRadius: {
         xs: "var(--radius-xs)",

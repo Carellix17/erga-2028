@@ -100,7 +100,12 @@
 --sidebar-accent: 140 21% 95%;
 --sidebar-accent-foreground: 120 8% 7%;
 --sidebar-border: 150 14% 24% / 0.12;
---sidebar-ring: 132 25% 41%;
+    --sidebar-ring: 132 25% 41%;
+
+    /* 🌲 P24 — firme del guscio: nav a pillola (bosco) e puntino lime */
+    --nav-surface: 134 33% 15%;
+    --nav-foreground: 130 30% 96%;
+    --lime: 79 86% 65%;
 
     /* Scala del testo (Accessibilità) */
     --text-scale: 1;
@@ -197,7 +202,12 @@
 --sidebar-accent: 139 33% 17%;
 --sidebar-accent-foreground: 135 22% 93%;
 --sidebar-border: 150 20% 90% / 0.10;
---sidebar-ring: 132 21% 68%;
+    --sidebar-ring: 132 21% 68%;
+
+    /* 🌲 P24 — firme del guscio: nav a pillola (bosco di notte) e puntino lime */
+    --nav-surface: 139 33% 17%;
+    --nav-foreground: 135 22% 93%;
+    --lime: 79 86% 65%;
   }
 
   :root {
@@ -627,6 +637,15 @@
   }
   .leaf-fade {
     animation: leaf-fade 420ms ease-out both;
+  }
+  /* 🌲 P24 — passaggio tra stanze: dissolvenza di SOLA LUCE (mai transform:
+     rispetta la REGOLA DEL PALCO, le finestre a schermo intero restano attaccate) */
+  .room-fade {
+    animation: room-fade 200ms ease-out both;
+  }
+  @keyframes room-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
   .animate-scale-in {
     animation: m3-scale-in 550ms cubic-bezier(0.05, 0.7, 0.1, 1) both;

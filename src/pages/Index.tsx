@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { StudioView } from "@/components/studio/StudioView";
@@ -37,19 +37,32 @@ const Index = () => {
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // 🧭 P24 — memoria di posizione: ogni stanza riapre DOV'ERA (oggetti persistenti)
+  const scrollPositions = useRef<Record<Tab, number>>({ studio: 0, piano: 0, pratica: 0, profilo: 0 });
+  const changeTab = useCallback(
+    (tab: Tab) => {
+      scrollPositions.current[activeTab] = window.scrollY;
+      setActiveTab(tab);
+    },
+    [activeTab]
+  );
+
+  useEffect(() => {
+    window.scrollTo(0, scrollPositions.current[activeTab]);
+  }, [activeTab]);
+
   // 🤖 P7 — il citofono dell'agente: la chat può chiedere di cambiare scheda
   // ("portami agli esercizi", "apri le lezioni") senza conoscere la app.
   useEffect(() => {
     const handler = (e: Event) => {
       const tab = (e as CustomEvent<string>).detail;
       if (tab === "studio" || tab === "piano" || tab === "pratica" || tab === "profilo") {
-        setActiveTab(tab);
-        window.scrollTo({ top: 0 });
+        changeTab(tab);
       }
     };
     window.addEventListener("erga:goto-tab", handler);
     return () => window.removeEventListener("erga:goto-tab", handler);
-  }, []);
+  }, [changeTab]);
 
   const { data: uploadedFiles, updateData: setUploadedFiles } = useUserData<UploadedFile[]>(
     "uploaded_files",
@@ -81,12 +94,12 @@ const Index = () => {
     // Nuovo file caricato: invalida tutto il dominio lezioni/contesti
     invalidateAll();
     invalidateHasContent();
-    setActiveTab("studio");
+    changeTab("studio");
   };
 
   const handleSelectFile = (contextId: string) => {
     setSelectedContextId(contextId);
-    setActiveTab("studio");
+    changeTab("studio");
   };
 
   const handleFileDeleted = () => {
@@ -130,6 +143,8 @@ const Index = () => {
 
         <main className="w-full max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-4 sm:px-6 pb-24 md:pb-6">
         <h1 className="sr-only">Erga — Il tuo assistente di studio intelligente</h1>
+        {/* 🌲 P24 — passaggio tra stanze: dissolvenza di sola luce (200ms) */}
+        <div key={activeTab} className="room-fade">
         {/* Banner ricalcola Esagono se per qualche motivo i punteggi sono tutti default */}
         {activeTab === "studio" && cognitive && [cognitive.log_score, cognitive.mem_score, cognitive.foc_score, cognitive.voc_score, cognitive.ans_score, cognitive.app_score].every((s) => s === 50) && (
           <button
@@ -172,6 +187,7 @@ const Index = () => {
         {activeTab === "profilo" && (
           <ProfileView onOpenCognitive={() => setShowOnboarding(true)} />
         )}
+        </div>
         </main>
       </div>
 

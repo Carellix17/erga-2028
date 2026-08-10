@@ -1,70 +1,58 @@
-import { FileUp, Settings } from"lucide-react";
-import { useState } from"react";
-import { Link } from"react-router-dom";
-import { Button } from"@/components/ui/button";
-import { UserMenu } from"./UserMenu";
-import { SubscriptionBadge } from"@/components/subscription/SubscriptionBadge";
-import { SubscriptionSheet } from"@/components/subscription/SubscriptionSheet";
-import { useSubscription } from"@/hooks/useSubscription";
-import { SaveStatusIndicator, SaveStatusDot } from"./SaveStatusIndicator";
+import { Brain, FileUp } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { UserMenu } from "./UserMenu";
+import { SaveStatusIndicator } from "./SaveStatusIndicator";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { FocusPill } from "@/components/focus/FocusPill";
 import { useFocus } from "@/contexts/FocusContext";
 
 interface AppHeaderProps {
- onUploadClick: () => void;
- hasFiles: boolean;
+  onUploadClick: () => void;
+  hasFiles: boolean;
 }
 
+// 🌲 P24 BOSCO — testata alleggerita: [logo pillola] · [stato quasi invisibile]
+//                            [azione contestuale] · [profilo]
+// Il badge abbonamento e le impostazioni vivono nel menu profilo (UserMenu).
+// Regola P23a intonsa: sotto i 400px il bottone File resta icona (aria-label).
 export function AppHeader({ onUploadClick, hasFiles }: AppHeaderProps) {
- const [showSubscription, setShowSubscription] = useState(false);
- const { tier } = useSubscription();
- const { t } = useTranslation();
+  const { t } = useTranslation();
   const { isActive: focusActive } = useFocus();
 
- return (
- <>
- <header className="sticky top-0 z-40 bg-background border-b border-border shadow-level-1 transition-all duration-200">
- <div className="flex items-center justify-between h-16 px-4 sm:px-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto">
- <div className="flex items-center gap-2 sm:gap-3 animate-fade-up min-w-0">
- <SubscriptionBadge tier={tier} onClick={() => setShowSubscription(true)} />
- <div>
- <span className="font-display font-bold text-xl text-foreground tracking-tight">
- Erga
- </span>
- </div>
- <SaveStatusIndicator />
- <SaveStatusDot />
- </div>
- 
- <div className="flex items-center gap-1.5 sm:gap-2.5">
-      {focusActive ? <FocusPill /> : <LanguageSwitcher />}
- <Button
- variant={hasFiles ?"tonal" :"default"}
- size="sm"
- onClick={onUploadClick}
- aria-label={hasFiles ? t("header.files") : t("header.upload")}
- className="gap-2"
- >
- <FileUp className="w-4 h-4" />
- <span className="hidden min-[400px]:inline">{hasFiles ? t("header.files") : t("header.upload")}</span>
- </Button>
- <Button asChild variant="ghost" size="icon-sm" aria-label="Impostazioni">
- <Link to="/app/impostazioni">
- <Settings className="w-5 h-5" />
- </Link>
- </Button>
- <UserMenu />
- </div>
- </div>
- </header>
+  return (
+    <header className="sticky top-0 z-40 bg-background border-b border-border shadow-level-1 transition-all duration-200">
+      <div className="flex items-center justify-between h-16 px-4 sm:px-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <Link
+            to="/app"
+            aria-label="Erga — home"
+            className="flex items-center gap-2 bg-primary text-primary-foreground rounded-full pl-2.5 pr-4 h-10 shadow-level-1 shrink-0"
+          >
+            <span className="w-6 h-6 rounded-full bg-primary-foreground/15 flex items-center justify-center">
+              <Brain className="w-3.5 h-3.5" strokeWidth={2} />
+            </span>
+            <span className="font-bold text-[15px] tracking-tight">Erga</span>
+          </Link>
+          <SaveStatusIndicator />
+        </div>
 
- <SubscriptionSheet
- open={showSubscription}
- onOpenChange={setShowSubscription}
- currentTier={tier}
- />
- </>
- );
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
+          {focusActive ? <FocusPill /> : <LanguageSwitcher />}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={onUploadClick}
+            aria-label={hasFiles ? t("header.files") : t("header.upload")}
+            className="gap-2"
+          >
+            <FileUp className="w-4 h-4" />
+            <span className="hidden min-[400px]:inline">{hasFiles ? t("header.files") : t("header.upload")}</span>
+          </Button>
+          <UserMenu />
+        </div>
+      </div>
+    </header>
+  );
 }

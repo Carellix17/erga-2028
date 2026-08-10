@@ -1,59 +1,39 @@
-import { Cloud, CloudOff, Check, Loader2 } from "lucide-react";
+import { CloudOff } from "lucide-react";
 import { useSaveStatus } from "@/contexts/SaveStatusContext";
 import { cn } from "@/lib/utils";
 
+// 🌲 P24 — "Erga ricorda", non "Erga sta salvando":
+// saving → puntino lime che respira · saved → puntino che svanisce · error → visibile.
+// Idle → nulla: la barra resta quasi invisibile.
 export function SaveStatusIndicator() {
   const { status, errorMessage } = useSaveStatus();
-
   if (status === "idle") return null;
 
-  const config = {
-    saving: {
-      icon: <Loader2 className="w-3.5 h-3.5 animate-spin" />,
-      label: "Salvataggio…",
-      className: "bg-surface-container text-muted-foreground",
-    },
-    saved: {
-      icon: <Check className="w-3.5 h-3.5" />,
-      label: "Progressi salvati",
-      className: "bg-success-container text-success",
-    },
-    error: {
-      icon: <CloudOff className="w-3.5 h-3.5" />,
-      label: errorMessage ?? "Errore salvataggio",
-      className: "bg-error-container text-destructive",
-    },
-  } as const;
-
-  const { icon, label, className } = config[status];
+  const label =
+    status === "error"
+      ? errorMessage ?? "Errore salvataggio"
+      : status === "saving"
+        ? "Salvataggio…"
+        : "Progressi salvati";
 
   return (
-    <div
+    <span
       role="status"
       aria-live="polite"
+      title={label}
       className={cn(
-        "hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full label-small font-medium animate-fade-up transition-all duration-300",
-        className
+        "inline-flex items-center justify-center shrink-0",
+        status === "saving" && "w-2.5 h-2.5 rounded-full bg-lime animate-pulse",
+        status === "saved" && "w-2.5 h-2.5 rounded-full bg-success/70 animate-fade-in",
+        status === "error" && "w-5 h-5 rounded-full bg-error-container text-destructive"
       )}
     >
-      {icon}
-      <span className="whitespace-nowrap">{label}</span>
-    </div>
+      {status === "error" && <CloudOff className="w-3 h-3" />}
+    </span>
   );
 }
 
+// Compatibilità: il puntino mobile è assorbito da SaveStatusIndicator (P24).
 export function SaveStatusDot() {
-  const { status, errorMessage } = useSaveStatus();
-  if (status === "idle") return null;
-  const color =
-    status === "saving" ? "bg-muted-foreground animate-pulse"
-    : status === "saved" ? "bg-success"
-    : "bg-destructive";
-  return (
-    <span
-      className={cn("sm:hidden inline-block w-2 h-2 rounded-full", color)}
-      aria-label={status === "error" ? errorMessage ?? "Errore" : status === "saving" ? "Salvataggio" : "Salvato"}
-      title={status === "error" ? errorMessage ?? "Errore" : status === "saving" ? "Salvataggio" : "Salvato"}
-    />
-  );
+  return null;
 }
