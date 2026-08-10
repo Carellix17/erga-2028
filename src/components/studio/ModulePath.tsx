@@ -234,13 +234,6 @@ export function ModulePath({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modLessons, n, allDone]);
 
-  const subtitleFor = (state: NodeState) =>
-    state === "done" ? "Completata"
-    : state === "cur" ? (isGeneratingLesson ? "In preparazione…" : "Sei qui")
-    : state === "gen" ? "In generazione…"
-    : state === "av" ? "Disponibile"
-    : "Da sbloccare";
-
   return (
     <div className="pb-32 animate-fade-in">
       {/* ── Intestazione: torna ai moduli + titolo modulo INTERO ── */}
@@ -392,19 +385,20 @@ export function ModulePath({
                 </span>
               )}
 
-              {/* 🌲 P24 — riquadro del titolo SOTTO il nodo: stesso materiale dei
-                  tasti del banner (card + bordo + ombra leggera), centrato,
-                  mai sovrapposto ad altri testi (niente più didascalie laterali) */}
+              {/* 🌲 P24 — riquadro del titolo: STESSO MATERIALE del tasto Riprendi
+                  (velo bianco traslucido, non vetro liquido), ancorato al LATO
+                  INTERNO del nodo così non esce mai dallo schermo su mobile.
+                  Solo il titolo: niente scritte di stato (più snello). */}
               <div
-                className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+12px)] z-10"
-                style={{ width: "min(66vw, 168px)" }}
+                className={cn(
+                  "absolute top-[calc(100%+12px)] z-10",
+                  side === "l" ? "left-0" : "right-0",
+                )}
+                style={{ width: "min(56vw, 180px)" }}
               >
-                <div className="rounded-xl bg-card border border-border shadow-level-1 px-2.5 py-1.5 text-center">
+                <div className="rounded-xl bg-white/15 dark:bg-white/10 backdrop-blur-sm border border-white/30 dark:border-white/15 shadow-level-1 px-2.5 py-2">
                   <span className="block text-[11.5px] font-semibold leading-snug text-foreground line-clamp-2">
                     {lesson.title}
-                  </span>
-                  <span className="block text-[10px] font-medium text-muted-foreground mt-0.5">
-                    {subtitleFor(state)}
                   </span>
                 </div>
               </div>
@@ -437,11 +431,8 @@ export function ModulePath({
             <Trophy className="w-6 h-6" strokeWidth={1.8} />
           )}
           <div className="absolute top-[calc(100%+12px)] left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
-            <div className="rounded-xl bg-card border border-border shadow-level-1 px-2.5 py-1.5 text-center">
-              <div className="text-[11px] font-bold text-foreground">Test finale</div>
-              <div className="text-[10px] text-muted-foreground font-medium">
-                {allDone ? "Pronto — mettiti alla prova!" : "Completa il modulo per sbloccarlo"}
-              </div>
+            <div className="rounded-xl bg-white/15 dark:bg-white/10 backdrop-blur-sm border border-white/30 dark:border-white/15 shadow-level-1 px-2.5 py-1.5 text-center">
+              <span className="text-[11px] font-bold text-foreground">Test finale</span>
             </div>
           </div>
         </div>

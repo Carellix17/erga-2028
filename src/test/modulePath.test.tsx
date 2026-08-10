@@ -62,8 +62,8 @@ describe("ModulePath — percorso squadrato delle lezioni", () => {
     );
     expect(screen.getByText("La Rivoluzione Industriale")).toBeTruthy();
     expect(screen.getByText("L'Europa prima della Rivoluzione")).toBeTruthy();
-    expect(screen.getByText("Sei qui")).toBeTruthy();
-    expect(screen.getByText("Da sbloccare")).toBeTruthy();
+    // il nodo corrente ha l'etichetta "Riprendi" (nessuna scritta di stato)
+    expect(screen.getByText("Riprendi")).toBeTruthy();
   });
 
   it("in generazione mostra il banner e non i nodi cliccabili", () => {
