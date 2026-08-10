@@ -664,6 +664,19 @@
     from { transform: translateY(48px); opacity: 0.6; }
     to   { transform: translateY(0); opacity: 1; }
   }
+  /* 🌲 P24 — linee squadrate del percorso lezioni (SVG, spessore costante) */
+  .seg-base { stroke: hsl(var(--surface-container-highest)); }
+  .seg-on { stroke: hsl(var(--tertiary)); }
+  .seg-base, .seg-on { vector-effect: non-scaling-stroke; }
+
+  /* 🌲 P24 — respiro del nodo corrente nel percorso lezioni (bordo lime) */
+  .animate-breathe-ring {
+    animation: breathe-ring 2.4s ease-in-out infinite;
+  }
+  @keyframes breathe-ring {
+    0%, 100% { box-shadow: 0 0 0 7px hsl(79 86% 65% / 0.20); }
+    50%      { box-shadow: 0 0 0 4px hsl(79 86% 65% / 0.12); }
+  }
   .animate-scale-in {
     animation: m3-scale-in var(--motion-entrance) cubic-bezier(0.05, 0.7, 0.1, 1) both;
     will-change: transform, opacity;

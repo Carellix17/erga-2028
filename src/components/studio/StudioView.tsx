@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { FullscreenLessonGate } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
-import { LessonsList } from "./LessonsList";
 import { GenerationProgress } from "./GenerationProgress";
+import { ModulePath } from "./ModulePath";
+import { ModulesOverview, type ModuleCardData } from "./ModulesOverview";
 import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
 import { PathHero } from "./PathHero";
@@ -15,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
 import { edgeFetch } from "@/lib/edgeFetch";
-import { MODULE_SIZE, moduleIndexOf, moduleRange, lessonsInModule, isModuleFullyMissing, isFirstOfModule, isInGatedModule, isGateLesson } from "@/lib/lessonModules";
+import { MODULE_SIZE, moduleIndexOf, moduleRange, moduleCount, moduleTitleFor, lessonsInModule, isModuleFullyMissing, isFirstOfModule, isInGatedModule, isGateLesson } from "@/lib/lessonModules";
 import { currentLanguage } from "@/i18n";
 import {
   useLessonsQuery,
@@ -58,7 +59,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   // questo stato decide solo se la FINESTRA è aperta su questa scheda.
   const [moduleScreen, setModuleScreen] = useState<{ moduleIndex: number } | null>(null);
   const [isGeneratingLesson, setIsGeneratingLesson] = useState(false);
-  const [showList, setShowList] = useState(true);
+
+  // 🌲 P24 — la stanza ha DUE viste: i moduli (schermata 1) e le lezioni del
+  // modulo (schermata 2, il percorso squadrato).
+  const [viewMode, setViewMode] = useState<"modules" | "lessons">("modules");
+  const [activeModuleIndex, setActiveModuleIndex] = useState<number | null>(null);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
   const [activeContextId, setActiveContextId] = useState<string | null>(null);
   // 🔖 P10a: segnalibro nel cloud — l'app ricorda l'ultimo percorso VISTO
@@ -188,7 +193,12 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   }, [generationStatus, effectiveContextId]);
 
   const lessonsQuery = useLessonsQuery(effectiveContextId);
-  const lessons: LessonMeta[] = lessonsQuery.data?.lessons ?? [];
+  // Reference stabile (useMemo): i useMemo che dipendono da `lessons` non
+  // ricalcolano a ogni render quando i dati non sono cambiati.
+  const lessons: LessonMeta[] = useMemo(
+    () => lessonsQuery.data?.lessons ?? [],
+    [lessonsQuery.data?.lessons],
+  );
   const cachedCurrentIndex = lessonsQuery.data?.currentIndex ?? 0;
   const updateProgress = useUpdateLessonProgress(effectiveContextId);
   const { invalidateList, invalidateContexts, setLessonsList } = useLessonsCacheControls();
@@ -222,6 +232,12 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   useEffect(() => {
     setCurrentLessonIndex(cachedCurrentIndex);
   }, [effectiveContextId, cachedCurrentIndex]);
+
+  // 🌲 P24 — cambio corso: si riparte dalla schermata dei moduli.
+  useEffect(() => {
+    setViewMode("modules");
+    setActiveModuleIndex(null);
+  }, [effectiveContextId]);
 
   // Spinner SOLO al primo fetch (nessuna cache disponibile)
   const isLoading = hasFiles && lessonsQuery.isLoading && lessons.length === 0;
@@ -406,8 +422,8 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   };
 
   // 🏭 P10b: la fabbrica ha FINITO → chiudi la sala d'attesa e apri la prima
-  // lezione del modulo (ora tornita). Se non c'è (es. limite beta scattato a
-  // metà lavoro), spiega perché invece di aprire una lezione vuota.
+  // lezione del modulo (ora tornita), SOLO se l'utente è ancora nella schermata
+  // di quel modulo. Se è tornato ai moduli, la card mostra "Riprendi".
   useEffect(() => {
     if (!moduleScreen || moduleJob) return;
     const target = moduleScreen.moduleIndex;
@@ -417,16 +433,19 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       const freshLessons = fresh.data?.lessons ?? [];
       const firstIdx = moduleRange(target).start;
       const first = freshLessons[firstIdx];
+      const stillOnModule = viewMode === "lessons" && activeModuleIndex === target;
       if (first?.is_generated) {
-        setActiveLessonIndex(firstIdx);
-        if (firstIdx > cachedCurrentIndex) updateProgress.mutate(firstIdx);
+        if (stillOnModule) {
+          setActiveLessonIndex(firstIdx);
+          if (firstIdx > cachedCurrentIndex) updateProgress.mutate(firstIdx);
+        }
         toast({ title: `Modulo ${target + 1} pronto!`, description: "Le nuove lezioni ti aspettano: buono studio!" });
       } else {
         toast({ title: "Modulo non completato", description: "Non tutte le lezioni sono state create. Riprova dalla prima lezione del modulo.", variant: "destructive" });
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [moduleJob, moduleScreen]);
+  }, [moduleJob, moduleScreen, viewMode, activeModuleIndex]);
 
   const handleNext = async () => {
     if (currentLessonIndex < lessons.length - 1) {
@@ -471,7 +490,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         queryFn: () => fetchLessonFull(currentUser as string, effectiveContextId, index),
       });
     }
-    setCurrentLessonIndex(index); setShowList(false);
+    setCurrentLessonIndex(index);
     // Aggiorna i progressi solo in avanti: tornare indietro non riduce il completamento.
     if (index > cachedCurrentIndex) updateProgress.mutate(index);
   };
@@ -493,6 +512,70 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   };
 
   const activeCourseId = activeContextId ?? effectiveContextId;
+
+  // ── 🌲 P24: navigazione a due viste (moduli ↔ lezioni) ──
+  const backToModules = () => {
+    setModuleScreen(null);
+    setActiveModuleIndex(null);
+    setViewMode("modules");
+  };
+
+  const openModule = async (moduleIndex: number) => {
+    setActiveModuleIndex(moduleIndex);
+    setViewMode("lessons");
+    const modLessons = lessonsInModule(lessons, moduleIndex);
+    // Modulo già in fabbrica → schermata "in generazione" (arma l'apertura a fine job).
+    if (moduleJob && moduleJob.moduleIndex === moduleIndex) {
+      setModuleScreen({ moduleIndex });
+      return;
+    }
+    // Modulo tutto da costruire → la fabbrica parte DA SOLA e mostriamo la costruzione.
+    if (isModuleFullyMissing(modLessons)) {
+      setModuleScreen({ moduleIndex });
+      void startModuleGeneration(moduleIndex, { silent: true });
+      return;
+    }
+    // Modulo pronto (o parzialmente): il percorso si apre e le eventuali
+    // lezioni mancanti si riparano al tocco, come sempre.
+  };
+
+  // Le card della schermata 1: stato, titolo, avanzamento per ogni modulo.
+  const modules = useMemo<ModuleCardData[]>(() => {
+    const count = moduleCount(lessons.length);
+    const result: ModuleCardData[] = [];
+    for (let m = 0; m < count; m++) {
+      const { start, end } = moduleRange(m);
+      const modWithPos = lessons
+        .map((l, pos) => ({ l, pos }))
+        .filter(({ l, pos }) => {
+          const order = l.lesson_order ?? pos;
+          return order >= start && order <= end;
+        });
+      const total = modWithPos.length;
+      const doneCount = modWithPos.filter(({ pos }) => pos < currentLessonIndex).length;
+      const containsCurrent = modWithPos.some(({ pos }) => pos === currentLessonIndex);
+      const fullyMissing = total > 0 && modWithPos.every(({ l }) => !l.is_generated);
+      const isGen = moduleJob?.moduleIndex === m;
+      let state: ModuleCardData["state"];
+      if (isGen) state = "gen";
+      else if (total > 0 && doneCount === total) state = "done";
+      else if (containsCurrent) state = "cur";
+      else if (fullyMissing) state = "lock";
+      else state = "ready";
+      result.push({
+        index: m,
+        title: moduleTitleFor(m, activeContext?.module_titles ?? null, modWithPos[0]?.l.title).replace(/^Modulo \d+ · /, ""),
+        doneCount,
+        total,
+        state,
+        genPercent:
+          isGen && moduleJob
+            ? Math.round(((moduleJob.generatedCount ?? 0) / Math.max(moduleJob.totalLessons ?? total, 1)) * 100)
+            : undefined,
+      });
+    }
+    return result;
+  }, [lessons, currentLessonIndex, moduleJob, activeContext?.module_titles]);
 
   const handleRegenerateCourse = async () => {
     await handleGenerateLessons();
@@ -532,6 +615,117 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       onClearContext?.();
     } catch (err) {
       toast({ title: "Errore", description: err instanceof Error ? err.message : "Impossibile eliminare", variant: "destructive" });
+    }
+  };
+
+  // ── 🌲 P24: azioni sulle lezioni (usate dal percorso) ──
+  const handleSelectFromPath = async (index: number) => {
+    const lesson = lessons[index];
+    if (!lesson) return;
+    // 🔒 P10c CANCELLO DEL VAGONE: finché la fabbrica lavora su QUESTO modulo,
+    // solo la porta si apre → schermata in generazione.
+    if (moduleJob && isInGatedModule(index, moduleJob.moduleIndex)) {
+      if (isGateLesson(index, moduleJob.moduleIndex)) {
+        setModuleScreen({ moduleIndex: moduleJob.moduleIndex });
+        setActiveModuleIndex(moduleJob.moduleIndex);
+        setViewMode("lessons");
+      } else {
+        toast({ title: "Modulo in preparazione", description: "Questa si sblocca quando TUTTO il modulo è pronto: ti avvisiamo noi con una notifica!" });
+      }
+      return;
+    }
+    if (lesson.is_generated) {
+      setActiveLessonIndex(index);
+      if (index > cachedCurrentIndex) updateProgress.mutate(index);
+      return;
+    }
+    // 🏭 P10b: la lezione non è pronta → ragiona a MODULI, non a singola.
+    const mIdx = moduleIndexOf(index);
+    if (moduleJob) {
+      setModuleScreen({ moduleIndex: moduleJob.moduleIndex });
+      setActiveModuleIndex(moduleJob.moduleIndex);
+      setViewMode("lessons");
+      return;
+    }
+    if (isModuleFullyMissing(lessonsInModule(lessons, mIdx))) {
+      // Vagone tutto da costruire → la fabbrica parte e vediamo la costruzione.
+      setModuleScreen({ moduleIndex: mIdx });
+      setActiveModuleIndex(mIdx);
+      setViewMode("lessons");
+      await startModuleGeneration(mIdx, { silent: true });
+    } else {
+      // Vagone parzialmente pronto: ripara solo il buco, come abbiamo sempre fatto.
+      await generateLessonContent(index);
+      setActiveLessonIndex(index);
+      if (index > cachedCurrentIndex) updateProgress.mutate(index);
+    }
+  };
+
+  const handleRegenerateLesson = async (index: number) => {
+    const lesson = lessons[index];
+    if (!lesson) return;
+    setLessonsList(effectiveContextId, (prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        lessons: prev.lessons.map((l) =>
+          l.id === lesson.id ? { ...l, is_generated: false } : l,
+        ),
+      };
+    });
+    try {
+      await supabase
+        .from("mini_lessons")
+        .update({ is_generated: false, explanation: "", concept: "", example: null, exercises: [] })
+        .eq("id", lesson.id);
+    } catch (err) {
+      console.error("Error resetting lesson for regenerate:", err);
+    }
+    const fresh = await generateLessonContent(index);
+    if (fresh) {
+      toast({ title: "Lezione rigenerata", description: "I contenuti sono stati aggiornati." });
+    }
+  };
+
+  const handleDeleteLesson = async (lessonId: string) => {
+    const lessonOrder = lessons.find((l) => l.id === lessonId)?.lesson_order;
+    try {
+      const { error } = await supabase.from("mini_lessons").delete().eq("id", lessonId);
+      if (error) throw error;
+      setLessonsList(effectiveContextId, (prev) => {
+        if (!prev) return prev;
+        const remaining = prev.lessons.filter((l) => l.id !== lessonId);
+        return { ...prev, lessons: remaining };
+      });
+      toast({ title: "Lezione eliminata" });
+      if (lessonOrder !== undefined && currentLessonIndex >= lessons.length - 1) {
+        setCurrentLessonIndex(Math.max(0, lessons.length - 2));
+      }
+      await refetchLessons();
+    } catch (err) {
+      console.error("Error deleting lesson:", err);
+      toast({ title: "Errore", description: "Impossibile eliminare la lezione", variant: "destructive" });
+    }
+  };
+
+  const handleRenameLesson = async (lessonId: string, newTitle: string) => {
+    try {
+      const { error } = await supabase
+        .from("mini_lessons")
+        .update({ title: newTitle })
+        .eq("id", lessonId);
+      if (error) throw error;
+      setLessonsList(effectiveContextId, (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          lessons: prev.lessons.map((l) => (l.id === lessonId ? { ...l, title: newTitle } : l)),
+        };
+      });
+      toast({ title: "Titolo aggiornato" });
+    } catch (err) {
+      console.error("Error renaming lesson:", err);
+      toast({ title: "Errore", description: "Impossibile rinominare la lezione", variant: "destructive" });
     }
   };
 
@@ -686,123 +880,33 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         freeLimitMessage={FREE_LIMIT_MESSAGE}
         isRegenerating={isGenerating || !!moduleJob}
       />
-      <LessonsList
-        lessons={lessons}
-        currentIndex={currentLessonIndex}
-        gatedModuleIndex={moduleJob ? moduleJob.moduleIndex : null}
-        moduleTitles={activeContext?.module_titles ?? null}
-        showProgressHeader={false}
-        onSelectLesson={async (index) => {
-          const lesson = lessons[index];
-          if (!lesson) return;
-          // 🔒 P10c CANCELLO DEL VAGONE: finché la fabbrica lavora su QUESTO modulo,
-          // solo la porta si apre → sala d'attesa. Le altre avvisano con un messaggino,
-          // anche se la macchina le ha già tornite: si sbloccano TUTTE insieme alla fine.
-          if (moduleJob && isInGatedModule(index, moduleJob.moduleIndex)) {
-            if (isGateLesson(index, moduleJob.moduleIndex)) {
-              setModuleScreen({ moduleIndex: moduleJob.moduleIndex });
-            } else {
-              toast({ title: "Modulo in preparazione", description: "Questa si sblocca quando TUTTO il modulo è pronto: ti avvisiamo noi con una notifica!" });
-            }
-            return;
+      {viewMode === "modules" ? (
+        <ModulesOverview modules={modules} onOpenModule={(idx) => void openModule(idx)} />
+      ) : (
+        <ModulePath
+          moduleIndex={activeModuleIndex ?? 0}
+          moduleTitle={
+            activeModuleIndex != null
+              ? moduleTitleFor(activeModuleIndex, activeContext?.module_titles ?? null, lessons[moduleRange(activeModuleIndex).start]?.title).replace(/^Modulo \d+ · /, "")
+              : "Modulo"
           }
-          if (lesson.is_generated) {
-            setActiveLessonIndex(index);
-            if (index > cachedCurrentIndex) updateProgress.mutate(index);
-            return;
-          }
-          // 🏭 P10b: la lezione non è pronta → ragiona a MODULI, non a singola.
-          const mIdx = moduleIndexOf(index);
-          if (moduleJob) {
-            // Cantiere già attivo: apri la sala d'attesa (mostra il modulo in lavorazione).
-            setModuleScreen({ moduleIndex: moduleJob.moduleIndex });
-            return;
-          }
-          if (isModuleFullyMissing(lessonsInModule(lessons, mIdx))) {
-            // Vagone tutto da costruire → la fabbrica lavora in background e tu
-            // aspetti nella sala con barra e messaggini (o esci: arriva la push).
-            await startModuleGeneration(mIdx);
-          } else {
-            // Vagone parzialmente pronto (es. lavoro interrotto a metà):
-            // ripara solo il buco, come abbiamo sempre fatto.
-            await generateLessonContent(index);
-            setActiveLessonIndex(index);
-            if (index > cachedCurrentIndex) updateProgress.mutate(index);
-          }
-        }}
-        onBack={() => {}}
-        isGenerating={isGeneratingLesson}
-        showBackButton={false}
-        showFinalTest={allGenerated}
-        onStartFinalTest={handleStartFinalTest}
-        isLoadingFinalTest={isLoadingFinalTest}
-        onRegenerateLesson={async (index) => {
-          const lesson = lessons[index];
-          if (!lesson) return;
-          // Mark as not generated locally so the edge function generates from scratch.
-          setLessonsList(effectiveContextId, (prev) => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              lessons: prev.lessons.map((l) =>
-                l.id === lesson.id ? { ...l, is_generated: false } : l,
-              ),
-            };
-          });
-          try {
-            await supabase
-              .from("mini_lessons")
-              .update({ is_generated: false, explanation: "", concept: "", example: null, exercises: [] })
-              .eq("id", lesson.id);
-          } catch (err) {
-            console.error("Error resetting lesson for regenerate:", err);
-          }
-          const fresh = await generateLessonContent(index);
-          if (fresh) {
-            toast({ title: "Lezione rigenerata", description: "I contenuti sono stati aggiornati." });
-          }
-        }}
-        onDeleteLesson={async (lessonId) => {
-          const lessonOrder = lessons.find((l) => l.id === lessonId)?.lesson_order;
-          try {
-            const { error } = await supabase.from("mini_lessons").delete().eq("id", lessonId);
-            if (error) throw error;
-            setLessonsList(effectiveContextId, (prev) => {
-              if (!prev) return prev;
-              const remaining = prev.lessons.filter((l) => l.id !== lessonId);
-              return { ...prev, lessons: remaining };
-            });
-            toast({ title: "Lezione eliminata" });
-            if (lessonOrder !== undefined && currentLessonIndex >= lessons.length - 1) {
-              setCurrentLessonIndex(Math.max(0, lessons.length - 2));
-            }
-            await refetchLessons();
-          } catch (err) {
-            console.error("Error deleting lesson:", err);
-            toast({ title: "Errore", description: "Impossibile eliminare la lezione", variant: "destructive" });
-          }
-        }}
-        onRenameLesson={async (lessonId, newTitle) => {
-          try {
-            const { error } = await supabase
-              .from("mini_lessons")
-              .update({ title: newTitle })
-              .eq("id", lessonId);
-            if (error) throw error;
-            setLessonsList(effectiveContextId, (prev) => {
-              if (!prev) return prev;
-              return {
-                ...prev,
-                lessons: prev.lessons.map((l) => (l.id === lessonId ? { ...l, title: newTitle } : l)),
-              };
-            });
-            toast({ title: "Titolo aggiornato" });
-          } catch (err) {
-            console.error("Error renaming lesson:", err);
-            toast({ title: "Errore", description: "Impossibile rinominare la lezione", variant: "destructive" });
-          }
-        }}
-      />
+          lessons={lessons}
+          currentIndex={currentLessonIndex}
+          isGeneratingLesson={isGeneratingLesson}
+          isModuleGenerating={!!moduleScreen && moduleScreen.moduleIndex === activeModuleIndex}
+          genCount={moduleJob && moduleJob.moduleIndex === activeModuleIndex ? (moduleJob.generatedCount ?? 0) : 0}
+          genTotal={moduleJob && moduleJob.moduleIndex === activeModuleIndex ? (moduleJob.totalLessons ?? MODULE_SIZE) : MODULE_SIZE}
+          onBack={backToModules}
+          onModuleCompleted={backToModules}
+          onSelectLesson={(idx) => void handleSelectFromPath(idx)}
+          showFinalTest={allGenerated}
+          onStartFinalTest={handleStartFinalTest}
+          isLoadingFinalTest={isLoadingFinalTest}
+          onRegenerateLesson={handleRegenerateLesson}
+          onDeleteLesson={handleDeleteLesson}
+          onRenameLesson={handleRenameLesson}
+        />
+      )}
 
       {activeLessonIndex !== null && currentLesson && currentLesson.is_generated && !isGeneratingLesson && (
         <FullscreenLessonGate
@@ -816,9 +920,14 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
             setCurrentLessonIndex(nextIndex);
             setActiveLessonIndex(null);
             if (nextIndex > cachedCurrentIndex) updateProgress.mutate(nextIndex);
+            // 🌲 P24: finito l'ultimo passo di un modulo → torna alla schermata
+            // dei moduli (il prossimo mostra "in generazione" se parte la fabbrica).
+            if (nextIndex < lessons.length && isFirstOfModule(nextIndex)) {
+              backToModules();
+            }
             // 🏭 P10b IBRIDO: hai appena messo piede sul cancello di un vagone
             // tutto da costruire → la fabbrica parte DA SOLA (silenziosa: se poi
-            // clicchi la lezione e non è pronta, si apre la sala d'attesa).
+            // clicchi la lezione e non è pronta, si apre la schermata in generazione).
             if (
               nextIndex < lessons.length &&
               isFirstOfModule(nextIndex) &&
@@ -839,8 +948,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         />
       )}
 
-      {/* 🏭 P10b: la sala d'attesa della fabbrica (sovrasta tutto, z-[90]) */}
-      {moduleScreen && (
+      {/* 🏭 P10b: la sala d'attesa della fabbrica (fallback: la schermata
+          "in generazione" del percorso la sostituisce quando si è nella vista
+          lezioni del modulo) */}
+      {moduleScreen && viewMode !== "lessons" && (
         <ModuleGenerationScreen
           moduleIndex={moduleScreen.moduleIndex}
           moduleTitle={(activeContext?.module_titles?.[moduleScreen.moduleIndex] || null) ?? null}
@@ -856,6 +967,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           exercises={finalTestExercises}
           onClose={() => setShowFinalTest(false)}
           onComplete={() => { setShowFinalTest(false);
+            backToModules();
             toast({ title: "Complimenti!", description: "Hai completato il percorso e il test finale!" }); }}
         />
       )}
