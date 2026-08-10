@@ -4,7 +4,6 @@ import {
   ArrowLeftRight,
   BookOpen,
   Check,
-  ChevronDown,
   FileText,
   FolderOpen,
   Globe,
@@ -158,31 +157,11 @@ export function PathHero({
         <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-white/[0.04]" aria-hidden />
 
         <div className="relative">
-          {/* ── Riga alta: etichetta + menù ⋯ ── */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="label-small text-primary-foreground/70 mb-1 tracking-[0.16em]">
-                Percorso attuale
-              </p>
-              {multi && title ? (
-                <button
-                  type="button"
-                  onClick={() => setPickerOpen(true)}
-                  aria-label="Cambia corso"
-                  className="group flex items-center gap-1.5 max-w-full text-left"
-                >
-                  <h2 className="truncate font-display font-extrabold text-xl sm:text-2xl leading-snug">
-                    {title}
-                  </h2>
-                  <ChevronDown className="w-4 h-4 text-primary-foreground/60 shrink-0 transition-transform duration-200 group-hover:translate-y-0.5" />
-                </button>
-              ) : (
-                <h2 className="font-display font-extrabold text-xl sm:text-2xl leading-snug line-clamp-2 pr-2">
-                  {title ?? "Il tuo percorso"}
-                </h2>
-              )}
-            </div>
-
+          {/* ── Riga alta: etichetta a sinistra, menù ⋯ in alto a destra ── */}
+          <div className="flex items-center justify-between gap-3">
+            <p className="label-small text-primary-foreground/70 tracking-[0.16em]">
+              Percorso attuale
+            </p>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -256,6 +235,11 @@ export function PathHero({
             </DropdownMenu>
           </div>
 
+          {/* ── Titolo: a tutta larghezza, NOME INTERO (niente tagli su mobile) ── */}
+          <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1">
+            {title ?? "Il tuo percorso"}
+          </h2>
+
           {/* ── Avanzamento: scritta + barra con percentuale ── */}
           {isGenerating ? (
             <>
@@ -286,16 +270,16 @@ export function PathHero({
             </>
           )}
 
-          {/* ── Azioni: Riprendi + Cambia corso ── */}
+          {/* ── Azioni: Riprendi + Cambia corso — STESSA ALTEZZA (h-11) ── */}
           {!isGenerating && (canResume || multi) && (
-            <div className="mt-5 flex items-center gap-2.5">
+            <div className="mt-5 flex items-stretch gap-2.5">
               {canResume && onResume && (
                 <button
                   type="button"
                   onClick={onResume}
-                  className="inline-flex items-center gap-2 rounded-full bg-white/15 border border-white/25 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/25 active:scale-[0.97]"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/25 h-11 px-4 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/25 active:scale-[0.97]"
                 >
-                  <BookOpen className="w-4 h-4" strokeWidth={1.9} />
+                  <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Riprendi
                 </button>
               )}
@@ -303,9 +287,9 @@ export function PathHero({
                 <button
                   type="button"
                   onClick={() => setPickerOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] border border-white/20 px-5 py-2.5 text-sm font-semibold text-white/90 transition-all duration-200 hover:bg-white/15 active:scale-[0.97]"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-white/[0.08] border border-white/20 h-11 flex-1 px-3 text-sm font-semibold text-white/90 transition-all duration-200 hover:bg-white/15 active:scale-[0.97]"
                 >
-                  <ArrowLeftRight className="w-4 h-4" strokeWidth={1.9} />
+                  <ArrowLeftRight className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Cambia corso
                 </button>
               )}
@@ -314,10 +298,12 @@ export function PathHero({
         </div>
       </div>
 
-      {/* ── Selettore dei percorsi ── */}
-      {pickerOpen && onSelectCourse && (
+      {/* ── Selettore dei percorsi: in un PORTALE sopra tutto (anche l'header),
+          con sfondo sfocato. Renderizzato fuori dalla card animata, così la
+          finestra fissa non resta intrappolata sotto gli altri elementi. ── */}
+      {pickerOpen && onSelectCourse && createPortal(
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 animate-fade-in"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-fade-in"
           onClick={() => setPickerOpen(false)}
         >
           <div
@@ -381,7 +367,8 @@ export function PathHero({
               })}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {/* ── Rinomina corso ── */}
