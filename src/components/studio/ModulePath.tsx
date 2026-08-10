@@ -54,7 +54,7 @@ interface ModulePathProps {
 // generazione mostra banner + nodi tratteggiati che respirano.
 
 const NODE = 54;
-const STEP = 104;
+const STEP = 118;
 const TROPHY = 62;
 const L_COL = 10; // % centro colonna sinistra
 const R_COL = 90; // % centro colonna destra
@@ -318,7 +318,7 @@ export function ModulePath({
           <g
             className="segs"
             dangerouslySetInnerHTML={{ __html: segs }}
-            style={{ strokeWidth: 8, strokeLinecap: "butt", fill: "none" }}
+            style={{ strokeWidth: 8, strokeLinecap: "round", strokeLinejoin: "round", fill: "none" }}
           />
         </svg>
 
@@ -392,20 +392,21 @@ export function ModulePath({
                 </span>
               )}
 
-              {/* Didascalia titolo: verso il CENTRO (mai fuori schermo) */}
+              {/* 🌲 P24 — riquadro del titolo SOTTO il nodo: stesso materiale dei
+                  tasti del banner (card + bordo + ombra leggera), centrato,
+                  mai sovrapposto ad altri testi (niente più didascalie laterali) */}
               <div
-                className={cn(
-                  "absolute top-0 flex flex-col justify-center min-h-[54px]",
-                  side === "l" ? "left-[calc(100%+14px)] text-left items-start" : "right-[calc(100%+14px)] text-right items-end",
-                )}
-                style={{ width: "min(42vw, 150px)" }}
+                className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+12px)] z-10"
+                style={{ width: "min(66vw, 168px)" }}
               >
-                <span className="text-[12.5px] font-semibold leading-snug text-foreground line-clamp-2">
-                  {lesson.title}
-                </span>
-                <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
-                  {subtitleFor(state)}
-                </span>
+                <div className="rounded-xl bg-card border border-border shadow-level-1 px-2.5 py-1.5 text-center">
+                  <span className="block text-[11.5px] font-semibold leading-snug text-foreground line-clamp-2">
+                    {lesson.title}
+                  </span>
+                  <span className="block text-[10px] font-medium text-muted-foreground mt-0.5">
+                    {subtitleFor(state)}
+                  </span>
+                </div>
               </div>
             </div>
           );
@@ -435,10 +436,12 @@ export function ModulePath({
           ) : (
             <Trophy className="w-6 h-6" strokeWidth={1.8} />
           )}
-          <div className="absolute top-[calc(100%+10px)] left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
-            <div className="text-[11px] font-bold text-foreground">Test finale</div>
-            <div className="text-[10px] text-muted-foreground font-medium text-center">
-              {allDone ? "Pronto — mettiti alla prova!" : "Completa il modulo per sbloccarlo"}
+          <div className="absolute top-[calc(100%+12px)] left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
+            <div className="rounded-xl bg-card border border-border shadow-level-1 px-2.5 py-1.5 text-center">
+              <div className="text-[11px] font-bold text-foreground">Test finale</div>
+              <div className="text-[10px] text-muted-foreground font-medium">
+                {allDone ? "Pronto — mettiti alla prova!" : "Completa il modulo per sbloccarlo"}
+              </div>
             </div>
           </div>
         </div>
