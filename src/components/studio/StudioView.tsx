@@ -6,6 +6,7 @@ import { CourseSelector } from "./CourseSelector";
 import { GenerationProgress } from "./GenerationProgress";
 import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
+import { PathHero } from "./PathHero";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -208,6 +209,13 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [generationStatus, effectiveContextId]);
+
+  // 🌲 P24 — percentuale della fabbrica per l'eroe del percorso
+  const generationPercent =
+    generationStep === "analyzing" ? 15
+    : generationStep === "creating-index" ? 35
+    : generationStep === "generating-lessons" ? Math.min(95, 35 + ((generationLessonCount / Math.max(generationTotalLessons, 1)) * 60))
+    : 100;
 
   // Sincronizza l'indice corrente con quello del cloud al primo load di un context.
   // Per un nuovo PDF la progressione è separata, quindi parte da 0.
@@ -470,15 +478,38 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
-  if (isGenerating) {
+  // 🌲 P24 — la generazione NON sostituisce più la schermata: vive nello spazio.
+  // Nome del percorso senza estensione né prefissi emoji (per l'eroe).
+  const heroTitle = contextFileName
+    ? contextFileName
+        .replace(/\.(pdf|docx|doc|txt|md|pptx?|xlsx?|jpe?g|png|webp|heic|heif)$/i, "")
+        .replace(/^🌐\s*/, "")
+        .trim() || null
+    : null;
+
+  // Prima generazione (nessuna lezione ancora): eroe-fabbrica + pannello fasi.
+  if (isGenerating && lessons.length === 0) {
     return (
-      <GenerationProgress
-        isGenerating={isGenerating}
-        currentStep={generationStep}
-        totalLessons={generationTotalLessons}
-        generatedCount={generationLessonCount}
-        fileName={contextFileName || undefined}
-      />
+      <>
+        <PathHero
+          title={heroTitle}
+          completedCount={0}
+          totalLessons={0}
+          isGenerating
+          progressPercent={generationPercent}
+        />
+        <GenerationProgress
+          compact
+          isGenerating={isGenerating}
+          currentStep={generationStep}
+          totalLessons={generationTotalLessons}
+          generatedCount={generationLessonCount}
+          fileName={contextFileName || undefined}
+        />
+        <p className="mx-4 mt-4 text-center text-xs text-muted-foreground leading-relaxed px-4 py-3 rounded-[18px] bg-card">
+          Puoi anche uscire dall'app: ti avvisiamo con una notifica appena è pronto.
+        </p>
+      </>
     );
   }
 
@@ -578,6 +609,32 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
 
   return (
     <>
+      {/* 🌲 P24 — l'eroe del percorso: la card ad arco in cima a Studio.
+          La lezione corrente resta il punto di ripresa; durante la
+          generazione l'eroe mostra la barra di trasformazione. */}
+      <PathHero
+        title={heroTitle}
+        completedCount={Math.max(0, Math.min(currentLessonIndex, lessons.length))}
+        totalLessons={lessons.length}
+        isGenerating={isGenerating}
+        progressPercent={generationPercent}
+        canResume={!!lessons[currentLessonIndex]?.is_generated && !isGenerating}
+        onResume={() => {
+          const l = lessons[currentLessonIndex];
+          if (!l) return;
+          if (l.is_generated) setActiveLessonIndex(currentLessonIndex);
+        }}
+      />
+      {isGenerating && (
+        <GenerationProgress
+          compact
+          isGenerating={isGenerating}
+          currentStep={generationStep}
+          totalLessons={generationTotalLessons}
+          generatedCount={generationLessonCount}
+          fileName={contextFileName || undefined}
+        />
+      )}
       {/* 📦 P17: il cartellino "materiale nuovo" — le lezioni non lo sanno ancora */}
       {activeContext?.new_material_pending && (
         <div className="mx-4 mt-4 mb-1 rounded-[18px] bg-card px-4 py-3.5 flex items-start gap-3 animate-fade-up">

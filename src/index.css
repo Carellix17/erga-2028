@@ -647,6 +647,25 @@
     from { opacity: 0; }
     to   { opacity: 1; }
   }
+  /* 🌲 P24 — la lezione sale dal basso come un foglio (dalla foto):
+     ingresso a foglio arrotondato che si apre a schermo pieno. Animiamo la
+     FINESTRA stessa (la foglia), mai il contenitore: REGOLA DEL PALCO intonsa. */
+  .animate-lesson-sheet-in {
+    animation: lesson-sheet-in 280ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+  @keyframes lesson-sheet-in {
+    from { transform: translateY(100%); border-radius: 28px 28px 0 0; opacity: 0.98; }
+    to   { transform: translateY(0); border-radius: 0; opacity: 1; }
+  }
+  /* 🌲 P24 — foglio dal basso per i pannelli (sala d'attesa, fogli): sale
+     con un filo di luce, senza mai staccarsi dal mondo (opacità, non taglio) */
+  .animate-sheet-up {
+    animation: sheet-up 260ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+  @keyframes sheet-up {
+    from { transform: translateY(48px); opacity: 0.6; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
   .animate-scale-in {
     animation: m3-scale-in 550ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
     will-change: transform, opacity;

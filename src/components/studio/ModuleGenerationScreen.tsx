@@ -75,61 +75,76 @@ export function ModuleGenerationScreen({
   }, [targetProgress, capProgress]);
 
   return (
-    <div className="fixed inset-0 z-[90] bg-background flex flex-col items-center justify-center p-6 animate-fade-up overflow-y-auto">
-      {/* Insegna della fabbrica */}
-      <div className="relative mb-8 mt-4">
-        <div className="w-24 h-24 rounded-full bg-card shadow-level-1 flex items-center justify-center">
-          <Factory className="w-10 h-10 text-foreground" strokeWidth={1.5} />
+    // 🌲 P24 — la sala d'attesa NON copre più la lista: è un FOGLIO dal basso.
+    // Le lezioni restano visibili dietro (continuità), il velo è opaco e leggero.
+    <div
+      className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40 animate-fade-in"
+      onClick={onCancel}
+    >
+      <div
+        role="dialog"
+        aria-label={`Preparazione modulo ${moduleIndex + 1}`}
+        className="w-full max-w-lg bg-background rounded-t-[28px] shadow-level-5 border-t border-border p-6 pb-8 max-h-[85vh] overflow-y-auto animate-sheet-up"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Insegna della fabbrica */}
+        <div className="flex items-center gap-4 mb-5">
+          <div className="relative flex-shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-card shadow-level-1 flex items-center justify-center">
+              <Factory className="w-7 h-7 text-foreground" strokeWidth={1.5} />
+            </div>
+            <div className="absolute -bottom-1.5 -right-1.5 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-[10px] font-bold">
+              Modulo {moduleIndex + 1}
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-display text-lg font-bold tracking-tight text-foreground leading-snug">
+              Sto preparando il modulo {moduleIndex + 1}
+            </h2>
+            {moduleTitle && (
+              <p className="text-sm text-foreground/80 font-semibold truncate mt-0.5">
+                «{moduleTitle}»
+              </p>
+            )}
+            {fileName && (
+              <p className="text-xs text-muted-foreground font-medium truncate mt-0.5">
+                {fileName}
+              </p>
+            )}
+          </div>
         </div>
-        <div className="absolute -bottom-1 -right-2 bg-primary text-primary-foreground rounded-full px-2.5 py-1 text-[11px] font-bold">
-          Modulo {moduleIndex + 1}
-        </div>
-      </div>
 
-      <h2 className="font-display text-2xl font-bold tracking-tight text-foreground text-center mb-1">
-        Sto preparando il modulo {moduleIndex + 1}
-      </h2>
-      {moduleTitle && (
-        <p className="text-sm text-foreground/80 font-semibold mb-1 text-center max-w-[85vw] truncate">
-          «{moduleTitle}»
-        </p>
-      )}
-      {fileName && (
-        <p className="text-xs text-foreground font-medium mb-6 bg-secondary px-3 py-1.5 rounded-full max-w-[90vw] truncate">
-          {fileName}
-        </p>
-      )}
-
-      {/* Barra di avanzamento */}
-      <div className="w-full max-w-xs mb-3">
-        <div className="h-2 rounded-full bg-secondary overflow-hidden">
+        {/* Barra di avanzamento */}
+        <div className="h-2 rounded-full bg-secondary overflow-hidden mb-3">
           <div
             className="h-full rounded-full bg-primary transition-all duration-300"
             style={{ width: `${animatedProgress}%` }}
           />
         </div>
-      </div>
-      <p className="text-sm font-semibold text-foreground mb-1 tabular-nums">
-        Lezione {Math.min(generatedCount, totalLessons)} di {totalLessons}
-      </p>
-      <p className="body-small text-muted-foreground mb-8 min-h-[1.5rem] text-center transition-opacity">
-        {tips[tipIndex]}
-      </p>
-
-      {/* Cartello notifica: puoi anche uscire */}
-      <div className="w-full max-w-sm rounded-[18px] bg-card p-4 mb-6 flex items-start gap-3">
-        <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
-          <Bell className="w-4 h-4 text-foreground" strokeWidth={1.75} />
+        <div className="flex items-baseline justify-between mb-4">
+          <p className="text-sm font-semibold text-foreground tabular-nums">
+            Lezione {Math.min(generatedCount, totalLessons)} di {totalLessons}
+          </p>
+          <p className="body-small text-muted-foreground text-right max-w-[55%] truncate">
+            {tips[tipIndex]}
+          </p>
         </div>
-        <p className="body-small text-foreground leading-relaxed pt-1.5">
-          Puoi anche uscire da questa schermata o chiudere l'app: ti arriva una
-          <strong> notifica</strong> quando il modulo è pronto.
-        </p>
-      </div>
 
-      <Button variant="outline" className="h-12 px-6" onClick={onCancel}>
-        Torna alle lezioni
-      </Button>
+        {/* Cartello notifica: puoi anche uscire */}
+        <div className="rounded-[18px] bg-card p-4 mb-5 flex items-start gap-3">
+          <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+            <Bell className="w-4 h-4 text-foreground" strokeWidth={1.75} />
+          </div>
+          <p className="body-small text-foreground leading-relaxed pt-1.5">
+            Puoi anche uscire da questo foglio o chiudere l'app: ti arriva una
+            <strong> notifica</strong> quando il modulo è pronto.
+          </p>
+        </div>
+
+        <Button variant="outline" className="w-full h-12" onClick={onCancel}>
+          Torna alle lezioni
+        </Button>
+      </div>
     </div>
   );
 }

@@ -233,17 +233,28 @@ export function LessonsList({
                   const isGatePorta = isGateLesson(lessonOrder, gatedModuleIndex);
                   const isLocked = (!lesson.is_generated && globalIndex > currentIndex) || (inGatedModule && !isGatePorta);
                   const disabled = isGenerating || (isLocked && !inGatedModule);
-                  const subtitle = inGatedModule
-                    ? "In preparazione…"
-                    : isCompleted
-                      ? "Completata"
-                      : isCurrent
-                        ? lesson.is_generated
-                          ? "Pronta per te"
-                          : "Da preparare"
-                        : lesson.is_generated
-                          ? "Pronta"
-                          : "Da sbloccare";
+                  // 🌲 P24 — MACCHINA DI STATI ESPLICITA della lezione: ogni stato
+                  // ha superficie, affordance e feedback propri. La logica di
+                  // abilitazione è INVIOLATA (stesse condizioni di sempre).
+                  type LessonState =
+                    | "generating" | "gated" | "gate-door"
+                    | "completed" | "current" | "locked" | "available";
+                  const state: LessonState =
+                    isGenerating && isCurrent ? "generating"
+                    : inGatedModule && !isGatePorta ? "gated"
+                    : isGatePorta ? "gate-door"
+                    : isCompleted ? "completed"
+                    : isCurrent ? "current"
+                    : isLocked ? "locked"
+                    : "available";
+                  const subtitle =
+                    state === "gated" || state === "gate-door" ? "In preparazione…"
+                    : state === "completed" ? "Completata"
+                    : state === "current" ? (lesson.is_generated ? "Pronta per te" : "Da preparare")
+                    : state === "generating" ? "La fabbrica sta lavorando su questa…"
+                    : state === "locked" ? "Da sbloccare"
+                    : lesson.is_generated ? "Pronta"
+                    : "Da sbloccare";
 
                   return (
                     <button
@@ -269,11 +280,16 @@ export function LessonsList({
                       }}
                       disabled={disabled}
                       className={cn(
-                        "w-full flex items-center gap-3.5 rounded-[18px] px-3.5 py-3 text-left select-none",
-                        "transition-colors duration-200",
-                        isCurrent ? "bg-surface-container-high" : "bg-card",
-                        !disabled && "hover:bg-surface-container-high active:bg-surface-container-highest",
-                        isLocked && !inGatedModule && "opacity-55",
+                        "w-full flex items-center gap-3.5 rounded-[18px] px-3.5 py-3 text-left select-none relative overflow-hidden",
+                        "transition-[background-color,transform,border-color,box-shadow] duration-200",
+                        // 🌲 P24 — la lezione CORRENTE è l'unico oggetto in rilievo
+                        // (Piano 2): superficie, filo di bordo e ombra di contatto.
+                        state === "current" || state === "generating"
+                          ? "bg-surface-container-high border border-primary/20 shadow-level-1"
+                          : "bg-card border border-transparent",
+                        !disabled && "hover:bg-surface-container-highest active:scale-[0.985]",
+                        (state === "locked" || state === "gated") && "opacity-55",
+                        state === "generating" && "border-lime/40",
                       )}
                       style={{
                         touchAction: "manipulation",
@@ -281,29 +297,34 @@ export function LessonsList({
                         userSelect: "none",
                       }}
                     >
+                      {/* 🌲 P24 — marker "sei qui": la barretta bosco sul bordo */}
+                      {(state === "current" || state === "generating") && (
+                        <span className="absolute left-0 top-2.5 bottom-2.5 w-1 rounded-r-full bg-primary" aria-hidden />
+                      )}
+
                       {/* Tondo di stato: il FIRM è solo sulla lezione corrente */}
                       <span
                         className={cn(
                           "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-200",
-                          isCurrent ? "bg-primary text-primary-foreground" : "bg-secondary",
-                          isGatePorta && "ring-2 ring-tertiary/60 animate-pulse-soft",
+                          state === "current" || state === "generating" ? "bg-primary text-primary-foreground" : "bg-secondary",
+                          state === "gate-door" && "ring-2 ring-tertiary/60 animate-pulse-soft",
                         )}
                       >
-                        {isGenerating && isCurrent ? (
+                        {state === "generating" ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : inGatedModule && !isGatePorta ? (
+                        ) : state === "gated" ? (
                           <Lock className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
-                        ) : isGatePorta ? (
-                          <Factory className={cn("w-4 h-4", isCurrent ? "text-primary-foreground" : "text-tertiary")} strokeWidth={1.75} />
-                        ) : isCompleted ? (
+                        ) : state === "gate-door" ? (
+                          <Factory className="w-4 h-4 text-tertiary" strokeWidth={1.75} />
+                        ) : state === "completed" ? (
                           <Check className="w-5 h-5 text-tertiary" strokeWidth={2.5} />
-                        ) : isLocked ? (
+                        ) : state === "locked" ? (
                           <Lock className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
                         ) : (
                           <span
                             className={cn(
                               "text-sm font-bold",
-                              isCurrent ? "text-primary-foreground" : "text-foreground/80",
+                              state === "current" ? "text-primary-foreground" : "text-foreground/80",
                             )}
                           >
                             {globalIndex + 1}
@@ -326,12 +347,12 @@ export function LessonsList({
                         </span>
                       </span>
 
-                      {/* Invito a destra */}
-                      {isCurrent && !isGenerating ? (
-                        <span className="flex-shrink-0 text-xs font-bold text-primary bg-primary/10 rounded-full px-3 py-1.5">
+                      {/* Invito a destra: la pill "Riprendi" è in FIRMA piena */}
+                      {state === "current" && !isGenerating ? (
+                        <span className="flex-shrink-0 text-xs font-bold text-primary-foreground bg-primary rounded-full px-3 py-1.5 shadow-level-1">
                           Riprendi
                         </span>
-                      ) : !isLocked && !isGenerating ? (
+                      ) : state === "available" || state === "gate-door" ? (
                         <ChevronRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
                       ) : null}
                     </button>
