@@ -45,7 +45,7 @@ export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: Pra
                   key={tab.id}
                   onClick={() => setActiveSubTab(tab.id)}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl transition-all duration-400 ease-m3-emphasized",
+                    "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl transition-all duration-200 ease-m3-emphasized",
                     isActive
                       ? "bg-primary text-primary-foreground shadow-level-1"
                       : "text-muted-foreground hover:bg-foreground/[0.05]"

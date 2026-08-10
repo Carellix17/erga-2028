@@ -417,14 +417,14 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                   </Button>
                   <div
                     className={cn(
-                      "relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-500",
+                      "relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200",
                       dragActive ? "border-primary bg-primary-container scale-[1.02] shadow-level-2" : "border-outline-variant hover:border-primary/40 hover:bg-surface-container-low",
                       isUploading && "pointer-events-none opacity-50"
                     )}
                     onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
                   >
                     <input type="file" accept=".pdf,.txt,.md,.markdown,.docx,application/pdf,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple onChange={handleFileInput} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploading} />
-                    <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2 animate-float">
+                    <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2">
                       <FileUp className="w-8 h-8 text-primary-foreground" />
                     </div>
                     <p className="font-display font-semibold text-lg mb-1">Trascina qui i tuoi documenti</p>
@@ -495,7 +495,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Torna a Caricamento
                 </Button>
-                <div className="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-500 border-outline-variant hover:border-primary/40 hover:bg-surface-container-low">
+                <div className="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 border-outline-variant hover:border-primary/40 hover:bg-surface-container-low">
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -504,7 +504,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     disabled={isUploading || selectedImages.length >= MAX_IMAGES}
                   />
-                  <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2 animate-float">
+                  <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2">
                     <Camera className="w-8 h-8 text-primary-foreground" />
                   </div>
                   <p className="font-display font-semibold text-lg mb-1">Carica le tue foto</p>

@@ -209,14 +209,14 @@ export function GenerationProgress({
             <div
               key={step.id}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-[18px] transition-colors duration-500",
+                "flex items-center gap-3 px-4 py-3 rounded-[18px] transition-colors duration-300",
                 isActive && "bg-surface-container-high",
                 isComplete && "opacity-60",
                 isPending && "opacity-40"
               )}
             >
               <div className={cn(
-                "w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-500 flex-shrink-0",
+                "w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-300 flex-shrink-0",
                 isActive && "bg-primary text-primary-foreground",
                 isComplete && "bg-secondary",
                 isPending && "bg-secondary text-muted-foreground/60"

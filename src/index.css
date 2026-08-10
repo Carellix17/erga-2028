@@ -219,6 +219,13 @@
 --radius-xl: 1.25rem;    /* 22px — feature tile */
     --radius-2xl: 1.5rem;
     --radius-full: 9999px;
+
+    /* 🌲 P24 — GRAMMATICA MOTION: poche durate, sempre uguali
+       micro 120 · standard 180 · enfatizzato 240 · ingresso 300 */
+    --motion-micro: 120ms;
+    --motion-standard: 180ms;
+    --motion-emphasized: 240ms;
+    --motion-entrance: 300ms;
     --radius: 0.75rem;
 
     /* ─── Elevazione — sussurri, mai palchi ─── */
@@ -418,7 +425,7 @@
     100% { opacity: 1; }
   }
   .animate-cinematic-in {
-    animation: cinematic-enter 480ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    animation: cinematic-enter var(--motion-entrance) cubic-bezier(0.22, 0.61, 0.36, 1) both;
   }
   .gradient-warm {
     background: hsl(var(--surface-container));
@@ -595,18 +602,9 @@
   .motion-standard-accel { transition-timing-function: ease; transition-duration: 200ms; }
   .smooth-transition { transition: all 200ms ease; will-change: transform, opacity; }
 
-  /* ═══════ ORIGIN ATMOSPHERIC REVEAL — solo per hero/sezione, MAI su micro-interazioni ═══════ */
-  @keyframes atmospheric-in {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-  }
-  .animate-atmospheric-in {
-    animation: atmospheric-in 2500ms cubic-bezier(0.455, 0.03, 0.515, 0.955) both;
-  }
-
   /* ═══════ M3 FLUID ENTRANCE ANIMATIONS ═══════ */
   .animate-fade-up {
-    animation: m3-fade-up 600ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    animation: m3-fade-up var(--motion-entrance) cubic-bezier(0.05, 0.7, 0.1, 1) both;
     will-change: transform, opacity;
   }
   /* ⚠️ REGOLA DEL PALCO (P14c): MAI animare (transform, opacity o will-change)
@@ -626,17 +624,17 @@
     to   { opacity: 1; transform: none; }
   }
   .tab-enter[data-state="active"] {
-    animation: tab-enter 340ms cubic-bezier(0.2, 0, 0, 1) both;
+    animation: tab-enter var(--motion-entrance) cubic-bezier(0.2, 0, 0, 1) both;
   }
   .leaf-rise {
-    animation: tab-enter 380ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    animation: tab-enter var(--motion-entrance) cubic-bezier(0.05, 0.7, 0.1, 1) both;
   }
   @keyframes leaf-fade {
     from { opacity: 0; }
     to   { opacity: 1; }
   }
   .leaf-fade {
-    animation: leaf-fade 420ms ease-out both;
+    animation: leaf-fade var(--motion-emphasized) ease-out both;
   }
   /* 🌲 P24 — passaggio tra stanze: dissolvenza di SOLA LUCE (mai transform:
      rispetta la REGOLA DEL PALCO, le finestre a schermo intero restano attaccate) */
@@ -667,15 +665,11 @@
     to   { transform: translateY(0); opacity: 1; }
   }
   .animate-scale-in {
-    animation: m3-scale-in 550ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
-    will-change: transform, opacity;
-  }
-  .animate-slide-up {
-    animation: m3-slide-up 700ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    animation: m3-scale-in var(--motion-entrance) cubic-bezier(0.05, 0.7, 0.1, 1) both;
     will-change: transform, opacity;
   }
   .animate-fade-in {
-    animation: m3-fade-in 500ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+    animation: m3-fade-in var(--motion-emphasized) cubic-bezier(0.05, 0.7, 0.1, 1) both;
     will-change: opacity;
   }
   .animate-bounce-in {
@@ -683,45 +677,15 @@
     animation: erga-bounce-in 320ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
     will-change: transform, opacity;
   }
-  .animate-pop {
-    /* 🎨 P9a — riaccesa: "pop" di festa per i completamenti (evento creato ✓) */
-    animation: erga-pop 240ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
-    will-change: transform, opacity;
-  }
-  .animate-wiggle {
-    /* 🎨 P9a — riaccesa: scrollonata gentile per gli avvisi */
-    animation: erga-wiggle 380ms ease both;
-  }
   .animate-pulse-soft {
     /* 🎨 P9a — riaccesa: respiro dolce per l'orbe del tutor che parla/ascolta */
     animation: erga-pulse-soft 2.1s ease-in-out infinite;
     will-change: transform, opacity;
   }
-  .animate-float {
-    /* 🎨 P9a — riaccesa: galleggiamento gentile (icone in primo piano) */
-    animation: bounce-gentle 3.2s ease-in-out infinite;
-  }
-  .animate-bounce-gentle {
-    animation: bounce-gentle 2.6s ease-in-out infinite;
-  }
-  @keyframes bounce-gentle {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
-  }
   @keyframes erga-bounce-in {
     0% { opacity: 0; transform: scale(0.7); }
     70% { opacity: 1; transform: scale(1.05); }
     100% { opacity: 1; transform: scale(1); }
-  }
-  @keyframes erga-pop {
-    0% { opacity: 0; transform: scale(0.85); }
-    70% { opacity: 1; transform: scale(1.04); }
-    100% { opacity: 1; transform: scale(1); }
-  }
-  @keyframes erga-wiggle {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-2.5deg); }
-    60% { transform: rotate(2deg); }
   }
   @keyframes erga-pulse-soft {
     0%, 100% { opacity: 1; transform: scale(1); }
@@ -795,49 +759,12 @@
   100% { opacity: 1; transform: scale(1); }
 }
 
-@keyframes m3-slide-up {
-  0% { transform: translateY(100%); opacity: 0; }
-  60% { transform: translateY(-5%); }
-  100% { transform: translateY(0); opacity: 1; }
-}
 
 @keyframes m3-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes m3-bounce-in {
-  0% { opacity: 0; transform: scale(0.3); }
-  40% { transform: scale(1.12); }
-  70% { transform: scale(0.95); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-@keyframes m3-pop {
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.15); }
-  75% { transform: scale(0.95); }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes m3-wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  15% { transform: rotate(-8deg); }
-  30% { transform: rotate(6deg); }
-  45% { transform: rotate(-4deg); }
-  60% { transform: rotate(2deg); }
-  75% { transform: rotate(-1deg); }
-}
-
-@keyframes m3-pulse-soft {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(1.04); }
-}
-
-@keyframes m3-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
 
 /* ═══════ SCROLLBAR STYLING ═══════ */
 .scrollbar-hide {
@@ -879,23 +806,12 @@
   70% { transform: scale(1.03); }
   100% { transform: scale(1); opacity: 1; }
 }
-@keyframes xp-float {
-  0% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
-}
-@keyframes progress-glow {
-  0%, 100% { box-shadow: 0 0 4px hsl(var(--primary) / 0.3); }
-  50% { box-shadow: 0 0 12px hsl(var(--primary) / 0.6); }
-}
 
-.animate-lesson-in { animation: lesson-slide-in 500ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
-.animate-lesson-out { animation: lesson-slide-out 350ms cubic-bezier(0.3, 0, 0.8, 0.15) both; will-change: transform, opacity; }
+.animate-lesson-in { animation: lesson-slide-in var(--motion-entrance) cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
+.animate-lesson-out { animation: lesson-slide-out var(--motion-emphasized) cubic-bezier(0.3, 0, 0.8, 0.15) both; will-change: transform, opacity; }
 .animate-feedback-correct { animation: feedback-correct 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both; will-change: transform; }
 .animate-feedback-wrong { animation: m3-fade-in 200ms ease both; }
 .animate-option-pop { animation: option-pop 450ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
-.animate-xp-float { animation: xp-float 900ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
-.animate-progress-glow { animation: none; }
-
 /* Safe area */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
 

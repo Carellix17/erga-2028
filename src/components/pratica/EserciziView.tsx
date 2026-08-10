@@ -1145,14 +1145,14 @@ function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: Ge
             <div
               key={step.id}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-500",
+                "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200",
                 isActive && "bg-primary-container scale-[1.02]",
                 isComplete && "opacity-60",
                 isPending && "opacity-30"
               )}
             >
               <div className={cn(
-                "w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-500 flex-shrink-0",
+                "w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0",
                 isActive && "bg-primary text-primary-foreground shadow-level-1",
                 isComplete && "bg-success text-success-foreground",
                 isPending && "bg-surface-container-highest text-muted-foreground"

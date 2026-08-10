@@ -123,7 +123,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
             )}
           </div>
 
-          <div className="bg-card border border-border rounded-2xl shadow-level-1 p-6 sm:p-8 transition-all duration-500 ease-out">
+          <div className="bg-card border border-border rounded-2xl shadow-level-1 p-6 sm:p-8 transition-all duration-300 ease-out">
 
             {currentSlide === "intro" && (
               <div className="text-center space-y-6 animate-fade-up">

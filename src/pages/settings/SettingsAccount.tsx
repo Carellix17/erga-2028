@@ -50,7 +50,7 @@ export default function SettingsAccount() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingAvatar}
                 aria-label="Cambia foto profilo"
-                className="w-24 h-24 rounded-[2rem] overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-400 ease-m3-emphasized hover:scale-105 active:scale-95 relative group"
+                className="w-24 h-24 rounded-[2rem] overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-200 ease-m3-emphasized active:scale-95 relative group"
               >
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Foto profilo utente" className="w-full h-full object-cover" />
