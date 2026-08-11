@@ -386,17 +386,18 @@ export function ModulePath({
               )}
 
               {/* 🌲 P24 — riquadro del titolo: STESSO MATERIALE del tasto Riprendi
-                  (velo bianco traslucido, non vetro liquido), ancorato al LATO
-                  INTERNO del nodo così non esce mai dallo schermo su mobile.
-                  Solo il titolo: niente scritte di stato (più snello). */}
+                  (velo bianco traslucido), ancorato al LATO INTERNO del nodo e
+                  limitato in larghezza (max 36vw) per NON oltrepassare la linea
+                  verticale centrale del percorso: mai sopra il sentiero.
+                  Forma allungata: poco padding verticale, testo compatto. */}
               <div
                 className={cn(
-                  "absolute top-[calc(100%+12px)] z-10",
+                  "absolute top-[calc(100%+14px)] z-10",
                   side === "l" ? "left-0" : "right-0",
                 )}
-                style={{ width: "min(56vw, 180px)" }}
+                style={{ width: "min(36vw, 150px)" }}
               >
-                <div className="rounded-xl bg-white/15 dark:bg-white/10 backdrop-blur-sm border border-white/30 dark:border-white/15 shadow-level-1 px-2.5 py-2">
+                <div className="rounded-xl bg-white/15 dark:bg-white/10 backdrop-blur-sm border border-white/30 dark:border-white/15 shadow-level-1 px-3 py-1.5">
                   <span className="block text-[11.5px] font-semibold leading-snug text-foreground line-clamp-2">
                     {lesson.title}
                   </span>
@@ -422,7 +423,9 @@ export function ModulePath({
           }}
           role={allDone && showFinalTest && onStartFinalTest ? "button" : undefined}
           onClick={() => {
-            if (allDone && showFinalTest && onStartFinalTest && !isLoadingFinalTest) onStartFinalTest();
+            if (allDone && showFinalTest && onStartFinalTest && !isLoadingFinalTest) {
+              onStartFinalTest();
+            }
           }}
         >
           {isLoadingFinalTest ? (
@@ -430,8 +433,8 @@ export function ModulePath({
           ) : (
             <Trophy className="w-6 h-6" strokeWidth={1.8} />
           )}
-          <div className="absolute top-[calc(100%+12px)] left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
-            <div className="rounded-xl bg-white/15 dark:bg-white/10 backdrop-blur-sm border border-white/30 dark:border-white/15 shadow-level-1 px-2.5 py-1.5 text-center">
+          <div className="absolute top-[calc(100%+14px)] left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
+            <div className="rounded-xl bg-white/15 dark:bg-white/10 backdrop-blur-sm border border-white/30 dark:border-white/15 shadow-level-1 px-3 py-1 text-center">
               <span className="text-[11px] font-bold text-foreground">Test finale</span>
             </div>
           </div>
