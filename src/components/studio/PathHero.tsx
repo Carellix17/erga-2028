@@ -260,7 +260,7 @@ export function PathHero({
     <section
       className={
         isSelectingCourse
-          ? "fixed inset-x-0 top-16 bottom-24 z-30 flex flex-col items-center overflow-hidden"
+          ? "fixed inset-0 z-30 h-[100dvh] w-full overflow-hidden flex flex-col justify-center items-center"
           : "px-4 pt-4"
       }
     >
@@ -268,7 +268,7 @@ export function PathHero({
       <div
         className={
           isSelectingCourse
-            ? "w-full max-w-lg flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain px-4"
+            ? "w-full max-w-lg h-[80vh] max-h-[80vh] flex flex-col overflow-y-auto overscroll-contain px-4"
             : "w-full"
         }
       >
@@ -292,7 +292,7 @@ export function PathHero({
       {/* ── Hero card ── */}
       <motion.div
         layout
-        transition={{ layout: { type: "spring", stiffness: 300, damping: 28 } }}
+        transition={{ layout: { type: "spring", stiffness: 300, damping: 25 } }}
         className={cn(isSelectingCourse ? "my-auto shrink-0" : "", "relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6")}
         ref={heroRef}
         onClick={(e) => {
