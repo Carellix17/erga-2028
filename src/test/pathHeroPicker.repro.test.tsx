@@ -20,11 +20,21 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     activeCourseId: "1",
   };
 
-  it("apre il selettore senza errori: appare Annulla e gli altri corsi", () => {
+  it("apre il selettore: appare Annulla, Scegli corso e l'altro corso", () => {
     render(<PathHero {...base} onSelectCourse={() => {}} />);
     fireEvent.click(screen.getByText("Cambia corso"));
     expect(screen.getByText("Annulla")).toBeTruthy();
+    expect(screen.getByText("Scegli corso")).toBeTruthy();
     expect(screen.getByText("matematica")).toBeTruthy();
+  });
+
+  it("notifica al genitore l'apertura/chiusura del selettore", () => {
+    const onChange = vi.fn();
+    render(<PathHero {...base} onSelectCourse={() => {}} onSelectingChange={onChange} />);
+    fireEvent.click(screen.getByText("Cambia corso"));
+    expect(onChange).toHaveBeenCalledWith(true);
+    fireEvent.click(screen.getByText("Annulla"));
+    expect(onChange).toHaveBeenCalledWith(false);
   });
 
   it("cliccando un corso chiama onSelectCourse con il suo id e chiude", () => {

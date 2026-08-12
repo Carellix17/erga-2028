@@ -5,7 +5,6 @@ import {
   ArrowLeftRight,
   BookOpen,
   Check,
-  ChevronRight,
   FileText,
   FolderOpen,
   Globe,
@@ -75,6 +74,8 @@ interface PathHeroProps {
   generationBlocked?: boolean;
   freeLimitMessage?: string;
   isRegenerating?: boolean;
+  /** Notifica al genitore quando il selettore corsi si apre/chiude (per nascondere i moduli sotto). */
+  onSelectingChange?: (selecting: boolean) => void;
 }
 
 const getCourseIcon = (name: string) => {
@@ -95,6 +96,8 @@ const cardMotion = {
  * - stato `isSelectingCourse`: "Cambia corso" sparisce, "Riprendi" si espande
  *   al 100% (AnimatePresence + layout), le card degli altri corsi compaiono
  *   sopra/sotto la hero (opacity 0→1, scale 0.95→1) e la pagina scorre;
+ * - gli altri percorsi sono card STESSO STILE della hero (sfondo accento,
+ *   titolo, meta) con un solo tasto "Scegli corso";
  * - tap sulla hero o "Annulla" → ritorno allo stato singolo;
  * - selezione di un corso → diventa la nuova hero e si chiude il selettore.
  * Solo prop di framer-motion (transform/opacity), nessun JS pesante.
@@ -118,6 +121,7 @@ export function PathHero({
   generationBlocked = false,
   freeLimitMessage,
   isRegenerating = false,
+  onSelectingChange,
 }: PathHeroProps) {
   const [isSelectingCourse, setIsSelectingCourse] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
@@ -147,6 +151,20 @@ export function PathHero({
     return () => window.clearTimeout(t);
   }, [isSelectingCourse]);
 
+  const openPicker = () => {
+    setIsSelectingCourse(true);
+    onSelectingChange?.(true);
+  };
+  const closePicker = () => {
+    setIsSelectingCourse(false);
+    onSelectingChange?.(false);
+  };
+
+  const handleSelectCourse = (course: CourseOption) => {
+    onSelectCourse?.(course.id);
+    closePicker();
+  };
+
   const handleSaveRename = async () => {
     if (!onRenameCourse) return;
     const trimmed = renameValue.trim();
@@ -174,18 +192,12 @@ export function PathHero({
     }
   };
 
-  const handleSelectCourse = (course: CourseOption) => {
-    onSelectCourse?.(course.id);
-    setIsSelectingCourse(false);
-  };
-
   const renderCourseCard = (course: CourseOption) => {
     const Icon = getCourseIcon(course.file_name);
     const meta =
       typeof course.lesson_count === "number" && course.lesson_count > 0
         ? `${course.lesson_count} lezioni`
         : null;
-    const isActiveCourse = course.id === active?.id;
     return (
       <motion.button
         key={course.id}
@@ -193,61 +205,31 @@ export function PathHero({
         {...cardMotion}
         type="button"
         onClick={() => handleSelectCourse(course)}
-        className={cn(
-          "w-full flex items-center gap-3 rounded-[20px] border px-4 py-3.5 text-left shadow-level-1 transition-transform duration-150 active:scale-[0.98]",
-          isActiveCourse
-            ? "border-transparent"
-            : "bg-card border-border hover:bg-surface-container-low",
-        )}
-        style={
-          isActiveCourse
-            ? {
-                backgroundColor: "var(--subject-accent, #f59e0b)",
-                color: "var(--subject-accent-foreground, #111111)",
-              }
-            : undefined
-        }
+        className="relative w-full overflow-hidden rounded-[28px] shadow-level-2 p-4 sm:p-5 text-left transition-transform duration-150 active:scale-[0.98]"
+        style={{
+          backgroundColor: "var(--subject-accent, #f59e0b)",
+          color: "var(--subject-accent-foreground, #111111)",
+        }}
       >
-        <span
-          className={cn(
-            "w-10 h-10 rounded-[13px] flex items-center justify-center flex-shrink-0",
-            isActiveCourse
-              ? "text-current"
-              : "bg-secondary text-foreground",
-          )}
-          style={
-            isActiveCourse
-              ? { backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }
-              : undefined
-          }
-        >
-          <Icon className="w-4 h-4" strokeWidth={1.75} />
-        </span>
-        <span className="flex-1 min-w-0">
-          <span
-            className={cn(
-              "block truncate text-[15px] font-semibold",
-              isActiveCourse ? "text-current" : "text-foreground",
-            )}
-          >
+        {/* Motivo organico tono-su-tono, come la hero */}
+        <div className="absolute -right-10 -top-14 w-36 h-36 rounded-full bg-current opacity-[0.07]" aria-hidden />
+        <div className="absolute -right-1 -bottom-16 w-28 h-28 rounded-full bg-current opacity-[0.05]" aria-hidden />
+        <div className="relative">
+          <p className="label-small tracking-[0.14em] opacity-70 flex items-center gap-2">
+            <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+            Percorso
+          </p>
+          <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words text-current">
             {cleanCourseName(course.file_name)}
-          </span>
+          </h3>
           {meta && (
-            <span
-              className={cn(
-                "block text-xs mt-0.5",
-                isActiveCourse ? "text-current opacity-70" : "text-muted-foreground",
-              )}
-            >
-              {meta}
-            </span>
+            <p className="text-xs opacity-75 mt-1">{meta}</p>
           )}
-        </span>
-        {isActiveCourse ? (
-          <Check className="w-4 h-4 text-current flex-shrink-0" strokeWidth={2.5} />
-        ) : (
-          <ChevronRight className="w-4 h-4 text-muted-foreground/60 flex-shrink-0" />
-        )}
+          <span className="mt-3.5 inline-flex items-center justify-center gap-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black h-10 w-full text-sm font-semibold">
+            <Check className="w-4 h-4 shrink-0" strokeWidth={2.2} />
+            Scegli corso
+          </span>
+        </div>
       </motion.button>
     );
   };
@@ -277,7 +259,7 @@ export function PathHero({
         onClick={(e) => {
           // tap sulla hero (non sui bottoni interni) → chiudi il selettore
           if (isSelectingCourse && !(e.target as HTMLElement).closest("button")) {
-            setIsSelectingCourse(false);
+            closePicker();
           }
         }}
         className="relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6"
@@ -440,7 +422,7 @@ export function PathHero({
                     <motion.button
                       layout
                       type="button"
-                      onClick={() => setIsSelectingCourse(true)}
+                      onClick={openPicker}
                       className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
                       style={{
                         backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
@@ -477,7 +459,7 @@ export function PathHero({
                   <motion.button
                     layout
                     type="button"
-                    onClick={() => setIsSelectingCourse(false)}
+                    onClick={closePicker}
                     className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
                     style={{
                       backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",

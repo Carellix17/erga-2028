@@ -65,6 +65,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
   // 🌲 P24 — la stanza ha DUE viste: i moduli (schermata 1) e le lezioni del
   // modulo (schermata 2, il percorso squadrato).
   const [viewMode, setViewMode] = useState<"modules" | "lessons">("modules");
+  const [isCoursePickerOpen, setIsCoursePickerOpen] = useState(false);
   const [activeModuleIndex, setActiveModuleIndex] = useState<number | null>(null);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
   const [activeContextId, setActiveContextId] = useState<string | null>(null);
@@ -754,6 +755,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
           courses={allContexts}
           activeCourseId={activeCourseId}
           onSelectCourse={handleSelectCourse}
+          onSelectingChange={setIsCoursePickerOpen}
           onRegenerate={handleRegenerateCourse}
           onOpenMaterials={handleOpenMaterials}
           onRenameCourse={handleRenameCourse}
@@ -877,6 +879,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         courses={allContexts}
         activeCourseId={activeCourseId}
         onSelectCourse={handleSelectCourse}
+        onSelectingChange={setIsCoursePickerOpen}
         onRegenerate={handleRegenerateCourse}
         onOpenMaterials={handleOpenMaterials}
         onRenameCourse={handleRenameCourse}
@@ -887,7 +890,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
         isRegenerating={isGenerating || !!moduleJob}
       />
       {viewMode === "modules" ? (
-        <ModulesOverview modules={modules} onOpenModule={(idx) => void openModule(idx)} />
+        !isCoursePickerOpen ? (
+          <ModulesOverview modules={modules} onOpenModule={(idx) => void openModule(idx)} />
+        ) : null
       ) : (
         <ModulePath
           moduleIndex={activeModuleIndex ?? 0}
