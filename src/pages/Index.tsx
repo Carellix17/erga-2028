@@ -150,6 +150,7 @@ const Index = () => {
           <HomeView
             onOpenStudio={() => changeTab("studio")}
             onOpenPratica={() => changeTab("pratica")}
+            onOpenCognitive={() => setShowOnboarding(true)}
           />
         )}
         {/* Banner ricalcola Esagono se per qualche motivo i punteggi sono tutti default */}
