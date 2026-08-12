@@ -121,7 +121,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                     <span
                       className={cn(
                         "block h-full rounded-full transition-all duration-500",
-                        isGen ? "bg-lime" : "bg-success",
+                        isGen ? "bg-subject-accent" : "bg-subject-accent",
                       )}
                       style={{ width: `${isGen ? (m.genPercent ?? 0) : pct}%` }}
                     />

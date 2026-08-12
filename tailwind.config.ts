@@ -119,6 +119,9 @@ export default {
           foreground: "hsl(var(--nav-foreground))",
         },
         lime: { DEFAULT: "hsl(var(--lime))" },
+        // 🌲 P24 × MONOCROMO — accento dinamico della materia (var CSS)
+        "subject-accent": "var(--subject-accent)",
+        "subject-accent-light": "var(--subject-accent-light)",
       },
       borderRadius: {
         xs: "var(--radius-xs)",

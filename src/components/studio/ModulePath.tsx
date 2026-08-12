@@ -262,11 +262,11 @@ export function ModulePath({
               <p className="text-xs text-muted-foreground font-medium">
                 {doneCount} di {modLessons.length} lezioni completate
               </p>
-              <p className="text-sm font-bold text-tertiary tabular-nums">{pct}%</p>
+              <p className="text-sm font-bold text-subject-accent tabular-nums">{pct}%</p>
             </div>
             <div className="h-1.5 bg-secondary rounded-full overflow-hidden mt-1.5">
               <div
-                className="h-full rounded-full bg-tertiary transition-all duration-700 ease-m3-emphasized"
+                className="h-full rounded-full bg-subject-accent transition-all duration-700 ease-m3-emphasized"
                 style={{ width: `${pct}%` }}
               />
             </div>

@@ -15,17 +15,24 @@ const tabs = [
   { id: "studio" as Tab, i18nKey: "nav.studio", icon: BookOpen },
 ];
 
-// 🌲 P24 — la nav del Capo: Home · Piano · Studio nella pillola,
-// e il PROFILO STACCATO AL LATO (cerchio accanto alla pillola su mobile,
-// riga in fondo alla sidebar su desktop), stesso colore della nav,
-// icona profilo e puntino lime. Pratica non è più in nav: vive nella Home.
+// 🌲 P24 × MONOCROMO — la nav è una PILLOLA SOSPESA materica:
+// vetro chiaro (bg-white/90 + blur), bordo definito, voce attiva in
+// NERO PIENO (stile bottoni primari) e puntino = accento materia
+// (--subject-accent, dinamico). Profilo: cerchio staccato AL LATO,
+// stesso materiale della pillola. Pratica vive nella Home.
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const { t } = useTranslation();
+
+  const pillMaterial =
+    "bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-black/10 dark:border-white/10 text-neutral-900 dark:text-neutral-100";
+  const activeFill = "bg-black text-white dark:bg-white dark:text-black";
+  const idleTxt = "text-neutral-500 dark:text-neutral-400";
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pointer-events-none md:static md:z-auto md:px-0 md:pointer-events-auto md:w-64 md:h-screen md:sticky md:top-0 md:self-start md:shrink-0">
       <div className="max-w-lg mx-auto pointer-events-auto mb-[max(env(safe-area-inset-bottom,0px),1rem)] flex items-center gap-2.5 md:max-w-none md:mx-0 md:mb-0 md:h-full md:items-stretch">
         {/* ── Pillola (mobile) / Sidebar (desktop) ── */}
-        <div className="bg-nav text-nav-foreground rounded-full shadow-level-2 border border-white/10 flex-1 min-w-0 md:rounded-none md:border-0 md:border-r md:h-full md:flex md:flex-col">
+        <div className={cn(pillMaterial, "rounded-full shadow-level-2 flex-1 min-w-0 md:rounded-none md:border-0 md:border-r md:h-full md:flex md:flex-col")}>
           {/* Telefono: pillola */}
           <div className="flex items-center justify-around h-[4.5rem] px-2 rounded-full md:hidden">
             {tabs.map((tab) => {
@@ -36,24 +43,26 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
                   aria-current={isActive ? "page" : undefined}
-                  className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-lime/70"
+                  className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-subject-accent/70"
                 >
                   <span
                     className={cn(
                       "flex items-center justify-center rounded-full transition-all duration-200",
-                      isActive ? "bg-white/15 w-12 h-8" : "w-12 h-8 bg-transparent",
+                      isActive ? cn(activeFill, "w-12 h-8") : "w-12 h-8 bg-transparent",
                     )}
                   >
                     <Icon
-                      className={cn("w-[22px] h-[22px]", isActive ? "text-white" : "text-white/55")}
+                      className={cn("w-[22px] h-[22px]", isActive ? "" : idleTxt)}
                       strokeWidth={isActive ? 2.2 : 1.8}
                     />
                   </span>
-                  <span className={cn("label-small", isActive ? "text-white" : "text-white/55")}>{t(tab.i18nKey)}</span>
+                  <span className={cn("label-small", isActive ? "font-bold" : idleTxt)}>
+                    {t(tab.i18nKey)}
+                  </span>
                   <span
                     className={cn(
                       "w-1.5 h-1.5 rounded-full transition-opacity duration-200",
-                      isActive ? "bg-lime opacity-100" : "opacity-0",
+                      isActive ? "bg-subject-accent opacity-100" : "opacity-0",
                     )}
                   />
                 </button>
@@ -64,7 +73,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           {/* Desktop: sidebar */}
           <div className="hidden md:flex md:flex-col md:flex-1 md:min-h-0 md:px-3 md:py-6">
             <div className="flex items-center gap-2 px-3 pb-6">
-              <span className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center">
+              <span className="w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center">
                 <Brain className="w-4 h-4" strokeWidth={2} />
               </span>
               <span className="font-bold text-xl tracking-tight">Erga</span>
@@ -79,23 +88,23 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                     onClick={() => onTabChange(tab.id)}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-lime/70",
-                      isActive ? "bg-white/12" : "hover:bg-white/[0.06]",
+                      "flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-subject-accent/70",
+                      isActive ? activeFill : "hover:bg-black/5 dark:hover:bg-white/[0.06]",
                     )}
                   >
                     <Icon
-                      className={cn("w-5 h-5", isActive ? "text-white" : "text-white/55")}
+                      className={cn("w-5 h-5", isActive ? "" : idleTxt)}
                       strokeWidth={isActive ? 2.2 : 1.8}
                     />
                     <span
                       className={cn(
                         "flex-1 text-left text-[15px] font-semibold",
-                        isActive ? "text-white" : "text-white/55",
+                        isActive ? "" : idleTxt,
                       )}
                     >
                       {t(tab.i18nKey)}
                     </span>
-                    <span className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-lime" : "bg-transparent")} />
+                    <span className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-subject-accent" : "bg-transparent")} />
                   </button>
                 );
               })}
@@ -106,18 +115,15 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 onClick={() => onTabChange("profilo")}
                 aria-current={activeTab === "profilo" ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-lime/70",
-                  activeTab === "profilo" ? "bg-white/12" : "hover:bg-white/[0.06]",
+                  "flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-subject-accent/70",
+                  activeTab === "profilo" ? activeFill : "hover:bg-black/5 dark:hover:bg-white/[0.06]",
                 )}
               >
                 <span className="relative">
-                  <User
-                    className={cn("w-5 h-5", activeTab === "profilo" ? "text-white" : "text-white/55")}
-                    strokeWidth={2}
-                  />
+                  <User className={cn("w-5 h-5", activeTab === "profilo" ? "" : idleTxt)} strokeWidth={2} />
                   <span
                     className={cn(
-                      "absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-lime border border-nav",
+                      "absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-subject-accent border border-white dark:border-neutral-900",
                       activeTab === "profilo" ? "opacity-100" : "opacity-60",
                     )}
                   />
@@ -125,7 +131,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 <span
                   className={cn(
                     "flex-1 text-left text-[15px] font-semibold",
-                    activeTab === "profilo" ? "text-white" : "text-white/55",
+                    activeTab === "profilo" ? "" : idleTxt,
                   )}
                 >
                   {t("nav.profilo")}
@@ -135,19 +141,20 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           </div>
         </div>
 
-        {/* ── Profilo mobile: cerchio accanto alla pillola ── */}
+        {/* ── Profilo mobile: cerchio accanto alla pillola, stesso materiale ── */}
         <button
           type="button"
           onClick={() => onTabChange("profilo")}
           aria-label={t("nav.profilo")}
           aria-current={activeTab === "profilo" ? "page" : undefined}
           className={cn(
-            "md:hidden relative w-[4.5rem] h-[4.5rem] rounded-full bg-nav text-nav-foreground border border-white/10 shadow-level-2 flex items-center justify-center flex-shrink-0 transition-transform duration-150 active:scale-90",
-            activeTab === "profilo" && "ring-2 ring-lime/40",
+            "md:hidden relative w-[4.5rem] h-[4.5rem] rounded-full flex items-center justify-center flex-shrink-0 shadow-level-2 transition-transform duration-150 active:scale-90",
+            pillMaterial,
+            activeTab === "profilo" && "ring-2 ring-subject-accent/50",
           )}
         >
           <User className="w-5 h-5" strokeWidth={2} />
-          <span className="absolute top-1 right-1 w-3 h-3 rounded-full bg-lime border-2 border-nav" />
+          <span className="absolute top-1 right-1 w-3 h-3 rounded-full bg-subject-accent border-2 border-white dark:border-neutral-900" />
         </button>
       </div>
     </nav>

@@ -199,11 +199,11 @@ export function LessonsList({
           <p className="text-sm text-muted-foreground">
             {completedCount} di {lessons.length} lezioni completate
           </p>
-          <p className="text-sm font-bold text-tertiary">{progress}%</p>
+          <p className="text-sm font-bold text-subject-accent">{progress}%</p>
         </div>
         <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full bg-tertiary transition-all duration-700 ease-m3-emphasized"
+            className="h-full rounded-full bg-subject-accent transition-all duration-700 ease-m3-emphasized"
             style={{ width: `${progress}%` }}
           />
         </div>

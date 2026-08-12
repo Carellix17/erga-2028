@@ -249,7 +249,7 @@ export function PathHero({
               </p>
               <div className="mt-2 h-2 rounded-full bg-white/15 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-lime transition-all duration-300"
+                  className="h-full rounded-full bg-subject-accent transition-all duration-300"
                   style={{ width: `${barPct}%` }}
                 />
               </div>
@@ -260,11 +260,11 @@ export function PathHero({
                 <p className="text-sm text-primary-foreground/80">
                   {completedCount} di {totalLessons} lezioni
                 </p>
-                <p className="text-sm font-bold text-lime tabular-nums">{pct}%</p>
+                <p className="text-sm font-bold text-subject-accent tabular-nums">{pct}%</p>
               </div>
               <div className="mt-2 h-2 rounded-full bg-white/15 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-lime transition-all duration-700 ease-m3-emphasized"
+                  className="h-full rounded-full bg-subject-accent transition-all duration-700 ease-m3-emphasized"
                   style={{ width: `${barPct}%` }}
                 />
               </div>
