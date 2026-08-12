@@ -8,6 +8,8 @@ import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
 import { PathHero } from "./PathHero";
 import { cleanCourseName } from "@/lib/courseName";
+import { getSubjectAccent } from "@/lib/subjectColors";
+import { useSubjectAccent } from "@/hooks/useSubjectAccent";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -157,6 +159,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       .then(({ error }) => { if (error) console.error("[P10a] salvataggio segnalibro fallito:", error); });
   }, [currentUser, effectiveContextId, lastViewedLoaded, lastViewedStored]);
   const contextFileName = activeContext?.file_name || null;
+  // 🌲 P24 — accento dinamico: il colore della MATERIA del percorso attivo
+  // guida badge, barre, nodi e callout (--subject-accent). Quando non c'è
+  // contesto (o si esce da Studio) l'hook ripristina il tema neutro.
+  useSubjectAccent(contextFileName ? getSubjectAccent(contextFileName) : null);
   const contextStatus = activeContext?.processing_status || null;
   const contextErrorMessage = activeContext?.error_message || "Errore durante l'elaborazione del PDF. Ricarica il file e riprova.";
   const isDemoContext = !!activeContext?.is_demo;

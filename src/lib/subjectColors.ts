@@ -176,3 +176,38 @@ export function getSubjectColorByKey(key: string | null | undefined): SubjectCol
 export function resolveSubjectColor(subjectName: string, customKey?: string | null): SubjectColor {
  return getSubjectColorByKey(customKey) ?? getStableSubjectColor(subjectName);
 }
+
+// ============================================================
+// 🌲 P24 × ACCENTO MATERIA — mappa chiave → colore HSL reale
+// (allineato ai token pastel in index.css) per la variabile
+// `--subject-accent`. Le materie i cui pastelli sono stati
+// neutralizzati a grigio (scienze/fisica/geografia) hanno un
+// grigio come accento; tutto il resto usa il colore della materia.
+// ============================================================
+
+const SUBJECT_ACCENT_HSL: Record<string, string> = {
+  storia: "18 45% 45%",
+  matematica: "210 36% 42%",
+  economia: "38 55% 36%",
+  scienze: "0 0% 38%",
+  letteratura: "320 28% 44%",
+  filosofia: "230 22% 44%",
+  fisica: "0 0% 42%",
+  informatica: "250 28% 47%",
+  arte: "350 30% 50%",
+  geografia: "0 0% 36%",
+  diritto: "220 8% 34%",
+  lingue: "28 50% 42%",
+};
+
+const ACCENT_FALLBACK = "#f59e0b";
+
+/**
+ * Colore d'accento (HSL/HEX) della materia corrente, pronto per
+ * `--subject-accent`. Rispetta la scelta colore personalizzata
+ * dell'utente (customKey) e il rilevamento automatico dal nome.
+ */
+export function getSubjectAccent(subjectName: string, customKey?: string | null): string {
+  const resolved = resolveSubjectColor(subjectName, customKey);
+  return SUBJECT_ACCENT_HSL[resolved.key] ?? ACCENT_FALLBACK;
+}
