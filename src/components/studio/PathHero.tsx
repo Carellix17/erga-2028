@@ -135,7 +135,6 @@ export function PathHero({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const heroRef = useRef<HTMLDivElement | null>(null);
-  const cleanupRef = useRef<number | null>(null);
 
   const active = courses.find((c) => c.id === activeCourseId) ?? courses[0];
   const multi = courses.length > 1;
@@ -152,40 +151,48 @@ export function PathHero({
   const centerHero = useCallback(() => {
     const el = heroRef.current;
     if (!el) return;
+    // l'header sticky occupa spazio in alto: il centro visivo è l'area sotto di esso
+    const header = document.querySelector("header");
+    const headerH = header ? header.getBoundingClientRect().height : 0;
     const rect = el.getBoundingClientRect();
+    const avail = window.innerHeight - headerH;
     const top = Math.max(
       0,
-      window.scrollY + rect.top - (window.innerHeight - rect.height) / 2
+      window.scrollY + rect.top - headerH - (avail - rect.height) / 2
     );
     window.scrollTo({ top, behavior: "smooth" });
   }, []);
 
   // FASE 1 — la hero va al centro PRIMA di mostrare gli altri corsi.
-  // FASE 2 — compaiono le card sopra/sotto e la hero viene RICENTRATA:
-  // le card sopra la spingono verso il basso, quindi la riportiamo al
-  // centro per farla restare SEMPRE al centro durante tutto il processo.
+  // FASE 2 — compaiono le card sopra/sotto; la hero viene RICENTRATA dopo
+  // la fine della layout animation di framer-motion (~300ms) + verifica
+  // finale: così resta SEMPRE al centro dello schermo.
   useEffect(() => {
     if (!isSelectingCourse) return;
     setIsCentering(true);
     setShowOthers(false);
-    const t1 = window.setTimeout(() => {
-      centerHero();
-      const t2 = window.setTimeout(() => {
-        setShowOthers(true);
-        // layout cambiato (card montate): ri-centra la hero
-        const t3 = window.setTimeout(() => {
-          centerHero();
-          setIsCentering(false);
-        }, 80);
-        cleanupRef.current = t3;
-      }, 520);
-      cleanupRef.current = t2;
-    }, 40);
-    cleanupRef.current = t1;
-    return () => {
-      window.clearTimeout(cleanupRef.current ?? 0);
-      window.clearTimeout(t1);
-    };
+    const timers: number[] = [];
+    timers.push(
+      window.setTimeout(() => {
+        centerHero();
+        timers.push(
+          window.setTimeout(() => {
+            setShowOthers(true);
+            // aspetta che la layout animation della hero sia finita
+            timers.push(
+              window.setTimeout(() => {
+                centerHero();
+                // verifica finale: se lo scroll smooth non è ancora arrivato,
+                // ri-calcola dalla posizione corrente e ri-centra
+                timers.push(window.setTimeout(() => centerHero(), 400));
+                setIsCentering(false);
+              }, 420)
+            );
+          }, 520)
+        );
+      }, 40)
+    );
+    return () => timers.forEach((t) => window.clearTimeout(t));
   }, [isSelectingCourse, centerHero]);
 
   // Chiudi: reset di tutte le fasi
@@ -288,7 +295,13 @@ export function PathHero({
   };
 
   return (
-    <section className="px-4 pt-4">
+    <section
+      className={
+        isSelectingCourse
+          ? "px-4 pt-4 min-h-[calc(100vh-4rem)] flex flex-col"
+          : "px-4 pt-4"
+      }
+    >
       {/* Card corsi PRIMA dell'attiva (compaiono sopra la hero) */}
       <AnimatePresence initial={false}>
         {isSelectingCourse && showOthers && before.length > 0 && (
