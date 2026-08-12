@@ -154,15 +154,12 @@ export function PathHero({
   // avviene SOLO via layout CSS (flex + my-auto) animato da framer-motion.
   // Qui gestiamo solo l'overflow del body: nascosto durante l'animazione
   // iniziale per evitare salti, poi riabilitato (le card possono eccedere).
+  // La pagina di sfondo NON deve scrollare durante la selezione: overflow
+  // del body nascosto per TUTTO il tempo del picker, ripristinato alla chiusura.
   useEffect(() => {
-    if (!isSelectingCourse) return;
     const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const t = window.setTimeout(() => {
-      document.body.style.overflow = prev;
-    }, 850);
+    document.body.style.overflow = isSelectingCourse ? "hidden" : prev;
     return () => {
-      window.clearTimeout(t);
       document.body.style.overflow = prev;
     };
   }, [isSelectingCourse]);
@@ -263,10 +260,19 @@ export function PathHero({
     <section
       className={
         isSelectingCourse
-          ? "px-4 pt-4 min-h-[calc(100dvh-120px)] flex flex-col"
+          ? "fixed inset-x-0 top-16 bottom-24 z-30 flex flex-col items-center overflow-hidden"
           : "px-4 pt-4"
       }
     >
+      {/* Contenitore lista: scroll INTERNO se le card eccedono, mai la pagina */}
+      <div
+        className={
+          isSelectingCourse
+            ? "w-full max-w-lg flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain px-4"
+            : "w-full"
+        }
+      >
+        <div className={isSelectingCourse ? "flex flex-col min-h-full" : ""}>
       {/* Card corsi PRIMA dell'attiva (compaiono sopra la hero) */}
       <AnimatePresence initial={false}>
         {isSelectingCourse && before.length > 0 && (
@@ -286,8 +292,8 @@ export function PathHero({
       {/* ── Hero card ── */}
       <motion.div
         layout
-        transition={{ layout: { type: "spring", bounce: 0.2, duration: 0.6 } }}
-        className={cn(isSelectingCourse ? "my-auto" : "", "relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6")}
+        transition={{ layout: { type: "spring", stiffness: 300, damping: 28 } }}
+        className={cn(isSelectingCourse ? "my-auto shrink-0" : "", "relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6")}
         ref={heroRef}
         onClick={(e) => {
           // tap sulla hero (non sui bottoni interni) → chiudi il selettore
@@ -531,6 +537,8 @@ export function PathHero({
           </motion.div>
         )}
       </AnimatePresence>
+        </div>
+      </div>
 
       {/* ── Rinomina corso ── */}
       <Drawer open={renameOpen} onOpenChange={(o) => !o && setRenameOpen(false)}>
