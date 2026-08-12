@@ -292,7 +292,7 @@ export function HomeView({
 
         {/* Livello 1 — unica azione dominante. */}
         <section aria-labelledby="next-lesson-title" className="min-w-0">
-          <Card className="relative w-full min-w-0 overflow-hidden border-primary/15 bg-background/95 shadow-level-3 supports-[backdrop-filter]:bg-background/80 dark:border-white/10">
+          <Card className="relative w-full min-w-0 overflow-hidden border-primary/15 bg-background/95 supports-[backdrop-filter]:bg-background/80 dark:border-white/10">
             <div
               aria-hidden="true"
               className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-tertiary/15 blur-3xl"
@@ -569,7 +569,7 @@ export function HomeView({
                   type="button"
                   variant="outline"
                   onClick={() => handleToolClick(tool.id)}
-                  className="group h-auto min-h-[118px] min-w-0 flex-col items-start justify-start whitespace-normal rounded-2xl border-foreground/[0.08] bg-background/40 p-3.5 text-left shadow-none supports-[backdrop-filter]:bg-background/25 dark:border-white/[0.08]"
+                  className="group press h-auto min-h-[118px] min-w-0 flex-col items-start justify-start whitespace-normal rounded-2xl border-foreground/[0.08] bg-background/40 p-3.5 text-left shadow-none supports-[backdrop-filter]:bg-background/25 dark:border-white/[0.08]"
                 >
                   <span
                     className={cn(
