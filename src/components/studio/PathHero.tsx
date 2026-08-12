@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   ArrowLeftRight,
   BookOpen,
   Check,
+  ChevronRight,
   FileText,
   FolderOpen,
   Globe,
@@ -13,6 +14,7 @@ import {
   Pencil,
   RefreshCw,
   Trash2,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
@@ -81,12 +83,21 @@ const getCourseIcon = (name: string) => {
   return BookOpen;
 };
 
+const cardMotion = {
+  initial: { opacity: 0, scale: 0.95 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.95 },
+  transition: { duration: 0.25, ease: "easeOut" as const },
+};
+
 /**
- * P24 MONO — l'EROE DEL PERCORSO, versione "cappello completo":
- * la card ad arco in cima a Studio ora contiene TUTTO il comando del corso:
- * barra di avanzamento con percentuale, Riprendi + Cambia corso,
- * e il menù ⋯ (rigenera / materiali / rinomina / elimina) in alto a destra.
- * Sotto restano solo le lezioni. La logica dati resta in StudioView.
+ * P24 MONO — l'EROE DEL PERCORSO con MORPHING del selettore corsi:
+ * - stato `isSelectingCourse`: "Cambia corso" sparisce, "Riprendi" si espande
+ *   al 100% (AnimatePresence + layout), le card degli altri corsi compaiono
+ *   sopra/sotto la hero (opacity 0→1, scale 0.95→1) e la pagina scorre;
+ * - tap sulla hero o "Annulla" → ritorno allo stato singolo;
+ * - selezione di un corso → diventa la nuova hero e si chiude il selettore.
+ * Solo prop di framer-motion (transform/opacity), nessun JS pesante.
  */
 export function PathHero({
   title,
@@ -108,12 +119,13 @@ export function PathHero({
   freeLimitMessage,
   isRegenerating = false,
 }: PathHeroProps) {
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [isSelectingCourse, setIsSelectingCourse] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [isSavingRename, setIsSavingRename] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const heroRef = useRef<HTMLDivElement | null>(null);
 
   const active = courses.find((c) => c.id === activeCourseId) ?? courses[0];
   const multi = courses.length > 1;
@@ -121,6 +133,19 @@ export function PathHero({
   const barPct = isGenerating
     ? Math.min(100, Math.max(4, progressPercent))
     : pct;
+
+  const activeIdx = Math.max(0, courses.findIndex((c) => c.id === active?.id));
+  const before = courses.slice(0, activeIdx);
+  const after = courses.slice(activeIdx + 1);
+
+  // Porta la hero al centro visivo quando si apre il selettore
+  useEffect(() => {
+    if (!isSelectingCourse) return;
+    const t = window.setTimeout(() => {
+      heroRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
+    return () => window.clearTimeout(t);
+  }, [isSelectingCourse]);
 
   const handleSaveRename = async () => {
     if (!onRenameCourse) return;
@@ -149,9 +174,112 @@ export function PathHero({
     }
   };
 
+  const handleSelectCourse = (course: CourseOption) => {
+    onSelectCourse?.(course.id);
+    setIsSelectingCourse(false);
+  };
+
+  const renderCourseCard = (course: CourseOption) => {
+    const Icon = getCourseIcon(course.file_name);
+    const meta =
+      typeof course.lesson_count === "number" && course.lesson_count > 0
+        ? `${course.lesson_count} lezioni`
+        : null;
+    const isActiveCourse = course.id === active?.id;
+    return (
+      <motion.button
+        key={course.id}
+        layout
+        {...cardMotion}
+        type="button"
+        onClick={() => handleSelectCourse(course)}
+        className={cn(
+          "w-full flex items-center gap-3 rounded-[20px] border px-4 py-3.5 text-left shadow-level-1 transition-transform duration-150 active:scale-[0.98]",
+          isActiveCourse
+            ? "border-transparent"
+            : "bg-card border-border hover:bg-surface-container-low",
+        )}
+        style={
+          isActiveCourse
+            ? {
+                backgroundColor: "var(--subject-accent, #f59e0b)",
+                color: "var(--subject-accent-foreground, #111111)",
+              }
+            : undefined
+        }
+      >
+        <span
+          className={cn(
+            "w-10 h-10 rounded-[13px] flex items-center justify-center flex-shrink-0",
+            isActiveCourse
+              ? "text-current"
+              : "bg-secondary text-foreground",
+          )}
+          style={
+            isActiveCourse
+              ? { backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }
+              : undefined
+          }
+        >
+          <Icon className="w-4 h-4" strokeWidth={1.75} />
+        </span>
+        <span className="flex-1 min-w-0">
+          <span
+            className={cn(
+              "block truncate text-[15px] font-semibold",
+              isActiveCourse ? "text-current" : "text-foreground",
+            )}
+          >
+            {cleanCourseName(course.file_name)}
+          </span>
+          {meta && (
+            <span
+              className={cn(
+                "block text-xs mt-0.5",
+                isActiveCourse ? "text-current opacity-70" : "text-muted-foreground",
+              )}
+            >
+              {meta}
+            </span>
+          )}
+        </span>
+        {isActiveCourse ? (
+          <Check className="w-4 h-4 text-current flex-shrink-0" strokeWidth={2.5} />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-muted-foreground/60 flex-shrink-0" />
+        )}
+      </motion.button>
+    );
+  };
+
   return (
-    <section className="px-4 pt-4 animate-fade-up">
-      <div
+    <section className="px-4 pt-4">
+      {/* Card corsi PRIMA dell'attiva (compaiono sopra la hero) */}
+      <AnimatePresence initial={false}>
+        {isSelectingCourse && before.length > 0 && (
+          <motion.div
+            key="picker-before"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-3 mb-4"
+          >
+            {before.map(renderCourseCard)}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Hero card ── */}
+      <motion.div
+        layout
+        ref={heroRef}
+        onClick={(e) => {
+          // tap sulla hero (non sui bottoni interni) → chiudi il selettore
+          if (isSelectingCourse && !(e.target as HTMLElement).closest("button")) {
+            setIsSelectingCourse(false);
+          }
+        }}
         className="relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6"
         style={{
           backgroundColor: "var(--subject-accent, #f59e0b)",
@@ -167,7 +295,7 @@ export function PathHero({
           {/* ── Riga alta: etichetta a sinistra, menù ⋯ in alto a destra ── */}
           <div className="flex items-center justify-between gap-3">
             <p className="label-small tracking-[0.16em] opacity-70">
-              Percorso attuale
+              {isSelectingCourse ? "Seleziona un percorso" : "Percorso attuale"}
             </p>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -286,117 +414,101 @@ export function PathHero({
             </>
           )}
 
-          {/* ── Azioni: Riprendi + Cambia corso — STESSA ALTEZZA (h-11) ── */}
+          {/* ── Azioni con morphing: Cambia corso ⇄ Riprendi espanso + Annulla ── */}
           {!isGenerating && (canResume || multi) && (
-            <div className="mt-5 flex items-stretch gap-2.5">
-              {canResume && onResume && (
-                <button
-                  type="button"
-                  onClick={onResume}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-black text-white border border-black h-11 px-4 text-sm font-semibold transition-all duration-200 hover:bg-neutral-800 active:scale-[0.97] dark:bg-white dark:text-black dark:border-white dark:hover:bg-neutral-200"
+            <AnimatePresence mode="popLayout" initial={false}>
+              {!isSelectingCourse ? (
+                <motion.div
+                  key="actions-closed"
+                  layout
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.18 }}
+                  className="mt-5 flex items-stretch gap-2.5"
                 >
-                  <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
-                  Riprendi
-                </button>
-              )}
-              {multi && onSelectCourse && (
-                <button
-                  type="button"
-                  onClick={() => setPickerOpen(true)}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                  }}
+                  {canResume && onResume && (
+                    <motion.button
+                      layout
+                      type="button"
+                      onClick={onResume}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-black text-white border border-black h-11 px-4 text-sm font-semibold transition-all duration-200 hover:bg-neutral-800 active:scale-[0.97] dark:bg-white dark:text-black dark:border-white dark:hover:bg-neutral-200"
+                    >
+                      <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                      Riprendi
+                    </motion.button>
+                  )}
+                  {multi && onSelectCourse && (
+                    <motion.button
+                      layout
+                      type="button"
+                      onClick={() => setIsSelectingCourse(true)}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                      style={{
+                        backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                        borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                      }}
+                    >
+                      <ArrowLeftRight className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                      Cambia corso
+                    </motion.button>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="actions-open"
+                  layout
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.18 }}
+                  className="mt-5 flex items-stretch gap-2.5"
                 >
-                  <ArrowLeftRight className="w-4 h-4 shrink-0" strokeWidth={1.9} />
-                  Cambia corso
-                </button>
+                  {canResume && onResume ? (
+                    <motion.button
+                      layout
+                      type="button"
+                      onClick={onResume}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-full bg-black text-white border border-black h-11 flex-1 px-4 text-sm font-semibold transition-all duration-200 hover:bg-neutral-800 active:scale-[0.97] dark:bg-white dark:text-black dark:border-white dark:hover:bg-neutral-200"
+                    >
+                      <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                      Riprendi
+                    </motion.button>
+                  ) : (
+                    <div className="flex-1" />
+                  )}
+                  <motion.button
+                    layout
+                    type="button"
+                    onClick={() => setIsSelectingCourse(false)}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                    style={{
+                      backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                      borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                    }}
+                  >
+                    <X className="w-4 h-4 shrink-0" strokeWidth={2} />
+                    Annulla
+                  </motion.button>
+                </motion.div>
               )}
-            </div>
+            </AnimatePresence>
           )}
         </div>
-      </div>
+      </motion.div>
 
-      {/* ── Selettore dei percorsi: in un PORTALE sopra tutto (anche l'header),
-          con sfondo sfocato. Renderizzato fuori dalla card animata, così la
-          finestra fissa non resta intrappolata sotto gli altri elementi. ── */}
-      {pickerOpen && onSelectCourse && createPortal(
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-fade-in"
-          onClick={() => setPickerOpen(false)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Seleziona un percorso"
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm bg-popover text-popover-foreground rounded-[24px] shadow-level-3 p-5"
+      {/* Card corsi DOPO l'attiva (compaiono sotto la hero) */}
+      <AnimatePresence initial={false}>
+        {isSelectingCourse && after.length > 0 && (
+          <motion.div
+            key="picker-after"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-3 mt-4"
           >
-            <div className="mb-4 px-1">
-              <h3 className="font-display text-xl font-bold text-foreground">I tuoi percorsi</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Scegli su quale vuoi lavorare
-              </p>
-            </div>
-            <div className="flex flex-col gap-1.5 max-h-[60vh] overflow-y-auto">
-              {courses.map((course) => {
-                const Icon = getCourseIcon(course.file_name);
-                const isActive = course.id === active?.id;
-                const meta =
-                  typeof course.lesson_count === "number" && course.lesson_count > 0
-                    ? `${course.lesson_count} lezioni`
-                    : null;
-                return (
-                  <button
-                    key={course.id}
-                    type="button"
-                    onClick={() => {
-                      onSelectCourse(course.id);
-                      setPickerOpen(false);
-                    }}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-3 rounded-2xl w-full text-left transition-colors duration-150",
-                      isActive ? "shadow-level-1" : "hover:bg-secondary active:bg-secondary",
-                    )}
-                    style={isActive ? {
-                      backgroundColor: "var(--subject-accent, #f59e0b)",
-                      color: "var(--subject-accent-foreground, #111111)",
-                    } : undefined}
-                  >
-                    <span
-                      className={cn(
-                        "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0",
-                        isActive ? "text-current" : "bg-secondary text-foreground",
-                      )}
-                      style={isActive ? {
-                        backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)",
-                      } : undefined}
-                    >
-                      <Icon className="w-4 h-4" strokeWidth={1.75} />
-                    </span>
-                    <span className="flex-1 min-w-0">
-                      <span
-                        className={cn(
-                          "block truncate text-[15px] font-semibold",
-                          isActive ? "text-current" : "text-foreground",
-                        )}
-                      >
-                        {cleanCourseName(course.file_name)}
-                      </span>
-                      {meta && (
-                        <span className={cn("block text-xs mt-0.5", isActive ? "text-current opacity-70" : "text-muted-foreground")}>{meta}</span>
-                      )}
-                    </span>
-                    {isActive && <Check className="w-4 h-4 text-current flex-shrink-0" strokeWidth={2.5} />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+            {after.map(renderCourseCard)}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Rinomina corso ── */}
       <Drawer open={renameOpen} onOpenChange={(o) => !o && setRenameOpen(false)}>
