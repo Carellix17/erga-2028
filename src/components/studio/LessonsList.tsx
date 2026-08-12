@@ -296,7 +296,7 @@ export function LessonsList({
                           : "bg-card border border-transparent",
                         !disabled && "hover:bg-surface-container-highest active:scale-[0.985]",
                         (state === "locked" || state === "gated") && "opacity-55",
-                        state === "generating" && "border-lime/40",
+                        state === "generating" && "border-subject-accent/40",
                       )}
                       style={{
                         touchAction: "manipulation",

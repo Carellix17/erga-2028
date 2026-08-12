@@ -154,7 +154,7 @@ const MOCK_DASHBOARD_DATA = (() => {
         description: "12 esercizi pronti",
         eyebrow: "Allenati",
         icon: Zap,
-        iconClassName: "bg-lime/80 text-[#0C1F12]",
+        iconClassName: "bg-subject-accent/80 text-black",
         toastTitle: "",
         toastDescription: "",
       },

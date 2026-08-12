@@ -45,7 +45,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
             );
           } else if (isCur) {
             badge = (
-              <span className="badge-chip bg-lime text-[#0C1F12]">
+              <span className="badge-chip bg-subject-accent text-black">
                 <Play className="w-3 h-3" fill="currentColor" strokeWidth={0} />
                 Riprendi
               </span>
@@ -84,7 +84,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                 "flex items-center gap-3.5 rounded-[22px] bg-card border border-border px-4 py-4 text-left transition-all duration-200",
                 "shadow-level-1",
                 !isLocked && "hover:border-primary/30 hover:bg-surface-container-low active:scale-[0.985]",
-                isCur && "border-lime ring-2 ring-lime/25",
+                isCur && "border-subject-accent ring-2 ring-subject-accent/25",
                 isLocked && "opacity-60 cursor-default",
               )}
             >
@@ -93,7 +93,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                 className={cn(
                   "flex-shrink-0 w-12 h-12 rounded-[16px] flex items-center justify-center font-display font-extrabold text-base transition-colors duration-200",
                   isDone && "bg-success text-success-foreground",
-                  isCur && "bg-lime text-[#0C1F12]",
+                  isCur && "bg-subject-accent text-black",
                   isGen && "bg-surface-container-high text-muted-foreground",
                   isLocked && "bg-surface-container-high text-muted-foreground",
                   !isDone && !isCur && !isGen && !isLocked && "bg-primary text-primary-foreground",

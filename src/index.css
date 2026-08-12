@@ -13,28 +13,28 @@
 @layer base {
   :root {
     /* ─── Erga BOSCO "Bosco di luce" (tema chiaro, default) — menta e salvia ─── */
---primary: 134 33% 15%;                    /* Bosco scuro — la pill-firma è VERDE BOSCO su menta */
---primary-foreground: 130 30% 96%;
---primary-container: 136 27% 89%;
---on-primary-container: 139 44% 8%;
---secondary: 140 21% 95%;
---secondary-foreground: 146 21% 15%;
---secondary-container: 135 18% 91%;
---on-secondary-container: 144 22% 14%;
---tertiary: 132 25% 41%;                /* 🌿 SALVIA — poche gocce, come un profumo */
-    --tertiary-foreground: 0 0% 100%;
---tertiary-container: 140 25% 88%;
---on-tertiary-container: 139 41% 13%;
---gold-antique: 43 80% 31%;
---gold-antique-soft: 46 66% 89%;
+--primary: 0 0% 0%;                    /* NERO — la pill-firma è NERA su bianco (monocromo) */
+--primary-foreground: 0 0% 100%;
+--primary-container: 0 0% 92%;
+--on-primary-container: 0 0% 10%;
+--secondary: 0 0% 95%;
+--secondary-foreground: 0 0% 15%;
+--secondary-container: 0 0% 91%;
+--on-secondary-container: 0 0% 14%;
+--tertiary: 0 0% 32%;                /* grigio medio (monocromo) */
+--tertiary-foreground: 0 0% 100%;
+--tertiary-container: 0 0% 93%;
+--on-tertiary-container: 0 0% 12%;
+--gold-antique: 0 0% 45%;
+--gold-antique-soft: 0 0% 93%;
 --destructive: 8 61% 43%;
     --destructive-foreground: 0 0% 100%;
 --error-container: 12 68% 93%;
 --on-error-container: 9 72% 20%;
---success: 138 46% 34%;
-    --success-foreground: 0 0% 100%;
---success-container: 138 43% 90%;
---on-success-container: 141 61% 15%;
+--success: 0 0% 25%;
+--success-foreground: 0 0% 100%;
+--success-container: 0 0% 90%;
+--on-success-container: 0 0% 12%;
 --warning: 40 82% 32%;
     --warning-foreground: 0 0% 100%;
 --warning-container: 41 70% 88%;
@@ -47,28 +47,27 @@
     --pastel-terracotta: 18 45% 45%;       /* storia 🧱 */
     --pastel-polvere: 210 36% 42%;         /* matematica */
     --pastel-ocra: 38 55% 36%;             /* economia */
-    --pastel-bosco: 145 28% 34%;           /* scienze */
+--pastel-bosco: 0 0% 38%;           /* scienze */
     --pastel-prugna: 320 28% 44%;          /* letteratura */
     --pastel-crepuscolo: 230 22% 44%;      /* filosofia */
-    --pastel-mare: 185 38% 35%;            /* fisica */
+--pastel-mare: 0 0% 42%;            /* fisica */
     --pastel-violetto: 250 28% 47%;        /* informatica */
     --pastel-cipria: 350 30% 50%;          /* arte */
-    --pastel-oliva: 85 26% 34%;            /* geografia */
+--pastel-oliva: 0 0% 36%;            /* geografia */
     --pastel-grafite: 220 8% 34%;          /* diritto (prima era BIANCO-su-bianco!) */
     --pastel-miele: 28 50% 42%;            /* lingue */
     --pastel-neutro: 36 6% 46%;            /* generale (ripiego) */
---background: 135 20% 96%;               /* menta #F3F7F4 */
---foreground: 120 8% 7%;
---surface-dim: 136 17% 87%;
-    --surface-bright: 0 0% 100%;
-    --surface-container-lowest: 0 0% 100%;
---surface-container-low: 140 20% 97%;
---surface-container: 140 21% 95%;
---surface-container-high: 135 18% 91%;
---surface-container-highest: 136 19% 88%;
-
-    --card: 0 0% 100%;
---card-foreground: 120 8% 7%;
+--background: 0 0% 96%;               /* grigio chiaro (monocromo) */
+--foreground: 0 0% 8%;
+--surface-dim: 0 0% 88%;
+--surface-bright: 0 0% 100%;
+--surface-container-lowest: 0 0% 100%;
+--surface-container-low: 0 0% 97%;
+--surface-container: 0 0% 95%;
+--surface-container-high: 0 0% 92%;
+--surface-container-highest: 0 0% 89%;
+--card: 0 0% 100%;
+--card-foreground: 0 0% 8%;
 
     /* ═══ token glass PENSIONATI (alias opachi per compatibilità) ═══ */
     --glass-surface-1: hsl(var(--surface-container-low));
@@ -77,40 +76,38 @@
     --glass-surface-hover: hsl(var(--surface-container-highest));
     --glass-border: hsl(var(--border));
     --glass-inset: hsl(0 0% 0% / 0);
-
-    --popover: 0 0% 100%;
---popover-foreground: 120 8% 7%;
---muted: 140 20% 94%;
---muted-foreground: 136 6% 37%;
---accent: 136 27% 89%;                  /* salvia-soft per selezioni */
---accent-foreground: 139 41% 13%;
---outline: 150 14% 24% / 0.25;
---outline-variant: 150 14% 24% / 0.12;
---border: 150 14% 24% / 0.12;
-    --input: 0 0% 100%;
---ring: 132 25% 41%;
+--popover: 0 0% 100%;
+--popover-foreground: 0 0% 8%;
+--muted: 0 0% 94%;
+--muted-foreground: 0 0% 38%;
+--accent: 0 0% 93%;                  /* grigio tenue per selezioni (monocromo) */
+--accent-foreground: 0 0% 12%;
+--outline: 0 0% 24% / 0.25;
+--outline-variant: 0 0% 24% / 0.12;
+--border: 0 0% 24% / 0.12;
+--input: 0 0% 100%;
+--ring: 0 0% 25%;
     /* 🌲 P24 × MONOCROMO — colore d'accento DINAMICO della materia.
        La pagina padre (o il profilo) puo' sovrascrivere --subject-accent
        per legare il colore alla materia di studio corrente. Fallback ambra. */
     --subject-accent: #f59e0b;
     --subject-accent-light: #fde68a;
---inverse-surface: 134 33% 15%;
---inverse-on-surface: 135 20% 96%;
---inverse-primary: 132 21% 68%;
-
-    --sidebar-background: 0 0% 100%;
---sidebar-foreground: 120 8% 7%;
---sidebar-primary: 134 33% 15%;
---sidebar-primary-foreground: 130 30% 96%;
---sidebar-accent: 140 21% 95%;
---sidebar-accent-foreground: 120 8% 7%;
---sidebar-border: 150 14% 24% / 0.12;
-    --sidebar-ring: 132 25% 41%;
+--inverse-surface: 0 0% 8%;
+--inverse-on-surface: 0 0% 96%;
+--inverse-primary: 0 0% 62%;
+--sidebar-background: 0 0% 100%;
+--sidebar-foreground: 0 0% 8%;
+--sidebar-primary: 0 0% 0%;
+--sidebar-primary-foreground: 0 0% 100%;
+--sidebar-accent: 0 0% 95%;
+--sidebar-accent-foreground: 0 0% 8%;
+--sidebar-border: 0 0% 24% / 0.12;
+--sidebar-ring: 0 0% 25%;
 
     /* 🌲 P24 — firme del guscio: nav a pillola (bosco) e puntino lime */
-    --nav-surface: 134 33% 15%;
-    --nav-foreground: 130 30% 96%;
-    --lime: 79 86% 65%;
+--nav-surface: 0 0% 10%;
+--nav-foreground: 0 0% 96%;
+--lime: 0 0% 50%;
 
     /* Scala del testo (Accessibilità) */
     --text-scale: 1;
@@ -118,27 +115,27 @@
 
   .dark {
     /* ─── Erga BOSCO "Bosco di notte" (tema scuro) — verde profondo, carbone ─── */
---primary: 134 18% 86%;                   /* la pill-firma BIANCA, testo nero */
---primary-foreground: 139 44% 8%;
---primary-container: 139 29% 19%;
---on-primary-container: 135 26% 85%;
---secondary: 144 31% 13%;
---secondary-foreground: 135 22% 93%;
---secondary-container: 141 28% 16%;
---on-secondary-container: 140 24% 90%;
---tertiary: 132 21% 68%;               /* 🌿 SALVIA chiara sul nero */
---tertiary-foreground: 139 44% 8%;
---tertiary-container: 139 33% 17%;
---on-tertiary-container: 135 26% 85%;
---gold-antique: 44 48% 59%;
---gold-antique-soft: 42 38% 12%;
+--primary: 0 0% 100%;                   /* la pill-firma BIANCA, testo nero (monocromo) */
+--primary-foreground: 0 0% 0%;
+--primary-container: 0 0% 24%;
+--on-primary-container: 0 0% 90%;
+--secondary: 0 0% 12%;
+--secondary-foreground: 0 0% 94%;
+--secondary-container: 0 0% 18%;
+--on-secondary-container: 0 0% 90%;
+--tertiary: 0 0% 78%;               /* grigio chiaro (monocromo) */
+--tertiary-foreground: 0 0% 8%;
+--tertiary-container: 0 0% 24%;
+--on-tertiary-container: 0 0% 90%;
+--gold-antique: 0 0% 60%;
+--gold-antique-soft: 0 0% 16%;
 --destructive: 9 65% 64%;
     --destructive-foreground: 0 0% 100%;
 --error-container: 7 53% 15%;
 --on-error-container: 10 73% 81%;
---success: 135 37% 59%;
---success-foreground: 139 44% 8%;
---success-container: 139 35% 14%;
+--success: 0 0% 82%;
+--success-foreground: 0 0% 8%;
+--success-container: 0 0% 18%;
 --warning: 40 68% 61%;
 --warning-foreground: 139 44% 8%;
 --warning-container: 39 53% 15%;
@@ -148,13 +145,13 @@
     --pastel-terracotta: 18 40% 66%;
     --pastel-polvere: 210 34% 70%;
     --pastel-ocra: 40 48% 64%;
-    --pastel-bosco: 140 24% 66%;
+--pastel-bosco: 0 0% 66%;
     --pastel-prugna: 322 30% 72%;
     --pastel-crepuscolo: 230 22% 72%;
-    --pastel-mare: 185 30% 64%;
+--pastel-mare: 0 0% 64%;
     --pastel-violetto: 250 26% 74%;
     --pastel-cipria: 350 28% 72%;
-    --pastel-oliva: 85 24% 62%;
+--pastel-oliva: 0 0% 68%;
     --pastel-grafite: 220 8% 70%;
     --pastel-miele: 28 44% 66%;
     --pastel-neutro: 36 6% 68%;
@@ -167,17 +164,17 @@
     --shadow-level-3: 0 3px 6px 0 rgba(0, 0, 0, 0.50), 0 12px 28px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 hsl(0 0% 100% / 0.06);
     --shadow-level-4: 0 4px 8px 0 rgba(0, 0, 0, 0.50), 0 18px 38px -8px rgba(0, 0, 0, 0.60), inset 0 1px 0 0 hsl(0 0% 100% / 0.07);
     --shadow-level-5: 0 4px 10px 0 rgba(0, 0, 0, 0.55), 0 24px 48px -8px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
---background: 138 36% 9%;                 /* bosco profondo #0F2014 */
---foreground: 135 22% 93%;
---surface-dim: 145 35% 7%;
---surface-bright: 139 29% 19%;
---surface-container-lowest: 140 31% 6%;
---surface-container-low: 148 32% 10%;
---surface-container: 134 33% 15%;          /* carbone #141414 */
---surface-container-high: 139 33% 17%;  /* #1A1A1B */
---surface-container-highest: 139 31% 20%;
---card: 134 33% 15%;
---card-foreground: 135 22% 93%;
+--background: 0 0% 8%;                 /* nero (monocromo) */
+--foreground: 0 0% 93%;
+--surface-dim: 0 0% 6%;
+--surface-bright: 0 0% 18%;
+--surface-container-lowest: 0 0% 5%;
+--surface-container-low: 0 0% 10%;
+--surface-container: 0 0% 13%;          /* carbone #141414 */
+--surface-container-high: 0 0% 17%;  /* #1A1A1B */
+--surface-container-highest: 0 0% 21%;
+--card: 0 0% 14%;
+--card-foreground: 0 0% 93%;
 
     /* ═══ token glass PENSIONATI (alias opachi per compatibilità) ═══ */
     --glass-surface-1: hsl(var(--surface-container-low));
@@ -186,35 +183,35 @@
     --glass-surface-hover: hsl(var(--surface-container-highest));
     --glass-border: hsl(var(--border));
     --glass-inset: hsl(0 0% 0% / 0);
---popover: 140 33% 12%;
---popover-foreground: 135 22% 93%;
---muted: 144 31% 13%;
---muted-foreground: 141 11% 69%;
---accent: 139 33% 17%;                 /* salvia-soft su nero */
---accent-foreground: 135 26% 85%;
---outline: 150 20% 90% / 0.16;
---outline-variant: 150 20% 90% / 0.08;
---border: 150 20% 90% / 0.10;
---input: 148 32% 10%;
---ring: 132 21% 68%;
+--popover: 0 0% 12%;
+--popover-foreground: 0 0% 93%;
+--muted: 0 0% 12%;
+--muted-foreground: 0 0% 68%;
+--accent: 0 0% 20%;                 /* grigio tenue su nero (monocromo) */
+--accent-foreground: 0 0% 88%;
+--outline: 0 0% 90% / 0.16;
+--outline-variant: 0 0% 90% / 0.08;
+--border: 0 0% 90% / 0.10;
+--input: 0 0% 10%;
+--ring: 0 0% 80%;
     --subject-accent: #fbbf24;
     --subject-accent-light: #fde68a;
---inverse-surface: 135 18% 91%;
---inverse-on-surface: 138 36% 9%;
---inverse-primary: 132 25% 41%;
---sidebar-background: 138 36% 9%;
---sidebar-foreground: 135 22% 93%;
---sidebar-primary: 134 18% 86%;
---sidebar-primary-foreground: 139 44% 8%;
---sidebar-accent: 139 33% 17%;
---sidebar-accent-foreground: 135 22% 93%;
---sidebar-border: 150 20% 90% / 0.10;
-    --sidebar-ring: 132 21% 68%;
+--inverse-surface: 0 0% 93%;
+--inverse-on-surface: 0 0% 8%;
+--inverse-primary: 0 0% 40%;
+--sidebar-background: 0 0% 8%;
+--sidebar-foreground: 0 0% 93%;
+--sidebar-primary: 0 0% 100%;
+--sidebar-primary-foreground: 0 0% 0%;
+--sidebar-accent: 0 0% 20%;
+--sidebar-accent-foreground: 0 0% 93%;
+--sidebar-border: 0 0% 90% / 0.10;
+--sidebar-ring: 0 0% 80%;
 
     /* 🌲 P24 — firme del guscio: nav a pillola (bosco di notte) e puntino lime */
-    --nav-surface: 139 33% 17%;
-    --nav-foreground: 135 22% 93%;
-    --lime: 79 86% 65%;
+--nav-surface: 0 0% 12%;
+--nav-foreground: 0 0% 92%;
+--lime: 0 0% 60%;
   }
 
   :root {
@@ -386,41 +383,41 @@
    comportano come in :root. I portali (toast, sheet) restano fuori: giusto. */
 .force-light {
   color-scheme: light;
---primary: 134 33% 15%;
---primary-foreground: 130 30% 96%;
---primary-container: 136 27% 89%;
---secondary: 140 21% 95%;
---secondary-foreground: 146 21% 15%;
---secondary-container: 135 18% 91%;
---tertiary: 132 25% 41%;
-  --tertiary-foreground: 0 0% 100%;
---tertiary-container: 140 25% 88%;
+--primary: 0 0% 0%;
+--primary-foreground: 0 0% 100%;
+--primary-container: 0 0% 92%;
+--secondary: 0 0% 95%;
+--secondary-foreground: 0 0% 15%;
+--secondary-container: 0 0% 91%;
+--tertiary: 0 0% 32%;
+--tertiary-foreground: 0 0% 100%;
+--tertiary-container: 0 0% 93%;
 --destructive: 8 61% 43%;
   --destructive-foreground: 0 0% 100%;
 --error-container: 12 68% 93%;
---success: 138 46% 34%;
+--success: 0 0% 25%;
 --warning: 40 82% 32%;
---background: 135 20% 96%;
---foreground: 120 8% 7%;
---surface-dim: 136 17% 87%;
-  --surface-bright: 0 0% 100%;
-  --surface-container-lowest: 0 0% 100%;
---surface-container-low: 140 20% 97%;
---surface-container: 140 21% 95%;
---surface-container-high: 135 18% 91%;
---surface-container-highest: 136 19% 88%;
-  --card: 0 0% 100%;
---card-foreground: 120 8% 7%;
-  --popover: 0 0% 100%;
---popover-foreground: 120 8% 7%;
---muted: 140 20% 94%;
---muted-foreground: 136 6% 37%;
---accent: 136 27% 89%;
---accent-foreground: 139 41% 13%;
---outline: 150 14% 24% / 0.25;
---outline-variant: 150 14% 24% / 0.12;
---border: 150 14% 24% / 0.12;
-  --input: 0 0% 100%;
+--background: 0 0% 96%;
+--foreground: 0 0% 8%;
+--surface-dim: 0 0% 88%;
+--surface-bright: 0 0% 100%;
+--surface-container-lowest: 0 0% 100%;
+--surface-container-low: 0 0% 97%;
+--surface-container: 0 0% 95%;
+--surface-container-high: 0 0% 92%;
+--surface-container-highest: 0 0% 89%;
+--card: 0 0% 100%;
+--card-foreground: 0 0% 8%;
+--popover: 0 0% 100%;
+--popover-foreground: 0 0% 8%;
+--muted: 0 0% 94%;
+--muted-foreground: 0 0% 38%;
+--accent: 0 0% 93%;
+--accent-foreground: 0 0% 12%;
+--outline: 0 0% 24% / 0.25;
+--outline-variant: 0 0% 24% / 0.12;
+--border: 0 0% 24% / 0.12;
+--input: 0 0% 100%;
   --shadow-level-1: 0 1px 2px 0 rgba(23, 21, 18, 0.06), 0 1px 3px 0 rgba(23, 21, 18, 0.04);
   --shadow-level-2: 0 1px 2px 0 rgba(23, 21, 18, 0.06), 0 4px 12px -2px rgba(23, 21, 18, 0.10);
   --shadow-level-3: 0 2px 4px 0 rgba(23, 21, 18, 0.07), 0 10px 26px -6px rgba(23, 21, 18, 0.14);
@@ -683,8 +680,8 @@
     animation: breathe-ring 2.4s ease-in-out infinite;
   }
   @keyframes breathe-ring {
-    0%, 100% { box-shadow: 0 0 0 7px hsl(79 86% 65% / 0.20); }
-    50%      { box-shadow: 0 0 0 4px hsl(79 86% 65% / 0.12); }
+    0%, 100% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--subject-accent) 20%, transparent); }
+    50%      { box-shadow: 0 0 0 4px color-mix(in srgb, var(--subject-accent) 12%, transparent); }
   }
   .animate-scale-in {
     animation: m3-scale-in var(--motion-entrance) cubic-bezier(0.05, 0.7, 0.1, 1) both;
@@ -737,7 +734,7 @@
     overflow: hidden;
   }
   .m3-progress-indicator {
-    background-color: var(--subject-accent);            /* 🌿 progressi = accento materia */
+    background-color: var(--subject-accent);            /* progressi = accento materia (--subject-accent) */
     border-radius: var(--radius-full);
     transition: width 700ms cubic-bezier(0.05, 0.7, 0.1, 1);
     will-change: width;
@@ -953,10 +950,10 @@ html.reduce-motion *::after {
 }
 
 .glass-panel.is-active {
-  border-color: hsl(79 86% 65% / 0.55);
+  border-color: color-mix(in srgb, var(--subject-accent) 55%, transparent);
   box-shadow:
     inset 0 1px 0 0 hsl(0 0% 100% / 0.7),
-    0 10px 30px -10px hsl(79 86% 65% / 0.25),
+    0 10px 30px -10px color-mix(in srgb, var(--subject-accent) 25%, transparent),
     0 2px 6px -1px hsl(0 0% 0% / 0.10);
 }
 

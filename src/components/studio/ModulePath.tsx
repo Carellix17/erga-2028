@@ -294,7 +294,7 @@ export function ModulePath({
       {isModuleGenerating && genTotal > 0 && (
         <div className="mx-4 mt-3 h-1.5 rounded-full bg-secondary overflow-hidden">
           <div
-            className="h-full rounded-full bg-lime transition-all duration-500"
+            className="h-full rounded-full bg-subject-accent transition-all duration-500"
             style={{ width: `${Math.max(4, Math.min(100, (genCount / genTotal) * 100))}%` }}
           />
         </div>
@@ -330,7 +330,7 @@ export function ModulePath({
                 "absolute flex items-center justify-center rounded-[16px] font-display font-extrabold text-base select-none",
                 "transition-all duration-200",
                 state === "done" && "bg-primary text-primary-foreground shadow-level-2",
-                state === "cur" && "bg-card border-[3px] border-lime text-foreground shadow-level-3 animate-breathe-ring",
+                state === "cur" && "bg-card border-[3px] border-subject-accent text-foreground shadow-level-3 animate-breathe-ring",
                 state === "av" && "bg-card border-2 border-border text-tertiary",
                 state === "lock" && "bg-surface-container-high border-2 border-border text-muted-foreground",
                 state === "gen" && "bg-card border-[2.5px] border-dashed border-tertiary text-tertiary",
@@ -378,7 +378,7 @@ export function ModulePath({
               {/* Etichetta corrente */}
               {state === "cur" && !isGeneratingLesson && (
                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
-                  <span className="inline-flex items-center gap-1 bg-lime text-[#0C1F12] text-[10.5px] font-extrabold px-2.5 py-1 rounded-full shadow-level-1">
+                  <span className="inline-flex items-center gap-1 bg-subject-accent text-black text-[10.5px] font-extrabold px-2.5 py-1 rounded-full shadow-level-1">
                     <Play className="w-2.5 h-2.5" fill="currentColor" strokeWidth={0} />
                     Riprendi
                   </span>
