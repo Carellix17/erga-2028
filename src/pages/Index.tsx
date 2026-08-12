@@ -5,6 +5,7 @@ import { StudioView } from "@/components/studio/StudioView";
 import { PianoView } from "@/components/piano/PianoView";
 import { PraticaView } from "@/components/pratica/PraticaView";
 import { ProfileView } from "@/components/profile/ProfileView";
+import { HomeView } from "@/components/home/HomeView";
 import { UploadSheet } from "@/components/upload/UploadSheet";
 import { useUserData } from "@/hooks/useUserData";
 import { useHasContentQuery, useLessonsCacheControls } from "@/hooks/useLessons";
@@ -16,7 +17,7 @@ import { CognitiveOnboarding } from "@/components/onboarding/CognitiveOnboarding
 import { Brain } from "lucide-react";
 import { useDemoHandoff } from "@/hooks/useDemoHandoff";
 
-type Tab = "studio" | "piano" | "pratica" | "profilo";
+type Tab = "home" | "studio" | "piano" | "pratica" | "profilo";
 
 interface UploadedFile {
   name: string;
@@ -31,14 +32,14 @@ const Index = () => {
   // Se l'utente arriva qui dopo una sessione demo anonima, persistiamo l'esagono
   // calcolato in locale sul suo nuovo profilo cognitivo.
   useDemoHandoff();
-  const [activeTab, setActiveTab] = useState<Tab>("studio");
+  const [activeTab, setActiveTab] = useState<Tab>("home");
   const [showUpload, setShowUpload] = useState(false);
   const [manageFocusContextId, setManageFocusContextId] = useState<string | null>(null);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // 🧭 P24 — memoria di posizione: ogni stanza riapre DOV'ERA (oggetti persistenti)
-  const scrollPositions = useRef<Record<Tab, number>>({ studio: 0, piano: 0, pratica: 0, profilo: 0 });
+  const scrollPositions = useRef<Record<Tab, number>>({ home: 0, studio: 0, piano: 0, pratica: 0, profilo: 0 });
   const changeTab = useCallback(
     (tab: Tab) => {
       scrollPositions.current[activeTab] = window.scrollY;
@@ -56,7 +57,7 @@ const Index = () => {
   useEffect(() => {
     const handler = (e: Event) => {
       const tab = (e as CustomEvent<string>).detail;
-      if (tab === "studio" || tab === "piano" || tab === "pratica" || tab === "profilo") {
+      if (tab === "home" || tab === "studio" || tab === "piano" || tab === "pratica" || tab === "profilo") {
         changeTab(tab);
       }
     };
@@ -145,6 +146,12 @@ const Index = () => {
         <h1 className="sr-only">Erga — Il tuo assistente di studio intelligente</h1>
         {/* 🌲 P24 — passaggio tra stanze: dissolvenza di sola luce (200ms) */}
         <div key={activeTab} className="room-fade">
+        {activeTab === "home" && (
+          <HomeView
+            onOpenStudio={() => changeTab("studio")}
+            onOpenPratica={() => changeTab("pratica")}
+          />
+        )}
         {/* Banner ricalcola Esagono se per qualche motivo i punteggi sono tutti default */}
         {activeTab === "studio" && cognitive && [cognitive.log_score, cognitive.mem_score, cognitive.foc_score, cognitive.voc_score, cognitive.ans_score, cognitive.app_score].every((s) => s === 50) && (
           <button
