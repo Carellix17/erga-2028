@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -132,8 +132,6 @@ export function PathHero({
   onSelectingChange,
 }: PathHeroProps) {
   const [isSelectingCourse, setIsSelectingCourse] = useState(false);
-  // Posizione di scroll originale: per tornare su alla chiusura
-  const originalScrollRef = useRef(0);
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [isSavingRename, setIsSavingRename] = useState(false);
@@ -152,50 +150,24 @@ export function PathHero({
   const before = courses.slice(0, activeIdx);
   const after = courses.slice(activeIdx + 1);
 
-  // Centra la hero nel viewport (calcolo esatto con clamp a 0)
-  const centerHero = useCallback(() => {
-    const el = heroRef.current;
-    if (!el) return;
-    // il centro visivo e' l'area tra l'header sticky (sopra) e la floating
-    // nav (sotto): su mobile l'altezza utile e' ridotta
-    const header = document.querySelector("header");
-    const headerH = header ? header.getBoundingClientRect().height : 0;
-    const navH = window.innerWidth < 768 ? 96 : 0; // floating nav ~90px + margine
-    const rect = el.getBoundingClientRect();
-    const avail = window.innerHeight - headerH - navH;
-    const top = Math.max(
-      0,
-      window.scrollY + rect.top - headerH - (avail - rect.height) / 2
-    );
-    window.scrollTo({ top, behavior: "smooth" });
-  }, []);
-
-  // COREOGRAFIA a 2 FASI:
-  // APERTURA — FASE 1 (t≈0): la hero inizia SUBITO a centrarsi (scroll smooth
-  //   + layout animation 0.35s). FASE 2 (delay 0.25s): le card esterne
-  //   compaiono sopra/sotto (framer-motion). Poi ricentratura (~0.7s) per
-  //   compensare la spinta delle card superiori e tenere la hero al centro.
-  // CHIUSURA — le card escono PRIMA (exit 0.12s), poi la hero torna alla
-  //   posizione di scroll originale.
+  // Nessuna manipolazione dello scroll (vietata dal brief): il centramento
+  // avviene SOLO via layout CSS (flex + my-auto) animato da framer-motion.
+  // Qui gestiamo solo l'overflow del body: nascosto durante l'animazione
+  // iniziale per evitare salti, poi riabilitato (le card possono eccedere).
   useEffect(() => {
-    if (isSelectingCourse) {
-      const timers: number[] = [];
-      timers.push(window.setTimeout(() => centerHero(), 30)); // FASE 1 subito
-      timers.push(window.setTimeout(() => centerHero(), 700)); // ricentra dopo card
-      return () => timers.forEach((t) => window.clearTimeout(t));
-    }
-    // chiusura: aspetta l'exit delle card (0.12s), poi torna alla posizione originale
-    const timers: number[] = [];
-    timers.push(
-      window.setTimeout(() => {
-        window.scrollTo({ top: originalScrollRef.current, behavior: "smooth" });
-      }, 160)
-    );
-    return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [isSelectingCourse, centerHero]);
+    if (!isSelectingCourse) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const t = window.setTimeout(() => {
+      document.body.style.overflow = prev;
+    }, 850);
+    return () => {
+      window.clearTimeout(t);
+      document.body.style.overflow = prev;
+    };
+  }, [isSelectingCourse]);
 
   const openPicker = () => {
-    originalScrollRef.current = window.scrollY;
     setIsSelectingCourse(true);
     onSelectingChange?.(true);
   };
@@ -291,7 +263,7 @@ export function PathHero({
     <section
       className={
         isSelectingCourse
-          ? "px-4 pt-4 min-h-[calc(100vh-4rem)] flex flex-col"
+          ? "px-4 pt-4 min-h-[calc(100dvh-120px)] flex flex-col"
           : "px-4 pt-4"
       }
     >
@@ -314,7 +286,8 @@ export function PathHero({
       {/* ── Hero card ── */}
       <motion.div
         layout
-        transition={{ layout: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } }}
+        transition={{ layout: { type: "spring", bounce: 0.2, duration: 0.6 } }}
+        className={cn(isSelectingCourse ? "my-auto" : "", "relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6")}
         ref={heroRef}
         onClick={(e) => {
           // tap sulla hero (non sui bottoni interni) → chiudi il selettore
@@ -322,7 +295,6 @@ export function PathHero({
             closePicker();
           }
         }}
-        className="relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6"
         style={{
           backgroundColor: "var(--subject-accent, #f59e0b)",
           color: "var(--subject-accent-foreground, #111111)",
