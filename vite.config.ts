@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    allowedHosts: true, // dev-only: consente l'anteprima remota (nessun effetto in build)
     hmr: {
       overlay: false,
     },
@@ -36,8 +37,8 @@ export default defineConfig(({ mode }) => ({
         name: "Erga - Ridefinisci lo studio",
         short_name: "Erga",
         description: "Erga rivoluziona l'apprendimento, organizzando il materiale su più livelli.",
-        theme_color: "#0F2014",
-        background_color: "#F3F7F4",
+        theme_color: "#0a0a0a",
+        background_color: "#f5f5f5",
         display: "standalone",
         orientation: "portrait",
         scope: "/",
