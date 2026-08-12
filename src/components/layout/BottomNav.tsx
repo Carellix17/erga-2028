@@ -1,4 +1,5 @@
 import { BookOpen, Brain, CalendarDays, Home as HomeIcon, User } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
@@ -33,8 +34,8 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
       <div className="max-w-lg mx-auto pointer-events-auto mb-[max(env(safe-area-inset-bottom,0px),1rem)] flex items-center gap-2.5 md:max-w-none md:mx-0 md:mb-0 md:h-full md:items-stretch">
         {/* ── Pillola (mobile) / Sidebar (desktop) ── */}
         <div className={cn(pillMaterial, "rounded-full shadow-level-2 flex-1 min-w-0 md:rounded-none md:border-0 md:border-r md:h-full md:flex md:flex-col")}>
-          {/* Telefono: pillola */}
-          <div className="flex items-center justify-around h-[4.5rem] px-2 rounded-full md:hidden">
+          {/* Telefono: pillola con SOTTO-PILLOLA FLUIDA (layoutId) */}
+          <div className="relative flex items-center justify-around h-[4.5rem] px-2 rounded-full md:hidden">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -43,28 +44,35 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
                   aria-current={isActive ? "page" : undefined}
-                  className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/70"
+                  className="relative flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/70"
                 >
+                  {isActive && (
+                    <motion.span
+                      layoutId="activeTabBackground"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      className="absolute inset-0 rounded-full bg-neutral-200/80 dark:bg-white/10"
+                      aria-hidden
+                    />
+                  )}
                   <span
                     className={cn(
-                      "flex items-center justify-center rounded-full transition-all duration-200",
-                      isActive ? cn(activeFill, "w-12 h-8") : "w-12 h-8 bg-transparent",
+                      "relative z-10 flex items-center justify-center rounded-full",
+                      isActive ? "w-12 h-8" : "w-12 h-8",
                     )}
                   >
                     <Icon
-                      className={cn("w-[22px] h-[22px]", isActive ? "" : idleTxt)}
+                      className={cn("w-[22px] h-[22px]", isActive ? "text-neutral-900 dark:text-white" : idleTxt)}
                       strokeWidth={isActive ? 2.2 : 1.8}
                     />
                   </span>
-                  <span className={cn("label-small", isActive ? "font-bold" : idleTxt)}>
-                    {t(tab.i18nKey)}
-                  </span>
                   <span
                     className={cn(
-                      "w-1.5 h-1.5 rounded-full transition-opacity duration-200",
-                      isActive ? "bg-black opacity-100 dark:bg-white" : "opacity-0",
+                      "label-small relative z-10",
+                      isActive ? "font-bold text-neutral-900 dark:text-white" : idleTxt,
                     )}
-                  />
+                  >
+                    {t(tab.i18nKey)}
+                  </span>
                 </button>
               );
             })}
