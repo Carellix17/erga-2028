@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -148,35 +148,45 @@ export function PathHero({
   const before = courses.slice(0, activeIdx);
   const after = courses.slice(activeIdx + 1);
 
+  // Centra la hero nel viewport (calcolo esatto con clamp a 0)
+  const centerHero = useCallback(() => {
+    const el = heroRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const top = Math.max(
+      0,
+      window.scrollY + rect.top - (window.innerHeight - rect.height) / 2
+    );
+    window.scrollTo({ top, behavior: "smooth" });
+  }, []);
+
   // FASE 1 — la hero va al centro PRIMA di mostrare gli altri corsi.
-  // Quando si clicca "Cambia corso": la pagina scorre (smooth) per portare
-  // la hero al centro del viewport, poi (a scroll arrivato) si montano le
-  // card degli altri corsi sopra e sotto.
+  // FASE 2 — compaiono le card sopra/sotto e la hero viene RICENTRATA:
+  // le card sopra la spingono verso il basso, quindi la riportiamo al
+  // centro per farla restare SEMPRE al centro durante tutto il processo.
   useEffect(() => {
     if (!isSelectingCourse) return;
     setIsCentering(true);
     setShowOthers(false);
-    const t = window.setTimeout(() => {
-      const el = heroRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const top = Math.max(
-        0,
-        window.scrollY + rect.top - (window.innerHeight - rect.height) / 2
-      );
-      window.scrollTo({ top, behavior: "smooth" });
-      // aspetta la fine dello scroll (~500ms) prima di mostrare le altre card
+    const t1 = window.setTimeout(() => {
+      centerHero();
       const t2 = window.setTimeout(() => {
         setShowOthers(true);
-        setIsCentering(false);
+        // layout cambiato (card montate): ri-centra la hero
+        const t3 = window.setTimeout(() => {
+          centerHero();
+          setIsCentering(false);
+        }, 80);
+        cleanupRef.current = t3;
       }, 520);
       cleanupRef.current = t2;
     }, 40);
+    cleanupRef.current = t1;
     return () => {
-      window.clearTimeout(t);
-      if (cleanupRef.current) window.clearTimeout(cleanupRef.current);
+      window.clearTimeout(cleanupRef.current ?? 0);
+      window.clearTimeout(t1);
     };
-  }, [isSelectingCourse]);
+  }, [isSelectingCourse, centerHero]);
 
   // Chiudi: reset di tutte le fasi
   useEffect(() => {
