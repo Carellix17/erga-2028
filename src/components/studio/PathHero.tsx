@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
+import { getSubjectAccent, getAccentForeground } from "@/lib/subjectColors";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -198,6 +199,9 @@ export function PathHero({
       typeof course.lesson_count === "number" && course.lesson_count > 0
         ? `${course.lesson_count} lezioni`
         : null;
+    // 🌲 P24 — ogni corso ha il PROPRIO colore materia (non quello della hero)
+    const accent = getSubjectAccent(course.file_name);
+    const fg = getAccentForeground(accent);
     return (
       <motion.button
         key={course.id}
@@ -207,8 +211,8 @@ export function PathHero({
         onClick={() => handleSelectCourse(course)}
         className="relative w-full overflow-hidden rounded-[28px] shadow-level-2 p-4 sm:p-5 text-left transition-transform duration-150 active:scale-[0.98]"
         style={{
-          backgroundColor: "var(--subject-accent, #f59e0b)",
-          color: "var(--subject-accent-foreground, #111111)",
+          backgroundColor: accent,
+          color: fg,
         }}
       >
         {/* Motivo organico tono-su-tono, come la hero */}
@@ -225,7 +229,13 @@ export function PathHero({
           {meta && (
             <p className="text-xs opacity-75 mt-1">{meta}</p>
           )}
-          <span className="mt-3.5 inline-flex items-center justify-center gap-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black h-10 w-full text-sm font-semibold">
+          <span
+            className="mt-3.5 inline-flex items-center justify-center gap-1.5 rounded-full border h-10 w-full text-sm font-semibold"
+            style={{
+              backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+              borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+            }}
+          >
             <Check className="w-4 h-4 shrink-0" strokeWidth={2.2} />
             Scegli corso
           </span>
@@ -412,7 +422,11 @@ export function PathHero({
                       layout
                       type="button"
                       onClick={onResume}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-black text-white border border-black h-11 px-4 text-sm font-semibold transition-all duration-200 hover:bg-neutral-800 active:scale-[0.97] dark:bg-white dark:text-black dark:border-white dark:hover:bg-neutral-200"
+                      className="inline-flex items-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                      style={{
+                        backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                        borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                      }}
                     >
                       <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                       Riprendi
@@ -448,7 +462,11 @@ export function PathHero({
                       layout
                       type="button"
                       onClick={onResume}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-full bg-black text-white border border-black h-11 flex-1 px-4 text-sm font-semibold transition-all duration-200 hover:bg-neutral-800 active:scale-[0.97] dark:bg-white dark:text-black dark:border-white dark:hover:bg-neutral-200"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                      style={{
+                        backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                        borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                      }}
                     >
                       <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                       Riprendi
