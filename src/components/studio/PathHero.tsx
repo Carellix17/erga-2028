@@ -85,11 +85,18 @@ const getCourseIcon = (name: string) => {
   return BookOpen;
 };
 
+// Coreografia a 2 FASI: le card esterne compaiono con DELAY 0.25s (dopo il
+// centramento della hero) e in chiusura escono VELOCI (0.12s) prima che la
+// hero torni su.
 const cardMotion = {
-  initial: { opacity: 0, scale: 0.95 },
-  animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.95 },
-  transition: { duration: 0.25, ease: "easeOut" as const },
+  initial: { opacity: 0, y: 15, scale: 0.96 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { delay: 0.25, duration: 0.3, ease: "easeOut" as const },
+  },
+  exit: { opacity: 0, transition: { duration: 0.12, ease: "easeOut" as const } },
 };
 
 /**
@@ -125,10 +132,8 @@ export function PathHero({
   onSelectingChange,
 }: PathHeroProps) {
   const [isSelectingCourse, setIsSelectingCourse] = useState(false);
-  // Fase 1: la hero va al centro (le card degli altri corsi NON sono ancora montate)
-  const [isCentering, setIsCentering] = useState(false);
-  // Fase 2: centratura finita → compaiono le card sopra/sotto
-  const [showOthers, setShowOthers] = useState(false);
+  // Posizione di scroll originale: per tornare su alla chiusura
+  const originalScrollRef = useRef(0);
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [isSavingRename, setIsSavingRename] = useState(false);
@@ -151,11 +156,13 @@ export function PathHero({
   const centerHero = useCallback(() => {
     const el = heroRef.current;
     if (!el) return;
-    // l'header sticky occupa spazio in alto: il centro visivo è l'area sotto di esso
+    // il centro visivo e' l'area tra l'header sticky (sopra) e la floating
+    // nav (sotto): su mobile l'altezza utile e' ridotta
     const header = document.querySelector("header");
     const headerH = header ? header.getBoundingClientRect().height : 0;
+    const navH = window.innerWidth < 768 ? 96 : 0; // floating nav ~90px + margine
     const rect = el.getBoundingClientRect();
-    const avail = window.innerHeight - headerH;
+    const avail = window.innerHeight - headerH - navH;
     const top = Math.max(
       0,
       window.scrollY + rect.top - headerH - (avail - rect.height) / 2
@@ -163,46 +170,32 @@ export function PathHero({
     window.scrollTo({ top, behavior: "smooth" });
   }, []);
 
-  // FASE 1 — la hero va al centro PRIMA di mostrare gli altri corsi.
-  // FASE 2 — compaiono le card sopra/sotto; la hero viene RICENTRATA dopo
-  // la fine della layout animation di framer-motion (~300ms) + verifica
-  // finale: così resta SEMPRE al centro dello schermo.
+  // COREOGRAFIA a 2 FASI:
+  // APERTURA — FASE 1 (t≈0): la hero inizia SUBITO a centrarsi (scroll smooth
+  //   + layout animation 0.35s). FASE 2 (delay 0.25s): le card esterne
+  //   compaiono sopra/sotto (framer-motion). Poi ricentratura (~0.7s) per
+  //   compensare la spinta delle card superiori e tenere la hero al centro.
+  // CHIUSURA — le card escono PRIMA (exit 0.12s), poi la hero torna alla
+  //   posizione di scroll originale.
   useEffect(() => {
-    if (!isSelectingCourse) return;
-    setIsCentering(true);
-    setShowOthers(false);
+    if (isSelectingCourse) {
+      const timers: number[] = [];
+      timers.push(window.setTimeout(() => centerHero(), 30)); // FASE 1 subito
+      timers.push(window.setTimeout(() => centerHero(), 700)); // ricentra dopo card
+      return () => timers.forEach((t) => window.clearTimeout(t));
+    }
+    // chiusura: aspetta l'exit delle card (0.12s), poi torna alla posizione originale
     const timers: number[] = [];
     timers.push(
       window.setTimeout(() => {
-        centerHero();
-        timers.push(
-          window.setTimeout(() => {
-            setShowOthers(true);
-            // aspetta che la layout animation della hero sia finita
-            timers.push(
-              window.setTimeout(() => {
-                centerHero();
-                // verifica finale: se lo scroll smooth non è ancora arrivato,
-                // ri-calcola dalla posizione corrente e ri-centra
-                timers.push(window.setTimeout(() => centerHero(), 400));
-                setIsCentering(false);
-              }, 420)
-            );
-          }, 520)
-        );
-      }, 40)
+        window.scrollTo({ top: originalScrollRef.current, behavior: "smooth" });
+      }, 160)
     );
     return () => timers.forEach((t) => window.clearTimeout(t));
   }, [isSelectingCourse, centerHero]);
 
-  // Chiudi: reset di tutte le fasi
-  useEffect(() => {
-    if (isSelectingCourse) return;
-    setIsCentering(false);
-    setShowOthers(false);
-  }, [isSelectingCourse]);
-
   const openPicker = () => {
+    originalScrollRef.current = window.scrollY;
     setIsSelectingCourse(true);
     onSelectingChange?.(true);
   };
@@ -304,13 +297,13 @@ export function PathHero({
     >
       {/* Card corsi PRIMA dell'attiva (compaiono sopra la hero) */}
       <AnimatePresence initial={false}>
-        {isSelectingCourse && showOthers && before.length > 0 && (
+        {isSelectingCourse && before.length > 0 && (
           <motion.div
             key="picker-before"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, transition: { duration: 0.12 } }}
+            transition={{ duration: 0.15 }}
             className="space-y-3 mb-4"
           >
             {before.map(renderCourseCard)}
@@ -321,6 +314,7 @@ export function PathHero({
       {/* ── Hero card ── */}
       <motion.div
         layout
+        transition={{ layout: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } }}
         ref={heroRef}
         onClick={(e) => {
           // tap sulla hero (non sui bottoni interni) → chiudi il selettore
@@ -552,13 +546,13 @@ export function PathHero({
 
       {/* Card corsi DOPO l'attiva (compaiono sotto la hero) */}
       <AnimatePresence initial={false}>
-        {isSelectingCourse && showOthers && after.length > 0 && (
+        {isSelectingCourse && after.length > 0 && (
           <motion.div
             key="picker-after"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, transition: { duration: 0.12 } }}
+            transition={{ duration: 0.15 }}
             className="space-y-3 mt-4"
           >
             {after.map(renderCourseCard)}
