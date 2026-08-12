@@ -6,8 +6,10 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
  <div
  ref={ref}
  className={cn(
-/* ─ Erga × Origin — Graphite card, 16px radius, no shadow (elevation by surface step) ─ */
-"rounded-2xl bg-card text-card-foreground border border-outline-variant/60",
+// 🌲 P24 × Apple — superficie semi-trasparente con blur (degradazione: senza
+// backdrop-filter resta un velo al 70%, sempre leggibile), bordo definito che
+// riflette la luce (nero/10 di giorno, bianco/10 di notte) + hairline interna.
+"rounded-2xl border bg-card/70 backdrop-blur-md text-card-foreground border-black/10 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.55)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]",
  className,
  )}
  {...props}
