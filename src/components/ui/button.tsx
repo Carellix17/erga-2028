@@ -5,49 +5,42 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-semibold relative overflow-hidden transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-38 active:scale-[0.97] active:duration-100 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "relative inline-flex min-w-0 touch-manipulation select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-xl text-sm font-semibold transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-100 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-38 motion-reduce:transform-none motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
-        destructive:
-          "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
+        default: "bg-primary text-primary-foreground shadow-level-0 hover:opacity-90 state-layer",
+        destructive: "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90 state-layer",
         outline:
-          "border border-border bg-transparent text-foreground hover:bg-foreground/[0.06] rounded-full",
+          "border border-foreground/15 bg-background/80 text-foreground backdrop-blur-sm hover:bg-foreground/[0.06] supports-[backdrop-filter]:bg-background/55",
         secondary:
-          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
-        ghost:
-          "text-foreground hover:bg-foreground/[0.08] rounded-full",
-        link:
-          "text-primary underline-offset-4 hover:underline",
-        tonal:
-          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
-        fab:
-          "bg-primary-container text-primary shadow-level-0 hover:opacity-90 rounded-full state-layer",
+          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 state-layer",
+        ghost: "text-foreground hover:bg-foreground/[0.08]",
+        link: "text-primary underline-offset-4 hover:underline",
+        tonal: "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 state-layer",
+        fab: "bg-primary-container text-primary shadow-level-0 hover:opacity-90 state-layer",
         "fab-secondary":
-          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 rounded-full state-layer",
+          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 state-layer",
         "fab-tertiary":
-          "bg-tertiary-container text-tertiary shadow-level-0 hover:opacity-90 rounded-full state-layer",
-        elevated:
-          "bg-surface-container-low text-primary shadow-level-0 hover:opacity-90 rounded-full state-layer",
+          "bg-tertiary-container text-tertiary shadow-level-0 hover:opacity-90 state-layer",
+        elevated: "bg-surface-container-low text-primary shadow-level-1 hover:opacity-90 state-layer",
       },
       size: {
-        default: "h-11 px-6 rounded-full",
-        sm: "h-9 px-5 text-xs rounded-full",
-        lg: "h-14 px-8 text-base rounded-full",
-        icon: "h-11 w-11 rounded-full",
-        "icon-sm": "h-9 w-9 rounded-full",
-        "icon-lg": "h-12 w-12 rounded-full",
-        fab: "h-14 w-14 rounded-full",
-        "fab-extended": "h-14 px-7 rounded-full",
+        default: "h-11 px-5 py-2.5",
+        sm: "h-9 px-4 text-xs",
+        lg: "h-12 rounded-2xl px-7 text-base",
+        icon: "h-11 w-11 p-0",
+        "icon-sm": "h-9 w-9 p-0",
+        "icon-lg": "h-12 w-12 rounded-2xl p-0",
+        fab: "h-14 w-14 rounded-2xl p-0",
+        "fab-extended": "h-14 rounded-2xl px-7",
       },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 export interface ButtonProps

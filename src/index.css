@@ -260,13 +260,17 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* ═══ Voce tipografica Opal: Inter ovunque, titoli 800, zero serif ═══ */
+  /* Titoli compatti: tracking coerente sui tre livelli del Design System. */
+  h1, h2, h3,
+  .display-large, .headline-large, .headline-medium {
+    @apply tracking-tight;
+  }
+
   h1, .display-large {
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     font-weight: 800;
     font-size: 2.25rem;
     line-height: 1.05;
-    letter-spacing: -0.03em;
     color: hsl(var(--foreground));
   }
 
@@ -275,7 +279,6 @@
     font-weight: 800;
     font-size: 1.625rem;
     line-height: 1.1;
-    letter-spacing: -0.02em;
     color: hsl(var(--foreground));
   }
 
@@ -284,7 +287,6 @@
     font-weight: 700;
     font-size: 1.25rem;
     line-height: 1.25;
-    letter-spacing: -0.01em;
     color: hsl(var(--foreground));
   }
 
