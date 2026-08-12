@@ -16,76 +16,77 @@ export interface SubjectColor {
  solid: string; // solid background (replaces gradient usage)
  badge: string; // badge bg
  badgeText: string; // badge text
+ accent: string; // raw contextual color used by Studio through --subject-accent
 }
 
 const SUBJECT_COLORS: SubjectColor[] = [ {
- key:"storia",
+ key:"storia", accent:"#b4533f",
  label:"Storia",
  bg:"bg-pastel-terracotta/10", bgActive:"bg-pastel-terracotta", text:"text-pastel-terracotta", textActive:"text-primary-foreground",
  border:"border-pastel-terracotta/40", icon:"bg-pastel-terracotta/20", gradient:"from-pastel-terracotta/40 to-pastel-terracotta/10", solid:"bg-pastel-terracotta",
  badge:"bg-pastel-terracotta/15", badgeText:"text-pastel-terracotta",
  }, {
- key:"matematica",
+ key:"matematica", accent:"#2563eb",
  label:"Matematica",
  bg:"bg-pastel-polvere/10", bgActive:"bg-pastel-polvere", text:"text-pastel-polvere", textActive:"text-primary-foreground",
  border:"border-pastel-polvere/40", icon:"bg-pastel-polvere/20", gradient:"from-pastel-polvere/40 to-pastel-polvere/10", solid:"bg-pastel-polvere",
  badge:"bg-pastel-polvere/15", badgeText:"text-pastel-polvere",
  }, {
- key:"economia",
+ key:"economia", accent:"#f59e0b",
  label:"Economia",
  bg:"bg-pastel-ocra/10", bgActive:"bg-pastel-ocra", text:"text-pastel-ocra", textActive:"text-primary-foreground",
  border:"border-pastel-ocra/40", icon:"bg-pastel-ocra/20", gradient:"from-pastel-ocra/40 to-pastel-ocra/10", solid:"bg-pastel-ocra",
  badge:"bg-pastel-ocra/15", badgeText:"text-pastel-ocra",
  }, {
- key:"scienze",
+ key:"scienze", accent:"#0891b2",
  label:"Scienze",
- bg:"bg-pastel-bosco/10", bgActive:"bg-pastel-bosco", text:"text-pastel-bosco", textActive:"text-primary-foreground",
- border:"border-pastel-bosco/40", icon:"bg-pastel-bosco/20", gradient:"from-pastel-bosco/40 to-pastel-bosco/10", solid:"bg-pastel-bosco",
- badge:"bg-pastel-bosco/15", badgeText:"text-pastel-bosco",
+ bg:"bg-pastel-polvere/10", bgActive:"bg-pastel-polvere", text:"text-pastel-polvere", textActive:"text-primary-foreground",
+ border:"border-pastel-polvere/40", icon:"bg-pastel-polvere/20", gradient:"from-pastel-polvere/40 to-pastel-polvere/10", solid:"bg-pastel-polvere",
+ badge:"bg-pastel-polvere/15", badgeText:"text-pastel-polvere",
  }, {
- key:"letteratura",
+ key:"letteratura", accent:"#be185d",
  label:"Letteratura",
  bg:"bg-pastel-prugna/10", bgActive:"bg-pastel-prugna", text:"text-pastel-prugna", textActive:"text-primary-foreground",
  border:"border-pastel-prugna/40", icon:"bg-pastel-prugna/20", gradient:"from-pastel-prugna/40 to-pastel-prugna/10", solid:"bg-pastel-prugna",
  badge:"bg-pastel-prugna/15", badgeText:"text-pastel-prugna",
  }, {
- key:"filosofia",
+ key:"filosofia", accent:"#4f46e5",
  label:"Filosofia",
  bg:"bg-pastel-crepuscolo/10", bgActive:"bg-pastel-crepuscolo", text:"text-pastel-crepuscolo", textActive:"text-primary-foreground",
  border:"border-pastel-crepuscolo/40", icon:"bg-pastel-crepuscolo/20", gradient:"from-pastel-crepuscolo/40 to-pastel-crepuscolo/10", solid:"bg-pastel-crepuscolo",
  badge:"bg-pastel-crepuscolo/15", badgeText:"text-pastel-crepuscolo",
  }, {
- key:"fisica",
+ key:"fisica", accent:"#0369a1",
  label:"Fisica",
  bg:"bg-pastel-mare/10", bgActive:"bg-pastel-mare", text:"text-pastel-mare", textActive:"text-primary-foreground",
  border:"border-pastel-mare/40", icon:"bg-pastel-mare/20", gradient:"from-pastel-mare/40 to-pastel-mare/10", solid:"bg-pastel-mare",
  badge:"bg-pastel-mare/15", badgeText:"text-pastel-mare",
  }, {
- key:"informatica",
+ key:"informatica", accent:"#7c3aed",
  label:"Informatica",
  bg:"bg-pastel-violetto/10", bgActive:"bg-pastel-violetto", text:"text-pastel-violetto", textActive:"text-primary-foreground",
  border:"border-pastel-violetto/40", icon:"bg-pastel-violetto/20", gradient:"from-pastel-violetto/40 to-pastel-violetto/10", solid:"bg-pastel-violetto",
  badge:"bg-pastel-violetto/15", badgeText:"text-pastel-violetto",
  }, {
- key:"arte",
+ key:"arte", accent:"#e11d48",
  label:"Arte",
  bg:"bg-pastel-cipria/10", bgActive:"bg-pastel-cipria", text:"text-pastel-cipria", textActive:"text-primary-foreground",
  border:"border-pastel-cipria/40", icon:"bg-pastel-cipria/20", gradient:"from-pastel-cipria/40 to-pastel-cipria/10", solid:"bg-pastel-cipria",
  badge:"bg-pastel-cipria/15", badgeText:"text-pastel-cipria",
  }, {
- key:"geografia",
+ key:"geografia", accent:"#ea580c",
  label:"Geografia",
- bg:"bg-pastel-oliva/10", bgActive:"bg-pastel-oliva", text:"text-pastel-oliva", textActive:"text-primary-foreground",
- border:"border-pastel-oliva/40", icon:"bg-pastel-oliva/20", gradient:"from-pastel-oliva/40 to-pastel-oliva/10", solid:"bg-pastel-oliva",
- badge:"bg-pastel-oliva/15", badgeText:"text-pastel-oliva",
+ bg:"bg-pastel-ocra/10", bgActive:"bg-pastel-ocra", text:"text-pastel-ocra", textActive:"text-primary-foreground",
+ border:"border-pastel-ocra/40", icon:"bg-pastel-ocra/20", gradient:"from-pastel-ocra/40 to-pastel-ocra/10", solid:"bg-pastel-ocra",
+ badge:"bg-pastel-ocra/15", badgeText:"text-pastel-ocra",
  }, {
- key:"diritto",
+ key:"diritto", accent:"#334155",
  label:"Diritto",
  bg:"bg-pastel-grafite/10", bgActive:"bg-pastel-grafite", text:"text-pastel-grafite", textActive:"text-primary-foreground",
  border:"border-pastel-grafite/40", icon:"bg-pastel-grafite/20", gradient:"from-pastel-grafite/40 to-pastel-grafite/10", solid:"bg-pastel-grafite",
  badge:"bg-pastel-grafite/15", badgeText:"text-pastel-grafite",
  }, {
- key:"lingue",
+ key:"lingue", accent:"#d97706",
  label:"Lingue",
  bg:"bg-pastel-miele/10", bgActive:"bg-pastel-miele", text:"text-pastel-miele", textActive:"text-primary-foreground",
  border:"border-pastel-miele/40", icon:"bg-pastel-miele/20", gradient:"from-pastel-miele/40 to-pastel-miele/10", solid:"bg-pastel-miele",
@@ -109,10 +110,9 @@ const SUBJECT_KEYWORDS: Record<string, string[]> = {
  lingue: ["inglese","francese","tedesco","spagnolo","latino","greco","lingua","grammatica","traduzione"],
 };
 
-// 🌿 P21e — ripiego generale: pastello neutro di casa (il solid era bg-white:
-// bianco-su-bianco di giorno! ora e' inchiostro).
+// Fallback generale: accento ambra ad alto contrasto, classi legacy neutre.
 const DEFAULT_COLOR: SubjectColor = {
- key:"default",
+ key:"default", accent:"#f59e0b",
  label:"Generale",
  bg:"bg-pastel-neutro/10", bgActive:"bg-pastel-neutro", text:"text-pastel-neutro", textActive:"text-primary-foreground",
  border:"border-pastel-neutro/40", icon:"bg-pastel-neutro/20", gradient:"from-pastel-neutro/40 to-pastel-neutro/10", solid:"bg-foreground",
@@ -177,37 +177,51 @@ export function resolveSubjectColor(subjectName: string, customKey?: string | nu
  return getSubjectColorByKey(customKey) ?? getStableSubjectColor(subjectName);
 }
 
-// ============================================================
-// 🌲 P24 × ACCENTO MATERIA — mappa chiave → colore HSL reale
-// (allineato ai token pastel in index.css) per la variabile
-// `--subject-accent`. Le materie i cui pastelli sono stati
-// neutralizzati a grigio (scienze/fisica/geografia) hanno un
-// grigio come accento; tutto il resto usa il colore della materia.
-// ============================================================
-
-const SUBJECT_ACCENT_HSL: Record<string, string> = {
-  storia: "18 45% 45%",
-  matematica: "210 36% 42%",
-  economia: "38 55% 36%",
-  scienze: "0 0% 38%",
-  letteratura: "320 28% 44%",
-  filosofia: "230 22% 44%",
-  fisica: "0 0% 42%",
-  informatica: "250 28% 47%",
-  arte: "350 30% 50%",
-  geografia: "0 0% 36%",
-  diritto: "220 8% 34%",
-  lingue: "28 50% 42%",
-};
-
-const ACCENT_FALLBACK = "#f59e0b";
 
 /**
- * Colore d'accento (HSL/HEX) della materia corrente, pronto per
- * `--subject-accent`. Rispetta la scelta colore personalizzata
- * dell'utente (customKey) e il rilevamento automatico dal nome.
+ * Chooses the more readable neutral foreground for a HEX or HSL accent using
+ * WCAG relative luminance.
  */
+export function getAccentForeground(accent: string): "#ffffff" | "#111111" {
+ const value = accent.trim();
+ const normalizedHex = value.replace(/^#/, "");
+ const hex = normalizedHex.length === 3
+  ? normalizedHex.split("").map((char) => char + char).join("")
+  : normalizedHex;
+
+ let channels: number[] | null = null;
+ if (/^[0-9a-f]{6}$/i.test(hex)) {
+  channels = [0, 2, 4].map(
+   (offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255,
+  );
+ } else {
+  const hsl = value.match(
+   /^hsl\(\s*(-?\d+(?:\.\d+)?)\s*[ ,]\s*(\d+(?:\.\d+)?)%\s*[ ,]\s*(\d+(?:\.\d+)?)%\s*\)$/i,
+  );
+  if (hsl) {
+   const hue = ((Number(hsl[1]) % 360) + 360) % 360;
+   const saturation = Math.min(100, Number(hsl[2])) / 100;
+   const lightness = Math.min(100, Number(hsl[3])) / 100;
+   const chroma = saturation * Math.min(lightness, 1 - lightness);
+   channels = [0, 8, 4].map((offset) => {
+    const segment = (offset + hue / 30) % 12;
+    return lightness - chroma * Math.max(-1, Math.min(segment - 3, 9 - segment, 1));
+   });
+  }
+ }
+
+ if (!channels) return "#111111";
+ const linear = channels.map((channel) =>
+  channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+ );
+ const luminance = 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+ const whiteContrast = 1.05 / (luminance + 0.05);
+ const darkLuminance = 0.0056; // #111111
+ const darkContrast = (luminance + 0.05) / (darkLuminance + 0.05);
+ return whiteContrast >= darkContrast ? "#ffffff" : "#111111";
+}
+
+/** Returns the contextual accent for the detected or user-selected subject. */
 export function getSubjectAccent(subjectName: string, customKey?: string | null): string {
-  const resolved = resolveSubjectColor(subjectName, customKey);
-  return SUBJECT_ACCENT_HSL[resolved.key] ?? ACCENT_FALLBACK;
+ return resolveSubjectColor(subjectName, customKey).accent;
 }

@@ -16,7 +16,7 @@ import { useFocus } from "@/contexts/FocusContext";
 import { FocusPill } from "@/components/focus/FocusPill";
 
 /**
- * 🌿 P21c ERGA OPAL: la sala-lezione si è fatta sobria.
+ * P21c ERGA OPAL: la sala-lezione si è fatta sobria.
  * Via il tasto di vetro, via XP e coriandoli, via il fondo a puntini:
  * restano i contenuti, la barra a segmenti e i box-pastello nel testo
  * (DECISIONE DEL CAPO: i pastelli restano — ma ora esistono anche in
@@ -24,7 +24,7 @@ import { FocusPill } from "@/components/focus/FocusPill";
  * La LOGICA (step, quiz, figure, prefetch, assistente) è intatta.
  */
 
-// 🌲 P24 × MONOCROMO — i box d'evidenziazione usano l'ACCENTO MATERIA
+// P24 × MONOCROMO — i box d'evidenziazione usano l'ACCENTO MATERIA
 // (--subject-accent): tinta chiara di sfondo + bordo al 30%.
 // Gli emoji del contenuto restano il marcatore semantico.
 function CalloutBlockquote({ children }: { children?: React.ReactNode }) {
@@ -228,7 +228,7 @@ export function FullscreenLesson({
   const segments = steps.length;
 
   return (
-    // 🌲 P24 — il foglio che sale: la lezione entra dal basso arrotondata
+    // P24 — il foglio che sale: la lezione entra dal basso arrotondata
     // e si apre a schermo pieno (animate-lesson-sheet-in)
     <div ref={rootRef} className="fixed inset-0 z-50 bg-background flex flex-col animate-lesson-sheet-in">
       {/* Top bar */}
@@ -343,7 +343,7 @@ export function FullscreenLesson({
           <Button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="flex-1 h-12 text-base"
+            className="flex-1 h-12 text-base bg-black text-white hover:bg-neutral-800 active:scale-[0.97] dark:bg-white dark:text-black dark:hover:bg-neutral-200"
             size="lg"
           >
             {currentStep === steps.length - 1

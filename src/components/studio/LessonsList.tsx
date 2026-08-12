@@ -25,7 +25,7 @@ interface LessonsListProps {
   onBack: () => void;
   isGenerating: boolean;
   showBackButton?: boolean;
-  /** 🌲 P24 — nasconde la testata "X di Y completate + barra": ora vive nel banner (PathHero). */
+  /** P24 — nasconde la testata "X di Y completate + barra": ora vive nel banner (PathHero). */
   showProgressHeader?: boolean;
   showFinalTest?: boolean;
   onStartFinalTest?: () => void;
@@ -39,10 +39,10 @@ interface LessonsListProps {
   onRenameLesson?: (lessonId: string, newTitle: string) => Promise<void> | void;
 }
 
-// 🌿 P21b ERGA OPAL: il "sentiero a zig-zag" è diventato una LISTA PULITA.
+// P21b ERGA OPAL: il "sentiero a zig-zag" è diventato una LISTA PULITA.
 // Niente nodi colorati, curve SVG, coroncine e stelline: carte carbone su nero
 // (bianche su carta), un solo segno forte — il tondo-firma sulla lezione che
-// aspetta te — e la salvia per i completamenti. La LOGICA non è cambiata di
+// aspetta te — e un segno neutro per i completamenti. La LOGICA non è cambiata di
 // una virgola: stessi cancelli del vagone, stesso long-press, stessi gesti.
 
 export function LessonsList({
@@ -179,7 +179,7 @@ export function LessonsList({
   return (
     <div className="pb-32 animate-fade-in">
       {/* ── Testata di percorso: statica, sobria, scorre con la pagina.
-          🌲 P24: in Studio è nascosta (il progresso vive nel banner); resta
+          P24: in Studio è nascosta (il progresso vive nel banner); resta
           disponibile per altri usi della lista. ── */}
       {showProgressHeader && (
       <div className="px-4 pt-6">
@@ -240,7 +240,7 @@ export function LessonsList({
                   const isGatePorta = isGateLesson(lessonOrder, gatedModuleIndex);
                   const isLocked = (!lesson.is_generated && globalIndex > currentIndex) || (inGatedModule && !isGatePorta);
                   const disabled = isGenerating || (isLocked && !inGatedModule);
-                  // 🌲 P24 — MACCHINA DI STATI ESPLICITA della lezione: ogni stato
+                  // P24 — MACCHINA DI STATI ESPLICITA della lezione: ogni stato
                   // ha superficie, affordance e feedback propri. La logica di
                   // abilitazione è INVIOLATA (stesse condizioni di sempre).
                   type LessonState =
@@ -289,14 +289,14 @@ export function LessonsList({
                       className={cn(
                         "w-full flex items-center gap-3.5 rounded-[18px] px-3.5 py-3 text-left select-none relative overflow-hidden",
                         "transition-[background-color,transform,border-color,box-shadow] duration-200",
-                        // 🌲 P24 — la lezione CORRENTE è l'unico oggetto in rilievo
+                        // P24 — la lezione CORRENTE è l'unico oggetto in rilievo
                         // (Piano 2): superficie, filo di bordo e ombra di contatto.
                         state === "current" || state === "generating"
-                          ? "bg-surface-container-high border border-primary/20 shadow-level-1"
+                          ? "bg-surface-container-high border border-subject-accent shadow-level-1"
                           : "bg-card border border-transparent",
                         !disabled && "hover:bg-surface-container-highest active:scale-[0.985]",
                         (state === "locked" || state === "gated") && "opacity-55",
-                        state === "generating" && "border-subject-accent/40",
+                        state === "generating" && "border-subject-accent",
                       )}
                       style={{
                         touchAction: "manipulation",
@@ -304,16 +304,16 @@ export function LessonsList({
                         userSelect: "none",
                       }}
                     >
-                      {/* 🌲 P24 — marker "sei qui": la barretta bosco sul bordo */}
+                      {/* Marker "sei qui": la barretta segue l'accento materia. */}
                       {(state === "current" || state === "generating") && (
-                        <span className="absolute left-0 top-2.5 bottom-2.5 w-1 rounded-r-full bg-primary" aria-hidden />
+                        <span className="absolute left-0 top-2.5 bottom-2.5 w-1 rounded-r-full bg-subject-accent" aria-hidden />
                       )}
 
                       {/* Tondo di stato: il FIRM è solo sulla lezione corrente */}
                       <span
                         className={cn(
                           "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-200",
-                          state === "current" || state === "generating" ? "bg-primary text-primary-foreground" : "bg-secondary",
+                          state === "current" || state === "generating" ? "bg-subject-accent text-subject-accent-foreground" : "bg-secondary",
                           state === "gate-door" && "ring-2 ring-tertiary/60 animate-pulse-soft",
                         )}
                       >
@@ -331,7 +331,7 @@ export function LessonsList({
                           <span
                             className={cn(
                               "text-sm font-bold",
-                              state === "current" ? "text-primary-foreground" : "text-foreground/80",
+                              state === "current" ? "text-subject-accent-foreground" : "text-foreground/80",
                             )}
                           >
                             {globalIndex + 1}
@@ -356,7 +356,7 @@ export function LessonsList({
 
                       {/* Invito a destra: la pill "Riprendi" è in FIRMA piena */}
                       {state === "current" && !isGenerating ? (
-                        <span className="flex-shrink-0 text-xs font-bold text-primary-foreground bg-primary rounded-full px-3 py-1.5 shadow-level-1">
+                        <span className="flex-shrink-0 text-xs font-bold bg-black text-white rounded-full px-3 py-1.5 shadow-level-1 dark:bg-white dark:text-black">
                           Riprendi
                         </span>
                       ) : state === "available" || state === "gate-door" ? (
@@ -370,7 +370,7 @@ export function LessonsList({
           );
         })}
 
-        {/* ── Test Finale: la goccia di salvia di fine percorso ── */}
+        {/* ── Test Finale: chiusura neutra del percorso ── */}
         {showFinalTest && onStartFinalTest && (
           <section className="px-0">
             <button

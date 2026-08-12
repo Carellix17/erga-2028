@@ -99,28 +99,26 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // 🌿 P21e — pastelli materia domati (i valori vivono in index.css, dual-theme)
+        //  P21e — pastelli materia domati (i valori vivono in index.css, dual-theme)
         "pastel-terracotta": "hsl(var(--pastel-terracotta))",
         "pastel-polvere": "hsl(var(--pastel-polvere))",
         "pastel-ocra": "hsl(var(--pastel-ocra))",
-        "pastel-bosco": "hsl(var(--pastel-bosco))",
         "pastel-prugna": "hsl(var(--pastel-prugna))",
         "pastel-crepuscolo": "hsl(var(--pastel-crepuscolo))",
         "pastel-mare": "hsl(var(--pastel-mare))",
         "pastel-violetto": "hsl(var(--pastel-violetto))",
         "pastel-cipria": "hsl(var(--pastel-cipria))",
-        "pastel-oliva": "hsl(var(--pastel-oliva))",
         "pastel-grafite": "hsl(var(--pastel-grafite))",
         "pastel-miele": "hsl(var(--pastel-miele))",
         "pastel-neutro": "hsl(var(--pastel-neutro))",
-        // 🌲 P24 — firme del guscio: nav a pillola (bosco) e puntino lime
+        //  P24 — firme del guscio: nav a pillola (neutro) e puntino neutro
         nav: {
           DEFAULT: "hsl(var(--nav-surface))",
           foreground: "hsl(var(--nav-foreground))",
         },
-        lime: { DEFAULT: "hsl(var(--lime))" },
-        // 🌲 P24 × MONOCROMO — accento dinamico della materia (var CSS)
+        //  P24 × MONOCROMO — accento dinamico della materia (var CSS)
         "subject-accent": "var(--subject-accent)",
+        "subject-accent-foreground": "var(--subject-accent-foreground)",
         "subject-accent-light": "var(--subject-accent-light)",
       },
       borderRadius: {

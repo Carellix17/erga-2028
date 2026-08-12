@@ -8,12 +8,12 @@ interface GenerationProgressProps {
   totalLessons: number;
   generatedCount: number;
   fileName?: string;
-  /** 🌲 P24 — modalità pannello: la generazione vive DENTRO lo spazio
+  /** P24 — modalità pannello: la generazione vive DENTRO lo spazio
    *  (sotto l'eroe o sopra la lista), non in una schermata sostitutiva. */
   compact?: boolean;
 }
 
-// 🌲 P24 ERGA BOSCO: la generazione è un processo INTERNO all'ambiente.
+// La generazione è un processo INTERNO all'ambiente.
 // In modalità compatta niente anello gigante: un pannello con la barra,
 // le quattro fasi in fila e il conteggio — mentre le lezioni restano in vista.
 

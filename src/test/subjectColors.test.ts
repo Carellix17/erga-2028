@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
-  getStableSubjectColor, getSubjectColorByKey, resolveSubjectColor, SUBJECT_PALETTE,
+  getAccentForeground,
+  getStableSubjectColor,
+  getSubjectColorByKey,
+  resolveSubjectColor,
+  SUBJECT_PALETTE,
 } from "@/lib/subjectColors";
 
 describe("getSubjectColorByKey", () => {
@@ -29,11 +33,25 @@ describe("resolveSubjectColor (automatico + personalizzato)", () => {
   it("il colore automatico e' stabile nel tempo per nomi sconosciuti", () => {
     expect(getStableSubjectColor("Diritto Penale II").key).toBe(getStableSubjectColor("Diritto Penale II").key);
   });
-  it("la palette contiene colori con tutte le classi necessarie", () => {
+  it("la palette contiene colori con tutte le classi e gli accenti necessari", () => {
     for (const c of SUBJECT_PALETTE) {
       expect(c.solid).toMatch(/^bg-/);
       expect(c.badge).toMatch(/^bg-/);
       expect(c.border).toMatch(/^border-/);
+      expect(c.accent).toMatch(/^#[0-9a-f]{6}$/i);
     }
+  });
+});
+
+describe("getAccentForeground", () => {
+  it("sceglie un primo piano neutro ad alto contrasto per HEX e HSL", () => {
+    expect(getAccentForeground("#f59e0b")).toBe("#111111");
+    expect(getAccentForeground("#2563eb")).toBe("#ffffff");
+    expect(getAccentForeground("hsl(45 100% 50%)")).toBe("#111111");
+    expect(getAccentForeground("hsl(220 100% 20%)")).toBe("#ffffff");
+  });
+
+  it("usa il quasi-nero neutro per valori non validi", () => {
+    expect(getAccentForeground("not-a-color")).toBe("#111111");
   });
 });

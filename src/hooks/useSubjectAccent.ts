@@ -1,16 +1,17 @@
 import { useEffect, useRef } from "react";
+import { getAccentForeground } from "@/lib/subjectColors";
 
 /**
- * 🌲 P24 × ACCENTO MATERIA — hook che collega il colore della materia
+ * P24 × ACCENTO MATERIA — hook che collega il colore della materia
  * corrente alla variabile CSS `--subject-accent` (e derivata `-light`).
  *
  * - Accetta HEX (#f59e0b), HSL "hsl(18 45% 45%)" o tuple grezze "18 45% 45%".
  * - Imposta le variabili sul nodo radice (document.documentElement): tutta
  *   l'interfaccia che usa `--subject-accent` (badge, barre di progresso,
- *   nodi del percorso, callout, puntino nav) si ricolora all'istante.
+ *   nodi del percorso e callout) si ricolora all'istante.
  * - Al cambio materia l'accento segue; allo smontaggio (o con color null)
  *   ripristina i valori precedenti → le schermate generali (Home/Profilo)
- *   tornano al fallback monocromatico neutro.
+ *   tornano al fallback ambra ad alto contrasto.
  * - Nessuna classe dinamica concatenata: solo CSS custom properties.
  */
 
@@ -31,7 +32,11 @@ export function normalizeAccentColor(color?: string | null): string | null {
 }
 
 export function useSubjectAccent(color?: string | null) {
-  const previous = useRef<{ accent: string | null; light: string | null } | null>(null);
+  const previous = useRef<{
+    accent: string | null;
+    light: string | null;
+    foreground: string | null;
+  } | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -41,12 +46,14 @@ export function useSubjectAccent(color?: string | null) {
       previous.current = {
         accent: root.style.getPropertyValue("--subject-accent") || null,
         light: root.style.getPropertyValue("--subject-accent-light") || null,
+        foreground: root.style.getPropertyValue("--subject-accent-foreground") || null,
       };
     }
 
     const normalized = normalizeAccentColor(color);
     if (normalized) {
       root.style.setProperty("--subject-accent", normalized);
+      root.style.setProperty("--subject-accent-foreground", getAccentForeground(normalized));
       // variabile derivata per le tinte morbide (bg/10, border/30…)
       root.style.setProperty(
         "--subject-accent-light",
@@ -59,6 +66,8 @@ export function useSubjectAccent(color?: string | null) {
       else root.style.removeProperty("--subject-accent");
       if (prev?.light) root.style.setProperty("--subject-accent-light", prev.light);
       else root.style.removeProperty("--subject-accent-light");
+      if (prev?.foreground) root.style.setProperty("--subject-accent-foreground", prev.foreground);
+      else root.style.removeProperty("--subject-accent-foreground");
     }
   }, [color]);
 
@@ -66,6 +75,10 @@ export function useSubjectAccent(color?: string | null) {
   useEffect(() => {
     if (!color) {
       document.documentElement.style.setProperty("--subject-accent", FALLBACK);
+      document.documentElement.style.setProperty(
+        "--subject-accent-foreground",
+        getAccentForeground(FALLBACK)
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -79,6 +92,8 @@ export function useSubjectAccent(color?: string | null) {
       else root.style.removeProperty("--subject-accent");
       if (prev?.light) root.style.setProperty("--subject-accent-light", prev.light);
       else root.style.removeProperty("--subject-accent-light");
+      if (prev?.foreground) root.style.setProperty("--subject-accent-foreground", prev.foreground);
+      else root.style.removeProperty("--subject-accent-foreground");
     };
   }, []);
 }

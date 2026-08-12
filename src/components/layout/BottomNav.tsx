@@ -15,10 +15,10 @@ const tabs = [
   { id: "studio" as Tab, i18nKey: "nav.studio", icon: BookOpen },
 ];
 
-// 🌲 P24 × MONOCROMO — la nav è una PILLOLA SOSPESA materica:
+// P24 × MONOCROMO — la nav è una PILLOLA SOSPESA materica:
 // vetro chiaro (bg-white/90 + blur), bordo definito, voce attiva in
-// NERO PIENO (stile bottoni primari) e puntino = accento materia
-// (--subject-accent, dinamico). Profilo: cerchio staccato AL LATO,
+// NERO PIENO (stile bottoni primari) e indicatore neutro.
+// Profilo: cerchio staccato AL LATO,
 // stesso materiale della pillola. Pratica vive nella Home.
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const { t } = useTranslation();
@@ -43,7 +43,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
                   aria-current={isActive ? "page" : undefined}
-                  className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-subject-accent/70"
+                  className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/70"
                 >
                   <span
                     className={cn(
@@ -62,7 +62,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   <span
                     className={cn(
                       "w-1.5 h-1.5 rounded-full transition-opacity duration-200",
-                      isActive ? "bg-subject-accent opacity-100" : "opacity-0",
+                      isActive ? "bg-black opacity-100 dark:bg-white" : "opacity-0",
                     )}
                   />
                 </button>
@@ -88,7 +88,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                     onClick={() => onTabChange(tab.id)}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-subject-accent/70",
+                      "flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/70",
                       isActive ? activeFill : "hover:bg-black/5 dark:hover:bg-white/[0.06]",
                     )}
                   >
@@ -104,7 +104,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                     >
                       {t(tab.i18nKey)}
                     </span>
-                    <span className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-subject-accent" : "bg-transparent")} />
+                    <span className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-white dark:bg-black" : "bg-transparent")} />
                   </button>
                 );
               })}
@@ -115,7 +115,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 onClick={() => onTabChange("profilo")}
                 aria-current={activeTab === "profilo" ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-subject-accent/70",
+                  "flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/70",
                   activeTab === "profilo" ? activeFill : "hover:bg-black/5 dark:hover:bg-white/[0.06]",
                 )}
               >
@@ -123,7 +123,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   <User className={cn("w-5 h-5", activeTab === "profilo" ? "" : idleTxt)} strokeWidth={2} />
                   <span
                     className={cn(
-                      "absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-subject-accent border border-white dark:border-neutral-900",
+                      "absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-neutral-500 border border-white dark:border-neutral-900",
                       activeTab === "profilo" ? "opacity-100" : "opacity-60",
                     )}
                   />
@@ -150,11 +150,11 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           className={cn(
             "md:hidden relative w-[4.5rem] h-[4.5rem] rounded-full flex items-center justify-center flex-shrink-0 shadow-level-2 transition-transform duration-150 active:scale-90",
             pillMaterial,
-            activeTab === "profilo" && "ring-2 ring-subject-accent/50",
+            activeTab === "profilo" && "ring-2 ring-neutral-500/50",
           )}
         >
           <User className="w-5 h-5" strokeWidth={2} />
-          <span className="absolute top-1 right-1 w-3 h-3 rounded-full bg-subject-accent border-2 border-white dark:border-neutral-900" />
+          <span className="absolute top-1 right-1 w-3 h-3 rounded-full bg-neutral-500 border-2 border-white dark:border-neutral-900" />
         </button>
       </div>
     </nav>

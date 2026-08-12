@@ -13,7 +13,7 @@ interface AppHeaderProps {
   hasFiles: boolean;
 }
 
-// 🌲 P24 BOSCO — testata alleggerita: [logo pillola] · [stato quasi invisibile]
+// Testata alleggerita: [logo pillola] · [stato quasi invisibile]
 //                            [azione contestuale] · [profilo]
 // Il badge abbonamento e le impostazioni vivono nel menu profilo (UserMenu).
 // Regola P23a intonsa: sotto i 400px il bottone File resta icona (aria-label).

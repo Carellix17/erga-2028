@@ -609,7 +609,7 @@ function EvaluationItem({ evaluation, subject }: { evaluation: Evaluation; subje
               </span>
             )}
             {evaluation.goal != null && (
-              <span className="label-small px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200 inline-flex items-center gap-1">
+              <span className="label-small px-2.5 py-0.5 rounded-full bg-neutral-100 text-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-200 inline-flex items-center gap-1">
                 <Target className="w-3 h-3" />
                 {t("piano.goalBadge", { goal: evaluation.goal })}
               </span>

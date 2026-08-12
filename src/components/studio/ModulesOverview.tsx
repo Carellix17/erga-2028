@@ -19,7 +19,7 @@ interface ModulesOverviewProps {
 }
 
 /**
- * 🌲 P24 — SCHERMATA 1: i moduli del corso.
+ * P24 — SCHERMATA 1: i moduli del corso.
  * Rettangoli cliccabili (come nel mockup approvato): titolo INTERO del modulo,
  * numero in una targa, stato (completato / riprendi / in generazione / da
  * sbloccare / apri) e barra di avanzamento per il modulo corrente o in generazione.
@@ -41,11 +41,11 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
           let badge: React.ReactNode;
           if (isDone) {
             badge = (
-              <span className="badge-chip bg-success text-success-foreground">Completato</span>
+              <span className="badge-chip bg-black text-white dark:bg-white dark:text-black">Completato</span>
             );
           } else if (isCur) {
             badge = (
-              <span className="badge-chip bg-subject-accent text-black">
+              <span className="badge-chip bg-subject-accent text-subject-accent-foreground">
                 <Play className="w-3 h-3" fill="currentColor" strokeWidth={0} />
                 Riprendi
               </span>
@@ -84,7 +84,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                 "flex items-center gap-3.5 rounded-[22px] bg-card border border-border px-4 py-4 text-left transition-all duration-200",
                 "shadow-level-1",
                 !isLocked && "hover:border-primary/30 hover:bg-surface-container-low active:scale-[0.985]",
-                isCur && "border-subject-accent ring-2 ring-subject-accent/25",
+                isCur && "border-subject-accent ring-2 ring-subject-accent",
                 isLocked && "opacity-60 cursor-default",
               )}
             >
@@ -92,8 +92,8 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
               <span
                 className={cn(
                   "flex-shrink-0 w-12 h-12 rounded-[16px] flex items-center justify-center font-display font-extrabold text-base transition-colors duration-200",
-                  isDone && "bg-success text-success-foreground",
-                  isCur && "bg-subject-accent text-black",
+                  isDone && "bg-subject-accent text-subject-accent-foreground",
+                  isCur && "bg-subject-accent text-subject-accent-foreground",
                   isGen && "bg-surface-container-high text-muted-foreground",
                   isLocked && "bg-surface-container-high text-muted-foreground",
                   !isDone && !isCur && !isGen && !isLocked && "bg-primary text-primary-foreground",

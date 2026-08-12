@@ -144,7 +144,7 @@ const MOCK_DASHBOARD_DATA = (() => {
         description: "Focus da 25 min",
         eyebrow: "Timer",
         icon: Timer,
-        iconClassName: "bg-primary/90 text-primary-foreground",
+        iconClassName: "bg-neutral-900 text-white dark:bg-white dark:text-black",
         toastTitle: "Pomodoro pronto",
         toastDescription: "Timer mock impostato su 25 minuti.",
       },
@@ -154,7 +154,7 @@ const MOCK_DASHBOARD_DATA = (() => {
         description: "12 esercizi pronti",
         eyebrow: "Allenati",
         icon: Zap,
-        iconClassName: "bg-subject-accent/80 text-black",
+        iconClassName: "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-white",
         toastTitle: "",
         toastDescription: "",
       },
@@ -299,7 +299,7 @@ export function HomeView({
             />
             <CardHeader className="relative z-10 p-6 pb-4 sm:p-9 sm:pb-5">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="gap-1.5 border-0 bg-primary text-primary-foreground">
+                <Badge className="gap-1.5 border-0 bg-black text-white dark:bg-white dark:text-black">
                   <Sparkles className="h-3 w-3" aria-hidden="true" />
                   Prossima lezione
                 </Badge>
@@ -352,7 +352,7 @@ export function HomeView({
               <Button
                 size="lg"
                 onClick={onOpenStudio}
-                className="mt-8 h-14 w-full gap-2 rounded-2xl px-7 text-base shadow-level-2 sm:w-auto sm:min-w-[250px]"
+                className="mt-8 h-14 w-full gap-2 rounded-2xl bg-black px-7 text-base text-white shadow-level-2 hover:bg-neutral-800 active:scale-[0.97] dark:bg-white dark:text-black dark:hover:bg-neutral-200 sm:w-auto sm:min-w-[250px]"
               >
                 <Play className="h-5 w-5 fill-current" aria-hidden="true" />
                 Inizia lezione · {nextLesson.durationMinutes} min

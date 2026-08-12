@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 import { useTranslation, Trans } from "react-i18next";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
-// 🌿 P21d ERGA OPAL: come il Login, la registrazione parla il dizionario
-// dei temi. Le spunte di validazione ora fioriscono in salvia.
+// P21d ERGA OPAL: come il Login, la registrazione parla il dizionario
+// dei temi. Le spunte di validazione ora restano ad alto contrasto.
 // Logica (signUp, OAuth, controlli password, i18n) intatta.
 
 export default function Registrati() {

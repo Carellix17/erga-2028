@@ -7,10 +7,10 @@ import { DemoFlow } from "@/components/demo/DemoFlow";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
-// 🌿 P21d ERGA OPAL — LA VETRINA. Resta vestita di chiaro (carta avorio)
+// P21d ERGA OPAL — LA VETRINA. Resta vestita di chiaro (carta avorio)
 // anche quando l'app è in smoking nero: la magia è `.force-light`.
 // Via blob sfocati, puntini e colori scritti a mano: titolo 800, una goccia
-// di salvia sulla seconda riga, pill-firma in alto a destra.
+// un accento neutro sulla seconda riga, pill-firma in alto a destra.
 
 export default function Landing() {
   const { isAuthenticated, isLoading } = useAuth();

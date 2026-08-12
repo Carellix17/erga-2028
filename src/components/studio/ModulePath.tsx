@@ -47,9 +47,9 @@ interface ModulePathProps {
   onRenameLesson?: (lessonId: string, newTitle: string) => Promise<void> | void;
 }
 
-// 🌲 P24 — SCHERMATA 2: il PERCORSO SQUADRATO del modulo (mockup approvato).
+// P24 — SCHERMATA 2: il PERCORSO SQUADRATO del modulo (mockup approvato).
 // I nodi quadrati si alternano a sinistra/destra e sono collegati da una linea
-// a gomiti (orizzontale → verticale → orizzontale) che si accende in salvia sui
+// a gomiti (orizzontale → verticale → orizzontale) che segue l'accento materia sui
 // passi completati. In fondo, il trofeo del test finale. Il modulo in
 // generazione mostra banner + nodi tratteggiati che respirano.
 
@@ -329,7 +329,7 @@ export function ModulePath({
               className={cn(
                 "absolute flex items-center justify-center rounded-[16px] font-display font-extrabold text-base select-none",
                 "transition-all duration-200",
-                state === "done" && "bg-primary text-primary-foreground shadow-level-2",
+                state === "done" && "bg-subject-accent text-subject-accent-foreground shadow-level-2",
                 state === "cur" && "bg-card border-[3px] border-subject-accent text-foreground shadow-level-3 animate-breathe-ring",
                 state === "av" && "bg-card border-2 border-border text-tertiary",
                 state === "lock" && "bg-surface-container-high border-2 border-border text-muted-foreground",
@@ -378,14 +378,14 @@ export function ModulePath({
               {/* Etichetta corrente */}
               {state === "cur" && !isGeneratingLesson && (
                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
-                  <span className="inline-flex items-center gap-1 bg-subject-accent text-black text-[10.5px] font-extrabold px-2.5 py-1 rounded-full shadow-level-1">
+                  <span className="inline-flex items-center gap-1 bg-subject-accent text-subject-accent-foreground text-[10.5px] font-extrabold px-2.5 py-1 rounded-full shadow-level-1">
                     <Play className="w-2.5 h-2.5" fill="currentColor" strokeWidth={0} />
                     Riprendi
                   </span>
                 </span>
               )}
 
-              {/* 🌲 P24 — riquadro del titolo: STESSO MATERIALE del tasto Riprendi
+              {/* P24 — riquadro del titolo: STESSO MATERIALE del tasto Riprendi
                   (velo bianco traslucido), ancorato al LATO INTERNO del nodo e
                   limitato in larghezza (max 36vw) per NON oltrepassare la linea
                   verticale centrale del percorso: mai sopra il sentiero.
@@ -411,7 +411,7 @@ export function ModulePath({
         <div
           className={cn(
             "absolute flex items-center justify-center rounded-[20px] font-display select-none transition-all duration-200",
-            allDone && "bg-primary text-primary-foreground shadow-level-2 cursor-pointer hover:bg-primary/90 active:scale-[0.96]",
+            allDone && "bg-subject-accent text-subject-accent-foreground shadow-level-2 cursor-pointer hover:opacity-90 active:scale-[0.96]",
             !allDone && "bg-surface-container-high border-2 border-border text-muted-foreground",
           )}
           style={{
@@ -447,7 +447,7 @@ export function ModulePath({
           <button
             type="button"
             onClick={onModuleCompleted}
-            className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+            className="w-full h-12 rounded-full bg-black text-white font-semibold text-sm transition-all duration-200 hover:bg-neutral-800 active:scale-[0.97] dark:bg-white dark:text-black dark:hover:bg-neutral-200"
           >
             ✓ Modulo completato — Torna ai moduli
           </button>

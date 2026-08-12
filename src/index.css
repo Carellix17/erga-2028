@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════
-   ERGA BOSCO — FONDAMENTA (P24)
-   Bosco di luce (salvia/menta) / Bosco di notte (verde profondo),
-   superfici OPACHE (vetro abolito), pill-firma verde bosco,
-   Plus Jakarta Sans ovunque, salvia come voce di casa.
+   ERGA MONO — FONDANEUTRO (P24)
+   Mono di luce (neutro/neutro) / Mono di notte (neutro profondo),
+   superfici OPACHE (vetro abolito), pill-firma neutro neutro,
+   Plus Jakarta Sans ovunque, neutro come voce di casa.
    REGOLA DEL PALCO: intonsa (vedi sotto, mai toccarla).
    ═══════════════════════════════════════════════════════ */
 
 @layer base {
   :root {
-    /* ─── Erga BOSCO "Bosco di luce" (tema chiaro, default) — menta e salvia ─── */
---primary: 0 0% 0%;                    /* NERO — la pill-firma è NERA su bianco (monocromo) */
+    /* ─── Erga MONO "Mono di luce" (tema chiaro, default) — neutro e neutro ─── */
+--primary: 0 0% 9%;                    /* NERO — la pill-firma è NERA su bianco (monocromo) */
 --primary-foreground: 0 0% 100%;
 --primary-container: 0 0% 92%;
 --on-primary-container: 0 0% 10%;
@@ -27,37 +27,35 @@
 --on-tertiary-container: 0 0% 12%;
 --gold-antique: 0 0% 45%;
 --gold-antique-soft: 0 0% 93%;
---destructive: 8 61% 43%;
+--destructive: 8 0% 43%;
     --destructive-foreground: 0 0% 100%;
---error-container: 12 68% 93%;
---on-error-container: 9 72% 20%;
+--error-container: 12 0% 93%;
+--on-error-container: 9 0% 20%;
 --success: 0 0% 25%;
 --success-foreground: 0 0% 100%;
 --success-container: 0 0% 90%;
 --on-success-container: 0 0% 12%;
---warning: 40 82% 32%;
+--warning: 40 0% 32%;
     --warning-foreground: 0 0% 100%;
---warning-container: 41 70% 88%;
---on-warning-container: 41 83% 14%;
+--warning-container: 41 0% 88%;
+--on-warning-container: 41 0% 14%;
 
-    /* 🌿 P21e — PASTELLI DOMATI delle materie: la vecchia famiglia orchidea/iride
+    /*  P21e — PASTELLI DOMATI delle materie: la vecchia famiglia orchidea/iride
        (accesa e cieca al buio) va in pensione. Ogni materia ha un pastello smorzato
        Opal; la versione notturna vive in .dark, cosi' badge, bordi e pallini si
        vestono da soli sia di giorno che di notte. Chiavi delle materie INVARIATE. */
-    --pastel-terracotta: 18 45% 45%;       /* storia 🧱 */
-    --pastel-polvere: 210 36% 42%;         /* matematica */
-    --pastel-ocra: 38 55% 36%;             /* economia */
---pastel-bosco: 0 0% 38%;           /* scienze */
-    --pastel-prugna: 320 28% 44%;          /* letteratura */
-    --pastel-crepuscolo: 230 22% 44%;      /* filosofia */
+    --pastel-terracotta: 18 0% 45%;       /* storia 🧱 */
+    --pastel-polvere: 210 0% 42%;         /* matematica */
+    --pastel-ocra: 38 0% 36%;             /* economia */
+    --pastel-prugna: 320 0% 44%;          /* letteratura */
+    --pastel-crepuscolo: 230 0% 44%;      /* filosofia */
 --pastel-mare: 0 0% 42%;            /* fisica */
-    --pastel-violetto: 250 28% 47%;        /* informatica */
-    --pastel-cipria: 350 30% 50%;          /* arte */
---pastel-oliva: 0 0% 36%;            /* geografia */
-    --pastel-grafite: 220 8% 34%;          /* diritto (prima era BIANCO-su-bianco!) */
-    --pastel-miele: 28 50% 42%;            /* lingue */
-    --pastel-neutro: 36 6% 46%;            /* generale (ripiego) */
---background: 0 0% 96%;               /* grigio chiaro (monocromo) */
+    --pastel-violetto: 250 0% 47%;        /* informatica */
+    --pastel-cipria: 350 0% 50%;          /* arte */
+    --pastel-grafite: 220 0% 34%;          /* diritto (prima era BIANCO-su-bianco!) */
+    --pastel-miele: 28 0% 42%;            /* lingue */
+    --pastel-neutro: 36 0% 46%;            /* generale (ripiego) */
+--background: 0 0% 98%;               /* grigio chiaro (monocromo) */
 --foreground: 0 0% 8%;
 --surface-dim: 0 0% 88%;
 --surface-bright: 0 0% 100%;
@@ -87,11 +85,12 @@
 --border: 0 0% 24% / 0.12;
 --input: 0 0% 100%;
 --ring: 0 0% 25%;
-    /* 🌲 P24 × MONOCROMO — colore d'accento DINAMICO della materia.
+    /*  P24 × MONOCROMO — colore d'accento DINAMICO della materia.
        La pagina padre (o il profilo) puo' sovrascrivere --subject-accent
        per legare il colore alla materia di studio corrente. Fallback ambra. */
     --subject-accent: #f59e0b;
-    --subject-accent-light: #fde68a;
+    --subject-accent-foreground: #111111;
+    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 28%, white);
 --inverse-surface: 0 0% 8%;
 --inverse-on-surface: 0 0% 96%;
 --inverse-primary: 0 0% 62%;
@@ -104,17 +103,16 @@
 --sidebar-border: 0 0% 24% / 0.12;
 --sidebar-ring: 0 0% 25%;
 
-    /* 🌲 P24 — firme del guscio: nav a pillola (bosco) e puntino lime */
+    /*  P24 — firme del guscio: nav a pillola (neutro) e puntino neutro */
 --nav-surface: 0 0% 10%;
 --nav-foreground: 0 0% 96%;
---lime: 0 0% 50%;
 
     /* Scala del testo (Accessibilità) */
     --text-scale: 1;
   }
 
   .dark {
-    /* ─── Erga BOSCO "Bosco di notte" (tema scuro) — verde profondo, carbone ─── */
+    /* ─── Erga MONO "Mono di notte" (tema scuro) — neutro profondo, carbone ─── */
 --primary: 0 0% 100%;                   /* la pill-firma BIANCA, testo nero (monocromo) */
 --primary-foreground: 0 0% 0%;
 --primary-container: 0 0% 24%;
@@ -129,34 +127,32 @@
 --on-tertiary-container: 0 0% 90%;
 --gold-antique: 0 0% 60%;
 --gold-antique-soft: 0 0% 16%;
---destructive: 9 65% 64%;
+--destructive: 9 0% 64%;
     --destructive-foreground: 0 0% 100%;
---error-container: 7 53% 15%;
---on-error-container: 10 73% 81%;
+--error-container: 7 0% 15%;
+--on-error-container: 10 0% 81%;
 --success: 0 0% 82%;
 --success-foreground: 0 0% 8%;
 --success-container: 0 0% 18%;
---warning: 40 68% 61%;
---warning-foreground: 139 44% 8%;
---warning-container: 39 53% 15%;
+--warning: 40 0% 61%;
+--warning-foreground: 139 0% 8%;
+--warning-container: 39 0% 15%;
 
-    /* 🌿 P21e — pastelli domati, VERSIONE NOTTURNA: stessi nomi, luminosita' alta
+    /*  P21e — pastelli domati, VERSIONE NOTTURNA: stessi nomi, luminosita' alta
        e saturazione gentile per leggere sul carbone senza accecare. */
-    --pastel-terracotta: 18 40% 66%;
-    --pastel-polvere: 210 34% 70%;
-    --pastel-ocra: 40 48% 64%;
---pastel-bosco: 0 0% 66%;
-    --pastel-prugna: 322 30% 72%;
-    --pastel-crepuscolo: 230 22% 72%;
+    --pastel-terracotta: 18 0% 66%;
+    --pastel-polvere: 210 0% 70%;
+    --pastel-ocra: 40 0% 64%;
+    --pastel-prugna: 322 0% 72%;
+    --pastel-crepuscolo: 230 0% 72%;
 --pastel-mare: 0 0% 64%;
-    --pastel-violetto: 250 26% 74%;
-    --pastel-cipria: 350 28% 72%;
---pastel-oliva: 0 0% 68%;
-    --pastel-grafite: 220 8% 70%;
-    --pastel-miele: 28 44% 66%;
-    --pastel-neutro: 36 6% 68%;
+    --pastel-violetto: 250 0% 74%;
+    --pastel-cipria: 350 0% 72%;
+    --pastel-grafite: 220 0% 70%;
+    --pastel-miele: 28 0% 66%;
+    --pastel-neutro: 36 0% 68%;
 
-    /* 🌿 P22 — MATERIAL DEPTH notturno: prima NON ESISTEVA (le ombre chiare sul
+    /*  P22 — MATERIAL DEPTH notturno: prima NON ESISTEVA (le ombre chiare sul
        nero spariscono). Di notte: nero deciso + capello di luce (4-7% bianco)
        sul bordo superiore delle superfici, tecnica Fluent — i piani si leggono. */
     --shadow-level-1: 0 1px 2px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
@@ -195,7 +191,8 @@
 --input: 0 0% 10%;
 --ring: 0 0% 80%;
     --subject-accent: #fbbf24;
-    --subject-accent-light: #fde68a;
+    --subject-accent-foreground: #111111;
+    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 28%, white);
 --inverse-surface: 0 0% 93%;
 --inverse-on-surface: 0 0% 8%;
 --inverse-primary: 0 0% 40%;
@@ -208,14 +205,13 @@
 --sidebar-border: 0 0% 90% / 0.10;
 --sidebar-ring: 0 0% 80%;
 
-    /* 🌲 P24 — firme del guscio: nav a pillola (bosco di notte) e puntino lime */
+    /*  P24 — firme del guscio: nav a pillola (neutro di notte) e puntino neutro */
 --nav-surface: 0 0% 12%;
 --nav-foreground: 0 0% 92%;
---lime: 0 0% 60%;
   }
 
   :root {
-    /* ─── Radii Bosco — angoli grandi, bottoni sempre a pillola ─── */
+    /* ─── Radii Mono — angoli grandi, bottoni sempre a pillola ─── */
     --radius-xs: 0.375rem;
     --radius-sm: 0.5rem;
     --radius-md: 0.625rem;
@@ -224,7 +220,7 @@
     --radius-2xl: 1.5rem;
     --radius-full: 9999px;
 
-    /* 🌲 P24 — GRAMMATICA MOTION: poche durate, sempre uguali
+    /*  P24 — GRAMMATICA MOTION: poche durate, sempre uguali
        micro 120 · standard 180 · enfatizzato 240 · ingresso 300 */
     --motion-micro: 120ms;
     --motion-standard: 180ms;
@@ -234,15 +230,15 @@
 
     /* ─── Elevazione — sussurri, mai palchi ─── */
     --shadow-level-0: none;
-    /* 🌿 P22 — MATERIAL DEPTH: una sola mano timida non bastava (effetto foglio).
+    /*  P22 — MATERIAL DEPTH: una sola mano timida non bastava (effetto foglio).
        Ora ogni livello = ombra di CONTATTO (vicina, netta) + ombra d'AMBIENTE
        (larga, soffusa): le superfici prendono peso, lo stile non cambia.
        Stessi nomi di gettone = si propaga da solo in tutta la casa. */
-    --shadow-level-1: 0 1px 2px 0 rgba(23, 21, 18, 0.06), 0 1px 3px 0 rgba(23, 21, 18, 0.04);
-    --shadow-level-2: 0 1px 2px 0 rgba(23, 21, 18, 0.06), 0 4px 12px -2px rgba(23, 21, 18, 0.10);
-    --shadow-level-3: 0 2px 4px 0 rgba(23, 21, 18, 0.07), 0 10px 26px -6px rgba(23, 21, 18, 0.14);
-    --shadow-level-4: 0 3px 6px 0 rgba(23, 21, 18, 0.08), 0 16px 36px -8px rgba(23, 21, 18, 0.17);
-    --shadow-level-5: 0 4px 8px 0 rgba(23, 21, 18, 0.10), 0 20px 44px -8px rgba(23, 21, 18, 0.26);
+    --shadow-level-1: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    --shadow-level-2: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.10);
+    --shadow-level-3: 0 2px 4px 0 rgba(0, 0, 0, 0.07), 0 10px 26px -6px rgba(0, 0, 0, 0.14);
+    --shadow-level-4: 0 3px 6px 0 rgba(0, 0, 0, 0.08), 0 16px 36px -8px rgba(0, 0, 0, 0.17);
+    --shadow-level-5: 0 4px 8px 0 rgba(0, 0, 0, 0.10), 0 20px 44px -8px rgba(0, 0, 0, 0.26);
 
     --state-hover: 0.06;
     --state-focus: 0.08;
@@ -377,13 +373,13 @@
     background: hsl(var(--primary));
   }
 
-/* 🌿 P21d — LA VETRINA AL CHIARO: la Landing resta in abito chiaro (carta
+/*  P21d — LA VETRINA AL CHIARO: la Landing resta in abito chiaro (carta
    avorio) anche quando l'app gira in smoking nero. Uso: la pagina avvolge
    tutto in <div className="force-light ..."> e i token lì dentro si
    comportano come in :root. I portali (toast, sheet) restano fuori: giusto. */
 .force-light {
   color-scheme: light;
---primary: 0 0% 0%;
+--primary: 0 0% 9%;
 --primary-foreground: 0 0% 100%;
 --primary-container: 0 0% 92%;
 --secondary: 0 0% 95%;
@@ -392,12 +388,12 @@
 --tertiary: 0 0% 32%;
 --tertiary-foreground: 0 0% 100%;
 --tertiary-container: 0 0% 93%;
---destructive: 8 61% 43%;
+--destructive: 8 0% 43%;
   --destructive-foreground: 0 0% 100%;
---error-container: 12 68% 93%;
+--error-container: 12 0% 93%;
 --success: 0 0% 25%;
---warning: 40 82% 32%;
---background: 0 0% 96%;
+--warning: 40 0% 32%;
+--background: 0 0% 98%;
 --foreground: 0 0% 8%;
 --surface-dim: 0 0% 88%;
 --surface-bright: 0 0% 100%;
@@ -418,11 +414,11 @@
 --outline-variant: 0 0% 24% / 0.12;
 --border: 0 0% 24% / 0.12;
 --input: 0 0% 100%;
-  --shadow-level-1: 0 1px 2px 0 rgba(23, 21, 18, 0.06), 0 1px 3px 0 rgba(23, 21, 18, 0.04);
-  --shadow-level-2: 0 1px 2px 0 rgba(23, 21, 18, 0.06), 0 4px 12px -2px rgba(23, 21, 18, 0.10);
-  --shadow-level-3: 0 2px 4px 0 rgba(23, 21, 18, 0.07), 0 10px 26px -6px rgba(23, 21, 18, 0.14);
-  --shadow-level-4: 0 3px 6px 0 rgba(23, 21, 18, 0.08), 0 16px 36px -8px rgba(23, 21, 18, 0.17);
-  --shadow-level-5: 0 4px 8px 0 rgba(23, 21, 18, 0.10), 0 20px 44px -8px rgba(23, 21, 18, 0.26);
+  --shadow-level-1: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  --shadow-level-2: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.10);
+  --shadow-level-3: 0 2px 4px 0 rgba(0, 0, 0, 0.07), 0 10px 26px -6px rgba(0, 0, 0, 0.14);
+  --shadow-level-4: 0 3px 6px 0 rgba(0, 0, 0, 0.08), 0 16px 36px -8px rgba(0, 0, 0, 0.17);
+  --shadow-level-5: 0 4px 8px 0 rgba(0, 0, 0, 0.10), 0 20px 44px -8px rgba(0, 0, 0, 0.26);
 }
   /* ═══════ CINEMATIC ENTER ═══════
      Soft fade + micro scale-up. No bounce. */
@@ -581,7 +577,7 @@
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   }
   .m3-nav-indicator {
-    background-color: hsl(var(--tertiary-container));   /* 🌿 goccia di salvia */
+    background-color: hsl(var(--tertiary-container));   /*  goccia di neutro */
     border-radius: var(--radius-full);
     width: 4rem;
     height: 2rem;
@@ -642,7 +638,7 @@
   .leaf-fade {
     animation: leaf-fade var(--motion-emphasized) ease-out both;
   }
-  /* 🌲 P24 — passaggio tra stanze: dissolvenza di SOLA LUCE (mai transform:
+  /*  P24 — passaggio tra stanze: dissolvenza di SOLA LUCE (mai transform:
      rispetta la REGOLA DEL PALCO, le finestre a schermo intero restano attaccate) */
   .room-fade {
     animation: room-fade 200ms ease-out both;
@@ -651,7 +647,7 @@
     from { opacity: 0; }
     to   { opacity: 1; }
   }
-  /* 🌲 P24 — la lezione sale dal basso come un foglio (dalla foto):
+  /*  P24 — la lezione sale dal basso come un foglio (dalla foto):
      ingresso a foglio arrotondato che si apre a schermo pieno. Animiamo la
      FINESTRA stessa (la foglia), mai il contenitore: REGOLA DEL PALCO intonsa. */
   .animate-lesson-sheet-in {
@@ -661,7 +657,7 @@
     from { transform: translateY(100%); border-radius: 28px 28px 0 0; opacity: 0.98; }
     to   { transform: translateY(0); border-radius: 0; opacity: 1; }
   }
-  /* 🌲 P24 — foglio dal basso per i pannelli (sala d'attesa, fogli): sale
+  /*  P24 — foglio dal basso per i pannelli (sala d'attesa, fogli): sale
      con un filo di luce, senza mai staccarsi dal mondo (opacità, non taglio) */
   .animate-sheet-up {
     animation: sheet-up 260ms cubic-bezier(0.2, 0, 0, 1) both;
@@ -670,12 +666,12 @@
     from { transform: translateY(48px); opacity: 0.6; }
     to   { transform: translateY(0); opacity: 1; }
   }
-  /* 🌲 P24 — linee squadrate del percorso lezioni (SVG, spessore costante) */
+  /*  P24 — linee squadrate del percorso lezioni (SVG, spessore costante) */
   .seg-base { stroke: hsl(var(--surface-container-highest)); }
   .seg-on { stroke: var(--subject-accent); }
   .seg-base, .seg-on { vector-effect: non-scaling-stroke; }
 
-  /* 🌲 P24 — respiro del nodo corrente nel percorso lezioni (bordo lime) */
+  /*  P24 — respiro del nodo corrente nel percorso lezioni (bordo neutro) */
   .animate-breathe-ring {
     animation: breathe-ring 2.4s ease-in-out infinite;
   }
@@ -713,14 +709,14 @@
 
   /* 🎨 P9a — pastelli semantici della routine (scuola/sonno/pasti):
      la tinta ha un senso (distingue i blocchi), ma addolcita sul tono di casa. */
-  .routine-school { background: hsl(214 80% 94% / 0.75); border: 1px solid hsl(214 70% 87% / 0.85); color: hsl(222 25% 22%); }
-  .routine-school-dot { background: hsl(214 60% 64%); }
-  .routine-sleep { background: hsl(243 60% 95% / 0.85); border: 1px solid hsl(243 50% 89% / 0.85); color: hsl(222 25% 22%); }
-  .routine-sleep-dot { background: hsl(243 45% 70%); }
-  .routine-meal { background: hsl(38 85% 94% / 0.8); border: 1px solid hsl(38 70% 86% / 0.9); color: hsl(222 25% 22%); }
-  .routine-meal-dot { background: hsl(38 70% 60%); }
+  .routine-school { background: hsl(214 0% 94% / 0.75); border: 1px solid hsl(214 0% 87% / 0.85); color: hsl(222 0% 22%); }
+  .routine-school-dot { background: hsl(214 0% 64%); }
+  .routine-sleep { background: hsl(243 0% 95% / 0.85); border: 1px solid hsl(243 0% 89% / 0.85); color: hsl(222 0% 22%); }
+  .routine-sleep-dot { background: hsl(243 0% 70%); }
+  .routine-meal { background: hsl(38 0% 94% / 0.8); border: 1px solid hsl(38 0% 86% / 0.9); color: hsl(222 0% 22%); }
+  .routine-meal-dot { background: hsl(38 0% 60%); }
   .routine-other { background: hsl(var(--surface-container) / 0.85); border: 1px solid hsl(var(--outline-variant)); color: hsl(var(--muted-foreground)); }
-  .routine-other-dot { background: hsl(var(--muted-foreground)); }  /* 🌿 P21j — anche il puntino del mattone Altro parla in gettoni */  /* 🌿 P21e — il quarto mattone routine parla in gettoni: va anche di notte */
+  .routine-other-dot { background: hsl(var(--muted-foreground)); }  /*  P21j — anche il puntino del mattone Altro parla in gettoni */  /*  P21e — il quarto mattone routine parla in gettoni: va anche di notte */
   .animate-stagger-1 { animation-delay: 60ms; animation-fill-mode: both; }
   .animate-stagger-2 { animation-delay: 120ms; animation-fill-mode: both; }
   .animate-stagger-3 { animation-delay: 180ms; animation-fill-mode: both; }
@@ -859,10 +855,10 @@ html.text-scale-lg     { --text-scale: 1.125; }
 html.text-scale-xl     { --text-scale: 1.28; }
 
 html.high-contrast {
-  --outline: 220 12% 10% / 0.55;
-  --outline-variant: 220 12% 10% / 0.38;
-  --border: 220 12% 10% / 0.38;
-  --muted-foreground: 220 10% 26%;
+  --outline: 220 0% 10% / 0.55;
+  --outline-variant: 220 0% 10% / 0.38;
+  --border: 220 0% 10% / 0.38;
+  --muted-foreground: 220 0% 26%;
 }
 html.high-contrast.dark {
   --outline: 0 0% 100% / 0.6;
@@ -885,7 +881,7 @@ html.reduce-motion *::after {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   🌲 P24 × APPLE — MATERIALE TRASLUCIDO CON FISICA DELLA LUCE
+    P24 × APPLE — MATERIALE TRASLUCIDO CON FISICA DELLA LUCE
    .glass-panel → superficie traslucida con:
      · GRADIENTE DI RIFRAZIONE interno (luce che entra dall'alto);
      · SPECULAR HIGHLIGHT sul bordo superiore (inset 1px bianco);
@@ -896,7 +892,7 @@ html.reduce-motion *::after {
    .glass-hero  → variante "hero": highlight più marcato, ombra più
        profonda, gradiente più presente (per la card principale).
    .glass-panel.is-active → stato attivo (es. timer in corso): bordo
-       lime + alone luminoso.
+       neutro + alone luminoso.
    .press       → micro-interazione tattile: scala 0.98 + leggero
        abbassamento di luminosità + rientro dell'ombra (inset) al
        tocco. Puro CSS, nessun JS, 60fps.
@@ -969,7 +965,7 @@ html.reduce-motion *::after {
 
 
 /* ═══════════════════════════════════════════════════════════════
-   🌲 P24 × MONOCROMO — DOT GRID, ACCENTO MATERIA, CALLOUT
+    P24 × MONOCROMO — DOT GRID, ACCENTO MATERIA, CALLOUT
    .bg-dot-grid        → matrice di puntini sottili (radial-gradient,
                          ~10% opacita': nitida e leggera, un solo layer,
                          nessun impatto sullo scroll);

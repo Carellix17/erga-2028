@@ -13,9 +13,9 @@ import { writeDemoState, type DemoHexagon } from "@/hooks/useDemoHandoff";
 import { useTranslation, Trans } from "react-i18next";
 import { currentLanguage } from "@/i18n";
 
-// 🌿 P21d ERGA OPAL: la vetrina interattiva parla il dizionario dei temi
+// P21d ERGA OPAL: la vetrina interattiva parla il dizionario dei temi
 // (vive dentro `.force-light` → sempre in abito chiaro). Via slate fissi,
-// vetro e puntini: carte nette, tondi-firma, spunte salvia.
+// vetro e puntini: carte nette, tondi-firma, spunte neutre.
 // LOGICA intatta: generazione demo, esagono, muro di registrazione, i18n.
 
 type Slide = { part_title: string; content: string };

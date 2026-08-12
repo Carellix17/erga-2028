@@ -82,7 +82,7 @@ const getCourseIcon = (name: string) => {
 };
 
 /**
- * 🌲 P24 BOSCO — l'EROE DEL PERCORSO, versione "cappello completo":
+ * P24 MONO — l'EROE DEL PERCORSO, versione "cappello completo":
  * la card ad arco in cima a Studio ora contiene TUTTO il comando del corso:
  * barra di avanzamento con percentuale, Riprendi + Cambia corso,
  * e il menù ⋯ (rigenera / materiali / rinomina / elimina) in alto a destra.
@@ -151,16 +151,22 @@ export function PathHero({
 
   return (
     <section className="px-4 pt-4 animate-fade-up">
-      <div className="relative overflow-hidden rounded-[32px] bg-primary text-primary-foreground shadow-level-2 p-5 sm:p-6">
-        {/* Motivo organico: due tondi di luce, come raggi tra le fronde */}
-        <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-white/[0.07]" aria-hidden />
-        <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-white/[0.05]" aria-hidden />
-        <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-white/[0.04]" aria-hidden />
+      <div
+        className="relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6"
+        style={{
+          backgroundColor: "var(--subject-accent, #f59e0b)",
+          color: "var(--subject-accent-foreground, #111111)",
+        }}
+      >
+        {/* Motivo organico tono-su-tono, leggibile su accenti chiari o scuri. */}
+        <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
+        <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
+        <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
 
         <div className="relative">
           {/* ── Riga alta: etichetta a sinistra, menù ⋯ in alto a destra ── */}
           <div className="flex items-center justify-between gap-3">
-            <p className="label-small text-primary-foreground/70 tracking-[0.16em]">
+            <p className="label-small tracking-[0.16em] opacity-70">
               Percorso attuale
             </p>
             <DropdownMenu>
@@ -168,12 +174,15 @@ export function PathHero({
                 <button
                   type="button"
                   aria-label="Azioni corso"
-                  className="relative w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 transition-colors duration-200 flex items-center justify-center shrink-0 active:scale-[0.95]"
+                  className="relative w-10 h-10 rounded-full transition-opacity duration-200 flex items-center justify-center shrink-0 hover:opacity-80 active:scale-[0.95]"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)",
+                  }}
                 >
-                  <MoreHorizontal className="w-5 h-5 text-white" strokeWidth={2} />
+                  <MoreHorizontal className="w-5 h-5 text-current" strokeWidth={2} />
                   {hasNewMaterial && (
                     <span
-                      className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-warning ring-2 ring-primary"
+                      className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-warning ring-2 ring-current"
                       aria-label="Nuovo materiale da includere"
                     />
                   )}
@@ -244,12 +253,15 @@ export function PathHero({
           {/* ── Avanzamento: scritta + barra con percentuale ── */}
           {isGenerating ? (
             <>
-              <p className="mt-4 text-xs text-primary-foreground/80">
+              <p className="mt-4 text-xs opacity-80">
                 Erga sta trasformando il tuo materiale…
               </p>
-              <div className="mt-2 h-2 rounded-full bg-white/15 overflow-hidden">
+              <div
+                className="mt-2 h-2 rounded-full overflow-hidden"
+                style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
+              >
                 <div
-                  className="h-full rounded-full bg-subject-accent transition-all duration-300"
+                  className="h-full rounded-full bg-current transition-all duration-300"
                   style={{ width: `${barPct}%` }}
                 />
               </div>
@@ -257,14 +269,17 @@ export function PathHero({
           ) : (
             <>
               <div className="mt-4 flex items-baseline justify-between gap-3">
-                <p className="text-sm text-primary-foreground/80">
+                <p className="text-sm opacity-80">
                   {completedCount} di {totalLessons} lezioni
                 </p>
-                <p className="text-sm font-bold text-subject-accent tabular-nums">{pct}%</p>
+                <p className="text-sm font-bold tabular-nums">{pct}%</p>
               </div>
-              <div className="mt-2 h-2 rounded-full bg-white/15 overflow-hidden">
+              <div
+                className="mt-2 h-2 rounded-full overflow-hidden"
+                style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
+              >
                 <div
-                  className="h-full rounded-full bg-subject-accent transition-all duration-700 ease-m3-emphasized"
+                  className="h-full rounded-full bg-current transition-all duration-700 ease-m3-emphasized"
                   style={{ width: `${barPct}%` }}
                 />
               </div>
@@ -278,7 +293,7 @@ export function PathHero({
                 <button
                   type="button"
                   onClick={onResume}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/25 h-11 px-4 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/25 active:scale-[0.97]"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-black text-white border border-black h-11 px-4 text-sm font-semibold transition-all duration-200 hover:bg-neutral-800 active:scale-[0.97] dark:bg-white dark:text-black dark:border-white dark:hover:bg-neutral-200"
                 >
                   <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Riprendi
@@ -288,7 +303,11 @@ export function PathHero({
                 <button
                   type="button"
                   onClick={() => setPickerOpen(true)}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-white/[0.08] border border-white/20 h-11 flex-1 px-3 text-sm font-semibold text-white/90 transition-all duration-200 hover:bg-white/15 active:scale-[0.97]"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                  }}
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Cambia corso
@@ -338,14 +357,21 @@ export function PathHero({
                     }}
                     className={cn(
                       "flex items-center gap-3 px-3 py-3 rounded-2xl w-full text-left transition-colors duration-150",
-                      isActive ? "bg-accent" : "hover:bg-secondary active:bg-secondary",
+                      isActive ? "shadow-level-1" : "hover:bg-secondary active:bg-secondary",
                     )}
+                    style={isActive ? {
+                      backgroundColor: "var(--subject-accent, #f59e0b)",
+                      color: "var(--subject-accent-foreground, #111111)",
+                    } : undefined}
                   >
                     <span
                       className={cn(
                         "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0",
-                        isActive ? "bg-tertiary/20 text-tertiary" : "bg-secondary text-foreground",
+                        isActive ? "text-current" : "bg-secondary text-foreground",
                       )}
+                      style={isActive ? {
+                        backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)",
+                      } : undefined}
                     >
                       <Icon className="w-4 h-4" strokeWidth={1.75} />
                     </span>
@@ -353,16 +379,16 @@ export function PathHero({
                       <span
                         className={cn(
                           "block truncate text-[15px] font-semibold",
-                          isActive ? "text-accent-foreground" : "text-foreground",
+                          isActive ? "text-current" : "text-foreground",
                         )}
                       >
                         {cleanCourseName(course.file_name)}
                       </span>
                       {meta && (
-                        <span className="block text-xs text-muted-foreground mt-0.5">{meta}</span>
+                        <span className={cn("block text-xs mt-0.5", isActive ? "text-current opacity-70" : "text-muted-foreground")}>{meta}</span>
                       )}
                     </span>
-                    {isActive && <Check className="w-4 h-4 text-tertiary flex-shrink-0" strokeWidth={2.5} />}
+                    {isActive && <Check className="w-4 h-4 text-current flex-shrink-0" strokeWidth={2.5} />}
                   </button>
                 );
               })}
