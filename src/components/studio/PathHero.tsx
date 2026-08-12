@@ -143,12 +143,23 @@ export function PathHero({
   const before = courses.slice(0, activeIdx);
   const after = courses.slice(activeIdx + 1);
 
-  // Porta la hero al centro visivo quando si apre il selettore
+  // Porta la hero PERFETTAMENTE al centro del viewport quando si apre il
+  // selettore. Aspetta la fine delle animazioni delle card (250ms) così la
+  // posizione è calcolata a pagina assestata, poi centra con il calcolo
+  // esatto (getBoundingClientRect) — la hero resta sempre al centro, gli
+  // altri corsi sopra e sotto.
   useEffect(() => {
     if (!isSelectingCourse) return;
     const t = window.setTimeout(() => {
-      heroRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 80);
+      const el = heroRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const top = Math.max(
+        0,
+        window.scrollY + rect.top - (window.innerHeight - rect.height) / 2
+      );
+      window.scrollTo({ top, behavior: "smooth" });
+    }, 320);
     return () => window.clearTimeout(t);
   }, [isSelectingCourse]);
 
