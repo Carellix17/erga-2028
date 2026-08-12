@@ -125,12 +125,17 @@ export function PathHero({
   onSelectingChange,
 }: PathHeroProps) {
   const [isSelectingCourse, setIsSelectingCourse] = useState(false);
+  // Fase 1: la hero va al centro (le card degli altri corsi NON sono ancora montate)
+  const [isCentering, setIsCentering] = useState(false);
+  // Fase 2: centratura finita → compaiono le card sopra/sotto
+  const [showOthers, setShowOthers] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [isSavingRename, setIsSavingRename] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const heroRef = useRef<HTMLDivElement | null>(null);
+  const cleanupRef = useRef<number | null>(null);
 
   const active = courses.find((c) => c.id === activeCourseId) ?? courses[0];
   const multi = courses.length > 1;
@@ -143,13 +148,14 @@ export function PathHero({
   const before = courses.slice(0, activeIdx);
   const after = courses.slice(activeIdx + 1);
 
-  // Porta la hero PERFETTAMENTE al centro del viewport quando si apre il
-  // selettore. Aspetta la fine delle animazioni delle card (250ms) così la
-  // posizione è calcolata a pagina assestata, poi centra con il calcolo
-  // esatto (getBoundingClientRect) — la hero resta sempre al centro, gli
-  // altri corsi sopra e sotto.
+  // FASE 1 — la hero va al centro PRIMA di mostrare gli altri corsi.
+  // Quando si clicca "Cambia corso": la pagina scorre (smooth) per portare
+  // la hero al centro del viewport, poi (a scroll arrivato) si montano le
+  // card degli altri corsi sopra e sotto.
   useEffect(() => {
     if (!isSelectingCourse) return;
+    setIsCentering(true);
+    setShowOthers(false);
     const t = window.setTimeout(() => {
       const el = heroRef.current;
       if (!el) return;
@@ -159,8 +165,24 @@ export function PathHero({
         window.scrollY + rect.top - (window.innerHeight - rect.height) / 2
       );
       window.scrollTo({ top, behavior: "smooth" });
-    }, 320);
-    return () => window.clearTimeout(t);
+      // aspetta la fine dello scroll (~500ms) prima di mostrare le altre card
+      const t2 = window.setTimeout(() => {
+        setShowOthers(true);
+        setIsCentering(false);
+      }, 520);
+      cleanupRef.current = t2;
+    }, 40);
+    return () => {
+      window.clearTimeout(t);
+      if (cleanupRef.current) window.clearTimeout(cleanupRef.current);
+    };
+  }, [isSelectingCourse]);
+
+  // Chiudi: reset di tutte le fasi
+  useEffect(() => {
+    if (isSelectingCourse) return;
+    setIsCentering(false);
+    setShowOthers(false);
   }, [isSelectingCourse]);
 
   const openPicker = () => {
@@ -259,7 +281,7 @@ export function PathHero({
     <section className="px-4 pt-4">
       {/* Card corsi PRIMA dell'attiva (compaiono sopra la hero) */}
       <AnimatePresence initial={false}>
-        {isSelectingCourse && before.length > 0 && (
+        {isSelectingCourse && showOthers && before.length > 0 && (
           <motion.div
             key="picker-before"
             initial={{ opacity: 0 }}
@@ -507,7 +529,7 @@ export function PathHero({
 
       {/* Card corsi DOPO l'attiva (compaiono sotto la hero) */}
       <AnimatePresence initial={false}>
-        {isSelectingCourse && after.length > 0 && (
+        {isSelectingCourse && showOthers && after.length > 0 && (
           <motion.div
             key="picker-after"
             initial={{ opacity: 0 }}

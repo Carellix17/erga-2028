@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { PathHero } from "@/components/studio/PathHero";
 
@@ -20,11 +20,12 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     activeCourseId: "1",
   };
 
-  it("apre il selettore: appare Annulla, Scegli corso e l'altro corso", () => {
+  it("apre il selettore: appare Annulla subito, gli altri corsi dopo la centratura", async () => {
     render(<PathHero {...base} onSelectCourse={() => {}} />);
     fireEvent.click(screen.getByText("Cambia corso"));
     expect(screen.getByText("Annulla")).toBeTruthy();
-    expect(screen.getByText("Scegli corso")).toBeTruthy();
+    // gli altri corsi compaiono DOPO la centratura (fase 2)
+    await waitFor(() => expect(screen.getByText("Scegli corso")).toBeTruthy(), { timeout: 2000 });
     expect(screen.getByText("matematica")).toBeTruthy();
   });
 
@@ -37,14 +38,15 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     expect(onChange).toHaveBeenCalledWith(false);
   });
 
-  it("cliccando un corso chiama onSelectCourse con il suo id e chiude", () => {
+  it("cliccando un corso chiama onSelectCourse con il suo id e chiude", async () => {
     const onSelect = vi.fn();
     render(<PathHero {...base} onSelectCourse={onSelect} />);
     fireEvent.click(screen.getByText("Cambia corso"));
+    await waitFor(() => expect(screen.getByText("matematica")).toBeTruthy(), { timeout: 2000 });
     fireEvent.click(screen.getByText("matematica"));
     expect(onSelect).toHaveBeenCalledWith("2");
     // il selettore si chiude: "Cambia corso" torna visibile
-    expect(screen.getByText("Cambia corso")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Cambia corso")).toBeTruthy(), { timeout: 2000 });
   });
 
   it("Annulla chiude il selettore senza selezionare", () => {
