@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
 import { getSubjectAccent, getAccentForeground } from "@/lib/subjectColors";
+import { CourseCard, courseDisplayName } from "./CourseCard";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -243,41 +244,23 @@ export function PathHero({
       typeof course.lesson_count === "number" && course.lesson_count > 0
         ? `${course.lesson_count} lezioni`
         : null;
-    // Ogni corso ha il PROPRIO colore materia (non quello della hero)
-    const accent = getSubjectAccent(course.file_name);
-    const fg = getAccentForeground(accent);
     return (
-      <motion.button
+      <CourseCard
         key={course.id}
+        course={course}
+        onSelect={() => handleSelectCourse(course)}
+        actionLabel="Scegli corso"
         {...cardMotion}
-        type="button"
-        onClick={() => handleSelectCourse(course)}
-        className="relative w-full overflow-hidden rounded-[28px] shadow-level-2 p-4 sm:p-5 text-left transition-transform duration-150 active:scale-[0.98]"
-        style={{ backgroundColor: accent, color: fg }}
       >
-        <div className="absolute -right-10 -top-14 w-36 h-36 rounded-full bg-current opacity-[0.07]" aria-hidden />
-        <div className="absolute -right-1 -bottom-16 w-28 h-28 rounded-full bg-current opacity-[0.05]" aria-hidden />
-        <div className="relative">
-          <p className="label-small tracking-[0.14em] opacity-70 flex items-center gap-2">
-            <Icon className="w-3.5 h-3.5" strokeWidth={2} />
-            Percorso
-          </p>
-          <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words text-current">
-            {cleanCourseName(course.file_name)}
-          </h3>
-          {meta && <p className="text-xs opacity-75 mt-1">{meta}</p>}
-          <span
-            className="mt-3.5 inline-flex items-center justify-center gap-1.5 rounded-full border h-10 w-full text-sm font-semibold"
-            style={{
-              backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-              borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-            }}
-          >
-            <Check className="w-4 h-4 shrink-0" strokeWidth={2.2} />
-            Scegli corso
-          </span>
-        </div>
-      </motion.button>
+        <p className="label-small tracking-[0.14em] opacity-70 flex items-center gap-2">
+          <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+          Percorso
+        </p>
+        <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words">
+          {courseDisplayName(course.file_name)}
+        </h3>
+        {meta && <p className="text-xs opacity-75 mt-1">{meta}</p>}
+      </CourseCard>
     );
   };
 

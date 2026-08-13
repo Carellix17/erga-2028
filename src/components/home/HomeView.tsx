@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
@@ -22,6 +22,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { fetchCourseImage, getCachedCourseImage } from "@/lib/wikipediaImage";
+import { getSubjectAccent } from "@/lib/subjectColors";
+import { cleanSubjectTitleForSearch } from "@/lib/courseTitle";
 
 interface HomeViewProps {
   onOpenStudio: () => void;
@@ -200,6 +203,25 @@ export function HomeView({
   const { student, lessonsToday, upcomingTasks, quickTools } =
     MOCK_DASHBOARD_DATA;
   const nextLesson = lessonsToday[0];
+  // 🖼️ P24 — immagine di copertina per la card "Prossima lezione" (Wikipedia)
+  const [lessonCover, setLessonCover] = useState<string | null>(null);
+  useEffect(() => {
+    if (!nextLesson?.subject) return;
+    const title = cleanSubjectTitleForSearch(nextLesson.subject);
+    if (!title) return;
+    const cached = getCachedCourseImage(title);
+    if (cached !== null) {
+      setLessonCover(cached);
+      return;
+    }
+    let alive = true;
+    void fetchCourseImage(title).then((url) => {
+      if (alive) setLessonCover(url);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [nextLesson?.subject]);
   const visibleTasks = showAllTasks
     ? upcomingTasks
     : upcomingTasks.slice(0, INITIAL_VISIBLE_TASKS);
@@ -293,6 +315,36 @@ export function HomeView({
         {/* Livello 1 — unica azione dominante. */}
         <section aria-labelledby="next-lesson-title" className="min-w-0">
           <Card className="relative w-full min-w-0 overflow-hidden border-primary/15 bg-background/95 supports-[backdrop-filter]:bg-background/80 dark:border-white/10">
+            {/* 🖼️ P24 — LAYER 0: immagine di copertina sfocata */}
+            {lessonCover && (
+              <div className="absolute inset-0 overflow-hidden" aria-hidden>
+                <img
+                  src={lessonCover}
+                  alt=""
+                  className="w-full h-full object-cover blur-md scale-110 opacity-40"
+                  loading="lazy"
+                />
+              </div>
+            )}
+            {/* LAYER 1: tinta materia + ombra per leggibilità */}
+            <div
+              aria-hidden="true"
+              className={cn(
+                "pointer-events-none absolute inset-0",
+                lessonCover
+                  ? "bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+                  : "",
+              )}
+              style={
+                lessonCover
+                  ? undefined
+                  : {
+                      background: `linear-gradient(to bottom, color-mix(in srgb, ${getSubjectAccent(
+                        nextLesson?.subject ?? "",
+                      )} 12%, transparent), transparent)`,
+                    }
+              }
+            />
             <div
               aria-hidden="true"
               className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-tertiary/15 blur-3xl"
@@ -305,7 +357,12 @@ export function HomeView({
                 </Badge>
                 <Badge
                   variant="outline"
-                  className="bg-background/45 text-foreground backdrop-blur-sm"
+                  className={cn(
+                    "backdrop-blur-sm",
+                    lessonCover
+                      ? "bg-black/30 text-white border-white/30"
+                      : "bg-background/45 text-foreground",
+                  )}
                 >
                   {nextLesson.subject}
                 </Badge>

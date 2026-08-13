@@ -466,6 +466,7 @@ export type Database = {
       study_contexts: {
         Row: {
           content: string
+          cover_image_url: string | null
           created_at: string
           error_message: string | null
           file_name: string
@@ -483,6 +484,7 @@ export type Database = {
         }
         Insert: {
           content: string
+          cover_image_url?: string | null
           created_at?: string
           error_message?: string | null
           file_name: string
@@ -500,6 +502,7 @@ export type Database = {
         }
         Update: {
           content?: string
+          cover_image_url?: string | null
           created_at?: string
           error_message?: string | null
           file_name?: string
