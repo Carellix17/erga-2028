@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
 import { getSubjectAccent, getAccentForeground } from "@/lib/subjectColors";
 import { CourseCard, courseDisplayName } from "./CourseCard";
+import { CourseCardBackground } from "./CourseCardBackground";
+import { useCourseImage } from "@/hooks/useCourseImage";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -154,6 +156,8 @@ export function PathHero({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const active = courses.find((c) => c.id === activeCourseId) ?? courses[0];
+  // 🖼️ P24 — immagine della HERO (corso attivo): centralizzata, resta nei cambi stato
+  const heroCover = useCourseImage(active?.id ?? null, active?.file_name ?? "");
   const multi = courses.length > 1;
   const pct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
   const barPct = isGenerating
@@ -477,7 +481,7 @@ export function PathHero({
 
   const heroStyle = {
     backgroundColor: "var(--subject-accent, #f59e0b)",
-    color: "var(--subject-accent-foreground, #111111)",
+    color: heroCover ? "#ffffff" : "var(--subject-accent-foreground, #111111)",
   } as const;
 
   return (
@@ -494,6 +498,10 @@ export function PathHero({
           <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
           <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
           <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
+          <CourseCardBackground
+            coverUrl={heroCover}
+            subjectColor="var(--subject-accent, #f59e0b)"
+          />
           {heroInner(false)}
         </motion.div>
       )}
@@ -542,6 +550,10 @@ export function PathHero({
                       <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
                       <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
                       <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
+                      <CourseCardBackground
+                        coverUrl={heroCover}
+                        subjectColor="var(--subject-accent, #f59e0b)"
+                      />
                       {heroInner(true)}
                     </motion.div>
 
