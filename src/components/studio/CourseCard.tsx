@@ -27,6 +27,13 @@ interface CourseCardProps {
   noImage?: boolean;
 }
 
+// Prop di framer-motion (initial/animate/exit/transition/layout) inoltrate
+// al motion.button interno, così l'animazione di entrata/uscita funziona.
+type CourseCardMotionProps = Omit<
+  React.ComponentPropsWithoutRef<typeof motion.button>,
+  "children" | "className" | "onClick" | "style"
+>;
+
 /**
  * 🖼️ P24 — Card corso con COVER IMMAGINE contestuale:
  *  Layer 0: immagine sfocata (blur-md, scale-110, opacity-40)
@@ -43,7 +50,8 @@ export function CourseCard({
   children,
   className,
   noImage = false,
-}: CourseCardProps) {
+  ...motionProps
+}: CourseCardProps & CourseCardMotionProps) {
   const [coverUrl, setCoverUrl] = useState<string | null>(
     course.cover_image_url ?? null,
   );
@@ -74,7 +82,7 @@ export function CourseCard({
 
   return (
     <motion.button
-      layout
+      {...motionProps}
       type="button"
       onClick={() => onSelect(course)}
       className={cn(
