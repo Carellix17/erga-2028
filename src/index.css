@@ -44,17 +44,19 @@
        (accesa e cieca al buio) va in pensione. Ogni materia ha un pastello smorzato
        Opal; la versione notturna vive in .dark, cosi' badge, bordi e pallini si
        vestono da soli sia di giorno che di notte. Chiavi delle materie INVARIATE. */
-    --pastel-terracotta: 18 0% 45%;       /* storia 🧱 */
-    --pastel-polvere: 210 0% 42%;         /* matematica */
-    --pastel-ocra: 38 0% 36%;             /* economia */
-    --pastel-prugna: 320 0% 44%;          /* letteratura */
-    --pastel-crepuscolo: 230 0% 44%;      /* filosofia */
---pastel-mare: 0 0% 42%;            /* fisica */
-    --pastel-violetto: 250 0% 47%;        /* informatica */
-    --pastel-cipria: 350 0% 50%;          /* arte */
-    --pastel-grafite: 220 0% 34%;          /* diritto (prima era BIANCO-su-bianco!) */
-    --pastel-miele: 28 0% 42%;            /* lingue */
-    --pastel-neutro: 36 0% 46%;            /* generale (ripiego) */
+--pastel-terracotta: 18 45% 45%;       /* storia 🧱 */
+--pastel-polvere: 210 36% 42%;         /* matematica */
+--pastel-ocra: 38 55% 36%;             /* economia */
+--pastel-prugna: 320 28% 44%;          /* letteratura */
+--pastel-crepuscolo: 230 22% 44%;      /* filosofia */
+--pastel-mare: 185 38% 35%;            /* fisica */
+--pastel-violetto: 250 28% 47%;        /* informatica */
+--pastel-cipria: 350 30% 50%;          /* arte */
+--pastel-grafite: 220 16% 38%;          /* diritto (prima era BIANCO-su-bianco!) */
+--pastel-miele: 28 50% 42%;            /* lingue */
+--pastel-neutro: 36 6% 46%;            /* generale (ripiego) */
+--pastel-bosco: 145 28% 34%;           /* scienze */
+--pastel-oliva: 85 26% 34%;            /* geografia */
 --background: 0 0% 98%;               /* grigio chiaro (monocromo) */
 --foreground: 0 0% 8%;
 --surface-dim: 0 0% 88%;
@@ -140,17 +142,19 @@
 
     /*  P21e — pastelli domati, VERSIONE NOTTURNA: stessi nomi, luminosita' alta
        e saturazione gentile per leggere sul carbone senza accecare. */
-    --pastel-terracotta: 18 0% 66%;
-    --pastel-polvere: 210 0% 70%;
-    --pastel-ocra: 40 0% 64%;
-    --pastel-prugna: 322 0% 72%;
-    --pastel-crepuscolo: 230 0% 72%;
---pastel-mare: 0 0% 64%;
-    --pastel-violetto: 250 0% 74%;
-    --pastel-cipria: 350 0% 72%;
-    --pastel-grafite: 220 0% 70%;
-    --pastel-miele: 28 0% 66%;
-    --pastel-neutro: 36 0% 68%;
+--pastel-terracotta: 18 40% 66%;
+--pastel-polvere: 210 34% 70%;
+--pastel-ocra: 40 48% 64%;
+--pastel-prugna: 322 30% 72%;
+--pastel-crepuscolo: 230 22% 72%;
+--pastel-mare: 185 30% 64%;
+--pastel-violetto: 250 26% 74%;
+--pastel-cipria: 350 28% 72%;
+--pastel-grafite: 220 16% 70%;
+--pastel-miele: 28 44% 66%;
+    --pastel-neutro: 36 6% 68%;
+    --pastel-bosco: 140 24% 66%;
+    --pastel-oliva: 85 24% 62%;
 
     /*  P22 — MATERIAL DEPTH notturno: prima NON ESISTEVA (le ombre chiare sul
        nero spariscono). Di notte: nero deciso + capello di luce (4-7% bianco)

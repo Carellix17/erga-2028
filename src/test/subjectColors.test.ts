@@ -38,7 +38,7 @@ describe("resolveSubjectColor (automatico + personalizzato)", () => {
       expect(c.solid).toMatch(/^bg-/);
       expect(c.badge).toMatch(/^bg-/);
       expect(c.border).toMatch(/^border-/);
-      expect(c.accent).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(c.accent).toMatch(/^hsl\(/); // accent = colore materia (hsl allineato ai pastelli)
     }
   });
 });

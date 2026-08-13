@@ -53,8 +53,17 @@ describe("Cacciatore di verdi (monocromo)", () => {
       problems.push(`${file}: hex della vecchia palette bosco`);
     }
     // nei CSS controlla anche gli hue verdi nei token (escluso subject-accent HEX)
-    if (file.endsWith(".css") && GREEN_HSL_RE.test(content)) {
-      problems.push(`${file}: hue HSL verde in una regola/token`);
+    if (file.endsWith(".css")) {
+      // escludi le righe dei PASTELLI MATERIA (--pastel-*): sono i colori
+      // distintivi delle materie, voluti dal Capo (Orari e materie / corsi)
+      const lines = content.split("\n");
+      for (const line of lines) {
+        if (/--pastel-[a-z-]+\s*:/.test(line)) continue;
+        if (GREEN_HSL_RE.test(line)) {
+          problems.push(`${file}: hue HSL verde (riga: ${line.trim().slice(0, 60)})`);
+          break;
+        }
+      }
     }
   }
 
