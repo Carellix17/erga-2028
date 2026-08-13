@@ -424,10 +424,10 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
         </div>
       </div>
       <div className={cn(
-        "p-6 sm:p-7 rounded-[18px] border space-y-4",
+        "p-6 sm:p-7 rounded-[18px] border space-y-4 backdrop-blur-md",
         isExample
           ? "bg-tertiary-container/60 border-tertiary/30 border-l-4 border-l-tertiary"
-          : "bg-card border-outline-variant/60"
+          : "bg-white/70 dark:bg-neutral-900/70 border-neutral-200/50 dark:border-neutral-800/50 shadow-sm"
       )}>
         {segments.map((seg, i) => {
           if (seg.type === "text") {
@@ -501,7 +501,7 @@ function ExerciseStep({
           ))}
         </div>
       </div>
-      <div className="p-5 rounded-[18px] bg-card border border-outline-variant/60">
+      <div className="p-5 rounded-[18px] backdrop-blur-md bg-white/70 dark:bg-neutral-900/70 border border-neutral-200/50 dark:border-neutral-800/50 shadow-sm">
         <ExerciseRenderer exercise={exercise} onComplete={onComplete} isCompleted={isCompleted} />
       </div>
     </div>

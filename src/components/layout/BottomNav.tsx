@@ -35,7 +35,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
         {/* ── Pillola (mobile) / Sidebar (desktop) ── */}
         <div className={cn(pillMaterial, "rounded-full shadow-level-2 flex-1 min-w-0 md:rounded-none md:border-0 md:border-r md:h-full md:flex md:flex-col")}>
           {/* Telefono: pillola con SOTTO-PILLOLA FLUIDA (layoutId) */}
-          <div className="relative flex items-center justify-around h-[4.5rem] px-2 rounded-full md:hidden">
+          <div className="relative grid grid-cols-3 items-center justify-items-center h-[4.5rem] px-2 rounded-full md:hidden">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -44,7 +44,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
                   aria-current={isActive ? "page" : undefined}
-                  className="relative flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/70"
+                  className="relative w-full flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/70"
                 >
                   {isActive && (
                     <motion.span
@@ -158,10 +158,17 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           className={cn(
             "md:hidden relative w-[4.5rem] h-[4.5rem] rounded-full flex items-center justify-center flex-shrink-0 shadow-level-2 transition-transform duration-150 active:scale-90",
             pillMaterial,
-            activeTab === "profilo" && "ring-2 ring-neutral-500/50",
           )}
         >
-          <User className="w-5 h-5" strokeWidth={2} />
+          {activeTab === "profilo" && (
+            <motion.span
+              layoutId="activeTabBackground"
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="absolute inset-0 rounded-full bg-neutral-200/80 dark:bg-white/10"
+              aria-hidden
+            />
+          )}
+          <User className="relative z-10 w-5 h-5" strokeWidth={2} />
           <span className="absolute top-1 right-1 w-3 h-3 rounded-full bg-neutral-500 border-2 border-white dark:border-neutral-900" />
         </button>
       </div>
