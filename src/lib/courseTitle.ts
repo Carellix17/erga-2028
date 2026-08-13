@@ -15,6 +15,10 @@ const FILE_EXT_RE = /\.(pdf|docx?|txt|md|pptx?|xlsx?|jpe?g|png|webp|heic|heif)$/
 const NOISE_WORDS =
   /\b(appunti|appunto|bozza|bozze|copia|dispensa|riassunto|riassunti|capitolo|cap\b|capitoli|lezione|lezioni|v[0-9]+|finale|final|definitivo|definitiva|nuovo|nuova|versione|ver\b|scheda|schede|materiale|materiali|testo|testi|slides|slide|pdf)\b/gi;
 
+// Stopwords italiane comuni (preposizioni/articoli) che sporcano la query
+const STOPWORDS =
+  /\b(di|del|dello|della|dei|degli|delle|il|lo|la|i|gli|le|un|uno|una|un'|e|ed|con|per|su|in|a|da|al|allo|alla|ai|agli|alle|dal|dallo|dalla|dai|dagli|dalle|che|piu'|più|nel|nello|nella|nei|negli|nelle)\b/gi;
+
 export function cleanSubjectTitleForSearch(fileName: string): string {
   if (!fileName) return "";
 
@@ -29,6 +33,13 @@ export function cleanSubjectTitleForSearch(fileName: string): string {
 
   // 3) rimuovi le keyword di sistema (parole intere)
   out = out.replace(NOISE_WORDS, " ").replace(/\s+/g, " ").trim();
+
+  // 4) rimuovi stopwords italiane e numeri isolati
+  out = out
+    .replace(STOPWORDS, " ")
+    .replace(/\b\d+\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
   return out;
 }
