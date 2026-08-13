@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -85,9 +86,13 @@ const getCourseIcon = (name: string) => {
   return BookOpen;
 };
 
-// Coreografia a 2 FASI: le card esterne compaiono con DELAY 0.25s (dopo il
-// centramento della hero) e in chiusura escono VELOCI (0.12s) prima che la
-// hero torni su.
+// Transizione condivisa della HERO (layoutId): spring fluido per il volo
+// dalla posizione inline al centro del portale e ritorno.
+const heroLayoutTransition = {
+  layout: { type: "spring", stiffness: 300, damping: 25 },
+} as const;
+
+// Card esterne: compaiono con DELAY 0.25 (dopo il volo della hero), escono rapide.
 const cardMotion = {
   initial: { opacity: 0, y: 15, scale: 0.96 },
   animate: {
@@ -100,15 +105,22 @@ const cardMotion = {
 };
 
 /**
- * P24 MONO — l'EROE DEL PERCORSO con MORPHING del selettore corsi:
- * - stato `isSelectingCourse`: "Cambia corso" sparisce, "Riprendi" si espande
- *   al 100% (AnimatePresence + layout), le card degli altri corsi compaiono
- *   sopra/sotto la hero (opacity 0→1, scale 0.95→1) e la pagina scorre;
- * - gli altri percorsi sono card STESSO STILE della hero (sfondo accento,
- *   titolo, meta) con un solo tasto "Scegli corso";
- * - tap sulla hero o "Annulla" → ritorno allo stato singolo;
- * - selezione di un corso → diventa la nuova hero e si chiude il selettore.
- * Solo prop di framer-motion (transform/opacity), nessun JS pesante.
+ * P24 MONO — l'EROE DEL PERCORSO con SELEZIONE CORSI A PORTALE.
+ *
+ * Perché un portale: il contenitore del selettore è renderizzato come figlio
+ * diretto di document.body (createPortal), quindi NESSUN antenato (layout di
+ * Studio, transizioni, overflow) può interferire con il posizionamento:
+ * `fixed inset-0` = SEMPRE il viewport reale del dispositivo, mai il
+ * documento scrollabile.
+ *
+ * La HERO usa `layoutId="hero-card"` in entrambi gli stati (inline quando si
+ * studia, nel portale quando si seleziona): Framer Motion anima la card che
+ * "vola" dalla sua posizione al centro dello schermo in un unico movimento
+ * fluido (spring), senza alcuna API di scroll.
+ *
+ * Sequenza: 1) la hero vola al centro; 2) con delay 0.25s compaiono le altre
+ * card sopra/sotto (lista scrollabile solo al suo interno); 3) selezione o
+ * Annulla → le card escono, la hero torna alla sua posizione.
  */
 export function PathHero({
   title,
@@ -137,7 +149,6 @@ export function PathHero({
   const [isSavingRename, setIsSavingRename] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const heroRef = useRef<HTMLDivElement | null>(null);
 
   const active = courses.find((c) => c.id === activeCourseId) ?? courses[0];
   const multi = courses.length > 1;
@@ -150,12 +161,7 @@ export function PathHero({
   const before = courses.slice(0, activeIdx);
   const after = courses.slice(activeIdx + 1);
 
-  // Nessuna manipolazione dello scroll (vietata dal brief): il centramento
-  // avviene SOLO via layout CSS (flex + my-auto) animato da framer-motion.
-  // Qui gestiamo solo l'overflow del body: nascosto durante l'animazione
-  // iniziale per evitare salti, poi riabilitato (le card possono eccedere).
-  // La pagina di sfondo NON deve scrollare durante la selezione: overflow
-  // del body nascosto per TUTTO il tempo del picker, ripristinato alla chiusura.
+  // La pagina di sfondo NON deve scrollare durante la selezione.
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = isSelectingCourse ? "hidden" : prev;
@@ -211,23 +217,18 @@ export function PathHero({
       typeof course.lesson_count === "number" && course.lesson_count > 0
         ? `${course.lesson_count} lezioni`
         : null;
-    // 🌲 P24 — ogni corso ha il PROPRIO colore materia (non quello della hero)
+    // Ogni corso ha il PROPRIO colore materia (non quello della hero)
     const accent = getSubjectAccent(course.file_name);
     const fg = getAccentForeground(accent);
     return (
       <motion.button
         key={course.id}
-        layout
         {...cardMotion}
         type="button"
         onClick={() => handleSelectCourse(course)}
         className="relative w-full overflow-hidden rounded-[28px] shadow-level-2 p-4 sm:p-5 text-left transition-transform duration-150 active:scale-[0.98]"
-        style={{
-          backgroundColor: accent,
-          color: fg,
-        }}
+        style={{ backgroundColor: accent, color: fg }}
       >
-        {/* Motivo organico tono-su-tono, come la hero */}
         <div className="absolute -right-10 -top-14 w-36 h-36 rounded-full bg-current opacity-[0.07]" aria-hidden />
         <div className="absolute -right-1 -bottom-16 w-28 h-28 rounded-full bg-current opacity-[0.05]" aria-hidden />
         <div className="relative">
@@ -238,9 +239,7 @@ export function PathHero({
           <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words text-current">
             {cleanCourseName(course.file_name)}
           </h3>
-          {meta && (
-            <p className="text-xs opacity-75 mt-1">{meta}</p>
-          )}
+          {meta && <p className="text-xs opacity-75 mt-1">{meta}</p>}
           <span
             className="mt-3.5 inline-flex items-center justify-center gap-1.5 rounded-full border h-10 w-full text-sm font-semibold"
             style={{
@@ -256,289 +255,306 @@ export function PathHero({
     );
   };
 
-  return (
-    <section
-      className={
-        isSelectingCourse
-          ? "fixed inset-0 z-30 h-[100dvh] w-full overflow-hidden flex flex-col justify-center items-center"
-          : "px-4 pt-4"
-      }
-    >
-      {/* Contenitore lista: scroll INTERNO se le card eccedono, mai la pagina */}
-      <div
-        className={
-          isSelectingCourse
-            ? "w-full max-w-lg h-[80vh] max-h-[80vh] flex flex-col overflow-y-auto overscroll-contain px-4"
-            : "w-full"
-        }
-      >
-        <div className={isSelectingCourse ? "flex flex-col min-h-full" : ""}>
-      {/* Card corsi PRIMA dell'attiva (compaiono sopra la hero) */}
-      <AnimatePresence initial={false}>
-        {isSelectingCourse && before.length > 0 && (
-          <motion.div
-            key="picker-before"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.12 } }}
-            transition={{ duration: 0.15 }}
-            className="space-y-3 mb-4"
+  // ── Contenuto interno della HERO (condiviso tra inline e portale) ──
+  const heroInner = (inPicker: boolean) => (
+    <div className="relative">
+      {/* Riga alta: etichetta + menù ⋯ */}
+      <div className="flex items-center justify-between gap-3">
+        <p className="label-small tracking-[0.16em] opacity-70">
+          {inPicker ? "Seleziona un percorso" : "Percorso attuale"}
+        </p>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label="Azioni corso"
+              className="relative w-10 h-10 rounded-full transition-opacity duration-200 flex items-center justify-center shrink-0 hover:opacity-80 active:scale-[0.95]"
+              style={{
+                backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)",
+              }}
+            >
+              <MoreHorizontal className="w-5 h-5 text-current" strokeWidth={2} />
+              {hasNewMaterial && (
+                <span
+                  className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-warning ring-2 ring-current"
+                  aria-label="Nuovo materiale da includere"
+                />
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64 rounded-2xl bg-popover text-popover-foreground shadow-level-3 border border-border p-1.5">
+            {hasNewMaterial && (
+              <DropdownMenuLabel className="text-xs font-medium text-warning px-3 py-2 leading-snug">
+                Nuovo materiale: rigenera il percorso per includerlo
+              </DropdownMenuLabel>
+            )}
+            {onRegenerate && (
+              <DropdownMenuItem
+                onSelect={onRegenerate}
+                disabled={isGenerating || isRegenerating || generationBlocked}
+                className="rounded-xl cursor-pointer"
+              >
+                <RefreshCw className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
+                <span className="flex-1">Rigenera percorso</span>
+                {isRegenerating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              </DropdownMenuItem>
+            )}
+            {onOpenMaterials && (
+              <DropdownMenuItem onSelect={onOpenMaterials} className="rounded-xl cursor-pointer">
+                <FolderOpen className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
+                <span className="flex-1">Apri materiali</span>
+              </DropdownMenuItem>
+            )}
+            {onRenameCourse && (
+              <DropdownMenuItem
+                onSelect={() => {
+                  setRenameValue(title ?? "");
+                  setRenameOpen(true);
+                }}
+                className="rounded-xl cursor-pointer"
+              >
+                <Pencil className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
+                <span className="flex-1">Rinomina corso</span>
+              </DropdownMenuItem>
+            )}
+            {onDeleteCourse && (
+              <>
+                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuItem
+                  onSelect={() => setConfirmDelete(true)}
+                  className="rounded-xl cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" strokeWidth={1.75} />
+                  <span className="flex-1">Elimina corso</span>
+                </DropdownMenuItem>
+              </>
+            )}
+            {generationBlocked && freeLimitMessage && (
+              <div className="mt-1 px-3 py-2 rounded-xl bg-warning-container/70 text-warning text-xs leading-snug flex gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={1.75} />
+                <span>{freeLimitMessage}</span>
+              </div>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Titolo: nome intero */}
+      <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1">
+        {title ?? "Il tuo percorso"}
+      </h2>
+
+      {/* Avanzamento */}
+      {isGenerating ? (
+        <>
+          <p className="mt-4 text-xs opacity-80">Erga sta trasformando il tuo materiale…</p>
+          <div
+            className="mt-2 h-2 rounded-full overflow-hidden"
+            style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
           >
-            {before.map(renderCourseCard)}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Hero card ── */}
-      <motion.div
-        layout
-        transition={{ layout: { type: "spring", stiffness: 300, damping: 25 } }}
-        className={cn(isSelectingCourse ? "my-auto shrink-0" : "", "relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6")}
-        ref={heroRef}
-        onClick={(e) => {
-          // tap sulla hero (non sui bottoni interni) → chiudi il selettore
-          if (isSelectingCourse && !(e.target as HTMLElement).closest("button")) {
-            closePicker();
-          }
-        }}
-        style={{
-          backgroundColor: "var(--subject-accent, #f59e0b)",
-          color: "var(--subject-accent-foreground, #111111)",
-        }}
-      >
-        {/* Motivo organico tono-su-tono, leggibile su accenti chiari o scuri. */}
-        <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
-        <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
-        <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
-
-        <div className="relative">
-          {/* ── Riga alta: etichetta a sinistra, menù ⋯ in alto a destra ── */}
-          <div className="flex items-center justify-between gap-3">
-            <p className="label-small tracking-[0.16em] opacity-70">
-              {isSelectingCourse ? "Seleziona un percorso" : "Percorso attuale"}
+            <div
+              className="h-full rounded-full bg-current transition-all duration-300"
+              style={{ width: `${barPct}%` }}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="mt-4 flex items-baseline justify-between gap-3">
+            <p className="text-sm opacity-80">
+              {completedCount} di {totalLessons} lezioni
             </p>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
+            <p className="text-sm font-bold tabular-nums">{pct}%</p>
+          </div>
+          <div
+            className="mt-2 h-2 rounded-full overflow-hidden"
+            style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
+          >
+            <div
+              className="h-full rounded-full bg-current transition-all duration-700 ease-m3-emphasized"
+              style={{ width: `${barPct}%` }}
+            />
+          </div>
+        </>
+      )}
+
+      {/* Azioni */}
+      {!isGenerating && (canResume || multi) && (
+        <AnimatePresence mode="popLayout" initial={false}>
+          {!inPicker ? (
+            <motion.div
+              key="actions-closed"
+              layout
+              exit={{ opacity: 0, scale: 0.97 }}
+              transition={{ duration: 0.18 }}
+              className="mt-5 flex items-stretch gap-2.5"
+            >
+              {canResume && onResume && (
+                <motion.button
+                  layout
                   type="button"
-                  aria-label="Azioni corso"
-                  className="relative w-10 h-10 rounded-full transition-opacity duration-200 flex items-center justify-center shrink-0 hover:opacity-80 active:scale-[0.95]"
+                  onClick={onResume}
+                  className="inline-flex items-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
                   style={{
-                    backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)",
+                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
                   }}
                 >
-                  <MoreHorizontal className="w-5 h-5 text-current" strokeWidth={2} />
-                  {hasNewMaterial && (
-                    <span
-                      className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-warning ring-2 ring-current"
-                      aria-label="Nuovo materiale da includere"
-                    />
-                  )}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 rounded-2xl bg-popover text-popover-foreground shadow-level-3 border border-border p-1.5">
-                {hasNewMaterial && (
-                  <DropdownMenuLabel className="text-xs font-medium text-warning px-3 py-2 leading-snug">
-                    Nuovo materiale: rigenera il percorso per includerlo
-                  </DropdownMenuLabel>
-                )}
-                {onRegenerate && (
-                  <DropdownMenuItem
-                    onSelect={onRegenerate}
-                    disabled={isGenerating || isRegenerating || generationBlocked}
-                    className="rounded-xl cursor-pointer"
-                  >
-                    <RefreshCw className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
-                    <span className="flex-1">Rigenera percorso</span>
-                    {isRegenerating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  </DropdownMenuItem>
-                )}
-                {onOpenMaterials && (
-                  <DropdownMenuItem onSelect={onOpenMaterials} className="rounded-xl cursor-pointer">
-                    <FolderOpen className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
-                    <span className="flex-1">Apri materiali</span>
-                  </DropdownMenuItem>
-                )}
-                {onRenameCourse && (
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      setRenameValue(title ?? "");
-                      setRenameOpen(true);
-                    }}
-                    className="rounded-xl cursor-pointer"
-                  >
-                    <Pencil className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
-                    <span className="flex-1">Rinomina corso</span>
-                  </DropdownMenuItem>
-                )}
-                {onDeleteCourse && (
-                  <>
-                    <DropdownMenuSeparator className="bg-border" />
-                    <DropdownMenuItem
-                      onSelect={() => setConfirmDelete(true)}
-                      className="rounded-xl cursor-pointer text-destructive focus:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" strokeWidth={1.75} />
-                      <span className="flex-1">Elimina corso</span>
-                    </DropdownMenuItem>
-                  </>
-                )}
-                {generationBlocked && freeLimitMessage && (
-                  <div className="mt-1 px-3 py-2 rounded-xl bg-warning-container/70 text-warning text-xs leading-snug flex gap-2">
-                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={1.75} />
-                    <span>{freeLimitMessage}</span>
-                  </div>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* ── Titolo: a tutta larghezza, NOME INTERO (niente tagli su mobile) ── */}
-          <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1">
-            {title ?? "Il tuo percorso"}
-          </h2>
-
-          {/* ── Avanzamento: scritta + barra con percentuale ── */}
-          {isGenerating ? (
-            <>
-              <p className="mt-4 text-xs opacity-80">
-                Erga sta trasformando il tuo materiale…
-              </p>
-              <div
-                className="mt-2 h-2 rounded-full overflow-hidden"
-                style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
-              >
-                <div
-                  className="h-full rounded-full bg-current transition-all duration-300"
-                  style={{ width: `${barPct}%` }}
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="mt-4 flex items-baseline justify-between gap-3">
-                <p className="text-sm opacity-80">
-                  {completedCount} di {totalLessons} lezioni
-                </p>
-                <p className="text-sm font-bold tabular-nums">{pct}%</p>
-              </div>
-              <div
-                className="mt-2 h-2 rounded-full overflow-hidden"
-                style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
-              >
-                <div
-                  className="h-full rounded-full bg-current transition-all duration-700 ease-m3-emphasized"
-                  style={{ width: `${barPct}%` }}
-                />
-              </div>
-            </>
-          )}
-
-          {/* ── Azioni con morphing: Cambia corso ⇄ Riprendi espanso + Annulla ── */}
-          {!isGenerating && (canResume || multi) && (
-            <AnimatePresence mode="popLayout" initial={false}>
-              {!isSelectingCourse ? (
-                <motion.div
-                  key="actions-closed"
-                  layout
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.18 }}
-                  className="mt-5 flex items-stretch gap-2.5"
-                >
-                  {canResume && onResume && (
-                    <motion.button
-                      layout
-                      type="button"
-                      onClick={onResume}
-                      className="inline-flex items-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                      style={{
-                        backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                        borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                      }}
-                    >
-                      <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
-                      Riprendi
-                    </motion.button>
-                  )}
-                  {multi && onSelectCourse && (
-                    <motion.button
-                      layout
-                      type="button"
-                      onClick={openPicker}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                      style={{
-                        backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                        borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                      }}
-                    >
-                      <ArrowLeftRight className="w-4 h-4 shrink-0" strokeWidth={1.9} />
-                      Cambia corso
-                    </motion.button>
-                  )}
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="actions-open"
-                  layout
-                  initial={{ opacity: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.18 }}
-                  className="mt-5 flex items-stretch gap-2.5"
-                >
-                  {canResume && onResume ? (
-                    <motion.button
-                      layout
-                      type="button"
-                      onClick={onResume}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                      style={{
-                        backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                        borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                      }}
-                    >
-                      <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
-                      Riprendi
-                    </motion.button>
-                  ) : (
-                    <div className="flex-1" />
-                  )}
-                  <motion.button
-                    layout
-                    type="button"
-                    onClick={closePicker}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                    style={{
-                      backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                      borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                    }}
-                  >
-                    <X className="w-4 h-4 shrink-0" strokeWidth={2} />
-                    Annulla
-                  </motion.button>
-                </motion.div>
+                  <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  Riprendi
+                </motion.button>
               )}
-            </AnimatePresence>
+              {multi && onSelectCourse && (
+                <motion.button
+                  layout
+                  type="button"
+                  onClick={openPicker}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                  }}
+                >
+                  <ArrowLeftRight className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  Cambia corso
+                </motion.button>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="actions-open"
+              layout
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.18 }}
+              className="mt-5 flex items-stretch gap-2.5"
+            >
+              {canResume && onResume ? (
+                <motion.button
+                  layout
+                  type="button"
+                  onClick={onResume}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                  }}
+                >
+                  <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  Riprendi
+                </motion.button>
+              ) : (
+                <div className="flex-1" />
+              )}
+              <motion.button
+                layout
+                type="button"
+                onClick={closePicker}
+                className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                style={{
+                  backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                  borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                }}
+              >
+                <X className="w-4 h-4 shrink-0" strokeWidth={2} />
+                Annulla
+              </motion.button>
+            </motion.div>
           )}
-        </div>
-      </motion.div>
+        </AnimatePresence>
+      )}
+    </div>
+  );
 
-      {/* Card corsi DOPO l'attiva (compaiono sotto la hero) */}
-      <AnimatePresence initial={false}>
-        {isSelectingCourse && after.length > 0 && (
-          <motion.div
-            key="picker-after"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.12 } }}
-            transition={{ duration: 0.15 }}
-            className="space-y-3 mt-4"
-          >
-            {after.map(renderCourseCard)}
-          </motion.div>
-        )}
-      </AnimatePresence>
-        </div>
-      </div>
+  const heroStyle = {
+    backgroundColor: "var(--subject-accent, #f59e0b)",
+    color: "var(--subject-accent-foreground, #111111)",
+  } as const;
+
+  return (
+    <section className="px-4 pt-4">
+      {/* ── HERO inline (stato normale) — con layoutId per il volo condiviso ── */}
+      {!isSelectingCourse && (
+        <motion.div
+          layout
+          layoutId="hero-card"
+          transition={heroLayoutTransition}
+          className="relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6"
+          style={heroStyle}
+        >
+          <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
+          <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
+          <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
+          {heroInner(false)}
+        </motion.div>
+      )}
+
+      {/* ── SELEZIONE CORSI: PORTALE su document.body (viewport garantito) ── */}
+      {createPortal(
+        <AnimatePresence>
+          {isSelectingCourse && (
+            <motion.div
+              key="course-picker"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="fixed inset-0 z-[80] flex flex-col bg-background"
+              onClick={(e) => {
+                // tap sullo sfondo (non sulle card) → chiudi
+                if (e.target === e.currentTarget) closePicker();
+              }}
+            >
+              <div className="flex-1 min-h-0 w-full max-w-lg mx-auto flex flex-col px-4 py-6">
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+                  <div className="flex flex-col min-h-full">
+                    {/* Card sopra */}
+                    {before.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                        transition={{ duration: 0.15 }}
+                        className="space-y-3 mb-4"
+                      >
+                        {before.map(renderCourseCard)}
+                      </motion.div>
+                    )}
+
+                    {/* HERO al centro esatto del viewport (my-auto nel flex) */}
+                    <motion.div
+                      layout
+                      layoutId="hero-card"
+                      transition={heroLayoutTransition}
+                      className="my-auto shrink-0 relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6"
+                      style={heroStyle}
+                    >
+                      <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
+                      <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
+                      <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
+                      {heroInner(true)}
+                    </motion.div>
+
+                    {/* Card sotto */}
+                    {after.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                        transition={{ duration: 0.15 }}
+                        className="space-y-3 mt-4"
+                      >
+                        {after.map(renderCourseCard)}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* ── Rinomina corso ── */}
       <Drawer open={renameOpen} onOpenChange={(o) => !o && setRenameOpen(false)}>
