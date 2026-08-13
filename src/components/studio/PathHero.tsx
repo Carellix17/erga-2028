@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -144,6 +144,8 @@ export function PathHero({
   onSelectingChange,
 }: PathHeroProps) {
   const [isSelectingCourse, setIsSelectingCourse] = useState(false);
+  const heroRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [isSavingRename, setIsSavingRename] = useState(false);
@@ -160,6 +162,30 @@ export function PathHero({
   const activeIdx = Math.max(0, courses.findIndex((c) => c.id === active?.id));
   const before = courses.slice(0, activeIdx);
   const after = courses.slice(activeIdx + 1);
+
+  // OPZIONE B — all'apertura la lista parte col corso attuale al CENTRO
+  // dell'area visibile: scroll iniziale del CONTENITORE interno (mai la
+  // finestra). Dopo l'utente scrolla liberamente.
+  const centerActiveInList = useCallback(() => {
+    const list = listRef.current;
+    const hero = heroRef.current;
+    if (!list || !hero) return;
+    const listRect = list.getBoundingClientRect();
+    const heroRect = hero.getBoundingClientRect();
+    const offset =
+      heroRect.top - listRect.top - (listRect.height - heroRect.height) / 2 + list.scrollTop;
+    list.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    if (!isSelectingCourse) return;
+    const timers: number[] = [];
+    // dopo il mount (layout iniziale)
+    timers.push(window.setTimeout(() => centerActiveInList(), 90));
+    // dopo l'ingresso delle card esterne (delay 0.25s) l'altezza cambia
+    timers.push(window.setTimeout(() => centerActiveInList(), 700));
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [isSelectingCourse, centerActiveInList]);
 
   // La pagina di sfondo NON deve scrollare durante la selezione.
   useEffect(() => {
@@ -506,8 +532,8 @@ export function PathHero({
               }}
             >
               <div className="flex-1 min-h-0 w-full max-w-lg mx-auto flex flex-col px-4 py-6">
-                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
-                  <div className="flex flex-col min-h-full">
+                <div ref={listRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+                  <div className="flex flex-col">
                     {/* Card sopra */}
                     {before.length > 0 && (
                       <motion.div
@@ -521,12 +547,13 @@ export function PathHero({
                       </motion.div>
                     )}
 
-                    {/* HERO al centro esatto del viewport (my-auto nel flex) */}
+                    {/* HERO: in flusso normale; all'apertura la lista la scrolla al centro (opzione B) */}
                     <motion.div
                       layout
+                      ref={heroRef}
                       layoutId="hero-card"
                       transition={heroLayoutTransition}
-                      className="my-auto shrink-0 relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6"
+                      className="relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6"
                       style={heroStyle}
                     >
                       <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
