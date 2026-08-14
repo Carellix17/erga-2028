@@ -92,9 +92,11 @@ export function CourseCardBackground({
   const hasImage = !!coverUrl;
   const color = subjectColor || "#4A2E37"; // fallback caldo elegante
 
-  const baseColor = mixWithBlack(color, 0.68); // tono scuro derivato (mai nero)
-  const orbMain = mixWithWhite(color, 0.15); // versione più chiara/satura
-  const orbSecondary = mixWithWhite(color, 0.35); // tonalità complementare chiara
+  // Base meno scurita (0.5): il colore materia resta ben visibile, mai nero
+  const baseColor = mixWithBlack(color, 0.5);
+  // Orbs più vivaci: schiariti meno, opacità alte
+  const orbMain = mixWithWhite(color, 0.1);
+  const orbSecondary = mixWithWhite(color, 0.3);
 
   return (
     <>
@@ -108,14 +110,14 @@ export function CourseCardBackground({
       {/* 2) ORB PRINCIPALE — alto destra (dietro il menu ⋯) */}
       <div
         aria-hidden
-        className="absolute -top-10 -right-10 w-56 h-56 rounded-full opacity-60 blur-2xl"
+        className="absolute -top-10 -right-10 w-64 h-64 rounded-full opacity-70 blur-2xl"
         style={{ backgroundColor: orbMain }}
       />
 
       {/* 3) ORB SECONDARIO — alto sinistra (tridimensionalità) */}
       <div
         aria-hidden
-        className="absolute top-4 left-6 w-40 h-40 rounded-full opacity-30 blur-3xl"
+        className="absolute top-4 left-6 w-44 h-44 rounded-full opacity-40 blur-3xl"
         style={{ backgroundColor: orbSecondary }}
       />
 

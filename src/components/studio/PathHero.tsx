@@ -501,7 +501,7 @@ export function PathHero({
           <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
           <CourseCardBackground
             coverUrl={heroCover}
-            subjectColor="var(--subject-accent, #f59e0b)"
+            subjectColor={getSubjectAccent(active?.file_name ?? "")}
           />
           {heroInner(false)}
         </motion.div>
@@ -553,7 +553,7 @@ export function PathHero({
                       <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
                       <CourseCardBackground
                         coverUrl={heroCover}
-                        subjectColor="var(--subject-accent, #f59e0b)"
+            subjectColor={getSubjectAccent(active?.file_name ?? "")}
                       />
                       {heroInner(true)}
                     </motion.div>

@@ -112,7 +112,7 @@ const SUBJECT_KEYWORDS: Record<string, string[]> = {
 
 // Fallback generale: accento ambra ad alto contrasto, classi legacy neutre.
 const DEFAULT_COLOR: SubjectColor = {
- key:"default", accent:"hsl(36 6% 46%)",
+ key:"default", accent:"hsl(38 60% 42%)", // ambra calda: mai grigio per i corsi non riconosciuti,
  label:"Generale",
  bg:"bg-pastel-neutro/10", bgActive:"bg-pastel-neutro", text:"text-pastel-neutro", textActive:"text-primary-foreground",
  border:"border-pastel-neutro/40", icon:"bg-pastel-neutro/20", gradient:"from-pastel-neutro/40 to-pastel-neutro/10", solid:"bg-foreground",
