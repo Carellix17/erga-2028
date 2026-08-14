@@ -57,12 +57,12 @@ export function CourseCard({
       type="button"
       onClick={() => onSelect(course)}
       className={cn(
-        "relative w-full overflow-hidden rounded-[28px] border border-white/10 shadow-level-2 p-4 sm:p-5 text-left transition-transform duration-150 active:scale-[0.98]",
+        "relative w-full overflow-hidden rounded-[28px] border border-white/10 shadow-level-2 p-4 sm:p-5 text-left text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white transition-transform duration-150 active:scale-[0.98]",
         className,
       )}
       style={{ color: "#ffffff" }}
     >
-      <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} />
+      <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} variant="studio" />
 
       {/* LAYER 2 — contenuto (testo bianco ad alto contrasto su fondo scuro) */}
       <div className="relative z-10">

@@ -260,7 +260,7 @@ export function PathHero({
           <Icon className="w-3.5 h-3.5" strokeWidth={2} />
           Percorso
         </p>
-        <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words">
+        <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words text-white">
           {courseDisplayName(course.file_name)}
         </h3>
         {meta && <p className="text-xs opacity-75 mt-1">{meta}</p>}
@@ -353,7 +353,7 @@ export function PathHero({
       </div>
 
       {/* Titolo: nome intero */}
-      <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1">
+      <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1 text-white">
         {title ?? "Il tuo percorso"}
       </h2>
 
@@ -502,6 +502,7 @@ export function PathHero({
           <CourseCardBackground
             coverUrl={heroCover}
             subjectColor={getSubjectAccent(active?.file_name ?? "")}
+            variant="studio"
           />
           {heroInner(false)}
         </motion.div>
@@ -553,7 +554,8 @@ export function PathHero({
                       <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
                       <CourseCardBackground
                         coverUrl={heroCover}
-            subjectColor={getSubjectAccent(active?.file_name ?? "")}
+                        subjectColor={getSubjectAccent(active?.file_name ?? "")}
+                        variant="studio"
                       />
                       {heroInner(true)}
                     </motion.div>

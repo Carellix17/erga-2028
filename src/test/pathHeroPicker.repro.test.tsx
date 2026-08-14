@@ -29,6 +29,15 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     expect(screen.getByText("matematica")).toBeTruthy();
   });
 
+  it("forza i titoli di tutte le card corso al bianco anche nel tema chiaro", async () => {
+    render(<PathHero {...base} onSelectCourse={() => {}} />);
+    expect(screen.getByRole("heading", { name: "Storia" })).toHaveClass("text-white");
+
+    fireEvent.click(screen.getByText("Cambia corso"));
+    const otherCourseTitle = await screen.findByRole("heading", { name: "matematica" });
+    expect(otherCourseTitle).toHaveClass("text-white");
+  });
+
   it("notifica al genitore l'apertura/chiusura del selettore", () => {
     const onChange = vi.fn();
     render(<PathHero {...base} onSelectCourse={() => {}} onSelectingChange={onChange} />);

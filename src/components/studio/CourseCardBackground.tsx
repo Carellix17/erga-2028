@@ -5,21 +5,23 @@ interface CourseCardBackgroundProps {
   subjectColor: string;
   /** Opacità dell'immagine (default 0.4). */
   opacity?: number;
+  /** Il nuovo gradiente è intenzionalmente limitato alle card corso di Studio. */
+  variant?: "default" | "studio";
 }
 
 /**
- * 🖼️ P24 — AMBIENT GLOW con ORBS (riferimento visivo Capo).
+ * 🖼️ P24/P25 — AMBIENT GLOW con ORBS (riferimento visivo Capo).
  *
- * Struttura a livelli cromatici:
- *  1) BASE CROMATICA: tono scuro DERIVATO dal colore materia (mai nero pece).
- *     Es. Impressionismo → base bordeaux scuro; Evoluzionismo → base blu scuro.
- *  2) ORB PRINCIPALE (alto destra, dietro il menu ⋯): bolla luminosa
- *     w-56 h-56 rounded-full blur-2xl opacity-60 colorata con la materia.
- *  3) ORB SECONDARIO (alto sinistra): w-40 h-40 blur-3xl opacity-30 con una
- *     tonalità più chiara per la tridimensionalità.
- *  4) OVERLAY leggero from-transparent via-black/20 to-black/70 per garantire
- *     contrasto a testi bianchi e bottoni in basso.
- * Se coverUrl c'è: immagine sfocata sopra con dissolvenza.
+ * La variante `default` conserva esattamente lo sfondo P24 usato dalla Home.
+ * La variante `studio` applica la struttura approvata da image.png soltanto
+ * alle card corso di Studio:
+ *  1) BASE CROMATICA: tre tappe derivate dal colore materia. La metà alta
+ *     conserva la tinta; il carbone arriva gradualmente soltanto in basso.
+ *  2) COVER opzionale: immagine sfocata e fusa nel colore della materia.
+ *  3) DISCESA: velo verticale leggero al centro e profondo sul bordo basso.
+ *  4) ORB PRINCIPALE: grande luce in alto a destra, parzialmente fuori card.
+ *  5) ORB SECONDARIO: luce più piccola in alto a sinistra; tra le due resta
+ *     la valle cromatica visibile nel riferimento.
  * Reattivo al cambio materia (inline style). Nessun asset esterno.
  */
 
@@ -88,34 +90,96 @@ export function CourseCardBackground({
   coverUrl,
   subjectColor,
   opacity = 0.4,
+  variant = "default",
 }: CourseCardBackgroundProps) {
   const hasImage = !!coverUrl;
   const color = subjectColor || "#4A2E37"; // fallback caldo elegante
 
-  // Base meno scurita (0.5): il colore materia resta ben visibile, mai nero
-  const baseColor = mixWithBlack(color, 0.5);
-  // Orbs più vivaci: schiariti meno, opacità alte
-  const orbMain = mixWithWhite(color, 0.1);
-  const orbSecondary = mixWithWhite(color, 0.3);
+  if (variant === "default") {
+    // P24 invariato: questa è la resa condivisa con la Home.
+    const baseColor = mixWithBlack(color, 0.5);
+    const orbMain = mixWithWhite(color, 0.1);
+    const orbSecondary = mixWithWhite(color, 0.3);
+
+    return (
+      <>
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{ backgroundColor: baseColor }}
+        />
+
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70"
+        />
+
+        {hasImage && (
+          <div className="absolute inset-0 overflow-hidden rounded-[inherit] animate-fade-in" aria-hidden>
+            <img
+              src={coverUrl!}
+              alt=""
+              loading="lazy"
+              className="w-full h-full object-cover blur-md scale-110"
+              style={{ opacity }}
+            />
+          </div>
+        )}
+
+        {hasImage && (
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+            aria-hidden
+          />
+        )}
+
+        <div
+          aria-hidden
+          className="absolute -top-10 -right-10 w-72 h-72 rounded-full opacity-80 blur-2xl"
+          style={{ backgroundColor: orbMain }}
+        />
+
+        <div
+          aria-hidden
+          className="absolute top-4 left-6 w-48 h-48 rounded-full opacity-50 blur-3xl"
+          style={{ backgroundColor: orbSecondary }}
+        />
+      </>
+    );
+  }
+
+  // 🌗 P25 — scala misurata sul riferimento approvato:
+  // la materia resta viva per circa due terzi della card e diventa carbone
+  // soltanto in basso. Prima la base partiva già al 50% di nero e l'overlay
+  // arrivava al 70%: il risultato era piatto e troppo scuro (image2).
+  const baseTop = mixWithBlack(color, 0.34);
+  const baseMiddle = mixWithBlack(color, 0.45);
+  const baseBottom = mixWithBlack(color, 0.57);
+
+  // Due sorgenti distinte: una grande in alto a destra e una più piccola a
+  // sinistra. Il centro rimane leggermente più scuro, come in image.png.
+  const orbMain = mixWithWhite(color, 0.5);
+  const orbSecondary = mixWithWhite(color, 0.62);
 
   return (
     <>
-      {/* 1) BASE CROMATICA — tono scuro derivato dalla materia */}
+      {/* 1) BASE CROMATICA — colore materia vivo sopra, carbone solo in fondo. */}
       <div
         aria-hidden
+        data-course-card-layer="base"
         className="absolute inset-0"
-        style={{ backgroundColor: baseColor }}
+        style={{
+          backgroundImage: `linear-gradient(180deg, ${baseTop} 0%, ${baseTop} 34%, ${baseMiddle} 68%, ${baseBottom} 100%)`,
+        }}
       />
 
-      {/* 4) OVERLAY leggero per la leggibilità (testi/bottoni) */}
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70"
-      />
-
-      {/* LAYER 0 — immagine sfocata (sopra l'overlay, con dissolvenza) */}
+      {/* 2) COVER — resta opzionale e sfocata, senza cambiare la geometria. */}
       {hasImage && (
-        <div className="absolute inset-0 overflow-hidden rounded-[inherit] animate-fade-in" aria-hidden>
+        <div
+          aria-hidden
+          data-course-card-layer="cover"
+          className="absolute inset-0 overflow-hidden rounded-[inherit] animate-fade-in"
+        >
           <img
             src={coverUrl!}
             alt=""
@@ -126,27 +190,29 @@ export function CourseCardBackground({
         </div>
       )}
 
-      {/* Ombra leggera sopra l'immagine per il testo bianco */}
-      {hasImage && (
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
-          aria-hidden
-        />
-      )}
-
-      {/* 2) ORB PRINCIPALE — alto destra (dietro il menu ⋯).
-          DOPO overlay e immagine: sempre visibile sopra tutto (tranne contenuto z-10) */}
+      {/* 3) DISCESA — delicata al centro, più profonda soltanto sul bordo basso.
+          È sopra l'eventuale cover, quindi il contrasto resta stabile. */}
       <div
         aria-hidden
-        className="absolute -top-10 -right-10 w-72 h-72 rounded-full opacity-80 blur-2xl"
-        style={{ backgroundColor: orbMain }}
+        data-course-card-layer="shade"
+        className="absolute inset-0 bg-gradient-to-b from-transparent via-black/[0.08] to-black/[0.55]"
       />
 
-      {/* 3) ORB SECONDARIO — alto sinistra (tridimensionalità) */}
+      {/* 4) ALONE PRINCIPALE — spostato davvero in alto a destra: non lava
+          l'intera card e lascia visibile la valle cromatica centrale. */}
       <div
         aria-hidden
-        className="absolute top-4 left-6 w-48 h-48 rounded-full opacity-50 blur-3xl"
-        style={{ backgroundColor: orbSecondary }}
+        data-course-card-layer="orb-main"
+        className="absolute -top-28 -right-28 w-72 h-72 rounded-full blur-[6px]"
+        style={{ backgroundColor: orbMain, opacity: 0.42 }}
+      />
+
+      {/* 5) ALONE SECONDARIO — luce più piccola e morbida in alto a sinistra. */}
+      <div
+        aria-hidden
+        data-course-card-layer="orb-secondary"
+        className="absolute -top-6 -left-[88px] w-48 h-48 rounded-full blur-[18px]"
+        style={{ backgroundColor: orbSecondary, opacity: 0.38 }}
       />
     </>
   );
