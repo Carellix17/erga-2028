@@ -320,26 +320,21 @@ export function HomeView({
                 </Badge>
                 <Badge
                   variant="outline"
-                  className={cn(
-                    "backdrop-blur-sm",
-                    lessonCover
-                      ? "bg-black/30 text-white border-white/30"
-                      : "bg-background/45 text-foreground",
-                  )}
+                  className="backdrop-blur-sm bg-black/30 text-white border-white/30"
                 >
                   {nextLesson.subject}
                 </Badge>
               </div>
               <h2
                 id="next-lesson-title"
-                className="max-w-3xl break-words pt-3 font-display text-[clamp(1.8rem,7vw,3.25rem)] font-extrabold leading-[1.06] tracking-tight text-foreground [overflow-wrap:anywhere]"
+                className="max-w-3xl break-words pt-3 font-display text-[clamp(1.8rem,7vw,3.25rem)] font-extrabold leading-[1.06] tracking-tight text-white [overflow-wrap:anywhere]"
               >
                 {nextLesson.title}
               </h2>
             </CardHeader>
 
             <CardContent className="relative z-10 p-6 pt-0 sm:p-9 sm:pt-0">
-              <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-neutral-300">
                 <span className="inline-flex items-center gap-1.5">
                   <Clock3
                     className="h-4 w-4 text-tertiary"
@@ -355,24 +350,24 @@ export function HomeView({
 
               <div className="mt-6 max-w-lg">
                 <div className="mb-2 flex items-center justify-between gap-3 text-xs font-semibold">
-                  <span className="text-muted-foreground">
+                  <span className="text-neutral-300">
                     Preparazione lezione
                   </span>
-                  <span className="tabular-nums text-foreground">
+                  <span className="tabular-nums text-white">
                     {nextLesson.preparationProgress}%
                   </span>
                 </div>
                 <Progress
                   value={nextLesson.preparationProgress}
                   aria-label={`Preparazione lezione ${nextLesson.preparationProgress}%`}
-                  className="h-2 bg-secondary/70"
+                  className="h-2 bg-white/15"
                 />
               </div>
 
               <Button
                 size="lg"
                 onClick={onOpenStudio}
-                className="mt-8 h-14 w-full gap-2 rounded-2xl bg-black px-7 text-base text-white shadow-level-2 hover:bg-neutral-800 active:scale-[0.97] dark:bg-white dark:text-black dark:hover:bg-neutral-200 sm:w-auto sm:min-w-[250px]"
+                className="mt-8 h-14 w-full gap-2 rounded-2xl bg-white px-7 text-base text-black shadow-level-2 hover:bg-neutral-200 active:scale-[0.97] sm:w-auto sm:min-w-[250px]"
               >
                 <Play className="h-5 w-5 fill-current" aria-hidden="true" />
                 Inizia lezione · {nextLesson.durationMinutes} min

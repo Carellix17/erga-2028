@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
-import { getSubjectAccent, getAccentForeground } from "@/lib/subjectColors";
+import { getSubjectAccent } from "@/lib/subjectColors";
 import { useCourseImage } from "@/hooks/useCourseImage";
 import { CourseCardBackground } from "./CourseCardBackground";
 
@@ -50,8 +50,6 @@ export function CourseCard({
   const coverUrl = useCourseImage(noImage ? null : course.id, course.file_name);
 
   const accent = getSubjectAccent(course.file_name);
-  const fg = getAccentForeground(accent);
-  const hasImage = !!coverUrl;
 
   return (
     <motion.button
@@ -62,26 +60,19 @@ export function CourseCard({
         "relative w-full overflow-hidden rounded-[28px] shadow-level-2 p-4 sm:p-5 text-left transition-transform duration-150 active:scale-[0.98]",
         className,
       )}
-      style={{
-        backgroundColor: accent,
-        color: hasImage ? "#ffffff" : fg,
-      }}
+      style={{ color: "#ffffff" }}
     >
       <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} />
 
-      {/* LAYER 2 — contenuto */}
+      {/* LAYER 2 — contenuto (testo bianco ad alto contrasto su fondo scuro) */}
       <div className="relative z-10">
         {children}
         <span
           className="mt-3.5 inline-flex items-center justify-center gap-1.5 rounded-full border h-10 w-full text-sm font-semibold"
-          style={
-            hasImage
-              ? { backgroundColor: "rgba(255,255,255,0.15)", borderColor: "rgba(255,255,255,0.3)" }
-              : {
-                  backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                  borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                }
-          }
+          style={{
+            backgroundColor: "rgba(255,255,255,0.15)",
+            borderColor: "rgba(255,255,255,0.3)",
+          }}
         >
           {actionLabel}
         </span>

@@ -479,9 +479,10 @@ export function PathHero({
     </div>
   );
 
+  // Lo sfondo lo gestisce CourseCardBackground (base scura + glow materia):
+  // il testo è SEMPRE bianco per il massimo contrasto.
   const heroStyle = {
-    backgroundColor: "var(--subject-accent, #f59e0b)",
-    color: heroCover ? "#ffffff" : "var(--subject-accent-foreground, #111111)",
+    color: "#ffffff",
   } as const;
 
   return (
