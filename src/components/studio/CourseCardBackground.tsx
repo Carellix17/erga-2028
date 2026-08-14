@@ -107,27 +107,13 @@ export function CourseCardBackground({
         style={{ backgroundColor: baseColor }}
       />
 
-      {/* 2) ORB PRINCIPALE — alto destra (dietro il menu ⋯) */}
-      <div
-        aria-hidden
-        className="absolute -top-10 -right-10 w-64 h-64 rounded-full opacity-70 blur-2xl"
-        style={{ backgroundColor: orbMain }}
-      />
-
-      {/* 3) ORB SECONDARIO — alto sinistra (tridimensionalità) */}
-      <div
-        aria-hidden
-        className="absolute top-4 left-6 w-44 h-44 rounded-full opacity-40 blur-3xl"
-        style={{ backgroundColor: orbSecondary }}
-      />
-
       {/* 4) OVERLAY leggero per la leggibilità (testi/bottoni) */}
       <div
         aria-hidden
         className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70"
       />
 
-      {/* LAYER 0 — immagine sfocata (sopra, con dissolvenza) */}
+      {/* LAYER 0 — immagine sfocata (sopra l'overlay, con dissolvenza) */}
       {hasImage && (
         <div className="absolute inset-0 overflow-hidden rounded-[inherit] animate-fade-in" aria-hidden>
           <img
@@ -147,6 +133,21 @@ export function CourseCardBackground({
           aria-hidden
         />
       )}
+
+      {/* 2) ORB PRINCIPALE — alto destra (dietro il menu ⋯).
+          DOPO overlay e immagine: sempre visibile sopra tutto (tranne contenuto z-10) */}
+      <div
+        aria-hidden
+        className="absolute -top-10 -right-10 w-72 h-72 rounded-full opacity-80 blur-2xl"
+        style={{ backgroundColor: orbMain }}
+      />
+
+      {/* 3) ORB SECONDARIO — alto sinistra (tridimensionalità) */}
+      <div
+        aria-hidden
+        className="absolute top-4 left-6 w-48 h-48 rounded-full opacity-50 blur-3xl"
+        style={{ backgroundColor: orbSecondary }}
+      />
     </>
   );
 }

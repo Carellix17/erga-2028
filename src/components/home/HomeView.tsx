@@ -308,10 +308,7 @@ export function HomeView({
               subjectColor={getSubjectAccent(nextLesson?.subject ?? "")}
               opacity={0.4}
             />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-tertiary/15 blur-3xl"
-            />
+
             <CardHeader className="relative z-10 p-6 pb-4 sm:p-9 sm:pb-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="gap-1.5 border-0 bg-black text-white dark:bg-white dark:text-black">
