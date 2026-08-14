@@ -1,30 +1,28 @@
-import { cn } from "@/lib/utils";
-
 interface CourseCardBackgroundProps {
-  /** URL dell'immagine di copertina (null/undefined → fallback Ambient Glow). */
+  /** URL dell'immagine di copertina (null → solo Ambient Glow radiale). */
   coverUrl: string | null;
-  /** Colore materia (HEX o HSL) per i bagliori ambient. */
+  /** Colore materia (HEX o HSL): illumina la parte superiore della card. */
   subjectColor: string;
   /** Opacità dell'immagine (default 0.4). */
   opacity?: number;
-  /** Se true mostra il gradiente di contrasto scuro (default true). */
+  /** Se true mantiene il gradiente scuro in basso (default true). */
   withDarkGradient?: boolean;
 }
 
 /**
- * 🖼️ P24 — SFONDO UNIFICATO per le card dei corsi con FALLBACK AMBIENT GLOW.
+ * 🖼️ P24 — SFONDO AMBIENT GLOW a GRADIENTE RADIALE (riferimento visivo Capo).
  *
- * Sempre presente (base):
- *  · bg-neutral-950 (fondo scuro profondo)
- *  · bagliore principale in alto a destra (blur-3xl, colore materia, opacity 35%)
- *  · bagliore secondario in basso a sinistra (blur-2xl, colore materia, opacity 20%)
- *  · gradiente di contrasto (from-neutral-900/40 via-neutral-950/70 to-neutral-950/90)
- *    per garantire testi/badge/bottoni ad alto contrasto.
+ * Un solo contenitore con style inline:
+ *  · backgroundColor #121212 (fondo scuro, MAI nero pieno);
+ *  · radial-gradient(130% 100% at 75% 10%, coloreMateria 47% → 20% → transparent 75%)
+ *    = il colore della materia ILLUMINA la metà superiore destra della card;
+ *  · linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.6) 100%)
+ *    = leggero chiarore in alto + fondo scuro uniforme in basso (dove stanno
+ *    i bottoni), senza soffocare il colore.
  *
- * Quando coverUrl è presente:
- *  · l'immagine sfocata (blur-md, scale-110) si sovrappone con DISSOLVENZA
- *    (transition-opacity duration-500), i bagliori si attenuano.
- * Solo CSS puro / classi Tailwind: nessun asset esterno.
+ * Se coverUrl è presente: l'immagine sfocata si sovrappone con dissolvenza,
+ * ma la base radiale resta sotto (continuità). Il colore risponde in tempo
+ * reale al cambio di subjectColor. Nessun asset esterno: solo CSS.
  */
 export function CourseCardBackground({
   coverUrl,
@@ -33,47 +31,23 @@ export function CourseCardBackground({
   withDarkGradient = true,
 }: CourseCardBackgroundProps) {
   const hasImage = !!coverUrl;
+  const color = subjectColor || "#7A3B4E";
 
   return (
     <>
-      {/* BASE — fondo scuro profondo (sempre) */}
-      <div className="absolute inset-0 bg-neutral-950" aria-hidden />
-
-      {/* BAGLIORE principale — alto a destra (colore materia) */}
+      {/* BASE — gradiente radiale Ambient Glow (sempre, sotto tutto) */}
       <div
-        className={cn(
-          "absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl transition-opacity duration-500",
-          hasImage ? "opacity-0" : "opacity-35",
-        )}
-        style={{ backgroundColor: subjectColor }}
         aria-hidden
+        className="absolute inset-0"
+        style={{
+          backgroundColor: "#121212",
+          backgroundImage: `radial-gradient(130% 100% at 75% 10%, color-mix(in srgb, ${color} 47%, transparent) 0%, color-mix(in srgb, ${color} 20%, transparent) 45%, transparent 75%), linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.6) 100%)`,
+        }}
       />
 
-      {/* BAGLIORE secondario — basso a sinistra (colore materia, più tenue) */}
-      <div
-        className={cn(
-          "absolute -bottom-8 -left-8 w-36 h-36 rounded-full blur-2xl transition-opacity duration-500",
-          hasImage ? "opacity-0" : "opacity-20",
-        )}
-        style={{ backgroundColor: subjectColor }}
-        aria-hidden
-      />
-
-      {/* GRADIENTE DI CONTRASTO — sopra i bagliori, sotto tutto il resto */}
-      <div
-        className={cn(
-          "absolute inset-0 bg-gradient-to-b from-neutral-900/40 via-neutral-950/70 to-neutral-950/90",
-          !withDarkGradient && "opacity-0",
-        )}
-        aria-hidden
-      />
-
-      {/* LAYER 0 — immagine sfocata (con dissolvenza) */}
+      {/* LAYER 0 — immagine sfocata (sopra la base, con dissolvenza) */}
       {hasImage && (
-        <div
-          className="absolute inset-0 overflow-hidden rounded-[inherit] animate-fade-in"
-          aria-hidden
-        >
+        <div className="absolute inset-0 overflow-hidden rounded-[inherit] animate-fade-in" aria-hidden>
           <img
             src={coverUrl!}
             alt=""
@@ -84,10 +58,10 @@ export function CourseCardBackground({
         </div>
       )}
 
-      {/* Gradiente scuro sopra l'immagine per il contrasto del testo bianco */}
+      {/* Ombra leggera sopra l'immagine per il testo bianco (se richiesto) */}
       {hasImage && withDarkGradient && (
         <div
-          className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
           aria-hidden
         />
       )}

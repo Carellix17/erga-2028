@@ -493,7 +493,7 @@ export function PathHero({
           layout
           layoutId="hero-card"
           transition={heroLayoutTransition}
-          className="relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6"
+          className="relative overflow-hidden rounded-[32px] border border-white/10 shadow-level-2 p-5 sm:p-6"
           style={heroStyle}
         >
           <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
@@ -545,7 +545,7 @@ export function PathHero({
                       ref={heroRef}
                       layoutId="hero-card"
                       transition={heroLayoutTransition}
-                      className="relative overflow-hidden rounded-[32px] shadow-level-2 p-5 sm:p-6"
+                      className="relative overflow-hidden rounded-[32px] border border-white/10 shadow-level-2 p-5 sm:p-6"
                       style={heroStyle}
                     >
                       <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
