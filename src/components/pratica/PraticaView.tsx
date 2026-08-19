@@ -32,10 +32,10 @@ export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: Pra
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem-6rem)] -mb-24">
+    <div className="flex flex-col h-[calc(100vh-6rem)] -mb-24">
       {/* Sub-tab selector - hidden during exercises fullscreen */}
       {!isExerciseFullscreen && (
-        <div className="sticky top-16 px-3 pt-2 pb-2 flex-shrink-0 z-30 bg-background -mx-4 sm:-mx-6 px-4 sm:px-6">
+        <div className="sticky top-0 px-3 pt-2 pb-2 flex-shrink-0 z-30 bg-background -mx-4 sm:-mx-6 px-4 sm:px-6">
           <div className="flex gap-1.5 p-1 rounded-2xl bg-surface-container">
             {subTabs.map((tab) => {
               const Icon = tab.icon;

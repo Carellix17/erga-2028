@@ -21,6 +21,10 @@
     "upload": "Carica",
     "files": "File"
   },
+  "settings": {
+    "languageSubtitle": "Scegli la lingua dell'app",
+    "languageDescription": "Seleziona la lingua in cui vuoi vedere Erga."
+  },
   "landing": {
     "signIn": "Accedi",
     "signUp": "Registrati",

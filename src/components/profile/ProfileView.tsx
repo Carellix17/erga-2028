@@ -5,7 +5,7 @@ import { Label } from"@/components/ui/label";
 import { Slider } from"@/components/ui/slider";
 import { Skeleton } from"@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from"@/components/ui/radio-group";
-import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Brain, Hexagon } from "lucide-react";
+import { Save, User, GraduationCap, BookOpen, Loader2, CheckCircle2, Camera, UserCircle2, Target, Brain, Hexagon, Settings, LogOut, Crown, Zap } from "lucide-react";
 import { cn } from"@/lib/utils";
 import { NotificationsCard } from"./NotificationsCard";
 // Theme fisso: light-only.
@@ -15,7 +15,10 @@ import { Button as UiButton } from"@/components/ui/button";
 import { ScheduleConfigSheet } from"./ScheduleConfigSheet";
 import { CalendarClock } from"lucide-react";
 import { useProfileData, INSTITUTES as PROFILE_INSTITUTES, SCHOOLS as PROFILE_SCHOOLS, SUBJECTS as PROFILE_SUBJECTS } from"@/hooks/useProfileData";
-import { Link } from"react-router-dom";
+import { useAuth } from"@/contexts/AuthContext";
+import { useSubscription } from"@/hooks/useSubscription";
+import { SubscriptionSheet } from"@/components/subscription/SubscriptionSheet";
+import { Link, useNavigate } from"react-router-dom";
 
 const INSTITUTES = PROFILE_INSTITUTES;
 const SCHOOLS = PROFILE_SCHOOLS;
@@ -28,6 +31,22 @@ interface ProfileViewProps {
 export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  const { profile: cognitive } = useCognitiveProfile();
  const [scheduleOpen, setScheduleOpen] = useState(false);
+ const { logout } = useAuth();
+ const navigate = useNavigate();
+ const { tier } = useSubscription();
+ const [showSubscription, setShowSubscription] = useState(false);
+
+ const tierMeta = {
+   free: { icon: Zap, label: "Free" },
+   beta: { icon: Brain, label: "Beta" },
+   pro: { icon: Crown, label: "Pro" },
+ } as const;
+ const TierIcon = tierMeta[tier].icon;
+
+ const handleLogout = () => {
+   logout();
+   navigate("/login");
+ };
 
  // Logica profilo condivisa con Impostazioni → Account
  const {
@@ -76,9 +95,22 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
  }
 
  return (
- <div className="px-4 pt-6 pb-32 space-y-6 max-w-lg mx-auto animate-fade-up">
+ <div className="px-4 pt-4 pb-32 space-y-6 max-w-lg mx-auto animate-fade-up">
+ {/* Intestazione profilo: ingranaggio Impostazioni in alto a destra */}
+ <div className="flex items-center justify-end">
+   <Button
+     variant="ghost"
+     size="icon-sm"
+     aria-label="Impostazioni"
+     onClick={() => navigate("/app/impostazioni")}
+     className="rounded-full shrink-0"
+   >
+     <Settings className="w-5 h-5" />
+   </Button>
+ </div>
+
  {/* Avatar & Name Header */}
- <div className="flex flex-col items-center gap-4 py-4">
+ <div className="flex flex-col items-center gap-4 pt-2 pb-4">
  <div className="relative">
  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
  <button
@@ -277,6 +309,35 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
 
  {/* Notifiche push */}
  <NotificationsCard />
+
+ {/* Abbonamento e uscita (prima vivevano nel menu dell'header) */}
+ <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-colors duration-200 hover:bg-surface-container-low p-5 space-y-2">
+   <button
+     onClick={() => setShowSubscription(true)}
+     className="w-full flex items-center gap-3 p-2 -m-2 rounded-2xl transition-all duration-300 ease-m3-emphasized hover:bg-foreground/[0.06] text-left"
+   >
+     <span className="w-11 h-11 rounded-2xl bg-primary-container text-primary flex items-center justify-center shrink-0">
+       <TierIcon className="w-5 h-5" />
+     </span>
+     <span className="flex-1 min-w-0 title-medium text-foreground">Abbonamento</span>
+     <span className="label-small text-muted-foreground shrink-0">{tierMeta[tier].label}</span>
+   </button>
+
+   <Button
+     variant="ghost"
+     onClick={handleLogout}
+     className="w-full justify-start h-12 rounded-2xl text-destructive hover:bg-destructive/10"
+   >
+     <LogOut className="w-4 h-4 mr-2" />
+     Esci
+   </Button>
+ </div>
+
+ <SubscriptionSheet
+   open={showSubscription}
+   onOpenChange={setShowSubscription}
+   currentTier={tier}
+ />
 
  {/* "Salvagente": appare solo se ci sono modifiche non salvate */}
  {dirty && (
