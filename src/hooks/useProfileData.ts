@@ -146,6 +146,27 @@ export function useProfileData() {
       const urlWithCache = `${publicUrl}?t=${Date.now()}`;
       setAvatarUrl(urlWithCache);
       setAvatarPreview(urlWithCache);
+      // Segna dirty così l'autosave in Generale può persistere, e salva subito anche dal profilo
+      setDirty(true);
+      // Salvataggio immediato dell'avatar (così non serve il pulsante Salva)
+      try {
+        const { data: { session: s2 } } = await supabase.auth.getSession();
+        const authToken2 = s2?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken2}` },
+            body: JSON.stringify({
+              userId: currentUser, action: "save",
+              institute_type: institute, subject_levels: subjectLevels, subject_goals: subjectGoals,
+              first_name: firstName, last_name: lastName, nickname,
+              age: age ? parseInt(age) : null, school, avatar_url: urlWithCache,
+            }),
+          }
+        );
+        setDirty(false);
+      } catch { /* silenzioso: l'autosave ritenterà */ }
     } catch (err) {
       console.error("Error uploading avatar:", err);
       toast({ title: "Errore", description: "Impossibile caricare l'immagine", variant: "destructive" });
