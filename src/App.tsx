@@ -23,6 +23,7 @@ import SettingsAccount from "./pages/settings/SettingsAccount";
 import SettingsAppearance from "./pages/settings/SettingsAppearance";
 import SettingsAccessibility from "./pages/settings/SettingsAccessibility";
 import SettingsTerms from "./pages/settings/SettingsTerms";
+import SettingsLanguage from "./pages/settings/SettingsLanguage";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 
 const queryClient = new QueryClient({
@@ -91,6 +92,7 @@ const App = () => (
             <Route path="/app/impostazioni/account" element={<ProtectedRoute><SettingsAccount /></ProtectedRoute>} />
             <Route path="/app/impostazioni/aspetto" element={<ProtectedRoute><SettingsAppearance /></ProtectedRoute>} />
             <Route path="/app/impostazioni/accessibilita" element={<ProtectedRoute><SettingsAccessibility /></ProtectedRoute>} />
+            <Route path="/app/impostazioni/lingua" element={<ProtectedRoute><SettingsLanguage /></ProtectedRoute>} />
             <Route path="/app/impostazioni/termini" element={<ProtectedRoute><SettingsTerms /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

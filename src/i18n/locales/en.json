@@ -21,6 +21,10 @@
     "upload": "Upload",
     "files": "Files"
   },
+  "settings": {
+    "languageSubtitle": "Choose the app language",
+    "languageDescription": "Select the language you want to see Erga in."
+  },
   "landing": {
     "signIn": "Sign in",
     "signUp": "Sign up",

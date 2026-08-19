@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { User, Palette, Accessibility, FileText, ChevronRight } from "lucide-react";
+import { User, Palette, Accessibility, FileText, ChevronRight, Languages } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
 
 const ITEMS = [
   { to: "/app/impostazioni/account", icon: User, title: "Account", desc: "Modifica i tuoi dati personali" },
+  { to: "/app/impostazioni/lingua", icon: Languages, title: "Lingua", desc: "Scegli la lingua dell'app" },
   { to: "/app/impostazioni/aspetto", icon: Palette, title: "Aspetto", desc: "Tema, colori e visualizzazione" },
   { to: "/app/impostazioni/accessibilita", icon: Accessibility, title: "Accessibilità", desc: "Testo, contrasto e movimento" },
   { to: "/app/impostazioni/termini", icon: FileText, title: "Termini e condizioni", desc: "Termini di servizio e privacy" },

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { AppHeader } from "@/components/layout/AppHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { StudioView } from "@/components/studio/StudioView";
 import { PianoView } from "@/components/piano/PianoView";
@@ -135,13 +134,6 @@ const Index = () => {
       {!isFullscreen && <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />}
 
       <div className="flex-1 flex flex-col min-w-0">
-        {!isFullscreen && (
-          <AppHeader
-            onUploadClick={() => setShowUpload(true)}
-            hasFiles={hasFiles}
-          />
-        )}
-
         <main className="w-full max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-4 sm:px-6 pb-24 md:pb-6">
         <h1 className="sr-only">Erga — Il tuo assistente di studio intelligente</h1>
         {/* 🌲 P24 — passaggio tra stanze: dissolvenza di sola luce (200ms) */}
