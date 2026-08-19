@@ -230,7 +230,7 @@ export function FullscreenLesson({
   return (
     // P24 — il foglio che sale: la lezione entra dal basso arrotondata
     // e si apre a schermo pieno (animate-lesson-sheet-in)
-    <div ref={rootRef} className="fixed inset-0 z-50 bg-background flex flex-col animate-lesson-sheet-in">
+    <div ref={rootRef} className="no-halo fixed inset-0 z-50 bg-background flex flex-col animate-lesson-sheet-in">
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
         <div className="flex items-center gap-2 mb-2">
@@ -859,7 +859,7 @@ export function FullscreenLessonGate({
 
   if (!full) {
     return (
-      <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center gap-4 animate-fade-up">
+      <div className="no-halo fixed inset-0 z-50 bg-background flex flex-col items-center justify-center gap-4 animate-fade-up">
         <div className="w-16 h-16 rounded-full bg-card shadow-level-1 flex items-center justify-center">
           <Loader2 className="w-7 h-7 text-foreground animate-spin" />
         </div>

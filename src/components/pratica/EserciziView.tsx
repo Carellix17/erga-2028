@@ -846,7 +846,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
     const grade = Math.round((correctCount / results.length) * 10 * 10) / 10;
     const pct = Math.round((correctCount / results.length) * 100);
     return (
-      <div className="fixed inset-0 z-50 bg-background flex flex-col h-full px-4 py-6 items-center justify-center space-y-6 pt-safe pb-safe">
+      <div className="no-halo fixed inset-0 z-50 bg-background flex flex-col h-full px-4 py-6 items-center justify-center space-y-6 pt-safe pb-safe">
         <div className={cn(
           "w-28 h-28 rounded-full flex flex-col items-center justify-center",
           grade >= 7 ? "bg-success-container" : grade >= 5 ? "bg-warning/10" : "bg-error-container"
@@ -900,7 +900,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
 
   // Exercise view
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col h-full pt-safe pb-safe">
+    <div className="no-halo fixed inset-0 z-50 bg-background flex flex-col h-full pt-safe pb-safe">
       {/* Header with X button */}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center justify-between mb-2">
