@@ -1,5 +1,6 @@
-import { Check, Lock, Play, RefreshCw } from "lucide-react";
+import { Check, Lock, Play, Plus, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type ModuleState = "done" | "cur" | "gen" | "lock" | "ready";
 
@@ -16,6 +17,8 @@ export interface ModuleCardData {
 interface ModulesOverviewProps {
   modules: ModuleCardData[];
   onOpenModule: (moduleIndex: number) => void;
+  /** Apre il pannello di caricamento per creare un nuovo percorso di studio. */
+  onCreatePath?: () => void;
 }
 
 /**
@@ -24,9 +27,15 @@ interface ModulesOverviewProps {
  * numero in una targa, stato (completato / riprendi / in generazione / da
  * sbloccare / apri) e barra di avanzamento per il modulo corrente o in generazione.
  * La logica (quali moduli esistono, quanto sono completi) arriva da StudioView.
+ *
+ * In coda alla lista vive il pulsante "Nuovo percorso di studio": stessa
+ * pill-firma nera/bianca del bottone principale dell'app (Button variant
+ * "default"), stessa entrata `animate-fade-up` delle altre foglie della
+ * schermata (con un filo di ritardo, così arriva DOPO le schede dei moduli)
+ * e le stesse micro-transizioni al tocco (`duration-200`, `active:scale`).
  */
-export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps) {
-  if (modules.length === 0) return null;
+export function ModulesOverview({ modules, onOpenModule, onCreatePath }: ModulesOverviewProps) {
+  if (modules.length === 0 && !onCreatePath) return null;
 
   return (
     <div className="px-4 pt-5 pb-32 animate-fade-up">
@@ -135,6 +144,33 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
           );
         })}
       </div>
+
+      {/* ➕ Nuovo percorso: la pill-firma dell'app in coda alla lista dei moduli.
+          Entra con la stessa dissolvenza-in-salita delle altre foglie, appena
+          dopo le schede (delay), e reagisce al tocco come loro. */}
+      {onCreatePath && (
+        <div
+          className="mt-5 animate-fade-up"
+          style={{ animationDelay: "120ms" }}
+        >
+          <Button
+            type="button"
+            size="lg"
+            onClick={onCreatePath}
+            aria-label="Crea un nuovo percorso di studio"
+            className={cn(
+              "w-full rounded-full transition-all duration-200",
+              "shadow-level-1 hover:shadow-level-2 active:scale-[0.985]",
+            )}
+          >
+            <Plus className="w-4 h-4" strokeWidth={2.5} />
+            Nuovo percorso di studio
+          </Button>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            Carica un PDF o un link: l'AI costruisce un nuovo corso di mini-lezioni.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
