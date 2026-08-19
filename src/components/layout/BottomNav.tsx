@@ -31,6 +31,12 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pointer-events-none md:static md:z-auto md:px-0 md:pointer-events-auto md:w-64 md:h-screen md:sticky md:top-0 md:self-start md:shrink-0">
+      {/* ── Alone nero sfumato ── fascia scura che avvolge la pillola (mobile)
+           e sfuma verso il contenuto della pagina per massimizzare il contrasto. */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-black/80 via-black/35 to-transparent pointer-events-none md:hidden"
+        aria-hidden
+      />
       <div className="max-w-lg mx-auto pointer-events-auto mb-[max(env(safe-area-inset-bottom,0px),1rem)] flex items-center gap-2.5 md:max-w-none md:mx-0 md:mb-0 md:h-full md:items-stretch">
         {/* ── Pillola (mobile) / Sidebar (desktop) ── */}
         <div className={cn(pillMaterial, "rounded-full shadow-level-2 flex-1 min-w-0 md:rounded-none md:border-0 md:border-r md:h-full md:flex md:flex-col")}>
