@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { useCourseImage } from "@/hooks/useCourseImage";
 import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
 import { getSubjectAccent } from "@/lib/subjectColors";
+import { useWelcomeMessage } from "@/hooks/useWelcomeMessage";
 
 
 interface HomeViewProps {
@@ -194,6 +195,19 @@ export function HomeView({
 
   const { student, lessonsToday, upcomingTasks, quickTools } =
     MOCK_DASHBOARD_DATA;
+
+  // Messaggio di benvenuto dinamico
+  const welcomeMessage = useWelcomeMessage({
+    userName: student.name,
+    streakDays: student.streakDays,
+    dailyProgress: Math.min(
+      100,
+      Math.round(
+        (student.studyMinutesCompleted / student.dailyGoalMinutes) * 100,
+      ),
+    ),
+    lessonsCompleted: completedTaskIds.length,
+  });
   const nextLesson = lessonsToday[0];
   // 🖼️ P24 — immagine di copertina per la card "Prossima lezione" (Wikipedia)
   const lessonCover = useCourseImage(
@@ -249,11 +263,20 @@ export function HomeView({
     <div className="relative isolate min-w-0 overflow-x-clip py-6 sm:py-8">
       <div className="relative z-10 space-y-10 md:space-y-14">
         {/* Intro compatta: orienta senza competere con l'azione principale. */}
-        <header className="min-w-0">
-          <h1 className="break-words font-display text-[clamp(1.7rem,6vw,2.35rem)] font-extrabold leading-tight tracking-normal text-foreground [overflow-wrap:anywhere]">
-            {MOCK_DASHBOARD_DATA.greeting},{" "}
-            <span className="text-tertiary">{student.name}</span>
+        <header className="min-w-0 pt-4 sm:pt-6">
+          <h1 className="flex flex-col gap-0">
+            <span className="break-words font-display text-[clamp(1.5rem,5.5vw,2.1rem)] font-extrabold leading-tight tracking-normal text-foreground [overflow-wrap:anywhere]">
+              {welcomeMessage.greeting}
+            </span>
+            <span className="break-words font-display text-[clamp(1.7rem,6vw,2.35rem)] font-extrabold leading-tight tracking-normal text-tertiary [overflow-wrap:anywhere]">
+              {welcomeMessage.name}
+            </span>
           </h1>
+          {welcomeMessage.subtitle && (
+            <p className="mt-2 text-sm font-medium text-muted-foreground">
+              {welcomeMessage.subtitle}
+            </p>
+          )}
         </header>
 
         {/* Azione principale — la prossima lezione. */}
