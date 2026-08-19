@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { LessonsList } from "@/components/studio/LessonsList";
 import { LessonsListSkeleton } from "@/components/studio/LessonsListSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ModulesOverview } from "@/components/studio/ModulesOverview";
 
 /**
  * 🌿 P21b — Collaudo di accensione della schermata Studio in salotto
@@ -65,5 +66,27 @@ describe("P21b pilota Studio — accensione", () => {
     render(<EmptyState onUploadClick={onUpload} />);
     expect(screen.getByText("Inizia il tuo percorso")).toBeTruthy();
     expect(screen.getByText("Inizia ora")).toBeTruthy();
+  });
+
+  it("ModulesOverview mostra il pulsante 'Nuovo percorso di studio' e lo notifica", () => {
+    const onCreatePath = vi.fn();
+    render(
+      <ModulesOverview
+        modules={[
+          { index: 0, title: "Modulo 1", doneCount: 1, total: 5, state: "cur" },
+        ]}
+        onOpenModule={() => {}}
+        onCreatePath={onCreatePath}
+      />,
+    );
+    const btn = screen.getByRole("button", { name: "Crea un nuovo percorso di studio" });
+    expect(btn).toBeTruthy();
+    fireEvent.click(btn);
+    expect(onCreatePath).toHaveBeenCalledTimes(1);
+  });
+
+  it("ModulesOverview senza percorsi mostra comunque l'invito a crearne uno", () => {
+    render(<ModulesOverview modules={[]} onOpenModule={() => {}} onCreatePath={() => {}} />);
+    expect(screen.getByText("Nuovo percorso di studio")).toBeTruthy();
   });
 });

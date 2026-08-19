@@ -891,7 +891,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       />
       {viewMode === "modules" ? (
         !isCoursePickerOpen ? (
-          <ModulesOverview modules={modules} onOpenModule={(idx) => void openModule(idx)} />
+          <ModulesOverview
+            modules={modules}
+            onOpenModule={(idx) => void openModule(idx)}
+            onCreatePath={onUploadClick}
+          />
         ) : null
       ) : (
         <ModulePath
