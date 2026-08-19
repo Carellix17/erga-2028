@@ -1,0 +1,320 @@
+import { Brain, CalendarDays, Check, Home as HomeIcon, BookOpen, Play, Timer, User, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+type Tab = "home" | "piano" | "studio";
+
+export function PhoneShell({
+  children,
+  tab,
+  tilt,
+  label,
+}: {
+  children: React.ReactNode;
+  tab: Tab;
+  tilt?: boolean;
+  label: string;
+}) {
+  return (
+    <div
+      role="img"
+      aria-label={label}
+      className={cn(
+        "relative z-[2] w-[min(100%,300px)] rounded-[36px] bg-[#0A0A0A] p-[9px]",
+        "shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_30px_80px_rgba(0,0,0,0.32)]",
+        tilt && "-rotate-[5.5deg] translate-y-2",
+      )}
+    >
+      <div className="relative min-h-[580px] overflow-hidden rounded-[28px] bg-[#F7F7F8] text-[#111]">
+        <div className="absolute left-1/2 top-2 z-10 h-[18px] w-[88px] -translate-x-1/2 rounded-[20px] bg-black" />
+        {children}
+        <PhoneTabBar active={tab} />
+      </div>
+    </div>
+  );
+}
+
+function PhoneHeader({ initials = "AL" }: { initials?: string }) {
+  return (
+    <div className="flex items-center justify-between px-1">
+      <div className="flex h-8 items-center gap-1.5 rounded-full bg-neutral-900 pl-1.5 pr-3 text-white">
+        <span className="grid h-[22px] w-[22px] place-items-center rounded-full bg-white/15">
+          <Brain className="h-3 w-3" strokeWidth={2.2} />
+        </span>
+        <span className="text-[12px] font-bold tracking-tight">Erga</span>
+      </div>
+      <span className="grid h-7 w-7 place-items-center rounded-full bg-neutral-900 text-[10px] font-bold text-white">
+        {initials}
+      </span>
+    </div>
+  );
+}
+
+function PhoneTabBar({ active }: { active: Tab }) {
+  const items: { id: Tab; label: string; Icon: typeof HomeIcon }[] = [
+    { id: "home", label: "Home", Icon: HomeIcon },
+    { id: "piano", label: "Piano", Icon: CalendarDays },
+    { id: "studio", label: "Studio", Icon: BookOpen },
+  ];
+  return (
+    <nav className="absolute bottom-2 left-2 right-2 flex items-center gap-1.5" aria-hidden>
+      <div className="grid h-[52px] flex-1 grid-cols-3 items-center rounded-full border border-black/10 bg-white/90 px-1 shadow-sm">
+        {items.map(({ id, label, Icon }) => {
+          const on = active === id;
+          return (
+            <div key={id} className="relative flex flex-col items-center gap-0.5">
+              {on && <span className="absolute inset-x-1 inset-y-1 rounded-full bg-neutral-200/80" />}
+              <Icon className={cn("relative z-10 h-[16px] w-[16px]", on ? "text-neutral-900" : "text-neutral-400")} strokeWidth={on ? 2.2 : 1.8} />
+              <span className={cn("relative z-10 text-[8px] font-semibold", on ? "text-neutral-900" : "text-neutral-400")}>{label}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="relative grid h-[52px] w-[52px] place-items-center rounded-full border border-black/10 bg-white/90 shadow-sm">
+        <User className="h-4 w-4 text-neutral-700" />
+        <span className="absolute right-1 top-1 h-2 w-2 rounded-full border-2 border-white bg-neutral-500" />
+      </div>
+    </nav>
+  );
+}
+
+export function PhoneHome() {
+  return (
+    <div className="flex flex-col gap-2.5 px-2.5 pb-16 pt-8">
+      <PhoneHeader />
+      <p className="px-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+        mercoledì 19 agosto · 2 lezioni
+      </p>
+      <h3 className="px-0.5 font-extrabold leading-tight tracking-tight text-[17px]">
+        Buon pomeriggio, <span className="text-neutral-500">Alessandro</span>
+      </h3>
+      <div className="overflow-hidden rounded-[18px] bg-gradient-to-br from-[#2A2226] to-[#141214] p-3 text-white">
+        <div className="mb-1.5 flex gap-1">
+          <span className="rounded-full bg-black px-2 py-0.5 text-[8px] font-bold">Prossima lezione</span>
+          <span className="rounded-full border border-white/25 px-2 py-0.5 text-[8px] text-white/80">Fisica</span>
+        </div>
+        <p className="text-[15px] font-extrabold leading-[1.15] tracking-tight">
+          Cinematica e il moto rettilineo
+        </p>
+        <p className="mt-1.5 text-[10px] text-neutral-300">Oggi, 15:30 · 18 min</p>
+        <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/15">
+          <div className="h-full w-[68%] rounded-full bg-[#E8C4C6]" />
+        </div>
+        <div className="mt-2.5 flex h-8 items-center justify-center gap-1 rounded-2xl bg-white text-[11px] font-bold text-black">
+          <Play className="h-3 w-3 fill-current" />
+          Inizia lezione · 18 min
+        </div>
+      </div>
+      <div className="rounded-[16px] border border-black/[0.06] bg-white p-2 shadow-sm">
+        <div className="mb-1 flex items-center justify-between px-1">
+          <p className="text-[10px] font-bold">Piano del giorno</p>
+          <span className="rounded-full bg-neutral-100 px-1.5 py-0.5 text-[9px] font-semibold">1/4</span>
+        </div>
+        {[
+          { t: "Appunti cinematica", done: true },
+          { t: "8 esercizi sul moto", done: false },
+          { t: "Vocabolario inglese", done: false },
+        ].map((row) => (
+          <div key={row.t} className="flex items-center gap-2 border-t border-black/[0.05] px-1 py-1.5 first:border-0">
+            <span className={cn("grid h-3.5 w-3.5 place-items-center rounded-[4px] border", row.done ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300")}>
+              {row.done && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
+            </span>
+            <span className={cn("text-[10px] font-semibold", row.done && "text-neutral-400 line-through")}>{row.t}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function PhoneStudio() {
+  const nodes = [
+    { n: "✓", title: "Velocità e spostamento", side: "l", state: "done" },
+    { n: "✓", title: "Moto uniforme", side: "r", state: "done" },
+    { n: "3", title: "Accelerazione", side: "l", state: "cur" },
+    { n: "4", title: "Problema guidato", side: "r", state: "lock" },
+  ] as const;
+
+  return (
+    <div className="flex flex-col gap-2 px-2 pb-16 pt-8">
+      <PhoneHeader />
+      <div className="px-1">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-neutral-400">Modulo 1</p>
+        <p className="text-[13px] font-extrabold leading-snug">Le basi della cinematica</p>
+        <div className="mt-1.5 flex items-baseline justify-between text-[10px]">
+          <span className="text-neutral-500">2 di 4 lezioni</span>
+          <span className="font-bold">50%</span>
+        </div>
+        <div className="mt-1 h-1 overflow-hidden rounded-full bg-neutral-200">
+          <div className="h-full w-1/2 rounded-full bg-[#C4878B]" />
+        </div>
+      </div>
+      <div className="relative mx-1 mt-1 h-[340px]">
+        {nodes.map((node, i) => (
+          <div
+            key={node.title}
+            className={cn("absolute flex items-start gap-1.5", node.side === "l" ? "left-1" : "right-1 flex-row-reverse")}
+            style={{ top: 12 + i * 72 }}
+          >
+            <div className="relative">
+              {node.state === "cur" && (
+                <span className="absolute -top-5 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#C4878B] px-2 py-0.5 text-[8px] font-extrabold text-[#1A1012]">
+                  Riprendi
+                </span>
+              )}
+              <div
+                className={cn(
+                  "grid h-11 w-11 place-items-center rounded-[14px] text-[13px] font-extrabold",
+                  node.state === "done" && "bg-[#C4878B] text-[#1A1012] shadow-sm",
+                  node.state === "cur" && "border-[3px] border-[#C4878B] bg-white",
+                  node.state === "lock" && "border-2 border-neutral-200 bg-neutral-100 text-neutral-400",
+                )}
+              >
+                {node.n}
+              </div>
+            </div>
+            <div className="mt-1 max-w-[108px] rounded-xl border border-black/10 bg-white/80 px-2 py-1 text-[10px] font-semibold leading-snug shadow-sm">
+              {node.title}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function PhonePiano() {
+  const mute = new Set([27, 28, 29, 30, 31]);
+  const days = [27, 28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+  return (
+    <div className="flex flex-col gap-2 px-2.5 pb-16 pt-8">
+      <PhoneHeader />
+      <div className="grid grid-cols-[1.4fr_.8fr] gap-1">
+        <div className="grid h-9 place-items-center rounded-full bg-neutral-900 text-[11px] font-bold text-white">
+          Genera piano
+        </div>
+        <div className="flex h-9 items-center justify-center gap-1 rounded-full border border-neutral-200 bg-white text-[11px] font-semibold">
+          <Timer className="h-3 w-3" /> Focus
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-1 rounded-full bg-neutral-100 p-0.5">
+        <span className="grid h-7 place-items-center rounded-full bg-white text-[11px] font-semibold shadow-sm">Mese</span>
+        <span className="grid h-7 place-items-center text-[11px] text-neutral-400">Settimana</span>
+      </div>
+      <p className="text-center text-[12px] font-semibold">agosto 2026</p>
+      <div className="grid grid-cols-7 text-center text-[8px] uppercase tracking-wider text-neutral-400">
+        {["lun", "mar", "mer", "gio", "ven", "sab", "dom"].map((d) => <span key={d}>{d}</span>)}
+      </div>
+      <div className="grid grid-cols-7">
+        {days.map((d, i) => (
+          <span
+            key={`${d}-${i}`}
+            className={cn(
+              "relative mx-auto grid h-7 w-7 place-items-center rounded-full text-[11px]",
+              mute.has(d) && i < 5 && "text-neutral-300",
+              d === 19 && i > 10 && "bg-neutral-900 font-bold text-white",
+            )}
+          >
+            {d}
+            {(d === 19 || d === 20 || d === 21) && i > 10 && (
+              <span className="absolute bottom-0.5 h-1 w-1 rounded-full bg-[#C4878B]" />
+            )}
+          </span>
+        ))}
+      </div>
+      <div className="mt-1 rounded-[14px] border border-black/[0.06] bg-white p-2">
+        <p className="text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Mercoledì 19</p>
+        <p className="mt-0.5 text-[12px] font-bold">Cinematica compressa</p>
+        <p className="text-[10px] text-neutral-500">15:10 · Fisica · 18 min</p>
+      </div>
+    </div>
+  );
+}
+
+export function PhoneLesson() {
+  return (
+    <div className="flex min-h-[580px] flex-col px-2.5 pb-4 pt-8">
+      <div className="mb-2 flex items-center gap-1.5">
+        <span className="grid h-6 w-6 place-items-center rounded-full text-neutral-400">
+          <X className="h-3.5 w-3.5" />
+        </span>
+        <div className="flex h-1.5 flex-1 gap-0.5">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <i key={i} className={cn("h-full flex-1 rounded-full", i < 3 ? "bg-neutral-900" : "bg-neutral-200")} />
+          ))}
+        </div>
+        <span className="text-[10px] font-semibold text-neutral-400">3/8</span>
+      </div>
+      <p className="text-center text-[9px] text-neutral-400">
+        Lezione 3 di 12 · <span className="font-semibold text-neutral-800">Cinematica</span>
+      </p>
+      <div className="mt-4 flex items-center gap-2">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-neutral-100 text-sm">🎯</span>
+        <p className="text-[13px] font-extrabold leading-tight">Perché ti riguarda</p>
+      </div>
+      <div className="mt-3 rounded-[16px] border border-neutral-200/70 bg-white p-3.5 shadow-sm">
+        <p className="text-[12px] leading-relaxed text-neutral-700">
+          Il <strong className="text-neutral-900">moto rettilineo</strong> è ovunque: bus, palla, freno in città.
+          Capirlo significa leggere i numeri prima che la verifica te li chieda.
+        </p>
+        <div className="mt-2.5 rounded-2xl border border-amber-200/80 bg-amber-50 px-3 py-2 text-[11px] leading-snug text-neutral-800">
+          ⚡ In 3 righe capisci <strong>perché</strong> tutto il resto ha senso.
+        </div>
+      </div>
+      <div className="mt-auto flex h-10 items-center justify-center rounded-full bg-neutral-900 text-[13px] font-bold text-white">
+        Continua →
+      </div>
+    </div>
+  );
+}
+
+export function PhoneHero({
+  kicker,
+  title,
+  meta,
+  pct,
+  badge,
+  steps,
+}: {
+  kicker: string;
+  title: string;
+  meta: string;
+  pct: number;
+  badge: string | null;
+  steps: { n: string; title: string; desc: string; time: string }[];
+}) {
+  return (
+    <div className="flex flex-col gap-2 px-2.5 pb-16 pt-8">
+      <PhoneHeader />
+      <div className="rounded-[18px] bg-gradient-to-br from-[#2A2226] to-[#1A1618] p-3 text-white">
+        <p className="text-[8px] uppercase tracking-[0.12em] text-white/55">{kicker}</p>
+        <h3 className="mt-1 text-[16px] font-bold tracking-tight">{title}</h3>
+        <div className="mt-1.5 flex justify-between text-[10px] text-neutral-300">
+          <span>{meta}</span>
+          <span>{pct}%</span>
+        </div>
+        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/15">
+          <div className="h-full rounded-full bg-[#E8C4C6] transition-all duration-500" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
+      {badge && (
+        <div className="rounded-[10px] bg-[#E8C4C6] px-2 py-1.5 text-[10px] font-semibold text-[#1A1012]">
+          {badge}
+        </div>
+      )}
+      <div className="grid gap-1.5">
+        {steps.map((s, i) => (
+          <article key={s.n} className={cn("grid grid-cols-[28px_1fr_auto] items-center gap-1.5 rounded-[14px] border bg-white px-1.5 py-1.5", i === 0 ? "border-[#C4878B]/50" : "border-black/[0.06]")}>
+            <div className={cn("grid h-7 w-7 place-items-center rounded-[9px] text-[11px] font-bold", i === 0 ? "bg-[#C4878B] text-[#1A1012]" : "bg-neutral-100")}>
+              {s.n}
+            </div>
+            <div>
+              <h4 className="text-[11px] font-bold leading-tight">{s.title}</h4>
+              <p className="text-[9px] text-neutral-500">{s.desc}</p>
+            </div>
+            <time className="text-[9px] font-bold text-[#A86B70]">{s.time}</time>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
