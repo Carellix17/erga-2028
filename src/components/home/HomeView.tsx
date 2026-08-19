@@ -3,7 +3,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
   Brain,
-  CalendarDays,
   CheckCircle2,
   ChevronDown,
   Clock3,
@@ -66,16 +65,8 @@ const MOCK_DASHBOARD_DATA = (() => {
   return {
     greeting:
       hour < 12 ? "Buongiorno" : hour < 18 ? "Buon pomeriggio" : "Buonasera",
-    todayLabel: new Intl.DateTimeFormat("it-IT", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    }).format(now),
     student: {
       name: "Alessandro",
-      level: 8,
-      levelName: "Esploratore",
-      levelProgress: 72,
       studyMinutesCompleted: 42,
       dailyGoalMinutes: 60,
       streakDays: 6,
@@ -258,48 +249,14 @@ export function HomeView({
     <div className="relative isolate min-w-0 overflow-x-clip py-6 sm:py-8">
       <div className="relative z-10 space-y-10 md:space-y-14">
         {/* Intro compatta: orienta senza competere con l'azione principale. */}
-        <header className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              <CalendarDays
-                className="h-3.5 w-3.5 text-tertiary"
-                aria-hidden="true"
-              />
-              <span className="capitalize">
-                {MOCK_DASHBOARD_DATA.todayLabel}
-              </span>
-              <span
-                aria-hidden="true"
-                className="h-1 w-1 rounded-full bg-muted-foreground/40"
-              />
-              <span>{lessonsToday.length} lezioni oggi</span>
-            </div>
-            <h1 className="break-words font-display text-[clamp(1.7rem,6vw,2.35rem)] font-extrabold leading-tight tracking-tight text-foreground [overflow-wrap:anywhere]">
-              {MOCK_DASHBOARD_DATA.greeting},{" "}
-              <span className="text-tertiary">{student.name}</span>
-            </h1>
-          </div>
-
-          <div className="flex w-full min-w-0 items-center gap-3 sm:w-auto sm:min-w-[220px]">
-            <div className="min-w-0 flex-1">
-              <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-semibold">
-                <span className="truncate text-muted-foreground">
-                  Livello {student.level} · {student.levelName}
-                </span>
-                <span className="shrink-0 tabular-nums text-foreground">
-                  {student.levelProgress}%
-                </span>
-              </div>
-              <Progress
-                value={student.levelProgress}
-                aria-label={`Progresso livello ${student.levelProgress}%`}
-                className="h-1.5 bg-secondary/65"
-              />
-            </div>
-          </div>
+        <header className="min-w-0">
+          <h1 className="break-words font-display text-[clamp(1.7rem,6vw,2.35rem)] font-extrabold leading-tight tracking-normal text-foreground [overflow-wrap:anywhere]">
+            {MOCK_DASHBOARD_DATA.greeting},{" "}
+            <span className="text-tertiary">{student.name}</span>
+          </h1>
         </header>
 
-        {/* Livello 1 — unica azione dominante. */}
+        {/* Azione principale — la prossima lezione. */}
         <section aria-labelledby="next-lesson-title" className="min-w-0">
           <Card className="relative w-full min-w-0 overflow-hidden border-primary/15 bg-background/95 supports-[backdrop-filter]:bg-background/80 dark:border-white/10">
             {/* 🖼️ P24 — sfondo unificato (immagine + tinta materia) */}
@@ -309,7 +266,7 @@ export function HomeView({
               opacity={0.4}
             />
 
-            <CardHeader className="relative z-10 p-6 pb-4 sm:p-9 sm:pb-5">
+            <CardHeader className="relative z-10 p-5 pb-3 sm:p-6 sm:pb-4">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="gap-1.5 border-0 bg-black text-white dark:bg-white dark:text-black">
                   <Sparkles className="h-3 w-3" aria-hidden="true" />
@@ -324,29 +281,32 @@ export function HomeView({
               </div>
               <h2
                 id="next-lesson-title"
-                className="max-w-3xl break-words pt-3 font-display text-[clamp(1.8rem,7vw,3.25rem)] font-extrabold leading-[1.06] tracking-tight text-white [overflow-wrap:anywhere]"
+                className="max-w-2xl break-words pt-2 font-display text-[clamp(1.45rem,5vw,2.2rem)] font-extrabold leading-[1.12] tracking-tight text-white [overflow-wrap:anywhere]"
               >
                 {nextLesson.title}
               </h2>
             </CardHeader>
 
-            <CardContent className="relative z-10 p-6 pt-0 sm:p-9 sm:pt-0">
-              <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-neutral-300">
+            <CardContent className="relative z-10 p-5 pt-0 sm:p-6 sm:pt-0">
+              <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-neutral-300">
                 <span className="inline-flex items-center gap-1.5">
                   <Clock3
-                    className="h-4 w-4 text-tertiary"
+                    className="h-3.5 w-3.5 text-tertiary"
                     aria-hidden="true"
                   />
                   Oggi, {nextLesson.startTime}
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Timer className="h-4 w-4 text-tertiary" aria-hidden="true" />
+                  <Timer
+                    className="h-3.5 w-3.5 text-tertiary"
+                    aria-hidden="true"
+                  />
                   Sessione guidata · {nextLesson.durationMinutes} min
                 </span>
               </div>
 
-              <div className="mt-6 max-w-lg">
-                <div className="mb-2 flex items-center justify-between gap-3 text-xs font-semibold">
+              <div className="mt-4 max-w-md">
+                <div className="mb-1.5 flex items-center justify-between gap-3 text-xs font-semibold">
                   <span className="text-neutral-300">
                     Preparazione lezione
                   </span>
@@ -357,23 +317,23 @@ export function HomeView({
                 <Progress
                   value={nextLesson.preparationProgress}
                   aria-label={`Preparazione lezione ${nextLesson.preparationProgress}%`}
-                  className="h-2 bg-white/15"
+                  className="h-1.5 bg-white/15"
                 />
               </div>
 
               <Button
                 size="lg"
                 onClick={onOpenStudio}
-                className="mt-8 h-14 w-full gap-2 rounded-2xl bg-white px-7 text-base text-black shadow-level-2 hover:bg-neutral-200 active:scale-[0.97] sm:w-auto sm:min-w-[250px]"
+                className="mt-5 h-12 w-full gap-2 rounded-xl bg-white px-6 text-sm text-black shadow-level-2 hover:bg-neutral-200 active:scale-[0.97] sm:w-auto sm:min-w-[220px]"
               >
-                <Play className="h-5 w-5 fill-current" aria-hidden="true" />
+                <Play className="h-4 w-4 fill-current" aria-hidden="true" />
                 Inizia lezione · {nextLesson.durationMinutes} min
               </Button>
             </CardContent>
           </Card>
         </section>
 
-        {/* Livello 2 — piano essenziale, con dettaglio progressivo. */}
+        {/* Piano essenziale, con dettaglio progressivo. */}
         <section
           aria-labelledby="today-plan-title"
           className="min-w-0 space-y-4"
@@ -554,7 +514,7 @@ export function HomeView({
           </div>
         </section>
 
-        {/* Livello 3 — strumenti secondari, volutamente più quieti. */}
+        {/* Strumenti secondari, volutamente più quieti. */}
         <section
           aria-labelledby="quick-tools-title"
           className="min-w-0 space-y-4 pb-2"
