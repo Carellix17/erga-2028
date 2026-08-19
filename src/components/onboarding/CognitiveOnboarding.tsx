@@ -102,7 +102,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
   })();
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background overflow-y-auto">
+    <div className="no-halo fixed inset-0 z-[100] bg-background overflow-y-auto">
       <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-lg">
           {/* Progress + close */}
