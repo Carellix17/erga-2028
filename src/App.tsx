@@ -90,6 +90,7 @@ const App = () => (
             />
             <Route path="/app/impostazioni" element={<ProtectedRoute><SettingsIndex /></ProtectedRoute>} />
             <Route path="/app/impostazioni/account" element={<ProtectedRoute><SettingsAccount /></ProtectedRoute>} />
+            <Route path="/app/impostazioni/generale" element={<ProtectedRoute><SettingsAccount /></ProtectedRoute>} />
             <Route path="/app/impostazioni/aspetto" element={<ProtectedRoute><SettingsAppearance /></ProtectedRoute>} />
             <Route path="/app/impostazioni/accessibilita" element={<ProtectedRoute><SettingsAccessibility /></ProtectedRoute>} />
             <Route path="/app/impostazioni/lingua" element={<ProtectedRoute><SettingsLanguage /></ProtectedRoute>} />
