@@ -16,46 +16,34 @@ import {
 import { BrandMark } from "./BrandMark";
 import { DeferredHexagon } from "./DeferredHexagon";
 import { MaterialJourney } from "./MaterialJourney";
-import { PhoneHero, PhoneShell } from "./PhoneMocks";
+import { PhoneHome, PhoneShell } from "./PhoneMocks";
 import { ProductShowcase } from "./ProductShowcase";
 import "./landing.css";
 
 const PATHS = {
   fisica: {
-    kicker: "Fisica · verifica",
-    title: "Cinematica",
-    meta: "4 tappe · interrogazione",
-    badge: "Esempio di percorso · Tempo stimato: 18 min",
-    steps: [
-      { n: "1", title: "Concetto chiave", desc: "Moto rettilineo, v = s/t", time: "4 min" },
-      { n: "2", title: "Quiz lampo sulle formule", desc: "8 domande, solo le basi", time: "3 min" },
-      { n: "3", title: "Problema guidato", desc: "Auto in frenata, un esercizio", time: "7 min" },
-      { n: "4", title: "Richiamo attivo per domani", desc: "4 carte, poi stop", time: "4 min" },
-    ],
+    subject: "Fisica",
+    title: "Cinematica e moto rettilineo",
+    time: "15:30",
+    duration: 18,
+    progress: 68,
+    tasks: ["Ripassa le formule del moto", "8 esercizi sulla velocità", "Richiamo attivo finale"],
   },
   sposi: {
-    kicker: "Italiano · capitoli 9–12",
-    title: "I Promessi Sposi",
-    meta: "4 tappe · orale",
-    badge: "Esempio di percorso · Tempo stimato: 19 min",
-    steps: [
-      { n: "1", title: "Mappa del capitolo", desc: "Don Abbondio, i bravi, il filo", time: "5 min" },
-      { n: "2", title: "Personaggi e mosse", desc: "Quiz lampo, niente riassunto", time: "4 min" },
-      { n: "3", title: "Passo guidato", desc: "Il voto di Lucia, cosa chiede la prof", time: "6 min" },
-      { n: "4", title: "Richiamo da interrogazione", desc: "5 domande ad alta voce", time: "4 min" },
-    ],
+    subject: "Italiano",
+    title: "I Promessi Sposi · Capitoli 9–12",
+    time: "16:10",
+    duration: 19,
+    progress: 45,
+    tasks: ["Mappa dei personaggi", "Passo guidato sul capitolo 10", "5 domande per l’orale"],
   },
   latino: {
-    kicker: "Latino · grammatica",
+    subject: "Latino",
     title: "Sintassi dei casi",
-    meta: "4 tappe · versione",
-    badge: "Esempio di percorso · Tempo stimato: 18 min",
-    steps: [
-      { n: "1", title: "Schema dei casi", desc: "Dal nominativo all’ablativo", time: "4 min" },
-      { n: "2", title: "Riconoscimento lampo", desc: "10 desinenze, un colpo d’occhio", time: "4 min" },
-      { n: "3", title: "Versione guidata", desc: "4 proposizioni, un caso alla volta", time: "7 min" },
-      { n: "4", title: "Richiamo per l’interrogazione", desc: "3 frasi, poi chiudi", time: "3 min" },
-    ],
+    time: "16:40",
+    duration: 18,
+    progress: 52,
+    tasks: ["Schema dei casi", "Riconoscimento delle desinenze", "Versione guidata"],
   },
 } as const;
 
@@ -273,15 +261,17 @@ export function ErgaMarketing() {
                   <path d="M54 108 C150 124 96 240 212 272 S330 338 354 430" />
                 </svg>
               </div>
-              <PhoneShell tab="studio" tilt label={`Esempio Erga: percorso ${data.title} in quattro tappe`}>
-                <PhoneHero
-                  kicker={data.kicker}
-                  title={data.title}
-                  meta={data.meta}
-                  pct={100}
-                  badge={data.badge}
-                  steps={data.steps}
-                />
+              <PhoneShell tab="home" tilt label={`Schermata Home di Erga con la prossima lezione di ${data.subject}`}>
+                <div key={path} className="lp-phone-screen-swap">
+                  <PhoneHome
+                    subject={data.subject}
+                    title={data.title}
+                    startTime={data.time}
+                    duration={data.duration}
+                    progress={data.progress}
+                    tasks={data.tasks}
+                  />
+                </div>
               </PhoneShell>
             </div>
           </div>

@@ -65,15 +65,18 @@ describe("landing marketing", () => {
     expect(menuButton).toHaveFocus();
   });
 
-  it("mostra subito il risultato completo quando si cambia materia", () => {
+  it("mostra la vera struttura della Home e aggiorna la materia scelta", () => {
     renderLanding();
+
+    expect(screen.getByText("Buon pomeriggio")).toBeInTheDocument();
+    expect(screen.getByText("Preparazione lezione")).toBeInTheDocument();
+    expect(screen.getByText("Piano del giorno")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Latino · Sintassi dei casi" }));
 
+    expect(screen.getAllByText("Sintassi dei casi").length).toBeGreaterThan(0);
     expect(screen.getByText("Schema dei casi")).toBeInTheDocument();
     expect(screen.getByText("Versione guidata")).toBeInTheDocument();
-    expect(screen.getByText("Richiamo per l’interrogazione")).toBeInTheDocument();
-    expect(screen.getByText(/Esempio di percorso · Tempo stimato: 18 min/)).toBeInTheDocument();
   });
 
   it("racconta la trasformazione dal materiale al piano", () => {
@@ -94,5 +97,15 @@ describe("landing marketing", () => {
     expect(screen.getByRole("heading", { name: "Una proposta che puoi accettare o cambiare." })).toBeInTheDocument();
     expect(screen.getByText("Vista mese e settimana")).toBeInTheDocument();
     expect(within(controls).getByRole("button", { name: "Piano" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("non sovrappone la navigazione alla lezione a schermo intero", () => {
+    const { container } = renderLanding();
+    const controls = screen.getByRole("group", { name: "Scegli l’anteprima dell’app" });
+
+    fireEvent.click(within(controls).getByRole("button", { name: "Lezione" }));
+
+    expect(container.querySelector(".lp-showcase-phone nav")).not.toBeInTheDocument();
+    expect(screen.getByText("Continua →")).toBeInTheDocument();
   });
 });

@@ -680,9 +680,57 @@
   .erga-lp .lp-final-box { min-height: 610px; }
 }
 
+
+/* ─── Animazioni degli screen: brevi, informative e senza sovrapposizioni ─── */
+.erga-lp .lp-phone-screen-swap { height: 580px; overflow: hidden; }
+.erga-lp .lp-phone-screen-swap > .lp-phone-view {
+  height: 580px;
+  animation: lp-phone-screen-in 320ms var(--lp-out) both;
+}
+.erga-lp .lp-stage .lp-phone-shell > div { animation: lp-phone-shell-in 560ms var(--lp-out) both; }
+.erga-lp .lp-phone-home-block { animation: lp-phone-block-in 360ms var(--lp-out) both; }
+.erga-lp .lp-phone-home-block:nth-child(1) { animation-delay: 60ms; }
+.erga-lp .lp-phone-home-block:nth-child(2) { animation-delay: 110ms; }
+.erga-lp .lp-phone-home-block:nth-child(3) { animation-delay: 160ms; }
+.erga-lp .lp-phone-home-block:nth-child(4) { animation-delay: 210ms; }
+.erga-lp .lp-phone-content-block { animation: lp-phone-block-in 340ms var(--lp-out) both; }
+.erga-lp .lp-phone-content-block:nth-of-type(2) { animation-delay: 70ms; }
+.erga-lp .lp-phone-progress { animation: lp-phone-progress-in 620ms 180ms var(--lp-out) both; }
+.erga-lp .lp-phone-detail-swap { animation: lp-phone-detail-in 280ms var(--lp-out) both; }
+.erga-lp .lp-hero-paper { opacity: 0; animation: lp-paper-in 520ms var(--lp-out) forwards; }
+.erga-lp .lp-hero-paper.pdf { animation-delay: 120ms; }
+.erga-lp .lp-hero-paper.photo { animation-delay: 220ms; }
+.erga-lp .lp-hero-paper.notes { animation-delay: 320ms; }
+
+@keyframes lp-phone-shell-in {
+  from { opacity: 0; translate: 0 24px; }
+  to { opacity: 1; translate: 0 0; }
+}
+@keyframes lp-phone-screen-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes lp-phone-block-in {
+  from { opacity: 0; translate: 0 8px; }
+  to { opacity: 1; translate: 0 0; }
+}
+@keyframes lp-phone-detail-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes lp-paper-in {
+  from { opacity: 0; translate: 0 14px; }
+  to { opacity: 1; translate: 0 0; }
+}
+@keyframes lp-phone-progress-in {
+  from { scale: 0 1; }
+  to { scale: 1 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .erga-lp *, .erga-lp *::before, .erga-lp *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;

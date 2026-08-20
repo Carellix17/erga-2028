@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BookOpen, CalendarDays, Check, GraduationCap, type LucideIcon } from "lucide-react";
-import { PhoneLesson, PhonePiano, PhoneShell, PhoneStudio } from "./PhoneMocks";
+import { PhoneLesson, PhonePiano, PhoneShell, PhoneStudio, type PhoneTab } from "./PhoneMocks";
 
 const VIEWS = {
   studio: {
@@ -28,7 +28,7 @@ const VIEWS = {
     description: "Le tappe mettono in evidenza il nucleo dell’argomento e lasciano spazio a esempi, fonti ed esercizi.",
     bullets: ["Testo leggibile", "Esempi mirati", "Avanzamento chiaro"],
     Icon: GraduationCap,
-    phoneTab: "home" as const,
+    phoneTab: null,
   },
 } satisfies Record<string, {
   label: string;
@@ -37,7 +37,7 @@ const VIEWS = {
   description: string;
   bullets: string[];
   Icon: LucideIcon;
-  phoneTab: "home" | "piano" | "studio";
+  phoneTab: PhoneTab | null;
 }>;
 
 type ViewKey = keyof typeof VIEWS;
@@ -59,9 +59,11 @@ export function ProductShowcase() {
           <div className="lp-showcase-phone">
             <div className="lp-showcase-orbit" aria-hidden />
             <PhoneShell tab={view.phoneTab} label={`Anteprima Erga: ${view.label}`}>
-              {activeView === "studio" && <PhoneStudio />}
-              {activeView === "piano" && <PhonePiano />}
-              {activeView === "lezione" && <PhoneLesson />}
+              <div key={activeView} className="lp-phone-screen-swap">
+                {activeView === "studio" && <PhoneStudio />}
+                {activeView === "piano" && <PhonePiano />}
+                {activeView === "lezione" && <PhoneLesson />}
+              </div>
             </PhoneShell>
           </div>
 
@@ -84,7 +86,7 @@ export function ProductShowcase() {
               })}
             </div>
 
-            <div className="lp-showcase-detail" aria-live="polite">
+            <div key={activeView} className="lp-showcase-detail lp-phone-detail-swap" aria-live="polite">
               <p>{view.eyebrow}</p>
               <h3>{view.title}</h3>
               <p className="lp-showcase-description">{view.description}</p>
