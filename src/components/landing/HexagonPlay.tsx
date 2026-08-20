@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { BarChart3, Compass, Lightbulb, Pin, Target, Zap, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type HexKey = "log" | "mem" | "foc" | "voc" | "ans" | "app";
@@ -145,34 +146,39 @@ function lessonFor(scores: HexScores, active: HexKey) {
   const recap = scores.mem < 45;
   const deep = scores.log > 75 && scores.foc > 60;
 
-  const title = simple ? "🎯 Perché ti serve" : "🎯 Perché ti riguarda";
+  const title = simple ? "Perché ti serve" : "Perché ti riguarda";
   let body = "";
   let box = "";
+  let Icon: LucideIcon = Zap;
 
   if (exampleFirst) {
     body = short
       ? "Un’auto frena. In 4 secondi si ferma. Quello è moto rettilineo: una linea, un tempo, una velocità."
       : "Pensa a un’auto che frena al semaforo. In pochi secondi la velocità scende a zero. È lo stesso schema della verifica: uno spostamento, un tempo, una formula.";
-    box = "💡 Prima l’esempio, poi la regola. Così la applichi subito.";
+    box = "Prima l’esempio, poi la regola. Così la applichi subito.";
+    Icon = Lightbulb;
   } else if (simple) {
     body = short
       ? "Moto rettilineo = muoversi su una linea. Velocità = spazio ÷ tempo."
       : "Moto rettilineo vuol dire muoversi su una linea dritta. La parola velocità qui significa solo: quanto spazio fai in un certo tempo.";
-    box = "📌 Velocità = spazio ÷ tempo. Tienila così.";
+    box = "Velocità = spazio ÷ tempo. Tienila così.";
+    Icon = Pin;
   } else if (deep) {
     body = "Il moto rettilineo uniforme è il caso in cui lo spostamento è proporzionale al tempo. Se la velocità cambia, entra l’accelerazione: il nesso causa-effetto che la verifica vuole sentire.";
-    box = "📊 v costante → s = vt. v che cambia → a = Δv/Δt.";
+    box = "v costante → s = vt. v che cambia → a = Δv/Δt.";
+    Icon = BarChart3;
   } else {
     body = short
-      ? "Il moto rettilineo è ovunque: bus, palla, freno. Capirlo chiude la verifica in meno tempo."
+      ? "Il moto rettilineo è ovunque: bus, palla, freno. Capirlo rende più chiaro il nucleo della verifica."
       : "Il moto rettilineo è ovunque: bus, palla, freno in città. Capirlo significa leggere i numeri prima che la verifica te li chieda.";
     box = recap
-      ? "🧭 Ripeti: linea dritta · spazio · tempo. Poi stop."
-      : "⚡ In 3 righe capisci perché tutto il resto ha senso.";
+      ? "Ripeti: linea dritta · spazio · tempo. Poi stop."
+      : "In 3 righe capisci perché tutto il resto ha senso.";
+    Icon = recap ? Compass : Zap;
   }
 
   const hint = VERTS.find((v) => v.key === active)?.label ?? "Calma";
-  return { title, body, box, hint };
+  return { title, body, box, hint, Icon };
 }
 
 export function HexagonPlay() {
@@ -190,6 +196,7 @@ export function HexagonPlay() {
   }).join(" ");
 
   const lesson = useMemo(() => lessonFor(scores, active), [scores, active]);
+  const LessonIcon = lesson.Icon;
   const items = useMemo(() => buildDayPlan(day, ansia, tempo, scores), [day, ansia, tempo, scores]);
   const status = statusCopy(ansia, tempo, scores);
 
@@ -235,33 +242,23 @@ export function HexagonPlay() {
         <div className="lp-reveal">
           <p className="lp-eyebrow">Il cuore</p>
           <h2 className="lp-h2">L’Esagono cognitivo.</h2>
-          <p className="lp-lead" style={{ margin: "1rem 0 1.6rem" }}>
+          <p className="lp-lead lp-hex-intro">
             Non sei un voto. Sei sei forze. Trascina un vertice: la minilezione a lato e il piano sotto si riscrivono.
           </p>
           <div className="lp-panel">
             <p className="lp-kicker">Minilezione · {lesson.hint} {scores[active]}/100</p>
-            <h3 style={{ fontSize: "1.35rem", letterSpacing: "-0.03em", marginBottom: "0.55rem" }}>{lesson.title}</h3>
-            <p style={{ color: "#C7C7CC", lineHeight: 1.6 }}>{lesson.body}</p>
-            <div
-              style={{
-                marginTop: "0.85rem",
-                borderRadius: 14,
-                padding: "0.65rem 0.8rem",
-                background: "rgba(196,135,139,0.14)",
-                border: "1px solid rgba(196,135,139,0.22)",
-                color: "#E8C4C6",
-                fontSize: "0.88rem",
-              }}
-            >
-              {lesson.box}
+            <h3 className="lp-mini-title"><Target aria-hidden />{lesson.title}</h3>
+            <p className="lp-mini-body">{lesson.body}</p>
+            <div className="lp-mini-callout">
+              <LessonIcon aria-hidden />
+              <span>{lesson.box}</span>
             </div>
-            <div className="lp-verts" role="tablist" aria-label="Vertici dell'esagono">
+            <div className="lp-verts" role="group" aria-label="Vertici dell'esagono">
               {VERTS.map((v) => (
                 <button
                   key={v.key}
                   type="button"
-                  role="tab"
-                  aria-selected={active === v.key}
+                  aria-pressed={active === v.key}
                   className={active === v.key ? "is-on" : undefined}
                   onClick={() => setActive(v.key)}
                 >
@@ -276,13 +273,14 @@ export function HexagonPlay() {
           <svg
             ref={svgRef}
             viewBox="0 0 400 400"
-            role="img"
-            aria-label="Esagono cognitivo: trascina i vertici"
+            aria-labelledby="hexagon-title hexagon-description"
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
-            style={{ width: "100%", height: "auto", maxWidth: 520, touchAction: "none", display: "block", marginInline: "auto" }}
+            className="lp-hex-chart"
           >
+            <title id="hexagon-title">Esagono cognitivo interattivo</title>
+            <desc id="hexagon-description">Trascina i sei punti o usa le frecce della tastiera per modificare Logica, Memoria, Focus, Lessico, Calma e Pratica.</desc>
             <g fill="none" stroke="rgba(255,255,255,.10)" strokeWidth="1">
               <polygon points="200,50 330,125 330,275 200,350 70,275 70,125" />
               <polygon points="200,90 300,148 300,252 200,310 100,252 100,148" />
@@ -307,9 +305,11 @@ export function HexagonPlay() {
                   <circle
                     cx={p.x}
                     cy={p.y}
-                    r={on ? 9 : 7}
+                    r={on ? 10 : 8}
                     fill={on ? "#C4A574" : "#F2F2F7"}
-                    style={{ cursor: "grab" }}
+                    stroke="transparent"
+                    strokeWidth="28"
+                    className="lp-hex-handle"
                     tabIndex={0}
                     role="slider"
                     aria-label={`${v.label}: ${scores[v.key]}`}
@@ -334,7 +334,7 @@ export function HexagonPlay() {
               );
             })}
           </svg>
-          <p className="lp-small" style={{ textAlign: "center", marginTop: "0.4rem", color: "#86868B" }}>
+          <p className="lp-small lp-hex-help">
             Trascina un punto verso il bordo per alzarlo. Tastiera: frecce.
           </p>
         </div>
@@ -396,13 +396,12 @@ export function StudyTimeline({
 }) {
   return (
     <div className={cn("lp-timeline", dark && "dark")}>
-      <div className="lp-week" role="tablist" aria-label="Giorni della settimana">
+      <div className="lp-week" role="group" aria-label="Giorni della settimana">
         {DAYS.map((d) => (
           <button
             key={d.id}
             type="button"
-            role="tab"
-            aria-selected={day === d.id}
+            aria-pressed={day === d.id}
             className={day === d.id ? "is-on" : undefined}
             onClick={() => onDay(d.id)}
           >

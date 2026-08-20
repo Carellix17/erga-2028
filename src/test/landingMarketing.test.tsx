@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { ErgaMarketing } from "@/components/landing/ErgaMarketing";
@@ -16,7 +16,7 @@ describe("landing marketing", () => {
     renderLanding();
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      /dal tuo materiale.*a un percorso.*che puoi seguire/i,
+      /il tuo materiale.*un percorso.*da seguire/i,
     );
     expect(screen.getByText("La beta è gratuita.")).toBeInTheDocument();
     expect(screen.getByText("Non ancora disponibile")).toBeInTheDocument();
@@ -47,5 +47,32 @@ describe("landing marketing", () => {
     const answerId = question.getAttribute("aria-controls");
     expect(answerId).toBeTruthy();
     expect(document.getElementById(answerId!)).toHaveTextContent(/beta.*gratuito/i);
+  });
+
+  it("gestisce il focus del menu mobile e lo chiude con Escape", () => {
+    renderLanding();
+
+    const menuButton = screen.getByRole("button", { name: "Apri menu" });
+    fireEvent.click(menuButton);
+
+    const mobileNav = screen.getByRole("navigation", { name: "Menu mobile" });
+    expect(menuButton).toHaveAttribute("aria-expanded", "true");
+    expect(within(mobileNav).getByRole("link", { name: "Prodotto" })).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(menuButton).toHaveAttribute("aria-expanded", "false");
+    expect(menuButton).toHaveFocus();
+  });
+
+  it("mostra subito il risultato completo quando si cambia materia", () => {
+    renderLanding();
+
+    fireEvent.click(screen.getByRole("button", { name: "Latino · Sintassi dei casi" }));
+
+    expect(screen.getByText("Schema dei casi")).toBeInTheDocument();
+    expect(screen.getByText("Versione guidata")).toBeInTheDocument();
+    expect(screen.getByText("Richiamo per l’interrogazione")).toBeInTheDocument();
+    expect(screen.getByText(/Esempio di percorso · Tempo stimato: 18 min/)).toBeInTheDocument();
   });
 });

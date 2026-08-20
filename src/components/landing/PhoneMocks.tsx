@@ -1,4 +1,4 @@
-import { Brain, CalendarDays, Check, Home as HomeIcon, BookOpen, Play, Timer, User, X } from "lucide-react";
+import { Brain, CalendarDays, Check, Home as HomeIcon, BookOpen, Play, Target, Timer, User, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Tab = "home" | "piano" | "studio";
@@ -63,8 +63,8 @@ function PhoneTabBar({ active }: { active: Tab }) {
           return (
             <div key={id} className="relative flex flex-col items-center gap-0.5">
               {on && <span className="absolute inset-x-1 inset-y-1 rounded-full bg-neutral-200/80" />}
-              <Icon className={cn("relative z-10 h-[16px] w-[16px]", on ? "text-neutral-900" : "text-neutral-400")} strokeWidth={on ? 2.2 : 1.8} />
-              <span className={cn("relative z-10 text-[8px] font-semibold", on ? "text-neutral-900" : "text-neutral-400")}>{label}</span>
+              <Icon className={cn("relative z-10 h-[16px] w-[16px]", on ? "text-neutral-900" : "text-neutral-600")} strokeWidth={on ? 2.2 : 1.8} />
+              <span className={cn("relative z-10 text-[8px] font-semibold", on ? "text-neutral-900" : "text-neutral-600")}>{label}</span>
             </div>
           );
         })}
@@ -81,12 +81,12 @@ export function PhoneHome() {
   return (
     <div className="flex flex-col gap-2.5 px-2.5 pb-16 pt-8">
       <PhoneHeader />
-      <p className="px-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+      <p className="px-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-neutral-600">
         mercoledì 19 agosto · 2 lezioni
       </p>
-      <h3 className="px-0.5 font-extrabold leading-tight tracking-tight text-[17px]">
-        Buon pomeriggio, <span className="text-neutral-500">Alessandro</span>
-      </h3>
+      <p className="px-0.5 font-extrabold leading-tight tracking-tight text-[17px]">
+        Buon pomeriggio, <span className="text-neutral-600">Alessandro</span>
+      </p>
       <div className="overflow-hidden rounded-[18px] bg-gradient-to-br from-[#2A2226] to-[#141214] p-3 text-white">
         <div className="mb-1.5 flex gap-1">
           <span className="rounded-full bg-black px-2 py-0.5 text-[8px] font-bold">Prossima lezione</span>
@@ -118,7 +118,7 @@ export function PhoneHome() {
             <span className={cn("grid h-3.5 w-3.5 place-items-center rounded-[4px] border", row.done ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300")}>
               {row.done && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
             </span>
-            <span className={cn("text-[10px] font-semibold", row.done && "text-neutral-400 line-through")}>{row.t}</span>
+            <span className={cn("text-[10px] font-semibold", row.done && "text-neutral-600 line-through")}>{row.t}</span>
           </div>
         ))}
       </div>
@@ -138,10 +138,10 @@ export function PhoneStudio() {
     <div className="flex flex-col gap-2 px-2 pb-16 pt-8">
       <PhoneHeader />
       <div className="px-1">
-        <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-neutral-400">Modulo 1</p>
+        <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-neutral-600">Modulo 1</p>
         <p className="text-[13px] font-extrabold leading-snug">Le basi della cinematica</p>
         <div className="mt-1.5 flex items-baseline justify-between text-[10px]">
-          <span className="text-neutral-500">2 di 4 lezioni</span>
+          <span className="text-neutral-600">2 di 4 lezioni</span>
           <span className="font-bold">50%</span>
         </div>
         <div className="mt-1 h-1 overflow-hidden rounded-full bg-neutral-200">
@@ -166,7 +166,7 @@ export function PhoneStudio() {
                   "grid h-11 w-11 place-items-center rounded-[14px] text-[13px] font-extrabold",
                   node.state === "done" && "bg-[#C4878B] text-[#1A1012] shadow-sm",
                   node.state === "cur" && "border-[3px] border-[#C4878B] bg-white",
-                  node.state === "lock" && "border-2 border-neutral-200 bg-neutral-100 text-neutral-400",
+                  node.state === "lock" && "border-2 border-neutral-200 bg-neutral-100 text-neutral-600",
                 )}
               >
                 {node.n}
@@ -198,10 +198,10 @@ export function PhonePiano() {
       </div>
       <div className="grid grid-cols-2 gap-1 rounded-full bg-neutral-100 p-0.5">
         <span className="grid h-7 place-items-center rounded-full bg-white text-[11px] font-semibold shadow-sm">Mese</span>
-        <span className="grid h-7 place-items-center text-[11px] text-neutral-400">Settimana</span>
+        <span className="grid h-7 place-items-center text-[11px] text-neutral-600">Settimana</span>
       </div>
       <p className="text-center text-[12px] font-semibold">agosto 2026</p>
-      <div className="grid grid-cols-7 text-center text-[8px] uppercase tracking-wider text-neutral-400">
+      <div className="grid grid-cols-7 text-center text-[8px] uppercase tracking-wider text-neutral-600">
         {["lun", "mar", "mer", "gio", "ven", "sab", "dom"].map((d) => <span key={d}>{d}</span>)}
       </div>
       <div className="grid grid-cols-7">
@@ -210,7 +210,7 @@ export function PhonePiano() {
             key={`${d}-${i}`}
             className={cn(
               "relative mx-auto grid h-7 w-7 place-items-center rounded-full text-[11px]",
-              mute.has(d) && i < 5 && "text-neutral-300",
+              mute.has(d) && i < 5 && "text-neutral-600",
               d === 19 && i > 10 && "bg-neutral-900 font-bold text-white",
             )}
           >
@@ -222,9 +222,9 @@ export function PhonePiano() {
         ))}
       </div>
       <div className="mt-1 rounded-[14px] border border-black/[0.06] bg-white p-2">
-        <p className="text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Mercoledì 19</p>
+        <p className="text-[9px] font-semibold uppercase tracking-wider text-neutral-600">Mercoledì 19</p>
         <p className="mt-0.5 text-[12px] font-bold">Cinematica compressa</p>
-        <p className="text-[10px] text-neutral-500">15:10 · Fisica · 18 min</p>
+        <p className="text-[10px] text-neutral-600">15:10 · Fisica · 18 min</p>
       </div>
     </div>
   );
@@ -234,21 +234,23 @@ export function PhoneLesson() {
   return (
     <div className="flex min-h-[580px] flex-col px-2.5 pb-4 pt-8">
       <div className="mb-2 flex items-center gap-1.5">
-        <span className="grid h-6 w-6 place-items-center rounded-full text-neutral-400">
+        <span className="grid h-6 w-6 place-items-center rounded-full text-neutral-600">
           <X className="h-3.5 w-3.5" />
         </span>
         <div className="flex h-1.5 flex-1 gap-0.5">
           {Array.from({ length: 8 }).map((_, i) => (
-            <i key={i} className={cn("h-full flex-1 rounded-full", i < 3 ? "bg-neutral-900" : "bg-neutral-200")} />
+            <span key={i} className={cn("h-full flex-1 rounded-full", i < 3 ? "bg-neutral-900" : "bg-neutral-200")} />
           ))}
         </div>
-        <span className="text-[10px] font-semibold text-neutral-400">3/8</span>
+        <span className="text-[10px] font-semibold text-neutral-600">3/8</span>
       </div>
-      <p className="text-center text-[9px] text-neutral-400">
+      <p className="text-center text-[9px] text-neutral-600">
         Lezione 3 di 12 · <span className="font-semibold text-neutral-800">Cinematica</span>
       </p>
       <div className="mt-4 flex items-center gap-2">
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-neutral-100 text-sm">🎯</span>
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-neutral-100 text-neutral-700">
+          <Target className="h-4 w-4" aria-hidden />
+        </span>
         <p className="text-[13px] font-extrabold leading-tight">Perché ti riguarda</p>
       </div>
       <div className="mt-3 rounded-[16px] border border-neutral-200/70 bg-white p-3.5 shadow-sm">
@@ -256,8 +258,9 @@ export function PhoneLesson() {
           Il <strong className="text-neutral-900">moto rettilineo</strong> è ovunque: bus, palla, freno in città.
           Capirlo significa leggere i numeri prima che la verifica te li chieda.
         </p>
-        <div className="mt-2.5 rounded-2xl border border-amber-200/80 bg-amber-50 px-3 py-2 text-[11px] leading-snug text-neutral-800">
-          ⚡ In 3 righe capisci <strong>perché</strong> tutto il resto ha senso.
+        <div className="mt-2.5 flex items-start gap-1.5 rounded-2xl border border-amber-200/80 bg-amber-50 px-3 py-2 text-[11px] leading-snug text-neutral-800">
+          <Zap className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
+          <span>In 3 righe capisci <strong>perché</strong> tutto il resto ha senso.</span>
         </div>
       </div>
       <div className="mt-auto flex h-10 items-center justify-center rounded-full bg-neutral-900 text-[13px] font-bold text-white">
@@ -280,20 +283,20 @@ export function PhoneHero({
   meta: string;
   pct: number;
   badge: string | null;
-  steps: { n: string; title: string; desc: string; time: string }[];
+  steps: readonly { n: string; title: string; desc: string; time: string }[];
 }) {
   return (
     <div className="flex flex-col gap-2 px-2.5 pb-16 pt-8">
       <PhoneHeader />
       <div className="rounded-[18px] bg-gradient-to-br from-[#2A2226] to-[#1A1618] p-3 text-white">
         <p className="text-[8px] uppercase tracking-[0.12em] text-white/55">{kicker}</p>
-        <h3 className="mt-1 text-[16px] font-bold tracking-tight">{title}</h3>
+        <p className="mt-1 text-[16px] font-bold tracking-tight">{title}</p>
         <div className="mt-1.5 flex justify-between text-[10px] text-neutral-300">
           <span>{meta}</span>
           <span>{pct}%</span>
         </div>
         <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/15">
-          <div className="h-full rounded-full bg-[#E8C4C6] transition-all duration-500" style={{ width: `${pct}%` }} />
+          <div className="h-full origin-left rounded-full bg-[#E8C4C6] transition-transform duration-300" style={{ transform: `scaleX(${pct / 100})` }} />
         </div>
       </div>
       {badge && (
@@ -308,10 +311,10 @@ export function PhoneHero({
               {s.n}
             </div>
             <div>
-              <h4 className="text-[11px] font-bold leading-tight">{s.title}</h4>
-              <p className="text-[9px] text-neutral-500">{s.desc}</p>
+              <p className="text-[11px] font-bold leading-tight">{s.title}</p>
+              <p className="text-[9px] text-neutral-600">{s.desc}</p>
             </div>
-            <time className="text-[9px] font-bold text-[#A86B70]">{s.time}</time>
+            <time className="text-[9px] font-bold text-[#92545A]">{s.time}</time>
           </article>
         ))}
       </div>
