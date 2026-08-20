@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SaveStatusProvider } from "@/contexts/SaveStatusContext";
@@ -11,20 +12,25 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { FocusProvider } from "@/contexts/FocusContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
-import Index from "./pages/Index";
 import Landing from "./pages/Landing";
-import Login from "./pages/Login";
-import ChangePassword from "./pages/ChangePassword";
-import Registrati from "./pages/Registrati";
-import NotFound from "./pages/NotFound";
-import OAuthConsent from "./pages/OAuthConsent";
-import SettingsIndex from "./pages/settings/SettingsIndex";
-import SettingsAccount from "./pages/settings/SettingsAccount";
-import SettingsAppearance from "./pages/settings/SettingsAppearance";
-import SettingsAccessibility from "./pages/settings/SettingsAccessibility";
-import SettingsTerms from "./pages/settings/SettingsTerms";
-import SettingsLanguage from "./pages/settings/SettingsLanguage";
+import { SplashScreen } from "@/components/shared/SplashScreen";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
+
+// La landing resta nel primo caricamento; le aree dell'app vengono scaricate
+// solo quando servono. In questo modo chi visita la pagina pubblica non deve
+// attendere anche calendario, lettore PDF, esercizi e impostazioni.
+const Index = lazy(() => import("./pages/Index"));
+const Login = lazy(() => import("./pages/Login"));
+const ChangePassword = lazy(() => import("./pages/ChangePassword"));
+const Registrati = lazy(() => import("./pages/Registrati"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+const SettingsIndex = lazy(() => import("./pages/settings/SettingsIndex"));
+const SettingsAccount = lazy(() => import("./pages/settings/SettingsAccount"));
+const SettingsAppearance = lazy(() => import("./pages/settings/SettingsAppearance"));
+const SettingsAccessibility = lazy(() => import("./pages/settings/SettingsAccessibility"));
+const SettingsTerms = lazy(() => import("./pages/settings/SettingsTerms"));
+const SettingsLanguage = lazy(() => import("./pages/settings/SettingsLanguage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +80,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
             <ErrorBoundary>
+          <Suspense fallback={<SplashScreen />}>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/registrati" element={<Registrati />} />
@@ -98,6 +105,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
             </ErrorBoundary>
               </BrowserRouter>
             </FocusProvider>
