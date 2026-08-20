@@ -15,6 +15,7 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import Landing from "./pages/Landing";
 import { SplashScreen } from "@/components/shared/SplashScreen";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
+import { safeStorage } from "@/lib/safeStorage";
 
 // La landing resta nel primo caricamento; le aree dell'app vengono scaricate
 // solo quando servono. In questo modo chi visita la pagina pubblica non deve
@@ -52,8 +53,12 @@ const queryClient = new QueryClient({
 // 🗄️ P16: la dispensa nel telefono — lezioni e contesti già scaricati restano
 // sul dispositivo 24 ore. Cambiare percorso o riaprire l'app mostra SUBITO
 // quello che c'è, e il cloud aggiorna in silenzio sullo sfondo.
+//
+// Passa da safeStorage e non da window.localStorage: in Safari privato o in
+// un iframe con storage bloccato la lettura lancia, e a livello di modulo
+// significherebbe schermata bianca per tutti — landing pubblica inclusa.
 const persister = createSyncStoragePersister({
-  storage: window.localStorage,
+  storage: safeStorage,
   key: "erga-query-dispensa-v1",
 });
 

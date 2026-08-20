@@ -5,6 +5,30 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
+/**
+ * Separazione dei chunk in gruppi stabili.
+ *
+ * Senza questo, un visitatore della landing scaricava un unico blocco
+ * vendor che conteneva anche pdfjs, recharts e framer-motion: roba che
+ * serve solo dentro /app. Raggruppare per libreria (invece di per route)
+ * mantiene le firme dei file stabili tra build, quindi la cache del
+ * browser sopravvive ai deploy.
+ */
+function manualChunks(id: string): string | undefined {
+  if (!id.includes("node_modules")) return undefined;
+  if (id.includes("react-router")) return "router";
+  if (/[\\/]react-dom[\\/]|[\\/]react[\\/]|[\\/]scheduler[\\/]/.test(id)) return "react";
+  if (id.includes("@supabase") || id.includes("@lovable.dev")) return "supabase";
+  if (id.includes("@tanstack")) return "query";
+  if (id.includes("pdfjs-dist")) return "pdf";
+  if (id.includes("recharts") || id.includes("d3-")) return "charts";
+  if (id.includes("framer-motion")) return "motion";
+  if (id.includes("i18next")) return "i18n";
+  if (id.includes("@radix-ui")) return "radix";
+  if (id.includes("lucide-react")) return "icons";
+  return "vendor";
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
@@ -15,10 +39,20 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  build: {
+    target: "es2020",
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: { manualChunks },
+    },
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    mcpPlugin(),
+    // Il bridge MCP serve all'editor, non agli utenti finali: fuori dalla
+    // build di produzione.
+    mode === "development" && mcpPlugin(),
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: null, // We register manually with iframe/preview guards

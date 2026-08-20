@@ -6,7 +6,13 @@
     <title>Erga — Dal tuo materiale a un percorso di studio</title>
     <meta name="description" content="Carica PDF, documenti o immagini e trasforma il materiale in lezioni brevi, esercizi e un piano di studio personalizzato. Beta gratuita per le scuole superiori.">
     <meta name="author" content="Erga" />
+    <!-- TODO: puntare canonical e og:url al dominio definitivo prima del lancio:
+         oggi tutto il ranking si consolida su erga-demo.lovable.app -->
     <link rel="canonical" href="https://erga-demo.lovable.app/" />
+
+    <!-- Icone: prima la PNG da 2,7 KB. La .ico da 61 KB resta solo come
+         fallback legacy richiesto automaticamente dai browser vecchi. -->
+    <link rel="icon" type="image/png" sizes="any" href="/favicon.png" />
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -20,8 +26,7 @@
     <meta name="apple-mobile-web-app-title" content="Erga" />
     <meta name="application-name" content="Erga" />
     <meta name="google-site-verification" content="Eps7yPiScoBaT8IqMd9WhMrNqh2-B5H789Ij2gAqbLM" />
-    
-    
+
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Erga" />
     <meta property="og:locale" content="it_IT" />
@@ -30,22 +35,141 @@
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Erga: dal tuo materiale a un percorso di studio" />
+    <meta property="og:title" content="Erga — Dal tuo materiale a un percorso di studio">
+    <meta property="og:description" content="Lezioni brevi, esercizi e un piano personalizzato a partire dai materiali che studi davvero. Beta gratuita.">
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://erga-demo.lovable.app/og-erga.png" />
     <meta name="twitter:image:alt" content="Erga: dal tuo materiale a un percorso di studio" />
+    <meta name="twitter:title" content="Erga — Dal tuo materiale a un percorso di studio">
+    <meta name="twitter:description" content="Lezioni brevi, esercizi e un piano personalizzato a partire dai materiali che studi davvero. Beta gratuita.">
 
+    <!-- Font: NON render-blocking. Il foglio viene caricato come stampa e
+         promosso a schermo all'onload, così il primo paint non aspetta
+         Google Fonts. Il fallback di sistema è già in .erga-lp. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <meta property="og:title" content="Erga — Dal tuo materiale a un percorso di studio">
-    <meta name="twitter:title" content="Erga — Dal tuo materiale a un percorso di studio">
-    <meta property="og:description" content="Lezioni brevi, esercizi e un piano personalizzato a partire dai materiali che studi davvero. Beta gratuita.">
-    <meta name="twitter:description" content="Lezioni brevi, esercizi e un piano personalizzato a partire dai materiali che studi davvero. Beta gratuita.">
-</head>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all';this.onload=null">
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    </noscript>
+
+    <!-- Dati strutturati: la SPA non serve HTML ai crawler, quindi almeno
+         prodotto e FAQ devono essere leggibili senza eseguire JS.
+         Le domande rispecchiano 1:1 quelle visibili in ErgaMarketing. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://erga-demo.lovable.app/#website",
+            "url": "https://erga-demo.lovable.app/",
+            "name": "Erga",
+            "inLanguage": "it-IT",
+            "description": "Dal tuo materiale a un percorso di studio: lezioni brevi, esercizi e un piano personalizzato."
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "Erga",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "it-IT",
+            "description": "Erga trasforma PDF, documenti, foto o una ricerca web in lezioni brevi, esercizi e un piano di studio adattato al profilo cognitivo dello studente.",
+            "audience": {
+              "@type": "EducationalAudience",
+              "educationalRole": "student"
+            },
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "EUR",
+              "description": "Beta gratuita, nessuna carta richiesta."
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Per chi è pensato Erga?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "La beta è pensata soprattutto per studenti delle scuole superiori. Puoi usarla per verifiche, interrogazioni e ripassi partendo dai materiali che studi davvero."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Che cos'è l'Esagono cognitivo?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "È un profilo composto da sei aree: Logica, Memoria, Focus, Lessico, Calma e Pratica. Le risposte iniziali aiutano Erga ad adattare il modo in cui presenta lezioni ed esercizi; i risultati di alcuni quiz possono aggiornare gradualmente l'area Pratica."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Come vengono protetti i miei materiali?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "L'accesso richiede un account e il sistema separa i materiali dei diversi utenti. Erga usa i file per creare le tue lezioni. L'informativa completa su privacy, conservazione e cancellazione dei dati deve essere pubblicata prima del lancio commerciale."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Quali materie posso studiare?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Non c'è un catalogo chiuso: puoi partire da PDF, documenti, foto o da una ricerca web. La qualità del percorso dipende anche dalla chiarezza e dalla completezza del materiale fornito."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Quanto costa?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Durante la beta l'accesso è gratuito e non richiede una carta. Il piano Pro non è ancora acquistabile: funzionalità e prezzo saranno comunicati prima del lancio."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <style>
+      /* Solo per il fallback noscript: nessun costo per chi ha JS. */
+      .no-js-fallback {
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 3rem 1.25rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+        color: #0a0a0a;
+        line-height: 1.6;
+      }
+      .no-js-fallback h1 { font-size: 2rem; letter-spacing: -0.03em; line-height: 1.1; }
+      .no-js-fallback a { color: #b8050f; }
+    </style>
+  </head>
 
   <body>
     <div id="root"></div>
+    <noscript>
+      <div class="no-js-fallback">
+        <h1>Il tuo materiale. Un percorso da seguire.</h1>
+        <p>
+          Carica un PDF, una foto o scegli un argomento: Erga organizza il
+          contenuto in lezioni brevi, esercizi e un piano di studio adattato al
+          tuo profilo. Beta gratuita per le scuole superiori, nessuna carta
+          richiesta.
+        </p>
+        <p>
+          Per usare Erga serve JavaScript attivo. Puoi comunque
+          <a href="/registrati">creare il profilo gratuito</a> o
+          <a href="/login">accedere</a>.
+        </p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

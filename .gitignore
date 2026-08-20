@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Segreti
+# La .env generata da Lovable contiene solo chiavi pubbliche (anon key
+# Supabase, protetta dalle RLS) e resta committata perché serve alla build.
+# Qualsiasi credenziale vera — service_role, API key, webhook secret — va
+# in .env.local, che da qui non esce. Vedi .env.example.
+.env.local
+.env.*.local
+*.pem
+*.key
