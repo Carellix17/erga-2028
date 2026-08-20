@@ -18,8 +18,8 @@ describe("landing marketing", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       /il tuo materiale.*un percorso.*da seguire/i,
     );
-    expect(screen.getByText("La beta è gratuita.")).toBeInTheDocument();
-    expect(screen.getByText("Non ancora disponibile")).toBeInTheDocument();
+    expect(screen.getByText("Gratis, senza carta.")).toBeInTheDocument();
+    expect(screen.getByText("Non è ancora in vendita.")).toBeInTheDocument();
     expect(document.body).not.toHaveTextContent("6,99 €");
     expect(document.body).not.toHaveTextContent("iris.p@example.org");
   });
@@ -74,5 +74,25 @@ describe("landing marketing", () => {
     expect(screen.getByText("Versione guidata")).toBeInTheDocument();
     expect(screen.getByText("Richiamo per l’interrogazione")).toBeInTheDocument();
     expect(screen.getByText(/Esempio di percorso · Tempo stimato: 18 min/)).toBeInTheDocument();
+  });
+
+  it("racconta la trasformazione dal materiale al piano", () => {
+    renderLanding();
+
+    expect(screen.getByRole("heading", { name: "Parti da ciò che studi davvero." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Erga trova il filo." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "La mappa diventa un percorso." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Il percorso entra nella tua settimana." })).toBeInTheDocument();
+  });
+
+  it("mostra una sola anteprima e permette di cambiare vista", () => {
+    renderLanding();
+
+    const controls = screen.getByRole("group", { name: "Scegli l’anteprima dell’app" });
+    fireEvent.click(within(controls).getByRole("button", { name: "Piano" }));
+
+    expect(screen.getByRole("heading", { name: "Una proposta che puoi accettare o cambiare." })).toBeInTheDocument();
+    expect(screen.getByText("Vista mese e settimana")).toBeInTheDocument();
+    expect(within(controls).getByRole("button", { name: "Piano" })).toHaveAttribute("aria-pressed", "true");
   });
 });

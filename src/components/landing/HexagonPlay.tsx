@@ -240,11 +240,16 @@ export function HexagonPlay() {
     <>
       <div className="lp-hex-layout">
         <div className="lp-reveal">
-          <p className="lp-eyebrow">Il cuore</p>
+          <p className="lp-eyebrow">Provalo</p>
           <h2 className="lp-h2">L’Esagono cognitivo.</h2>
           <p className="lp-lead lp-hex-intro">
-            Non sei un voto. Sei sei forze. Trascina un vertice: la minilezione a lato e il piano sotto si riscrivono.
+            Non sei un voto. Sei sei forze. Trascina un vertice e osserva come cambiano la spiegazione e il piano.
           </p>
+          <div className="lp-effect-flow" aria-label="Il profilo modifica la lezione e poi il piano">
+            <span><b>1</b>Profilo</span>
+            <span><b>2</b>Lezione</span>
+            <span><b>3</b>Piano</span>
+          </div>
           <div className="lp-panel">
             <p className="lp-kicker">Minilezione · {lesson.hint} {scores[active]}/100</p>
             <h3 className="lp-mini-title"><Target aria-hidden />{lesson.title}</h3>
@@ -305,11 +310,9 @@ export function HexagonPlay() {
                   <circle
                     cx={p.x}
                     cy={p.y}
-                    r={on ? 10 : 8}
-                    fill={on ? "#C4A574" : "#F2F2F7"}
-                    stroke="transparent"
-                    strokeWidth="28"
-                    className="lp-hex-handle"
+                    r={26}
+                    fill="transparent"
+                    className="lp-hex-hit"
                     tabIndex={0}
                     role="slider"
                     aria-label={`${v.label}: ${scores[v.key]}`}
@@ -329,6 +332,14 @@ export function HexagonPlay() {
                         setScores((s) => ({ ...s, [v.key]: Math.max(0, s[v.key] - 5) }));
                       }
                     }}
+                  />
+                  <circle
+                    cx={p.x}
+                    cy={p.y}
+                    r={on ? 10 : 8}
+                    fill={on ? "#C4A574" : "#F2F2F7"}
+                    className="lp-hex-dot"
+                    aria-hidden="true"
                   />
                 </g>
               );
@@ -377,7 +388,7 @@ export function HexagonPlay() {
             {status.d}
           </p>
         </div>
-        <StudyTimeline dark day={day} onDay={setDay} items={items} />
+        <StudyTimeline dark day={day} onDay={setDay} items={items} maxItems={5} />
       </div>
     </>
   );
@@ -388,12 +399,17 @@ export function StudyTimeline({
   day,
   onDay,
   items,
+  maxItems,
 }: {
   dark?: boolean;
   day: string;
   onDay: (id: (typeof DAYS)[number]["id"]) => void;
   items: PlanItem[];
+  maxItems?: number;
 }) {
+  const visibleItems = maxItems ? items.slice(0, maxItems) : items;
+  const hiddenCount = items.length - visibleItems.length;
+
   return (
     <div className={cn("lp-timeline", dark && "dark")}>
       <div className="lp-week" role="group" aria-label="Giorni della settimana">
@@ -410,7 +426,7 @@ export function StudyTimeline({
           </button>
         ))}
       </div>
-      {items.map((it) => (
+      {visibleItems.map((it) => (
         <div key={`${it.time}-${it.title}`} className={cn("lp-tl-row", it.pause && "is-pause")}>
           <time>{it.time}</time>
           <div>
@@ -420,6 +436,9 @@ export function StudyTimeline({
           </div>
         </div>
       ))}
+      {hiddenCount > 0 && (
+        <p className="lp-timeline-more">+{hiddenCount} attività nel piano completo</p>
+      )}
     </div>
   );
 }

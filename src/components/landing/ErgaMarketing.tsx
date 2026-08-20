@@ -2,19 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  BookOpen,
-  Brain,
-  CalendarDays,
+  Atom,
+  CalendarCheck2,
+  Check,
   FileText,
-  Globe2,
   Image as ImageIcon,
   Menu,
+  Mic2,
+  PenLine,
   Plus,
   X,
 } from "lucide-react";
 import { BrandMark } from "./BrandMark";
-import { HexagonPlay } from "./HexagonPlay";
-import { PhoneHero, PhoneLesson, PhonePiano, PhoneShell, PhoneStudio } from "./PhoneMocks";
+import { DeferredHexagon } from "./DeferredHexagon";
+import { MaterialJourney } from "./MaterialJourney";
+import { PhoneHero, PhoneShell } from "./PhoneMocks";
+import { ProductShowcase } from "./ProductShowcase";
 import "./landing.css";
 
 const PATHS = {
@@ -262,6 +265,14 @@ export function ErgaMarketing() {
                   <polygon fill="none" stroke="rgba(196,135,139,.45)" strokeWidth="1.2" points="200,56 318,124 318,276 200,344 82,276 82,124" />
                 </svg>
               </div>
+              <div className="lp-hero-materials" aria-hidden>
+                <div className="lp-hero-paper pdf"><FileText /><span>PDF</span><small>Capitolo 4</small></div>
+                <div className="lp-hero-paper photo"><ImageIcon /><span>Foto</span><small>Quaderno</small></div>
+                <div className="lp-hero-paper notes"><PenLine /><span>Appunti</span><small>Formula chiave</small></div>
+                <svg viewBox="0 0 420 560" preserveAspectRatio="none">
+                  <path d="M54 108 C150 124 96 240 212 272 S330 338 354 430" />
+                </svg>
+              </div>
               <PhoneShell tab="studio" tilt label={`Esempio Erga: percorso ${data.title} in quattro tappe`}>
                 <PhoneHero
                   kicker={data.kicker}
@@ -296,207 +307,112 @@ export function ErgaMarketing() {
           </div>
         </div>
 
-        <section id="prodotto">
-          <div className="lp-wrap">
-            <div className="lp-sec-head lp-reveal">
-              <p className="lp-eyebrow">Il prodotto</p>
-              <h2 className="lp-h2">Studio, pratica e piano in un solo posto.</h2>
-              <p className="lp-lead">Il materiale diventa un percorso ordinato. Puoi ripassare, fare esercizi e distribuire le attività nella settimana.</p>
-            </div>
-            <div className="lp-feat-grid">
-              <article className="lp-card lp-reveal">
-                <div className="lp-icon red" aria-hidden>
-                  <BookOpen />
-                </div>
-                <h3 className="lp-h3">Percorsi a tappe</h3>
-                <p>Lezioni brevi, moduli ordinati e ripresa dal punto in cui avevi interrotto. Il percorso nasce dal materiale che hai caricato.</p>
-                <span className="lp-tag">Tab Studio</span>
-              </article>
-              <article className="lp-card lp-reveal" id="piano">
-                <div className="lp-icon" aria-hidden>
-                  <CalendarDays />
-                </div>
-                <h3 className="lp-h3">Piano e modalità Focus</h3>
-                <p>Inserisci verifiche e impegni, genera una proposta settimanale e usa il timer per concentrarti su un’attività alla volta.</p>
-                <span className="lp-tag">Tab Piano</span>
-              </article>
-              <article className="lp-card lp-reveal">
-                <div className="lp-icon line" aria-hidden>
-                  <Brain />
-                </div>
-                <h3 className="lp-h3">Esagono cognitivo</h3>
-                <p>Logica, Memoria, Focus, Lessico, Calma e Pratica aiutano a scegliere linguaggio, ritmo ed esempi più adatti al tuo profilo.</p>
-                <span className="lp-tag">Il cuore</span>
-              </article>
-            </div>
-          </div>
-        </section>
+        <MaterialJourney />
 
-        <section className="lp-show" id="app">
-          <div className="lp-wrap">
-            <div className="lp-sec-head lp-reveal">
-              <p className="lp-eyebrow">Anteprima dell’app</p>
-              <h2 className="lp-h2">Vedi subito cosa farai.</h2>
-              <p className="lp-lead">Queste anteprime mostrano le aree principali di Erga: percorso, calendario e lezione. Alcuni dettagli possono cambiare durante la beta.</p>
-            </div>
-            <div className="lp-phones">
-              <figure className="lp-reveal">
-                <PhoneShell tab="studio" label="Percorso Studio con nodi a scacchiera">
-                  <PhoneStudio />
-                </PhoneShell>
-                <figcaption className="lp-cap">Studio — il percorso a tappe</figcaption>
-              </figure>
-              <figure className="lp-reveal">
-                <PhoneShell tab="piano" label="Tab Piano con genera piano e calendario">
-                  <PhonePiano />
-                </PhoneShell>
-                <figcaption className="lp-cap">Piano — mese, settimana, Focus</figcaption>
-              </figure>
-              <figure className="lp-reveal">
-                <PhoneShell tab="home" label="Lezione a tappe con box evidenziato">
-                  <PhoneLesson />
-                </PhoneShell>
-                <figcaption className="lp-cap">Lezione — tappe, fonti, avanti</figcaption>
-              </figure>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <div className="lp-wrap">
-            <div className="lp-sec-head lp-reveal">
-              <p className="lp-eyebrow">Come funziona</p>
-              <h2 className="lp-h2">Tre passaggi, dal materiale allo studio.</h2>
-            </div>
-            <div className="lp-steps">
-              <article className="lp-step lp-reveal">
-                <div className="lp-num">01</div>
-                <h3 className="lp-h3">Carica o cerca</h3>
-                <p className="lp-lead lp-step-copy">Aggiungi un PDF, un documento, una foto del quaderno oppure cerca un argomento sul web.</p>
-              </article>
-              <article className="lp-step lp-reveal">
-                <div className="lp-num">02</div>
-                <h3 className="lp-h3">Controlla il percorso</h3>
-                <p className="lp-lead lp-step-copy">Erga organizza i concetti in moduli e lezioni. Tu scegli da dove iniziare e puoi aggiungere altro materiale.</p>
-              </article>
-              <article className="lp-step lp-reveal">
-                <div className="lp-num">03</div>
-                <h3 className="lp-h3">Studia e fai pratica</h3>
-                <p className="lp-lead lp-step-copy">Segui le lezioni, genera esercizi e usa il piano o il timer Focus per organizzare il lavoro.</p>
-              </article>
-            </div>
-            <div className="lp-mats">
-              <div className="lp-mat lp-reveal"><span className="lp-mat-icon" aria-hidden><FileText /></span><div><b>Carica PDF</b><span>Dispense, slide e fotocopie.</span></div></div>
-              <div className="lp-mat lp-reveal"><span className="lp-mat-icon" aria-hidden><ImageIcon /></span><div><b>Carica foto</b><span>Lavagna, quaderno e libro.</span></div></div>
-              <div className="lp-mat lp-reveal"><span className="lp-mat-icon" aria-hidden><Globe2 /></span><div><b>Ricerca web</b><span>Wikipedia, manuali e altre fonti.</span></div></div>
-            </div>
-          </div>
-        </section>
+        <ProductShowcase />
 
         <section className="lp-hex-sec" id="esagono">
           <div className="lp-wrap">
-            <HexagonPlay />
+            <DeferredHexagon />
           </div>
         </section>
 
-        <section>
+        <section className="lp-use-beta" id="prezzi">
           <div className="lp-wrap">
             <div className="lp-sec-head lp-reveal">
               <p className="lp-eyebrow">Esempi d’uso</p>
-              <h2 className="lp-h2">Tre situazioni in cui può aiutarti.</h2>
-              <p className="lp-lead">Sono scenari dimostrativi, non testimonianze di utenti reali.</p>
+              <h2 className="lp-h2">Tre giornate vere. Tre percorsi diversi.</h2>
+              <p className="lp-lead">Esempi dimostrativi basati sulle funzioni disponibili nella beta, non testimonianze di utenti reali.</p>
             </div>
-            <div className="lp-quotes">
-              <article className="lp-quote lp-reveal">
+
+            <div className="lp-scenarios">
+              <article className="lp-scenario lp-reveal">
+                <div className="lp-scenario-icon" aria-hidden><Atom /></div>
                 <span className="lp-scenario-label">Verifica di fisica</span>
-                <h3 className="lp-h3">Dal capitolo agli esercizi</h3>
-                <p>Carichi il materiale, controlli le lezioni generate e prepari un set di esercizi sugli argomenti della verifica.</p>
-              </article>
-              <article className="lp-quote lp-reveal">
-                <span className="lp-scenario-label">Interrogazione di italiano</span>
-                <h3 className="lp-h3">Ripasso e simulazione orale</h3>
-                <p>Organizzi i capitoli in tappe e usi la modalità Interrogazione per allenarti a rispondere ad alta voce.</p>
-              </article>
-              <article className="lp-quote lp-reveal">
-                <span className="lp-scenario-label">Settimana piena</span>
-                <h3 className="lp-h3">Una proposta da adattare</h3>
-                <p>Inserisci verifiche e impegni, poi controlli il piano suggerito prima di aggiungerlo al calendario.</p>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section id="prezzi">
-          <div className="lp-wrap">
-            <div className="lp-sec-head lp-reveal">
-              <p className="lp-eyebrow">Accesso</p>
-              <h2 className="lp-h2">La beta è gratuita.</h2>
-              <p className="lp-lead">Non serve una carta. Il piano Pro non è ancora in vendita e non mostriamo un prezzo finché non sarà definito.</p>
-            </div>
-            <div className="lp-price-grid">
-              <article className="lp-price feat lp-reveal">
-                <p className="lp-small">Beta</p>
-                <p className="amount">Gratis</p>
-                <p className="lp-small">Accesso alle funzioni attualmente disponibili.</p>
-                <ul>
-                  <li>Caricamento di PDF, documenti e immagini</li>
-                  <li>Lezioni, esercizi e simulazione orale</li>
-                  <li>Piano di studio e modalità Focus</li>
-                  <li>Profilo cognitivo personalizzato</li>
-                </ul>
-                <Link className="lp-btn lp-btn-primary" to={SIGNUP_PATH}>Partecipa alla beta</Link>
-              </article>
-              <article className="lp-price lp-reveal">
-                <p className="lp-small">Pro</p>
-                <p className="amount">In arrivo</p>
-                <p className="lp-small">Prezzo e condizioni non ancora definiti.</p>
-                <ul>
-                  <li>Nessun acquisto disponibile oggi</li>
-                  <li>Nessun addebito durante la beta</li>
-                  <li>Dettagli comunicati prima del lancio</li>
-                </ul>
-                <span className="lp-btn lp-btn-disabled" aria-disabled="true">Non ancora disponibile</span>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section id="faq">
-          <div className="lp-wrap">
-            <div className="lp-sec-head lp-reveal">
-              <p className="lp-eyebrow">Domande</p>
-              <h2 className="lp-h2">Poche, nette.</h2>
-            </div>
-            <div className="lp-faq">
-              {FAQ.map(([q, a], i) => (
-                <div key={q} className={`lp-faq-item lp-reveal${faqOpen === i ? " is-open" : ""}`}>
-                  <button
-                    type="button"
-                    aria-expanded={faqOpen === i}
-                    aria-controls={`faq-answer-${i}`}
-                    onClick={() => setFaqOpen(faqOpen === i ? null : i)}
-                  >
-                    {q}
-                    <Plus className="lp-plus" aria-hidden />
-                  </button>
-                  {faqOpen === i && <div className="a" id={`faq-answer-${i}`}>{a}</div>}
+                <h3 className="lp-h3">Dal capitolo agli esercizi.</h3>
+                <p>Carichi la dispensa, controlli il percorso e prepari un set di esercizi sugli argomenti scelti.</p>
+                <div className="lp-scenario-flow" aria-label="Flusso: PDF, percorso, esercizi">
+                  <span>PDF</span><span>Percorso</span><span>Esercizi</span>
                 </div>
-              ))}
+              </article>
+
+              <article className="lp-scenario lp-reveal">
+                <div className="lp-scenario-icon" aria-hidden><Mic2 /></div>
+                <span className="lp-scenario-label">Interrogazione di italiano</span>
+                <h3 className="lp-h3">Dal capitolo alla voce.</h3>
+                <p>Organizzi i passaggi, ripassi i concetti e usi la simulazione orale per allenare l’esposizione.</p>
+                <div className="lp-scenario-flow" aria-label="Flusso: capitoli, ripasso, simulazione">
+                  <span>Capitoli</span><span>Ripasso</span><span>Simulazione</span>
+                </div>
+              </article>
+
+              <article className="lp-scenario lp-reveal">
+                <div className="lp-scenario-icon" aria-hidden><CalendarCheck2 /></div>
+                <span className="lp-scenario-label">Settimana piena</span>
+                <h3 className="lp-h3">Dagli impegni a una proposta.</h3>
+                <p>Inserisci verifiche e attività, poi controlli il piano suggerito prima di aggiungerlo al calendario.</p>
+                <div className="lp-scenario-flow" aria-label="Flusso: impegni, proposta, calendario">
+                  <span>Impegni</span><span>Proposta</span><span>Calendario</span>
+                </div>
+              </article>
             </div>
+
+            <article className="lp-beta-card lp-reveal">
+              <div className="lp-beta-main">
+                <p className="lp-eyebrow lp-eyebrow-on-dark">Accesso alla beta</p>
+                <h3>Gratis, senza carta.</h3>
+                <p>Puoi provare le funzioni oggi disponibili e decidere con il tuo materiale se Erga ti è utile.</p>
+                <ul>
+                  <li><Check aria-hidden />PDF, documenti, foto e ricerca web</li>
+                  <li><Check aria-hidden />Lezioni, esercizi e simulazione orale</li>
+                  <li><Check aria-hidden />Piano, Focus ed Esagono cognitivo</li>
+                </ul>
+                <Link className="lp-btn lp-btn-red" to={SIGNUP_PATH}>Partecipa alla beta<ArrowRight aria-hidden /></Link>
+              </div>
+              <aside className="lp-beta-pro-note" aria-label="Informazioni sul futuro piano Pro">
+                <span>Pro</span>
+                <h3>Non è ancora in vendita.</h3>
+                <p>Prezzo e condizioni saranno comunicati prima del lancio. Durante la beta non ci sono addebiti.</p>
+              </aside>
+            </article>
           </div>
         </section>
 
-        <section className="lp-final" id="inizia">
-          <div className="lp-wrap">
-            <div className="lp-final-box lp-reveal">
-              <p className="lp-eyebrow lp-eyebrow-on-dark">Il primo passo</p>
-              <h2 className="lp-h2">Crea il profilo e prova Erga con il tuo materiale.</h2>
-              <p className="lp-lead">Dopo la registrazione completerai il questionario cognitivo e potrai aggiungere il primo argomento di studio.</p>
-              <div className="lp-onboard-cta">
-                <Link className="lp-btn lp-btn-red" to={SIGNUP_PATH}>Crea il profilo gratuito</Link>
-                <span className="lp-onboard-note">Beta gratuita. Nessuna carta richiesta.</span>
+        <section className="lp-closing" id="faq">
+          <div className="lp-wrap lp-closing-grid">
+            <div>
+              <div className="lp-sec-head lp-reveal">
+                <p className="lp-eyebrow">Domande</p>
+                <h2 className="lp-h2">Poche, nette.</h2>
+              </div>
+              <div className="lp-faq">
+                {FAQ.map(([q, a], i) => (
+                  <div key={q} className={`lp-faq-item lp-reveal${faqOpen === i ? " is-open" : ""}`}>
+                    <button
+                      type="button"
+                      aria-expanded={faqOpen === i}
+                      aria-controls={`faq-answer-${i}`}
+                      onClick={() => setFaqOpen(faqOpen === i ? null : i)}
+                    >
+                      {q}
+                      <Plus className="lp-plus" aria-hidden />
+                    </button>
+                    {faqOpen === i && <div className="a" id={`faq-answer-${i}`}>{a}</div>}
+                  </div>
+                ))}
               </div>
             </div>
+
+            <aside className="lp-final-box lp-reveal" id="inizia" aria-labelledby="final-cta-title">
+              <div className="lp-final-thread" aria-hidden><span className="line" /><span className="dot a" /><span className="dot b" /><span className="dot c" /></div>
+              <p className="lp-eyebrow lp-eyebrow-on-dark">Il primo passo</p>
+              <h2 className="lp-h2" id="final-cta-title">Prova Erga con il tuo materiale.</h2>
+              <p className="lp-lead">Crea il profilo, completa il questionario cognitivo e aggiungi il primo argomento di studio.</p>
+              <div className="lp-onboard-cta">
+                <Link className="lp-btn lp-btn-red" to={SIGNUP_PATH}>Crea il profilo gratuito<ArrowRight aria-hidden /></Link>
+                <span className="lp-onboard-note">Beta gratuita. Nessuna carta richiesta.</span>
+              </div>
+            </aside>
           </div>
         </section>
       </main>
