@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { FocusSetupDialog } from "@/components/focus/FocusSetupDialog";
 import { FocusFullscreen } from "@/components/focus/FocusFullscreen";
 
@@ -55,6 +56,7 @@ const FocusContext = createContext<FocusContextValue | null>(null);
 
 export function FocusProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
+  const queryClient = useQueryClient();
   const [setupOpen, setSetupOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [task, setTask] = useState<FocusTask | null>(null);
@@ -155,13 +157,14 @@ export function FocusProvider({ children }: { children: ReactNode }) {
           actual_duration: actualMinutes,
         });
         if (error) throw error;
+        await queryClient.invalidateQueries({ queryKey: ["home-dashboard", userId] });
         toast.success("Sessione registrata! Erga sta calibrando il tuo algoritmo.");
       } catch (e) {
         console.error("Failed to log study session:", e);
         toast.error("Non è stato possibile salvare la sessione.");
       }
     }
-  }, [task, session]);
+  }, [task, session, queryClient]);
 
   const nextPhase = useCallback(() => {
     let nextPhaseVal: FocusPhase;

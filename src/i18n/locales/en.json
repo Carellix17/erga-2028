@@ -21,6 +21,79 @@
     "upload": "Upload",
     "files": "Files"
   },
+  "home": {
+    "greeting": {
+      "night": "Good night",
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "subtitle": {
+      "pending_one": "You have one activity planned today",
+      "pending_other": "You have {{count}} activities planned today",
+      "completed": "You completed today's plan",
+      "nextEvaluation_one": "Your next test is tomorrow",
+      "nextEvaluation_other": "Your next test is in {{count}} days",
+      "resume": "You have a lesson to resume",
+      "empty": "You can plan your next step today"
+    },
+    "error": {
+      "title": "We can't load your Home",
+      "description": "Your data is safe. Check your connection and try again.",
+      "retry": "Try again"
+    },
+    "resume": {
+      "eyebrow": "Resume",
+      "lessonCount": "Lesson {{current}} of {{total}}",
+      "progress": "Path {{progress}}%",
+      "continue": "Resume lesson",
+      "start": "Start lesson",
+      "generatingTitle": "Your path is being prepared",
+      "generatingDescription": "You can keep using Erga: lessons will appear as soon as they are ready.",
+      "noLessonTitle": "This path has no lessons available yet",
+      "noLessonDescription": "Open Studio to check generation or choose another path.",
+      "noContentTitle": "Create your first path",
+      "noContentDescription": "Upload a PDF or photo, or search for a topic to start studying.",
+      "openStudio": "Open Studio",
+      "upload": "Add material"
+    },
+    "today": {
+      "eyebrow": "Today",
+      "title": "Today's plan",
+      "openPlan": "View Planner",
+      "startFocus": "Start Focus for {{title}}",
+      "showAll_one": "Show one more activity",
+      "showAll_other": "Show {{count}} more activities",
+      "showLess": "Show less",
+      "emptyTitle": "No activities planned",
+      "emptyDescription": "You can keep your afternoon free or plan a study session.",
+      "organize": "Plan the week"
+    },
+    "evaluation": {
+      "inDays_one": "Test tomorrow",
+      "inDays_other": "Test in {{count}} days"
+    },
+    "rhythm": {
+      "eyebrow": "Your rhythm",
+      "title": "Real data from Focus sessions",
+      "minutes": "minutes today",
+      "sessions": "sessions today",
+      "streak": "day streak",
+      "empty": "Complete your first Focus session to start seeing your rhythm."
+    },
+    "quick": {
+      "eyebrow": "Quick actions",
+      "title": "What do you want to do?",
+      "focus": "Focus",
+      "focusDescription": "Start the real timer",
+      "practice": "Practice",
+      "practiceDescription": "Open available exercises",
+      "upload": "Add material",
+      "uploadDescription": "PDF, photo or web search",
+      "cognitive": "Hexagon",
+      "cognitiveDescription": "Review your cognitive profile"
+    }
+  },
   "settings": {
     "languageSubtitle": "Choose the app language",
     "languageDescription": "Select the language you want to see Erga in."

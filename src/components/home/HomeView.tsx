@@ -1,593 +1,308 @@
-import { useEffect, useState } from "react";
-import type { LucideIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 import {
   BookOpen,
   Brain,
-  CheckCircle2,
-  ChevronDown,
+  CalendarDays,
+  Check,
   Clock3,
+  FileUp,
   Flame,
   Play,
+  RefreshCw,
   Sparkles,
   Target,
   Timer,
   Zap,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import { useCourseImage } from "@/hooks/useCourseImage";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
-import { getSubjectAccent } from "@/lib/subjectColors";
+import { useFocus } from "@/contexts/FocusContext";
+import { useHomeDashboard, type HomeTask } from "@/hooks/useHomeDashboard";
 import { useWelcomeMessage } from "@/hooks/useWelcomeMessage";
-
+import { getSubjectAccent } from "@/lib/subjectColors";
+import { cn } from "@/lib/utils";
 
 interface HomeViewProps {
   onOpenStudio: () => void;
+  onResumeLesson: (contextId: string, lessonIndex: number) => void;
+  onOpenPlan: () => void;
   onOpenPratica: () => void;
   onOpenCognitive: () => void;
+  onUpload: () => void;
 }
 
-type DashboardTaskStatus = "completed" | "current" | "upcoming";
-type QuickToolId = "pomodoro" | "practice" | "studio" | "cognitive";
+const VISIBLE_TASKS = 3;
 
-interface DashboardTask {
-  id: string;
-  title: string;
-  subject: string;
-  timeLabel: string;
-  status: DashboardTaskStatus;
+function HomeSkeleton() {
+  return (
+    <div className="space-y-8 py-8" aria-label="Caricamento Home">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-48 rounded-xl" />
+        <Skeleton className="h-9 w-36 rounded-xl" />
+        <Skeleton className="h-4 w-64 rounded-full" />
+      </div>
+      <Skeleton className="h-72 rounded-[24px]" />
+      <div className="space-y-3">
+        <Skeleton className="h-8 w-44 rounded-xl" />
+        <Skeleton className="h-20 rounded-2xl" />
+        <Skeleton className="h-20 rounded-2xl" />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <Skeleton className="h-28 rounded-2xl" />
+        <Skeleton className="h-28 rounded-2xl" />
+        <Skeleton className="h-28 rounded-2xl" />
+      </div>
+    </div>
+  );
 }
-
-interface QuickTool {
-  id: QuickToolId;
-  title: string;
-  description: string;
-  eyebrow: string;
-  icon: LucideIcon;
-  iconClassName: string;
-  toastTitle: string;
-  toastDescription: string;
-}
-
-/**
- * Dati dimostrativi della dashboard. Nessun valore mostrato in questa view
- * dipende da API o servizi esterni.
- */
-const MOCK_DASHBOARD_DATA = (() => {
-  const now = new Date();
-  const hour = now.getHours();
-
-  return {
-    greeting:
-      hour < 12 ? "Buongiorno" : hour < 18 ? "Buon pomeriggio" : "Buonasera",
-    student: {
-      name: "Alessandro",
-      studyMinutesCompleted: 42,
-      dailyGoalMinutes: 60,
-      streakDays: 6,
-    },
-    lessonsToday: [
-      {
-        id: "lesson-industrial-revolution",
-        subject: "Storia",
-        title:
-          "La rivoluzione industriale e la nascita della società contemporanea",
-        startTime: "15:30",
-        durationMinutes: 5,
-        preparationProgress: 68,
-      },
-      {
-        id: "lesson-functions",
-        subject: "Matematica",
-        title: "Ripasso delle funzioni esponenziali",
-        startTime: "17:00",
-        durationMinutes: 20,
-        preparationProgress: 34,
-      },
-    ],
-    upcomingTasks: [
-      {
-        id: "task-history-notes",
-        title: "Rileggi gli appunti sulla rivoluzione industriale",
-        subject: "Storia",
-        timeLabel: "14:45",
-        status: "completed",
-      },
-      {
-        id: "task-math-exercises",
-        title: "Completa 8 esercizi sulle funzioni esponenziali",
-        subject: "Matematica",
-        timeLabel: "16:20",
-        status: "current",
-      },
-      {
-        id: "task-english-review",
-        title: "Prepara il vocabolario per la prossima verifica di inglese",
-        subject: "Inglese",
-        timeLabel: "18:10",
-        status: "upcoming",
-      },
-      {
-        id: "task-science-map",
-        title: "Completa la mappa concettuale sulla cellula",
-        subject: "Scienze",
-        timeLabel: "18:40",
-        status: "upcoming",
-      },
-      {
-        id: "task-literature-reading",
-        title: "Leggi e annota il prossimo canto della Divina Commedia",
-        subject: "Italiano",
-        timeLabel: "19:15",
-        status: "upcoming",
-      },
-    ] satisfies DashboardTask[],
-    taskStatusLabels: {
-      completed: "Completato",
-      current: "In corso",
-      upcoming: "Da fare",
-    } satisfies Record<DashboardTaskStatus, string>,
-    quickTools: [
-      {
-        id: "pomodoro",
-        title: "Pomodoro",
-        description: "Focus da 25 min",
-        eyebrow: "Timer",
-        icon: Timer,
-        iconClassName: "bg-neutral-900 text-white dark:bg-white dark:text-black",
-        toastTitle: "Pomodoro pronto",
-        toastDescription: "Timer mock impostato su 25 minuti.",
-      },
-      {
-        id: "practice",
-        title: "Pratica rapida",
-        description: "12 esercizi pronti",
-        eyebrow: "Allenati",
-        icon: Zap,
-        iconClassName: "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-white",
-        toastTitle: "",
-        toastDescription: "",
-      },
-      {
-        id: "studio",
-        title: "Area Studio",
-        description: "Riprendi il modulo",
-        eyebrow: "Continua",
-        icon: BookOpen,
-        iconClassName: "bg-secondary/80 text-tertiary",
-        toastTitle: "",
-        toastDescription: "",
-      },
-      {
-        id: "cognitive",
-        title: "Esagono rapido",
-        description: "Profilo cognitivo",
-        eyebrow: "Personalizza",
-        icon: Brain,
-        iconClassName: "bg-tertiary/10 text-tertiary",
-        toastTitle: "",
-        toastDescription: "",
-      },
-    ] satisfies QuickTool[],
-  };
-})();
-
-const INITIAL_VISIBLE_TASKS = 3;
 
 export function HomeView({
   onOpenStudio,
+  onResumeLesson,
+  onOpenPlan,
   onOpenPratica,
   onOpenCognitive,
+  onUpload,
 }: HomeViewProps) {
-  const { toast } = useToast();
+  const { t, i18n } = useTranslation();
+  const dashboard = useHomeDashboard();
+  const focus = useFocus();
   const [showAllTasks, setShowAllTasks] = useState(false);
-  const [completedTaskIds, setCompletedTaskIds] = useState<string[]>(() =>
-    MOCK_DASHBOARD_DATA.upcomingTasks
-      .filter((task) => task.status === "completed")
-      .map((task) => task.id),
-  );
 
-  const { student, lessonsToday, upcomingTasks, quickTools } =
-    MOCK_DASHBOARD_DATA;
-
-  // Messaggio di benvenuto dinamico
-  const welcomeMessage = useWelcomeMessage({
-    userName: student.name,
-    streakDays: student.streakDays,
-    dailyProgress: Math.min(
-      100,
-      Math.round(
-        (student.studyMinutesCompleted / student.dailyGoalMinutes) * 100,
-      ),
-    ),
-    lessonsCompleted: completedTaskIds.length,
+  const data = dashboard.data;
+  const pendingTasks = data?.todayTasks.filter((task) => !task.isCompleted).length ?? 0;
+  const welcome = useWelcomeMessage({
+    userName: data?.displayName ?? "",
+    pendingTasks,
+    completedTasks: data?.completedActivities ?? 0,
+    hasResumeLesson: !!data?.resumeLesson,
+    nextEvaluationDays: data?.nextEvaluation?.daysAway ?? null,
   });
-  const nextLesson = lessonsToday[0];
-  // 🖼️ P24 — immagine di copertina per la card "Prossima lezione" (Wikipedia)
-  const lessonCover = useCourseImage(
-    nextLesson?.id ?? null,
-    nextLesson?.subject ?? "",
-  );
-  const visibleTasks = showAllTasks
-    ? upcomingTasks
-    : upcomingTasks.slice(0, INITIAL_VISIBLE_TASKS);
-  const hiddenTasksCount = Math.max(
-    0,
-    upcomingTasks.length - INITIAL_VISIBLE_TASKS,
-  );
-  const dailyProgress = Math.min(
-    100,
-    Math.round(
-      (student.studyMinutesCompleted / student.dailyGoalMinutes) * 100,
-    ),
-  );
-  const completedTasksCount = completedTaskIds.length;
 
-  const toggleTask = (taskId: string, checked: boolean) => {
-    setCompletedTaskIds((current) =>
-      checked
-        ? [...new Set([...current, taskId])]
-        : current.filter((id) => id !== taskId),
+  const todayLabel = useMemo(
+    () => new Intl.DateTimeFormat(i18n.language, { weekday: "long", day: "numeric", month: "long" }).format(new Date()),
+    [i18n.language],
+  );
+
+  if (dashboard.isLoading) return <HomeSkeleton />;
+
+  if (dashboard.isError || !data) {
+    return (
+      <div className="py-10">
+        <Card className="mx-auto max-w-xl border-destructive/25 bg-card p-6 text-center">
+          <RefreshCw className="mx-auto h-8 w-8 text-destructive" aria-hidden="true" />
+          <h1 className="mt-4 font-display text-xl font-bold">{t("home.error.title")}</h1>
+          <p className="mt-2 text-base text-muted-foreground">{t("home.error.description")}</p>
+          <Button className="mt-5 min-h-12 rounded-xl" onClick={() => dashboard.refetch()}>
+            {t("home.error.retry")}
+          </Button>
+        </Card>
+      </div>
     );
-  };
+  }
 
-  const handleToolClick = (toolId: QuickToolId) => {
-    if (toolId === "practice") {
-      onOpenPratica();
-      return;
-    }
+  const tasks = showAllTasks ? data.todayTasks : data.todayTasks.slice(0, VISIBLE_TASKS);
+  const hiddenTasks = Math.max(0, data.todayTasks.length - VISIBLE_TASKS);
+  const resume = data.resumeLesson;
 
-    if (toolId === "studio") {
-      onOpenStudio();
-      return;
-    }
-
-    if (toolId === "cognitive") {
-      onOpenCognitive();
-      return;
-    }
-
-    const tool = quickTools.find((item) => item.id === toolId);
-    if (tool) {
-      toast({ title: tool.toastTitle, description: tool.toastDescription });
-    }
+  const startTaskFocus = (task: HomeTask) => {
+    if (!task.canStartFocus) return;
+    focus.startSession({
+      label: task.title,
+      subject: task.subject,
+      eventId: task.sourceId,
+      sourceType: "planned",
+    });
   };
 
   return (
     <div className="relative isolate min-w-0 overflow-x-clip py-6 sm:py-8">
-      <div className="relative z-10 space-y-10 md:space-y-14">
-        {/* Intro compatta: orienta senza competere con l'azione principale. */}
+      <div className="relative z-10 space-y-9 md:space-y-12">
         <header className="min-w-0 pt-4 sm:pt-6">
-          <h1 className="flex flex-col gap-0">
-            <span className="break-words font-display text-[clamp(1.5rem,5.5vw,2.1rem)] font-extrabold leading-tight tracking-normal text-foreground [overflow-wrap:anywhere]">
-              {welcomeMessage.greeting}
+          <p className="text-sm font-semibold capitalize text-muted-foreground">{todayLabel}</p>
+          <h1 className="mt-3 flex flex-col gap-0">
+            <span className="break-words font-display text-[clamp(1.55rem,5.5vw,2.1rem)] font-extrabold leading-tight text-foreground">
+              {welcome.greeting}
             </span>
-            <span className="break-words font-display text-[clamp(1.7rem,6vw,2.35rem)] font-extrabold leading-tight tracking-normal text-tertiary [overflow-wrap:anywhere]">
-              {welcomeMessage.name}
+            <span className="break-words font-display text-[clamp(1.8rem,6vw,2.45rem)] font-extrabold leading-tight text-tertiary">
+              {welcome.name}
             </span>
           </h1>
-          {welcomeMessage.subtitle && (
-            <p className="mt-2 text-sm font-medium text-muted-foreground">
-              {welcomeMessage.subtitle}
-            </p>
-          )}
+          <p className="mt-2 text-base font-medium text-muted-foreground">{welcome.subtitle}</p>
         </header>
 
-        {/* Azione principale — la prossima lezione. */}
-        <section aria-labelledby="next-lesson-title" className="min-w-0">
-          <Card className="relative w-full min-w-0 overflow-hidden border-primary/15 bg-background/95 supports-[backdrop-filter]:bg-background/80 dark:border-white/10">
-            {/* 🖼️ P24 — sfondo unificato (immagine + tinta materia) */}
-            <CourseCardBackground
-              coverUrl={lessonCover}
-              subjectColor={getSubjectAccent(nextLesson?.subject ?? "")}
-              opacity={0.4}
-            />
-
-            <CardHeader className="relative z-10 p-5 pb-3 sm:p-6 sm:pb-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="gap-1.5 border-0 bg-black text-white dark:bg-white dark:text-black">
-                  <Sparkles className="h-3 w-3" aria-hidden="true" />
-                  Prossima lezione
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className="backdrop-blur-sm bg-black/30 text-white border-white/30"
-                >
-                  {nextLesson.subject}
-                </Badge>
-              </div>
-              <h2
-                id="next-lesson-title"
-                className="max-w-2xl break-words pt-2 font-display text-[clamp(1.45rem,5vw,2.2rem)] font-extrabold leading-[1.12] tracking-tight text-white [overflow-wrap:anywhere]"
-              >
-                {nextLesson.title}
-              </h2>
-            </CardHeader>
-
-            <CardContent className="relative z-10 p-5 pt-0 sm:p-6 sm:pt-0">
-              <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-neutral-300">
-                <span className="inline-flex items-center gap-1.5">
-                  <Clock3
-                    className="h-3.5 w-3.5 text-tertiary"
-                    aria-hidden="true"
-                  />
-                  Oggi, {nextLesson.startTime}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Timer
-                    className="h-3.5 w-3.5 text-tertiary"
-                    aria-hidden="true"
-                  />
-                  Sessione guidata · {nextLesson.durationMinutes} min
-                </span>
-              </div>
-
-              <div className="mt-4 max-w-md">
-                <div className="mb-1.5 flex items-center justify-between gap-3 text-xs font-semibold">
-                  <span className="text-neutral-300">
-                    Preparazione lezione
-                  </span>
-                  <span className="tabular-nums text-white">
-                    {nextLesson.preparationProgress}%
-                  </span>
+        <section aria-labelledby="resume-title" className="min-w-0">
+          {resume ? (
+            <Card className="relative min-h-[280px] overflow-hidden border-primary/15 bg-neutral-950 text-white">
+              <CourseCardBackground
+                coverUrl={resume.coverUrl}
+                subjectColor={getSubjectAccent(resume.courseTitle)}
+                opacity={0.46}
+              />
+              <CardHeader className="relative z-10 p-5 pb-3 sm:p-6 sm:pb-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="gap-1.5 border-0 bg-black text-white">
+                    <Sparkles className="h-3 w-3" aria-hidden="true" />
+                    {t("home.resume.eyebrow")}
+                  </Badge>
+                  <Badge variant="outline" className="border-white/30 bg-black/35 text-white">
+                    {resume.courseTitle}
+                  </Badge>
                 </div>
-                <Progress
-                  value={nextLesson.preparationProgress}
-                  aria-label={`Preparazione lezione ${nextLesson.preparationProgress}%`}
-                  className="h-1.5 bg-white/15"
-                />
+                <h2 id="resume-title" className="max-w-2xl pt-3 font-display text-[clamp(1.5rem,5vw,2.25rem)] font-extrabold leading-[1.12] tracking-tight text-white">
+                  {resume.lessonTitle}
+                </h2>
+              </CardHeader>
+              <CardContent className="relative z-10 p-5 pt-0 sm:p-6 sm:pt-0">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-neutral-200">
+                  <span>{t("home.resume.lessonCount", { current: resume.lessonNumber, total: resume.lessonCount })}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{t("home.resume.progress", { progress: resume.progressPercent })}</span>
+                </div>
+                <Button
+                  size="lg"
+                  onClick={() => onResumeLesson(resume.contextId, resume.lessonIndex)}
+                  className="mt-5 min-h-12 w-full gap-2 rounded-xl bg-white px-6 text-sm text-black hover:bg-neutral-200 sm:w-auto sm:min-w-[220px]"
+                >
+                  <Play className="h-4 w-4 fill-current" aria-hidden="true" />
+                  {resume.lessonNumber > 1 ? t("home.resume.continue") : t("home.resume.start")}
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-outline-variant/60 bg-card p-6 sm:p-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-container-high">
+                {data.isGenerating ? <RefreshCw className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileUp className="h-5 w-5" aria-hidden="true" />}
               </div>
-
-              <Button
-                size="lg"
-                onClick={onOpenStudio}
-                className="mt-5 h-12 w-full gap-2 rounded-xl bg-white px-6 text-sm text-black shadow-level-2 hover:bg-neutral-200 active:scale-[0.97] sm:w-auto sm:min-w-[220px]"
-              >
-                <Play className="h-4 w-4 fill-current" aria-hidden="true" />
-                Inizia lezione · {nextLesson.durationMinutes} min
+              <h2 id="resume-title" className="mt-4 font-display text-2xl font-bold">
+                {data.isGenerating ? t("home.resume.generatingTitle") : data.hasContexts ? t("home.resume.noLessonTitle") : t("home.resume.noContentTitle")}
+              </h2>
+              <p className="mt-2 max-w-xl text-base leading-relaxed text-muted-foreground">
+                {data.isGenerating ? t("home.resume.generatingDescription") : data.hasContexts ? t("home.resume.noLessonDescription") : t("home.resume.noContentDescription")}
+              </p>
+              <Button className="mt-5 min-h-12 rounded-xl" onClick={data.hasContexts ? onOpenStudio : onUpload}>
+                {data.hasContexts ? t("home.resume.openStudio") : t("home.resume.upload")}
               </Button>
-            </CardContent>
-          </Card>
+            </Card>
+          )}
         </section>
 
-        {/* Piano essenziale, con dettaglio progressivo. */}
-        <section
-          aria-labelledby="today-plan-title"
-          className="min-w-0 space-y-4"
-        >
-          <div className="flex min-w-0 items-end justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-                Oggi
-              </p>
-              <h2
-                id="today-plan-title"
-                className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground"
-              >
-                Piano del giorno
-              </h2>
+        <section aria-labelledby="today-plan-title" className="min-w-0 space-y-4">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("home.today.eyebrow")}</p>
+              <h2 id="today-plan-title" className="mt-1 font-display text-2xl font-bold tracking-tight">{t("home.today.title")}</h2>
             </div>
-            <Badge variant="secondary" className="shrink-0">
-              {completedTasksCount}/{upcomingTasks.length}
-            </Badge>
+            <Button variant="ghost" size="sm" className="min-h-11 rounded-xl" onClick={onOpenPlan}>
+              {t("home.today.openPlan")}
+            </Button>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
-            <Card className="min-w-0 bg-background/70 shadow-level-1 supports-[backdrop-filter]:bg-background/55 md:col-span-8">
-              <CardContent className="p-3 sm:p-4">
-                <div id="today-task-list" className="min-w-0" role="list">
-                  {visibleTasks.map((task, index) => {
-                    const isCompleted = completedTaskIds.includes(task.id);
-                    const visualStatus: DashboardTaskStatus = isCompleted
-                      ? "completed"
-                      : task.status === "completed"
-                        ? "upcoming"
-                        : task.status;
+          {data.nextEvaluation && (
+            <button type="button" onClick={onOpenPlan} className="flex min-h-16 w-full items-center gap-3 rounded-2xl border border-warning/25 bg-warning-container/45 p-4 text-left">
+              <CalendarDays className="h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  {t("home.evaluation.inDays", { count: data.nextEvaluation.daysAway })}
+                </span>
+                <span className="block truncate text-base font-bold">{data.nextEvaluation.subject} · {data.nextEvaluation.title}</span>
+              </span>
+            </button>
+          )}
 
-                    return (
-                      <div
-                        key={task.id}
-                        role="listitem"
-                        className={cn(
-                          "flex min-w-0 items-start gap-3 px-2 py-3.5 sm:items-center sm:px-3",
-                          index !== visibleTasks.length - 1 &&
-                            "border-b border-foreground/[0.07]",
-                          visualStatus === "current" &&
-                            "rounded-xl bg-primary/[0.045]",
-                        )}
-                      >
-                        <Checkbox
-                          id={task.id}
-                          checked={isCompleted}
-                          onCheckedChange={(checked) =>
-                            toggleTask(task.id, checked === true)
-                          }
-                          aria-label={`Segna come ${isCompleted ? "da fare" : "completata"}: ${task.title}`}
-                          className="mt-0.5 h-5 w-5 rounded-md border-foreground/20 sm:mt-0"
-                        />
-                        <label
-                          htmlFor={task.id}
-                          className="min-w-0 flex-1 cursor-pointer"
-                        >
-                          <span
-                            className={cn(
-                              "block break-words text-sm font-bold leading-snug text-foreground [overflow-wrap:anywhere] sm:line-clamp-1",
-                              isCompleted &&
-                                "text-muted-foreground line-through",
-                            )}
-                          >
-                            {task.title}
-                          </span>
-                          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                            <span>{task.subject}</span>
-                            <span aria-hidden="true">·</span>
-                            <span>{task.timeLabel}</span>
-                          </span>
-                        </label>
-                        <Badge
-                          variant={
-                            visualStatus === "current"
-                              ? "default"
-                              : visualStatus === "completed"
-                                ? "secondary"
-                                : "outline"
-                          }
-                          className="hidden shrink-0 sm:inline-flex"
-                        >
-                          {MOCK_DASHBOARD_DATA.taskStatusLabels[visualStatus]}
-                        </Badge>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {hiddenTasksCount > 0 && (
-                  <div className="border-t border-foreground/[0.07] px-1 pt-2 sm:px-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      aria-expanded={showAllTasks}
-                      aria-controls="today-task-list"
-                      onClick={() => setShowAllTasks((current) => !current)}
-                      className="w-full justify-between text-muted-foreground"
+          {tasks.length > 0 ? (
+            <Card className="overflow-hidden border-outline-variant/60 bg-card shadow-level-1">
+              <CardContent className="p-2 sm:p-3">
+                <div id="today-task-list" role="list">
+                  {tasks.map((task, index) => (
+                    <div
+                      key={task.id}
+                      role="listitem"
+                      className={cn(
+                        "flex min-h-[72px] items-center gap-3 rounded-xl px-2 py-3 sm:px-3",
+                        index !== tasks.length - 1 && "border-b border-foreground/[0.07]",
+                        task.isCompleted && "opacity-70",
+                      )}
                     >
-                      {showAllTasks
-                        ? "Mostra meno"
-                        : `Mostra tutti · altri ${hiddenTasksCount}`}
-                      <ChevronDown
-                        className={cn(
-                          "h-4 w-4 transition-transform duration-150",
-                          showAllTasks && "rotate-180",
-                        )}
-                        aria-hidden="true"
-                      />
-                    </Button>
-                  </div>
+                      <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-xl", task.isCompleted ? "bg-success text-success-foreground" : "bg-surface-container-high text-foreground")}>
+                        {task.isCompleted ? <Check className="h-5 w-5" aria-hidden="true" /> : task.kind === "study" ? <BookOpen className="h-5 w-5" aria-hidden="true" /> : <CalendarDays className="h-5 w-5" aria-hidden="true" />}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className={cn("break-words text-base font-bold leading-snug", task.isCompleted && "line-through")}>{task.title}</p>
+                        <p className="mt-1 flex flex-wrap gap-x-2 text-sm text-muted-foreground">
+                          <span>{task.subject}</span>
+                          {task.time && <><span aria-hidden="true">·</span><span>{task.time}</span></>}
+                        </p>
+                      </div>
+                      {task.canStartFocus && (
+                        <Button size="icon-sm" variant="outline" className="h-11 w-11 shrink-0 rounded-xl" aria-label={t("home.today.startFocus", { title: task.title })} onClick={() => startTaskFocus(task)}>
+                          <Timer className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {hiddenTasks > 0 && (
+                  <Button variant="ghost" className="mt-1 min-h-11 w-full rounded-xl" aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={() => setShowAllTasks((value) => !value)}>
+                    {showAllTasks ? t("home.today.showLess") : t("home.today.showAll", { count: hiddenTasks })}
+                  </Button>
                 )}
               </CardContent>
             </Card>
-
-            <Card className="min-w-0 bg-background/50 shadow-none supports-[backdrop-filter]:bg-background/35 md:col-span-4">
-              <CardHeader className="p-5 pb-2">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-                      Ritmo di oggi
-                    </p>
-                    <h2 className="mt-1 font-display text-lg font-bold tracking-tight text-foreground">
-                      Obiettivo giornaliero
-                    </h2>
-                  </div>
-                  <Target
-                    className="h-5 w-5 shrink-0 text-tertiary"
-                    aria-hidden="true"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="p-5 pt-3">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="font-display text-3xl font-extrabold tracking-tight text-foreground tabular-nums">
-                    {student.studyMinutesCompleted}
-                  </span>
-                  <span className="text-xs font-semibold text-muted-foreground">
-                    / {student.dailyGoalMinutes} min
-                  </span>
-                </div>
-                <Progress
-                  value={dailyProgress}
-                  aria-label={`Obiettivo giornaliero ${dailyProgress}%`}
-                  className="mt-3 h-2 bg-secondary/65"
-                />
-
-                <div className="mt-5 grid grid-cols-2 gap-4 border-t border-foreground/[0.07] pt-4">
-                  <div className="min-w-0">
-                    <CheckCircle2
-                      className="h-4 w-4 text-tertiary"
-                      aria-hidden="true"
-                    />
-                    <p className="mt-1.5 text-sm font-extrabold tracking-tight text-foreground tabular-nums">
-                      {completedTasksCount}/{upcomingTasks.length}
-                    </p>
-                    <p className="text-[10px] font-medium text-muted-foreground">
-                      Attività
-                    </p>
-                  </div>
-                  <div className="min-w-0">
-                    <Flame
-                      className="h-4 w-4 text-warning"
-                      aria-hidden="true"
-                    />
-                    <p className="mt-1.5 text-sm font-extrabold tracking-tight text-foreground tabular-nums">
-                      {student.streakDays} giorni
-                    </p>
-                    <p className="text-[10px] font-medium text-muted-foreground">
-                      Serie attiva
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
+          ) : (
+            <Card className="border-dashed border-outline-variant bg-card p-5">
+              <Clock3 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+              <h3 className="mt-3 font-display text-lg font-bold">{t("home.today.emptyTitle")}</h3>
+              <p className="mt-1 text-base text-muted-foreground">{t("home.today.emptyDescription")}</p>
+              <Button variant="outline" className="mt-4 min-h-11 rounded-xl" onClick={onOpenPlan}>{t("home.today.organize")}</Button>
             </Card>
-          </div>
+          )}
         </section>
 
-        {/* Strumenti secondari, volutamente più quieti. */}
-        <section
-          aria-labelledby="quick-tools-title"
-          className="min-w-0 space-y-4 pb-2"
-        >
+        <section aria-labelledby="rhythm-title" className="space-y-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-              Scorciatoie
-            </p>
-            <h2
-              id="quick-tools-title"
-              className="mt-1 font-display text-xl font-bold tracking-tight text-foreground"
-            >
-              Strumenti rapidi
-            </h2>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("home.rhythm.eyebrow")}</p>
+            <h2 id="rhythm-title" className="mt-1 font-display text-xl font-bold">{t("home.rhythm.title")}</h2>
           </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: t("home.rhythm.minutes"), value: data.minutesToday, Icon: Timer },
+              { label: t("home.rhythm.sessions"), value: data.sessionsToday, Icon: Target },
+              { label: t("home.rhythm.streak"), value: data.streakDays, Icon: Flame },
+            ].map(({ label, value, Icon }) => (
+              <Card key={label} className="min-w-0 border-outline-variant/60 bg-card p-3 shadow-none sm:p-4">
+                <Icon className="h-4 w-4 text-tertiary" aria-hidden="true" />
+                <p className="mt-2 font-display text-2xl font-extrabold tabular-nums">{value}</p>
+                <p className="mt-1 break-words text-sm leading-tight text-muted-foreground">{label}</p>
+              </Card>
+            ))}
+          </div>
+          {data.sessionsToday === 0 && <p className="text-sm text-muted-foreground">{t("home.rhythm.empty")}</p>}
+        </section>
 
-          <div className="grid min-w-0 grid-cols-2 gap-3 md:grid-cols-4">
-            {quickTools.map((tool) => {
-              const Icon = tool.icon;
-
-              return (
-                <Button
-                  key={tool.id}
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleToolClick(tool.id)}
-                  className="group press h-auto min-h-[118px] min-w-0 flex-col items-start justify-start whitespace-normal rounded-2xl border-foreground/[0.08] bg-background/40 p-3.5 text-left shadow-none supports-[backdrop-filter]:bg-background/25 dark:border-white/[0.08]"
-                >
-                  <span
-                    className={cn(
-                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                      tool.iconClassName,
-                    )}
-                  >
-                    <Icon className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                  <span className="mt-2 min-w-0 self-stretch">
-                    <span className="block text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-                      {tool.eyebrow}
-                    </span>
-                    <span className="mt-0.5 block break-words text-sm font-bold leading-tight text-foreground [overflow-wrap:anywhere]">
-                      {tool.title}
-                    </span>
-                    <span className="mt-1 block break-words text-[10px] font-medium leading-snug text-muted-foreground [overflow-wrap:anywhere]">
-                      {tool.description}
-                    </span>
-                  </span>
-                </Button>
-              );
-            })}
+        <section aria-labelledby="quick-tools-title" className="space-y-4 pb-2">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("home.quick.eyebrow")}</p>
+            <h2 id="quick-tools-title" className="mt-1 font-display text-xl font-bold">{t("home.quick.title")}</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {[
+              { id: "focus", title: t("home.quick.focus"), description: t("home.quick.focusDescription"), Icon: Timer, action: focus.openSetup },
+              { id: "practice", title: t("home.quick.practice"), description: t("home.quick.practiceDescription"), Icon: Zap, action: onOpenPratica },
+              { id: "upload", title: t("home.quick.upload"), description: t("home.quick.uploadDescription"), Icon: FileUp, action: onUpload },
+              { id: "cognitive", title: t("home.quick.cognitive"), description: t("home.quick.cognitiveDescription"), Icon: Brain, action: onOpenCognitive },
+            ].map((tool) => (
+              <Button key={tool.id} type="button" variant="outline" onClick={tool.action} className="h-auto min-h-[116px] flex-col items-start justify-start whitespace-normal rounded-2xl border-outline-variant/60 bg-card p-4 text-left shadow-none">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-surface-container-high"><tool.Icon className="h-4 w-4" aria-hidden="true" /></span>
+                <span className="mt-3 block text-base font-bold">{tool.title}</span>
+                <span className="mt-1 block text-sm font-medium leading-snug text-muted-foreground">{tool.description}</span>
+              </Button>
+            ))}
           </div>
         </section>
       </div>

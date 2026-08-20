@@ -35,6 +35,7 @@ const Index = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [manageFocusContextId, setManageFocusContextId] = useState<string | null>(null);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
+  const [lessonLaunch, setLessonLaunch] = useState<{ contextId: string; lessonIndex: number; requestId: number } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // 🧭 P24 — memoria di posizione: ogni stanza riapre DOV'ERA (oggetti persistenti)
@@ -141,8 +142,15 @@ const Index = () => {
         {activeTab === "home" && (
           <HomeView
             onOpenStudio={() => changeTab("studio")}
+            onResumeLesson={(contextId, lessonIndex) => {
+              setSelectedContextId(contextId);
+              setLessonLaunch({ contextId, lessonIndex, requestId: Date.now() });
+              changeTab("studio");
+            }}
+            onOpenPlan={() => changeTab("piano")}
             onOpenPratica={() => changeTab("pratica")}
             onOpenCognitive={() => setShowOnboarding(true)}
+            onUpload={() => setShowUpload(true)}
           />
         )}
         {/* Banner ricalcola Esagono se per qualche motivo i punteggi sono tutti default */}
@@ -163,6 +171,8 @@ const Index = () => {
             hasFiles={hasFiles}
             onUploadClick={() => setShowUpload(true)}
             selectedContextId={selectedContextId}
+            lessonLaunch={lessonLaunch}
+            onLessonLaunchHandled={() => setLessonLaunch(null)}
             onClearContext={() => setSelectedContextId(null)}
             onOpenCourseMaterials={(contextId) => {
               setManageFocusContextId(contextId);

@@ -44,13 +44,16 @@ interface StudioViewProps {
   hasFiles: boolean;
   onUploadClick: () => void;
   selectedContextId?: string | null;
+  lessonLaunch?: { contextId: string; lessonIndex: number; requestId: number } | null;
+  onLessonLaunchHandled?: () => void;
   onClearContext?: () => void;
   onOpenCourseMaterials?: (contextId: string) => void;
   onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
-export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClearContext, onOpenCourseMaterials, onFullscreenChange }: StudioViewProps) {
+export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonLaunch, onLessonLaunchHandled, onClearContext, onOpenCourseMaterials, onFullscreenChange }: StudioViewProps) {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
+  const handledLessonLaunchRef = useRef<number | null>(null);
   // `localStarting` copre la finestra tra il click "Genera" e la prima scrittura
   // di `generation_status='generating'` da parte del backend. Lo stato vero
   // arriva via Realtime dalla riga di `study_contexts`.
@@ -667,6 +670,26 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, onClear
       if (index > cachedCurrentIndex) updateProgress.mutate(index);
     }
   };
+
+  // La Home può chiedere di riaprire una lezione precisa. Aspettiamo che il
+  // contesto e la lista siano disponibili, poi apriamo direttamente il lettore.
+  useEffect(() => {
+    if (!lessonLaunch) return;
+    if (handledLessonLaunchRef.current === lessonLaunch.requestId) return;
+    if (effectiveContextId !== lessonLaunch.contextId || lessons.length === 0) return;
+
+    const index = Math.max(0, Math.min(lessonLaunch.lessonIndex, lessons.length - 1));
+    const lesson = lessons[index];
+    handledLessonLaunchRef.current = lessonLaunch.requestId;
+    setCurrentLessonIndex(index);
+    setActiveModuleIndex(moduleIndexOf(index));
+    setViewMode("lessons");
+    if (lesson?.is_generated) {
+      setActiveLessonIndex(index);
+      if (index > cachedCurrentIndex) updateProgress.mutate(index);
+    }
+    onLessonLaunchHandled?.();
+  }, [lessonLaunch, effectiveContextId, lessons, cachedCurrentIndex, updateProgress, onLessonLaunchHandled]);
 
   const handleRegenerateLesson = async (index: number) => {
     const lesson = lessons[index];

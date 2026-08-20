@@ -21,6 +21,79 @@
     "upload": "Carica",
     "files": "File"
   },
+  "home": {
+    "greeting": {
+      "night": "Buonanotte",
+      "morning": "Buongiorno",
+      "afternoon": "Buon pomeriggio",
+      "evening": "Buonasera"
+    },
+    "subtitle": {
+      "pending_one": "Hai un'attività prevista oggi",
+      "pending_other": "Hai {{count}} attività previste oggi",
+      "completed": "Hai completato il piano di oggi",
+      "nextEvaluation_one": "La prossima verifica è domani",
+      "nextEvaluation_other": "La prossima verifica è tra {{count}} giorni",
+      "resume": "Hai una lezione da riprendere",
+      "empty": "Oggi puoi organizzare il tuo prossimo passo"
+    },
+    "error": {
+      "title": "Non riusciamo a caricare la Home",
+      "description": "I tuoi dati sono al sicuro. Controlla la connessione e riprova.",
+      "retry": "Riprova"
+    },
+    "resume": {
+      "eyebrow": "Riprendi",
+      "lessonCount": "Lezione {{current}} di {{total}}",
+      "progress": "Percorso {{progress}}%",
+      "continue": "Riprendi lezione",
+      "start": "Inizia lezione",
+      "generatingTitle": "Il tuo percorso è in preparazione",
+      "generatingDescription": "Puoi continuare a usare Erga: le lezioni appariranno appena saranno pronte.",
+      "noLessonTitle": "Il percorso non ha ancora lezioni disponibili",
+      "noLessonDescription": "Apri Studio per controllare la generazione o scegliere un altro percorso.",
+      "noContentTitle": "Crea il tuo primo percorso",
+      "noContentDescription": "Carica un PDF, una foto o cerca un argomento per iniziare a studiare.",
+      "openStudio": "Apri Studio",
+      "upload": "Aggiungi materiale"
+    },
+    "today": {
+      "eyebrow": "Oggi",
+      "title": "Piano del giorno",
+      "openPlan": "Vedi Piano",
+      "startFocus": "Avvia Focus per {{title}}",
+      "showAll_one": "Mostra un'altra attività",
+      "showAll_other": "Mostra altre {{count}} attività",
+      "showLess": "Mostra meno",
+      "emptyTitle": "Nessuna attività prevista",
+      "emptyDescription": "Puoi lasciare libero il pomeriggio oppure organizzare una sessione.",
+      "organize": "Organizza la settimana"
+    },
+    "evaluation": {
+      "inDays_one": "Verifica domani",
+      "inDays_other": "Verifica tra {{count}} giorni"
+    },
+    "rhythm": {
+      "eyebrow": "Il tuo ritmo",
+      "title": "Dati reali dalle sessioni Focus",
+      "minutes": "minuti oggi",
+      "sessions": "sessioni oggi",
+      "streak": "giorni di serie",
+      "empty": "Completa la prima sessione Focus per iniziare a vedere il tuo ritmo."
+    },
+    "quick": {
+      "eyebrow": "Azioni rapide",
+      "title": "Cosa vuoi fare?",
+      "focus": "Focus",
+      "focusDescription": "Avvia il vero timer",
+      "practice": "Pratica",
+      "practiceDescription": "Apri gli esercizi disponibili",
+      "upload": "Aggiungi materiale",
+      "uploadDescription": "PDF, foto o ricerca web",
+      "cognitive": "Esagono",
+      "cognitiveDescription": "Rivedi il profilo cognitivo"
+    }
+  },
   "settings": {
     "languageSubtitle": "Scegli la lingua dell'app",
     "languageDescription": "Seleziona la lingua in cui vuoi vedere Erga."
