@@ -1,7 +1,9 @@
 # Istruzioni di lavoro per Erga
 
 Questo file raccoglie le regole che ogni assistente deve seguire quando lavora su Erga.
-Le guide complete sono in `docs/skills/`.
+Le guide curate per il progetto sono in `docs/skills/`; le skill installate dai relativi CLI sono in `.agents/skills/`.
+
+Prima di prendere decisioni di prodotto, leggere `PRODUCT.md`: è la fonte persistente e confermata su utenti, scopo, posizionamento, vincoli ed evidenze disponibili.
 
 ## 1. Regole operative del progetto
 
@@ -70,6 +72,35 @@ Se il 3D è giustificato:
 - evitare modelli oltre 5 MB, puntando a meno di 100.000 poligoni;
 - sospenderlo quando non è visibile;
 - testare consumo, fluidità e usabilità su telefono.
+
+### Impeccable — progettazione e revisione UI
+
+La skill principale è in `.agents/skills/impeccable/SKILL.md`. Per una sessione di lavoro visivo:
+
+- eseguire una sola volta lo script di contesto indicato dalla skill;
+- usare il comando/playbook Impeccable più vicino alla richiesta (shape, critique, audit, polish, harden, adapt, animate, optimize ecc.);
+- rispettare `PRODUCT.md` e `.impeccable/config.json`;
+- per Erga il percorso predefinito è **code-first**;
+- dopo modifiche UI, eseguire il detector meccanico di Impeccable sui file cambiati quando possibile.
+
+### Emil Kowalski Motion Skills — animazione con uno scopo
+
+Le skill installate da `emilkowalski/skill` sono in `.agents/skills/`. Usare soprattutto:
+
+- `animate` per implementare movimento;
+- `review-animations` per revisionare una transizione;
+- `find-animation-opportunities` e `improve-animations` per audit e piani;
+- `emil-design-eng` per rifinitura e comportamento dei componenti;
+- `ask-sonner` quando si lavora sui toast.
+
+Ogni animazione deve comunicare gerarchia, feedback, continuità o cambiamento di stato. Evitare movimento decorativo continuo e rispettare sempre `prefers-reduced-motion`.
+
+### Taste Skill — solo superfici marketing
+
+`design-taste-frontend` è in `.agents/skills/design-taste-frontend/SKILL.md`.
+Usarla per landing page, pagine marketing e redesign espressivi. Non applicarne automaticamente le regole a dashboard, calendari, tabelle o flussi operativi dell'app, dove chiarezza e convenzioni del prodotto hanno precedenza.
+
+In caso di conflitto tra una skill esterna e le regole specifiche di Erga, prevalgono nell'ordine: `PRODUCT.md`, questo `AGENTS.md`, accessibilità e codice esistente.
 
 ## 4. Requisiti minimi per il frontend
 
