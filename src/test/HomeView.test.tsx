@@ -95,6 +95,42 @@ describe("HomeView", () => {
     expect(screen.getByText("4")).toBeInTheDocument();
   });
 
+  it("mostra il ritmo prima della lezione e la lezione prima del piano del giorno", () => {
+    render(<HomeView {...callbacks} />);
+
+    const rhythmTitle = screen.getByRole("heading", { name: "Dati reali dalle sessioni Focus" });
+    const resumeTitle = screen.getByRole("heading", { name: "Il moto rettilineo" });
+    const todayTitle = screen.getByRole("heading", { name: "Piano del giorno" });
+
+    expect(rhythmTitle.compareDocumentPosition(resumeTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(resumeTitle.compareDocumentPosition(todayTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("adatta la card della lezione al contenuto con padding uniforme", () => {
+    render(<HomeView {...callbacks} />);
+
+    const card = screen.getByTestId("resume-lesson-card");
+    const button = screen.getByRole("button", { name: /Riprendi lezione/i });
+    const content = button.parentElement;
+
+    expect(card).toHaveClass("h-auto");
+    expect(card.className).not.toMatch(/min-h-|h-\[/);
+    expect(content).toHaveClass("p-5", "sm:p-6");
+    expect(content?.className).not.toMatch(/(?:^|\s)(?:p[bt]-)/);
+  });
+
+  it("mantiene le tre metriche in una griglia mobile compatta", () => {
+    render(<HomeView {...callbacks} />);
+
+    const rhythmTitle = screen.getByRole("heading", { name: "Dati reali dalle sessioni Focus" });
+    const grid = rhythmTitle.closest("section")?.querySelector(".grid");
+
+    expect(grid).toHaveClass("grid-cols-3", "gap-2", "min-[375px]:gap-3");
+    expect(screen.getByText("minuti oggi")).toHaveClass("text-balance");
+    expect(screen.getByText("sessioni oggi")).toHaveClass("text-balance");
+    expect(screen.getByText("giorni di serie")).toHaveClass("text-balance");
+  });
+
   it("riapre la lezione precisa", () => {
     render(<HomeView {...callbacks} />);
     fireEvent.click(screen.getByRole("button", { name: /Riprendi lezione/i }));
