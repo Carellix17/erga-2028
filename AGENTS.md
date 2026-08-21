@@ -1,7 +1,7 @@
 # Istruzioni di lavoro per Erga
 
 Questo file raccoglie le regole che ogni assistente deve seguire quando lavora su Erga.
-Le guide curate per il progetto sono in `docs/skills/`; le skill installate dai relativi CLI sono in `.agents/skills/`.
+Tutte le skill utilizzabili sono riunite in `.agents/skills/`; il catalogo è `.agents/skills/README.md`.
 
 Prima di prendere decisioni di prodotto, leggere `PRODUCT.md`: è la fonte persistente e confermata su utenti, scopo, posizionamento, vincoli ed evidenze disponibili.
 
@@ -31,7 +31,7 @@ Un effetto visivo non deve mai rendere l'app più difficile da usare, più lenta
 
 ### Frontend Design — sempre per lavori visivi
 
-Leggere `docs/skills/frontend-design/SKILL.md` quando si creano o modificano pagine, componenti o stili.
+Leggere `.agents/skills/frontend-design/SKILL.md` quando si creano o modificano pagine, componenti o stili.
 
 Prima di scrivere codice definire:
 
@@ -43,9 +43,13 @@ Prima di scrivere codice definire:
 
 Per Erga la direzione predefinita è **editoriale, minimale, autorevole ma vicina agli studenti**. Mantenere il marchio nero, bianco, rosso e rosa salvo richiesta esplicita. Evitare interfacce generiche da prodotto AI, decorazioni casuali e pattern copiati senza relazione con lo studio.
 
+### UI/UX Pro Max — ricerca strutturata prima delle modifiche ampie
+
+La skill completa è in `.agents/skills/ui-ux-pro-max/`. Per nuove pagine, redesign o revisioni ampie, iniziare dal generatore di design system e usare poi le ricerche UX/stack pertinenti. Non sostituire automaticamente i token e il marchio esistenti con i suggerimenti generici del database.
+
 ### Scroll Experience — solo quando migliora la storia
 
-Leggere `docs/skills/scroll-experience/SKILL.md` per parallax, sezioni sticky, reveal o narrazioni guidate dallo scorrimento.
+Leggere `.agents/skills/scroll-experience/SKILL.md` per parallax, sezioni sticky, reveal o narrazioni guidate dallo scorrimento.
 
 Regole Erga:
 
@@ -59,7 +63,7 @@ Regole Erga:
 
 ### 3D Web Experience — solo con un beneficio reale
 
-Leggere `docs/skills/3d-web-experience/SKILL.md` quando viene richiesto WebGL, Three.js, React Three Fiber, Spline o un elemento tridimensionale.
+Leggere `.agents/skills/3d-web-experience/SKILL.md` quando viene richiesto WebGL, Three.js, React Three Fiber, Spline o un elemento tridimensionale.
 
 Prima di introdurre il 3D chiedersi: “Aiuta davvero lo studente a capire o usare il prodotto?”. Se un'immagine, SVG o animazione 2D comunica lo stesso concetto, preferire la soluzione più semplice.
 
