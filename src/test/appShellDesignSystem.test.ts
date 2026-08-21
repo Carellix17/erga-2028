@@ -93,4 +93,15 @@ describe("app shell design system", () => {
     expect(aura).toMatch(/html\.reduce-motion[\s\S]*?animation: none/);
     expect(aura).toMatch(/@media \(prefers-contrast: more\)[\s\S]*?content: none/);
   });
+
+  it("espone la pagina /aura-lab solo in sviluppo, con toggle tema e tinte d'esempio", () => {
+    const app = read("src/App.tsx");
+    // registrata SOLO dietro import.meta.env.DEV
+    expect(app).toContain('import("./pages/AuraLab")');
+    expect(app).toContain('import.meta.env.DEV && <Route path="/aura-lab"');
+    const page = read("src/pages/AuraLab.tsx");
+    expect(page).toContain("useTheme");
+    expect(page).toContain("--ambient-block-ink");
+    expect(page).toContain("no-halo");
+  });
 });
