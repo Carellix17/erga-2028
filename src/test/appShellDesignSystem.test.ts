@@ -63,4 +63,34 @@ describe("app shell design system", () => {
     expect(css).toContain(".no-ambient");
     expect(css).not.toMatch(/\.dark [^{]*\b(h1|h2|p|span)\b[^{]*ambient-margin/);
   });
+
+  it("anima l'aura dei blocchi in entrambi i temi mescolando tinta e fondo", () => {
+    const css = read("src/index.css");
+    expect(css).toContain("P27 — AURA ANIMATA DEI BLOCCHI");
+    // sfumatura conica che gira lentamente attorno al bordo
+    expect(css).toContain("@keyframes ambient-margin-drift");
+    expect(css).toContain("conic-gradient(");
+    expect(css).toContain("from var(--aura-angle)");
+    expect(css).toMatch(/ambient-margin-drift \d+s linear infinite/);
+    // il fondo con cui si mescola la tinta: bianco di giorno, nero di notte
+    expect(css).toMatch(/:root \{[\s\S]*?--aura-void: hsl\(0 0% 100%\);/);
+    expect(css).toMatch(/\.dark \{[\s\S]*?--aura-void: hsl\(0 0% 0%\);/);
+    // la tinta arriva dal blocco stesso (o dal colore materia inline)
+    expect(css).toContain("--aura-ink: var(--ambient-block-ink, var(--ambient-ink));");
+  });
+
+  it("mantiene l'aura discreta: niente campi di testo, meno moto su telefono e con reduced motion", () => {
+    const css = read("src/index.css");
+    const aura = css.slice(css.indexOf("P27 — AURA ANIMATA DEI BLOCCHI"));
+    // il pseudo-elemento resta escluso da input, campi e sottoalberi opt-out
+    expect(aura).toMatch(/::after[\s\S]*?content: ""/);
+    expect(aura).toContain(":not(input, textarea, select");
+    expect(aura).toContain(".no-ambient");
+    // telefono: nessuna rotazione, solo respiro
+    expect(aura).toMatch(/@media \(max-width: 640px\)[\s\S]*?animation: ambient-margin-breathe/);
+    // preferenze di movimento ridotto
+    expect(aura).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?animation: none/);
+    expect(aura).toMatch(/html\.reduce-motion[\s\S]*?animation: none/);
+    expect(aura).toMatch(/@media \(prefers-contrast: more\)[\s\S]*?content: none/);
+  });
 });
