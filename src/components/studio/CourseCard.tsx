@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
@@ -56,6 +57,7 @@ export function CourseCard({
       {...motionProps}
       type="button"
       onClick={() => onSelect(course)}
+      style={{ "--ambient-block-ink": accent } as CSSProperties}
       className={cn(
         "interactive-card relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 p-4 text-left text-inverse-on-surface shadow-level-2 [&_h1]:text-inverse-on-surface [&_h2]:text-inverse-on-surface [&_h3]:text-inverse-on-surface sm:p-5",
         className,

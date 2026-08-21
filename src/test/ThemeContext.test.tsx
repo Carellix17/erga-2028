@@ -30,7 +30,7 @@ describe("ThemeProvider", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Dark" }));
     await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
-    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#0a0a0a");
+    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#05090A");
 
     fireEvent.click(screen.getByRole("button", { name: "Light" }));
     await waitFor(() => expect(document.documentElement).not.toHaveClass("dark"));

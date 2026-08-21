@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -483,7 +483,8 @@ export function PathHero({
   // il testo è SEMPRE bianco per il massimo contrasto.
   const heroStyle = {
     color: "hsl(var(--inverse-on-surface))",
-  } as const;
+    "--ambient-block-ink": getSubjectAccent(active?.file_name ?? ""),
+  } as CSSProperties;
 
   return (
     <section className="px-4 pt-4">

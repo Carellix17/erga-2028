@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import {
   BookOpen,
   Brain,
@@ -167,6 +167,7 @@ export function HomeView({
             {resume ? (
               <Card
                 data-testid="resume-lesson-card"
+                style={{ "--ambient-block-ink": getSubjectAccent(resume.courseTitle) } as CSSProperties}
                 className="relative h-auto overflow-hidden border-primary/15 bg-inverse-surface text-inverse-on-surface"
               >
                 <CourseCardBackground

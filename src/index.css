@@ -168,7 +168,7 @@
     --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.06);
     --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.07);
     --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
---background: 0 0% 8%;                 /* nero (monocromo) */
+--background: 192 33% 3%;              /* #05090A — fondo notte, senza puntini */
 --foreground: 0 0% 93%;
 --surface-dim: 0 0% 6%;
 --surface-bright: 0 0% 18%;
@@ -1012,7 +1012,8 @@ html.reduce-motion *::after {
     P24 × MONOCROMO — DOT GRID, ACCENTO MATERIA, CALLOUT
    .bg-dot-grid        → matrice di puntini sottili (radial-gradient,
                          ~10% opacita': nitida e leggera, un solo layer,
-                         nessun impatto sullo scroll);
+                         nessun impatto sullo scroll). In .dark i
+                         puntini sono spenti: il fondo è #05090A;
    .subject-callout    → box d'evidenziazione tinti col colore della
                          materia corrente (--subject-accent), con
                          fallback su --subject-accent-light;
@@ -1023,8 +1024,9 @@ html.reduce-motion *::after {
   background-image: radial-gradient(circle, hsl(0 0% 0% / 0.10) 1px, transparent 1px);
   background-size: 22px 22px;
 }
+/* P26 — di notte i puntini spariscono: il fondo è piatto #05090A. */
 .dark .bg-dot-grid {
-  background-image: radial-gradient(circle, hsl(0 0% 100% / 0.10) 1px, transparent 1px);
+  background-image: none;
 }
 
 .bg-subject-accent { background-color: var(--subject-accent); }
@@ -1042,4 +1044,98 @@ html.reduce-motion *::after {
   background-color: var(--subject-accent-light);
   background-color: color-mix(in srgb, var(--subject-accent) 10%, transparent);
   border-color: color-mix(in srgb, var(--subject-accent) 30%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+    P26 — MARGINE AMBIENTE DEI BLOCCHI (solo tema scuro)
+   Sui blocchi di contenuto (card, pannelli, callout) un margine
+   luminoso riprende il colore del blocco e respira piano. Non è
+   un alone nero: è la tinta della superficie, diluita, così la
+   stanza #05090A resta calda senza sporcare il testo.
+
+   · Solo .dark. Il tema chiaro non viene toccato.
+   · Solo i BLOCCHI di primo livello. Niente campi di testo
+     (input/textarea/select), niente righe singole (h-9…h-12),
+     niente figli annidati (chip, icone, barre).
+   · --ambient-block-ink (inline) vince: le card corso ci mettono
+     il colore materia. Altrimenti si eredita il fill, con fallback
+     sul gettone --card o sulla famiglia bg-*.
+   · ::after (mai ::before: .state-layer lo usa già) dipinge il
+     bagliore esterno con background-color: inherit.
+   · box-shadow tiene un filetto e un respiro anche se overflow
+     nascosto taglia il pseudo.
+   Opt-out: .no-halo / .no-ambient (e i loro sottoalberi).
+   ═══════════════════════════════════════════════════════════════ */
+
+@property --ambient-alpha {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0.2;
+}
+
+@keyframes ambient-margin-breathe {
+  0%, 100% { opacity: 0.14; }
+  50%      { opacity: 0.28; }
+}
+
+@keyframes ambient-margin-pulse {
+  0%, 100% { --ambient-alpha: 0.16; }
+  50%      { --ambient-alpha: 0.28; }
+}
+
+.dark { --ambient-ink: hsl(var(--card)); }
+.dark [class*="bg-warning"] { --ambient-ink: hsl(var(--warning)); }
+.dark [class*="bg-error"] { --ambient-ink: hsl(var(--destructive)); }
+.dark [class*="bg-success"] { --ambient-ink: hsl(var(--success)); }
+.dark [class*="bg-inverse"] { --ambient-ink: hsl(var(--inverse-surface)); }
+.dark [class*="bg-subject-accent"],
+.dark .subject-callout { --ambient-ink: var(--subject-accent); }
+
+.dark :is(
+  .ambient-block,
+  .rounded-card,
+  [class*="m3-card-"],
+  .glass-panel,
+  .glass-hero,
+  .editorial-focus,
+  .subject-callout
+):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *) {
+  --ambient-glow: var(--ambient-block-ink, var(--ambient-ink));
+  position: relative;
+  box-shadow:
+    var(--shadow-level-1),
+    0 0 0 1px color-mix(in srgb, var(--ambient-glow) calc(var(--ambient-alpha) * 55%), transparent),
+    0 12px 28px -8px color-mix(in srgb, var(--ambient-glow) calc(var(--ambient-alpha) * 80%), transparent);
+  animation: ambient-margin-pulse 8s ease-in-out infinite;
+}
+
+.dark :is(
+  .ambient-block,
+  .rounded-card,
+  [class*="m3-card-"],
+  .glass-panel,
+  .glass-hero,
+  .editorial-focus,
+  .subject-callout
+):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *)::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  background-color: var(--ambient-block-ink, inherit);
+  filter: blur(18px);
+  opacity: 0.2;
+  animation: ambient-margin-breathe 8s ease-in-out infinite;
+}
+
+@media (prefers-contrast: more) {
+  .dark :is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) {
+    animation: none;
+    box-shadow: var(--shadow-level-1);
+  }
+  .dark :is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout)::after {
+    content: none;
+  }
 }
