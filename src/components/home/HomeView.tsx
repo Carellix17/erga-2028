@@ -40,8 +40,9 @@ const VISIBLE_TASKS = 3;
 
 function HomeSkeleton() {
   return (
-    <div className="space-y-8 py-8" aria-label="Caricamento Home">
+    <div className="space-y-8 py-6" aria-label="Caricamento Home">
       <div className="space-y-2">
+        <Skeleton className="h-5 w-28 rounded-pill" />
         <Skeleton className="h-8 w-48 rounded-button" />
         <Skeleton className="h-9 w-36 rounded-button" />
         <Skeleton className="h-4 w-64 rounded-full" />
@@ -93,7 +94,7 @@ export function HomeView({
 
   if (dashboard.isError || !data) {
     return (
-      <div className="py-10">
+      <div className="pb-10 pt-20">
         <Card className="mx-auto max-w-xl border-destructive/25 bg-card p-6 text-center">
           <RefreshCw className="mx-auto h-8 w-8 text-destructive" aria-hidden="true" />
           <h1 className="mt-4 font-display text-xl font-bold">{t("home.error.title")}</h1>
@@ -121,10 +122,10 @@ export function HomeView({
   };
 
   return (
-    <div className="relative isolate min-w-0 overflow-x-clip py-6 sm:py-8">
+    <div className="relative isolate min-w-0 overflow-x-clip py-6">
       <div className="relative z-10 space-y-9 md:space-y-12">
-        <header className="min-w-0 pt-4 sm:pt-6">
-          <p className="text-sm font-semibold capitalize text-muted-foreground">{todayLabel}</p>
+        <header className="min-w-0">
+          <p className="max-w-[calc(100%-6rem)] truncate text-sm font-semibold capitalize text-muted-foreground min-[360px]:max-w-[calc(100%-11.5rem)]">{todayLabel}</p>
           <h1 className="mt-3 flex flex-col gap-0">
             <span className="break-words font-display text-[clamp(1.55rem,5.5vw,2.1rem)] font-extrabold leading-tight text-foreground">
               {welcome.greeting}

@@ -12,25 +12,55 @@ function LocationProbe() {
   return <span data-testid="location">{location.pathname}</span>;
 }
 
-function renderHeader(title: string | null = "Studio", route = "/app") {
+function renderHeader(title: string | null = "Studio", route = "/app", integratedHome = false) {
   return render(
     <MemoryRouter initialEntries={[route]}>
-      <AppHeader title={title} />
+      <AppHeader title={title} integratedHome={integratedHome} />
       <LocationProbe />
     </MemoryRouter>,
   );
 }
 
 describe("AppHeader", () => {
-  it("mostra titolo e streak con token semantici", () => {
+  it("mostra il titolo a sinistra e i controlli a destra", () => {
     renderHeader("Titolo di sezione molto lungo che deve restringersi");
-    expect(screen.getByRole("heading")).toHaveClass("truncate");
+    const heading = screen.getByRole("heading");
+    const streak = screen.getByLabelText("4 giorni");
+    const settings = screen.getByRole("button", { name: "Apri Impostazioni" });
+
+    expect(heading).toHaveClass("truncate", "text-left");
+    expect(heading.compareDocumentPosition(streak) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(streak.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("non mostra linee o ombre di separazione sotto l'header", () => {
+    renderHeader();
+    const header = screen.getByRole("banner");
+
+    expect(header.className).not.toContain("border-b");
+    expect(header.className).not.toContain("border-border");
+    expect(header.className).not.toContain("shadow-");
+  });
+
+  it("integra i controlli nella prima riga della Home senza una fascia vuota", () => {
+    renderHeader(null, "/app", true);
+    const header = screen.getByRole("banner");
+
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    expect(header).toHaveClass("absolute", "bg-transparent");
+    expect(header).not.toHaveClass("sticky");
     expect(screen.getByLabelText("4 giorni")).toBeInTheDocument();
   });
 
-  it("nasconde il titolo nella Home", () => {
-    renderHeader(null);
-    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  it.each([
+    "/app/impostazioni",
+    "/app/impostazioni/aspetto",
+    "/settings",
+    "/settings/appearance",
+  ])("nasconde il pulsante Impostazioni nella rotta %s", (route) => {
+    renderHeader("Impostazioni", route);
+    expect(screen.queryByRole("button", { name: "Apri Impostazioni" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("4 giorni")).toBeInTheDocument();
   });
 
   it("apre la rotta protetta delle impostazioni senza parametri di sessione", () => {
