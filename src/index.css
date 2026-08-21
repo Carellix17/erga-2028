@@ -1047,23 +1047,32 @@ html.reduce-motion *::after {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-    P26 — MARGINE AMBIENTE DEI BLOCCHI (solo tema scuro)
-   Sui blocchi di contenuto (card, pannelli, callout) un margine
-   luminoso riprende il colore del blocco e respira piano. Non è
-   un alone nero: è la tinta della superficie, diluita, così la
-   stanza #05090A resta calda senza sporcare il testo.
+    P26 — MARGINE AMBIENTE DEI BLOCCHI
+    P27 — AURA ANIMATA DEI BLOCCHI (chiaro + scuro)
+   Attorno ai bordi dei BLOCCHI di contenuto (card, pannelli,
+   callout) vive una sfumatura lenta che gira piano e respira.
+   Non è un alone nero: è la TINTA DEL BLOCCO mescolata al fondo
+   della stanza — nero in modalità scura, bianco in modalità
+   chiara. Un blocco marroncino avrà quindi un'aura marroncino/nera
+   di notte e marroncino/bianca di giorno.
 
-   · Solo .dark. Il tema chiaro non viene toccato.
+   · Vale in ENTRAMBI i temi: cambia solo il colore di fondo con
+     cui la tinta viene mescolata (--aura-void).
    · Solo i BLOCCHI di primo livello. Niente campi di testo
      (input/textarea/select), niente righe singole (h-9…h-12),
      niente figli annidati (chip, icone, barre).
    · --ambient-block-ink (inline) vince: le card corso ci mettono
-     il colore materia. Altrimenti si eredita il fill, con fallback
-     sul gettone --card o sulla famiglia bg-*.
-   · ::after (mai ::before: .state-layer lo usa già) dipinge il
-     bagliore esterno con background-color: inherit.
-   · box-shadow tiene un filetto e un respiro anche se overflow
-     nascosto taglia il pseudo.
+     il colore materia. Altrimenti si eredita il gettone --card o
+     la famiglia bg-* del blocco.
+   · ::after (mai ::before: .state-layer lo usa già) dipinge la
+     sfumatura conica sfocata che scivola attorno al bordo;
+     box-shadow tiene un filetto colorato e un respiro anche
+     quando overflow nascosto taglia il pseudo-elemento.
+   · Movimento LENTO e non invadente: giro completo in 28s,
+     respiro in 11s, nessun cambio di layout (solo pittura).
+     Su telefono la rotazione si spegne e resta il respiro.
+   · Rispetta prefers-reduced-motion / html.reduce-motion (regole
+     globali più in alto) e prefers-contrast: more.
    Opt-out: .no-halo / .no-ambient (e i loro sottoalberi).
    ═══════════════════════════════════════════════════════════════ */
 
@@ -1073,61 +1082,142 @@ html.reduce-motion *::after {
   initial-value: 0.2;
 }
 
-@keyframes ambient-margin-breathe {
-  0%, 100% { opacity: 0.14; }
-  50%      { opacity: 0.28; }
+@property --aura-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
 }
 
+/* Respiro dell'opacità della sfumatura esterna. */
+@keyframes ambient-margin-breathe {
+  0%, 100% { opacity: 0.26; }
+  50%      { opacity: 0.5; }
+}
+
+/* Respiro del filetto colorato (box-shadow) attorno al bordo. */
 @keyframes ambient-margin-pulse {
   0%, 100% { --ambient-alpha: 0.16; }
-  50%      { --ambient-alpha: 0.28; }
+  50%      { --ambient-alpha: 0.3; }
 }
 
-.dark { --ambient-ink: hsl(var(--card)); }
-.dark [class*="bg-warning"] { --ambient-ink: hsl(var(--warning)); }
-.dark [class*="bg-error"] { --ambient-ink: hsl(var(--destructive)); }
-.dark [class*="bg-success"] { --ambient-ink: hsl(var(--success)); }
-.dark [class*="bg-inverse"] { --ambient-ink: hsl(var(--inverse-surface)); }
-.dark [class*="bg-subject-accent"],
-.dark .subject-callout { --ambient-ink: var(--subject-accent); }
+/* Deriva lenta: la sfumatura conica gira attorno al blocco. */
+@keyframes ambient-margin-drift {
+  from { --aura-angle: 0deg; }
+  to   { --aura-angle: 360deg; }
+}
 
-.dark :is(
+/* ─── Fondo della stanza con cui si mescola la tinta del blocco ─── */
+:root {
+  --aura-void: hsl(0 0% 100%);            /* giorno: bianco */
+  --ambient-ink: color-mix(in srgb, hsl(var(--card)) 58%, hsl(var(--muted-foreground)));
+  --aura-strength: 0.85;
+}
+.dark {
+  --aura-void: hsl(0 0% 0%);              /* notte: nero */
+  --ambient-ink: hsl(var(--card));
+  --aura-strength: 1;
+}
+
+/* ─── Da dove arriva la tinta quando il blocco è colorato ─── */
+[class*="bg-warning"] { --ambient-ink: hsl(var(--warning)); }
+[class*="bg-error"] { --ambient-ink: hsl(var(--destructive)); }
+[class*="bg-success"] { --ambient-ink: hsl(var(--success)); }
+[class*="bg-inverse"] { --ambient-ink: hsl(var(--inverse-surface)); }
+[class*="bg-subject-accent"],
+.subject-callout { --ambient-ink: var(--subject-accent); }
+
+:is(
   .ambient-block,
-  .rounded-card,
+  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
   [class*="m3-card-"],
   .glass-panel,
   .glass-hero,
   .editorial-focus,
   .subject-callout
-):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *) {
-  --ambient-glow: var(--ambient-block-ink, var(--ambient-ink));
+):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *) {
+  --aura-ink: var(--ambient-block-ink, var(--ambient-ink));
+  --ambient-glow: var(--aura-ink);
   position: relative;
+}
+
+/* Il filetto colorato (che sovrascrive l'ombra) resta al buio: di giorno
+   le card mantengono la loro elevazione e ricevono solo l'aura del ::after. */
+.dark :is(
+  .ambient-block,
+  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
+  [class*="m3-card-"],
+  .glass-panel,
+  .glass-hero,
+  .editorial-focus,
+  .subject-callout
+):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *) {
   box-shadow:
     var(--shadow-level-1),
-    0 0 0 1px color-mix(in srgb, var(--ambient-glow) calc(var(--ambient-alpha) * 55%), transparent),
-    0 12px 28px -8px color-mix(in srgb, var(--ambient-glow) calc(var(--ambient-alpha) * 80%), transparent);
-  animation: ambient-margin-pulse 8s ease-in-out infinite;
+    0 0 0 1px color-mix(in srgb, var(--aura-ink) calc(var(--ambient-alpha) * 55%), transparent),
+    0 12px 28px -8px color-mix(in srgb, var(--aura-ink) calc(var(--ambient-alpha) * 80%), transparent);
+  animation: ambient-margin-pulse 11s ease-in-out infinite;
 }
 
-.dark :is(
+:is(
   .ambient-block,
-  .rounded-card,
+  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
   [class*="m3-card-"],
   .glass-panel,
   .glass-hero,
   .editorial-focus,
   .subject-callout
-):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *)::after {
+):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *)::after {
   content: "";
   position: absolute;
-  inset: -12px;
+  inset: -14px;
   border-radius: inherit;
   pointer-events: none;
   z-index: -1;
-  background-color: var(--ambient-block-ink, inherit);
-  filter: blur(18px);
-  opacity: 0.2;
-  animation: ambient-margin-breathe 8s ease-in-out infinite;
+  /* Ripiego per browser senza @property: tinta piena e sfocata. */
+  background-color: var(--aura-ink);
+  background-image: conic-gradient(
+    from var(--aura-angle),
+    color-mix(in srgb, var(--aura-ink) calc(92% * var(--aura-strength)), var(--aura-void)) 0deg,
+    var(--aura-void) 55deg,
+    color-mix(in srgb, var(--aura-ink) calc(70% * var(--aura-strength)), var(--aura-void)) 130deg,
+    var(--aura-void) 195deg,
+    color-mix(in srgb, var(--aura-ink) calc(100% * var(--aura-strength)), var(--aura-void)) 265deg,
+    var(--aura-void) 320deg,
+    color-mix(in srgb, var(--aura-ink) calc(92% * var(--aura-strength)), var(--aura-void)) 360deg
+  );
+  filter: blur(20px);
+  opacity: 0.3;
+  animation:
+    ambient-margin-drift 28s linear infinite,
+    ambient-margin-breathe 11s ease-in-out infinite;
+}
+
+/* I blocchi che portano il colore materia (card corso, hero del percorso)
+   hanno overflow nascosto: il pseudo-elemento viene tagliato. Di giorno la
+   sfumatura vive quindi anche nel box-shadow, tinta materia su bianco. */
+:is([style*="ambient-block-ink"]).rounded-card:not(.no-halo, .no-ambient, [data-no-halo]) {
+  box-shadow:
+    var(--shadow-level-2),
+    0 0 0 1px color-mix(in srgb, var(--aura-ink) calc(var(--ambient-alpha) * 60%), transparent),
+    0 14px 34px -10px color-mix(in srgb, var(--aura-ink) calc(var(--ambient-alpha) * 90%), transparent);
+  animation: ambient-margin-pulse 11s ease-in-out infinite;
+}
+
+/* Telefono: niente rotazione (solo pittura leggera), aura più stretta. */
+@media (max-width: 640px) {
+  :is(
+  .ambient-block,
+  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
+  [class*="m3-card-"],
+  .glass-panel,
+  .glass-hero,
+  .editorial-focus,
+  .subject-callout
+):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *)::after {
+    inset: -10px;
+    filter: blur(14px);
+    animation: ambient-margin-breathe 11s ease-in-out infinite;
+  }
 }
 
 @media (prefers-contrast: more) {
@@ -1135,7 +1225,39 @@ html.reduce-motion *::after {
     animation: none;
     box-shadow: var(--shadow-level-1);
   }
-  .dark :is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout)::after {
+  :is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) {
+    animation: none;
+  }
+  .dark :is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout)::after,
+  :is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout)::after {
     content: none;
   }
+}
+
+/* Movimento ridotto: l'aura resta, ferma e discreta. */
+@media (prefers-reduced-motion: reduce) {
+  :is(
+  .ambient-block,
+  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
+  [class*="m3-card-"],
+  .glass-panel,
+  .glass-hero,
+  .editorial-focus,
+  .subject-callout
+):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *)::after {
+    animation: none;
+    opacity: 0.22;
+  }
+}
+html.reduce-motion :is(
+  .ambient-block,
+  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
+  [class*="m3-card-"],
+  .glass-panel,
+  .glass-hero,
+  .editorial-focus,
+  .subject-callout
+):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *)::after {
+  animation: none;
+  opacity: 0.22;
 }
