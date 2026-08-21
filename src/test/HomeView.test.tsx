@@ -95,6 +95,22 @@ describe("HomeView", () => {
     expect(screen.getByText("4")).toBeInTheDocument();
   });
 
+  it("mantiene i testi secondari nel DOM ma li mostra solo da tablet in poi", () => {
+    mockDashboard({
+      ...dashboardData,
+      todayTasks: [],
+      nextEvaluation: null,
+      completedActivities: 0,
+      sessionsToday: 0,
+    });
+    render(<HomeView {...callbacks} />);
+
+    expect(screen.getByText("Hai una lezione da riprendere")).toHaveClass("hidden", "md:block");
+    expect(screen.getByText("Il tuo ritmo")).toHaveClass("hidden", "md:block");
+    expect(screen.getByText("Completa la prima sessione Focus per iniziare a vedere il tuo ritmo.")).toHaveClass("hidden", "md:block");
+    expect(screen.getByRole("heading", { name: "Dati reali dalle sessioni Focus" })).not.toHaveClass("hidden");
+  });
+
   it("mostra il ritmo prima della lezione e la lezione prima del piano del giorno", () => {
     render(<HomeView {...callbacks} />);
 

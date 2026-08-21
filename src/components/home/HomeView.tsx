@@ -139,12 +139,12 @@ export function HomeView({
                 {welcome.name}
               </span>
             </h1>
-            <p className="mt-2 text-base font-medium text-muted-foreground">{welcome.subtitle}</p>
+            <p className="mt-2 hidden text-base font-medium text-muted-foreground md:block">{welcome.subtitle}</p>
           </header>
 
           <section aria-labelledby="rhythm-title" className="min-w-0 space-y-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("home.rhythm.eyebrow")}</p>
+              <p className="hidden text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground md:block">{t("home.rhythm.eyebrow")}</p>
               <h2 id="rhythm-title" className="mt-1 font-display text-xl font-bold">{t("home.rhythm.title")}</h2>
             </div>
             <div className="grid grid-cols-3 gap-2 min-[375px]:gap-3">
@@ -160,7 +160,7 @@ export function HomeView({
                 </Card>
               ))}
             </div>
-            {data.sessionsToday === 0 && <p className="text-sm text-muted-foreground">{t("home.rhythm.empty")}</p>}
+            {data.sessionsToday === 0 && <p className="hidden text-sm text-muted-foreground md:block">{t("home.rhythm.empty")}</p>}
           </section>
 
           <section aria-labelledby="resume-title" className="min-w-0">
