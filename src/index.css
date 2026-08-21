@@ -1090,14 +1090,14 @@ html.reduce-motion *::after {
 
 /* Respiro dell'opacità della sfumatura esterna. */
 @keyframes ambient-margin-breathe {
-  0%, 100% { opacity: 0.26; }
-  50%      { opacity: 0.5; }
+  0%, 100% { opacity: 0.34; }
+  50%      { opacity: 0.62; }
 }
 
 /* Respiro del filetto colorato (box-shadow) attorno al bordo. */
 @keyframes ambient-margin-pulse {
-  0%, 100% { --ambient-alpha: 0.16; }
-  50%      { --ambient-alpha: 0.3; }
+  0%, 100% { --ambient-alpha: 0.22; }
+  50%      { --ambient-alpha: 0.42; }
 }
 
 /* Deriva lenta: la sfumatura conica gira attorno al blocco. */
@@ -1109,12 +1109,17 @@ html.reduce-motion *::after {
 /* ─── Fondo della stanza con cui si mescola la tinta del blocco ─── */
 :root {
   --aura-void: hsl(0 0% 100%);            /* giorno: bianco */
-  --ambient-ink: color-mix(in srgb, hsl(var(--card)) 58%, hsl(var(--muted-foreground)));
-  --aura-strength: 0.85;
+  /* Palette monocroma → la tinta va "staccata" dal fondo: di giorno è
+     scurita del 30% (mescolata verso il neutro scuro), altrimenti un
+     alone grigio su bianco non si vede. */
+  --ambient-ink: color-mix(in srgb, hsl(var(--card)) 70%, hsl(var(--muted-foreground)));
+  --aura-strength: 1;
 }
 .dark {
   --aura-void: hsl(0 0% 0%);              /* notte: nero */
-  --ambient-ink: hsl(var(--card));
+  /* Di notte la tinta è schiarita del 42% (mescolata verso il bianco):
+     sul carbone una card scura produrrebbe un alone invisibile. */
+  --ambient-ink: color-mix(in srgb, hsl(var(--card)) 58%, hsl(0 0% 100%));
   --aura-strength: 1;
 }
 
@@ -1186,7 +1191,7 @@ html.reduce-motion *::after {
     color-mix(in srgb, var(--aura-ink) calc(92% * var(--aura-strength)), var(--aura-void)) 360deg
   );
   filter: blur(20px);
-  opacity: 0.3;
+  opacity: 0.45;
   animation:
     ambient-margin-drift 28s linear infinite,
     ambient-margin-breathe 11s ease-in-out infinite;
