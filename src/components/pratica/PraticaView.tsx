@@ -35,8 +35,8 @@ export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: Pra
     <div className="flex flex-col h-[calc(100vh-6rem)] -mb-24">
       {/* Sub-tab selector - hidden during exercises fullscreen */}
       {!isExerciseFullscreen && (
-        <div className="sticky top-0 px-3 pt-2 pb-2 flex-shrink-0 z-30 bg-background -mx-4 sm:-mx-6 px-4 sm:px-6">
-          <div className="flex gap-1.5 p-1 rounded-2xl bg-surface-container">
+        <div className="sticky top-16 z-30 -mx-4 flex-shrink-0 bg-background/95 px-4 pb-2 pt-2 backdrop-blur-md sm:-mx-6 sm:px-6">
+          <div className="flex gap-1.5 rounded-card bg-surface-container p-1">
             {subTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeSubTab === tab.id;
@@ -45,7 +45,7 @@ export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: Pra
                   key={tab.id}
                   onClick={() => setActiveSubTab(tab.id)}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl transition-all duration-200 ease-m3-emphasized",
+                    "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-button transition-[transform,background-color,color,box-shadow] duration-200 ease-in-out active:scale-[0.98]",
                     isActive
                       ? "bg-primary text-primary-foreground shadow-level-1"
                       : "text-muted-foreground hover:bg-foreground/[0.05]"

@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import { cn } from "@/lib/utils";
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -7,13 +6,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        // 🌲 P24 × Apple — materiale traslucido con FISICA DELLA LUCE:
-        // · gradiente di rifrazione interno (luce che entra dall'alto);
-        // · specular highlight sul bordo superiore (inset 1px bianco);
-        // · ombra a doppio strato (occlusione stretta + ambient morbida);
-        // · blur dove supportato, con degradazione opaca per la leggibilità
-        //   (supports-[backdrop-filter]) e varianti light/dark.
-        "rounded-2xl border border-foreground/10 bg-background/95 text-card-foreground shadow-[inset_0_1px_0_0_rgba(255,255,255,0.5),0_10px_30px_-10px_rgba(0,0,0,0.18),0_2px_6px_-1px_rgba(0,0,0,0.10)] bg-gradient-to-b from-white/50 to-white/5 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 dark:border-white/10 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.10),0_10px_30px_-10px_rgba(0,0,0,0.5),0_2px_6px_-1px_rgba(0,0,0,0.32)] dark:from-white/12 dark:to-white/2",
+        "rounded-card border border-border bg-card text-card-foreground shadow-level-1 transition-[background-color,border-color,box-shadow] duration-200 ease-in-out",
         className,
       )}
       {...props}

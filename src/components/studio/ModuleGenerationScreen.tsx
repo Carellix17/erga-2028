@@ -78,7 +78,7 @@ export function ModuleGenerationScreen({
     // 🌲 P24 — la sala d'attesa NON copre più la lista: è un FOGLIO dal basso.
     // Le lezioni restano visibili dietro (continuità), il velo è opaco e leggero.
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40 animate-fade-in"
+      className="fixed inset-0 z-[90] flex items-end justify-center bg-scrim/40 animate-fade-in"
       onClick={onCancel}
     >
       <div

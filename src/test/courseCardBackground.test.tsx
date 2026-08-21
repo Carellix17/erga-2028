@@ -16,7 +16,7 @@ describe("CourseCardBackground — sfumature card corso", () => {
     expect(layerNames(container)).toEqual([]);
     expect(layers[0]?.style.backgroundColor).toBeTruthy();
     expect(layers[0]?.style.backgroundImage).toBe("");
-    expect(layers[1]).toHaveClass("via-black/20", "to-black/70");
+    expect(layers[1]).toHaveClass("via-scrim/20", "to-scrim/70");
     expect(layers[2]).toHaveClass("-top-10", "-right-10", "blur-2xl");
     expect(layers[3]).toHaveClass("top-4", "left-6", "blur-3xl");
   });
@@ -54,7 +54,7 @@ describe("CourseCardBackground — sfumature card corso", () => {
     const secondary = container.querySelector<HTMLElement>('[data-course-card-layer="orb-secondary"]');
 
     expect(base?.getAttribute("style")).toContain("linear-gradient");
-    expect(shade).toHaveClass("via-black/[0.08]", "to-black/[0.55]");
+    expect(shade).toHaveClass("via-scrim/[0.08]", "to-scrim/[0.55]");
     expect(main).toHaveClass("-top-28", "-right-28", "blur-[6px]");
     expect(secondary).toHaveClass("-top-6", "-left-[88px]", "blur-[18px]");
     expect(main?.style.opacity).toBe("0.42");

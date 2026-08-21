@@ -64,8 +64,8 @@ export default function SettingsAccount() {
         {isLoading ? (
           <div className="space-y-6">
             <Skeleton className="h-24 w-24 rounded-[2rem] mx-auto" />
-            <Skeleton className="h-56 rounded-2xl" />
-            <Skeleton className="h-44 rounded-2xl" />
+            <Skeleton className="h-56 rounded-card" />
+            <Skeleton className="h-44 rounded-card" />
           </div>
         ) : (
           <>
@@ -93,7 +93,7 @@ export default function SettingsAccount() {
             </div>
 
             {/* Dati personali */}
-            <section className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-4">
+            <section className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-4">
               <div className="flex items-center gap-2 mb-1">
                 <User className="w-5 h-5 text-foreground" />
                 <h2 className="title-medium font-display text-foreground">Dati personali</h2>
@@ -114,25 +114,25 @@ export default function SettingsAccount() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Nome</Label>
-                  <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-2xl h-12 bg-card border border-outline-variant/60" />
+                  <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-button h-12 bg-card border border-outline-variant/60" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Cognome</Label>
-                  <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-2xl h-12 bg-card border border-outline-variant/60" />
+                  <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-button h-12 bg-card border border-outline-variant/60" />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label className="label-medium text-muted-foreground">Nickname <span className="text-primary">(usato dal chatbot)</span></Label>
-                <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-2xl h-12 bg-card border border-outline-variant/60" />
+                <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-button h-12 bg-card border border-outline-variant/60" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Età</Label>
-                  <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-2xl h-12 bg-card border border-outline-variant/60" />
+                  <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-button h-12 bg-card border border-outline-variant/60" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Scuola</Label>
-                  <div className="h-12 rounded-2xl bg-card border border-outline-variant/60 flex items-center px-3">
+                  <div className="h-12 rounded-card bg-card border border-outline-variant/60 flex items-center px-3">
                     <select
                       value={school}
                       onChange={(e) => { setSchool(e.target.value); setDirty(true); }}
@@ -148,14 +148,14 @@ export default function SettingsAccount() {
             </section>
 
             {/* Tipo di istituto */}
-            <section className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-4">
+            <section className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-4">
               <div className="flex items-center gap-2 mb-1">
                 <GraduationCap className="w-5 h-5 text-foreground" />
                 <h2 className="title-medium font-display text-foreground">Tipo di istituto</h2>
               </div>
               <RadioGroup value={institute} onValueChange={(v) => { setInstitute(v); setDirty(true); }} className="space-y-1">
                 {INSTITUTES.map((inst) => (
-                  <label key={inst.value} className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-300 ease-m3-emphasized hover:bg-foreground/[0.06]">
+                  <label key={inst.value} className="flex items-center gap-3 p-3 rounded-button cursor-pointer transition-all duration-300 ease-m3-emphasized hover:bg-foreground/[0.06]">
                     <RadioGroupItem value={inst.value} />
                     <span className="body-large text-foreground">{inst.label}</span>
                   </label>
@@ -167,12 +167,12 @@ export default function SettingsAccount() {
             <NotificationsCard />
 
             {/* Zona pericolosa */}
-            <section className="rounded-2xl border border-destructive/30 bg-error-container/40 p-5 space-y-3">
+            <section className="rounded-card border border-destructive/30 bg-error-container/40 p-5 space-y-3">
               <h2 className="title-medium font-display text-foreground">Elimina account</h2>
               <p className="body-small text-muted-foreground">
                 L'eliminazione rimuove definitivamente i tuoi dati, i percorsi e le lezioni. L'azione non può essere annullata.
               </p>
-              <Button variant="ghost" onClick={() => setConfirmDelete(true)} className="w-full h-12 rounded-2xl text-destructive hover:bg-destructive/10">
+              <Button variant="ghost" onClick={() => setConfirmDelete(true)} className="w-full h-12 rounded-button text-destructive hover:bg-destructive/10">
                 <Trash2 className="w-4 h-4 mr-2" />
                 Elimina il mio account
               </Button>
@@ -182,7 +182,7 @@ export default function SettingsAccount() {
       </main>
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle>Eliminare il tuo account?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -190,9 +190,9 @@ export default function SettingsAccount() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-2xl">Annulla</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-dialog">Annulla</AlertDialogCancel>
             <AlertDialogAction
-              className="rounded-2xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="rounded-button bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
                 toast({
                   title: "Non ancora disponibile",

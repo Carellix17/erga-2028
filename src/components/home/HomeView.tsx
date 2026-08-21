@@ -42,20 +42,20 @@ function HomeSkeleton() {
   return (
     <div className="space-y-8 py-8" aria-label="Caricamento Home">
       <div className="space-y-2">
-        <Skeleton className="h-8 w-48 rounded-xl" />
-        <Skeleton className="h-9 w-36 rounded-xl" />
+        <Skeleton className="h-8 w-48 rounded-button" />
+        <Skeleton className="h-9 w-36 rounded-button" />
         <Skeleton className="h-4 w-64 rounded-full" />
       </div>
-      <Skeleton className="h-72 rounded-[24px]" />
+      <Skeleton className="h-72 rounded-card" />
       <div className="space-y-3">
-        <Skeleton className="h-8 w-44 rounded-xl" />
-        <Skeleton className="h-20 rounded-2xl" />
-        <Skeleton className="h-20 rounded-2xl" />
+        <Skeleton className="h-8 w-44 rounded-button" />
+        <Skeleton className="h-20 rounded-card" />
+        <Skeleton className="h-20 rounded-card" />
       </div>
       <div className="grid grid-cols-3 gap-3">
-        <Skeleton className="h-28 rounded-2xl" />
-        <Skeleton className="h-28 rounded-2xl" />
-        <Skeleton className="h-28 rounded-2xl" />
+        <Skeleton className="h-28 rounded-card" />
+        <Skeleton className="h-28 rounded-card" />
+        <Skeleton className="h-28 rounded-card" />
       </div>
     </div>
   );
@@ -98,7 +98,7 @@ export function HomeView({
           <RefreshCw className="mx-auto h-8 w-8 text-destructive" aria-hidden="true" />
           <h1 className="mt-4 font-display text-xl font-bold">{t("home.error.title")}</h1>
           <p className="mt-2 text-base text-muted-foreground">{t("home.error.description")}</p>
-          <Button className="mt-5 min-h-12 rounded-xl" onClick={() => dashboard.refetch()}>
+          <Button className="mt-5 min-h-12 rounded-button" onClick={() => dashboard.refetch()}>
             {t("home.error.retry")}
           </Button>
         </Card>
@@ -138,7 +138,7 @@ export function HomeView({
 
         <section aria-labelledby="resume-title" className="min-w-0">
           {resume ? (
-            <Card className="relative min-h-[280px] overflow-hidden border-primary/15 bg-neutral-950 text-white">
+            <Card className="relative min-h-[280px] overflow-hidden border-primary/15 bg-inverse-surface text-inverse-on-surface">
               <CourseCardBackground
                 coverUrl={resume.coverUrl}
                 subjectColor={getSubjectAccent(resume.courseTitle)}
@@ -146,20 +146,20 @@ export function HomeView({
               />
               <CardHeader className="relative z-10 p-5 pb-3 sm:p-6 sm:pb-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="gap-1.5 border-0 bg-black text-white">
+                  <Badge className="gap-1.5 border-0 bg-background text-foreground">
                     <Sparkles className="h-3 w-3" aria-hidden="true" />
                     {t("home.resume.eyebrow")}
                   </Badge>
-                  <Badge variant="outline" className="border-white/30 bg-black/35 text-white">
+                  <Badge variant="outline" className="border-inverse-on-surface/30 bg-inverse-surface/70 text-inverse-on-surface">
                     {resume.courseTitle}
                   </Badge>
                 </div>
-                <h2 id="resume-title" className="max-w-2xl pt-3 font-display text-[clamp(1.5rem,5vw,2.25rem)] font-extrabold leading-[1.12] tracking-tight text-white">
+                <h2 id="resume-title" className="max-w-2xl pt-3 font-display text-[clamp(1.5rem,5vw,2.25rem)] font-extrabold leading-[1.12] tracking-tight text-inverse-on-surface">
                   {resume.lessonTitle}
                 </h2>
               </CardHeader>
               <CardContent className="relative z-10 p-5 pt-0 sm:p-6 sm:pt-0">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-neutral-200">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-inverse-on-surface/80">
                   <span>{t("home.resume.lessonCount", { current: resume.lessonNumber, total: resume.lessonCount })}</span>
                   <span aria-hidden="true">·</span>
                   <span>{t("home.resume.progress", { progress: resume.progressPercent })}</span>
@@ -167,7 +167,7 @@ export function HomeView({
                 <Button
                   size="lg"
                   onClick={() => onResumeLesson(resume.contextId, resume.lessonIndex)}
-                  className="mt-5 min-h-12 w-full gap-2 rounded-xl bg-white px-6 text-sm text-black hover:bg-neutral-200 sm:w-auto sm:min-w-[220px]"
+                  className="mt-5 min-h-12 w-full gap-2 rounded-button bg-background px-6 text-sm text-foreground hover:bg-surface-container-high sm:w-auto sm:min-w-[220px]"
                 >
                   <Play className="h-4 w-4 fill-current" aria-hidden="true" />
                   {resume.lessonNumber > 1 ? t("home.resume.continue") : t("home.resume.start")}
@@ -176,7 +176,7 @@ export function HomeView({
             </Card>
           ) : (
             <Card className="border-outline-variant/60 bg-card p-6 sm:p-8">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-container-high">
+              <div className="flex h-12 w-12 items-center justify-center rounded-card bg-surface-container-high">
                 {data.isGenerating ? <RefreshCw className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileUp className="h-5 w-5" aria-hidden="true" />}
               </div>
               <h2 id="resume-title" className="mt-4 font-display text-2xl font-bold">
@@ -185,7 +185,7 @@ export function HomeView({
               <p className="mt-2 max-w-xl text-base leading-relaxed text-muted-foreground">
                 {data.isGenerating ? t("home.resume.generatingDescription") : data.hasContexts ? t("home.resume.noLessonDescription") : t("home.resume.noContentDescription")}
               </p>
-              <Button className="mt-5 min-h-12 rounded-xl" onClick={data.hasContexts ? onOpenStudio : onUpload}>
+              <Button className="mt-5 min-h-12 rounded-button" onClick={data.hasContexts ? onOpenStudio : onUpload}>
                 {data.hasContexts ? t("home.resume.openStudio") : t("home.resume.upload")}
               </Button>
             </Card>
@@ -198,13 +198,13 @@ export function HomeView({
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("home.today.eyebrow")}</p>
               <h2 id="today-plan-title" className="mt-1 font-display text-2xl font-bold tracking-tight">{t("home.today.title")}</h2>
             </div>
-            <Button variant="ghost" size="sm" className="min-h-11 rounded-xl" onClick={onOpenPlan}>
+            <Button variant="ghost" size="sm" className="min-h-11 rounded-button" onClick={onOpenPlan}>
               {t("home.today.openPlan")}
             </Button>
           </div>
 
           {data.nextEvaluation && (
-            <button type="button" onClick={onOpenPlan} className="flex min-h-16 w-full items-center gap-3 rounded-2xl border border-warning/25 bg-warning-container/45 p-4 text-left">
+            <button type="button" onClick={onOpenPlan} className="flex min-h-16 w-full items-center gap-3 rounded-card border border-warning/25 bg-warning-container/45 p-4 text-left">
               <CalendarDays className="h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
               <span className="min-w-0 flex-1">
                 <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -224,12 +224,12 @@ export function HomeView({
                       key={task.id}
                       role="listitem"
                       className={cn(
-                        "flex min-h-[72px] items-center gap-3 rounded-xl px-2 py-3 sm:px-3",
+                        "flex min-h-[72px] items-center gap-3 rounded-button px-2 py-3 sm:px-3",
                         index !== tasks.length - 1 && "border-b border-foreground/[0.07]",
                         task.isCompleted && "opacity-70",
                       )}
                     >
-                      <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-xl", task.isCompleted ? "bg-success text-success-foreground" : "bg-surface-container-high text-foreground")}>
+                      <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-button", task.isCompleted ? "bg-success text-success-foreground" : "bg-surface-container-high text-foreground")}>
                         {task.isCompleted ? <Check className="h-5 w-5" aria-hidden="true" /> : task.kind === "study" ? <BookOpen className="h-5 w-5" aria-hidden="true" /> : <CalendarDays className="h-5 w-5" aria-hidden="true" />}
                       </span>
                       <div className="min-w-0 flex-1">
@@ -240,7 +240,7 @@ export function HomeView({
                         </p>
                       </div>
                       {task.canStartFocus && (
-                        <Button size="icon-sm" variant="outline" className="h-11 w-11 shrink-0 rounded-xl" aria-label={t("home.today.startFocus", { title: task.title })} onClick={() => startTaskFocus(task)}>
+                        <Button size="icon-sm" variant="outline" className="h-11 w-11 shrink-0 rounded-button" aria-label={t("home.today.startFocus", { title: task.title })} onClick={() => startTaskFocus(task)}>
                           <Timer className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
@@ -248,7 +248,7 @@ export function HomeView({
                   ))}
                 </div>
                 {hiddenTasks > 0 && (
-                  <Button variant="ghost" className="mt-1 min-h-11 w-full rounded-xl" aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={() => setShowAllTasks((value) => !value)}>
+                  <Button variant="ghost" className="mt-1 min-h-11 w-full rounded-button" aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={() => setShowAllTasks((value) => !value)}>
                     {showAllTasks ? t("home.today.showLess") : t("home.today.showAll", { count: hiddenTasks })}
                   </Button>
                 )}
@@ -259,7 +259,7 @@ export function HomeView({
               <Clock3 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
               <h3 className="mt-3 font-display text-lg font-bold">{t("home.today.emptyTitle")}</h3>
               <p className="mt-1 text-base text-muted-foreground">{t("home.today.emptyDescription")}</p>
-              <Button variant="outline" className="mt-4 min-h-11 rounded-xl" onClick={onOpenPlan}>{t("home.today.organize")}</Button>
+              <Button variant="outline" className="mt-4 min-h-11 rounded-button" onClick={onOpenPlan}>{t("home.today.organize")}</Button>
             </Card>
           )}
         </section>
@@ -297,8 +297,8 @@ export function HomeView({
               { id: "upload", title: t("home.quick.upload"), description: t("home.quick.uploadDescription"), Icon: FileUp, action: onUpload },
               { id: "cognitive", title: t("home.quick.cognitive"), description: t("home.quick.cognitiveDescription"), Icon: Brain, action: onOpenCognitive },
             ].map((tool) => (
-              <Button key={tool.id} type="button" variant="outline" onClick={tool.action} className="h-auto min-h-[116px] flex-col items-start justify-start whitespace-normal rounded-2xl border-outline-variant/60 bg-card p-4 text-left shadow-none">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-surface-container-high"><tool.Icon className="h-4 w-4" aria-hidden="true" /></span>
+              <Button key={tool.id} type="button" variant="outline" onClick={tool.action} className="h-auto min-h-[116px] flex-col items-start justify-start whitespace-normal rounded-card border-outline-variant/60 bg-card p-4 text-left shadow-none">
+                <span className="grid h-10 w-10 place-items-center rounded-button bg-surface-container-high"><tool.Icon className="h-4 w-4" aria-hidden="true" /></span>
                 <span className="mt-3 block text-base font-bold">{tool.title}</span>
                 <span className="mt-1 block text-sm font-medium leading-snug text-muted-foreground">{tool.description}</span>
               </Button>

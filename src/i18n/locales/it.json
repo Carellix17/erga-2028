@@ -19,7 +19,11 @@
   },
   "header": {
     "upload": "Carica",
-    "files": "File"
+    "files": "File",
+    "settings": "Apri Impostazioni",
+    "startStreak": "Inizia la serie",
+    "streak_one": "{{count}} giorno",
+    "streak_other": "{{count}} giorni"
   },
   "home": {
     "greeting": {

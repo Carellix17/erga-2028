@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { BottomNav } from "@/components/layout/BottomNav";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { StudioView } from "@/components/studio/StudioView";
 import { PianoView } from "@/components/piano/PianoView";
 import { PraticaView } from "@/components/pratica/PraticaView";
@@ -15,6 +15,7 @@ import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
 import { CognitiveOnboarding } from "@/components/onboarding/CognitiveOnboarding";
 import { Brain } from "lucide-react";
 import { useDemoHandoff } from "@/hooks/useDemoHandoff";
+import { useTranslation } from "react-i18next";
 
 type Tab = "home" | "studio" | "piano" | "pratica" | "profilo";
 
@@ -31,6 +32,7 @@ const Index = () => {
   // Se l'utente arriva qui dopo una sessione demo anonima, persistiamo l'esagono
   // calcolato in locale sul suo nuovo profilo cognitivo.
   useDemoHandoff();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [showUpload, setShowUpload] = useState(false);
   const [manageFocusContextId, setManageFocusContextId] = useState<string | null>(null);
@@ -130,13 +132,16 @@ const Index = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background bg-dot-grid dot-halo-scope flex flex-col md:flex-row">
-      {!isFullscreen && <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />}
+  const headerTitle = activeTab === "home" ? null : t(`nav.${activeTab}`);
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <main className="w-full max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto px-4 sm:px-6 pb-24 md:pb-6">
-        <h1 className="sr-only">Erga — Il tuo assistente di studio intelligente</h1>
+  return (
+    <>
+      <AppLayout
+        activeTab={activeTab}
+        onTabChange={changeTab}
+        headerTitle={headerTitle}
+        hideChrome={isFullscreen}
+      >
         {/* 🌲 P24 — passaggio tra stanze: dissolvenza di sola luce (200ms) */}
         <div key={activeTab} className="room-fade">
         {activeTab === "home" && (
@@ -157,7 +162,7 @@ const Index = () => {
         {activeTab === "studio" && cognitive && [cognitive.log_score, cognitive.mem_score, cognitive.foc_score, cognitive.voc_score, cognitive.ans_score, cognitive.app_score].every((s) => s === 50) && (
           <button
             onClick={() => setShowOnboarding(true)}
-            className="w-full mt-4 mb-2 rounded-3xl bg-card border border-border px-4 py-3 flex items-center gap-3 text-left transition-all duration-300 hover:scale-[1.005] hover:border-foreground/25"
+            className="interactive-card mt-4 mb-2 flex w-full items-center gap-3 rounded-card border border-border bg-card px-4 py-3 text-left"
           >
             <Brain className="w-5 h-5 text-primary shrink-0" />
             <div className="flex-1">
@@ -198,8 +203,7 @@ const Index = () => {
           <ProfileView onOpenCognitive={() => setShowOnboarding(true)} />
         )}
         </div>
-        </main>
-      </div>
+      </AppLayout>
 
       <UploadSheet
         open={showUpload}
@@ -224,7 +228,7 @@ const Index = () => {
           }}
         />
       )}
-    </div>
+    </>
   );
 };
 

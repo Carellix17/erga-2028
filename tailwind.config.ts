@@ -26,6 +26,7 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        scrim: "hsl(var(--scrim) / <alpha-value>)",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -127,6 +128,12 @@ export default {
         md: "var(--radius-md)",
         lg: "var(--radius-lg)",
         xl: "var(--radius-xl)",
+        "2xl": "var(--radius-2xl)",
+        card: "var(--radius-card)",
+        button: "var(--radius-button)",
+        pill: "var(--radius-pill)",
+        dialog: "var(--radius-dialog)",
+        media: "var(--radius-media)",
         full: "var(--radius-full)",
       },
       boxShadow: {

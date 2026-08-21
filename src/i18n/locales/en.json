@@ -19,7 +19,11 @@
   },
   "header": {
     "upload": "Upload",
-    "files": "Files"
+    "files": "Files",
+    "settings": "Open Settings",
+    "startStreak": "Start your streak",
+    "streak_one": "{{count}} day",
+    "streak_other": "{{count}} days"
   },
   "home": {
     "greeting": {

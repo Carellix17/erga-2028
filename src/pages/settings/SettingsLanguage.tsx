@@ -17,7 +17,7 @@ export default function SettingsLanguage() {
     <SettingsPage>
       <SettingsHeader title={t("common.language")} subtitle={t("settings.languageSubtitle")} />
       <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6 animate-fade-up">
-        <section className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-3">
+        <section className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-3">
           <div className="flex items-center gap-2 mb-1">
             <Languages className="w-5 h-5 text-foreground" />
             <h2 className="title-medium font-display text-foreground">{t("common.language")}</h2>
@@ -34,7 +34,7 @@ export default function SettingsLanguage() {
                   aria-checked={active}
                   onClick={() => i18n.changeLanguage(opt.value)}
                   className={cn(
-                    "w-full flex items-center gap-4 p-3 rounded-2xl border transition-all duration-300 ease-m3-emphasized text-left",
+                    "w-full flex items-center gap-4 p-3 rounded-button border transition-all duration-300 ease-m3-emphasized text-left",
                     active
                       ? "border-primary bg-surface-container-high"
                       : "border-outline-variant/60 hover:bg-foreground/[0.06]"

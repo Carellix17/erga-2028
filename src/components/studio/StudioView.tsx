@@ -796,7 +796,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           generatedCount={generationLessonCount}
           fileName={contextFileName || undefined}
         />
-        <p className="mx-4 mt-4 text-center text-xs text-muted-foreground leading-relaxed px-4 py-3 rounded-[18px] bg-card">
+        <p className="mx-4 mt-4 text-center text-xs text-muted-foreground leading-relaxed px-4 py-3 rounded-card bg-card">
           Puoi anche uscire dall'app: ti avvisiamo con una notifica appena è pronto.
         </p>
       </>
@@ -871,7 +871,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           </Button>
         )}
         {generationBlocked && !isPdfProcessing && (
-          <p className="text-sm text-destructive max-w-sm bg-error-container/40 px-4 py-3 rounded-[18px]">
+          <p className="text-sm text-destructive max-w-sm bg-error-container/40 px-4 py-3 rounded-card">
             {FREE_LIMIT_MESSAGE}
           </p>
         )}
@@ -887,6 +887,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       {/* 🌲 P24 — il banner è il "cappello completo" della stanza: avanzamento
           con barra, Riprendi + Cambia corso, menù ⋯ (rigenera/materiali/rinomina/
           elimina). Sotto restano solo le lezioni: niente più doppioni. */}
+      <div className="studio-section-enter">
       <PathHero
         title={heroTitle}
         completedCount={Math.max(0, Math.min(currentLessonIndex, lessons.length))}
@@ -912,6 +913,8 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         freeLimitMessage={FREE_LIMIT_MESSAGE}
         isRegenerating={isGenerating || !!moduleJob}
       />
+      </div>
+      <div key={viewMode} className="studio-section-enter">
       {viewMode === "modules" ? (
         !isCoursePickerOpen ? (
           <ModulesOverview
@@ -945,6 +948,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           onRenameLesson={handleRenameLesson}
         />
       )}
+      </div>
 
       {activeLessonIndex !== null && currentLesson && currentLesson.is_generated && !isGeneratingLesson && (
         <FullscreenLessonGate

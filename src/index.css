@@ -87,6 +87,7 @@
 --border: 0 0% 24% / 0.12;
 --input: 0 0% 100%;
 --ring: 0 0% 25%;
+--scrim: 0 0% 0%;
     /*  P24 × MONOCROMO — colore d'accento DINAMICO della materia.
        La pagina padre (o il profilo) puo' sovrascrivere --subject-accent
        per legare il colore alla materia di studio corrente. Fallback ambra. */
@@ -222,6 +223,11 @@
 --radius-lg: 1rem;    /* 18px — card standard */
 --radius-xl: 1.25rem;    /* 22px — feature tile */
     --radius-2xl: 1.5rem;
+    --radius-card: 1rem;
+    --radius-button: 0.75rem;
+    --radius-pill: 9999px;
+    --radius-dialog: 1.25rem;
+    --radius-media: 1rem;
     --radius-full: 9999px;
 
     /*  P24 — GRAMMATICA MOTION: poche durate, sempre uguali
@@ -248,6 +254,16 @@
     --state-focus: 0.08;
     --state-pressed: 0.08;
     --state-dragged: 0.14;
+  }
+
+  /* La variante scura deve restare dopo i default: evita che la cascata
+     riapplichi le ombre chiare quando cambia il tema. */
+  .dark {
+    --shadow-level-1: 0 1px 2px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
+    --shadow-level-2: 0 2px 4px 0 rgba(0, 0, 0, 0.45), 0 6px 16px -2px rgba(0, 0, 0, 0.50), inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
+    --shadow-level-3: 0 3px 6px 0 rgba(0, 0, 0, 0.50), 0 12px 28px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 hsl(0 0% 100% / 0.06);
+    --shadow-level-4: 0 4px 8px 0 rgba(0, 0, 0, 0.50), 0 18px 38px -8px rgba(0, 0, 0, 0.60), inset 0 1px 0 0 hsl(0 0% 100% / 0.07);
+    --shadow-level-5: 0 4px 10px 0 rgba(0, 0, 0, 0.55), 0 24px 48px -8px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
   }
 }
 
@@ -485,7 +501,7 @@
   /* ═══════ M3 CARDS — Expressive ═══════ */
   .m3-card-elevated {
     background-color: hsl(var(--surface-container-low));
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-card);
     box-shadow: var(--shadow-level-1);
     transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1),
                 background-color 200ms cubic-bezier(0.2, 0, 0, 1);
@@ -497,7 +513,7 @@
 
   .m3-card-filled {
     background-color: hsl(var(--surface-container-highest));
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-card);
     box-shadow: var(--shadow-level-0);
     transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
   }
@@ -506,11 +522,32 @@
   .m3-card-outlined {
     background-color: hsl(var(--background));
     border: 1px solid hsl(var(--outline-variant));
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-card);
     box-shadow: var(--shadow-level-0);
     transition: box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
   }
   .m3-card-outlined:hover { box-shadow: var(--shadow-level-1); }
+
+  /* Superficie interattiva condivisa: nessun salto di layout, una sola fisica. */
+  .interactive-card {
+    transition: transform 200ms ease-in-out, box-shadow 200ms ease-in-out,
+                background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .interactive-card:hover {
+      transform: scale(1.01);
+      box-shadow: var(--shadow-level-2);
+    }
+  }
+  .interactive-card:active { transform: scale(0.99); }
+
+  @keyframes studio-section-enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .studio-section-enter {
+    animation: studio-section-enter 240ms ease-out both;
+  }
 
   /* ═══════ M3 STATE LAYERS ═══════ */
   .state-layer {
@@ -1002,151 +1039,4 @@ html.reduce-motion *::after {
   background-color: var(--subject-accent-light);
   background-color: color-mix(in srgb, var(--subject-accent) 10%, transparent);
   border-color: color-mix(in srgb, var(--subject-accent) 30%, transparent);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-    ALONE NERO SUL FONDO A PUNTINI (.dot-halo-scope)
-    Ogni cosa che vive SOPRA .bg-dot-grid — righe di testo, carte,
-    pillole, bottoni, pannelli — riceve un alone nero che sfuma nel
-    fondo, così la componente si stacca dalla matrice di puntini.
-
-    · --halo-text  → alone morbido dietro le righe di testo
-                     (ereditato: basta metterlo sullo scope);
-    · --halo-block → alone dietro i BLOCCHI (superfici con sfondo e
-                     angoli tondi): contatto stretto + ambient +
-                     due strati larghi che svaniscono nel fondo.
-    Intensità calibrata per tema: discreta di giorno, profonda di notte.
-    Opt-out: .no-halo (o [data-no-halo]) su qualsiasi sottoalbero
-    che NON sta sopra i puntini (es. lezione a tutto schermo).
-   ═══════════════════════════════════════════════════════════════ */
-:root {
-  --halo-text:
-    0 1px 2px hsl(0 0% 0% / 0.14),
-    0 0 10px hsl(0 0% 0% / 0.16),
-    0 0 28px hsl(0 0% 0% / 0.10);
-  --halo-text-strong:
-    0 1px 3px hsl(0 0% 0% / 0.20),
-    0 0 14px hsl(0 0% 0% / 0.22),
-    0 0 38px hsl(0 0% 0% / 0.14);
-  --halo-block:
-    0 2px 6px -1px hsl(0 0% 0% / 0.16),
-    0 10px 30px -10px hsl(0 0% 0% / 0.24),
-    0 0 26px 4px hsl(0 0% 0% / 0.16),
-    0 0 70px 20px hsl(0 0% 0% / 0.10);
-}
-.dark {
-  --halo-text:
-    0 1px 2px hsl(0 0% 0% / 0.60),
-    0 0 12px hsl(0 0% 0% / 0.50),
-    0 0 32px hsl(0 0% 0% / 0.34);
-  --halo-text-strong:
-    0 1px 3px hsl(0 0% 0% / 0.75),
-    0 0 16px hsl(0 0% 0% / 0.62),
-    0 0 44px hsl(0 0% 0% / 0.44);
-  --halo-block:
-    0 2px 8px -1px hsl(0 0% 0% / 0.55),
-    0 12px 34px -12px hsl(0 0% 0% / 0.62),
-    0 0 30px 6px hsl(0 0% 0% / 0.46),
-    0 0 88px 26px hsl(0 0% 0% / 0.30);
-}
-
-/* Utility esplicite, per applicare l'alone a mano dove serve. */
-.halo-text  { text-shadow: var(--halo-text); }
-.halo-title { text-shadow: var(--halo-text-strong); }
-.halo-block { box-shadow: var(--halo-block); }
-.halo-icon  { filter: drop-shadow(0 0 10px hsl(0 0% 0% / 0.28)); }
-
-/* ── 1. Righe di testo ─────────────────────────────────────────
-   text-shadow si eredita: una sola dichiarazione sullo scope veste
-   ogni riga di testo della stanza (titoli, paragrafi, etichette,
-   liste, badge…) senza toccare un solo componente. */
-.dot-halo-scope {
-  text-shadow: var(--halo-text);
-}
-.dot-halo-scope :is(h1, h2, h3) {
-  text-shadow: var(--halo-text-strong);
-}
-/* Superfici di scrittura e codice: niente alone, resterebbe illeggibile. */
-.dot-halo-scope :is(input, textarea, select, option, code, pre, kbd) {
-  text-shadow: none;
-}
-
-/* ── 2. Blocchi ────────────────────────────────────────────────
-   Un "blocco" è una superficie con sfondo proprio e angoli tondi:
-   carta, pillola, pannello, bottone pieno. L'alone va SOLO ai
-   blocchi di primo livello: i figli annidati (chip, icone, barre)
-   sono esclusi con :not(<blocco> *), altrimenti la stanza si
-   riempirebbe di macchie scure. */
-.dot-halo-scope
-  :where([class*="rounded"]):where(
-    [class*="bg-card"],
-    [class*="bg-background"],
-    [class*="bg-surface"],
-    [class*="bg-popover"],
-    [class*="bg-muted"],
-    [class*="bg-secondary"],
-    [class*="bg-primary"],
-    [class*="bg-accent"],
-    [class*="bg-white"],
-    [class*="bg-black"],
-    [class*="bg-neutral"],
-    [class*="bg-foreground"],
-    [class*="bg-destructive"],
-    [class*="bg-error-container"],
-    [class*="bg-warning-container"],
-    [class*="bg-success-container"],
-    [class*="bg-tertiary"],
-    [class*="bg-subject-accent"],
-    [class*="bg-gradient"],
-    [class*="glass-panel"],
-    [class*="glass-hero"],
-    [class*="subject-callout"],
-    [class*="m3-card"],
-    [class*="shadow-level"]
-  ):not(
-    :where([class*="rounded"]):where(
-      [class*="bg-card"],
-      [class*="bg-background"],
-      [class*="bg-surface"],
-      [class*="bg-popover"],
-      [class*="bg-muted"],
-      [class*="bg-secondary"],
-      [class*="bg-primary"],
-      [class*="bg-accent"],
-      [class*="bg-white"],
-      [class*="bg-black"],
-      [class*="bg-neutral"],
-      [class*="bg-foreground"],
-      [class*="bg-destructive"],
-      [class*="bg-error-container"],
-      [class*="bg-warning-container"],
-      [class*="bg-success-container"],
-      [class*="bg-tertiary"],
-      [class*="bg-subject-accent"],
-      [class*="bg-gradient"],
-      [class*="glass-panel"],
-      [class*="glass-hero"],
-      [class*="subject-callout"],
-      [class*="m3-card"],
-      [class*="shadow-level"]
-    ) *
-  ):not(.no-halo, .no-halo *, [data-no-halo], [data-no-halo] *) {
-  box-shadow: var(--halo-block);
-}
-
-/* ── 3. Opt-out ────────────────────────────────────────────────
-   Sottoalberi che coprono i puntini (overlay a tutto schermo,
-   fogli opachi): l'alone si spegne, testo e blocchi tornano netti. */
-.dot-halo-scope :is(.no-halo, [data-no-halo]),
-.dot-halo-scope :is(.no-halo, [data-no-halo]) * {
-  text-shadow: none;
-}
-
-/* ── 4. Rispetto delle preferenze ──────────────────────────────
-   Chi chiede più contrasto vuole bordi netti, non aloni diffusi. */
-@media (prefers-contrast: more) {
-  .dot-halo-scope,
-  .dot-halo-scope :is(h1, h2, h3) {
-    text-shadow: none;
-  }
 }

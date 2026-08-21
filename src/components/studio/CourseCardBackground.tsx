@@ -111,7 +111,7 @@ export function CourseCardBackground({
 
         <div
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70"
+          className="absolute inset-0 bg-gradient-to-b from-transparent via-scrim/20 to-scrim/70"
         />
 
         {hasImage && (
@@ -128,7 +128,7 @@ export function CourseCardBackground({
 
         {hasImage && (
           <div
-            className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+            className="absolute inset-0 bg-gradient-to-t from-scrim/60 via-transparent to-transparent"
             aria-hidden
           />
         )}
@@ -195,7 +195,7 @@ export function CourseCardBackground({
       <div
         aria-hidden
         data-course-card-layer="shade"
-        className="absolute inset-0 bg-gradient-to-b from-transparent via-black/[0.08] to-black/[0.55]"
+        className="absolute inset-0 bg-gradient-to-b from-transparent via-scrim/[0.08] to-scrim/[0.55]"
       />
 
       {/* 4) ALONE PRINCIPALE — spostato davvero in alto a destra: non lava

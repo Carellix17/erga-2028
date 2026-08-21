@@ -16,7 +16,7 @@ export default function SettingsAppearance() {
     <SettingsPage>
       <SettingsHeader title="Aspetto" subtitle="Tema e visualizzazione" />
       <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6 animate-fade-up">
-        <section className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-3">
+        <section className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-3">
           <h2 className="title-medium font-display text-foreground">Tema</h2>
           <p className="body-small text-muted-foreground -mt-2">Scegli come vuoi vedere Erga.</p>
 
@@ -30,13 +30,13 @@ export default function SettingsAppearance() {
                   aria-checked={active}
                   onClick={() => setTheme(opt.value)}
                   className={cn(
-                    "w-full flex items-center gap-4 p-3 rounded-2xl border transition-all duration-300 ease-m3-emphasized text-left",
+                    "w-full flex items-center gap-4 p-3 rounded-button border transition-all duration-300 ease-m3-emphasized text-left",
                     active
                       ? "border-primary bg-surface-container-high"
                       : "border-outline-variant/60 hover:bg-foreground/[0.06]"
                   )}
                 >
-                  <div className={cn("w-11 h-11 rounded-2xl border border-outline-variant/60 shrink-0", opt.swatch)} />
+                  <div className={cn("w-11 h-11 rounded-button border border-outline-variant/60 shrink-0", opt.swatch)} />
                   <div className="min-w-0 flex-1">
                     <p className="title-medium text-foreground flex items-center gap-2">
                       <opt.icon className="w-4 h-4" /> {opt.label}

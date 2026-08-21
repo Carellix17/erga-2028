@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Camera, UserCircle2, Hexagon, Settings, LogOut, Crown, Zap, Brain, Loader2 } from "lucide-react";
+import { Camera, UserCircle2, Hexagon, LogOut, Crown, Zap, Brain, Loader2 } from "lucide-react";
 import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
 import { CognitiveRadar } from "./CognitiveRadar";
 import { Button as UiButton } from "@/components/ui/button";
@@ -63,36 +63,27 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
           <Skeleton className="w-9 h-9 rounded-full" />
         </div>
         <div className="flex flex-col items-center gap-4 py-4">
-          <Skeleton className="w-24 h-24 rounded-[2rem]" />
+          <Skeleton className="w-24 h-24 rounded-media" />
           <Skeleton className="h-6 w-40 rounded-full" />
           <Skeleton className="h-4 w-56 rounded-full" />
         </div>
-        <Skeleton className="h-64 rounded-2xl" />
+        <Skeleton className="h-64 rounded-card" />
       </div>
     );
   }
 
   return (
     <div className="px-4 pt-4 pb-32 space-y-6 max-w-lg mx-auto animate-fade-up">
-      {/* Header: logout a sinistra delle impostazioni, con conferma */}
-      <div className="flex items-center justify-end gap-1">
+      {/* L'Header globale gestisce le Impostazioni; qui resta soltanto l'uscita. */}
+      <div className="flex items-center justify-end">
         <Button
           variant="ghost"
           size="icon-sm"
           aria-label="Esci dall'account"
           onClick={() => setConfirmLogout(true)}
-          className="rounded-full shrink-0 text-muted-foreground hover:text-destructive"
+          className="h-10 w-10 shrink-0 rounded-pill text-muted-foreground hover:text-destructive"
         >
           <LogOut className="w-5 h-5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Impostazioni"
-          onClick={() => navigate("/app/impostazioni")}
-          className="rounded-full shrink-0"
-        >
-          <Settings className="w-5 h-5" />
         </Button>
       </div>
 
@@ -104,7 +95,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingAvatar}
             aria-label="Cambia foto profilo"
-            className="w-24 h-24 rounded-[2rem] overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-200 ease-m3-emphasized active:scale-95 relative group"
+            className="w-24 h-24 rounded-media overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-200 ease-m3-emphasized active:scale-95 relative group"
           >
             {avatarPreview ? (
               <img src={avatarPreview} alt="Foto profilo utente" className="w-full h-full object-cover" />
@@ -121,9 +112,9 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
           </button>
         </div>
         <div className="text-center">
-          <h1 className="title-large font-display font-bold text-foreground">
+          <h2 className="title-large font-display font-bold text-foreground">
             {nickname || firstName || "Il tuo profilo"}
-          </h1>
+          </h2>
           <p className="body-medium text-muted-foreground">Personalizza la tua esperienza di studio</p>
           {/* Piccolo blocco piano abbonamento sotto il nome */}
           <button
@@ -137,7 +128,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
       </div>
 
       {/* Esagono Cognitivo */}
-      <div className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-colors duration-200 hover:bg-surface-container-low p-5 space-y-4">
+      <div className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 transition-colors duration-200 hover:bg-surface-container-low p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <Hexagon className="w-5 h-5 text-foreground" />
           <h2 className="title-medium font-display text-foreground">Esagono Cognitivo</h2>
@@ -154,7 +145,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
                 ["Calma", cognitive.ans_score],
                 ["Pratica", cognitive.app_score],
               ].map(([label, val]) => (
-                <div key={label as string} className="rounded-xl bg-surface-container-high py-2 text-center">
+                <div key={label as string} className="rounded-button bg-surface-container-high py-2 text-center">
                   <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</div>
                   <div className="text-base font-bold text-foreground tabular-nums">{val}</div>
                 </div>
@@ -167,7 +158,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
         <UiButton
           onClick={onOpenCognitive}
           variant="outline"
-          className="w-full rounded-2xl h-12 border border-outline-variant/60 bg-card hover:bg-surface-container-high shadow-level-1 transition-all duration-300"
+          className="w-full rounded-button h-12 border border-outline-variant/60 bg-card hover:bg-surface-container-high shadow-level-1 transition-all duration-300"
         >
           <Brain className="w-4 h-4 mr-2 text-foreground" />
           {cognitive ? "Ricalcola il tuo Esagono Cognitivo" : "Calcola il tuo Esagono Cognitivo"}
@@ -178,14 +169,14 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
 
       {/* Conferma logout */}
       <AlertDialog open={confirmLogout} onOpenChange={setConfirmLogout}>
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle>Uscire dall'account?</AlertDialogTitle>
             <AlertDialogDescription>Sei sicuro di voler uscire? Dovrai effettuare di nuovo l'accesso.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-2xl">Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLogout} className="rounded-2xl">
+            <AlertDialogCancel className="rounded-dialog">Annulla</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout} className="rounded-dialog">
               Esci
             </AlertDialogAction>
           </AlertDialogFooter>

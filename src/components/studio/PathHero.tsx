@@ -295,7 +295,7 @@ export function PathHero({
               )}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64 rounded-2xl bg-popover text-popover-foreground shadow-level-3 border border-border p-1.5">
+          <DropdownMenuContent align="end" className="w-64 rounded-dialog bg-popover text-popover-foreground shadow-level-3 border border-border p-1.5">
             {hasNewMaterial && (
               <DropdownMenuLabel className="text-xs font-medium text-warning px-3 py-2 leading-snug">
                 Nuovo materiale: rigenera il percorso per includerlo
@@ -305,7 +305,7 @@ export function PathHero({
               <DropdownMenuItem
                 onSelect={onRegenerate}
                 disabled={isGenerating || isRegenerating || generationBlocked}
-                className="rounded-xl cursor-pointer"
+                className="rounded-button cursor-pointer"
               >
                 <RefreshCw className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
                 <span className="flex-1">Rigenera percorso</span>
@@ -313,7 +313,7 @@ export function PathHero({
               </DropdownMenuItem>
             )}
             {onOpenMaterials && (
-              <DropdownMenuItem onSelect={onOpenMaterials} className="rounded-xl cursor-pointer">
+              <DropdownMenuItem onSelect={onOpenMaterials} className="rounded-button cursor-pointer">
                 <FolderOpen className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
                 <span className="flex-1">Apri materiali</span>
               </DropdownMenuItem>
@@ -324,7 +324,7 @@ export function PathHero({
                   setRenameValue(title ?? "");
                   setRenameOpen(true);
                 }}
-                className="rounded-xl cursor-pointer"
+                className="rounded-button cursor-pointer"
               >
                 <Pencil className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
                 <span className="flex-1">Rinomina corso</span>
@@ -335,7 +335,7 @@ export function PathHero({
                 <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem
                   onSelect={() => setConfirmDelete(true)}
-                  className="rounded-xl cursor-pointer text-destructive focus:text-destructive"
+                  className="rounded-button cursor-pointer text-destructive focus:text-destructive"
                 >
                   <Trash2 className="w-4 h-4" strokeWidth={1.75} />
                   <span className="flex-1">Elimina corso</span>
@@ -343,7 +343,7 @@ export function PathHero({
               </>
             )}
             {generationBlocked && freeLimitMessage && (
-              <div className="mt-1 px-3 py-2 rounded-xl bg-warning-container/70 text-warning text-xs leading-snug flex gap-2">
+              <div className="mt-1 px-3 py-2 rounded-button bg-warning-container/70 text-warning text-xs leading-snug flex gap-2">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={1.75} />
                 <span>{freeLimitMessage}</span>
               </div>
@@ -482,7 +482,7 @@ export function PathHero({
   // Lo sfondo lo gestisce CourseCardBackground (base scura + glow materia):
   // il testo è SEMPRE bianco per il massimo contrasto.
   const heroStyle = {
-    color: "#ffffff",
+    color: "hsl(var(--inverse-on-surface))",
   } as const;
 
   return (
@@ -493,7 +493,7 @@ export function PathHero({
           layout
           layoutId="hero-card"
           transition={heroLayoutTransition}
-          className="relative overflow-hidden rounded-[32px] border border-white/10 shadow-level-2 p-5 sm:p-6"
+          className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6"
           style={heroStyle}
         >
           <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
@@ -546,7 +546,7 @@ export function PathHero({
                       ref={heroRef}
                       layoutId="hero-card"
                       transition={heroLayoutTransition}
-                      className="relative overflow-hidden rounded-[32px] border border-white/10 shadow-level-2 p-5 sm:p-6"
+                      className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6"
                       style={heroStyle}
                     >
                       <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
@@ -602,7 +602,7 @@ export function PathHero({
                 if (e.key === "Enter") handleSaveRename();
               }}
               placeholder="Nome del corso"
-              className="rounded-2xl"
+              className="rounded-dialog"
             />
           </div>
           <DrawerFooter className="flex-row gap-3">

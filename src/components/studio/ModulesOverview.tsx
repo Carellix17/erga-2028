@@ -90,9 +90,8 @@ export function ModulesOverview({ modules, onOpenModule, onCreatePath }: Modules
               onClick={() => onOpenModule(m.index)}
               aria-label={`Modulo ${m.index + 1}: ${m.title}`}
               className={cn(
-                "flex items-center gap-3.5 rounded-[22px] bg-card border border-border px-4 py-4 text-left transition-all duration-200",
-                "shadow-level-1",
-                !isLocked && "hover:border-primary/30 hover:bg-surface-container-low active:scale-[0.985]",
+                "interactive-card flex items-center gap-3.5 rounded-card bg-card border border-border px-4 py-4 text-left shadow-level-1",
+                !isLocked && "hover:border-primary/30 hover:bg-surface-container-low",
                 isCur && "border-subject-accent ring-2 ring-subject-accent",
                 isLocked && "opacity-60 cursor-default",
               )}
@@ -100,7 +99,7 @@ export function ModulesOverview({ modules, onOpenModule, onCreatePath }: Modules
               {/* Targa numero */}
               <span
                 className={cn(
-                  "flex-shrink-0 w-12 h-12 rounded-[16px] flex items-center justify-center font-display font-extrabold text-base transition-colors duration-200",
+                  "flex-shrink-0 w-12 h-12 rounded-button flex items-center justify-center font-display font-extrabold text-base transition-colors duration-200",
                   isDone && "bg-subject-accent text-subject-accent-foreground",
                   isCur && "bg-subject-accent text-subject-accent-foreground",
                   isGen && "bg-surface-container-high text-muted-foreground",

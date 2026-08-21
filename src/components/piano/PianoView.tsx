@@ -236,11 +236,11 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     <div className="p-4 pb-28 space-y-4 animate-fade-up">
       {/* Scheletri: calendario + lista, stessa forma del contenuto reale */}
       <Skeleton className="h-11 w-56 rounded-full mx-auto" />
-      <Skeleton className="h-72 rounded-xl" />
+      <Skeleton className="h-72 rounded-card" />
       <div className="space-y-3 pt-2">
-        <Skeleton className="h-20 rounded-xl" />
-        <Skeleton className="h-20 rounded-xl" />
-        <Skeleton className="h-20 rounded-xl" />
+        <Skeleton className="h-20 rounded-card" />
+        <Skeleton className="h-20 rounded-card" />
+        <Skeleton className="h-20 rounded-card" />
       </div>
     </div>
   );
@@ -257,7 +257,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             size="lg"
             onClick={generatePlan}
             disabled={isGeneratingPlan}
-            className="flex-[2] h-14 gap-2.5 rounded-2xl bg-primary text-primary-foreground shadow-level-1 hover:opacity-95 active:scale-[0.98] transition-all duration-200 ease-m3-emphasized"
+            className="flex-[2] h-14 gap-2.5 rounded-button bg-primary text-primary-foreground shadow-level-1 hover:opacity-95 active:scale-[0.98] transition-all duration-200 ease-m3-emphasized"
           >
             {isGeneratingPlan ? (
               <>
@@ -272,7 +272,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             type="button"
             variant="outline"
             onClick={() => (focus.isActive ? focus.openFullscreen() : focus.openSetup())}
-            className="flex-[1] h-14 gap-1.5 rounded-2xl border-outline-variant bg-surface-container-low hover:bg-surface-container-high active:scale-[0.98] transition-all duration-200 ease-m3-emphasized"
+            className="flex-[1] h-14 gap-1.5 rounded-button border-outline-variant bg-surface-container-low hover:bg-surface-container-high active:scale-[0.98] transition-all duration-200 ease-m3-emphasized"
           >
             <Timer className="w-4 h-4" />
             <span className="font-display font-semibold">
@@ -283,7 +283,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       )}
 
       {/* Calendario: Mese ⇄ Settimana */}
-      <div className="m3-card-elevated rounded-xl p-4">
+      <div className="m3-card-elevated rounded-card p-4">
         <div className="flex justify-center mb-2">
           <div className="grid grid-cols-2 gap-1 p-1 rounded-full bg-surface-container">
             {([
@@ -311,14 +311,14 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           <>
             <Calendar
               mode="single" selected={selectedDate} onSelect={setSelectedDate} locale={it}
-              className="rounded-xl pointer-events-auto w-full"
+              className="rounded-card pointer-events-auto w-full"
               classNames={{
                 months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
                 month: "space-y-4 w-full",
                 caption: "flex justify-center pt-1 relative items-center",
                 caption_label: "text-sm font-display font-semibold",
                 nav: "space-x-1 flex items-center",
-                nav_button: "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-xl hover:bg-surface-container-highest transition-all",
+                nav_button: "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-button hover:bg-surface-container-highest transition-all",
                 nav_button_previous: "absolute left-1",
                 nav_button_next: "absolute right-1",
                 table: "w-full border-collapse space-y-1",
@@ -326,7 +326,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
                 head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem]",
                 row: "flex w-full mt-2",
                 cell: "h-10 w-full text-center text-sm p-0 relative",
-                day: "h-10 w-10 p-0 font-normal mx-auto rounded-xl hover:bg-surface-container-highest transition-all duration-200",
+                day: "h-10 w-10 p-0 font-normal mx-auto rounded-button hover:bg-surface-container-highest transition-all duration-200",
                 day_selected: "bg-primary text-primary-foreground hover:text-primary-foreground focus:text-primary-foreground shadow-level-1",
                 day_today: "bg-secondary-container text-foreground font-semibold",
                 day_outside: "opacity-30",
@@ -384,9 +384,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
 
       {/* Section Header */}
       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
-        <h1 className="title-medium font-display font-semibold min-w-0 break-words">
+        <h2 className="title-medium font-display font-semibold min-w-0 break-words">
           {selectedDate ? format(selectedDate, "d MMMM yyyy", { locale: dateLocale }) : t("piano.upcoming")}
-        </h1>
+        </h2>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => { setEditingEval(null); setShowAddSheet(true); }} aria-label="Aggiungi nuovo evento">
             <Plus className="w-4 h-4 mr-1" />{t("piano.addEvent")}
@@ -438,7 +438,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       {/* Events */}
       {selectedDate && selectedDateEvents.length === 0 ? (
         selectedDateEvaluations.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground m3-card-elevated rounded-xl">
+          <div className="text-center py-8 text-muted-foreground m3-card-elevated rounded-card">
             <p className="body-large font-medium">{t("piano.noEventsOnDate")}</p>
             <Button variant="link" onClick={() => { setEditingEval(null); setShowAddSheet(true); }} className="mt-2 text-primary">{t("piano.addEventForDay")}</Button>
           </div>
@@ -468,7 +468,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         </div>
       ) : (
         events.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground m3-card-elevated rounded-xl">
+          <div className="text-center py-10 text-muted-foreground m3-card-elevated rounded-card">
             <p className="body-large font-medium">{t("piano.noEvents")}</p>
             <p className="body-small mt-1">{t("piano.noEventsHint")}</p>
           </div>
@@ -592,9 +592,9 @@ function EvaluationItem({ evaluation, subject }: { evaluation: Evaluation; subje
   const topic = evaluation.topic_type === "free" ? evaluation.free_topic_title : null;
   const subjectColor = subject ? resolveSubjectColor(subject.name, subject.color) : undefined;
   return (
-    <div className={cn("rounded-xl p-4 bg-card border border-border shadow-level-1 border-l-4", subjectColor?.border ?? "border-l-foreground")}>
+    <div className="rounded-card border border-border bg-card p-4 shadow-level-1">
       <div className="flex items-start gap-3">
-        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+        <div className={cn("w-10 h-10 rounded-button flex items-center justify-center shrink-0",
           subjectColor ? cn(subjectColor.solid, "text-primary-foreground") : "bg-foreground text-background")}>
           <Icon className="w-5 h-5" />
         </div>

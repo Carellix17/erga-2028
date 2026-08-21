@@ -14,9 +14,9 @@ function Row({
   icon: Icon, title, desc, children,
 }: { icon: typeof Type; title: string; desc: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-3">
+    <section className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-3">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-surface-container-high flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-button bg-surface-container-high flex items-center justify-center shrink-0">
           <Icon className="w-5 h-5 text-foreground" />
         </div>
         <div className="min-w-0 flex-1">
@@ -44,7 +44,7 @@ export default function SettingsAccessibility() {
                 onClick={() => update({ textScale: s.value })}
                 aria-pressed={settings.textScale === s.value}
                 className={cn(
-                  "h-12 rounded-2xl border transition-all duration-300 ease-m3-emphasized body-medium",
+                  "h-12 rounded-button border transition-all duration-300 ease-m3-emphasized body-medium",
                   settings.textScale === s.value
                     ? "border-primary bg-surface-container-high text-foreground"
                     : "border-outline-variant/60 text-muted-foreground hover:bg-foreground/[0.06]"

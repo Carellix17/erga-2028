@@ -608,7 +608,7 @@ function AuthWallModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-scrim/60 backdrop-blur-sm animate-fade-in p-4">
       <div className="w-full max-w-md rounded-[24px] bg-card shadow-level-3 p-6 sm:p-8">
         <div className="flex items-center justify-between mb-1">
           <h3 className="font-display font-bold text-xl text-foreground">
