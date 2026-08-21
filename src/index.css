@@ -157,14 +157,17 @@
     --pastel-bosco: 140 24% 66%;
     --pastel-oliva: 85 24% 62%;
 
-    /*  P22 — MATERIAL DEPTH notturno: prima NON ESISTEVA (le ombre chiare sul
-       nero spariscono). Di notte: nero deciso + capello di luce (4-7% bianco)
-       sul bordo superiore delle superfici, tecnica Fluent — i piani si leggono. */
-    --shadow-level-1: 0 1px 2px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
-    --shadow-level-2: 0 2px 4px 0 rgba(0, 0, 0, 0.45), 0 6px 16px -2px rgba(0, 0, 0, 0.50), inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
-    --shadow-level-3: 0 3px 6px 0 rgba(0, 0, 0, 0.50), 0 12px 28px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 hsl(0 0% 100% / 0.06);
-    --shadow-level-4: 0 4px 8px 0 rgba(0, 0, 0, 0.50), 0 18px 38px -8px rgba(0, 0, 0, 0.60), inset 0 1px 0 0 hsl(0 0% 100% / 0.07);
-    --shadow-level-5: 0 4px 10px 0 rgba(0, 0, 0, 0.55), 0 24px 48px -8px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
+    /*  P25 — ALONI NERI RIMOSSI. Le ombre esterne notturne (P22: nero deciso,
+       opacità 0,45–0,65, blur fino a 48px) creavano un alone scuro e sfumato
+       attorno a card, blocchi e righe di testo. Rimosse su richiesta, senza
+       toccare gli elementi. Resta solo il capello di luce superiore (tecnica
+       Fluent): i piani si leggono ugualmente grazie al contrasto di sfondo,
+       al bordo e a questo filetto — senza più aloni neri. */
+    --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
+    --shadow-level-2: inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
+    --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.06);
+    --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.07);
+    --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
 --background: 0 0% 8%;                 /* nero (monocromo) */
 --foreground: 0 0% 93%;
 --surface-dim: 0 0% 6%;
@@ -259,11 +262,11 @@
   /* La variante scura deve restare dopo i default: evita che la cascata
      riapplichi le ombre chiare quando cambia il tema. */
   .dark {
-    --shadow-level-1: 0 1px 2px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
-    --shadow-level-2: 0 2px 4px 0 rgba(0, 0, 0, 0.45), 0 6px 16px -2px rgba(0, 0, 0, 0.50), inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
-    --shadow-level-3: 0 3px 6px 0 rgba(0, 0, 0, 0.50), 0 12px 28px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 hsl(0 0% 100% / 0.06);
-    --shadow-level-4: 0 4px 8px 0 rgba(0, 0, 0, 0.50), 0 18px 38px -8px rgba(0, 0, 0, 0.60), inset 0 1px 0 0 hsl(0 0% 100% / 0.07);
-    --shadow-level-5: 0 4px 10px 0 rgba(0, 0, 0, 0.55), 0 24px 48px -8px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
+    --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
+    --shadow-level-2: inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
+    --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.06);
+    --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.07);
+    --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
   }
 }
 
