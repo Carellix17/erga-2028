@@ -56,9 +56,9 @@ export function TrueFalse({
                 showResult && isSelected && !isCorrectOption && "bg-destructive",
               )}>
                 {value ? (
-                  <Check className={cn("w-6 h-6", showResult && isCorrectOption ? "text-[#F8F7DD]" : showResult && isSelected && !isCorrectOption ? "text-[#F8F7DD]" : "text-success")} />
+                  <Check className={cn("w-6 h-6", showResult && isCorrectOption ? "text-success-foreground" : showResult && isSelected && !isCorrectOption ? "text-destructive-foreground" : "text-success")} />
                 ) : (
-                  <X className={cn("w-6 h-6", showResult && isCorrectOption ? "text-[#F8F7DD]" : showResult && isSelected && !isCorrectOption ? "text-[#F8F7DD]" : "text-destructive")} />
+                  <X className={cn("w-6 h-6", showResult && isCorrectOption ? "text-success-foreground" : showResult && isSelected && !isCorrectOption ? "text-destructive-foreground" : "text-destructive")} />
                 )}
               </div>
               <span className={cn(

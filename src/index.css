@@ -142,7 +142,11 @@
 --gold-antique: 0 0% 60%;
 --gold-antique-soft: 0 0% 16%;
 --destructive: 9 0% 64%;
-    --destructive-foreground: var(--cream);
+    /*  Di notte --destructive è un grigio CHIARO (64%): l'inchiostro sopra
+       deve essere scuro, esattamente come --success-foreground qui sotto.
+       Prima era bianco puro e si leggeva a 2,5:1 (illeggibile); la panna
+       avrebbe fatto 2,3:1. Con il quasi-nero si arriva a 7,3:1. */
+    --destructive-foreground: 0 0% 8%;
 --error-container: 7 0% 15%;
 --on-error-container: 10 0% 81%;
 --success: 0 0% 82%;
