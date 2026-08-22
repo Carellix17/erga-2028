@@ -70,9 +70,9 @@ describe("luminanza e contrasto WCAG", () => {
 });
 
 describe("pickContrastInk", () => {
-  it("sceglie il bianco su fondo scuro (marrone materia sfumato nel nero)", () => {
+  it("sceglie la panna su fondo scuro (marrone materia sfumato nel nero)", () => {
     const pick = pickContrastInk({ r: 60, g: 45, b: 40, a: 1 });
-    expect(pick.channels).toBe("255 255 255");
+    expect(pick.channels).toBe("248 247 221"); // P29: #F8F7DD, non bianco puro
     expect(pick.tone).toBe("light-text");
     expect(pick.ratio).toBeGreaterThan(4.5); // almeno AA per testo normale
   });
@@ -110,13 +110,13 @@ describe("averageCssGradient", () => {
 });
 
 describe("blocchi data-auto-contrast (DOM)", () => {
-  it("fondo scuro sul blocco → inchiostro bianco", () => {
+  it("fondo scuro sul blocco → inchiostro panna", () => {
     document.body.innerHTML =
       '<div data-auto-contrast id="block" style="background-color: rgb(45, 30, 30)"><p>ciao</p></div>';
     const block = document.getElementById("block") as HTMLElement;
     const pick = applyAutoContrast(block);
     expect(pick.tone).toBe("light-text");
-    expect(block.style.getPropertyValue("--contrast-ink")).toBe("255 255 255");
+    expect(block.style.getPropertyValue("--contrast-ink")).toBe("248 247 221");
     expect(block.getAttribute("data-contrast-tone")).toBe("light-text");
   });
 

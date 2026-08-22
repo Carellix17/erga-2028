@@ -181,8 +181,11 @@ export function resolveSubjectColor(subjectName: string, customKey?: string | nu
 /**
  * Chooses the more readable neutral foreground for a HEX or HSL accent using
  * WCAG relative luminance.
+ *
+ * P29 — l'inchiostro chiaro è la panna #F8F7DD (non più il bianco puro):
+ * stessa scelta di contrasto, tinta calda coerente con il resto di Erga.
  */
-export function getAccentForeground(accent: string): "#ffffff" | "#111111" {
+export function getAccentForeground(accent: string): "#F8F7DD" | "#111111" {
  const value = accent.trim();
  const normalizedHex = value.replace(/^#/, "");
  const hex = normalizedHex.length === 3
@@ -215,10 +218,11 @@ export function getAccentForeground(accent: string): "#ffffff" | "#111111" {
   channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
  );
  const luminance = 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
- const whiteContrast = 1.05 / (luminance + 0.05);
+ const creamLuminance = 0.917; // #F8F7DD
+ const creamContrast = (creamLuminance + 0.05) / (luminance + 0.05);
  const darkLuminance = 0.0056; // #111111
  const darkContrast = (luminance + 0.05) / (darkLuminance + 0.05);
- return whiteContrast >= darkContrast ? "#ffffff" : "#111111";
+ return creamContrast >= darkContrast ? "#F8F7DD" : "#111111";
 }
 
 /** Returns the contextual accent for the detected or user-selected subject. */

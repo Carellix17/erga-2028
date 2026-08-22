@@ -50,7 +50,7 @@ export function ModulesOverview({ modules, onOpenModule, onCreatePath }: Modules
           let badge: React.ReactNode;
           if (isDone) {
             badge = (
-              <span className="badge-chip bg-black text-white dark:bg-white dark:text-black">Completato</span>
+              <span className="badge-chip bg-black text-white dark:bg-[#F8F7DD] dark:text-black">Completato</span>
             );
           } else if (isCur) {
             badge = (
