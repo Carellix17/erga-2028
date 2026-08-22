@@ -1266,3 +1266,33 @@ html.reduce-motion :is(
   animation: none;
   opacity: 0.22;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   P28 — INCHIOSTRO A CONTRASTO AUTOMATICO (script: src/lib/autoContrast.ts)
+   I blocchi marcati `data-auto-contrast` ricevono dallo script la
+   variabile --contrast-ink (canali "r g b"): bianco o quasi-nero,
+   scelto misurando il fondo reale del blocco con il rapporto WCAG.
+   Il testo del blocco eredita l'inchiostro; i figli usano le utility
+   qui sotto. Il ripiego (prima dello script, o senza script) è il
+   bianco: i blocchi ambientati nascono scuri.
+   NOTA: queste regole non vivono in un @layer, così battono le utility
+   Tailwind quando devono sostituire un colore hardcoded scorretto.
+   ═══════════════════════════════════════════════════════════════ */
+[data-auto-contrast] {
+  --contrast-ink: 255 255 255;
+  --contrast-surface: 20 16 16;
+  color: rgb(var(--contrast-ink));
+}
+
+/* Testo: pieno, secondario e terziario (sulle superfici ambientate). */
+.text-contrast { color: rgb(var(--contrast-ink, 255 255 255)); }
+.text-contrast-secondary { color: rgb(var(--contrast-ink, 255 255 255) / 0.8); }
+.text-contrast-tertiary { color: rgb(var(--contrast-ink, 255 255 255) / 0.64); }
+
+/* Superfici "inchiostro": chip e pill che staccano sul fondo rilevato. */
+.bg-contrast { background-color: rgb(var(--contrast-ink, 255 255 255)); }
+.bg-contrast-soft { background-color: rgb(var(--contrast-ink, 255 255 255) / 0.14); }
+.border-contrast { border-color: rgb(var(--contrast-ink, 255 255 255) / 0.28); }
+
+/* Testo che ha per sfondo l'inchiostro stesso (es. chip chiare). */
+.text-contrast-surface { color: rgb(var(--contrast-surface, 20 16 16)); }

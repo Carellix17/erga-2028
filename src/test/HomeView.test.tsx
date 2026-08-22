@@ -147,6 +147,18 @@ describe("HomeView", () => {
     expect(screen.getByText("giorni di serie")).toHaveClass("text-balance");
   });
 
+  it("P28: la lezione sospesa usa l'inchiostro a contrasto automatico, mai fisso", () => {
+    render(<HomeView {...callbacks} />);
+
+    const card = screen.getByTestId("resume-lesson-card");
+    // Prima il testo era `text-inverse-on-surface`: nel tema scuro diventava
+    // NERO sul fondo marrone/nero del blocco. Ora lo script misura il fondo
+    // reale e imposta --contrast-ink sul blocco marcato.
+    expect(card).toHaveAttribute("data-auto-contrast");
+    expect(card.className).not.toMatch(/text-inverse-on-surface/);
+    expect(card.innerHTML).not.toMatch(/text-inverse-on-surface/);
+  });
+
   it("riapre la lezione precisa", () => {
     render(<HomeView {...callbacks} />);
     fireEvent.click(screen.getByRole("button", { name: /Riprendi lezione/i }));

@@ -105,12 +105,14 @@ export function CourseCardBackground({
       <>
         <div
           aria-hidden
+          data-contrast-layer="base"
           className="absolute inset-0"
           style={{ backgroundColor: baseColor }}
         />
 
         <div
           aria-hidden
+          data-contrast-layer="shade"
           className="absolute inset-0 bg-gradient-to-b from-transparent via-scrim/20 to-scrim/70"
         />
 
@@ -130,6 +132,7 @@ export function CourseCardBackground({
           <div
             className="absolute inset-0 bg-gradient-to-t from-scrim/60 via-transparent to-transparent"
             aria-hidden
+            data-contrast-layer="shade"
           />
         )}
 
@@ -167,6 +170,7 @@ export function CourseCardBackground({
       <div
         aria-hidden
         data-course-card-layer="base"
+        data-contrast-layer="base"
         className="absolute inset-0"
         style={{
           backgroundImage: `linear-gradient(180deg, ${baseTop} 0%, ${baseTop} 34%, ${baseMiddle} 68%, ${baseBottom} 100%)`,
@@ -195,6 +199,7 @@ export function CourseCardBackground({
       <div
         aria-hidden
         data-course-card-layer="shade"
+        data-contrast-layer="shade"
         className="absolute inset-0 bg-gradient-to-b from-transparent via-scrim/[0.08] to-scrim/[0.55]"
       />
 
