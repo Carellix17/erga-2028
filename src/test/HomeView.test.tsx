@@ -147,6 +147,23 @@ describe("HomeView", () => {
     expect(screen.getByText("giorni di serie")).toHaveClass("text-balance");
   });
 
+  it("usa il fondo crema e illustrazioni nere nei blocchi operativi, senza toccare il percorso", () => {
+    render(<HomeView {...callbacks} />);
+
+    const rhythmTitle = screen.getByRole("heading", { name: "Dati reali dalle sessioni Focus" });
+    const rhythmCards = Array.from(rhythmTitle.closest("section")?.querySelector(".grid")?.children ?? []);
+    expect(rhythmCards).toHaveLength(3);
+    rhythmCards.forEach((card) => expect(card).toHaveClass("bg-[#F8F7DD]"));
+
+    const quickFocus = screen.getByRole("button", { name: "Focus: Avvia il vero timer" });
+    expect(quickFocus).toHaveClass("bg-[#F8F7DD]", "text-[#11110E]");
+    expect(screen.getAllByTestId("home-minimal-artwork").length).toBeGreaterThanOrEqual(8);
+
+    const resumeCard = screen.getByTestId("resume-lesson-card");
+    expect(resumeCard).toHaveClass("bg-inverse-surface");
+    expect(resumeCard).not.toHaveClass("bg-[#F8F7DD]");
+  });
+
   it("P28: la lezione sospesa usa l'inchiostro a contrasto automatico, mai fisso", () => {
     render(<HomeView {...callbacks} />);
 

@@ -38,6 +38,38 @@ interface HomeViewProps {
 
 const VISIBLE_TASKS = 3;
 
+const HOME_BLOCK_CLASS =
+  "border border-black/[0.08] bg-[#F8F7DD] text-[#11110E] shadow-[0_10px_30px_-24px_rgba(0,0,0,0.45)]";
+
+interface MinimalArtworkProps {
+  Icon: typeof Timer;
+  compact?: boolean;
+}
+
+/**
+ * Un piccolo segno editoriale, nero e geometrico, condiviso da tutti i blocchi
+ * operativi della Home. È volutamente decorativo: il testo resta l'unica fonte
+ * di significato per lettori di schermo.
+ */
+function MinimalArtwork({ Icon, compact = false }: MinimalArtworkProps) {
+  return (
+    <span
+      data-testid="home-minimal-artwork"
+      aria-hidden="true"
+      className={cn(
+        "relative isolate grid shrink-0 place-items-center overflow-hidden text-black",
+        compact
+          ? "h-9 w-9 [&_svg]:!h-6 [&_svg]:!w-6"
+          : "h-14 w-16 [&_svg]:!h-9 [&_svg]:!w-9",
+      )}
+    >
+      <span className="absolute inset-x-1 top-1/2 h-px -rotate-[18deg] bg-black/20" />
+      <span className="absolute right-1 top-1 h-3 w-3 rounded-full border border-black/30" />
+      <Icon className={cn("relative z-10 stroke-[1.6]", compact ? "h-6 w-6" : "h-9 w-9")} />
+    </span>
+  );
+}
+
 function HomeSkeleton() {
   return (
     <div className="space-y-8 py-6" aria-label="Caricamento Home">
@@ -153,10 +185,16 @@ export function HomeView({
                 { label: t("home.rhythm.sessions"), value: data.sessionsToday, Icon: Target },
                 { label: t("home.rhythm.streak"), value: data.streakDays, Icon: Flame },
               ].map(({ label, value, Icon }) => (
-                <Card key={label} className="flex min-w-0 flex-col items-center border-card bg-card p-2.5 text-center shadow-none min-[375px]:p-3 sm:items-start sm:p-4 sm:text-left">
-                  <Icon className="h-4 w-4 text-tertiary" aria-hidden="true" />
-                  <p className="mt-2 font-display text-xl font-extrabold tabular-nums min-[360px]:text-2xl">{value}</p>
-                  <p className="mt-1 text-balance text-[11px] leading-[1.25] text-muted-foreground min-[360px]:text-xs sm:text-sm">{label}</p>
+                <Card
+                  key={label}
+                  className={cn(
+                    HOME_BLOCK_CLASS,
+                    "flex min-w-0 flex-col items-center rounded-lg p-3 text-center min-[375px]:p-4 sm:items-start sm:text-left",
+                  )}
+                >
+                  <MinimalArtwork Icon={Icon} compact />
+                  <p className="mt-2 font-display text-2xl font-extrabold tabular-nums tracking-[-0.03em] min-[360px]:text-[1.7rem]">{value}</p>
+                  <p className="mt-1 text-balance text-[11px] font-medium leading-[1.25] text-black/65 min-[360px]:text-xs sm:text-sm">{label}</p>
                 </Card>
               ))}
             </div>
@@ -239,19 +277,26 @@ export function HomeView({
           </div>
 
           {data.nextEvaluation && (
-            <button type="button" onClick={onOpenPlan} className="flex min-h-16 w-full items-center gap-3 rounded-card border border-warning-container/45 bg-warning-container/45 p-4 text-left">
-              <CalendarDays className="h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
+            <button
+              type="button"
+              onClick={onOpenPlan}
+              className={cn(
+                HOME_BLOCK_CLASS,
+                "group flex min-h-[84px] w-full items-center gap-3 rounded-lg p-4 text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-20px_rgba(0,0,0,0.38)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 motion-reduce:transform-none",
+              )}
+            >
+              <MinimalArtwork Icon={CalendarDays} />
               <span className="min-w-0 flex-1">
-                <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="block text-xs font-bold uppercase tracking-wider text-black/60">
                   {t("home.evaluation.inDays", { count: data.nextEvaluation.daysAway })}
                 </span>
-                <span className="block truncate text-base font-bold">{data.nextEvaluation.subject} · {data.nextEvaluation.title}</span>
+                <span className="mt-1 block truncate text-base font-bold">{data.nextEvaluation.subject} · {data.nextEvaluation.title}</span>
               </span>
             </button>
           )}
 
           {tasks.length > 0 ? (
-            <Card className="overflow-hidden border-card bg-card shadow-level-1">
+            <Card className={cn(HOME_BLOCK_CLASS, "overflow-hidden rounded-lg")}>
               <CardContent className="p-2 sm:p-3">
                 <div id="today-task-list" role="list">
                   {tasks.map((task, index) => (
@@ -259,23 +304,23 @@ export function HomeView({
                       key={task.id}
                       role="listitem"
                       className={cn(
-                        "flex min-h-[72px] items-center gap-3 rounded-button px-2 py-3 sm:px-3",
-                        index !== tasks.length - 1 && "border-b border-foreground/[0.07]",
+                        "flex min-h-[76px] items-center gap-3 rounded-md px-2 py-3 text-[#11110E] sm:px-3",
+                        index !== tasks.length - 1 && "border-b border-black/[0.08]",
                         task.isCompleted && "opacity-70",
                       )}
                     >
-                      <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-button", task.isCompleted ? "bg-success text-success-foreground" : "bg-surface-container-high text-foreground")}>
-                        {task.isCompleted ? <Check className="h-5 w-5" aria-hidden="true" /> : task.kind === "study" ? <BookOpen className="h-5 w-5" aria-hidden="true" /> : <CalendarDays className="h-5 w-5" aria-hidden="true" />}
+                      <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-full border border-black/15 text-black", task.isCompleted && "bg-black text-[#F8F7DD]")}>
+                        {task.isCompleted ? <Check className="h-5 w-5" aria-hidden="true" /> : task.kind === "study" ? <BookOpen className="h-5 w-5 stroke-[1.6]" aria-hidden="true" /> : <CalendarDays className="h-5 w-5 stroke-[1.6]" aria-hidden="true" />}
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className={cn("break-words text-base font-bold leading-snug", task.isCompleted && "line-through")}>{task.title}</p>
-                        <p className="mt-1 flex flex-wrap gap-x-2 text-sm text-muted-foreground">
+                        <p className="mt-1 flex flex-wrap gap-x-2 text-sm text-black/60">
                           <span>{task.subject}</span>
                           {task.time && <><span aria-hidden="true">·</span><span>{task.time}</span></>}
                         </p>
                       </div>
                       {task.canStartFocus && (
-                        <Button size="icon-sm" variant="outline" className="h-11 w-11 shrink-0 rounded-button" aria-label={t("home.today.startFocus", { title: task.title })} onClick={() => startTaskFocus(task)}>
+                        <Button size="icon-sm" variant="outline" className="h-11 w-11 shrink-0 rounded-full border-black/15 bg-transparent text-black hover:bg-black hover:text-[#F8F7DD]" aria-label={t("home.today.startFocus", { title: task.title })} onClick={() => startTaskFocus(task)}>
                           <Timer className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
@@ -283,18 +328,18 @@ export function HomeView({
                   ))}
                 </div>
                 {hiddenTasks > 0 && (
-                  <Button variant="ghost" className="mt-1 min-h-11 w-full rounded-button" aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={() => setShowAllTasks((value) => !value)}>
+                  <Button variant="ghost" className="mt-1 min-h-11 w-full rounded-button text-black hover:bg-black/[0.06]" aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={() => setShowAllTasks((value) => !value)}>
                     {showAllTasks ? t("home.today.showLess") : t("home.today.showAll", { count: hiddenTasks })}
                   </Button>
                 )}
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-dashed border-card bg-card p-5">
-              <Clock3 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+            <Card className={cn(HOME_BLOCK_CLASS, "rounded-lg p-5")}>
+              <MinimalArtwork Icon={Clock3} />
               <h3 className="mt-3 font-display text-lg font-bold">{t("home.today.emptyTitle")}</h3>
-              <p className="mt-1 text-base text-muted-foreground">{t("home.today.emptyDescription")}</p>
-              <Button variant="outline" className="mt-4 min-h-11 rounded-button" onClick={onOpenPlan}>{t("home.today.organize")}</Button>
+              <p className="mt-1 text-base text-black/65">{t("home.today.emptyDescription")}</p>
+              <Button variant="outline" className="mt-4 min-h-11 rounded-button border-black/15 bg-transparent text-black hover:bg-black hover:text-[#F8F7DD]" onClick={onOpenPlan}>{t("home.today.organize")}</Button>
             </Card>
           )}
         </section>
@@ -311,10 +356,22 @@ export function HomeView({
               { id: "upload", title: t("home.quick.upload"), description: t("home.quick.uploadDescription"), Icon: FileUp, action: onUpload },
               { id: "cognitive", title: t("home.quick.cognitive"), description: t("home.quick.cognitiveDescription"), Icon: Brain, action: onOpenCognitive },
             ].map((tool) => (
-              <Button key={tool.id} type="button" variant="outline" onClick={tool.action} className="h-auto min-h-[116px] flex-col items-start justify-start whitespace-normal rounded-card border-card bg-card p-4 text-left shadow-none">
-                <span className="grid h-10 w-10 place-items-center rounded-button bg-surface-container-high"><tool.Icon className="h-4 w-4" aria-hidden="true" /></span>
-                <span className="mt-3 block text-base font-bold">{tool.title}</span>
-                <span className="mt-1 block text-sm font-medium leading-snug text-muted-foreground">{tool.description}</span>
+              <Button
+                key={tool.id}
+                type="button"
+                variant="outline"
+                aria-label={`${tool.title}: ${tool.description}`}
+                onClick={tool.action}
+                className={cn(
+                  HOME_BLOCK_CLASS,
+                  "group h-auto min-h-[164px] flex-col items-start justify-between whitespace-normal rounded-lg p-4 text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#F8F7DD] hover:shadow-[0_14px_30px_-20px_rgba(0,0,0,0.38)] motion-reduce:transform-none sm:p-5",
+                )}
+              >
+                <MinimalArtwork Icon={tool.Icon} />
+                <span className="mt-5 block">
+                  <span className="block text-base font-extrabold tracking-[-0.02em]">{tool.title}</span>
+                  <span className="mt-1 block text-sm font-medium leading-snug text-black/65">{tool.description}</span>
+                </span>
               </Button>
             ))}
           </div>
