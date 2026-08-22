@@ -46,9 +46,9 @@ describe("resolveSubjectColor (automatico + personalizzato)", () => {
 describe("getAccentForeground", () => {
   it("sceglie un primo piano neutro ad alto contrasto per HEX e HSL", () => {
     expect(getAccentForeground("#f59e0b")).toBe("#111111");
-    expect(getAccentForeground("#2563eb")).toBe("#ffffff");
+    expect(getAccentForeground("#2563eb")).toBe("#F8F7DD");
     expect(getAccentForeground("hsl(45 100% 50%)")).toBe("#111111");
-    expect(getAccentForeground("hsl(220 100% 20%)")).toBe("#ffffff");
+    expect(getAccentForeground("hsl(220 100% 20%)")).toBe("#F8F7DD");
   });
 
   it("usa il quasi-nero neutro per valori non validi", () => {

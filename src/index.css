@@ -12,7 +12,15 @@
 
 @layer base {
   :root {
-    /* ─── Erga MONO "Mono di luce" (tema chiaro, default) — neutro e neutro ─── */
+    /*  P29 — PANNA AL POSTO DEL BIANCO (#F8F7DD)
+       Un solo gettone per la tinta "bianco caldo" di Erga: canali HSL
+       grezzi (come tutti i gettoni di casa) così si può usare sia pieno
+       — hsl(var(--cream)) — sia con velo — hsl(var(--cream) / 0.10).
+       58 66% 92% È esattamente #F8F7DD, la stessa panna già usata dalle
+       carte del ritmo in Home. Di NOTTE prende il posto del bianco puro
+       su testi, superfici chiare e bordi: la pagina resta ad altissimo
+       contrasto (18,4:1 sul fondo #05090A) ma smette di abbagliare. */
+    --cream: 58 66% 92%;
 --primary: 0 0% 9%;                    /* NERO — la pill-firma è NERA su bianco (monocromo) */
 --primary-foreground: 0 0% 100%;
 --primary-container: 0 0% 92%;
@@ -115,23 +123,26 @@
   }
 
   .dark {
-    /* ─── Erga MONO "Mono di notte" (tema scuro) — neutro profondo, carbone ─── */
---primary: 0 0% 100%;                   /* la pill-firma BIANCA, testo nero (monocromo) */
+    /* ─── Erga MONO "Mono di notte" (tema scuro) — neutro profondo, carbone ───
+       P29: di notte il bianco puro (e i grigi quasi-bianchi al 88–94%) lasciano
+       il posto alla panna --cream (#F8F7DD). Cambiano i GETTONI, non i
+       componenti: testi, superfici chiare e bordi si ricolorano da soli. */
+--primary: var(--cream);                /* la pill-firma è PANNA, testo nero (monocromo) */
 --primary-foreground: 0 0% 0%;
 --primary-container: 0 0% 24%;
---on-primary-container: 0 0% 90%;
+--on-primary-container: var(--cream);
 --secondary: 0 0% 12%;
---secondary-foreground: 0 0% 94%;
+--secondary-foreground: var(--cream);
 --secondary-container: 0 0% 18%;
---on-secondary-container: 0 0% 90%;
+--on-secondary-container: var(--cream);
 --tertiary: 0 0% 78%;               /* grigio chiaro (monocromo) */
 --tertiary-foreground: 0 0% 8%;
 --tertiary-container: 0 0% 24%;
---on-tertiary-container: 0 0% 90%;
+--on-tertiary-container: var(--cream);
 --gold-antique: 0 0% 60%;
 --gold-antique-soft: 0 0% 16%;
 --destructive: 9 0% 64%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: var(--cream);
 --error-container: 7 0% 15%;
 --on-error-container: 10 0% 81%;
 --success: 0 0% 82%;
@@ -169,7 +180,7 @@
     --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.07);
     --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
 --background: 192 33% 3%;              /* #05090A — fondo notte, senza puntini */
---foreground: 0 0% 93%;
+--foreground: var(--cream);            /* P29: l'inchiostro di notte è panna, non bianco */
 --surface-dim: 0 0% 6%;
 --surface-bright: 0 0% 18%;
 --surface-container-lowest: 0 0% 5%;
@@ -178,7 +189,7 @@
 --surface-container-high: 0 0% 17%;  /* #1A1A1B */
 --surface-container-highest: 0 0% 21%;
 --card: 0 0% 14%;
---card-foreground: 0 0% 93%;
+--card-foreground: var(--cream);
 
     /* ═══ token glass PENSIONATI (alias opachi per compatibilità) ═══ */
     --glass-surface-1: hsl(var(--surface-container-low));
@@ -188,34 +199,35 @@
     --glass-border: hsl(var(--border));
     --glass-inset: hsl(0 0% 0% / 0);
 --popover: 0 0% 12%;
---popover-foreground: 0 0% 93%;
+--popover-foreground: var(--cream);
 --muted: 0 0% 12%;
 --muted-foreground: 0 0% 68%;
 --accent: 0 0% 20%;                 /* grigio tenue su nero (monocromo) */
---accent-foreground: 0 0% 88%;
---outline: 0 0% 90% / 0.16;
---outline-variant: 0 0% 90% / 0.08;
---border: 0 0% 90% / 0.10;
+--accent-foreground: var(--cream);
+    /* Bordi e filetti: la stessa panna, appena accennata (l'alfa non cambia). */
+--outline: var(--cream) / 0.16;
+--outline-variant: var(--cream) / 0.08;
+--border: var(--cream) / 0.10;
 --input: 0 0% 10%;
 --ring: 0 0% 80%;
     --subject-accent: #fbbf24;
     --subject-accent-foreground: #111111;
     --subject-accent-light: color-mix(in srgb, var(--subject-accent) 28%, white);
---inverse-surface: 0 0% 93%;
+--inverse-surface: var(--cream);
 --inverse-on-surface: 0 0% 8%;
 --inverse-primary: 0 0% 40%;
 --sidebar-background: 0 0% 8%;
---sidebar-foreground: 0 0% 93%;
---sidebar-primary: 0 0% 100%;
+--sidebar-foreground: var(--cream);
+--sidebar-primary: var(--cream);
 --sidebar-primary-foreground: 0 0% 0%;
 --sidebar-accent: 0 0% 20%;
---sidebar-accent-foreground: 0 0% 93%;
---sidebar-border: 0 0% 90% / 0.10;
+--sidebar-accent-foreground: var(--cream);
+--sidebar-border: var(--cream) / 0.10;
 --sidebar-ring: 0 0% 80%;
 
     /*  P24 — firme del guscio: nav a pillola (neutro di notte) e puntino neutro */
 --nav-surface: 0 0% 12%;
---nav-foreground: 0 0% 92%;
+--nav-foreground: var(--cream);
   }
 
   :root {
@@ -458,7 +470,7 @@
   .gradient-cool {
     /* was black→blue: now pure black per design directive */
     background: #000;
-    color: #fff;
+    color: #F8F7DD;   /* P29: inchiostro panna sul nero, mai bianco puro */
   }
   .gradient-surface {
     background: hsl(var(--background));
@@ -905,10 +917,12 @@ html.high-contrast {
   --muted-foreground: 220 0% 26%;
 }
 html.high-contrast.dark {
-  --outline: 0 0% 100% / 0.6;
-  --outline-variant: 0 0% 100% / 0.42;
-  --border: 0 0% 100% / 0.42;
-  --muted-foreground: 0 0% 88%;
+  /* P29: anche in alto contrasto la notte è panna, non bianco puro
+     (#F8F7DD sul fondo #05090A resta a 18,4:1, ben oltre l'AAA). */
+  --outline: var(--cream) / 0.6;
+  --outline-variant: var(--cream) / 0.42;
+  --border: var(--cream) / 0.42;
+  --muted-foreground: var(--cream);
 }
 html.high-contrast *:focus-visible {
   outline: 3px solid hsl(var(--ring));
@@ -1279,20 +1293,21 @@ html.reduce-motion :is(
    Tailwind quando devono sostituire un colore hardcoded scorretto.
    ═══════════════════════════════════════════════════════════════ */
 [data-auto-contrast] {
-  --contrast-ink: 255 255 255;
+  /* P29: l'inchiostro chiaro è la panna #F8F7DD = canali "248 247 221". */
+  --contrast-ink: 248 247 221;
   --contrast-surface: 20 16 16;
   color: rgb(var(--contrast-ink));
 }
 
 /* Testo: pieno, secondario e terziario (sulle superfici ambientate). */
-.text-contrast { color: rgb(var(--contrast-ink, 255 255 255)); }
-.text-contrast-secondary { color: rgb(var(--contrast-ink, 255 255 255) / 0.8); }
-.text-contrast-tertiary { color: rgb(var(--contrast-ink, 255 255 255) / 0.64); }
+.text-contrast { color: rgb(var(--contrast-ink, 248 247 221)); }
+.text-contrast-secondary { color: rgb(var(--contrast-ink, 248 247 221) / 0.8); }
+.text-contrast-tertiary { color: rgb(var(--contrast-ink, 248 247 221) / 0.64); }
 
 /* Superfici "inchiostro": chip e pill che staccano sul fondo rilevato. */
-.bg-contrast { background-color: rgb(var(--contrast-ink, 255 255 255)); }
-.bg-contrast-soft { background-color: rgb(var(--contrast-ink, 255 255 255) / 0.14); }
-.border-contrast { border-color: rgb(var(--contrast-ink, 255 255 255) / 0.28); }
+.bg-contrast { background-color: rgb(var(--contrast-ink, 248 247 221)); }
+.bg-contrast-soft { background-color: rgb(var(--contrast-ink, 248 247 221) / 0.14); }
+.border-contrast { border-color: rgb(var(--contrast-ink, 248 247 221) / 0.28); }
 
 /* Testo che ha per sfondo l'inchiostro stesso (es. chip chiare). */
 .text-contrast-surface { color: rgb(var(--contrast-surface, 20 16 16)); }
