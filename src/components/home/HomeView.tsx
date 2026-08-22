@@ -153,7 +153,7 @@ export function HomeView({
                 { label: t("home.rhythm.sessions"), value: data.sessionsToday, Icon: Target },
                 { label: t("home.rhythm.streak"), value: data.streakDays, Icon: Flame },
               ].map(({ label, value, Icon }) => (
-                <Card key={label} className="flex min-w-0 flex-col items-center border-outline-variant/60 bg-card p-2.5 text-center shadow-none min-[375px]:p-3 sm:items-start sm:p-4 sm:text-left">
+                <Card key={label} className="flex min-w-0 flex-col items-center border-card bg-card p-2.5 text-center shadow-none min-[375px]:p-3 sm:items-start sm:p-4 sm:text-left">
                   <Icon className="h-4 w-4 text-tertiary" aria-hidden="true" />
                   <p className="mt-2 font-display text-xl font-extrabold tabular-nums min-[360px]:text-2xl">{value}</p>
                   <p className="mt-1 text-balance text-[11px] leading-[1.25] text-muted-foreground min-[360px]:text-xs sm:text-sm">{label}</p>
@@ -169,7 +169,7 @@ export function HomeView({
                 data-testid="resume-lesson-card"
                 data-auto-contrast
                 style={{ "--ambient-block-ink": getSubjectAccent(resume.courseTitle) } as CSSProperties}
-                className="relative h-auto overflow-hidden border-primary/15 bg-inverse-surface"
+                className="relative h-auto overflow-hidden border-inverse-surface bg-inverse-surface"
               >
                 <CourseCardBackground
                   coverUrl={resume.coverUrl}
@@ -209,7 +209,7 @@ export function HomeView({
                 </div>
               </Card>
             ) : (
-              <Card className="h-auto border-outline-variant/60 bg-card p-6 sm:p-8">
+              <Card className="h-auto border-card bg-card p-6 sm:p-8">
                 <div className="flex h-12 w-12 items-center justify-center rounded-card bg-surface-container-high">
                   {data.isGenerating ? <RefreshCw className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileUp className="h-5 w-5" aria-hidden="true" />}
                 </div>
@@ -239,7 +239,7 @@ export function HomeView({
           </div>
 
           {data.nextEvaluation && (
-            <button type="button" onClick={onOpenPlan} className="flex min-h-16 w-full items-center gap-3 rounded-card border border-warning/25 bg-warning-container/45 p-4 text-left">
+            <button type="button" onClick={onOpenPlan} className="flex min-h-16 w-full items-center gap-3 rounded-card border border-warning-container/45 bg-warning-container/45 p-4 text-left">
               <CalendarDays className="h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
               <span className="min-w-0 flex-1">
                 <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -251,7 +251,7 @@ export function HomeView({
           )}
 
           {tasks.length > 0 ? (
-            <Card className="overflow-hidden border-outline-variant/60 bg-card shadow-level-1">
+            <Card className="overflow-hidden border-card bg-card shadow-level-1">
               <CardContent className="p-2 sm:p-3">
                 <div id="today-task-list" role="list">
                   {tasks.map((task, index) => (
@@ -290,7 +290,7 @@ export function HomeView({
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-dashed border-outline-variant bg-card p-5">
+            <Card className="border-dashed border-card bg-card p-5">
               <Clock3 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
               <h3 className="mt-3 font-display text-lg font-bold">{t("home.today.emptyTitle")}</h3>
               <p className="mt-1 text-base text-muted-foreground">{t("home.today.emptyDescription")}</p>
@@ -311,7 +311,7 @@ export function HomeView({
               { id: "upload", title: t("home.quick.upload"), description: t("home.quick.uploadDescription"), Icon: FileUp, action: onUpload },
               { id: "cognitive", title: t("home.quick.cognitive"), description: t("home.quick.cognitiveDescription"), Icon: Brain, action: onOpenCognitive },
             ].map((tool) => (
-              <Button key={tool.id} type="button" variant="outline" onClick={tool.action} className="h-auto min-h-[116px] flex-col items-start justify-start whitespace-normal rounded-card border-outline-variant/60 bg-card p-4 text-left shadow-none">
+              <Button key={tool.id} type="button" variant="outline" onClick={tool.action} className="h-auto min-h-[116px] flex-col items-start justify-start whitespace-normal rounded-card border-card bg-card p-4 text-left shadow-none">
                 <span className="grid h-10 w-10 place-items-center rounded-button bg-surface-container-high"><tool.Icon className="h-4 w-4" aria-hidden="true" /></span>
                 <span className="mt-3 block text-base font-bold">{tool.title}</span>
                 <span className="mt-1 block text-sm font-medium leading-snug text-muted-foreground">{tool.description}</span>
