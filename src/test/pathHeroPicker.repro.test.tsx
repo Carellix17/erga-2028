@@ -29,13 +29,20 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     expect(screen.getByText("matematica")).toBeTruthy();
   });
 
-  it("forza i titoli di tutte le card corso al bianco anche nel tema chiaro", async () => {
+  it("P28: marca le card corso per l'inchiostro a contrasto automatico", async () => {
     render(<PathHero {...base} onSelectCourse={() => {}} />);
-    expect(screen.getByRole("heading", { name: "Storia" })).toHaveClass("text-white");
+    // Il colore del testo NON è più un token fisso (text-inverse-on-surface
+    // diventava nero su fondo scuro nel tema scuro): lo script P28 misura il
+    // fondo reale del blocco marcato data-auto-contrast e imposta
+    // --contrast-ink; titoli e testi lo ereditano.
+    const heroHeading = screen.getByRole("heading", { name: "Storia" });
+    expect(heroHeading).not.toHaveClass("text-white");
+    expect(heroHeading.closest("[data-auto-contrast]")).not.toBeNull();
 
     fireEvent.click(screen.getByText("Cambia corso"));
     const otherCourseTitle = await screen.findByRole("heading", { name: "matematica" });
-    expect(otherCourseTitle).toHaveClass("text-white");
+    expect(otherCourseTitle).not.toHaveClass("text-white");
+    expect(otherCourseTitle.closest("[data-auto-contrast]")).not.toBeNull();
   });
 
   it("notifica al genitore l'apertura/chiusura del selettore", () => {

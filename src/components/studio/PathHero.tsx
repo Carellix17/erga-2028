@@ -260,7 +260,7 @@ export function PathHero({
           <Icon className="w-3.5 h-3.5" strokeWidth={2} />
           Percorso
         </p>
-        <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words text-white">
+        <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words">
           {courseDisplayName(course.file_name)}
         </h3>
         {meta && <p className="text-xs opacity-75 mt-1">{meta}</p>}
@@ -352,8 +352,8 @@ export function PathHero({
         </DropdownMenu>
       </div>
 
-      {/* Titolo: nome intero */}
-      <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1 text-white">
+      {/* Titolo: nome intero — eredita l'inchiostro a contrasto del blocco */}
+      <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1">
         {title ?? "Il tuo percorso"}
       </h2>
 
@@ -479,10 +479,11 @@ export function PathHero({
     </div>
   );
 
-  // Lo sfondo lo gestisce CourseCardBackground (base scura + glow materia):
-  // il testo è SEMPRE bianco per il massimo contrasto.
+  // Lo sfondo lo gestisce CourseCardBackground (base scura + glow materia).
+  // P28: il testo NON è più legato al tema (in dark mode diventava nero su
+  // fondo scuro): il blocco porta `data-auto-contrast` e lo script misura il
+  // fondo reale e imposta l'inchiostro a contrasto (--contrast-ink).
   const heroStyle = {
-    color: "hsl(var(--inverse-on-surface))",
     "--ambient-block-ink": getSubjectAccent(active?.file_name ?? ""),
   } as CSSProperties;
 
@@ -495,6 +496,7 @@ export function PathHero({
           layoutId="hero-card"
           transition={heroLayoutTransition}
           className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6"
+          data-auto-contrast
           style={heroStyle}
         >
           <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
@@ -548,6 +550,7 @@ export function PathHero({
                       layoutId="hero-card"
                       transition={heroLayoutTransition}
                       className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6"
+                      data-auto-contrast
                       style={heroStyle}
                     >
                       <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />

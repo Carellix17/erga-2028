@@ -167,8 +167,9 @@ export function HomeView({
             {resume ? (
               <Card
                 data-testid="resume-lesson-card"
+                data-auto-contrast
                 style={{ "--ambient-block-ink": getSubjectAccent(resume.courseTitle) } as CSSProperties}
-                className="relative h-auto overflow-hidden border-primary/15 bg-inverse-surface text-inverse-on-surface"
+                className="relative h-auto overflow-hidden border-primary/15 bg-inverse-surface"
               >
                 <CourseCardBackground
                   coverUrl={resume.coverUrl}
@@ -177,18 +178,21 @@ export function HomeView({
                 />
                 <div className="relative z-10 p-5 sm:p-6">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge className="gap-1.5 border-0 bg-background text-foreground">
+                    {/* P28: chip e testi seguono l'inchiostro misurato sul fondo
+                        reale del blocco (--contrast-ink/--contrast-surface),
+                        così restano leggibili in entrambi i temi. */}
+                    <Badge className="gap-1.5 border-0" style={{ backgroundColor: "rgb(var(--contrast-ink))", color: "rgb(var(--contrast-surface))" }}>
                       <Sparkles className="h-3 w-3" aria-hidden="true" />
                       {t("home.resume.eyebrow")}
                     </Badge>
-                    <Badge variant="outline" className="border-inverse-on-surface/30 bg-inverse-surface/70 text-inverse-on-surface">
+                    <Badge variant="outline" className="border-contrast bg-contrast-soft text-contrast">
                       {resume.courseTitle}
                     </Badge>
                   </div>
-                  <h2 id="resume-title" className="mt-3 max-w-2xl font-display text-[clamp(1.5rem,5vw,2.25rem)] font-extrabold leading-[1.12] tracking-tight text-inverse-on-surface">
+                  <h2 id="resume-title" className="mt-3 max-w-2xl font-display text-[clamp(1.5rem,5vw,2.25rem)] font-extrabold leading-[1.12] tracking-tight">
                     {resume.lessonTitle}
                   </h2>
-                  <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-inverse-on-surface/80">
+                  <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-contrast-secondary">
                     <span>{t("home.resume.lessonCount", { current: resume.lessonNumber, total: resume.lessonCount })}</span>
                     <span aria-hidden="true">·</span>
                     <span>{t("home.resume.progress", { progress: resume.progressPercent })}</span>
@@ -196,7 +200,8 @@ export function HomeView({
                   <Button
                     size="lg"
                     onClick={() => onResumeLesson(resume.contextId, resume.lessonIndex)}
-                    className="mt-5 min-h-12 w-full gap-2 rounded-button bg-background px-6 text-sm text-foreground hover:bg-surface-container-high sm:w-auto sm:min-w-[220px]"
+                    style={{ backgroundColor: "rgb(var(--contrast-ink))", color: "rgb(var(--contrast-surface))" }}
+                    className="mt-5 min-h-12 w-full gap-2 rounded-button px-6 text-sm transition-opacity hover:opacity-90 sm:w-auto sm:min-w-[220px]"
                   >
                     <Play className="h-4 w-4 fill-current" aria-hidden="true" />
                     {resume.lessonNumber > 1 ? t("home.resume.continue") : t("home.resume.start")}

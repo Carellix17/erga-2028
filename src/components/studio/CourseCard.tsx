@@ -57,19 +57,21 @@ export function CourseCard({
       {...motionProps}
       type="button"
       onClick={() => onSelect(course)}
+      data-auto-contrast
       style={{ "--ambient-block-ink": accent } as CSSProperties}
       className={cn(
-        "interactive-card relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 p-4 text-left text-inverse-on-surface shadow-level-2 [&_h1]:text-inverse-on-surface [&_h2]:text-inverse-on-surface [&_h3]:text-inverse-on-surface sm:p-5",
+        "interactive-card relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 p-4 text-left shadow-level-2 sm:p-5",
         className,
       )}
     >
       <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} variant="studio" />
 
-      {/* LAYER 2 — contenuto (testo bianco ad alto contrasto su fondo scuro) */}
+      {/* LAYER 2 — contenuto: l'inchiostro a contrasto lo decide lo script
+          P28 misurando il fondo reale (bianco su fondo scuro, in ogni tema) */}
       <div className="relative z-10">
         {children}
         <span
-          className="mt-3.5 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-pill border border-inverse-on-surface/30 bg-inverse-on-surface/15 text-sm font-semibold"
+          className="mt-3.5 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-pill border border-contrast bg-contrast-soft text-sm font-semibold"
         >
           {actionLabel}
         </span>
