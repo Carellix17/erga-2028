@@ -1,6 +1,6 @@
 export type HapticType = "light" | "medium" | "success" | "warning" | "error";
 
-export type HapticPattern = number | readonly number[];
+export type HapticPattern = number | number[];
 
 const HAPTIC_PATTERNS: Record<HapticType, HapticPattern> = {
   light: 10,

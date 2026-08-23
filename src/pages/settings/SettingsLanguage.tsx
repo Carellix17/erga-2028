@@ -2,6 +2,7 @@ import { Languages, Check } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
 import { useTranslation } from "react-i18next";
 import type { SupportedLanguage } from "@/i18n";
+import { useHaptics } from "@/hooks/useHaptics";
 
 const OPTIONS: { value: SupportedLanguage; labelKey: string }[] = [
   { value: "it", labelKey: "common.italian" },
@@ -32,7 +33,10 @@ export default function SettingsLanguage() {
                   key={opt.value}
                   role="radio"
                   aria-checked={active}
-                  onClick={() => i18n.changeLanguage(opt.value)}
+                  onClick={() => {
+                    triggerLight();
+                    void i18n.changeLanguage(opt.value);
+                  }}
                   className="erga-list-item flex w-full items-center gap-4 rounded-button p-3 text-left transition-all duration-300 ease-m3-emphasized"
                 >
                   <span className="erga-list-item-icon label-large flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold uppercase tracking-wider text-foreground">
