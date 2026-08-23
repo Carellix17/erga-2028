@@ -22,7 +22,11 @@ import {
   AgentFormValues,
 } from "@/lib/chatProtocol";
 
-interface ChatViewProps { hasFiles: boolean; onUploadClick: () => void; }
+interface ChatViewProps {
+  hasFiles: boolean;
+  onUploadClick: () => void;
+  contextId?: string | null;
+}
 
 type Message = {
   id: string;
@@ -39,7 +43,7 @@ interface TopicDoc { id: string; file_name: string; }
 /** La sentinella anti-pianto (P7): se il tubo tace oltre questo tempo, chiudiamo noi. */
 const STALL_TIMEOUT_MS = 45000;
 
-export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
+export function ChatView({ hasFiles, onUploadClick, contextId }: ChatViewProps) {
   const { t } = useTranslation();
   const welcomeMessage: Message = useMemo(() => ({
     id: "welcome", role: "assistant",
@@ -51,7 +55,13 @@ export function ChatView({ hasFiles, onUploadClick }: ChatViewProps) {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [topics, setTopics] = useState<TopicDoc[]>([]);
-  const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
+  const [activeTopicId, setActiveTopicId] = useState<string | null>(contextId ?? null);
+
+  useEffect(() => {
+    if (contextId && !activeConversationId) {
+      setActiveTopicId(contextId);
+    }
+  }, [contextId, activeConversationId]);
   const [executedActions, setExecutedActions] = useState<Record<string, boolean>>({});
   const abortRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);

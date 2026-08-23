@@ -24,6 +24,7 @@ export interface FocusTask {
   subjectId?: string;
   estimatedDuration?: number; // minutes, from AI plan
   sourceType?: "planned" | "adhoc";
+  durationMinutes?: number;
 }
 
 const DURATIONS: Record<FocusPhase, number> = {
@@ -47,7 +48,7 @@ interface FocusContextValue {
   toggleRun: () => void;
   restart: () => void;
   end: () => void;
-  startSession: (task: FocusTask) => void;
+  startSession: (task: FocusTask, customDurationMinutes?: number) => void;
   extend: () => void;
   nextPhase: () => void;
 }
@@ -62,6 +63,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   const [task, setTask] = useState<FocusTask | null>(null);
   const [phase, setPhase] = useState<FocusPhase>("focus");
   const [cycle, setCycle] = useState(0);
+  const [focusDuration, setFocusDuration] = useState(DURATIONS.focus);
   const [remaining, setRemaining] = useState(DURATIONS.focus);
   const [isRunning, setIsRunning] = useState(false);
   const [awaitingChoice, setAwaitingChoice] = useState(false);
@@ -101,11 +103,14 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     return () => stopTick();
   }, [isRunning]);
 
-  const startSession = useCallback((t: FocusTask) => {
-    setTask({ sourceType: t.eventId ? "planned" : "adhoc", ...t });
+  const startSession = useCallback((t: FocusTask, customDurationMinutes?: number) => {
+    const durMins = customDurationMinutes ?? t.durationMinutes ?? (t.estimatedDuration ? Math.round(t.estimatedDuration) : 25);
+    const durSecs = Math.max(1, durMins) * 60;
+    setFocusDuration(durSecs);
+    setTask({ sourceType: t.eventId ? "planned" : "adhoc", durationMinutes: durMins, ...t });
     setPhase("focus");
     setCycle(0);
-    setRemaining(DURATIONS.focus);
+    setRemaining(durSecs);
     setAwaitingChoice(false);
     focusSecondsRef.current = 0;
     setIsRunning(true);
@@ -123,10 +128,10 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   }, [awaitingChoice]);
 
   const restart = useCallback(() => {
-    setRemaining(DURATIONS[phase]);
+    setRemaining(phase === "focus" ? focusDuration : DURATIONS[phase]);
     setAwaitingChoice(false);
     setIsRunning(true);
-  }, [phase]);
+  }, [phase, focusDuration]);
 
   const end = useCallback(async () => {
     stopTick();
@@ -142,6 +147,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     setPhase("focus");
     setCycle(0);
     setRemaining(DURATIONS.focus);
+    setFocusDuration(DURATIONS.focus);
     focusSecondsRef.current = 0;
 
     if (currentTask && userId && actualMinutes > 0) {
@@ -177,16 +183,16 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     }
     setCycle(nextCycle);
     setPhase(nextPhaseVal);
-    setRemaining(DURATIONS[nextPhaseVal]);
+    setRemaining(nextPhaseVal === "focus" ? focusDuration : DURATIONS[nextPhaseVal]);
     setAwaitingChoice(false);
     setIsRunning(true);
-  }, [phase, cycle]);
+  }, [phase, cycle, focusDuration]);
 
   const extend = useCallback(() => {
-    setRemaining(DURATIONS[phase]);
+    setRemaining(phase === "focus" ? focusDuration : DURATIONS[phase]);
     setAwaitingChoice(false);
     setIsRunning(true);
-  }, [phase]);
+  }, [phase, focusDuration]);
 
   const value = useMemo<FocusContextValue>(
     () => ({

@@ -95,11 +95,16 @@ const speakWithAzure = async (text: string, onStart?: () => void, onEnd?: () => 
  });
 };
 
-export function InterrogazioneView() {
+interface InterrogazioneViewProps {
+  contextId?: string | null;
+  contextName?: string | null;
+}
+
+export function InterrogazioneView({ contextId, contextName }: InterrogazioneViewProps = {}) {
  const [mode, setMode] = useState<Mode>("select");
  const [phase, setPhase] = useState<Phase>("idle");
  const [courses, setCourses] = useState<Course[]>([]);
- const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+ const [selectedCourse, setSelectedCourse] = useState<string | null>(contextId ?? null);
  const [currentQuestion, setCurrentQuestion] = useState("");
  const [transcript, setTranscript] = useState("");
  const [isListening, setIsListening] = useState(false);
@@ -126,6 +131,12 @@ export function InterrogazioneView() {
  }, []);
 
  // Load courses
+ useEffect(() => {
+   if (contextId) {
+     setSelectedCourse(contextId);
+   }
+ }, [contextId]);
+
  useEffect(() => {
  const loadCourses = async () => {
  if (!currentUser) return;
@@ -369,13 +380,48 @@ export function InterrogazioneView() {
  setQuestionCount(0);
  setScores([]);
  setFinalReport(null);
- setSelectedCourse(null);
+ if (!contextId) setSelectedCourse(null);
  };
 
  const hasSpeech = typeof window !=="undefined" && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
  // Course & mode selection
  if (mode ==="select") {
+ if (contextId) {
+   return (
+     <div className="flex flex-col h-full px-4 sm:px-6 py-6 space-y-6 overflow-y-auto">
+       <div className="text-center space-y-3">
+         <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-bounce-in">
+           <Mic className="w-8 h-8" />
+         </div>
+         <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Interrogazione</h2>
+         <p className="body-medium text-muted-foreground">
+           {contextName ? `Simulazione su: ${contextName.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}` : "Scegli la modalità per iniziare"}
+         </p>
+       </div>
+
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 max-w-lg mx-auto w-full">
+         <button
+           onClick={() => { setSelectedCourse(contextId); setMode("config"); }}
+           className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-all duration-200 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 hover:bg-surface-container-high"
+         >
+           <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-level-1"><MessageSquare className="w-7 h-7" /></div>
+           <span className="label-large text-foreground font-semibold tracking-tight">Domande</span>
+           <span className="label-small text-muted-foreground text-center">Il tutor ti fa domande strutturate</span>
+         </button>
+         <button
+           onClick={() => { setSelectedCourse(contextId); startInterrogazione(contextId, "free"); }}
+           className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 transition-all duration-200 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 hover:bg-surface-container-high"
+         >
+           <div className="w-14 h-14 rounded-full bg-tertiary text-tertiary-foreground flex items-center justify-center shadow-level-1"><Volume2 className="w-7 h-7" /></div>
+           <span className="label-large text-foreground font-semibold tracking-tight">Esposizione</span>
+           <span className="label-small text-muted-foreground text-center">Esponi liberamente l'argomento</span>
+         </button>
+       </div>
+     </div>
+   );
+ }
+
  const selectedCourseObj = courses.find(c => c.id === selectedCourse);
  return (
  <div className="flex flex-col h-full px-4 sm:px-6 py-6 space-y-6 overflow-y-auto">

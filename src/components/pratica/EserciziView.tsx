@@ -51,6 +51,8 @@ interface ExerciseResult {
 
 interface EserciziViewProps {
   onFullscreenChange?: (isFullscreen: boolean) => void;
+  contextId?: string | null;
+  contextName?: string | null;
 }
 
 interface PastJob {
@@ -86,9 +88,9 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
+export function EserciziView({ onFullscreenChange, contextId, contextName }: EserciziViewProps) {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(contextId ?? null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
   const [exerciseCount, setExerciseCount] = useState<number>(10);
@@ -116,6 +118,12 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
   const { toast } = useToast();
 
   // Load courses
+  useEffect(() => {
+    if (contextId) {
+      setSelectedCourse(contextId);
+    }
+  }, [contextId]);
+
   useEffect(() => {
     const loadCourses = async () => {
       if (!currentUser) return;
@@ -484,10 +492,11 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
 
   // Exit exercises
   const exitExercises = () => {
-    setSelectedCourse(null);
+    if (!contextId) setSelectedCourse(null);
     setShowLessonPicker(false);
     setExercises([]);
     setIsFinished(false);
+    setView("menu");
     onFullscreenChange?.(false);
     loadHistory();
     loadQuizResults();
@@ -500,7 +509,11 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
         <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-5">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setShowLessonPicker(false); setSelectedCourse(null); }}
+              onClick={() => {
+                setShowLessonPicker(false);
+                if (!contextId) setSelectedCourse(null);
+                setView("menu");
+              }}
               className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
             >
               <ChevronLeft className="w-5 h-5 text-foreground" />
@@ -618,7 +631,13 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
-              onClick={() => setView("generate")}
+              onClick={() => {
+                if (contextId) {
+                  loadLessonsForCourse(contextId);
+                } else {
+                  setView("generate");
+                }
+              }}
               className="group relative overflow-hidden text-left p-5 rounded-2xl bg-primary text-primary-foreground shadow-level-2 transition-all duration-200 ease-m3-emphasized active:scale-[0.98]"
             >
               <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary-foreground/10 blur-2xl" />
@@ -888,7 +907,7 @@ export function EserciziView({ onFullscreenChange }: EserciziViewProps) {
 
         <div className="flex gap-3">
           <Button variant="outline" onClick={exitExercises} className="rounded-full">
-            Cambia corso
+            {contextId ? "Torna agli esercizi" : "Cambia corso"}
           </Button>
           <Button onClick={() => generateExercises(selectedCourse!, selectedLessonIds)} className="rounded-full bg-primary text-primary-foreground">
             <RefreshCw className="w-4 h-4 mr-2" /> Nuovi esercizi

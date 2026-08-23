@@ -153,7 +153,6 @@ const Index = () => {
               changeTab("studio");
             }}
             onOpenPlan={() => changeTab("piano")}
-            onOpenPratica={() => changeTab("pratica")}
             onOpenCognitive={() => setShowOnboarding(true)}
             onUpload={() => setShowUpload(true)}
           />
