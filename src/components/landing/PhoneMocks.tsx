@@ -287,7 +287,7 @@ export function PhoneLesson() {
           Il <strong className="text-neutral-900">moto rettilineo</strong> è ovunque: bus, palla, freno in città.
           Capirlo significa leggere i numeri prima che la verifica te li chieda.
         </p>
-        <div className="mt-2.5 flex items-start gap-1.5 rounded-2xl border border-amber-200/80 bg-amber-50 px-3 py-2 text-[11px] leading-snug text-neutral-800">
+        <div className="mt-2.5 flex items-start gap-1.5 rounded-2xl border border-neutral-200/80 bg-off-white px-3 py-2 text-[11px] leading-snug text-neutral-800">
           <Zap className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
           <span>In 3 righe capisci <strong>perché</strong> tutto il resto ha senso.</span>
         </div>

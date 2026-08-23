@@ -104,9 +104,9 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
             )}
             <div className="absolute inset-0 bg-foreground/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               {isUploadingAvatar ? (
-                <Loader2 className="w-6 h-6 text-[#F8F7DD] animate-spin" />
+                <Loader2 className="w-6 h-6 text-off-white animate-spin" />
               ) : (
-                <Camera className="w-6 h-6 text-[#F8F7DD]" />
+                <Camera className="w-6 h-6 text-off-white" />
               )}
             </div>
           </button>

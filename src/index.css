@@ -21,6 +21,11 @@
        su testi, superfici chiare e bordi: la pagina resta ad altissimo
        contrasto (18,4:1 sul fondo #05090A) ma smette di abbagliare. */
     --cream: 58 66% 92%;
+    --cream-hover: 237 236 208; /* #EDECD0: hover notturno già esistente, ora centralizzato. */
+    /* Off-white neutro per le superfici chiare dell'app: #F2F0EF.
+       È in canali RGB grezzi per poterlo usare in Tailwind come
+       bg-off-white/text-off-white anche con eventuale opacità. */
+    --off-white: 242 240 239;
 --primary: 0 0% 9%;                    /* NERO — la pill-firma è NERA su bianco (monocromo) */
 --primary-foreground: 0 0% 100%;
 --primary-container: 0 0% 92%;
@@ -127,6 +132,9 @@
        P29: di notte il bianco puro (e i grigi quasi-bianchi al 88–94%) lasciano
        il posto alla panna --cream (#F8F7DD). Cambiano i GETTONI, non i
        componenti: testi, superfici chiare e bordi si ricolorano da soli. */
+    /* In Dark Mode il nuovo off-white NON diventa #F2F0EF: resta la panna
+       storica, così i blocchi che usano bg-off-white non cambiano resa notturna. */
+    --off-white: 248 247 221;
 --primary: var(--cream);                /* la pill-firma è PANNA, testo nero (monocromo) */
 --primary-foreground: 0 0% 0%;
 --primary-container: 0 0% 24%;
@@ -418,6 +426,7 @@
    comportano come in :root. I portali (toast, sheet) restano fuori: giusto. */
 .force-light {
   color-scheme: light;
+  --off-white: 242 240 239;
 --primary: 0 0% 9%;
 --primary-foreground: 0 0% 100%;
 --primary-container: 0 0% 92%;
@@ -474,7 +483,7 @@
   .gradient-cool {
     /* was black→blue: now pure black per design directive */
     background: #000;
-    color: #F8F7DD;   /* P29: inchiostro panna sul nero, mai bianco puro */
+    color: hsl(var(--cream));   /* P29: inchiostro panna sul nero, mai bianco puro */
   }
   .gradient-surface {
     background: hsl(var(--background));

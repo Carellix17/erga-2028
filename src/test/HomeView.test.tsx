@@ -141,16 +141,16 @@ describe("HomeView", () => {
     expect(content?.className).not.toMatch(/(?:^|\s)(?:p[bt]-)/);
   });
 
-  it("usa il fondo crema e illustrazioni nere nei blocchi operativi, senza toccare il percorso", () => {
+  it("usa il fondo off-white neutro e illustrazioni nere nei blocchi operativi, senza toccare il percorso", () => {
     render(<HomeView {...callbacks} />);
 
     const focusCard = screen.getByTestId("home-focus-timer-card");
-    expect(focusCard).toHaveClass("bg-[#F8F7DD]", "text-[#11110E]");
+    expect(focusCard).toHaveClass("bg-off-white", "text-[#11110E]");
     expect(screen.getAllByTestId("home-minimal-artwork").length).toBeGreaterThanOrEqual(1);
 
     const resumeCard = screen.getByTestId("resume-lesson-card");
     expect(resumeCard).toHaveClass("bg-inverse-surface");
-    expect(resumeCard).not.toHaveClass("bg-[#F8F7DD]");
+    expect(resumeCard).not.toHaveClass("bg-off-white");
   });
 
   it("avvia il Pomodoro timer dalla card Focus con la durata selezionata tramite + e -", () => {

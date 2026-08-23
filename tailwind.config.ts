@@ -90,6 +90,9 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        "off-white": "rgb(var(--off-white) / <alpha-value>)",
+        cream: "hsl(var(--cream) / <alpha-value>)",
+        "cream-hover": "rgb(var(--cream-hover) / <alpha-value>)",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
