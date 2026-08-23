@@ -58,6 +58,15 @@ const dashboardData: HomeDashboardData = {
   sessionsToday: 2,
   completedActivities: 1,
   streakDays: 4,
+  focusSessions: [
+    {
+      id: "focus-1",
+      actualDuration: 32,
+      completedAt: "2026-08-23T14:30:00.000Z",
+      subjectName: "Fisica",
+      taskLabel: "Ripasso cinematica",
+    },
+  ],
 };
 
 const callbacks = {
@@ -85,17 +94,18 @@ describe("HomeView", () => {
     mockDashboard();
   });
 
-  it("mostra dati reali del dashboard", () => {
+  it("mantiene la Home concentrata sulle attività e sposta il riepilogo Focus", () => {
     render(<HomeView {...callbacks} />);
 
     expect(screen.getByText("Vale")).toBeInTheDocument();
     expect(screen.getByText("Il moto rettilineo")).toBeInTheDocument();
     expect(screen.getByText("Ripasso cinematica")).toBeInTheDocument();
-    expect(screen.getByText("32")).toBeInTheDocument();
-    expect(screen.getByText("4")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Dati reali dalle sessioni Focus" })).not.toBeInTheDocument();
+    expect(screen.queryByText("minuti oggi")).not.toBeInTheDocument();
+    expect(screen.queryByText("giorni di serie")).not.toBeInTheDocument();
   });
 
-  it("mantiene i testi secondari nel DOM ma li mostra solo da tablet in poi", () => {
+  it("mantiene il messaggio secondario della Home solo da tablet in poi", () => {
     mockDashboard({
       ...dashboardData,
       todayTasks: [],
@@ -106,19 +116,15 @@ describe("HomeView", () => {
     render(<HomeView {...callbacks} />);
 
     expect(screen.getByText("Hai una lezione da riprendere")).toHaveClass("hidden", "md:block");
-    expect(screen.getByText("Il tuo ritmo")).toHaveClass("hidden", "md:block");
-    expect(screen.getByText("Completa la prima sessione Focus per iniziare a vedere il tuo ritmo.")).toHaveClass("hidden", "md:block");
-    expect(screen.getByRole("heading", { name: "Dati reali dalle sessioni Focus" })).not.toHaveClass("hidden");
+    expect(screen.queryByText("Completa la prima sessione Focus per iniziare a vedere il tuo ritmo.")).not.toBeInTheDocument();
   });
 
-  it("mostra il ritmo prima della lezione e la lezione prima del piano del giorno", () => {
+  it("mostra la lezione prima del piano del giorno", () => {
     render(<HomeView {...callbacks} />);
 
-    const rhythmTitle = screen.getByRole("heading", { name: "Dati reali dalle sessioni Focus" });
     const resumeTitle = screen.getByRole("heading", { name: "Il moto rettilineo" });
     const todayTitle = screen.getByRole("heading", { name: "Piano del giorno" });
 
-    expect(rhythmTitle.compareDocumentPosition(resumeTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(resumeTitle.compareDocumentPosition(todayTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
@@ -135,29 +141,12 @@ describe("HomeView", () => {
     expect(content?.className).not.toMatch(/(?:^|\s)(?:p[bt]-)/);
   });
 
-  it("mantiene le tre metriche in una griglia mobile compatta", () => {
-    render(<HomeView {...callbacks} />);
-
-    const rhythmTitle = screen.getByRole("heading", { name: "Dati reali dalle sessioni Focus" });
-    const grid = rhythmTitle.closest("section")?.querySelector(".grid");
-
-    expect(grid).toHaveClass("grid-cols-3", "gap-2", "min-[375px]:gap-3");
-    expect(screen.getByText("minuti oggi")).toHaveClass("text-balance");
-    expect(screen.getByText("sessioni oggi")).toHaveClass("text-balance");
-    expect(screen.getByText("giorni di serie")).toHaveClass("text-balance");
-  });
-
   it("usa il fondo crema e illustrazioni nere nei blocchi operativi, senza toccare il percorso", () => {
     render(<HomeView {...callbacks} />);
 
-    const rhythmTitle = screen.getByRole("heading", { name: "Dati reali dalle sessioni Focus" });
-    const rhythmCards = Array.from(rhythmTitle.closest("section")?.querySelector(".grid")?.children ?? []);
-    expect(rhythmCards).toHaveLength(3);
-    rhythmCards.forEach((card) => expect(card).toHaveClass("bg-[#F8F7DD]"));
-
     const quickFocus = screen.getByRole("button", { name: "Focus: Avvia il vero timer" });
     expect(quickFocus).toHaveClass("bg-[#F8F7DD]", "text-[#11110E]");
-    expect(screen.getAllByTestId("home-minimal-artwork").length).toBeGreaterThanOrEqual(8);
+    expect(screen.getAllByTestId("home-minimal-artwork").length).toBeGreaterThanOrEqual(5);
 
     const resumeCard = screen.getByTestId("resume-lesson-card");
     expect(resumeCard).toHaveClass("bg-inverse-surface");

@@ -69,14 +69,17 @@ export function AppHeader({
         </div>
 
         <div className={cn("ml-auto flex shrink-0 items-center gap-2", integratedHome && "pointer-events-auto")}>
-          <div
-            className="flex h-10 min-w-10 max-w-[8.5rem] items-center gap-1.5 rounded-pill bg-surface-container-high px-2.5 text-sm font-semibold text-foreground"
-            aria-label={streakLabel}
+          <button
+            type="button"
+            onClick={() => navigate("/app/ritmo")}
+            aria-label={t("header.openFocusStats", { count: streakDays })}
+            title={t("header.openFocusStats", { count: streakDays })}
+            className="flex min-h-11 min-w-11 max-w-[8.5rem] items-center gap-1.5 rounded-pill bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Flame className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
             <span className="truncate min-[360px]:hidden">{streakDays}</span>
             <span className="hidden truncate min-[360px]:inline">{streakLabel}</span>
-          </div>
+          </button>
 
           {!isSettingsRoute && (
             <Button
