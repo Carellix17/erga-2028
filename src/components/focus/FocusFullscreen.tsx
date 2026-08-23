@@ -25,7 +25,9 @@ export function FocusFullscreen() {
     extend,
   } = useFocus();
 
-  const total = FOCUS_DURATIONS[phase];
+  const total = phase === "focus"
+    ? (task?.durationMinutes ? task.durationMinutes * 60 : FOCUS_DURATIONS.focus)
+    : FOCUS_DURATIONS[phase];
   const progress = 1 - remaining / total;
   const size = 260;
   const stroke = 10;

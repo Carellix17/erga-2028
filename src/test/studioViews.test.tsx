@@ -85,6 +85,33 @@ describe("P21b pilota Studio — accensione", () => {
     expect(onCreatePath).toHaveBeenCalledTimes(1);
   });
 
+  it("ModulesOverview mostra i blocchi di Pratica del percorso e chiama onOpenPratica con il tab corretto", () => {
+    const onOpenPratica = vi.fn();
+    render(
+      <ModulesOverview
+        modules={[
+          { index: 0, title: "Modulo 1", doneCount: 1, total: 5, state: "cur" },
+        ]}
+        onOpenModule={() => {}}
+        onOpenPratica={onOpenPratica}
+      />,
+    );
+
+    expect(screen.getByText("Pratica del percorso")).toBeTruthy();
+    expect(screen.getByText("Esercizi Mirati")).toBeTruthy();
+    expect(screen.getByText("Interrogazione")).toBeTruthy();
+    expect(screen.getByText("Chat col Tutor")).toBeTruthy();
+
+    fireEvent.click(screen.getByText("Esercizi Mirati"));
+    expect(onOpenPratica).toHaveBeenCalledWith("esercizi");
+
+    fireEvent.click(screen.getByText("Interrogazione"));
+    expect(onOpenPratica).toHaveBeenCalledWith("interrogazione");
+
+    fireEvent.click(screen.getByText("Chat col Tutor"));
+    expect(onOpenPratica).toHaveBeenCalledWith("chat");
+  });
+
   it("ModulesOverview senza percorsi mostra comunque l'invito a crearne uno", () => {
     render(<ModulesOverview modules={[]} onOpenModule={() => {}} onCreatePath={() => {}} />);
     expect(screen.getByText("Nuovo percorso di studio")).toBeTruthy();

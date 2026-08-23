@@ -1,4 +1,4 @@
-import { Check, Lock, Play, Plus, RefreshCw } from "lucide-react";
+import { Check, Dumbbell, Lock, MessageCircle, Mic, Play, Plus, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +19,8 @@ interface ModulesOverviewProps {
   onOpenModule: (moduleIndex: number) => void;
   /** Apre il pannello di caricamento per creare un nuovo percorso di studio. */
   onCreatePath?: () => void;
+  /** Apre la sezione pratica per il percorso selezionato. */
+  onOpenPratica?: (tab?: "esercizi" | "interrogazione" | "chat") => void;
 }
 
 /**
@@ -34,7 +36,7 @@ interface ModulesOverviewProps {
  * schermata (con un filo di ritardo, così arriva DOPO le schede dei moduli)
  * e le stesse micro-transizioni al tocco (`duration-200`, `active:scale`).
  */
-export function ModulesOverview({ modules, onOpenModule, onCreatePath }: ModulesOverviewProps) {
+export function ModulesOverview({ modules, onOpenModule, onCreatePath, onOpenPratica }: ModulesOverviewProps) {
   if (modules.length === 0 && !onCreatePath) return null;
 
   return (
@@ -143,6 +145,70 @@ export function ModulesOverview({ modules, onOpenModule, onCreatePath }: Modules
           );
         })}
       </div>
+
+      {/* 🎯 Pratica del percorso */}
+      {onOpenPratica && modules.length > 0 && (
+        <div className="mt-8 space-y-3 animate-fade-up">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              Pratica del percorso
+            </p>
+            <h3 className="font-display text-lg font-bold text-foreground">
+              Mettiti alla prova
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button
+              type="button"
+              onClick={() => onOpenPratica("esercizi")}
+              className="interactive-card flex items-start gap-3 rounded-card bg-card border border-border p-4 text-left shadow-level-1 hover:border-primary/40 hover:bg-surface-container-low transition-all active:scale-[0.98]"
+            >
+              <span className="w-10 h-10 rounded-button bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
+                <Dumbbell className="w-5 h-5" />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block font-display font-bold text-sm text-foreground">Esercizi Mirati</span>
+                <span className="block text-xs text-muted-foreground mt-0.5 leading-snug">
+                  Quiz e domande su misura
+                </span>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onOpenPratica("interrogazione")}
+              className="interactive-card flex items-start gap-3 rounded-card bg-card border border-border p-4 text-left shadow-level-1 hover:border-primary/40 hover:bg-surface-container-low transition-all active:scale-[0.98]"
+            >
+              <span className="w-10 h-10 rounded-button bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
+                <Mic className="w-5 h-5" />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block font-display font-bold text-sm text-foreground">Interrogazione</span>
+                <span className="block text-xs text-muted-foreground mt-0.5 leading-snug">
+                  Simulazione vocale o domande
+                </span>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onOpenPratica("chat")}
+              className="interactive-card flex items-start gap-3 rounded-card bg-card border border-border p-4 text-left shadow-level-1 hover:border-primary/40 hover:bg-surface-container-low transition-all active:scale-[0.98]"
+            >
+              <span className="w-10 h-10 rounded-button bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
+                <MessageCircle className="w-5 h-5" />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block font-display font-bold text-sm text-foreground">Chat col Tutor</span>
+                <span className="block text-xs text-muted-foreground mt-0.5 leading-snug">
+                  Spiegazioni e chiarimenti
+                </span>
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ➕ Nuovo percorso: la pill-firma dell'app in coda alla lista dei moduli.
           Entra con la stessa dissolvenza-in-salita delle altre foglie, appena

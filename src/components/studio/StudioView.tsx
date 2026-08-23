@@ -7,13 +7,14 @@ import { ModulesOverview, type ModuleCardData } from "./ModulesOverview";
 import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
 import { PathHero } from "./PathHero";
+import { PraticaView } from "@/components/pratica/PraticaView";
 import { cleanCourseName } from "@/lib/courseName";
 import { getSubjectAccent } from "@/lib/subjectColors";
 import { useSubjectAccent } from "@/hooks/useSubjectAccent";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { ChevronLeft, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,8 +67,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   const [isGeneratingLesson, setIsGeneratingLesson] = useState(false);
 
   // 🌲 P24 — la stanza ha DUE viste: i moduli (schermata 1) e le lezioni del
-  // modulo (schermata 2, il percorso squadrato).
-  const [viewMode, setViewMode] = useState<"modules" | "lessons">("modules");
+  // modulo (schermata 2, il percorso squadrato) + la vista pratica del percorso.
+  const [viewMode, setViewMode] = useState<"modules" | "lessons" | "pratica">("modules");
+  const [activePraticaTab, setActivePraticaTab] = useState<"esercizi" | "interrogazione" | "chat">("esercizi");
   const [isCoursePickerOpen, setIsCoursePickerOpen] = useState(false);
   const [activeModuleIndex, setActiveModuleIndex] = useState<number | null>(null);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
@@ -921,8 +923,40 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
             modules={modules}
             onOpenModule={(idx) => void openModule(idx)}
             onCreatePath={onUploadClick}
+            onOpenPratica={(tab) => {
+              setActivePraticaTab(tab || "esercizi");
+              setViewMode("pratica");
+            }}
           />
         ) : null
+      ) : viewMode === "pratica" ? (
+        <div className="flex flex-col h-full animate-fade-up">
+          <div className="px-4 py-2 flex items-center justify-between border-b border-border/40">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={backToModules}
+              className="rounded-button gap-1.5 text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Torna ai moduli</span>
+            </Button>
+            {heroTitle && (
+              <span className="text-xs font-semibold text-muted-foreground truncate max-w-[200px]">
+                {heroTitle}
+              </span>
+            )}
+          </div>
+          <PraticaView
+            hasFiles={hasFiles}
+            onUploadClick={onUploadClick}
+            onFullscreenChange={onFullscreenChange}
+            contextId={effectiveContextId}
+            contextName={heroTitle || contextFileName}
+            defaultSubTab={activePraticaTab}
+            onBack={backToModules}
+          />
+        </div>
       ) : (
         <ModulePath
           moduleIndex={activeModuleIndex ?? 0}

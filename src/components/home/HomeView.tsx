@@ -1,16 +1,16 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import {
   BookOpen,
-  Brain,
   CalendarDays,
   Check,
   Clock3,
   FileUp,
+  Minus,
   Play,
+  Plus,
   RefreshCw,
   Sparkles,
   Timer,
-  Zap,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -29,8 +29,8 @@ interface HomeViewProps {
   onOpenStudio: () => void;
   onResumeLesson: (contextId: string, lessonIndex: number) => void;
   onOpenPlan: () => void;
-  onOpenPratica: () => void;
-  onOpenCognitive: () => void;
+  onOpenPratica?: () => void;
+  onOpenCognitive?: () => void;
   onUpload: () => void;
 }
 
@@ -91,7 +91,6 @@ export function HomeView({
   onOpenStudio,
   onResumeLesson,
   onOpenPlan,
-  onOpenPratica,
   onOpenCognitive,
   onUpload,
 }: HomeViewProps) {
@@ -99,6 +98,7 @@ export function HomeView({
   const dashboard = useHomeDashboard();
   const focus = useFocus();
   const [showAllTasks, setShowAllTasks] = useState(false);
+  const [focusMinutes, setFocusMinutes] = useState(25);
 
   const data = dashboard.data;
   const pendingTasks = data?.todayTasks.filter((task) => !task.isCompleted).length ?? 0;
@@ -306,37 +306,83 @@ export function HomeView({
           )}
         </section>
 
-        <section aria-labelledby="quick-tools-title" className="space-y-4 pb-2">
+        <section aria-labelledby="focus-timer-title" className="space-y-4 pb-2">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("home.quick.eyebrow")}</p>
-            <h2 id="quick-tools-title" className="mt-1 font-display text-xl font-bold">{t("home.quick.title")}</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("home.focusTimer.eyebrow")}</p>
+            <h2 id="focus-timer-title" className="mt-1 font-display text-xl font-bold">{t("home.focusTimer.title")}</h2>
           </div>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {[
-              { id: "focus", title: t("home.quick.focus"), description: t("home.quick.focusDescription"), Icon: Timer, action: focus.openSetup },
-              { id: "practice", title: t("home.quick.practice"), description: t("home.quick.practiceDescription"), Icon: Zap, action: onOpenPratica },
-              { id: "upload", title: t("home.quick.upload"), description: t("home.quick.uploadDescription"), Icon: FileUp, action: onUpload },
-              { id: "cognitive", title: t("home.quick.cognitive"), description: t("home.quick.cognitiveDescription"), Icon: Brain, action: onOpenCognitive },
-            ].map((tool) => (
-              <Button
-                key={tool.id}
-                type="button"
-                variant="outline"
-                aria-label={`${tool.title}: ${tool.description}`}
-                onClick={tool.action}
-                className={cn(
-                  HOME_BLOCK_CLASS,
-                  "group h-auto min-h-[164px] flex-col items-start justify-between whitespace-normal rounded-lg p-4 text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#F8F7DD] hover:shadow-[0_14px_30px_-20px_rgba(0,0,0,0.38)] motion-reduce:transform-none sm:p-5",
-                )}
-              >
-                <MinimalArtwork Icon={tool.Icon} />
-                <span className="mt-5 block">
-                  <span className="block text-base font-extrabold tracking-[-0.02em]">{tool.title}</span>
-                  <span className="mt-1 block text-sm font-medium leading-snug text-black/65">{tool.description}</span>
-                </span>
-              </Button>
-            ))}
-          </div>
+          <Card data-testid="home-focus-timer-card" className={cn(HOME_BLOCK_CLASS, "rounded-lg p-5 sm:p-6")}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+              <div className="flex items-start gap-4">
+                <MinimalArtwork Icon={Timer} />
+                <div>
+                  <h3 className="font-display text-lg sm:text-xl font-extrabold tracking-tight text-black">
+                    {t("home.focusTimer.cardTitle")}
+                  </h3>
+                  <p className="mt-1 text-sm font-medium leading-relaxed text-black/70 max-w-sm">
+                    {t("home.focusTimer.description")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:items-end gap-3.5">
+                <div className="flex items-center justify-between sm:justify-end gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setFocusMinutes((m) => Math.max(5, m - 5))}
+                    disabled={focusMinutes <= 5}
+                    aria-label={t("home.focusTimer.decreaseAria")}
+                    className="h-12 w-12 rounded-full border-black/20 bg-transparent text-black transition-all hover:bg-black hover:text-[#F8F7DD] disabled:opacity-30 active:scale-95"
+                  >
+                    <Minus className="h-5 w-5" />
+                  </Button>
+
+                  <div className="min-w-[90px] text-center">
+                    <span className="block font-display text-4xl sm:text-5xl font-black tabular-nums tracking-tight text-black">
+                      {focusMinutes}
+                    </span>
+                    <span className="block text-xs font-bold uppercase tracking-wider text-black/60">
+                      {t("home.focusTimer.minutes")}
+                    </span>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setFocusMinutes((m) => Math.min(180, m + 5))}
+                    disabled={focusMinutes >= 180}
+                    aria-label={t("home.focusTimer.increaseAria")}
+                    className="h-12 w-12 rounded-full border-black/20 bg-transparent text-black transition-all hover:bg-black hover:text-[#F8F7DD] disabled:opacity-30 active:scale-95"
+                  >
+                    <Plus className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={() =>
+                    focus.startSession(
+                      {
+                        label: t("home.focusTimer.sessionLabel"),
+                        sourceType: "adhoc",
+                        estimatedDuration: focusMinutes,
+                        durationMinutes: focusMinutes,
+                      },
+                      focusMinutes,
+                    )
+                  }
+                  aria-label={t("home.focusTimer.start")}
+                  className="min-h-12 w-full sm:w-auto sm:min-w-[140px] gap-2 rounded-full bg-black px-6 text-sm font-bold text-[#F8F7DD] shadow-level-1 transition-transform hover:opacity-90 active:scale-95"
+                >
+                  <Play className="h-4 w-4 fill-current" aria-hidden="true" />
+                  <span>{t("home.focusTimer.start")}</span>
+                </Button>
+              </div>
+            </div>
+          </Card>
         </section>
       </div>
     </div>

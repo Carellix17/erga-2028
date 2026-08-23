@@ -79,6 +79,17 @@
       "inDays_one": "Test tomorrow",
       "inDays_other": "Test in {{count}} days"
     },
+    "focusTimer": {
+      "eyebrow": "Study session",
+      "title": "Focus Timer",
+      "cardTitle": "Pomodoro Timer",
+      "description": "Adjust minutes with + and - buttons and press Start to run the timer.",
+      "start": "Start",
+      "minutes": "minutes",
+      "sessionLabel": "Focus Session",
+      "decreaseAria": "Decrease by 5 minutes",
+      "increaseAria": "Increase by 5 minutes"
+    },
     "quick": {
       "eyebrow": "Quick actions",
       "title": "What do you want to do?",

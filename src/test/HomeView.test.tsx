@@ -144,13 +144,42 @@ describe("HomeView", () => {
   it("usa il fondo crema e illustrazioni nere nei blocchi operativi, senza toccare il percorso", () => {
     render(<HomeView {...callbacks} />);
 
-    const quickFocus = screen.getByRole("button", { name: "Focus: Avvia il vero timer" });
-    expect(quickFocus).toHaveClass("bg-[#F8F7DD]", "text-[#11110E]");
-    expect(screen.getAllByTestId("home-minimal-artwork").length).toBeGreaterThanOrEqual(5);
+    const focusCard = screen.getByTestId("home-focus-timer-card");
+    expect(focusCard).toHaveClass("bg-[#F8F7DD]", "text-[#11110E]");
+    expect(screen.getAllByTestId("home-minimal-artwork").length).toBeGreaterThanOrEqual(1);
 
     const resumeCard = screen.getByTestId("resume-lesson-card");
     expect(resumeCard).toHaveClass("bg-inverse-surface");
     expect(resumeCard).not.toHaveClass("bg-[#F8F7DD]");
+  });
+
+  it("avvia il Pomodoro timer dalla card Focus con la durata selezionata tramite + e -", () => {
+    render(<HomeView {...callbacks} />);
+
+    expect(screen.getByText("25")).toBeInTheDocument();
+
+    const increaseBtn = screen.getByRole("button", { name: /Aumenta di 5 minuti/i });
+    fireEvent.click(increaseBtn);
+    expect(screen.getByText("30")).toBeInTheDocument();
+
+    const decreaseBtn = screen.getByRole("button", { name: /Diminuisci di 5 minuti/i });
+    fireEvent.click(decreaseBtn);
+    expect(screen.getByText("25")).toBeInTheDocument();
+
+    fireEvent.click(increaseBtn);
+    fireEvent.click(increaseBtn);
+    expect(screen.getByText("35")).toBeInTheDocument();
+
+    const startBtn = screen.getByRole("button", { name: "Inizia" });
+    fireEvent.click(startBtn);
+    expect(startSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        estimatedDuration: 35,
+        durationMinutes: 35,
+        sourceType: "adhoc",
+      }),
+      35,
+    );
   });
 
   it("P28: la lezione sospesa usa l'inchiostro a contrasto automatico, mai fisso", () => {

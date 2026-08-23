@@ -79,6 +79,17 @@
       "inDays_one": "Verifica domani",
       "inDays_other": "Verifica tra {{count}} giorni"
     },
+    "focusTimer": {
+      "eyebrow": "Sessione di studio",
+      "title": "Timer di Focus",
+      "cardTitle": "Pomodoro Timer",
+      "description": "Regola i minuti con i pulsanti + e - e premi Inizia per avviare il timer.",
+      "start": "Inizia",
+      "minutes": "minuti",
+      "sessionLabel": "Sessione di Focus",
+      "decreaseAria": "Diminuisci di 5 minuti",
+      "increaseAria": "Aumenta di 5 minuti"
+    },
     "quick": {
       "eyebrow": "Azioni rapide",
       "title": "Cosa vuoi fare?",

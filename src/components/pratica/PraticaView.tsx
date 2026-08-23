@@ -12,6 +12,10 @@ interface PraticaViewProps {
   hasFiles: boolean;
   onUploadClick: () => void;
   onFullscreenChange?: (isFullscreen: boolean) => void;
+  contextId?: string | null;
+  contextName?: string | null;
+  defaultSubTab?: SubTab;
+  onBack?: () => void;
 }
 
 const subTabs = [
@@ -20,8 +24,16 @@ const subTabs = [
   { id: "esercizi" as SubTab, label: "Esercizi", icon: Dumbbell, description: "Allenati" },
 ];
 
-export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: PraticaViewProps) {
-  const [activeSubTab, setActiveSubTab] = useState<SubTab>("chat");
+export function PraticaView({
+  hasFiles,
+  onUploadClick,
+  onFullscreenChange,
+  contextId,
+  contextName,
+  defaultSubTab = "chat",
+  onBack,
+}: PraticaViewProps) {
+  const [activeSubTab, setActiveSubTab] = useState<SubTab>(defaultSubTab);
   const [isExerciseFullscreen, setIsExerciseFullscreen] = useState(false);
 
   const handleFullscreenChange = (isFullscreen: boolean) => {
@@ -63,13 +75,13 @@ export function PraticaView({ hasFiles, onUploadClick, onFullscreenChange }: Pra
       {/* Content */}
       <div className="flex-1 min-h-0 overflow-hidden">
         {activeSubTab === "chat" && (
-          <ChatView hasFiles={hasFiles} onUploadClick={onUploadClick} />
+          <ChatView hasFiles={hasFiles} onUploadClick={onUploadClick} contextId={contextId} />
         )}
         {activeSubTab === "interrogazione" && (
-          <InterrogazioneView />
+          <InterrogazioneView contextId={contextId} contextName={contextName} />
         )}
         {activeSubTab === "esercizi" && (
-          <EserciziView onFullscreenChange={handleFullscreenChange} />
+          <EserciziView onFullscreenChange={handleFullscreenChange} contextId={contextId} contextName={contextName} />
         )}
       </div>
     </div>
