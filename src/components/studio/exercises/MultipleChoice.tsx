@@ -62,8 +62,8 @@ export function MultipleChoice({
                   "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all",
                   !showResult && !isSelected && "bg-surface-container-highest text-muted-foreground",
                   !showResult && isSelected && "bg-primary text-primary-foreground",
-                  showResult && isCorrectOption && "bg-success text-[#F8F7DD]",
-                  showResult && isSelected && !isCorrectOption && "bg-destructive text-[#F8F7DD]",
+                  showResult && isCorrectOption && "bg-success text-success-foreground",
+                  showResult && isSelected && !isCorrectOption && "bg-destructive text-destructive-foreground",
                 )}>
                   {showResult && isCorrectOption ? (
                     <CheckCircle2 className="w-5 h-5" />
