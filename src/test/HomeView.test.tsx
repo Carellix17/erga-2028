@@ -141,14 +141,14 @@ describe("HomeView", () => {
     expect(content?.className).not.toMatch(/(?:^|\s)(?:p[bt]-)/);
   });
 
-  it("mantiene il light theme dei blocchi operativi ma prepara il materiale dark solo per Piano del giorno e Timer di Focus", () => {
+  it("mantiene il fondo chiaro dei blocchi operativi e li lega all'inchiostro caldo", () => {
     render(<HomeView {...callbacks} />);
 
     const dailyPlanCard = screen.getByTestId("home-daily-plan-card");
     const focusCard = screen.getByTestId("home-focus-timer-card");
 
-    expect(dailyPlanCard).toHaveClass("bg-off-white", "text-[#11110E]");
-    expect(focusCard).toHaveClass("bg-off-white", "text-[#11110E]");
+    expect(dailyPlanCard).toHaveClass("bg-off-white", "text-[#181516]");
+    expect(focusCard).toHaveClass("bg-off-white", "text-[#181516]");
     expect(dailyPlanCard.className).toContain("dark:bg-[rgba(26,26,26,0.85)]");
     expect(dailyPlanCard.className).toContain("dark:shadow-[0_0_30px_rgba(255,255,255,0.08),0_18px_40px_-28px_rgba(0,0,0,0.72)]");
     expect(focusCard.className).toContain("dark:bg-[rgba(26,26,26,0.85)]");

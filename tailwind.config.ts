@@ -91,6 +91,7 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         "off-white": "rgb(var(--off-white) / <alpha-value>)",
+        ink: "hsl(var(--ink) / <alpha-value>)",
         cream: "hsl(var(--cream) / <alpha-value>)",
         "cream-hover": "rgb(var(--cream-hover) / <alpha-value>)",
         sidebar: {

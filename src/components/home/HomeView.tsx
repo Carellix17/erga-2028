@@ -38,7 +38,7 @@ interface HomeViewProps {
 const VISIBLE_TASKS = 3;
 
 const HOME_BLOCK_CLASS =
-  "border border-black/[0.08] bg-off-white text-[#11110E] shadow-[0_10px_30px_-24px_rgba(0,0,0,0.45)]";
+  "border border-ink/[0.08] bg-off-white text-[#181516] shadow-[0_10px_30px_-24px_rgba(0,0,0,0.45)]";
 const HOME_DARK_MATERIAL_CLASS =
   "dark:border-white/10 dark:bg-[rgba(26,26,26,0.85)] dark:text-[#FAFAFA] supports-[backdrop-filter]:dark:bg-[rgba(26,26,26,0.72)] supports-[backdrop-filter]:dark:backdrop-blur-md dark:shadow-[0_0_30px_rgba(255,255,255,0.08),0_18px_40px_-28px_rgba(0,0,0,0.72)]";
 const HOME_DARK_TITLE_CLASS = "dark:text-[#FAFAFA]";
@@ -68,15 +68,16 @@ function MinimalArtwork({ Icon, compact = false, lightOnDarkCard = false }: Mini
       data-testid="home-minimal-artwork"
       aria-hidden="true"
       className={cn(
-        "relative isolate grid shrink-0 place-items-center overflow-hidden text-black",
+        "relative isolate grid shrink-0 place-items-center overflow-hidden text-foreground",
+        !lightOnDarkCard && "dark:text-black",
         lightOnDarkCard && "dark:text-[#FAFAFA]",
         compact
           ? "h-9 w-9 [&_svg]:!h-6 [&_svg]:!w-6"
           : "h-14 w-16 [&_svg]:!h-9 [&_svg]:!w-9",
       )}
     >
-      <span className={cn("absolute inset-x-1 top-1/2 h-px -rotate-[18deg] bg-black/20", lightOnDarkCard && "dark:bg-white/20")} />
-      <span className={cn("absolute right-1 top-1 h-3 w-3 rounded-full border border-black/30", lightOnDarkCard && "dark:border-white/30")} />
+      <span className={cn("absolute inset-x-1 top-1/2 h-px -rotate-[18deg] bg-foreground/20", !lightOnDarkCard && "dark:bg-black/20", lightOnDarkCard && "dark:bg-white/20")} />
+      <span className={cn("absolute right-1 top-1 h-3 w-3 rounded-full border border-foreground/30", !lightOnDarkCard && "dark:border-black/30", lightOnDarkCard && "dark:border-white/30")} />
       <Icon className={cn("relative z-10 stroke-[1.6]", compact ? "h-6 w-6" : "h-9 w-9")} />
     </span>
   );
@@ -304,12 +305,12 @@ export function HomeView({
               onClick={handleOpenPlan}
               className={cn(
                 HOME_BLOCK_CLASS,
-                "group flex min-h-[84px] w-full items-center gap-3 rounded-lg p-4 text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-20px_rgba(0,0,0,0.38)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 motion-reduce:transform-none",
+                "group flex min-h-[84px] w-full items-center gap-3 rounded-lg p-4 text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-20px_rgba(0,0,0,0.38)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink dark:focus-visible:ring-black focus-visible:ring-offset-2 motion-reduce:transform-none dark:border-black/[0.08] dark:text-[#11110E]",
               )}
             >
               <MinimalArtwork Icon={CalendarDays} />
               <span className="min-w-0 flex-1">
-                <span className="block text-xs font-bold uppercase tracking-wider text-black/60">
+                <span className="block text-xs font-bold uppercase tracking-wider text-foreground/60 dark:text-black/60">
                   {t("home.evaluation.inDays", { count: data.nextEvaluation.daysAway })}
                 </span>
                 <span className="mt-1 block truncate text-base font-bold">{data.nextEvaluation.subject} · {data.nextEvaluation.title}</span>
@@ -326,24 +327,24 @@ export function HomeView({
                       key={task.id}
                       role="listitem"
                       className={cn(
-                        "flex min-h-[76px] items-center gap-3 rounded-md px-2 py-3 text-[#11110E] sm:px-3",
+                        "flex min-h-[76px] items-center gap-3 rounded-md px-2 py-3 text-foreground sm:px-3",
                         HOME_DARK_TITLE_CLASS,
-                        index !== tasks.length - 1 && "border-b border-black/[0.08] dark:border-white/10",
+                        index !== tasks.length - 1 && "border-b border-ink/[0.08] dark:border-white/10",
                         task.isCompleted && "opacity-70",
                       )}
                     >
-                      <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-full border border-black/15 text-black dark:border-white/20 dark:text-[#FAFAFA]", task.isCompleted && "bg-black text-off-white dark:bg-[#FAFAFA] dark:text-[#111111]")}>
+                      <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-full border border-ink/15 text-foreground dark:border-white/20 dark:text-[#FAFAFA]", task.isCompleted && "bg-ink text-cream dark:bg-[#FAFAFA] dark:text-[#111111]")}>
                         {task.isCompleted ? <Check className="h-5 w-5" aria-hidden="true" /> : task.kind === "study" ? <BookOpen className="h-5 w-5 stroke-[1.6]" aria-hidden="true" /> : <CalendarDays className="h-5 w-5 stroke-[1.6]" aria-hidden="true" />}
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className={cn("break-words text-base font-bold leading-snug", HOME_DARK_TITLE_CLASS, task.isCompleted && "line-through")}>{task.title}</p>
-                        <p className={cn("mt-1 flex flex-wrap gap-x-2 text-sm text-black/60", HOME_DARK_MUTED_CLASS)}>
+                        <p className={cn("mt-1 flex flex-wrap gap-x-2 text-sm text-foreground/60", HOME_DARK_MUTED_CLASS)}>
                           <span>{task.subject}</span>
                           {task.time && <><span aria-hidden="true">·</span><span>{task.time}</span></>}
                         </p>
                       </div>
                       {task.canStartFocus && (
-                        <Button size="icon-sm" variant="outline" className={cn("h-11 w-11 shrink-0 rounded-full border-black/15 bg-transparent text-black hover:bg-black hover:text-off-white", HOME_DARK_OUTLINE_BUTTON_CLASS)} aria-label={t("home.today.startFocus", { title: task.title })} onClick={() => startTaskFocus(task)}>
+                        <Button size="icon-sm" variant="outline" className={cn("h-11 w-11 shrink-0 rounded-full border-ink/15 bg-transparent text-foreground hover:bg-ink hover:text-cream", HOME_DARK_OUTLINE_BUTTON_CLASS)} aria-label={t("home.today.startFocus", { title: task.title })} onClick={() => startTaskFocus(task)}>
                           <Timer className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
@@ -351,7 +352,7 @@ export function HomeView({
                   ))}
                 </div>
                 {hiddenTasks > 0 && (
-                  <Button variant="ghost" className={cn("mt-1 min-h-11 w-full rounded-button text-black hover:bg-black/[0.06]", HOME_DARK_GHOST_BUTTON_CLASS)} aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={handleToggleTasks}>
+                  <Button variant="ghost" className={cn("mt-1 min-h-11 w-full rounded-button text-foreground hover:bg-ink/[0.06]", HOME_DARK_GHOST_BUTTON_CLASS)} aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={handleToggleTasks}>
                     {showAllTasks ? t("home.today.showLess") : t("home.today.showAll", { count: hiddenTasks })}
                   </Button>
                 )}
@@ -361,8 +362,8 @@ export function HomeView({
             <Card data-testid="home-daily-plan-card" className={cn(HOME_BLOCK_CLASS, HOME_DARK_MATERIAL_CLASS, "rounded-lg p-5")}>
               <MinimalArtwork Icon={Clock3} lightOnDarkCard />
               <h3 className={cn("mt-3 font-display text-lg font-bold", HOME_DARK_TITLE_CLASS)}>{t("home.today.emptyTitle")}</h3>
-              <p className={cn("mt-1 text-base text-black/65", HOME_DARK_BODY_CLASS)}>{t("home.today.emptyDescription")}</p>
-              <Button variant="outline" className={cn("mt-4 min-h-11 rounded-button border-black/15 bg-transparent text-black hover:bg-black hover:text-off-white", HOME_DARK_INVERTED_BUTTON_CLASS)} onClick={handleOpenPlan}>{t("home.today.organize")}</Button>
+              <p className={cn("mt-1 text-base text-foreground/65", HOME_DARK_BODY_CLASS)}>{t("home.today.emptyDescription")}</p>
+              <Button variant="outline" className={cn("mt-4 min-h-11 rounded-button border-ink/15 bg-transparent text-foreground hover:bg-ink hover:text-cream", HOME_DARK_INVERTED_BUTTON_CLASS)} onClick={handleOpenPlan}>{t("home.today.organize")}</Button>
             </Card>
           )}
         </section>
@@ -377,10 +378,10 @@ export function HomeView({
               <div className="flex items-start gap-4">
                 <MinimalArtwork Icon={Timer} lightOnDarkCard />
                 <div>
-                  <h3 className={cn("font-display text-lg font-extrabold tracking-tight text-black sm:text-xl", HOME_DARK_TITLE_CLASS)}>
+                  <h3 className={cn("font-display text-lg font-extrabold tracking-tight text-foreground sm:text-xl", HOME_DARK_TITLE_CLASS)}>
                     {t("home.focusTimer.cardTitle")}
                   </h3>
-                  <p className={cn("mt-1 max-w-sm text-sm font-medium leading-relaxed text-black/70", HOME_DARK_BODY_CLASS)}>
+                  <p className={cn("mt-1 max-w-sm text-sm font-medium leading-relaxed text-foreground/70", HOME_DARK_BODY_CLASS)}>
                     {t("home.focusTimer.description")}
                   </p>
                 </div>
@@ -395,16 +396,16 @@ export function HomeView({
                     onClick={() => handleAdjustFocusMinutes("decrease")}
                     disabled={focusMinutes <= 5}
                     aria-label={t("home.focusTimer.decreaseAria")}
-                    className={cn("h-12 w-12 rounded-full border-black/20 bg-transparent text-black transition-all hover:bg-black hover:text-off-white disabled:opacity-30 active:scale-95", HOME_DARK_OUTLINE_BUTTON_CLASS)}
+                    className={cn("h-12 w-12 rounded-full border-ink/20 bg-transparent text-foreground transition-all hover:bg-ink hover:text-cream disabled:opacity-30 active:scale-95", HOME_DARK_OUTLINE_BUTTON_CLASS)}
                   >
                     <Minus className="h-5 w-5" />
                   </Button>
 
                   <div className="min-w-[90px] text-center">
-                    <span className={cn("block font-display text-4xl font-black tabular-nums tracking-tight text-black sm:text-5xl", HOME_DARK_TITLE_CLASS)}>
+                    <span className={cn("block font-display text-4xl font-black tabular-nums tracking-tight text-foreground sm:text-5xl", HOME_DARK_TITLE_CLASS)}>
                       {focusMinutes}
                     </span>
-                    <span className={cn("block text-xs font-bold uppercase tracking-wider text-black/60", HOME_DARK_MUTED_CLASS)}>
+                    <span className={cn("block text-xs font-bold uppercase tracking-wider text-foreground/60", HOME_DARK_MUTED_CLASS)}>
                       {t("home.focusTimer.minutes")}
                     </span>
                   </div>
@@ -416,7 +417,7 @@ export function HomeView({
                     onClick={() => handleAdjustFocusMinutes("increase")}
                     disabled={focusMinutes >= 180}
                     aria-label={t("home.focusTimer.increaseAria")}
-                    className={cn("h-12 w-12 rounded-full border-black/20 bg-transparent text-black transition-all hover:bg-black hover:text-off-white disabled:opacity-30 active:scale-95", HOME_DARK_OUTLINE_BUTTON_CLASS)}
+                    className={cn("h-12 w-12 rounded-full border-ink/20 bg-transparent text-foreground transition-all hover:bg-ink hover:text-cream disabled:opacity-30 active:scale-95", HOME_DARK_OUTLINE_BUTTON_CLASS)}
                   >
                     <Plus className="h-5 w-5" />
                   </Button>
@@ -426,7 +427,7 @@ export function HomeView({
                   type="button"
                   onClick={handleStartFocusTimer}
                   aria-label={t("home.focusTimer.start")}
-                  className={cn("min-h-12 w-full gap-2 rounded-full bg-black px-6 text-sm font-bold text-off-white shadow-level-1 transition-transform hover:opacity-90 active:scale-95 sm:w-auto sm:min-w-[140px]", HOME_DARK_INVERTED_BUTTON_CLASS)}
+                  className={cn("min-h-12 w-full gap-2 rounded-full bg-ink px-6 text-sm font-bold text-cream shadow-level-1 transition-transform hover:opacity-90 active:scale-95 sm:w-auto sm:min-w-[140px]", HOME_DARK_INVERTED_BUTTON_CLASS)}
                 >
                   <Play className="h-4 w-4 fill-current" aria-hidden="true" />
                   <span>{t("home.focusTimer.start")}</span>
