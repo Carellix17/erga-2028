@@ -52,6 +52,22 @@ describe("app shell design system", () => {
     expect(darkDot?.[0]).not.toContain("radial-gradient");
   });
 
+  it("in light mode usa il fondo #F2F0EF e l'inchiostro #181516 senza alterare la notte", () => {
+    const css = read("src/index.css");
+    const tailwind = read("tailwind.config.ts");
+    expect(css).toContain("--background: 20 10.34% 94.31%");
+    expect(css).toContain("--ink: 340 6.67% 8.82%");
+    expect(css).toContain("/* P32 — il fondo chiaro è #F2F0EF, senza texture né puntini. */");
+    const lightDot = css.match(/\.bg-dot-grid \{[\s\S]*?\}/);
+    expect(lightDot?.[0]).toContain("background-image: none");
+    expect(lightDot?.[0]).not.toContain("radial-gradient");
+    expect(css).toContain("--primary: var(--ink)");
+    expect(css).toContain("--inverse-surface: var(--ink)");
+    expect(css).toContain("--aura-void: hsl(20 10.34% 94.31%)");
+    expect(css).toContain("--ambient-ink: hsl(var(--ink))");
+    expect(tailwind).toContain('ink: "hsl(var(--ink) / <alpha-value>)"');
+  });
+
   it("applica il margine ambiente solo ai blocchi, non ai campi di testo", () => {
     const css = read("src/index.css");
     expect(css).toContain("P26 — MARGINE AMBIENTE DEI BLOCCHI");
@@ -72,8 +88,9 @@ describe("app shell design system", () => {
     expect(css).toContain("conic-gradient(");
     expect(css).toContain("from var(--aura-angle)");
     expect(css).toMatch(/ambient-margin-drift \d+s linear infinite/);
-    // il fondo con cui si mescola la tinta: bianco di giorno, nero di notte
-    expect(css).toMatch(/:root \{[\s\S]*?--aura-void: hsl\(0 0% 100%\);/);
+    // il fondo con cui si mescola la tinta: #F2F0EF di giorno, nero di notte
+    expect(css).toMatch(/:root \{[\s\S]*?--aura-void: hsl\(20 10\.34% 94\.31%\);/);
+    expect(css).toMatch(/:root \{[\s\S]*?--ambient-ink: hsl\(var\(--ink\)\);/);
     expect(css).toMatch(/\.dark \{[\s\S]*?--aura-void: hsl\(0 0% 0%\);/);
     // la tinta arriva dal blocco stesso (o dal colore materia inline)
     expect(css).toContain("--aura-ink: var(--ambient-block-ink, var(--ambient-ink));");

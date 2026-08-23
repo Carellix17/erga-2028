@@ -16,7 +16,7 @@ describe("settings surface tokens", () => {
     expect(css).toContain("background-color: rgb(26 26 26 / 0.80)");
     expect(css).toContain("border-color: hsl(0 0% 100% / 0.10)");
     expect(css).toContain("background-color: hsl(var(--card) / 0.92)");
-    expect(css).toContain("border: 1px solid hsl(0 0% 0% / 0.05)");
+    expect(css).toContain("border: 1px solid hsl(var(--ink) / 0.05)");
   });
 
   it("riusa i token sulle pagine impostazioni e sulle righe secondarie", () => {

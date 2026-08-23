@@ -77,9 +77,9 @@ describe("pickContrastInk", () => {
     expect(pick.ratio).toBeGreaterThan(4.5); // almeno AA per testo normale
   });
 
-  it("sceglie il quasi-nero su fondo chiaro", () => {
+  it("sceglie l'inchiostro caldo su fondo chiaro", () => {
     const pick = pickContrastInk({ r: 240, g: 235, b: 230, a: 1 });
-    expect(pick.channels).toBe("17 17 17");
+    expect(pick.channels).toBe("24 21 22");
     expect(pick.tone).toBe("dark-text");
     expect(pick.ratio).toBeGreaterThan(4.5);
   });
@@ -126,7 +126,7 @@ describe("blocchi data-auto-contrast (DOM)", () => {
     const block = document.getElementById("block") as HTMLElement;
     const pick = applyAutoContrast(block);
     expect(pick.tone).toBe("dark-text");
-    expect(block.style.getPropertyValue("--contrast-ink")).toBe("17 17 17");
+    expect(block.style.getPropertyValue("--contrast-ink")).toBe("24 21 22");
   });
 
   it("legge il fondo dai layer marcati data-contrast-layer anche se il blocco è trasparente", () => {
@@ -156,7 +156,7 @@ describe("blocchi data-auto-contrast (DOM)", () => {
     base.style.backgroundColor = "rgb(245, 242, 238)";
     applyAutoContrast(block);
     expect(block.getAttribute("data-contrast-tone")).toBe("dark-text");
-    expect(block.style.getPropertyValue("--contrast-ink")).toBe("17 17 17");
+    expect(block.style.getPropertyValue("--contrast-ink")).toBe("24 21 22");
   });
 
   it("refreshAutoContrast processa tutti i blocchi connessi", () => {

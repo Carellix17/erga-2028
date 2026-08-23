@@ -42,14 +42,14 @@ describe("useSubjectAccent", () => {
   it("ripristina accento e primo piano precedenti quando si esce dalla materia", () => {
     const root = document.documentElement;
     root.style.setProperty("--subject-accent", "#f59e0b");
-    root.style.setProperty("--subject-accent-foreground", "#111111");
+    root.style.setProperty("--subject-accent-foreground", "#181516");
 
     const { unmount } = render(<Probe color="#2563eb" />);
     expect(rootVar()).toBe("#2563eb");
     expect(rootForegroundVar()).toBe("#F2F0EF");
     unmount();
     expect(rootVar()).toBe("#f59e0b");
-    expect(rootForegroundVar()).toBe("#111111");
+    expect(rootForegroundVar()).toBe("#181516");
 
     root.style.removeProperty("--subject-accent");
     root.style.removeProperty("--subject-accent-foreground");

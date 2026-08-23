@@ -51,7 +51,7 @@ export default function AuraLab() {
           L&apos;aura è la sfumatura conica sfocata che <em>gira</em> (28s) e{" "}
           <em>respira</em> (11s) attorno ai bordi dei blocchi. Vale in entrambi i temi:
           la tinta del blocco viene mescolata al fondo della stanza (nero di notte,
-          bianco di giorno). Sotto, un campionario dei casi principali.
+          #F2F0EF di giorno). Sotto, un campionario dei casi principali.
         </p>
 
         {/* ── 1. Blocchi base ─────────────────────────────────────────── */}

@@ -182,10 +182,10 @@ export function resolveSubjectColor(subjectName: string, customKey?: string | nu
  * Chooses the more readable neutral foreground for a HEX or HSL accent using
  * WCAG relative luminance.
  *
- * P30 — l'inchiostro chiaro è l'off-white #F2F0EF (non il bianco puro):
- * stessa scelta di contrasto, tinta neutra coerente con il resto di Erga.
+ * P30/P32 — l'inchiostro chiaro è l'off-white #F2F0EF (non il bianco puro),
+ * mentre il tema chiaro usa l'inchiostro caldo #181516.
  */
-export function getAccentForeground(accent: string): "#F2F0EF" | "#111111" {
+export function getAccentForeground(accent: string): "#F2F0EF" | "#181516" {
  const value = accent.trim();
  const normalizedHex = value.replace(/^#/, "");
  const hex = normalizedHex.length === 3
@@ -213,16 +213,16 @@ export function getAccentForeground(accent: string): "#F2F0EF" | "#111111" {
   }
  }
 
- if (!channels) return "#111111";
+ if (!channels) return "#181516";
  const linear = channels.map((channel) =>
   channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
  );
  const luminance = 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
  const offWhiteLuminance = 0.8742941693240719; // #F2F0EF
  const offWhiteContrast = (offWhiteLuminance + 0.05) / (luminance + 0.05);
- const darkLuminance = 0.0056; // #111111
+ const darkLuminance = 0.007884483130952297; // #181516
  const darkContrast = (luminance + 0.05) / (darkLuminance + 0.05);
- return offWhiteContrast >= darkContrast ? "#F2F0EF" : "#111111";
+ return offWhiteContrast >= darkContrast ? "#F2F0EF" : "#181516";
 }
 
 /** Returns the contextual accent for the detected or user-selected subject. */

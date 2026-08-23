@@ -343,7 +343,7 @@ export function FullscreenLesson({
           <Button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="flex-1 h-12 text-base bg-black text-white hover:bg-neutral-800 active:scale-[0.97] dark:bg-cream dark:text-black dark:hover:bg-cream-hover"
+            className="flex-1 h-12 text-base bg-ink text-cream hover:bg-ink/90 active:scale-[0.97] dark:bg-cream dark:text-black dark:hover:bg-cream-hover"
             size="lg"
           >
             {currentStep === steps.length - 1

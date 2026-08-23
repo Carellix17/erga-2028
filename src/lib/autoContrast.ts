@@ -9,7 +9,7 @@
 
    Soluzione: uno script generico che guarda il fondo EFFETTIVO di ogni
    blocco marcato con `data-auto-contrast` e sceglie l'inchiostro
-   (bianco o quasi-nero) col miglior rapporto di contrasto WCAG.
+   (off-white o inchiostro caldo) col miglior rapporto di contrasto WCAG.
    L'inchiostro scelto viene scritto sul blocco come variabile CSS:
 
      --contrast-ink      canali "r g b" del testo a contrasto
@@ -44,8 +44,8 @@ export interface Rgba {
 }
 
 const WHITE: Rgba = { r: 255, g: 255, b: 255, a: 1 };
-/** Quasi-nero usato come inchiostro scuro (coerente con getAccentForeground). */
-const INK_DARK: Rgba = { r: 17, g: 17, b: 17, a: 1 };
+/** Inchiostro caldo del tema chiaro: #181516. */
+const INK_DARK: Rgba = { r: 24, g: 21, b: 22, a: 1 };
 /**
  * P30 — Inchiostro CHIARO: off-white #F2F0EF, non bianco puro.
  * Attenzione: `WHITE` qui sopra resta bianco vero perché serve a due cose
@@ -195,8 +195,9 @@ export interface ContrastPick {
 }
 
 /**
- * Sceglie tra off-white (#F2F0EF) e quasi-nero quello che contrasta di più col
- * fondo. A parità vince l'off-white: i blocchi ambientati di Erga nascono scuri.
+ * Sceglie tra off-white (#F2F0EF) e inchiostro caldo (#181516) quello che
+ * contrasta di più col fondo. A parità vince l'off-white: i blocchi ambientati
+ * di Erga nascono scuri.
  */
 export function pickContrastInk(background: Rgba): ContrastPick {
   const bg = { ...background, a: 1 };
@@ -204,7 +205,7 @@ export function pickContrastInk(background: Rgba): ContrastPick {
   const darkRatio = contrastRatio(INK_DARK, bg);
   const useLight = lightRatio >= darkRatio;
   return {
-    channels: useLight ? "242 240 239" : "17 17 17",
+    channels: useLight ? "242 240 239" : "24 21 22",
     tone: useLight ? "light-text" : "dark-text",
     ratio: Math.round((useLight ? lightRatio : darkRatio) * 100) / 100,
   };

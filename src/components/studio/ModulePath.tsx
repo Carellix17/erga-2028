@@ -397,7 +397,7 @@ export function ModulePath({
                 )}
                 style={{ width: "min(36vw, 150px)" }}
               >
-                <div className="rounded-xl bg-white/15 dark:bg-cream/10 backdrop-blur-sm border border-white/30 dark:border-cream/15 shadow-level-1 px-3 py-1.5">
+                <div className="rounded-xl bg-ink/15 dark:bg-cream/10 backdrop-blur-sm border border-ink/30 dark:border-cream/15 shadow-level-1 px-3 py-1.5">
                   <span className="block text-[11.5px] font-semibold leading-snug text-foreground line-clamp-2">
                     {lesson.title}
                   </span>
@@ -434,7 +434,7 @@ export function ModulePath({
             <Trophy className="w-6 h-6" strokeWidth={1.8} />
           )}
           <div className="absolute top-[calc(100%+14px)] left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
-            <div className="rounded-xl bg-white/15 dark:bg-cream/10 backdrop-blur-sm border border-white/30 dark:border-cream/15 shadow-level-1 px-3 py-1 text-center">
+            <div className="rounded-xl bg-ink/15 dark:bg-cream/10 backdrop-blur-sm border border-ink/30 dark:border-cream/15 shadow-level-1 px-3 py-1 text-center">
               <span className="text-[11px] font-bold text-foreground">Test finale</span>
             </div>
           </div>
@@ -447,7 +447,7 @@ export function ModulePath({
           <button
             type="button"
             onClick={onModuleCompleted}
-            className="w-full h-12 rounded-full bg-black text-white font-semibold text-sm transition-all duration-200 hover:bg-neutral-800 active:scale-[0.97] dark:bg-cream dark:text-black dark:hover:bg-cream-hover"
+            className="w-full h-12 rounded-full bg-ink text-cream font-semibold text-sm transition-all duration-200 hover:bg-ink/90 active:scale-[0.97] dark:bg-cream dark:text-black dark:hover:bg-cream-hover"
           >
             ✓ Modulo completato — Torna ai moduli
           </button>

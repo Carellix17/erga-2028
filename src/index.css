@@ -23,30 +23,32 @@
        È in canali RGB grezzi per poterlo usare in Tailwind come
        bg-off-white/text-off-white anche con eventuale opacità. */
     --off-white: 242 240 239;
---primary: 0 0% 9%;                    /* NERO — la pill-firma è NERA su bianco (monocromo) */
---primary-foreground: 0 0% 100%;
+    /* Inchiostro caldo dei blocchi e dei controlli chiari: #181516. */
+    --ink: 340 6.67% 8.82%;
+--primary: var(--ink);                 /* #181516 — la pill-firma chiara */
+--primary-foreground: var(--cream);
 --primary-container: 0 0% 92%;
---on-primary-container: 0 0% 10%;
+--on-primary-container: var(--ink);
 --secondary: 0 0% 95%;
---secondary-foreground: 0 0% 15%;
+--secondary-foreground: var(--ink);
 --secondary-container: 0 0% 91%;
---on-secondary-container: 0 0% 14%;
+--on-secondary-container: var(--ink);
 --tertiary: 0 0% 32%;                /* grigio medio (monocromo) */
---tertiary-foreground: 0 0% 100%;
+--tertiary-foreground: var(--cream);
 --tertiary-container: 0 0% 93%;
---on-tertiary-container: 0 0% 12%;
+--on-tertiary-container: var(--ink);
 --gold-antique: 0 0% 45%;
 --gold-antique-soft: 0 0% 93%;
 --destructive: 8 0% 43%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: var(--cream);
 --error-container: 12 0% 93%;
 --on-error-container: 9 0% 20%;
 --success: 0 0% 25%;
---success-foreground: 0 0% 100%;
+--success-foreground: var(--cream);
 --success-container: 0 0% 90%;
 --on-success-container: 0 0% 12%;
 --warning: 40 0% 32%;
-    --warning-foreground: 0 0% 100%;
+    --warning-foreground: var(--cream);
 --warning-container: 41 0% 88%;
 --on-warning-container: 41 0% 14%;
 
@@ -67,8 +69,8 @@
 --pastel-neutro: 36 6% 46%;            /* generale (ripiego) */
 --pastel-bosco: 145 28% 34%;           /* scienze */
 --pastel-oliva: 85 26% 34%;            /* geografia */
---background: 0 0% 98%;               /* grigio chiaro (monocromo) */
---foreground: 0 0% 8%;
+--background: 20 10.34% 94.31%;        /* #F2F0EF — fondo chiaro, senza puntini */
+--foreground: var(--ink);
 --surface-dim: 0 0% 88%;
 --surface-bright: 0 0% 100%;
 --surface-container-lowest: 0 0% 100%;
@@ -77,7 +79,7 @@
 --surface-container-high: 0 0% 92%;
 --surface-container-highest: 0 0% 89%;
 --card: 0 0% 100%;
---card-foreground: 0 0% 8%;
+--card-foreground: var(--ink);
 
     /* ═══ token glass PENSIONATI (alias opachi per compatibilità) ═══ */
     --glass-surface-1: hsl(var(--surface-container-low));
@@ -87,38 +89,38 @@
     --glass-border: hsl(var(--border));
     --glass-inset: hsl(0 0% 0% / 0);
 --popover: 0 0% 100%;
---popover-foreground: 0 0% 8%;
+--popover-foreground: var(--ink);
 --muted: 0 0% 94%;
 --muted-foreground: 0 0% 38%;
 --accent: 0 0% 93%;                  /* grigio tenue per selezioni (monocromo) */
---accent-foreground: 0 0% 12%;
---outline: 0 0% 24% / 0.25;
---outline-variant: 0 0% 24% / 0.12;
---border: 0 0% 24% / 0.12;
+--accent-foreground: var(--ink);
+--outline: var(--ink) / 0.25;
+--outline-variant: var(--ink) / 0.12;
+--border: var(--ink) / 0.12;
 --input: 0 0% 100%;
---ring: 0 0% 25%;
+--ring: var(--ink);
 --scrim: 0 0% 0%;
     /*  P24 × MONOCROMO — colore d'accento DINAMICO della materia.
        La pagina padre (o il profilo) puo' sovrascrivere --subject-accent
        per legare il colore alla materia di studio corrente. Fallback ambra. */
     --subject-accent: #f59e0b;
-    --subject-accent-foreground: #111111;
+    --subject-accent-foreground: #181516;
     --subject-accent-light: color-mix(in srgb, var(--subject-accent) 28%, white);
---inverse-surface: 0 0% 8%;
---inverse-on-surface: 0 0% 96%;
+--inverse-surface: var(--ink);
+--inverse-on-surface: var(--cream);
 --inverse-primary: 0 0% 62%;
 --sidebar-background: 0 0% 100%;
---sidebar-foreground: 0 0% 8%;
---sidebar-primary: 0 0% 0%;
---sidebar-primary-foreground: 0 0% 100%;
+--sidebar-foreground: var(--ink);
+--sidebar-primary: var(--ink);
+--sidebar-primary-foreground: var(--cream);
 --sidebar-accent: 0 0% 95%;
---sidebar-accent-foreground: 0 0% 8%;
---sidebar-border: 0 0% 24% / 0.12;
---sidebar-ring: 0 0% 25%;
+--sidebar-accent-foreground: var(--ink);
+--sidebar-border: var(--ink) / 0.12;
+--sidebar-ring: var(--ink);
 
     /*  P24 — firme del guscio: nav a pillola (neutro) e puntino neutro */
---nav-surface: 0 0% 10%;
---nav-foreground: 0 0% 96%;
+--nav-surface: var(--ink);
+--nav-foreground: var(--cream);
 
     /* Scala del testo (Accessibilità) */
     --text-scale: 1;
@@ -476,9 +478,14 @@
     background: hsl(var(--surface-container));
   }
   .gradient-cool {
-    /* was black→blue: now pure black per design directive */
+    /* Superficie a contrasto del tema chiaro: #181516, non nero puro. */
+    background: hsl(var(--ink));
+    color: hsl(var(--cream));
+  }
+  .dark .gradient-cool {
+    /* Il tema scuro non cambia: conserva il nero della superficie cool. */
     background: #000;
-    color: hsl(var(--cream));   /* P30: inchiostro off-white sul nero, mai bianco puro */
+    color: hsl(var(--cream));
   }
   .gradient-surface {
     background: hsl(var(--background));
@@ -509,7 +516,7 @@
      leggermente rialzato di giorno e vetroso/scuro di notte, senza aloni
      pesanti quando più elementi stanno in colonna. */
   .erga-settings-panel {
-    border: 1px solid hsl(0 0% 0% / 0.05);
+    border: 1px solid hsl(var(--ink) / 0.05);
     background-color: hsl(var(--card) / 0.94);
     box-shadow:
       0 12px 26px -22px hsl(0 0% 0% / 0.18),
@@ -518,7 +525,7 @@
   }
 
   .erga-list-item {
-    border: 1px solid hsl(0 0% 0% / 0.05);
+    border: 1px solid hsl(var(--ink) / 0.05);
     background-color: hsl(var(--card) / 0.92);
     box-shadow:
       0 10px 24px -20px hsl(0 0% 0% / 0.16),
@@ -532,7 +539,7 @@
 
   .erga-list-item:hover {
     background-color: hsl(var(--surface-container-low));
-    border-color: hsl(0 0% 0% / 0.08);
+    border-color: hsl(var(--ink) / 0.08);
     box-shadow:
       0 12px 28px -22px hsl(0 0% 0% / 0.18),
       0 1px 2px hsl(0 0% 0% / 0.05);
@@ -554,7 +561,7 @@
   }
 
   .erga-list-item-icon {
-    border: 1px solid hsl(0 0% 0% / 0.05);
+    border: 1px solid hsl(var(--ink) / 0.05);
     background-color: hsl(var(--surface-container-high));
     box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.55);
     transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
@@ -1019,10 +1026,11 @@ html.text-scale-lg     { --text-scale: 1.125; }
 html.text-scale-xl     { --text-scale: 1.28; }
 
 html.high-contrast {
-  --outline: 220 0% 10% / 0.55;
-  --outline-variant: 220 0% 10% / 0.38;
-  --border: 220 0% 10% / 0.38;
-  --muted-foreground: 220 0% 26%;
+  /* Contrasto alto: stesso inchiostro #181516, senza grigi freddi. */
+  --outline: var(--ink) / 0.55;
+  --outline-variant: var(--ink) / 0.38;
+  --border: var(--ink) / 0.38;
+  --muted-foreground: 340 7% 22%;
 }
 html.high-contrast.dark {
   /* P30: anche in alto contrasto la notte usa l'off-white, non il bianco puro
@@ -1067,7 +1075,7 @@ html.reduce-motion *::after {
   background-color: hsl(var(--card) / 0.72);
   background-image:
     linear-gradient(to bottom, hsl(0 0% 100% / 0.55), hsl(0 0% 100% / 0.06));
-  border: 1px solid hsl(0 0% 0% / 0.08);
+  border: 1px solid hsl(var(--ink) / 0.08);
   box-shadow:
     inset 0 1px 0 0 hsl(0 0% 100% / 0.65),
     inset 0 -1px 0 0 hsl(0 0% 0% / 0.03),
@@ -1131,11 +1139,10 @@ html.reduce-motion *::after {
 
 
 /* ═══════════════════════════════════════════════════════════════
-    P24 × MONOCROMO — DOT GRID, ACCENTO MATERIA, CALLOUT
-   .bg-dot-grid        → matrice di puntini sottili (radial-gradient,
-                         ~10% opacita': nitida e leggera, un solo layer,
-                         nessun impatto sullo scroll). In .dark i
-                         puntini sono spenti: il fondo è #05090A;
+    P24 × MONOCROMO — FONDO, ACCENTO MATERIA, CALLOUT
+   .bg-dot-grid        → superficie piatta: il tema chiaro usa
+                         #F2F0EF e non mostra più la vecchia matrice;
+                         in .dark il fondo resta #05090A, sempre piatto;
    .subject-callout    → box d'evidenziazione tinti col colore della
                          materia corrente (--subject-accent), con
                          fallback su --subject-accent-light;
@@ -1143,10 +1150,12 @@ html.reduce-motion *::after {
                          badge, barre e bordi dinamici.
    ═══════════════════════════════════════════════════════════════ */
 .bg-dot-grid {
-  background-image: radial-gradient(circle, hsl(0 0% 0% / 0.10) 1px, transparent 1px);
-  background-size: 22px 22px;
+  /* P32 — il fondo chiaro è #F2F0EF, senza texture né puntini. */
+  background-color: hsl(var(--background));
+  background-image: none;
+  background-size: auto;
 }
-/* P26 — di notte i puntini spariscono: il fondo è piatto #05090A. */
+/* P26 — di notte i puntini restano spenti: il fondo è piatto #05090A. */
 .dark .bg-dot-grid {
   background-image: none;
 }
@@ -1174,12 +1183,13 @@ html.reduce-motion *::after {
    Attorno ai bordi dei BLOCCHI di contenuto (card, pannelli,
    callout) vive una sfumatura lenta che gira piano e respira.
    Non è un alone nero: è la TINTA DEL BLOCCO mescolata al fondo
-   della stanza — nero in modalità scura, bianco in modalità
+   della stanza — nero in modalità scura, #F2F0EF in modalità
    chiara. Un blocco marroncino avrà quindi un'aura marroncino/nera
-   di notte e marroncino/bianca di giorno.
+   di notte e marroncino/beige di giorno.
 
    · Vale in ENTRAMBI i temi: cambia solo il colore di fondo con
-     cui la tinta viene mescolata (--aura-void).
+     cui la tinta viene mescolata (--aura-void): #F2F0EF di giorno,
+     nero di notte.
    · Solo i BLOCCHI di primo livello. Niente campi di testo
      (input/textarea/select), niente righe singole (h-9…h-12),
      niente figli annidati (chip, icone, barre).
@@ -1230,11 +1240,10 @@ html.reduce-motion *::after {
 
 /* ─── Fondo della stanza con cui si mescola la tinta del blocco ─── */
 :root {
-  --aura-void: hsl(0 0% 100%);            /* giorno: bianco */
-  /* Palette monocroma → la tinta va "staccata" dal fondo: di giorno è
-     scurita del 30% (mescolata verso il neutro scuro), altrimenti un
-     alone grigio su bianco non si vede. */
-  --ambient-ink: color-mix(in srgb, hsl(var(--card)) 70%, hsl(var(--muted-foreground)));
+  --aura-void: hsl(20 10.34% 94.31%);         /* giorno: #F2F0EF */
+  /* P32 — nel tema chiaro i margini dei blocchi usano lo stesso
+     inchiostro caldo #181516 dei controlli in contrasto. */
+  --ambient-ink: hsl(var(--ink));
   --aura-strength: 1;
 }
 .dark {
@@ -1392,18 +1401,18 @@ html.reduce-motion :is(
 /* ═══════════════════════════════════════════════════════════════
    P28 — INCHIOSTRO A CONTRASTO AUTOMATICO (script: src/lib/autoContrast.ts)
    I blocchi marcati `data-auto-contrast` ricevono dallo script la
-   variabile --contrast-ink (canali "r g b"): bianco o quasi-nero,
+   variabile --contrast-ink (canali "r g b"): off-white o inchiostro,
    scelto misurando il fondo reale del blocco con il rapporto WCAG.
    Il testo del blocco eredita l'inchiostro; i figli usano le utility
-   qui sotto. Il ripiego (prima dello script, o senza script) è il
-   bianco: i blocchi ambientati nascono scuri.
+   qui sotto. Il ripiego (prima dello script, o senza script) è
+   l'off-white #F2F0EF: i blocchi ambientati nascono scuri.
    NOTA: queste regole non vivono in un @layer, così battono le utility
    Tailwind quando devono sostituire un colore hardcoded scorretto.
    ═══════════════════════════════════════════════════════════════ */
 [data-auto-contrast] {
   /* P30: l'inchiostro chiaro è l'off-white #F2F0EF = canali "242 240 239". */
   --contrast-ink: 242 240 239;
-  --contrast-surface: 20 16 16;
+  --contrast-surface: 24 21 22; /* #181516 */
   color: rgb(var(--contrast-ink));
 }
 
@@ -1418,4 +1427,4 @@ html.reduce-motion :is(
 .border-contrast { border-color: rgb(var(--contrast-ink, 242 240 239) / 0.28); }
 
 /* Testo che ha per sfondo l'inchiostro stesso (es. chip chiare). */
-.text-contrast-surface { color: rgb(var(--contrast-surface, 20 16 16)); }
+.text-contrast-surface { color: rgb(var(--contrast-surface, 24 21 22)); }
