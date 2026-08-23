@@ -3,6 +3,7 @@ import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHead
 import { Switch } from "@/components/ui/switch";
 import { useAccessibility, type TextScale } from "@/contexts/AccessibilityContext";
 import { cn } from "@/lib/utils";
+import { useHaptics } from "@/hooks/useHaptics";
 
 const SCALES: { value: TextScale; label: string }[] = [
   { value: "normal", label: "Normale" },
@@ -42,7 +43,10 @@ export default function SettingsAccessibility() {
             {SCALES.map((s) => (
               <button
                 key={s.value}
-                onClick={() => update({ textScale: s.value })}
+                onClick={() => {
+                  triggerLight();
+                  update({ textScale: s.value });
+                }}
                 aria-pressed={settings.textScale === s.value}
                 className={cn(
                   "erga-list-item h-12 rounded-button transition-all duration-300 ease-m3-emphasized body-medium",

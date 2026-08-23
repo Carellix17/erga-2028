@@ -1,6 +1,7 @@
 import { Sun, Moon, Monitor, Check } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
 import { useTheme, type Theme } from "@/contexts/ThemeContext";
+import { useHaptics } from "@/hooks/useHaptics";
 
 const OPTIONS: { value: Theme; label: string; desc: string; icon: typeof Sun; swatch: string }[] = [
   { value: "light", label: "Chiaro", desc: "Sfondo chiaro, testo scuro", icon: Sun, swatch: "bg-[#F2F0EF]" },
@@ -28,7 +29,10 @@ export default function SettingsAppearance() {
                   key={opt.value}
                   role="radio"
                   aria-checked={active}
-                  onClick={() => setTheme(opt.value)}
+                  onClick={() => {
+                    triggerLight();
+                    setTheme(opt.value);
+                  }}
                   className="erga-list-item flex w-full items-center gap-4 rounded-button p-3 text-left transition-all duration-300 ease-m3-emphasized"
                 >
                   <div className={`erga-list-item-icon h-11 w-11 shrink-0 rounded-button ${opt.swatch}`} />
