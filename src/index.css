@@ -503,6 +503,106 @@
     margin-bottom: 0.5rem;
   }
 
+  /* ═══════ ERGA SECONDARY SURFACES ═══════
+     P31 — superfici secondarie per liste, righe impostazioni e bottoni-menu:
+     addio cartoncino 2D con contorno duro, benvenuto materiale morbido,
+     leggermente rialzato di giorno e vetroso/scuro di notte, senza aloni
+     pesanti quando più elementi stanno in colonna. */
+  .erga-settings-panel {
+    border: 1px solid hsl(0 0% 0% / 0.05);
+    background-color: hsl(var(--card) / 0.94);
+    box-shadow:
+      0 12px 26px -22px hsl(0 0% 0% / 0.18),
+      0 1px 2px hsl(0 0% 0% / 0.04);
+    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .erga-list-item {
+    border: 1px solid hsl(0 0% 0% / 0.05);
+    background-color: hsl(var(--card) / 0.92);
+    box-shadow:
+      0 10px 24px -20px hsl(0 0% 0% / 0.16),
+      0 1px 2px hsl(0 0% 0% / 0.04);
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  .erga-list-item:hover {
+    background-color: hsl(var(--surface-container-low));
+    border-color: hsl(0 0% 0% / 0.08);
+    box-shadow:
+      0 12px 28px -22px hsl(0 0% 0% / 0.18),
+      0 1px 2px hsl(0 0% 0% / 0.05);
+  }
+
+  .erga-list-item:active {
+    transform: scale(0.995);
+  }
+
+  .erga-list-item[aria-checked="true"],
+  .erga-list-item[aria-pressed="true"],
+  .erga-list-item[data-state="active"],
+  .erga-list-item[data-active="true"] {
+    background-color: hsl(var(--surface-container-high));
+    border-color: hsl(var(--foreground) / 0.10);
+    box-shadow:
+      0 12px 28px -22px hsl(0 0% 0% / 0.20),
+      0 1px 2px hsl(0 0% 0% / 0.06);
+  }
+
+  .erga-list-item-icon {
+    border: 1px solid hsl(0 0% 0% / 0.05);
+    background-color: hsl(var(--surface-container-high));
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.55);
+    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .dark .erga-settings-panel,
+  .dark .erga-list-item {
+    border-color: hsl(0 0% 100% / 0.10);
+    background-color: rgb(26 26 26 / 0.80);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.05),
+      0 10px 20px -20px hsl(0 0% 0% / 0.70);
+  }
+
+  @supports (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px)) {
+    .dark .erga-settings-panel,
+    .dark .erga-list-item {
+      background-color: rgb(26 26 26 / 0.72);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+    }
+  }
+
+  .dark .erga-list-item:hover {
+    background-color: rgb(34 34 34 / 0.84);
+    border-color: hsl(0 0% 100% / 0.16);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.06),
+      0 12px 20px -22px hsl(0 0% 0% / 0.74);
+  }
+
+  .dark .erga-list-item[aria-checked="true"],
+  .dark .erga-list-item[aria-pressed="true"],
+  .dark .erga-list-item[data-state="active"],
+  .dark .erga-list-item[data-active="true"] {
+    background-color: rgb(255 255 255 / 0.06);
+    border-color: hsl(0 0% 100% / 0.18);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.07),
+      0 12px 20px -22px hsl(0 0% 0% / 0.78);
+  }
+
+  .dark .erga-list-item-icon {
+    border-color: hsl(0 0% 100% / 0.10);
+    background-color: hsl(0 0% 100% / 0.05);
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.08);
+  }
+
   /* ═══════ M3 SURFACE CONTAINERS ═══════ */
   .surface-default { background-color: hsl(var(--background)); }
   .surface-dim { background-color: hsl(var(--surface-dim)); }

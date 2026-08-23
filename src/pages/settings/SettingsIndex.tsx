@@ -19,10 +19,10 @@ export default function SettingsIndex() {
           <Link
             key={to}
             to={to}
-            className="flex items-center gap-4 rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-4 transition-all duration-200 ease-m3-emphasized hover:bg-surface-container-high active:scale-[0.99]"
+            className="erga-list-item flex items-center gap-4 rounded-card p-4 text-left transition-all duration-200 ease-m3-emphasized active:scale-[0.99]"
           >
-            <div className="w-11 h-11 rounded-button bg-surface-container-high flex items-center justify-center shrink-0">
-              <Icon className="w-5 h-5 text-foreground" />
+            <div className="erga-list-item-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-button">
+              <Icon className="h-5 w-5 text-foreground" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="title-medium text-foreground">{title}</p>
