@@ -22,6 +22,7 @@ import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
 import { useFocus } from "@/contexts/FocusContext";
 import { useHomeDashboard, type HomeTask } from "@/hooks/useHomeDashboard";
 import { useWelcomeMessage } from "@/hooks/useWelcomeMessage";
+import { useHaptics } from "@/hooks/useHaptics";
 import { getSubjectAccent } from "@/lib/subjectColors";
 import { cn } from "@/lib/utils";
 
@@ -110,6 +111,7 @@ export function HomeView({
   const { t, i18n } = useTranslation();
   const dashboard = useHomeDashboard();
   const focus = useFocus();
+  const { triggerLight, triggerMedium } = useHaptics();
   const [showAllTasks, setShowAllTasks] = useState(false);
   const [focusMinutes, setFocusMinutes] = useState(25);
 
@@ -149,8 +151,40 @@ export function HomeView({
   const hiddenTasks = Math.max(0, data.todayTasks.length - VISIBLE_TASKS);
   const resume = data.resumeLesson;
 
+  const handleOpenPlan = () => {
+    triggerLight();
+    onOpenPlan();
+  };
+
+  const handleToggleTasks = () => {
+    triggerLight();
+    setShowAllTasks((value) => !value);
+  };
+
+  const handleAdjustFocusMinutes = (direction: "increase" | "decrease") => {
+    triggerMedium();
+    setFocusMinutes((minutes) => {
+      if (direction === "increase") return Math.min(180, minutes + 5);
+      return Math.max(5, minutes - 5);
+    });
+  };
+
+  const handleStartFocusTimer = () => {
+    triggerMedium();
+    focus.startSession(
+      {
+        label: t("home.focusTimer.sessionLabel"),
+        sourceType: "adhoc",
+        estimatedDuration: focusMinutes,
+        durationMinutes: focusMinutes,
+      },
+      focusMinutes,
+    );
+  };
+
   const startTaskFocus = (task: HomeTask) => {
     if (!task.canStartFocus) return;
+    triggerLight();
     focus.startSession({
       label: task.title,
       subject: task.subject,
@@ -212,7 +246,10 @@ export function HomeView({
                   </div>
                   <Button
                     size="lg"
-                    onClick={() => onResumeLesson(resume.contextId, resume.lessonIndex)}
+                    onClick={() => {
+                      triggerLight();
+                      onResumeLesson(resume.contextId, resume.lessonIndex);
+                    }}
                     style={{ backgroundColor: "rgb(var(--contrast-ink))", color: "rgb(var(--contrast-surface))" }}
                     className="mt-5 min-h-12 w-full gap-2 rounded-button px-6 text-sm transition-opacity hover:opacity-90 sm:w-auto sm:min-w-[220px]"
                   >
@@ -232,7 +269,17 @@ export function HomeView({
                 <p className="mt-2 max-w-xl text-base leading-relaxed text-muted-foreground">
                   {data.isGenerating ? t("home.resume.generatingDescription") : data.hasContexts ? t("home.resume.noLessonDescription") : t("home.resume.noContentDescription")}
                 </p>
-                <Button className="mt-5 min-h-12 rounded-button" onClick={data.hasContexts ? onOpenStudio : onUpload}>
+                <Button
+                  className="mt-5 min-h-12 rounded-button"
+                  onClick={() => {
+                    triggerLight();
+                    if (data.hasContexts) {
+                      onOpenStudio();
+                      return;
+                    }
+                    onUpload();
+                  }}
+                >
                   {data.hasContexts ? t("home.resume.openStudio") : t("home.resume.upload")}
                 </Button>
               </Card>
@@ -246,7 +293,7 @@ export function HomeView({
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("home.today.eyebrow")}</p>
               <h2 id="today-plan-title" className="mt-1 font-display text-2xl font-bold tracking-tight">{t("home.today.title")}</h2>
             </div>
-            <Button variant="ghost" size="sm" className="min-h-11 rounded-button" onClick={onOpenPlan}>
+            <Button variant="ghost" size="sm" className="min-h-11 rounded-button" onClick={handleOpenPlan}>
               {t("home.today.openPlan")}
             </Button>
           </div>
@@ -254,7 +301,7 @@ export function HomeView({
           {data.nextEvaluation && (
             <button
               type="button"
-              onClick={onOpenPlan}
+              onClick={handleOpenPlan}
               className={cn(
                 HOME_BLOCK_CLASS,
                 "group flex min-h-[84px] w-full items-center gap-3 rounded-lg p-4 text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-20px_rgba(0,0,0,0.38)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 motion-reduce:transform-none",
@@ -304,7 +351,7 @@ export function HomeView({
                   ))}
                 </div>
                 {hiddenTasks > 0 && (
-                  <Button variant="ghost" className={cn("mt-1 min-h-11 w-full rounded-button text-black hover:bg-black/[0.06]", HOME_DARK_GHOST_BUTTON_CLASS)} aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={() => setShowAllTasks((value) => !value)}>
+                  <Button variant="ghost" className={cn("mt-1 min-h-11 w-full rounded-button text-black hover:bg-black/[0.06]", HOME_DARK_GHOST_BUTTON_CLASS)} aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={handleToggleTasks}>
                     {showAllTasks ? t("home.today.showLess") : t("home.today.showAll", { count: hiddenTasks })}
                   </Button>
                 )}
@@ -315,7 +362,7 @@ export function HomeView({
               <MinimalArtwork Icon={Clock3} lightOnDarkCard />
               <h3 className={cn("mt-3 font-display text-lg font-bold", HOME_DARK_TITLE_CLASS)}>{t("home.today.emptyTitle")}</h3>
               <p className={cn("mt-1 text-base text-black/65", HOME_DARK_BODY_CLASS)}>{t("home.today.emptyDescription")}</p>
-              <Button variant="outline" className={cn("mt-4 min-h-11 rounded-button border-black/15 bg-transparent text-black hover:bg-black hover:text-off-white", HOME_DARK_INVERTED_BUTTON_CLASS)} onClick={onOpenPlan}>{t("home.today.organize")}</Button>
+              <Button variant="outline" className={cn("mt-4 min-h-11 rounded-button border-black/15 bg-transparent text-black hover:bg-black hover:text-off-white", HOME_DARK_INVERTED_BUTTON_CLASS)} onClick={handleOpenPlan}>{t("home.today.organize")}</Button>
             </Card>
           )}
         </section>
@@ -345,7 +392,7 @@ export function HomeView({
                     type="button"
                     variant="outline"
                     size="icon"
-                    onClick={() => setFocusMinutes((m) => Math.max(5, m - 5))}
+                    onClick={() => handleAdjustFocusMinutes("decrease")}
                     disabled={focusMinutes <= 5}
                     aria-label={t("home.focusTimer.decreaseAria")}
                     className={cn("h-12 w-12 rounded-full border-black/20 bg-transparent text-black transition-all hover:bg-black hover:text-off-white disabled:opacity-30 active:scale-95", HOME_DARK_OUTLINE_BUTTON_CLASS)}
@@ -366,7 +413,7 @@ export function HomeView({
                     type="button"
                     variant="outline"
                     size="icon"
-                    onClick={() => setFocusMinutes((m) => Math.min(180, m + 5))}
+                    onClick={() => handleAdjustFocusMinutes("increase")}
                     disabled={focusMinutes >= 180}
                     aria-label={t("home.focusTimer.increaseAria")}
                     className={cn("h-12 w-12 rounded-full border-black/20 bg-transparent text-black transition-all hover:bg-black hover:text-off-white disabled:opacity-30 active:scale-95", HOME_DARK_OUTLINE_BUTTON_CLASS)}
@@ -377,17 +424,7 @@ export function HomeView({
 
                 <Button
                   type="button"
-                  onClick={() =>
-                    focus.startSession(
-                      {
-                        label: t("home.focusTimer.sessionLabel"),
-                        sourceType: "adhoc",
-                        estimatedDuration: focusMinutes,
-                        durationMinutes: focusMinutes,
-                      },
-                      focusMinutes,
-                    )
-                  }
+                  onClick={handleStartFocusTimer}
                   aria-label={t("home.focusTimer.start")}
                   className={cn("min-h-12 w-full gap-2 rounded-full bg-black px-6 text-sm font-bold text-off-white shadow-level-1 transition-transform hover:opacity-90 active:scale-95 sm:w-auto sm:min-w-[140px]", HOME_DARK_INVERTED_BUTTON_CLASS)}
                 >

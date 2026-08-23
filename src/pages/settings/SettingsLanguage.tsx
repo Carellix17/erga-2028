@@ -10,6 +10,7 @@ const OPTIONS: { value: SupportedLanguage; labelKey: string }[] = [
 
 export default function SettingsLanguage() {
   const { t, i18n } = useTranslation();
+  const { triggerLight } = useHaptics();
   const current = (i18n.resolvedLanguage || i18n.language || "it").slice(0, 2) as SupportedLanguage;
 
   return (

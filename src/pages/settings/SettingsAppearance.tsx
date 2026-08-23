@@ -10,6 +10,7 @@ const OPTIONS: { value: Theme; label: string; desc: string; icon: typeof Sun; sw
 
 export default function SettingsAppearance() {
   const { theme, setTheme } = useTheme();
+  const { triggerLight } = useHaptics();
 
   return (
     <SettingsPage>

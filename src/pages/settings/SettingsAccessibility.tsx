@@ -31,6 +31,7 @@ function Row({
 
 export default function SettingsAccessibility() {
   const { settings, update } = useAccessibility();
+  const { triggerLight } = useHaptics();
 
   return (
     <SettingsPage>
@@ -57,21 +58,42 @@ export default function SettingsAccessibility() {
         <Row icon={Contrast} title="Alto contrasto" desc="Bordi e testi più marcati per una lettura più netta.">
           <div className="flex items-center justify-between">
             <span className="body-medium text-muted-foreground">Attiva alto contrasto</span>
-            <Switch checked={settings.highContrast} onCheckedChange={(v) => update({ highContrast: v })} aria-label="Alto contrasto" />
+            <Switch
+              checked={settings.highContrast}
+              onCheckedChange={(value) => {
+                triggerLight();
+                update({ highContrast: value });
+              }}
+              aria-label="Alto contrasto"
+            />
           </div>
         </Row>
 
         <Row icon={Wind} title="Riduci le animazioni" desc="Disattiva transizioni e movimenti, anche se il tuo dispositivo non lo richiede.">
           <div className="flex items-center justify-between">
             <span className="body-medium text-muted-foreground">Riduci il movimento</span>
-            <Switch checked={settings.reduceMotion} onCheckedChange={(v) => update({ reduceMotion: v })} aria-label="Riduci le animazioni" />
+            <Switch
+              checked={settings.reduceMotion}
+              onCheckedChange={(value) => {
+                triggerLight();
+                update({ reduceMotion: value });
+              }}
+              aria-label="Riduci le animazioni"
+            />
           </div>
         </Row>
 
         <Row icon={Volume2} title="Lettura vocale" desc="Attiva di default la voce nelle interrogazioni e nelle lezioni.">
           <div className="flex items-center justify-between">
             <span className="body-medium text-muted-foreground">Voce attiva all'avvio</span>
-            <Switch checked={settings.ttsEnabled} onCheckedChange={(v) => update({ ttsEnabled: v })} aria-label="Lettura vocale" />
+            <Switch
+              checked={settings.ttsEnabled}
+              onCheckedChange={(value) => {
+                triggerLight();
+                update({ ttsEnabled: value });
+              }}
+              aria-label="Lettura vocale"
+            />
           </div>
         </Row>
       </main>

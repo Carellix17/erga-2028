@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { User, Palette, Accessibility, FileText, ChevronRight, Languages } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
+import { useHaptics } from "@/hooks/useHaptics";
 
 const ITEMS = [
   { to: "/app/impostazioni/account", icon: User, title: "Generale", desc: "Dati personali e notifiche" },
@@ -11,6 +12,8 @@ const ITEMS = [
 ];
 
 export default function SettingsIndex() {
+  const { triggerLight } = useHaptics();
+
   return (
     <SettingsPage>
       <SettingsHeader title="Impostazioni" subtitle="Gestisci il tuo account e l'app" />
@@ -19,6 +22,7 @@ export default function SettingsIndex() {
           <Link
             key={to}
             to={to}
+            onClick={() => triggerLight()}
             className="erga-list-item flex items-center gap-4 rounded-card p-4 text-left transition-all duration-200 ease-m3-emphasized active:scale-[0.99]"
           >
             <div className="erga-list-item-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-button">
