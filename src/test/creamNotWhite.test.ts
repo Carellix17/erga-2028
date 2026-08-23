@@ -5,7 +5,7 @@ import { join } from "path";
 /**
  * 🛡️ P29 × GUARDIA DELLA PANNA — test anti-regressione del bianco.
  *
- * Nel tema SCURO l'inchiostro di Erga è la panna #F8F7DD, non il bianco
+ * Nel tema SCURO l'inchiostro di Erga è l'off-white #F2F0EF, non il bianco
  * puro: su fondo notte (#05090A) il bianco pieno abbaglia. Questo test
  * fallisce se qualcuno riporta il bianco (o un quasi-bianco) dentro il
  * blocco `.dark`, o se cambia la definizione del gettone `--cream`.
@@ -59,12 +59,12 @@ function tokenLines(body: string): [string, string][] {
     });
 }
 
-describe("Guardia della panna (#F8F7DD nel tema scuro)", () => {
-  it("il gettone --cream esiste ed è esattamente #F8F7DD", () => {
+describe("Guardia dell'off-white (#F2F0EF nel tema scuro)", () => {
+  it("il gettone --cream esiste ed è esattamente #F2F0EF", () => {
     const match = css.match(/--cream:\s*([^;]+);/);
     expect(match, "manca il gettone --cream in :root").not.toBeNull();
 
-    // 58 66% 92% → #F8F7DD (verificato canale per canale)
+    // 20 10.34% 94.31% → #F2F0EF (verificato canale per canale)
     const [, value] = match!;
     const hsl = value.trim().match(/^([\d.]+)\s+([\d.]+)%\s+([\d.]+)%$/);
     expect(hsl, `--cream deve essere una tupla HSL grezza, trovato "${value}"`).not.toBeNull();
@@ -81,7 +81,7 @@ describe("Guardia della panna (#F8F7DD nel tema scuro)", () => {
       .map((c) => c.toString(16).padStart(2, "0"))
       .join("")
       .toUpperCase()}`;
-    expect(hex).toBe("#F8F7DD");
+    expect(hex).toBe("#F2F0EF");
   });
 
   it("nessun gettone del tema scuro torna al bianco puro o a un quasi-bianco", () => {
@@ -127,14 +127,14 @@ describe("Guardia della panna (#F8F7DD nel tema scuro)", () => {
     }
   });
 
-  it("l'inchiostro automatico dei blocchi colorati è panna, non bianco", () => {
+  it("l'inchiostro automatico dei blocchi colorati è off-white, non bianco", () => {
     const auto = readFileSync(join(ROOT, "src", "lib", "autoContrast.ts"), "utf-8");
-    expect(auto).toContain("248, g: 247, b: 221");
-    expect(auto).toContain('"248 247 221"');
+    expect(auto).toContain("242, g: 240, b: 239");
+    expect(auto).toContain('"242 240 239"');
     expect(auto).not.toContain('"255 255 255"');
 
     // le utility CSS di supporto usano lo stesso ripiego
-    expect(css).toContain("--contrast-ink: 248 247 221");
+    expect(css).toContain("--contrast-ink: 242 240 239");
     expect(css).not.toContain("--contrast-ink, 255 255 255");
   });
 

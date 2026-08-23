@@ -1,7 +1,8 @@
 /* Marketing landing — scoped under .erga-lp so it never leaks into /app */
 
 .erga-lp {
-  --lp-bg: #f5f5f7;
+  --lp-off-white: #f2f0ef;
+  --lp-bg: var(--lp-off-white);
   --lp-elev: #ffffff;
   --lp-ink: #0a0a0a;
   --lp-ink-2: #3a3a3c;
@@ -262,13 +263,13 @@
 .erga-lp .lp-stat .lp-small { display: block; margin-top: 0.25rem; font-size: 1rem; line-height: 1.5; }
 .erga-lp .lp-stat b em { color: var(--lp-red); font-style: normal; }
 
-.erga-lp .lp-show { background: #0a0a0a; color: #f5f5f7; overflow: hidden; }
-.erga-lp .lp-show .lp-h2 { color: #f5f5f7; }
+.erga-lp .lp-show { background: #0a0a0a; color: var(--lp-off-white); overflow: hidden; }
+.erga-lp .lp-show .lp-h2 { color: var(--lp-off-white); }
 .erga-lp .lp-show .lp-lead { color: #a1a1a6; }
 .erga-lp .lp-show .lp-eyebrow { color: #86868b; }
 .erga-lp .lp-show .lp-eyebrow::before { background: var(--lp-rose); }
-.erga-lp .lp-hex-sec { background: #0a0a0a; color: #f5f5f7; position: relative; overflow: hidden; }
-.erga-lp .lp-hex-sec .lp-h2, .erga-lp .lp-hex-sec .lp-h3 { color: #f5f5f7; }
+.erga-lp .lp-hex-sec { background: #0a0a0a; color: var(--lp-off-white); position: relative; overflow: hidden; }
+.erga-lp .lp-hex-sec .lp-h2, .erga-lp .lp-hex-sec .lp-h3 { color: var(--lp-off-white); }
 .erga-lp .lp-hex-sec .lp-lead { color: #a1a1a6; }
 .erga-lp .lp-hex-sec .lp-eyebrow { color: #86868b; }
 .erga-lp .lp-hex-sec .lp-eyebrow::before { background: var(--lp-rose); }
@@ -287,7 +288,7 @@
 }
 .erga-lp .lp-mini-title {
   margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.55rem;
-  color: #f5f5f7; font-size: 1.35rem; letter-spacing: -0.03em;
+  color: var(--lp-off-white); font-size: 1.35rem; letter-spacing: -0.03em;
 }
 .erga-lp .lp-mini-title svg { width: 20px; height: 20px; color: var(--lp-rose); }
 .erga-lp .lp-mini-body { color: #d1d1d6; font-size: 1rem; line-height: 1.65; }
@@ -358,7 +359,7 @@
 }
 .erga-lp .lp-timeline.dark {
   background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08); color: #f5f5f7;
+  border-color: rgba(255, 255, 255, 0.08); color: var(--lp-off-white);
 }
 .erga-lp .lp-week {
   display: grid; grid-template-columns: repeat(7, minmax(44px, 1fr)); gap: 0.15rem;
@@ -482,7 +483,7 @@
 .erga-lp .lp-stage > [role="img"] { position: relative; z-index: 2; }
 
 /* ─── Un solo racconto di scroll: dal materiale al percorso ─── */
-.erga-lp .lp-journey { position: relative; background: #efeff1; }
+.erga-lp .lp-journey { position: relative; background: var(--lp-off-white); }
 .erga-lp .lp-journey .lp-eyebrow { color: #646468; }
 .erga-lp .lp-journey-grid { display: grid; gap: 1.25rem; }
 .erga-lp .lp-journey-visual { display: none; }
@@ -504,7 +505,7 @@
 .erga-lp .lp-journey-step-icon {
   position: relative; z-index: 1; width: 52px; height: 52px; border-radius: 16px;
   display: grid; place-items: center; color: #fff; background: var(--lp-ink);
-  border: 5px solid #efeff1;
+  border: 5px solid var(--lp-off-white);
 }
 .erga-lp .lp-journey-step[data-active="true"] .lp-journey-step-icon { background: var(--lp-red); }
 .erga-lp .lp-journey-step-icon svg { width: 20px; height: 20px; }
@@ -550,7 +551,7 @@
 .erga-lp .lp-source-sheet {
   position: absolute; width: 190px; min-height: 92px; padding: 1rem;
   display: flex; align-items: center; gap: 0.7rem; border-radius: 16px;
-  background: #f7f7f8; color: #111; box-shadow: 0 18px 40px rgba(0,0,0,.25);
+  background: var(--lp-off-white); color: #111; box-shadow: 0 18px 40px rgba(0,0,0,.25);
 }
 .erga-lp .lp-source-sheet svg { width: 22px; height: 22px; color: var(--lp-red); }
 .erga-lp .lp-source-sheet span { font-size: 0.88rem; font-weight: 750; }
@@ -581,7 +582,7 @@
 .erga-lp .lp-path-node b { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; background: #fff; color: #0a0a0a; }
 .erga-lp .lp-path-node span { padding: 0.5rem 0.65rem; border-radius: 10px; background: #242424; color: #d1d1d6; font-size: 0.75rem; }
 .erga-lp .lp-plan-preview { width: min(92%, 340px); display: grid; gap: 0.65rem; }
-.erga-lp .lp-plan-preview > div { display: grid; grid-template-columns: 52px 1fr auto; gap: 0.6rem; align-items: center; padding: 0.8rem; border-radius: 14px; background: #f7f7f8; color: #111; }
+.erga-lp .lp-plan-preview > div { display: grid; grid-template-columns: 52px 1fr auto; gap: 0.6rem; align-items: center; padding: 0.8rem; border-radius: 14px; background: var(--lp-off-white); color: #111; }
 .erga-lp .lp-plan-preview time { color: #5f5f64; font-size: 0.72rem; font-weight: 700; }
 .erga-lp .lp-plan-preview span { font-size: 0.82rem; font-weight: 750; }
 .erga-lp .lp-plan-preview b { color: #92545a; font-size: 0.7rem; }
@@ -605,10 +606,10 @@
 .erga-lp .lp-showcase-tabs svg { width: 18px; height: 18px; }
 .erga-lp .lp-showcase-detail { min-height: 320px; padding: 1.5rem; border: 1px solid rgba(255,255,255,.1); border-radius: 24px; background: rgba(255,255,255,.04); }
 .erga-lp .lp-showcase-detail > p:first-child { margin-bottom: 0.6rem; color: var(--lp-rose); font-size: 0.72rem; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
-.erga-lp .lp-showcase-detail h3 { color: #f5f5f7; font-size: clamp(1.55rem, 3vw, 2.35rem); line-height: 1.15; letter-spacing: -0.035em; }
+.erga-lp .lp-showcase-detail h3 { color: var(--lp-off-white); font-size: clamp(1.55rem, 3vw, 2.35rem); line-height: 1.15; letter-spacing: -0.035em; }
 .erga-lp .lp-showcase-description { margin-top: 0.9rem; color: #c7c7cc; font-size: 1rem; line-height: 1.65; }
 .erga-lp .lp-showcase-detail ul { margin-top: 1.2rem; display: grid; gap: 0.65rem; }
-.erga-lp .lp-showcase-detail li { display: flex; align-items: center; gap: 0.55rem; color: #f5f5f7; font-size: 1rem; }
+.erga-lp .lp-showcase-detail li { display: flex; align-items: center; gap: 0.55rem; color: var(--lp-off-white); font-size: 1rem; }
 .erga-lp .lp-showcase-detail li svg { width: 18px; height: 18px; color: var(--lp-rose); }
 .erga-lp .lp-showcase-note { margin-top: 1rem; color: #a1a1a6; font-size: 0.85rem; line-height: 1.5; }
 @media (min-width: 900px) {
@@ -637,7 +638,7 @@
 }
 
 /* ─── Scenari dimostrativi + una sola offerta reale ─── */
-.erga-lp .lp-use-beta { background: #f5f5f7; }
+.erga-lp .lp-use-beta { background: var(--lp-off-white); }
 .erga-lp .lp-scenarios { display: grid; gap: 1rem; }
 .erga-lp .lp-scenario { position: relative; overflow: hidden; padding: 1.4rem; border: 1px solid var(--lp-line); border-radius: 22px; background: #fff; }
 .erga-lp .lp-scenario::after { content: ""; position: absolute; right: -35px; top: -35px; width: 100px; height: 100px; border: 1px solid rgba(227,6,19,.12); transform: rotate(30deg); }
@@ -646,7 +647,7 @@
 .erga-lp .lp-scenario h3 { margin: .45rem 0 .6rem; }
 .erga-lp .lp-scenario > p { min-height: 76px; color: var(--lp-ink-2); font-size: 1rem; line-height: 1.6; }
 .erga-lp .lp-scenario-flow { display: flex; align-items: center; gap: .8rem; margin-top: 1.1rem; overflow-x: auto; padding: 3px; }
-.erga-lp .lp-scenario-flow span { position: relative; min-height: 36px; padding: .5rem .65rem; border-radius: 999px; background: #f0f0f2; color: var(--lp-ink-2); font-size: .75rem; font-weight: 700; white-space: nowrap; }
+.erga-lp .lp-scenario-flow span { position: relative; min-height: 36px; padding: .5rem .65rem; border-radius: 999px; background: var(--lp-off-white); color: var(--lp-ink-2); font-size: .75rem; font-weight: 700; white-space: nowrap; }
 .erga-lp .lp-scenario-flow span:not(:last-child)::after { content: ""; position: absolute; left: calc(100% + .2rem); top: 50%; width: .4rem; height: 1px; background: var(--lp-red); }
 @media (min-width: 800px) { .erga-lp .lp-scenarios { grid-template-columns: repeat(3, 1fr); } }
 .erga-lp .lp-beta-card { margin-top: 1.2rem; display: grid; gap: 1rem; padding: 1.2rem; border-radius: 28px; background: var(--lp-ink); color: #fff; overflow: hidden; }
@@ -654,7 +655,7 @@
 .erga-lp .lp-beta-main h3 { margin: .6rem 0 .7rem; color: #fff; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1; letter-spacing: -.045em; }
 .erga-lp .lp-beta-main > p:not(.lp-eyebrow) { max-width: 46ch; color: #c7c7cc; font-size: 1rem; line-height: 1.6; }
 .erga-lp .lp-beta-main ul { margin: 1.2rem 0 1.4rem; display: grid; gap: .7rem; }
-.erga-lp .lp-beta-main li { display: flex; align-items: flex-start; gap: .55rem; color: #f5f5f7; font-size: 1rem; line-height: 1.5; }
+.erga-lp .lp-beta-main li { display: flex; align-items: flex-start; gap: .55rem; color: var(--lp-off-white); font-size: 1rem; line-height: 1.5; }
 .erga-lp .lp-beta-main li svg { width: 18px; height: 18px; margin-top: .2rem; flex: 0 0 18px; color: var(--lp-rose); }
 .erga-lp .lp-beta-pro-note { padding: 1.2rem; border: 1px solid rgba(255,255,255,.1); border-radius: 20px; background: rgba(255,255,255,.05); }
 .erga-lp .lp-beta-pro-note > span { color: var(--lp-rose); font-size: .72rem; font-weight: 750; text-transform: uppercase; letter-spacing: .1em; }

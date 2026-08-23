@@ -47,12 +47,12 @@ const WHITE: Rgba = { r: 255, g: 255, b: 255, a: 1 };
 /** Quasi-nero usato come inchiostro scuro (coerente con getAccentForeground). */
 const INK_DARK: Rgba = { r: 17, g: 17, b: 17, a: 1 };
 /**
- * P29 — Inchiostro CHIARO: panna #F8F7DD, non più bianco puro.
+ * P30 — Inchiostro CHIARO: off-white #F2F0EF, non bianco puro.
  * Attenzione: `WHITE` qui sopra resta bianco vero perché serve a due cose
  * diverse (la parola chiave CSS "white" e il fondo di ripiego della pagina):
  * cambia solo il colore con cui SCRIVIAMO sui blocchi scuri.
  */
-const INK_LIGHT: Rgba = { r: 248, g: 247, b: 221, a: 1 };
+const INK_LIGHT: Rgba = { r: 242, g: 240, b: 239, a: 1 };
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -195,8 +195,8 @@ export interface ContrastPick {
 }
 
 /**
- * Sceglie tra panna (#F8F7DD) e quasi-nero quello che contrasta di più col
- * fondo. A parità vince la panna: i blocchi ambientati di Erga nascono scuri.
+ * Sceglie tra off-white (#F2F0EF) e quasi-nero quello che contrasta di più col
+ * fondo. A parità vince l'off-white: i blocchi ambientati di Erga nascono scuri.
  */
 export function pickContrastInk(background: Rgba): ContrastPick {
   const bg = { ...background, a: 1 };
@@ -204,7 +204,7 @@ export function pickContrastInk(background: Rgba): ContrastPick {
   const darkRatio = contrastRatio(INK_DARK, bg);
   const useLight = lightRatio >= darkRatio;
   return {
-    channels: useLight ? "248 247 221" : "17 17 17",
+    channels: useLight ? "242 240 239" : "17 17 17",
     tone: useLight ? "light-text" : "dark-text",
     ratio: Math.round((useLight ? lightRatio : darkRatio) * 100) / 100,
   };

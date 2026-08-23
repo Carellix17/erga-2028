@@ -29,7 +29,7 @@ describe("useSubjectAccent", () => {
   it("imposta accento e primo piano leggibile sul root", () => {
     render(<Probe color="#2563eb" />);
     expect(rootVar()).toBe("#2563eb");
-    expect(rootForegroundVar()).toBe("#F8F7DD");
+    expect(rootForegroundVar()).toBe("#F2F0EF");
   });
 
   it("cambia all'istante quando la materia cambia", () => {
@@ -46,7 +46,7 @@ describe("useSubjectAccent", () => {
 
     const { unmount } = render(<Probe color="#2563eb" />);
     expect(rootVar()).toBe("#2563eb");
-    expect(rootForegroundVar()).toBe("#F8F7DD");
+    expect(rootForegroundVar()).toBe("#F2F0EF");
     unmount();
     expect(rootVar()).toBe("#f59e0b");
     expect(rootForegroundVar()).toBe("#111111");

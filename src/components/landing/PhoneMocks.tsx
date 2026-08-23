@@ -24,7 +24,7 @@ export function PhoneShell({
         tilt && "-rotate-[5.5deg] translate-y-2",
       )}
     >
-      <div className="relative h-[580px] overflow-hidden rounded-[28px] bg-[#F7F7F8] text-[#111]">
+      <div className="relative h-[580px] overflow-hidden rounded-[28px] bg-off-white text-[#111]">
         <div className="absolute left-1/2 top-2 z-30 h-[18px] w-[88px] -translate-x-1/2 rounded-[20px] bg-black" />
         {children}
         {tab && <PhoneTabBar active={tab} />}
