@@ -23,7 +23,9 @@
     "settings": "Open Settings",
     "startStreak": "Start your streak",
     "streak_one": "{{count}} day",
-    "streak_other": "{{count}} days"
+    "streak_other": "{{count}} days",
+    "openFocusStats_one": "Open streak statistics: {{count}} day",
+    "openFocusStats_other": "Open streak statistics: {{count}} days"
   },
   "home": {
     "greeting": {
@@ -77,14 +79,6 @@
       "inDays_one": "Test tomorrow",
       "inDays_other": "Test in {{count}} days"
     },
-    "rhythm": {
-      "eyebrow": "Your rhythm",
-      "title": "Real data from Focus sessions",
-      "minutes": "minutes today",
-      "sessions": "sessions today",
-      "streak": "day streak",
-      "empty": "Complete your first Focus session to start seeing your rhythm."
-    },
     "quick": {
       "eyebrow": "Quick actions",
       "title": "What do you want to do?",
@@ -96,6 +90,61 @@
       "uploadDescription": "PDF, photo or web search",
       "cognitive": "Hexagon",
       "cognitiveDescription": "Review your cognitive profile"
+    }
+  },
+  "focusStats": {
+    "title": "Your rhythm",
+    "subtitle": "Focus sessions and consistency",
+    "error": {
+      "title": "We can't load your rhythm",
+      "description": "Your data is safe. Check your connection and try again.",
+      "retry": "Try again"
+    },
+    "streak": {
+      "days_one": "{{count}} day streak",
+      "days_other": "{{count}} day streak",
+      "activeDescription": "You kept your rhythm with at least one Focus session every day.",
+      "emptyDescription": "Complete a Focus session to start your streak."
+    },
+    "today": {
+      "title": "Today",
+      "minutes": "Focus minutes",
+      "sessions": "Completed sessions",
+      "caption": "logged today",
+      "sessionsCaption_one": "session logged today",
+      "sessionsCaption_other": "sessions logged today"
+    },
+    "timeline": {
+      "title": "Focus over time",
+      "description": "Minutes actually completed in Focus sessions.",
+      "periodLabel": "Statistics period",
+      "period_one": "{{count}} day",
+      "period_other": "{{count}} days",
+      "legend": "Focus minutes",
+      "minutes": "minutes",
+      "sessions": "sessions",
+      "sameAsPrevious": "same as the previous period",
+      "comparedWithPrevious": "{{value}} from the previous period",
+      "chartAria": "Focus minutes trend for the last {{count}} days",
+      "tableCaption": "Daily Focus session data for the last {{count}} days",
+      "tableDate": "Date",
+      "emptyTitle": "No sessions in this period yet",
+      "emptyDescription": "Once you complete a Focus session, you'll see your real trend here."
+    },
+    "summary": {
+      "minutes": "Focus time",
+      "sessions": "Sessions",
+      "activeDays": "Active days",
+      "average": "Session average"
+    },
+    "recent": {
+      "title": "Latest sessions",
+      "realData": "Real data",
+      "fallbackTitle": "Focus session",
+      "todayAt": "Today, {{time}}"
+    },
+    "actions": {
+      "startFocus": "Start Focus"
     }
   },
   "settings": {

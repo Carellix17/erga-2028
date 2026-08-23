@@ -35,6 +35,15 @@ export interface HomeNextEvaluation {
   date: string;
 }
 
+/** Sessioni reali disponibili per la pagina del ritmo, senza dati di altri utenti. */
+export interface HomeFocusSession {
+  id: string;
+  actualDuration: number;
+  completedAt: string;
+  subjectName: string | null;
+  taskLabel: string | null;
+}
+
 export interface HomeDashboardData {
   displayName: string;
   resumeLesson: HomeResumeLesson | null;
@@ -47,6 +56,7 @@ export interface HomeDashboardData {
   sessionsToday: number;
   completedActivities: number;
   streakDays: number;
+  focusSessions: HomeFocusSession[];
 }
 
 interface ProfileRow {
@@ -82,9 +92,12 @@ interface EvaluationRow {
 }
 
 interface SessionRow {
+  id: string;
   actual_duration: number;
   completed_at: string;
   event_id: string | null;
+  subject_name: string | null;
+  task_label: string | null;
 }
 
 function assertNoError(error: { message?: string } | null, fallback: string) {
@@ -108,7 +121,9 @@ export function useHomeDashboard() {
       const now = new Date();
       const today = toLocalDayKey(now);
       const horizon = toLocalDayKey(addDays(now, 14));
-      const logsSince = addDays(now, -60).toISOString();
+      // La Home usa solo il riepilogo di oggi, ma il medesimo dato alimenta
+      // la pagina del ritmo: 60 giorni visibili + 60 per il confronto omogeneo.
+      const logsSince = addDays(now, -120).toISOString();
       const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
       const endHorizon = addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), 15).toISOString();
 
@@ -144,7 +159,7 @@ export function useHomeDashboard() {
           .eq("user_id", currentUser as string),
         supabase
           .from("study_sessions_logs")
-          .select("actual_duration, completed_at, event_id")
+          .select("id, actual_duration, completed_at, event_id, subject_name, task_label")
           .eq("user_id", currentUser as string)
           .gte("completed_at", logsSince)
           .order("completed_at", { ascending: false }),
@@ -274,6 +289,13 @@ export function useHomeDashboard() {
         sessionsToday: sessionsToday.length,
         completedActivities: completedEventIds.size,
         streakDays: computeStudyStreak(sessions.map((session) => session.completed_at), now),
+        focusSessions: sessions.map((session) => ({
+          id: session.id,
+          actualDuration: Math.max(0, session.actual_duration || 0),
+          completedAt: session.completed_at,
+          subjectName: session.subject_name,
+          taskLabel: session.task_label,
+        })),
       };
     },
   });

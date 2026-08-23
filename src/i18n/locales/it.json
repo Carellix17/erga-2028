@@ -23,7 +23,9 @@
     "settings": "Apri Impostazioni",
     "startStreak": "Inizia la serie",
     "streak_one": "{{count}} giorno",
-    "streak_other": "{{count}} giorni"
+    "streak_other": "{{count}} giorni",
+    "openFocusStats_one": "Apri le statistiche della serie: {{count}} giorno",
+    "openFocusStats_other": "Apri le statistiche della serie: {{count}} giorni"
   },
   "home": {
     "greeting": {
@@ -77,14 +79,6 @@
       "inDays_one": "Verifica domani",
       "inDays_other": "Verifica tra {{count}} giorni"
     },
-    "rhythm": {
-      "eyebrow": "Il tuo ritmo",
-      "title": "Dati reali dalle sessioni Focus",
-      "minutes": "minuti oggi",
-      "sessions": "sessioni oggi",
-      "streak": "giorni di serie",
-      "empty": "Completa la prima sessione Focus per iniziare a vedere il tuo ritmo."
-    },
     "quick": {
       "eyebrow": "Azioni rapide",
       "title": "Cosa vuoi fare?",
@@ -96,6 +90,61 @@
       "uploadDescription": "PDF, foto o ricerca web",
       "cognitive": "Esagono",
       "cognitiveDescription": "Rivedi il profilo cognitivo"
+    }
+  },
+  "focusStats": {
+    "title": "Il tuo ritmo",
+    "subtitle": "Sessioni Focus e continuità",
+    "error": {
+      "title": "Non riusciamo a caricare il tuo ritmo",
+      "description": "I tuoi dati sono al sicuro. Controlla la connessione e riprova.",
+      "retry": "Riprova"
+    },
+    "streak": {
+      "days_one": "{{count}} giorno di serie",
+      "days_other": "{{count}} giorni di serie",
+      "activeDescription": "Hai mantenuto il ritmo con almeno una sessione Focus ogni giorno.",
+      "emptyDescription": "Completa una sessione Focus per iniziare la tua serie."
+    },
+    "today": {
+      "title": "Oggi",
+      "minutes": "Minuti Focus",
+      "sessions": "Sessioni concluse",
+      "caption": "registrati oggi",
+      "sessionsCaption_one": "sessione registrata oggi",
+      "sessionsCaption_other": "sessioni registrate oggi"
+    },
+    "timeline": {
+      "title": "Focus nel tempo",
+      "description": "Minuti realmente conclusi nelle sessioni Focus.",
+      "periodLabel": "Periodo delle statistiche",
+      "period_one": "{{count}} giorno",
+      "period_other": "{{count}} giorni",
+      "legend": "Minuti Focus",
+      "minutes": "minuti",
+      "sessions": "sessioni",
+      "sameAsPrevious": "come nel periodo precedente",
+      "comparedWithPrevious": "{{value}} rispetto al periodo precedente",
+      "chartAria": "Andamento dei minuti Focus negli ultimi {{count}} giorni",
+      "tableCaption": "Dati giornalieri delle sessioni Focus negli ultimi {{count}} giorni",
+      "tableDate": "Data",
+      "emptyTitle": "Ancora nessuna sessione in questo periodo",
+      "emptyDescription": "Quando concludi una sessione Focus, qui vedrai il tuo andamento reale."
+    },
+    "summary": {
+      "minutes": "Tempo Focus",
+      "sessions": "Sessioni",
+      "activeDays": "Giorni attivi",
+      "average": "Media a sessione"
+    },
+    "recent": {
+      "title": "Ultime sessioni",
+      "realData": "Dati reali",
+      "fallbackTitle": "Sessione Focus",
+      "todayAt": "Oggi, {{time}}"
+    },
+    "actions": {
+      "startFocus": "Avvia Focus"
     }
   },
   "settings": {

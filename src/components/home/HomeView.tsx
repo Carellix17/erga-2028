@@ -6,11 +6,9 @@ import {
   Check,
   Clock3,
   FileUp,
-  Flame,
   Play,
   RefreshCw,
   Sparkles,
-  Target,
   Timer,
   Zap,
 } from "lucide-react";
@@ -78,15 +76,6 @@ function HomeSkeleton() {
         <Skeleton className="h-8 w-48 rounded-button" />
         <Skeleton className="h-9 w-36 rounded-button" />
         <Skeleton className="h-4 w-64 rounded-full" />
-      </div>
-      <div className="space-y-3">
-        <Skeleton className="h-4 w-28 rounded-pill" />
-        <Skeleton className="h-6 w-56 rounded-button" />
-        <div className="grid grid-cols-3 gap-2 min-[375px]:gap-3">
-          <Skeleton className="h-24 rounded-card" />
-          <Skeleton className="h-24 rounded-card" />
-          <Skeleton className="h-24 rounded-card" />
-        </div>
       </div>
       <Skeleton className="h-56 rounded-card" />
       <div className="space-y-3">
@@ -173,33 +162,6 @@ export function HomeView({
             </h1>
             <p className="mt-2 hidden text-base font-medium text-muted-foreground md:block">{welcome.subtitle}</p>
           </header>
-
-          <section aria-labelledby="rhythm-title" className="min-w-0 space-y-4">
-            <div>
-              <p className="hidden text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground md:block">{t("home.rhythm.eyebrow")}</p>
-              <h2 id="rhythm-title" className="mt-1 font-display text-xl font-bold">{t("home.rhythm.title")}</h2>
-            </div>
-            <div className="grid grid-cols-3 gap-2 min-[375px]:gap-3">
-              {[
-                { label: t("home.rhythm.minutes"), value: data.minutesToday, Icon: Timer },
-                { label: t("home.rhythm.sessions"), value: data.sessionsToday, Icon: Target },
-                { label: t("home.rhythm.streak"), value: data.streakDays, Icon: Flame },
-              ].map(({ label, value, Icon }) => (
-                <Card
-                  key={label}
-                  className={cn(
-                    HOME_BLOCK_CLASS,
-                    "flex min-w-0 flex-col items-center rounded-lg p-3 text-center min-[375px]:p-4 sm:items-start sm:text-left",
-                  )}
-                >
-                  <MinimalArtwork Icon={Icon} compact />
-                  <p className="mt-2 font-display text-2xl font-extrabold tabular-nums tracking-[-0.03em] min-[360px]:text-[1.7rem]">{value}</p>
-                  <p className="mt-1 text-balance text-[11px] font-medium leading-[1.25] text-black/65 min-[360px]:text-xs sm:text-sm">{label}</p>
-                </Card>
-              ))}
-            </div>
-            {data.sessionsToday === 0 && <p className="hidden text-sm text-muted-foreground md:block">{t("home.rhythm.empty")}</p>}
-          </section>
 
           <section aria-labelledby="resume-title" className="min-w-0">
             {resume ? (
