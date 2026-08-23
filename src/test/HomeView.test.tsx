@@ -141,16 +141,34 @@ describe("HomeView", () => {
     expect(content?.className).not.toMatch(/(?:^|\s)(?:p[bt]-)/);
   });
 
-  it("usa il fondo off-white neutro e illustrazioni nere nei blocchi operativi, senza toccare il percorso", () => {
+  it("mantiene il light theme dei blocchi operativi ma prepara il materiale dark solo per Piano del giorno e Timer di Focus", () => {
     render(<HomeView {...callbacks} />);
 
+    const dailyPlanCard = screen.getByTestId("home-daily-plan-card");
     const focusCard = screen.getByTestId("home-focus-timer-card");
+
+    expect(dailyPlanCard).toHaveClass("bg-off-white", "text-[#11110E]");
     expect(focusCard).toHaveClass("bg-off-white", "text-[#11110E]");
+    expect(dailyPlanCard.className).toContain("dark:bg-[rgba(26,26,26,0.85)]");
+    expect(dailyPlanCard.className).toContain("dark:shadow-[0_0_30px_rgba(255,255,255,0.08),0_18px_40px_-28px_rgba(0,0,0,0.72)]");
+    expect(focusCard.className).toContain("dark:bg-[rgba(26,26,26,0.85)]");
+    expect(focusCard.className).toContain("supports-[backdrop-filter]:dark:backdrop-blur-md");
+    expect(screen.getByRole("button", { name: "Inizia" }).className).toContain("dark:bg-[#FAFAFA]");
     expect(screen.getAllByTestId("home-minimal-artwork").length).toBeGreaterThanOrEqual(1);
 
     const resumeCard = screen.getByTestId("resume-lesson-card");
     expect(resumeCard).toHaveClass("bg-inverse-surface");
     expect(resumeCard).not.toHaveClass("bg-off-white");
+    expect(resumeCard.className).not.toContain("dark:bg-[rgba(26,26,26,0.85)]");
+  });
+
+  it("applica lo stesso materiale dark anche allo stato vuoto del Piano del giorno", () => {
+    mockDashboard({ ...dashboardData, todayTasks: [] });
+    render(<HomeView {...callbacks} />);
+
+    const dailyPlanCard = screen.getByTestId("home-daily-plan-card");
+    expect(dailyPlanCard.className).toContain("dark:bg-[rgba(26,26,26,0.85)]");
+    expect(screen.getByRole("button", { name: /Organizza la settimana/i }).className).toContain("dark:bg-[#FAFAFA]");
   });
 
   it("avvia il Pomodoro timer dalla card Focus con la durata selezionata tramite + e -", () => {
