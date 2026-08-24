@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Hexagon, SlidersHorizontal, Brain, Loader2, RotateCcw, Check } from "lucide-react";
 import { useCognitiveProfile, type CognitiveProfile } from "@/hooks/useCognitiveProfile";
 import { CognitiveRadar } from "./CognitiveRadar";
+import { CoreCard } from "./CoreCard";
 import { useToast } from "@/hooks/use-toast";
 
 // Le 6 dimensioni del modello Erga (stessi nomi usati da test diagnostico,
@@ -107,126 +108,119 @@ export function CognitiveHexagonEditor({ onOpenDiagnostic }: Props) {
   return (
     <div className="space-y-4">
       {/* Grafico + valori */}
-      <div className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Hexagon className="w-5 h-5 text-foreground" aria-hidden="true" />
-          <h2 className="title-medium font-display text-foreground">Esagono Cognitivo</h2>
-        </div>
-
-        {profile ? (
-          <>
-            <LiveRadar data={radarData} />
-            <div className="grid grid-cols-3 gap-2 text-[11px]">
-              {DIMENSIONS.map((d) => (
-                <div
-                  key={d.key}
-                  className="rounded-button bg-surface-container-high py-2 text-center"
-                >
-                  <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    {d.label}
+      <CoreCard id="esagono" icon={Hexagon} title="Esagono Cognitivo">
+        <div className="space-y-4">
+          {profile ? (
+            <>
+              <LiveRadar data={radarData} />
+              <div className="grid grid-cols-3 gap-2 text-[11px]">
+                {DIMENSIONS.map((d) => (
+                  <div
+                    key={d.key}
+                    className="rounded-button bg-surface-container-high py-2 text-center"
+                  >
+                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      {d.label}
+                    </div>
+                    <div className="text-base font-bold text-foreground tabular-nums">{shown[d.key]}</div>
                   </div>
-                  <div className="text-base font-bold text-foreground tabular-nums">{shown[d.key]}</div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="py-6 text-center space-y-2">
+              <Brain className="w-8 h-8 mx-auto text-muted-foreground" aria-hidden="true" />
+              <p className="body-medium text-muted-foreground">
+                Non hai ancora calcolato il tuo Esagono Cognitivo.
+              </p>
+              <p className="body-small text-muted-foreground">
+                Due minuti di domande per capire come studi: Erga userà il risultato per adattare le lezioni a te.
+              </p>
             </div>
-          </>
-        ) : (
-          <div className="py-6 text-center space-y-2">
-            <Brain className="w-8 h-8 mx-auto text-muted-foreground" aria-hidden="true" />
-            <p className="body-medium text-muted-foreground">
-              Non hai ancora calcolato il tuo Esagono Cognitivo.
-            </p>
-            <p className="body-small text-muted-foreground">
-              Due minuti di domande per capire come studi: Erga userà il risultato per adattare le lezioni a te.
-            </p>
-          </div>
-        )}
+          )}
 
-        {!calibrating && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {profile && (
+          {!calibrating && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {profile && (
+                <Button
+                  onClick={startCalibration}
+                  variant="outline"
+                  className="w-full rounded-button h-12"
+                >
+                  <SlidersHorizontal className="w-4 h-4 mr-2" aria-hidden="true" />
+                  Aggiusta parametri
+                </Button>
+              )}
               <Button
-                onClick={startCalibration}
-                variant="outline"
-                className="w-full rounded-button h-12 border border-outline-variant/60 bg-card hover:bg-surface-container-high shadow-level-1"
+                onClick={onOpenDiagnostic}
+                variant={profile ? "outline" : "default"}
+                className="w-full rounded-button h-12"
               >
-                <SlidersHorizontal className="w-4 h-4 mr-2" aria-hidden="true" />
-                Aggiusta parametri
+                <Brain className="w-4 h-4 mr-2" aria-hidden="true" />
+                {profile ? "Rifai il test" : "Calcola il tuo Esagono"}
               </Button>
-            )}
-            <Button
-              onClick={onOpenDiagnostic}
-              variant={profile ? "outline" : "default"}
-              className="w-full rounded-button h-12 border border-outline-variant/60 bg-card hover:bg-surface-container-high shadow-level-1"
-            >
-              <Brain className="w-4 h-4 mr-2 text-foreground" aria-hidden="true" />
-              {profile ? "Rifai il test" : "Calcola il tuo Esagono"}
-            </Button>
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      </CoreCard>
 
       {/* Pannello di calibrazione manuale */}
       {calibrating && (
-        <div
-          className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-5 animate-fade-up"
-          role="group"
-          aria-label="Calibrazione manuale dell'Esagono Cognitivo"
+        <CoreCard
+          id="calibrazione"
+          title="Aggiusta i parametri"
+          description="Muovi i cursori se senti che un valore non ti rappresenta. Il grafico si aggiorna in tempo reale."
+          className="animate-fade-up"
         >
-          <div>
-            <h3 className="title-medium font-display text-foreground">Aggiusta i parametri</h3>
-            <p className="body-small text-muted-foreground">
-              Muovi i cursori se senti che un valore non ti rappresenta. Il grafico si aggiorna in tempo reale.
-            </p>
-          </div>
-
-          <div className="space-y-5">
-            {DIMENSIONS.map((d) => (
-              <div key={d.key}>
-                <div className="flex items-baseline justify-between mb-2">
-                  <span id={`slider-label-${d.key}`} className="label-large font-semibold text-foreground">
-                    {d.label}
-                  </span>
-                  <span className="label-large text-muted-foreground tabular-nums" aria-hidden="true">
-                    {draft[d.key]}
-                  </span>
-                </div>
-                <Slider
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={[draft[d.key]]}
-                  onValueChange={(v) => setScore(d.key, v[0] ?? draft[d.key])}
-                  thumbProps={{
-                    "aria-labelledby": `slider-label-${d.key}`,
-                    "aria-valuetext": `${draft[d.key]} su 100`,
-                  }}
-                  className="py-1"
-                />
+            <div className="space-y-5">
+              <div className="space-y-5">
+                {DIMENSIONS.map((d) => (
+                  <div key={d.key}>
+                    <div className="flex items-baseline justify-between mb-2">
+                      <span id={`slider-label-${d.key}`} className="label-large font-semibold text-foreground">
+                        {d.label}
+                      </span>
+                      <span className="label-large text-muted-foreground tabular-nums" aria-hidden="true">
+                        {draft[d.key]}
+                      </span>
+                    </div>
+                    <Slider
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={[draft[d.key]]}
+                      onValueChange={(v) => setScore(d.key, v[0] ?? draft[d.key])}
+                      thumbProps={{
+                        "aria-labelledby": `slider-label-${d.key}`,
+                        "aria-valuetext": `${draft[d.key]} su 100`,
+                      }}
+                      className="py-1"
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              onClick={cancelCalibration}
-              variant="outline"
-              disabled={saving}
-              className="flex-1 h-12 rounded-button"
-            >
-              <RotateCcw className="w-4 h-4 mr-2" aria-hidden="true" />
-              Annulla
-            </Button>
-            <Button onClick={handleSave} disabled={saving} className="flex-1 h-12 rounded-button">
-              {saving ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
-              ) : (
-                <Check className="w-4 h-4 mr-2" aria-hidden="true" />
-              )}
-              Salva parametri
-            </Button>
-          </div>
-        </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={cancelCalibration}
+                  variant="outline"
+                  disabled={saving}
+                  className="flex-1 h-12 rounded-button"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" aria-hidden="true" />
+                  Annulla
+                </Button>
+                <Button onClick={handleSave} disabled={saving} className="flex-1 h-12 rounded-button">
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Check className="w-4 h-4 mr-2" aria-hidden="true" />
+                  )}
+                  Salva parametri
+                </Button>
+              </div>
+            </div>
+          </CoreCard>
       )}
     </div>
   );

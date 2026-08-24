@@ -48,6 +48,54 @@ vi.mock("@/components/profile/NotificationsCard", () => ({
   NotificationsCard: () => <section aria-label="Notifiche" />,
 }));
 
+// La scheda "Accesso e sicurezza" arriva dal Core e porta i suoi hook.
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({
+    currentEmail: "vale@example.com",
+    isGoogleUser: false,
+    logout: vi.fn(),
+    session: null,
+  }),
+}));
+
+vi.mock("@/hooks/useSubscription", () => ({
+  useSubscription: () => ({
+    tier: "beta",
+    isPro: false,
+    isBetaTester: true,
+    hasActiveSubscription: false,
+    loading: false,
+  }),
+}));
+
+vi.mock("@/components/subscription/SubscriptionSheet", () => ({
+  SubscriptionSheet: () => <div data-testid="subscription-sheet" />,
+}));
+
+// La scheda "Accesso e sicurezza" è arrivata dal Core: porta con sé i suoi hook.
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({
+    currentEmail: "vale@example.com",
+    isGoogleUser: false,
+    logout: vi.fn(),
+    session: null,
+  }),
+}));
+
+vi.mock("@/hooks/useSubscription", () => ({
+  useSubscription: () => ({
+    tier: "beta",
+    isPro: false,
+    isBetaTester: true,
+    hasActiveSubscription: false,
+    loading: false,
+  }),
+}));
+
+vi.mock("@/components/subscription/SubscriptionSheet", () => ({
+  SubscriptionSheet: () => <div data-testid="subscription-sheet" />,
+}));
+
 function renderSettingsPage(ui: React.ReactElement, route: string) {
   return render(
     <MemoryRouter initialEntries={[route]}>
@@ -70,5 +118,28 @@ describe("pagine impostazioni", () => {
 
     expect(screen.getByRole("heading", { level: 1, name: title })).toBeInTheDocument();
     expect(screen.queryByText("Ops, qualcosa è andato storto")).not.toBeInTheDocument();
+  });
+});
+
+describe("Generale — accesso e sicurezza (spostato fuori dal Core)", () => {
+  it("tiene email, cambio password e uscita a portata di mano", () => {
+    renderSettingsPage(<SettingsAccount />, "/app/impostazioni/account");
+
+    expect(screen.getByRole("heading", { name: "Accesso e sicurezza" })).toBeInTheDocument();
+    expect(screen.getByText("vale@example.com")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Cambia password/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Esci dall'account/i })).toBeInTheDocument();
+  });
+});
+
+
+describe("Impostazioni → Generale: accesso e sicurezza", () => {
+  it("ospita email, cambio password e uscita (spostati fuori dal Core)", () => {
+    renderSettingsPage(<SettingsAccount />, "/app/impostazioni/account");
+
+    expect(screen.getByRole("heading", { name: "Accesso e sicurezza" })).toBeInTheDocument();
+    expect(screen.getByText("vale@example.com")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Cambia password/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Esci dall'account/i })).toBeInTheDocument();
   });
 });

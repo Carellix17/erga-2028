@@ -132,7 +132,9 @@ const Index = () => {
     );
   }
 
-  const headerTitle = activeTab === "home" ? null : t(`nav.${activeTab}`);
+  // Home e Core portano già la propria intestazione dentro la stanza:
+  // niente titolo duplicato nella barra in alto (un solo <h1> per pagina).
+  const headerTitle = activeTab === "home" || activeTab === "core" ? null : t(`nav.${activeTab}`);
 
   return (
     <>

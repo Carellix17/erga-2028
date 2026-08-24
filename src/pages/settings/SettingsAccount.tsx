@@ -15,6 +15,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useProfileData, INSTITUTES, SCHOOLS } from "@/hooks/useProfileData";
 import { NotificationsCard } from "@/components/profile/NotificationsCard";
+import { AccountAccessCard } from "@/components/settings/AccountAccessCard";
 
 export default function SettingsAccount() {
   const { toast } = useToast();
@@ -162,6 +163,9 @@ export default function SettingsAccount() {
                 ))}
               </RadioGroup>
             </section>
+
+            {/* Accesso e sicurezza (email, password, uscita) */}
+            <AccountAccessCard />
 
             {/* Notifiche */}
             <NotificationsCard />

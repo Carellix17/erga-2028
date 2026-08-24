@@ -10,6 +10,7 @@ import {
 } from "@/hooks/useUserRoutines";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { CoreCard } from "./CoreCard";
 import {
   ROUTINE_DAYS, ROUTINE_GRID_HEIGHT, ROUTINE_HOURS, ROUTINE_KINDS, ROUTINE_ROW_H,
   findRoutineConflict, fmtTime, layoutRoutineSegments, minToTime, routineDayLabel,
@@ -138,26 +139,18 @@ export function WeeklyRoutineEditor() {
 
   return (
     <div className="space-y-4">
-      <section
-        className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-4"
-        aria-labelledby="core-routine-title"
-      >
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <CalendarClock className="w-5 h-5 text-foreground shrink-0" aria-hidden="true" />
-            <h2 id="core-routine-title" className="title-medium font-display text-foreground truncate">
-              Settimana
-            </h2>
-          </div>
-          <Button onClick={() => openCreate()} size="sm" className="h-11 rounded-pill px-4 shrink-0">
+      <CoreCard
+        id="routine"
+        icon={CalendarClock}
+        title="Settimana"
+        description="I tuoi impegni fissi fuori dallo studio (scuola, sonno, pasti, sport). Il piano di studio li eviterà."
+        action={
+          <Button onClick={() => openCreate()} size="sm" className="h-11 rounded-pill px-4">
             <Plus className="w-4 h-4 mr-1" aria-hidden="true" />
             Aggiungi blocco
           </Button>
-        </div>
-        <p className="body-small text-muted-foreground -mt-2">
-          I tuoi impegni fissi fuori dallo studio (scuola, sonno, pasti, sport). Il piano di studio li eviterà.
-        </p>
-
+        }
+      >
         {routines.isLoading ? (
           <p className="body-small text-muted-foreground text-center py-8">Caricamento…</p>
         ) : isEmpty ? (
@@ -309,7 +302,7 @@ export function WeeklyRoutineEditor() {
             </div>
           </div>
         )}
-      </section>
+      </CoreCard>
 
       {/* Modale creazione / modifica routine */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>

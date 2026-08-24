@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { BookOpen, Plus, Trash2, Loader2, Sparkles, Heart } from "lucide-react";
+import { BookOpen, Heart, Plus, X } from "lucide-react";
 import {
   useUserSubjects, useAddUserSubject, useDeleteUserSubject, useUpdateSubjectColor,
 } from "@/hooks/useUserSubjects";
@@ -10,6 +11,7 @@ import { SUBJECT_PALETTE, resolveSubjectColor } from "@/lib/subjectColors";
 import { useUserData } from "@/hooks/useUserData";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { CoreCard } from "./CoreCard";
 
 // Suggerimenti rapidi per gli interessi: solo chips da un tocco, mai campi obbligatori.
 const INTEREST_SUGGESTIONS = [
@@ -24,6 +26,15 @@ const INTEREST_SUGGESTIONS = [
   "Lettura",
   "Cucina",
 ];
+
+/** Stile condiviso dei tag del Core: Badge minimale + piccola "x" di rimozione. */
+const TAG_CLASS = "h-9 gap-1 py-0 pl-3 pr-1 text-[13px] font-semibold";
+const TAG_REMOVE_CLASS = cn(
+  "-mr-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-pill",
+  "text-muted-foreground transition-colors duration-200",
+  "hover:bg-foreground/10 hover:text-foreground",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+);
 
 interface AddTagInputProps {
   value: string;
@@ -49,16 +60,16 @@ function AddTagInput({ value, onChange, onAdd, placeholder, ariaLabel, addButton
         }}
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className="rounded-button h-11 bg-card border border-border"
+        className="h-11 rounded-button border-border bg-card"
       />
       <Button
         onClick={onAdd}
         disabled={disabled || !value.trim()}
         size="icon"
         aria-label={addButtonLabel}
-        className="h-11 w-11 rounded-button shrink-0"
+        className="h-11 w-11 shrink-0 rounded-button"
       >
-        <Plus className="w-4 h-4" aria-hidden="true" />
+        <Plus className="h-4 w-4" aria-hidden="true" />
       </Button>
     </div>
   );
@@ -120,168 +131,150 @@ export function SubjectsInterestsEditor() {
   return (
     <div className="space-y-4">
       {/* ── Materie ── */}
-      <section
-        className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-4"
-        aria-labelledby="core-materie-title"
+      <CoreCard
+        id="materie"
+        icon={BookOpen}
+        title="Materie preferite"
+        description="Le materie che studi davvero: Erga le usa per organizzare i tuoi materiali e i colori dei corsi."
       >
-        <div className="flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-foreground" aria-hidden="true" />
-          <h2 id="core-materie-title" className="title-medium font-display text-foreground">
-            Materie preferite
-          </h2>
-        </div>
-        <p className="body-small text-muted-foreground -mt-2">
-          Le materie che studi davvero: Erga le usa per organizzare i tuoi materiali e i colori dei corsi.
-        </p>
+        <div className="space-y-4">
+          <AddTagInput
+            value={newSubject}
+            onChange={setNewSubject}
+            onAdd={handleAddSubject}
+            placeholder="Es. Matematica"
+            ariaLabel="Aggiungi materia"
+            addButtonLabel="Aggiungi la materia"
+            disabled={addSubject.isPending}
+          />
 
-        <AddTagInput
-          value={newSubject}
-          onChange={setNewSubject}
-          onAdd={handleAddSubject}
-          placeholder="Es. Matematica"
-          ariaLabel="Aggiungi materia"
-          addButtonLabel="Aggiungi la materia"
-          disabled={addSubject.isPending}
-        />
-
-        {subjects.isLoading ? (
-          <p className="body-small text-muted-foreground">Caricamento…</p>
-        ) : subjects.data?.length ? (
-          <ul className="flex flex-wrap gap-2" aria-label="Materie aggiunte">
-            {subjects.data.map((s) => {
-              const col = resolveSubjectColor(s.name, s.color);
-              return (
-                <li
-                  key={s.id}
-                  className="inline-flex items-center gap-2 rounded-full bg-card border border-border pl-2.5 pr-1 py-1 text-sm animate-scale-in"
-                >
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        className="flex items-center gap-1.5 rounded-full pr-1 hover:opacity-80 transition min-h-[32px]"
-                        aria-label={`Cambia colore di ${s.name}`}
-                        title="Cambia colore"
-                      >
-                        <span
-                          className={cn(
-                            "w-3 h-3 rounded-full ring-2 ring-offset-1",
-                            col.solid,
-                            s.color ? "ring-border" : "ring-transparent",
-                          )}
-                          aria-hidden="true"
-                        />
-                        {s.name}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-56 p-3" align="start">
-                      <p className="text-xs font-semibold mb-2">Colore di {s.name}</p>
-                      <div className="grid grid-cols-7 gap-1.5 mb-2">
-                        {SUBJECT_PALETTE.map((c) => (
+          {subjects.isLoading ? (
+            <p className="body-small text-muted-foreground">Caricamento…</p>
+          ) : subjects.data?.length ? (
+            <ul className="flex flex-wrap gap-2" aria-label="Materie aggiunte">
+              {subjects.data.map((s) => {
+                const col = resolveSubjectColor(s.name, s.color);
+                return (
+                  <li key={s.id} className="animate-scale-in">
+                    <Badge variant="secondary" className={TAG_CLASS}>
+                      <Popover>
+                        <PopoverTrigger asChild>
                           <button
-                            key={c.key}
-                            onClick={() => updateColor.mutate({ id: s.id, color: c.key })}
-                            aria-label={c.label}
-                            className={cn(
-                              "w-6 h-6 rounded-full transition-transform hover:scale-110",
-                              c.solid,
-                              (s.color === c.key || (!s.color && col.key === c.key)) &&
-                                "ring-2 ring-offset-2 ring-foreground",
-                            )}
-                          />
-                        ))}
-                      </div>
-                      {s.color && (
-                        <button
-                          onClick={() => updateColor.mutate({ id: s.id, color: null })}
-                          className="text-xs text-muted-foreground hover:text-foreground transition"
-                        >
-                          Torna al colore automatico
-                        </button>
-                      )}
-                    </PopoverContent>
-                  </Popover>
-                  <button
-                    onClick={() => handleDeleteSubject(s.id, s.name)}
-                    className="rounded-full p-1 hover:bg-muted transition min-h-[32px] min-w-[32px] flex items-center justify-center"
-                    aria-label={`Rimuovi ${s.name}`}
-                  >
-                    <Trash2 className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="body-small text-muted-foreground">
-            Nessuna materia aggiunta. Aggiungi quelle del tuo programma per ritrovarle subito nei corsi.
-          </p>
-        )}
-      </section>
+                            className="flex min-w-0 items-center gap-1.5 rounded-pill text-left transition-opacity duration-200 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            aria-label={`Cambia colore di ${s.name}`}
+                            title="Cambia colore"
+                          >
+                            <span
+                              className={cn("h-2.5 w-2.5 shrink-0 rounded-full", col.solid)}
+                              aria-hidden="true"
+                            />
+                            <span className="max-w-[9rem] truncate">{s.name}</span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-56 p-3" align="start">
+                          <p className="text-xs font-semibold mb-2">Colore di {s.name}</p>
+                          <div className="grid grid-cols-7 gap-1.5 mb-2">
+                            {SUBJECT_PALETTE.map((c) => (
+                              <button
+                                key={c.key}
+                                onClick={() => updateColor.mutate({ id: s.id, color: c.key })}
+                                aria-label={c.label}
+                                className={cn(
+                                  "w-6 h-6 rounded-full transition-transform hover:scale-110",
+                                  c.solid,
+                                  (s.color === c.key || (!s.color && col.key === c.key)) &&
+                                    "ring-2 ring-offset-2 ring-foreground",
+                                )}
+                              />
+                            ))}
+                          </div>
+                          {s.color && (
+                            <button
+                              onClick={() => updateColor.mutate({ id: s.id, color: null })}
+                              className="text-xs text-muted-foreground hover:text-foreground transition"
+                            >
+                              Torna al colore automatico
+                            </button>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+
+                      <button
+                        onClick={() => handleDeleteSubject(s.id, s.name)}
+                        className={TAG_REMOVE_CLASS}
+                        aria-label={`Rimuovi ${s.name}`}
+                      >
+                        <X className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                    </Badge>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="body-small text-muted-foreground">
+              Nessuna materia aggiunta. Aggiungi quelle del tuo programma per ritrovarle subito nei corsi.
+            </p>
+          )}
+        </div>
+      </CoreCard>
 
       {/* ── Interessi ── */}
-      <section
-        className="rounded-card bg-card border border-outline-variant/60 shadow-level-1 p-5 space-y-4"
-        aria-labelledby="core-interessi-title"
+      <CoreCard
+        id="interessi"
+        icon={Heart}
+        title="Interessi & hobby"
+        description="Le tue passioni, salvate nel tuo profilo Erga. Premi Invio per aggiungere."
       >
-        <div className="flex items-center gap-2">
-          <Heart className="w-5 h-5 text-foreground" aria-hidden="true" />
-          <h2 id="core-interessi-title" className="title-medium font-display text-foreground">
-            Interessi &amp; hobby
-          </h2>
-        </div>
-        <p className="body-small text-muted-foreground -mt-2">
-          Le tue passioni, salvate nel tuo profilo Erga. Premi Invio per aggiungere.
-        </p>
+        <div className="space-y-4">
+          <AddTagInput
+            value={newInterest}
+            onChange={setNewInterest}
+            onAdd={() => addInterest()}
+            placeholder="Es. Scacchi, droni, economia…"
+            ariaLabel="Aggiungi interesse"
+            addButtonLabel="Aggiungi l'interesse"
+          />
 
-        <AddTagInput
-          value={newInterest}
-          onChange={setNewInterest}
-          onAdd={() => addInterest()}
-          placeholder="Es. Scacchi, droni, economia…"
-          ariaLabel="Aggiungi interesse"
-          addButtonLabel="Aggiungi l'interesse"
-        />
+          {interests.length ? (
+            <ul className="flex flex-wrap gap-2" aria-label="Interessi aggiunti">
+              {interests.map((tag) => (
+                <li key={tag} className="animate-scale-in">
+                  <Badge variant="secondary" className={TAG_CLASS}>
+                    <span className="max-w-[10rem] truncate">{tag}</span>
+                    <button
+                      onClick={() => removeInterest(tag)}
+                      className={TAG_REMOVE_CLASS}
+                      aria-label={`Rimuovi ${tag}`}
+                    >
+                      <X className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="body-small text-muted-foreground">
+              Nessun interesse ancora. Racconta cosa ti appassiona fuori da scuola.
+            </p>
+          )}
 
-        {interests.length ? (
-          <ul className="flex flex-wrap gap-2" aria-label="Interessi aggiunti">
-            {interests.map((tag) => (
-              <li
-                key={tag}
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary-container/70 border border-outline-variant/60 pl-3 pr-1 py-1 text-sm animate-scale-in"
-              >
-                <Sparkles className="w-3 h-3 text-primary" aria-hidden="true" />
-                {tag}
+          {remainingSuggestions.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="label-small text-muted-foreground">Suggerimenti:</span>
+              {remainingSuggestions.map((s) => (
                 <button
-                  onClick={() => removeInterest(tag)}
-                  className="rounded-full p-1.5 hover:bg-muted transition min-h-[32px] min-w-[32px] flex items-center justify-center"
-                  aria-label={`Rimuovi ${tag}`}
+                  key={s}
+                  onClick={() => addInterest(s)}
+                  className="min-h-9 rounded-pill border border-dashed border-border px-3 text-[13px] text-muted-foreground transition-colors duration-200 hover:border-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+                  + {s}
                 </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="body-small text-muted-foreground">
-            Nessun interesse ancora. Racconta cosa ti appassiona fuori da scuola.
-          </p>
-        )}
-
-        {remainingSuggestions.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="label-small text-muted-foreground">Suggerimenti:</span>
-            {remainingSuggestions.map((s) => (
-              <button
-                key={s}
-                onClick={() => addInterest(s)}
-                className="px-3 py-1.5 rounded-full border border-dashed border-outline-variant text-sm text-muted-foreground hover:text-foreground hover:border-foreground transition-colors min-h-[36px]"
-              >
-                + {s}
-              </button>
-            ))}
-          </div>
-        )}
-      </section>
+              ))}
+            </div>
+          )}
+        </div>
+      </CoreCard>
     </div>
   );
 }
