@@ -4,7 +4,7 @@ import { Upload, Brain, ArrowRight, Check, Lock, Mail, Eye, EyeOff, ChevronLeft,
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CognitiveRadar } from "@/components/profile/CognitiveRadar";
+import { CognitiveRadar } from "@/components/core/CognitiveRadar";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";

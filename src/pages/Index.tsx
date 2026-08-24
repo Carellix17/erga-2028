@@ -3,7 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { StudioView } from "@/components/studio/StudioView";
 import { PianoView } from "@/components/piano/PianoView";
 import { PraticaView } from "@/components/pratica/PraticaView";
-import { ProfileView } from "@/components/profile/ProfileView";
+import { CoreView } from "@/components/core/CoreView";
 import { HomeView } from "@/components/home/HomeView";
 import { UploadSheet } from "@/components/upload/UploadSheet";
 import { useUserData } from "@/hooks/useUserData";
@@ -17,7 +17,7 @@ import { Brain } from "lucide-react";
 import { useDemoHandoff } from "@/hooks/useDemoHandoff";
 import { useTranslation } from "react-i18next";
 
-type Tab = "home" | "studio" | "piano" | "pratica" | "profilo";
+type Tab = "home" | "studio" | "piano" | "pratica" | "core";
 
 interface UploadedFile {
   name: string;
@@ -41,7 +41,7 @@ const Index = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // 🧭 P24 — memoria di posizione: ogni stanza riapre DOV'ERA (oggetti persistenti)
-  const scrollPositions = useRef<Record<Tab, number>>({ home: 0, studio: 0, piano: 0, pratica: 0, profilo: 0 });
+  const scrollPositions = useRef<Record<Tab, number>>({ home: 0, studio: 0, piano: 0, pratica: 0, core: 0 });
   const changeTab = useCallback(
     (tab: Tab) => {
       scrollPositions.current[activeTab] = window.scrollY;
@@ -59,7 +59,7 @@ const Index = () => {
   useEffect(() => {
     const handler = (e: Event) => {
       const tab = (e as CustomEvent<string>).detail;
-      if (tab === "home" || tab === "studio" || tab === "piano" || tab === "pratica" || tab === "profilo") {
+      if (tab === "home" || tab === "studio" || tab === "piano" || tab === "pratica" || tab === "core") {
         changeTab(tab);
       }
     };
@@ -198,8 +198,8 @@ const Index = () => {
             onFullscreenChange={setIsFullscreen}
           />
         )}
-        {activeTab === "profilo" && (
-          <ProfileView onOpenCognitive={() => setShowOnboarding(true)} />
+        {activeTab === "core" && (
+          <CoreView onOpenCognitive={() => setShowOnboarding(true)} />
         )}
         </div>
       </AppLayout>

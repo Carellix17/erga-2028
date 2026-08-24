@@ -1,9 +1,9 @@
-import { BookOpen, Brain, CalendarDays, Home as HomeIcon, User } from "lucide-react";
+import { BookOpen, Brain, CalendarDays, Hexagon, Home as HomeIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
-export type Tab = "home" | "studio" | "piano" | "pratica" | "profilo";
+export type Tab = "home" | "studio" | "piano" | "pratica" | "core";
 
 interface BottomNavProps {
   activeTab: Tab;
@@ -19,7 +19,7 @@ const tabs = [
 // P24 × MONOCROMO — la nav è una PILLOLA SOSPESA materica:
 // vetro chiaro (bg-white/90 + blur), bordo definito, voce attiva in
 // NERO PIENO (stile bottoni primari) e indicatore neutro.
-// Profilo: cerchio staccato AL LATO,
+// Core: cerchio staccato AL LATO (esagono, il centro di personalizzazione),
 // stesso materiale della pillola. Pratica vive nella Home.
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const { t } = useTranslation();
@@ -123,50 +123,50 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 );
               })}
             </div>
-            {/* Profilo in fondo alla sidebar */}
+            {/* Core in fondo alla sidebar */}
             <div className="mt-auto pt-6">
               <button
-                onClick={() => onTabChange("profilo")}
-                aria-current={activeTab === "profilo" ? "page" : undefined}
+                onClick={() => onTabChange("core")}
+                aria-current={activeTab === "core" ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-3 w-full px-3 py-2.5 rounded-button transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  activeTab === "profilo" ? activeFill : "hover:bg-surface-container-high",
+                  activeTab === "core" ? activeFill : "hover:bg-surface-container-high",
                 )}
               >
                 <span className="relative">
-                  <User className={cn("w-5 h-5", activeTab === "profilo" ? "" : idleTxt)} strokeWidth={2} />
+                  <Hexagon className={cn("w-5 h-5", activeTab === "core" ? "" : idleTxt)} strokeWidth={2} />
                   <span
                     className={cn(
                       "absolute -top-0.5 -right-0.5 w-2 h-2 rounded-pill bg-muted-foreground border border-card",
-                      activeTab === "profilo" ? "opacity-100" : "opacity-60",
+                      activeTab === "core" ? "opacity-100" : "opacity-60",
                     )}
                   />
                 </span>
                 <span
                   className={cn(
                     "flex-1 text-left text-[15px] font-semibold",
-                    activeTab === "profilo" ? "" : idleTxt,
+                    activeTab === "core" ? "" : idleTxt,
                   )}
                 >
-                  {t("nav.profilo")}
+                  {t("nav.core")}
                 </span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* ── Profilo mobile: cerchio accanto alla pillola, stesso materiale ── */}
+        {/* ── Core mobile: cerchio accanto alla pillola, stesso materiale ── */}
         <button
           type="button"
-          onClick={() => onTabChange("profilo")}
-          aria-label={t("nav.profilo")}
-          aria-current={activeTab === "profilo" ? "page" : undefined}
+          onClick={() => onTabChange("core")}
+          aria-label={t("nav.core")}
+          aria-current={activeTab === "core" ? "page" : undefined}
           className={cn(
             "md:hidden relative w-[4.5rem] h-[4.5rem] rounded-pill flex items-center justify-center flex-shrink-0 shadow-level-2 transition-transform duration-150 active:scale-90",
             pillMaterial,
           )}
         >
-          {activeTab === "profilo" && (
+          {activeTab === "core" && (
             <motion.span
               layoutId="activeTabBackground"
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
@@ -174,7 +174,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               aria-hidden
             />
           )}
-          <User className="relative z-10 w-5 h-5" strokeWidth={2} />
+          <Hexagon className="relative z-10 w-5 h-5" strokeWidth={2} />
           <span className="absolute top-1 right-1 w-3 h-3 rounded-pill bg-muted-foreground border-2 border-card" />
         </button>
       </div>
