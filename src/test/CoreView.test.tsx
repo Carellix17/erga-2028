@@ -17,8 +17,6 @@ if (!("ResizeObserver" in globalThis)) {
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
-type CognitiveSaveArg = Record<string, string | number | null | undefined>;
-const saveCognitive = vi.fn(async (_data: CognitiveSaveArg) => true);
 const openDiagnostic = vi.fn();
 const updateInterests = vi.fn();
 
@@ -41,7 +39,7 @@ vi.mock("@/hooks/useCognitiveProfile", () => ({
     hasCompletedOnboarding: true,
     isLoaded: true,
     refresh: vi.fn(),
-    save: saveCognitive,
+    save: vi.fn(),
   }),
 }));
 
@@ -138,24 +136,12 @@ describe("CoreView", () => {
     expect(screen.getAllByRole("tabpanel")).toHaveLength(1);
   });
 
-  it("apre il pannello di calibrazione con 6 cursori e salva", async () => {
+  it("non permette di modificare a mano i punteggi: solo rifare il test", () => {
     renderCore();
-    fireEvent.click(screen.getByRole("button", { name: /Aggiusta parametri/i }));
-    const sliders = screen.getAllByRole("slider");
-    expect(sliders).toHaveLength(6);
-
-    // Muove il cursore del Focus (80 → 81+) e salva
-    const focus = screen.getByRole("slider", { name: "Focus" });
-    fireEvent.keyDown(focus, { key: "ArrowRight" });
-    fireEvent.click(screen.getByRole("button", { name: /Salva parametri/i }));
-    expect(await vi.waitFor(() => expect(saveCognitive).toHaveBeenCalledTimes(1)));
-    const firstCall = saveCognitive.mock.calls.at(0);
-    expect(firstCall).toBeDefined();
-    const arg = (firstCall as unknown as [CognitiveSaveArg])[0];
-    expect(arg.foc_score).toBeGreaterThan(80);
-    expect(arg).toMatchObject({ nome: "Vale", eta: 16 }); // i dati anagrafici non si perdono
-    expect(arg).toHaveProperty("log_score");
-    expect(arg).toHaveProperty("app_score");
+    expect(screen.queryByRole("button", { name: /Aggiusta parametri/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("slider")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Salva parametri/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Rifai il test/i })).toBeInTheDocument();
   });
 
   it("il pulsante diagnostico apre il questionario", () => {
