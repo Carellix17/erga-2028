@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Hexagon, Brain } from "lucide-react";
 import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
 import { CognitiveRadar } from "./CognitiveRadar";
 import { CoreCard } from "./CoreCard";
+import { HexagonSkeleton } from "./HexagonSkeleton";
 
 // Le 6 dimensioni del modello Erga (stessi nomi usati da test diagnostico,
 // radar e funzione cloud cognitive-profile: NON rinominare senza aggiornare il backend).
@@ -31,12 +31,7 @@ export function CognitiveHexagonEditor({ onOpenDiagnostic }: Props) {
   const { profile, isLoaded } = useCognitiveProfile();
 
   if (!isLoaded) {
-    return (
-      <div className="space-y-4" aria-busy="true" aria-label="Caricamento Esagono Cognitivo">
-        <Skeleton className="h-64 rounded-card" />
-        <Skeleton className="h-24 rounded-card" />
-      </div>
-    );
+    return <HexagonSkeleton />;
   }
 
   return (

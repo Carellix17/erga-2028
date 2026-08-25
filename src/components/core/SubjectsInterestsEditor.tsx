@@ -12,6 +12,7 @@ import { useUserData } from "@/hooks/useUserData";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { CoreCard } from "./CoreCard";
+import { SubjectsSkeleton } from "./SubjectsSkeleton";
 
 // Suggerimenti rapidi per gli interessi: solo chips da un tocco, mai campi obbligatori.
 const INTEREST_SUGGESTIONS = [
@@ -86,7 +87,7 @@ export function SubjectsInterestsEditor() {
   const [newSubject, setNewSubject] = useState("");
 
   // ── Interessi (archivio personale nel cloud, chiave "interests") ──
-  const { data: interests, updateData: updateInterests } = useUserData<string[]>("interests", []);
+  const { data: interests, updateData: updateInterests, isLoaded: interestsLoaded } = useUserData<string[]>("interests", []);
   const [newInterest, setNewInterest] = useState("");
 
   const handleAddSubject = async () => {
@@ -128,6 +129,13 @@ export function SubjectsInterestsEditor() {
     (s) => !interests.some((i) => i.toLowerCase() === s.toLowerCase()),
   ).slice(0, 5);
 
+  // Skeleton solo per caricamento iniziale — non per azioni rapide come aggiungere un tag
+  const isInitialLoading = subjects.isLoading || !interestsLoaded;
+
+  if (isInitialLoading) {
+    return <SubjectsSkeleton />;
+  }
+
   return (
     <div className="space-y-4">
       {/* ── Materie ── */}
@@ -148,9 +156,7 @@ export function SubjectsInterestsEditor() {
             disabled={addSubject.isPending}
           />
 
-          {subjects.isLoading ? (
-            <p className="body-small text-muted-foreground">Caricamento…</p>
-          ) : subjects.data?.length ? (
+          {subjects.data?.length ? (
             <ul className="flex flex-wrap gap-2" aria-label="Materie aggiunte">
               {subjects.data.map((s) => {
                 const col = resolveSubjectColor(s.name, s.color);

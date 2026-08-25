@@ -11,6 +11,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { CoreCard } from "./CoreCard";
+import { RoutineSkeleton } from "./RoutineSkeleton";
 import {
   ROUTINE_DAYS, ROUTINE_GRID_HEIGHT, ROUTINE_HOURS, ROUTINE_KINDS, ROUTINE_ROW_H,
   findRoutineConflict, fmtTime, layoutRoutineSegments, minToTime, routineDayLabel,
@@ -137,6 +138,10 @@ export function WeeklyRoutineEditor() {
   const segmentsByDay = useMemo(() => routineSegmentsByDay(routines.data ?? []), [routines.data]);
   const isEmpty = !routines.isLoading && (routines.data?.length ?? 0) === 0;
 
+  if (routines.isLoading) {
+    return <RoutineSkeleton />;
+  }
+
   return (
     <div className="space-y-4">
       <CoreCard
@@ -151,9 +156,7 @@ export function WeeklyRoutineEditor() {
           </Button>
         }
       >
-        {routines.isLoading ? (
-          <p className="body-small text-muted-foreground text-center py-8">Caricamento…</p>
-        ) : isEmpty ? (
+        {isEmpty ? (
           <div className="py-8 text-center space-y-2">
             <CalendarClock className="w-8 h-8 mx-auto text-muted-foreground" aria-hidden="true" />
             <p className="body-medium text-muted-foreground">
