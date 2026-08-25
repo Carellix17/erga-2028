@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   ArrowLeftRight,
   BookOpen,
-  Check,
   FileText,
   FolderOpen,
   Globe,
@@ -18,7 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
-import { getSubjectAccent, getAccentForeground } from "@/lib/subjectColors";
+import { getSubjectAccent } from "@/lib/subjectColors";
 import { CourseCard, courseDisplayName } from "./CourseCard";
 import { CourseCardBackground } from "./CourseCardBackground";
 import { useCourseImage } from "@/hooks/useCourseImage";
@@ -85,7 +84,6 @@ const getCourseIcon = (name: string) => {
   return BookOpen;
 };
 
-// Transizione condivisa della HERO (layoutId): spring fluido per il volo
 const heroLayoutTransition = {
   layout: { type: "spring", stiffness: 300, damping: 25 },
 } as const;
@@ -148,21 +146,21 @@ export function PathHero({
   const centerActiveInList = useCallback(() => {
     const list = listRef.current;
     const hero = heroRef.current;
-    if (!list || !hero) return;
+    if (!list || !hero || transitioningId) return;
     const listRect = list.getBoundingClientRect();
     const heroRect = hero.getBoundingClientRect();
     const offset =
       heroRect.top - listRect.top - (listRect.height - heroRect.height) / 2 + list.scrollTop;
     list.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
-  }, []);
+  }, [transitioningId]);
 
   useEffect(() => {
-    if (!isSelectingCourse) return;
+    if (!isSelectingCourse || transitioningId) return;
     const timers: number[] = [];
     timers.push(window.setTimeout(() => centerActiveInList(), 90));
     timers.push(window.setTimeout(() => centerActiveInList(), 700));
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [isSelectingCourse, centerActiveInList]);
+  }, [isSelectingCourse, centerActiveInList, transitioningId]);
 
   // Body scroll lock — defer restore until animation completes
   const prevOverflowRef = useRef<string>("");
@@ -171,7 +169,6 @@ export function PathHero({
       prevOverflowRef.current = document.body.style.overflow;
       document.body.style.overflow = "hidden";
     } else if (!isAnimating) {
-      // Only restore when not animating
       document.body.style.overflow = prevOverflowRef.current || "";
     }
     return () => {
@@ -181,54 +178,55 @@ export function PathHero({
     };
   }, [isSelectingCourse, isAnimating]);
 
-  const openPicker = () => {
+  const openPicker = useCallback(() => {
     setIsSelectingCourse(true);
     onSelectingChange?.(true);
-  };
-  
+  }, [onSelectingChange]);
+
   const closePicker = useCallback(() => {
     setIsSelectingCourse(false);
     onSelectingChange?.(false);
-    // Defer scroll reset until animation completes
-    // The listRef scrollTop will be preserved until AnimatePresence exit completes
   }, [onSelectingChange]);
 
-  const handleSelectCourse = useCallback((course: CourseOption) => {
-    // Prevent rapid double clicks
-    if (isAnimating) return;
-    
-    // If selecting same course, just close
-    if (course.id === activeCourseId) {
-      closePicker();
-      return;
-    }
-
-    // Immediately set transitioning for layoutId continuity
-    // This ensures the clicked card gets layoutId="hero-card" before scroll reset
-    setTransitioningId(course.id);
-    setIsAnimating(true);
-
-    // Critical: call onSelectCourse synchronously so state updates remain synchronized
-    // with visual transition start (as required)
-    // Framer Motion will have already captured First position via getBoundingClientRect()
-    // relative to viewport because portal is fixed and list has layoutScroll
-    onSelectCourse?.(course.id);
-
-    // Defer picker close until after FLIP First measurement
-    // This prevents race condition where scrollTop resets before layout calculation
-    requestAnimationFrame(() => {
-      setTimeout(() => {
+  const handleSelectCourse = useCallback(
+    (course: CourseOption) => {
+      if (isAnimating) return;
+      if (course.id === activeCourseId) {
         closePicker();
-      }, 50);
-    });
+        return;
+      }
 
-    // Clear transitioning state after animation completes (onAnimationComplete equivalent)
-    setTimeout(() => {
-      setTransitioningId(null);
-      setIsAnimating(false);
-      document.body.style.overflow = prevOverflowRef.current || "";
-    }, 600);
-  }, [activeCourseId, closePicker, isAnimating, onSelectCourse]);
+      // Preserve scroll position — do NOT reset scrollTop synchronously
+      // Capture current scrollTop to restore if needed, but we keep it intact during transition
+      const currentScrollTop = listRef.current?.scrollTop ?? 0;
+
+      setTransitioningId(course.id);
+      setIsAnimating(true);
+
+      // Synchronously update selected course state — remains synchronized with visual transition
+      onSelectCourse?.(course.id);
+
+      // Defer unmounting/resetting scroll until layout animation finishes
+      // The scroll container maintains exact scroll position during shared element transition
+      // via layoutScroll prop, ensuring getBoundingClientRect() is viewport-relative
+      requestAnimationFrame(() => {
+        // Keep scroll position during first frame
+        if (listRef.current) {
+          listRef.current.scrollTop = currentScrollTop;
+        }
+        setTimeout(() => {
+          closePicker();
+        }, 80);
+      });
+
+      setTimeout(() => {
+        setTransitioningId(null);
+        setIsAnimating(false);
+        document.body.style.overflow = prevOverflowRef.current || "";
+      }, 650);
+    },
+    [activeCourseId, closePicker, isAnimating, onSelectCourse]
+  );
 
   const handleSaveRename = async () => {
     if (!onRenameCourse) return;
@@ -257,29 +255,29 @@ export function PathHero({
     }
   };
 
-  const renderCourseCard = (course: CourseOption) => {
+  const renderCourseCard = (course: CourseOption, index?: number) => {
     const Icon = getCourseIcon(course.file_name);
     const meta =
       typeof course.lesson_count === "number" && course.lesson_count > 0
         ? `${course.lesson_count} lezioni`
         : null;
-    
+
     const isTransitioning = transitioningId === course.id;
-    
+
     return (
       <CourseCard
         key={course.id}
         course={course}
         onSelect={() => handleSelectCourse(course)}
         actionLabel="Scegli corso"
-        // Critical fix: when this card is the one being selected, give it layoutId="hero-card"
-        // so it animates directly from its scrolled position to the header target
-        // layoutScroll on parent ensures scrollTop is factored into FLIP calculation
-        layoutId={isTransitioning ? "hero-card" : undefined}
-        layout={isTransitioning ? true : undefined}
+        // Fix: use course-specific layoutId for continuous viewport measurement
+        // When this card is selected, it shares layoutId with target hero slot
+        layoutId={isTransitioning ? `course-card-${course.id}` : `course-card-${course.id}`}
+        layout
         transition={isTransitioning ? heroLayoutTransition : undefined}
         {...(!isTransitioning ? cardMotion : {})}
-        style={isTransitioning ? { zIndex: 10 } : undefined}
+        style={isTransitioning ? { zIndex: 20 } : undefined}
+        className={cn(isTransitioning && "ring-2 ring-primary/30")}
       >
         <p className="label-small tracking-[0.14em] opacity-70 flex items-center gap-2">
           <Icon className="w-3.5 h-3.5" strokeWidth={2} />
@@ -338,74 +336,163 @@ export function PathHero({
             {onOpenMaterials && (
               <DropdownMenuItem onSelect={onOpenMaterials} className="rounded-button cursor-pointer">
                 <FolderOpen className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
-                <span>Materiali</span>
+                <span className="flex-1">Apri materiali</span>
               </DropdownMenuItem>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => { setRenameValue(title ?? ""); setRenameOpen(true); }} className="rounded-button cursor-pointer">
-              <Pencil className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
-              <span>Rinomina</span>
-            </DropdownMenuItem>
-            {onDeleteCourse && (
-              <DropdownMenuItem onSelect={() => setConfirmDelete(true)} className="rounded-button cursor-pointer text-destructive focus:text-destructive">
-                <Trash2 className="w-4 h-4" strokeWidth={1.75} />
-                <span>Elimina percorso</span>
+            {onRenameCourse && (
+              <DropdownMenuItem
+                onSelect={() => {
+                  setRenameValue(title ?? "");
+                  setRenameOpen(true);
+                }}
+                className="rounded-button cursor-pointer"
+              >
+                <Pencil className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
+                <span className="flex-1">Rinomina corso</span>
               </DropdownMenuItem>
+            )}
+            {onDeleteCourse && (
+              <>
+                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuItem
+                  onSelect={() => setConfirmDelete(true)}
+                  className="rounded-button cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" strokeWidth={1.75} />
+                  <span className="flex-1">Elimina corso</span>
+                </DropdownMenuItem>
+              </>
             )}
             {generationBlocked && freeLimitMessage && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground px-3 py-2 leading-snug">
-                  {freeLimitMessage}
-                </DropdownMenuLabel>
-              </>
+              <div className="mt-1 px-3 py-2 rounded-button bg-warning-container/70 text-warning text-xs leading-snug flex gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={1.75} />
+                <span>{freeLimitMessage}</span>
+              </div>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      <h2 className="mt-3 font-display font-extrabold text-[clamp(1.35rem,5vw,1.9rem)] leading-tight break-words">
-        {title ? cleanCourseName(title) : "Percorso"}
+      <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1">
+        {title ?? "Il tuo percorso"}
       </h2>
 
-      <div className="mt-3 flex items-center gap-2">
-        <div className="h-1.5 flex-1 rounded-full bg-current/15 overflow-hidden">
-          <div className="h-full rounded-full bg-current transition-all duration-500" style={{ width: `${barPct}%` }} />
-        </div>
-        <span className="text-xs font-semibold tabular-nums">{barPct}%</span>
-      </div>
+      {isGenerating ? (
+        <>
+          <p className="mt-4 text-xs opacity-80">Erga sta trasformando il tuo materiale…</p>
+          <div
+            className="mt-2 h-2 rounded-full overflow-hidden"
+            style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
+          >
+            <div
+              className="h-full rounded-full bg-current transition-all duration-300"
+              style={{ width: `${barPct}%` }}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="mt-4 flex items-baseline justify-between gap-3">
+            <p className="text-sm opacity-80">
+              {completedCount} di {totalLessons} lezioni
+            </p>
+            <p className="text-sm font-bold tabular-nums">{pct}%</p>
+          </div>
+          <div
+            className="mt-2 h-2 rounded-full overflow-hidden"
+            style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
+          >
+            <div
+              className="h-full rounded-full bg-current transition-all duration-700 ease-m3-emphasized"
+              style={{ width: `${barPct}%` }}
+            />
+          </div>
+        </>
+      )}
 
-      <div className="mt-1 flex items-center gap-2 text-xs opacity-70">
-        <span>{completedCount}/{totalLessons} lezioni</span>
-        {isGenerating && <span className="flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />Generazione...</span>}
-      </div>
-
-      <div className="mt-4 flex gap-2">
-        {inPicker ? (
-          <Button variant="outline" onClick={closePicker} className="flex-1 h-11 rounded-pill">
-            <X className="w-4 h-4 mr-1" />Annulla
-          </Button>
-        ) : (
-          <>
-            {canResume && onResume && (
-              <Button onClick={onResume} className="flex-1 h-11 rounded-pill gap-1.5">
-                <BookOpen className="w-4 h-4" />Riprendi
-              </Button>
-            )}
-            {multi && (
-              <Button variant="outline" onClick={openPicker} className="h-11 rounded-pill gap-1.5">
-                <ArrowLeftRight className="w-4 h-4" />Cambia corso
-              </Button>
-            )}
-          </>
-        )}
-      </div>
-
-      {hasNewMaterial && !inPicker && (
-        <div className="mt-3 flex items-center gap-2 text-xs bg-warning/15 text-warning-foreground px-3 py-2 rounded-button">
-          <AlertTriangle className="w-4 h-4 shrink-0" />
-          <span>Nuovo materiale disponibile</span>
-        </div>
+      {!isGenerating && (canResume || multi) && (
+        <AnimatePresence mode="popLayout" initial={false}>
+          {!inPicker ? (
+            <motion.div
+              key="actions-closed"
+              layout
+              exit={{ opacity: 0, scale: 0.97 }}
+              transition={{ duration: 0.18 }}
+              className="mt-5 flex items-stretch gap-2.5"
+            >
+              {canResume && onResume && (
+                <motion.button
+                  layout
+                  type="button"
+                  onClick={onResume}
+                  className="inline-flex items-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                  }}
+                >
+                  <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  Riprendi
+                </motion.button>
+              )}
+              {multi && (
+                <motion.button
+                  layout
+                  type="button"
+                  onClick={openPicker}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                  }}
+                >
+                  <ArrowLeftRight className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  Cambia corso
+                </motion.button>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="actions-open"
+              layout
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.18 }}
+              className="mt-5 flex items-stretch gap-2.5"
+            >
+              {canResume && onResume ? (
+                <motion.button
+                  layout
+                  type="button"
+                  onClick={onResume}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                  }}
+                >
+                  <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  Riprendi
+                </motion.button>
+              ) : (
+                <div className="flex-1" />
+              )}
+              <motion.button
+                layout
+                type="button"
+                onClick={closePicker}
+                className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                style={{
+                  backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                  borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                }}
+              >
+                <X className="w-4 h-4 shrink-0" strokeWidth={2} />
+                Annulla
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       )}
     </div>
   );
@@ -414,42 +501,46 @@ export function PathHero({
     "--ambient-block-ink": getSubjectAccent(active?.file_name ?? ""),
   } as CSSProperties;
 
-  // Determine if inline hero should have layoutId
-  // During transition, the transitioning card has layoutId, so inline hero should also have it
-  // to complete the animation from scrolled position directly to header
-  const inlineHeroLayoutId = transitioningId ? "hero-card" : (isSelectingCourse ? undefined : "hero-card");
-  const portalHeroLayoutId = transitioningId ? undefined : "hero-card";
+  // For smooth single-step animation from scrolled list to header:
+  // - When transitioning, inline hero uses same layoutId as transitioning card
+  // - This ensures viewport-relative measurement via getBoundingClientRect()
+  // - Scroll container maintains scroll position during transition via layoutScroll
+  const isTransitioningActive = !!transitioningId;
+  const inlineHeroId = isTransitioningActive
+    ? `course-card-${transitioningId}`
+    : isSelectingCourse
+      ? undefined
+      : `course-card-${active?.id}`;
+
+  const portalHeroId = isTransitioningActive ? undefined : `course-card-${active?.id}`;
 
   return (
     <section className="px-4 pt-4">
-      {/* HERO inline — with layoutId for shared element transition */}
+      {/* HERO inline — maintains layoutId for shared element */}
       <motion.div
         layout
-        layoutId={inlineHeroLayoutId}
+        layoutId={inlineHeroId}
         transition={heroLayoutTransition}
         className={cn(
           "relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6",
-          isSelectingCourse && !transitioningId && "invisible pointer-events-none"
+          isSelectingCourse && !isTransitioningActive && "invisible pointer-events-none h-0 overflow-hidden p-0 border-0"
         )}
         data-auto-contrast
         style={heroStyle}
-        // Ensure layout measurement uses viewport, not scroll parent
-        layoutScroll={false}
       >
         <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
         <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
         <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
         <CourseCardBackground
-          coverUrl={heroCover}
-          subjectColor={getSubjectAccent(active?.file_name ?? "")}
+          coverUrl={isTransitioningActive ? transitioningCover : heroCover}
+          subjectColor={getSubjectAccent(isTransitioningActive ? transitioningCourse?.file_name ?? "" : active?.file_name ?? "")}
           variant="studio"
         />
         {heroInner(false)}
       </motion.div>
 
-      {/* SELEZIONE CORSI: PORTALE */}
       {createPortal(
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {isSelectingCourse && (
             <motion.div
               key="course-picker"
@@ -461,21 +552,14 @@ export function PathHero({
               onClick={(e) => {
                 if (e.target === e.currentTarget && !isAnimating) closePicker();
               }}
-              onAnimationComplete={(definition) => {
-                // Defer scroll reset until exit animation completes
-                if (definition === "exit" || definition === undefined) {
-                  // Animation completed
-                }
-              }}
             >
               <div className="flex-1 min-h-0 w-full max-w-lg mx-auto flex flex-col px-4 py-6">
-                {/* Critical fix: layoutScroll ensures Framer Motion factors scrollTop into FLIP */}
+                {/* layoutScroll ensures scrollTop is factored into FLIP */}
                 <motion.div
                   ref={listRef as any}
                   layoutScroll
                   className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-                  // Prevent scroll reset during transition
-                  style={{ scrollBehavior: transitioningId ? "auto" : "smooth" } as any}
+                  style={{ scrollBehavior: isTransitioningActive ? "auto" : "smooth" } as any}
                 >
                   <div className="flex flex-col">
                     {before.length > 0 && (
@@ -486,16 +570,17 @@ export function PathHero({
                         transition={{ duration: 0.15 }}
                         className="space-y-3 mb-4"
                       >
-                        {before.map(renderCourseCard)}
+                        {before
+                          .filter((c) => c.id !== transitioningId)
+                          .map((c) => renderCourseCard(c))}
                       </motion.div>
                     )}
 
-                    {/* Portal HERO — only show when not transitioning to another course */}
-                    {!transitioningId && (
+                    {!isTransitioningActive && (
                       <motion.div
                         layout
                         ref={heroRef}
-                        layoutId={portalHeroLayoutId}
+                        layoutId={portalHeroId}
                         transition={heroLayoutTransition}
                         className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6"
                         data-auto-contrast
@@ -514,36 +599,33 @@ export function PathHero({
                       </motion.div>
                     )}
 
-                    {/* When transitioning, show the transitioning card as hero in portal position */}
-                    {transitioningId && (() => {
-                      const tCourse = courses.find(c => c.id === transitioningId);
-                      return (
-                        <motion.div
-                          layout
-                          layoutId="hero-card"
-                          transition={heroLayoutTransition}
-                          className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6"
-                          data-auto-contrast
-                          style={{
-                            ...heroStyle,
-                            "--ambient-block-ink": getSubjectAccent(tCourse?.file_name ?? ""),
-                          } as any}
-                        >
-                          <CourseCardBackground
-                            coverUrl={transitioningCover}
-                            subjectColor={getSubjectAccent(tCourse?.file_name ?? "")}
-                            variant="studio"
-                          />
-                          <div className="relative">
-                            <p className="label-small tracking-[0.16em] opacity-70">Percorso selezionato</p>
-                            <h2 className="mt-3 font-display font-extrabold text-[clamp(1.35rem,5vw,1.9rem)] leading-tight break-words">
-                              {cleanCourseName(tCourse?.file_name ?? "")}
-                            </h2>
-                            <div className="mt-4 h-11 w-full rounded-pill bg-current/10 animate-pulse" />
+                    {isTransitioningActive && transitioningCourse && (
+                      <motion.div
+                        layout
+                        layoutId={`course-card-${transitioningId}`}
+                        transition={heroLayoutTransition}
+                        className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6"
+                        data-auto-contrast
+                        style={{
+                          "--ambient-block-ink": getSubjectAccent(transitioningCourse.file_name),
+                        } as CSSProperties}
+                      >
+                        <CourseCardBackground
+                          coverUrl={transitioningCover}
+                          subjectColor={getSubjectAccent(transitioningCourse.file_name)}
+                          variant="studio"
+                        />
+                        <div className="relative">
+                          <p className="label-small tracking-[0.16em] opacity-70">Percorso selezionato</p>
+                          <h2 className="mt-3 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words">
+                            {cleanCourseName(transitioningCourse.file_name)}
+                          </h2>
+                          <div className="mt-4 flex items-center gap-2 text-xs opacity-70">
+                            <span>Transizione in corso...</span>
                           </div>
-                        </motion.div>
-                      );
-                    })()}
+                        </div>
+                      </motion.div>
+                    )}
 
                     {after.length > 0 && (
                       <motion.div
@@ -553,19 +635,10 @@ export function PathHero({
                         transition={{ duration: 0.15 }}
                         className="space-y-3 mt-4"
                       >
-                        {after.map((course) => {
-                          // Hide the transitioning course from the list to avoid duplicate
-                          if (course.id === transitioningId) return null;
-                          return renderCourseCard(course);
-                        })}
+                        {after
+                          .filter((c) => c.id !== transitioningId)
+                          .map((c) => renderCourseCard(c))}
                       </motion.div>
-                    )}
-
-                    {/* Also hide transitioning course from before list */}
-                    {before.length > 0 && transitioningId && (
-                      <div className="hidden">
-                        {before.filter(c => c.id === transitioningId).map(() => null)}
-                      </div>
                     )}
                   </div>
                 </motion.div>
