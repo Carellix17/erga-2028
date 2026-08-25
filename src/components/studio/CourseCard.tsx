@@ -10,7 +10,6 @@ export interface CourseCardData {
   id: string;
   file_name: string;
   lesson_count?: number | null;
-  /** (opzionale) URL immagine già noto (es. da DB). */
   cover_image_url?: string | null;
 }
 
@@ -18,25 +17,23 @@ interface CourseCardProps {
   course: CourseCardData;
   active?: boolean;
   onSelect: (course: CourseCardData) => void;
-  /** Testo del pulsante. */
   actionLabel: string;
-  /** Contenuto extra (es. avanzamento della hero). */
   children?: React.ReactNode;
   className?: string;
-  /** Se true disabilita il recupero immagine. */
   noImage?: boolean;
+  style?: CSSProperties;
 }
 
-// Prop di framer-motion inoltrate al motion.button interno.
+// Prop di framer-motion inoltrate al motion.button interno - manteniamo style separato per merge
 type CourseCardMotionProps = Omit<
   React.ComponentPropsWithoutRef<typeof motion.button>,
   "children" | "className" | "onClick" | "style"
 >;
 
 /**
- * 🖼️ P24 — Card corso con cover immagine contestuale (hook centralizzato).
- * Usa `useCourseImage` (Supabase → localStorage → Wikipedia) e il componente
- * unificato `CourseCardBackground` per i layer. Testo/bottoni a contrasto.
+ * 🖼️ P24 — Card corso con cover immagine contestuale
+ * Fix: merge style prop con --ambient-block-ink per permettere zIndex e viewport-relative positioning
+ * durante la transizione shared element. Aggiunto layoutScroll awareness per scroll container.
  */
 export function CourseCard({
   course,
@@ -46,10 +43,10 @@ export function CourseCard({
   children,
   className,
   noImage = false,
+  style,
   ...motionProps
 }: CourseCardProps & CourseCardMotionProps) {
   const coverUrl = useCourseImage(noImage ? null : course.id, course.file_name);
-
   const accent = getSubjectAccent(course.file_name);
 
   return (
@@ -58,16 +55,13 @@ export function CourseCard({
       type="button"
       onClick={() => onSelect(course)}
       data-auto-contrast
-      style={{ "--ambient-block-ink": accent } as CSSProperties}
+      style={{ "--ambient-block-ink": accent, ...style } as CSSProperties}
       className={cn(
         "interactive-card relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 p-4 text-left shadow-level-2 sm:p-5",
         className,
       )}
     >
       <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} variant="studio" />
-
-      {/* LAYER 2 — contenuto: l'inchiostro a contrasto lo decide lo script
-          P28 misurando il fondo reale (bianco su fondo scuro, in ogni tema) */}
       <div className="relative z-10">
         {children}
         <span
@@ -80,5 +74,4 @@ export function CourseCard({
   );
 }
 
-/** Helper: nome pulito del corso (usato nei contenuti). */
 export const courseDisplayName = (file_name: string) => cleanCourseName(file_name);
