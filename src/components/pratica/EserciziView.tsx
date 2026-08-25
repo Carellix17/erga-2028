@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { EserciziMenuSkeleton, EserciziGenerationSkeleton, LessonPickerSkeleton, EserciziCardSkeleton } from "./EserciziSkeleton";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Slider } from "@/components/ui/slider";
 import { currentLanguage } from "@/i18n";
@@ -522,10 +523,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName }: Ese
           </div>
 
           {loadingLessons ? (
-            <div className="flex flex-col items-center gap-3 py-8">
-              <Loader2 className="w-8 h-8 text-primary animate-spin" />
-              <p className="body-medium text-muted-foreground">Carico le lezioni...</p>
-            </div>
+            <LessonPickerSkeleton />
           ) : lessons.length === 0 ? (
             <p className="text-center text-muted-foreground body-medium">Nessuna lezione disponibile per questo corso.</p>
           ) : (

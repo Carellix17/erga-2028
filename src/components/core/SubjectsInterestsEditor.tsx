@@ -1,3 +1,4 @@
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -132,8 +133,12 @@ export function SubjectsInterestsEditor() {
   // Skeleton solo per caricamento iniziale — non per azioni rapide come aggiungere un tag
   const isInitialLoading = subjects.isLoading || !interestsLoaded;
 
-  if (isInitialLoading) {
+  const showSubjectsSkeleton = useDelayedLoading(isInitialLoading, 100);
+  if (showSubjectsSkeleton) {
     return <SubjectsSkeleton />;
+  }
+  if (isInitialLoading) {
+    return null;
   }
 
   return (

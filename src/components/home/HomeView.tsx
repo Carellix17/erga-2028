@@ -17,6 +17,8 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { HomeDashboardSkeleton } from "./HomeDashboardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
 import { useFocus } from "@/contexts/FocusContext";
@@ -83,25 +85,6 @@ function MinimalArtwork({ Icon, compact = false, lightOnDarkCard = false }: Mini
   );
 }
 
-function HomeSkeleton() {
-  return (
-    <div className="space-y-8 py-6" aria-label="Caricamento Home">
-      <div className="space-y-2">
-        <Skeleton className="h-5 w-28 rounded-pill" />
-        <Skeleton className="h-8 w-48 rounded-button" />
-        <Skeleton className="h-9 w-36 rounded-button" />
-        <Skeleton className="h-4 w-64 rounded-full" />
-      </div>
-      <Skeleton className="h-56 rounded-card" />
-      <div className="space-y-3">
-        <Skeleton className="h-8 w-44 rounded-button" />
-        <Skeleton className="h-20 rounded-card" />
-        <Skeleton className="h-20 rounded-card" />
-      </div>
-    </div>
-  );
-}
-
 export function HomeView({
   onOpenStudio,
   onResumeLesson,
@@ -131,7 +114,9 @@ export function HomeView({
     [i18n.language],
   );
 
-  if (dashboard.isLoading) return <HomeSkeleton />;
+  const showHomeSkeleton = useDelayedLoading(dashboard.isLoading, 100);
+  if (showHomeSkeleton) return <HomeDashboardSkeleton />;
+  if (dashboard.isLoading) return null;
 
   if (dashboard.isError || !data) {
     return (

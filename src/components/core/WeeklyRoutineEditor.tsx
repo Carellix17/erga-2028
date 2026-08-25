@@ -1,3 +1,4 @@
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -138,8 +139,12 @@ export function WeeklyRoutineEditor() {
   const segmentsByDay = useMemo(() => routineSegmentsByDay(routines.data ?? []), [routines.data]);
   const isEmpty = !routines.isLoading && (routines.data?.length ?? 0) === 0;
 
-  if (routines.isLoading) {
+  const showRoutineSkeleton = useDelayedLoading(routines.isLoading, 100);
+  if (showRoutineSkeleton) {
     return <RoutineSkeleton />;
+  }
+  if (routines.isLoading) {
+    return null;
   }
 
   return (

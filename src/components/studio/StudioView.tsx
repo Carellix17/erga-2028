@@ -4,6 +4,7 @@ import { FinalTest } from "./FinalTest";
 import { GenerationProgress } from "./GenerationProgress";
 import { ModulePath } from "./ModulePath";
 import { ModulesOverview, type ModuleCardData } from "./ModulesOverview";
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
 import { PathHero } from "./PathHero";
@@ -253,6 +254,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
 
   // Spinner SOLO al primo fetch (nessuna cache disponibile)
   const isLoading = hasFiles && lessonsQuery.isLoading && lessons.length === 0;
+  const showLessonsSkeleton = useDelayedLoading(isLoading, 100);
 
   useEffect(() => { if (lessons.length === 0) return; setCurrentLessonIndex((idx) => { if (idx < 0) return 0; if (idx > lessons.length - 1) return lessons.length - 1; return idx; }); }, [lessons.length]);
   // ⚠️ NESSUNA auto-generazione a cascata. Le lezioni vengono generate SOLO on-demand:
@@ -818,11 +820,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     return <LessonsListSkeleton />;
   }
 
-  if (isLoading) {
-    // 🦴 P10a: scheletro del sentiero anche per il primo caricamento del percorso
-    // ⚡ P16: con la LUNGHEZZA VERA — il numero di lezioni lo sappiamo già
-    // dalla lista contesti, è un dato leggero che viaggia gratis.
+  if (showLessonsSkeleton) {
     return <LessonsListSkeleton count={activeContext?.lesson_count} />;
+  }
+  if (isLoading) {
+    return null;
   }
 
   if (lessons.length === 0) {

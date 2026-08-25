@@ -1,3 +1,4 @@
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { Button } from "@/components/ui/button";
 import { Hexagon, Brain } from "lucide-react";
 import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
@@ -30,8 +31,12 @@ interface Props {
 export function CognitiveHexagonEditor({ onOpenDiagnostic }: Props) {
   const { profile, isLoaded } = useCognitiveProfile();
 
-  if (!isLoaded) {
+  const showHexSkeleton = useDelayedLoading(!isLoaded, 100);
+  if (showHexSkeleton) {
     return <HexagonSkeleton />;
+  }
+  if (!isLoaded) {
+    return null;
   }
 
   return (

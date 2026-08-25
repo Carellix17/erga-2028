@@ -12,6 +12,7 @@ import { Clock3, Flame, Minus, Play, TrendingDown, TrendingUp } from "lucide-rea
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
+import { FocusStatsSkeleton } from "./FocusStatsSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFocus } from "@/contexts/FocusContext";
 import { useHomeDashboard } from "@/hooks/useHomeDashboard";
@@ -62,20 +63,7 @@ function FocusChartTooltip({
   );
 }
 
-function FocusStatsSkeleton() {
-  return (
-    <main className="mx-auto w-full max-w-lg space-y-10 px-4 py-7 pb-12 sm:max-w-2xl sm:px-6 lg:max-w-4xl">
-      <section className="py-3 text-center">
-        <Skeleton className="mx-auto h-32 w-32 rounded-full" />
-        <Skeleton className="mx-auto mt-5 h-6 w-32 rounded-full" />
-        <Skeleton className="mx-auto mt-3 h-4 w-52 rounded-full" />
-      </section>
-      <Skeleton className="h-28 rounded-card" />
-      <Skeleton className="h-[25rem] rounded-card" />
-      <Skeleton className="h-48 rounded-card" />
-    </main>
-  );
-}
+
 
 function formatMinutesForDisplay(minutes: number, short = false): string {
   const safeMinutes = Math.max(0, Math.round(minutes));

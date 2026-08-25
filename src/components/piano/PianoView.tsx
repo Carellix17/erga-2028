@@ -4,6 +4,8 @@ import { format, isSameDay } from "date-fns";
 import { it, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { StudyPlanSkeleton } from "./StudyPlanSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -232,18 +234,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
-  if (isLoading) return (
-    <div className="p-4 pb-28 space-y-4 animate-fade-up">
-      {/* Scheletri: calendario + lista, stessa forma del contenuto reale */}
-      <Skeleton className="h-11 w-56 rounded-full mx-auto" />
-      <Skeleton className="h-72 rounded-card" />
-      <div className="space-y-3 pt-2">
-        <Skeleton className="h-20 rounded-card" />
-        <Skeleton className="h-20 rounded-card" />
-        <Skeleton className="h-20 rounded-card" />
-      </div>
-    </div>
-  );
+  const showPlanSkeleton = useDelayedLoading(isLoading, 100);
+  if (showPlanSkeleton) return <StudyPlanSkeleton />;
+  if (isLoading) return null;
 
   return (
     <div className="p-4 pb-28 space-y-4 animate-fade-up">
