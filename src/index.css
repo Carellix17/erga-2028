@@ -809,12 +809,14 @@
   .leaf-fade {
     animation: leaf-fade var(--motion-emphasized) ease-out both;
   }
-  /* Home: il primo gesto resta nel primo viewport, ma la lezione da riprendere
-     arriva dopo un vero momento di orientamento. La misura fluida evita sia
-     l'effetto "titolo incollato" alla barra sia un salto rigido tra dispositivi. */
+  /* Home: il primo gesto resta nel primo viewport, ma senza spingere il
+     benvenuto e i blocchi troppo in basso: l'hero occupa un po' meno altezza,
+     così il messaggio sale e la lezione da riprendere resta subito visibile.
+     La misura fluida evita sia l'effetto "titolo incollato" alla barra sia
+     un salto rigido tra dispositivi. */
   .home-hero {
     display: flex;
-    min-height: clamp(34rem, calc(100svh - 5rem), 46rem);
+    min-height: clamp(31.5rem, calc(100svh - 7.5rem), 43.5rem);
     flex-direction: column;
   }
 
@@ -824,7 +826,7 @@
     flex: 1 1 auto;
     flex-direction: column;
     justify-content: center;
-    padding-block: clamp(4rem, 10svh, 7rem);
+    padding-block: clamp(3rem, 8svh, 6rem);
   }
 
   /* Su schermi bassi la card deve comunque rimanere raggiungibile sopra la
@@ -832,11 +834,11 @@
      nasconde l'azione principale sotto la UI fissa. */
   @media (max-height: 700px) {
     .home-hero {
-      min-height: clamp(30rem, calc(100svh - 9rem), 40rem);
+      min-height: clamp(27.5rem, calc(100svh - 11.5rem), 37.5rem);
     }
 
     .home-welcome {
-      padding-block: clamp(3rem, 8svh, 5rem);
+      padding-block: clamp(2.5rem, 7svh, 4rem);
     }
   }
 
