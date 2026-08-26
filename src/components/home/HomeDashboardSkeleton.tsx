@@ -8,8 +8,9 @@ const HOME_BLOCK_CLASS =
 /**
  * HomeDashboardSkeleton — Dashboard principale
  * Replica pixel-perfect di HomeView per zero CLS:
- * - Header: todayLabel h-5 w-28, greeting h-8 w-48, name h-9 w-36, subtitle h-4 w-64
- * - Resume card: h-56 rounded-card con badge, titolo, progress, bottone
+ * - Hero: messaggio centrato nello spazio prima della lezione da riprendere
+ * - Header: todayLabel h-5 w-28, greeting/name su scala tipografica maggiorata, subtitle h-4 w-64
+ * - Resume card: altezza naturale con badge, titolo, progress, bottone
  * - Today plan: eyebrow + titolo + lista task min-h-[76px] con icona 44px
  * - Focus timer card: p-5 sm:p-6
  */
@@ -17,15 +18,15 @@ export function HomeDashboardSkeleton() {
   return (
     <div className="relative isolate min-w-0 overflow-x-clip py-6 animate-fade-up" aria-busy="true" aria-label="Caricamento Dashboard">
       <div className="relative z-10 space-y-9 md:space-y-12">
-        <div className="space-y-6 md:space-y-8">
+        <div className="home-hero" data-testid="home-hero-skeleton">
           {/* Header */}
-          <header className="min-w-0 space-y-3">
+          <header className="home-welcome min-w-0">
             <Skeleton className="h-4 w-28 rounded-pill" />
-            <div className="space-y-1">
-              <Skeleton className="h-8 w-48 rounded-button" />
-              <Skeleton className="h-9 w-36 rounded-button" />
+            <div className="mt-4 space-y-1">
+              <Skeleton className="h-10 w-56 rounded-button" />
+              <Skeleton className="h-12 w-44 rounded-button" />
             </div>
-            <Skeleton className="h-4 w-64 rounded-full opacity-70 hidden md:block" />
+            <Skeleton className="mt-3 hidden h-4 w-64 rounded-full opacity-70 md:block" />
           </header>
 
           {/* Resume Lesson Card — h-auto con stessi padding p-5 sm:p-6 */}

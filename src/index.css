@@ -809,6 +809,37 @@
   .leaf-fade {
     animation: leaf-fade var(--motion-emphasized) ease-out both;
   }
+  /* Home: il primo gesto resta nel primo viewport, ma la lezione da riprendere
+     arriva dopo un vero momento di orientamento. La misura fluida evita sia
+     l'effetto "titolo incollato" alla barra sia un salto rigido tra dispositivi. */
+  .home-hero {
+    display: flex;
+    min-height: clamp(34rem, calc(100svh - 5rem), 46rem);
+    flex-direction: column;
+  }
+
+  .home-welcome {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: clamp(4rem, 10svh, 7rem);
+  }
+
+  /* Su schermi bassi la card deve comunque rimanere raggiungibile sopra la
+     bottom navigation mobile, senza trasformare l'hero in una sezione che
+     nasconde l'azione principale sotto la UI fissa. */
+  @media (max-height: 700px) {
+    .home-hero {
+      min-height: clamp(30rem, calc(100svh - 9rem), 40rem);
+    }
+
+    .home-welcome {
+      padding-block: clamp(3rem, 8svh, 5rem);
+    }
+  }
+
   /*  P24 — passaggio tra stanze: dissolvenza di SOLA LUCE (mai transform:
      rispetta la REGOLA DEL PALCO, le finestre a schermo intero restano attaccate) */
   .room-fade {

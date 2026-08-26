@@ -182,18 +182,18 @@ export function HomeView({
   return (
     <div className="relative isolate min-w-0 overflow-x-clip py-6">
       <div className="relative z-10 space-y-9 md:space-y-12">
-        <div className="space-y-6 md:space-y-8">
-          <header className="min-w-0">
+        <div className="home-hero" data-testid="home-hero">
+          <header className="home-welcome min-w-0">
             <p className="max-w-[calc(100%-6rem)] truncate text-sm font-semibold capitalize text-muted-foreground min-[360px]:max-w-[calc(100%-11.5rem)]">{todayLabel}</p>
-            <h1 className="mt-3 flex flex-col gap-0">
-              <span className="break-words font-display text-[clamp(1.55rem,5.5vw,2.1rem)] font-extrabold leading-tight text-foreground">
+            <h1 className="mt-4 flex flex-col gap-0">
+              <span className="break-words font-display text-[clamp(2rem,7vw,3rem)] font-extrabold leading-[1.08] text-foreground">
                 {welcome.greeting}
               </span>
-              <span className="break-words font-display text-[clamp(1.8rem,6vw,2.45rem)] font-extrabold leading-tight text-tertiary">
+              <span className="break-words font-display text-[clamp(2.35rem,8.5vw,3.8rem)] font-extrabold leading-[1.02] text-tertiary">
                 {welcome.name}
               </span>
             </h1>
-            <p className="mt-2 hidden text-base font-medium text-muted-foreground md:block">{welcome.subtitle}</p>
+            <p className="mt-3 hidden max-w-2xl text-base font-medium leading-relaxed text-muted-foreground md:block">{welcome.subtitle}</p>
           </header>
 
           <section aria-labelledby="resume-title" className="min-w-0">
