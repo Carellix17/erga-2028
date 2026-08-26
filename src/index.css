@@ -127,12 +127,8 @@
   }
 
   .dark {
-    /* ─── Erga MONO "Mono di notte" (tema scuro) — neutro profondo, carbone ───
-       P30: di notte l'inchiostro chiaro non torna al bianco né alla panna.
-       L'interfaccia usa lo stesso off-white #F2F0EF anche sui token scuri,
-       così testi, bordi e superfici chiare restano coerenti in tutta l'app. */
     --off-white: 242 240 239;
---primary: var(--cream);                /* la pill-firma è PANNA, testo nero (monocromo) */
+--primary: var(--cream);
 --primary-foreground: 0 0% 0%;
 --primary-container: 0 0% 24%;
 --on-primary-container: var(--cream);
@@ -140,17 +136,13 @@
 --secondary-foreground: var(--cream);
 --secondary-container: 0 0% 18%;
 --on-secondary-container: var(--cream);
---tertiary: 0 0% 78%;               /* grigio chiaro (monocromo) */
+--tertiary: 0 0% 78%;
 --tertiary-foreground: 0 0% 8%;
 --tertiary-container: 0 0% 24%;
 --on-tertiary-container: var(--cream);
 --gold-antique: 0 0% 60%;
 --gold-antique-soft: 0 0% 16%;
 --destructive: 9 0% 64%;
-    /*  Di notte --destructive è un grigio CHIARO (64%): l'inchiostro sopra
-       deve essere scuro, esattamente come --success-foreground qui sotto.
-       Prima era bianco puro e si leggeva a 2,5:1 (illeggibile); la panna
-       avrebbe fatto 2,3:1. Con il quasi-nero si arriva a 7,3:1. */
     --destructive-foreground: 0 0% 8%;
 --error-container: 7 0% 15%;
 --on-error-container: 10 0% 81%;
@@ -161,8 +153,6 @@
 --warning-foreground: 139 0% 8%;
 --warning-container: 39 0% 15%;
 
-    /*  P21e — pastelli domati, VERSIONE NOTTURNA: stessi nomi, luminosita' alta
-       e saturazione gentile per leggere sul carbone senza accecare. */
 --pastel-terracotta: 18 40% 66%;
 --pastel-polvere: 210 34% 70%;
 --pastel-ocra: 40 48% 64%;
@@ -177,17 +167,12 @@
     --pastel-bosco: 140 24% 66%;
     --pastel-oliva: 85 24% 62%;
 
-    /*  P25 — ALONI NERI RIMOSSI. Le ombre esterne notturne (P22: nero deciso,
-       opacità 0,45–0,65, blur fino a 48px) creavano un alone scuro e sfumato
-       attorno a card, blocchi e righe di testo. Rimosse su richiesta, senza
-       toccare gli elementi. Resta solo il capello di luce superiore (tecnica
-       Fluent): i piani si leggono ugualmente grazie al contrasto di sfondo,
-       al bordo e a questo filetto — senza più aloni neri. */
-    --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
-    --shadow-level-2: inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
-    --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.06);
-    --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.07);
-    --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
+    /* P33 — ombre notte con profondità: capello di luce + ombra ambiente soffusa */
+    --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 1px 3px 0 hsl(0 0% 0% / 0.20), 0 1px 2px 0 hsl(0 0% 0% / 0.15);
+    --shadow-level-2: inset 0 1px 0 0 hsl(0 0% 100% / 0.07), 0 4px 12px -2px hsl(0 0% 0% / 0.35), 0 2px 6px -1px hsl(0 0% 0% / 0.25);
+    --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.08), 0 10px 26px -6px hsl(0 0% 0% / 0.45), 0 4px 12px -2px hsl(0 0% 0% / 0.30);
+    --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.09), 0 16px 36px -8px hsl(0 0% 0% / 0.50), 0 6px 16px -4px hsl(0 0% 0% / 0.35);
+    --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.10), 0 20px 44px -8px hsl(0 0% 0% / 0.55), 0 8px 20px -4px hsl(0 0% 0% / 0.40);
 --background: 192 33% 3%;              /* #05090A — fondo notte, senza puntini */
 --foreground: var(--cream);            /* P29: l'inchiostro di notte è panna, non bianco */
 --surface-dim: 0 0% 6%;
@@ -298,7 +283,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Public Sans', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -311,53 +296,60 @@
   }
 
   h1, .display-large {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
-    font-weight: 800;
-    font-size: 2.25rem;
-    line-height: 1.05;
+    font-family: 'Libre Bodoni', 'Plus Jakarta Sans', Georgia, serif;
+    font-weight: 700;
+    font-size: 2.5rem;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
     color: hsl(var(--foreground));
   }
 
   h2, .headline-large {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
-    font-weight: 800;
-    font-size: 1.625rem;
-    line-height: 1.1;
+    font-family: 'Libre Bodoni', 'Plus Jakarta Sans', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.75rem;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
     color: hsl(var(--foreground));
   }
 
   h3, .headline-medium {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 700;
     font-size: 1.25rem;
     line-height: 1.25;
+    letter-spacing: -0.01em;
     color: hsl(var(--foreground));
   }
 
   .title-large {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 700;
     font-size: 1.125rem;
     line-height: 1.4;
+    letter-spacing: -0.01em;
   }
 
-  .title-medium { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; }
-  .title-small { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; }
+  .title-medium { font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; }
+  .title-small { font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; }
 
   .body-large, .body-medium {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 400;
+    line-height: 1.6;
     color: hsl(var(--foreground));
   }
   .body-small {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 400;
+    font-size: 0.9375rem;
+    line-height: 1.5;
     color: hsl(var(--muted-foreground));
   }
 
-  /* Etichette da registro — piccole, uppercase, tracking */
+  /* Etichette da registro — piccole, uppercase, tracking — Swiss Modernism */
   .label-large, .label-medium, .label-small {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
     text-transform: uppercase;
     font-weight: 600;
   }

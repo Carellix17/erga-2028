@@ -56,8 +56,8 @@ interface ModulePathProps {
 const NODE = 54;
 const STEP = 118;
 const TROPHY = 62;
-const L_COL = 10; // % centro colonna sinistra
-const R_COL = 90; // % centro colonna destra
+const L_COL = 18; // % centro colonna sinistra — 18% per evitare overflow su 375px (era 10%)
+const R_COL = 82; // % centro colonna destra — 82% per simmetria mobile (era 90%)
 const MID = 50;
 
 type NodeState = "done" | "cur" | "av" | "lock" | "gen";

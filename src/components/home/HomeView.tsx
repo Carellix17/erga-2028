@@ -180,23 +180,26 @@ export function HomeView({
   };
 
   return (
-    <div className="relative isolate min-w-0 overflow-x-clip py-6">
-      <div className="relative z-10 space-y-9 md:space-y-12">
-        <div className="home-hero" data-testid="home-hero">
-          <header className="home-welcome min-w-0">
-            <p className="max-w-[calc(100%-6rem)] truncate text-sm font-semibold capitalize text-muted-foreground min-[360px]:max-w-[calc(100%-11.5rem)]">{todayLabel}</p>
-            <h1 className="mt-4 flex flex-col gap-0">
-              <span className="break-words font-display text-[clamp(2rem,7vw,3rem)] font-extrabold leading-[1.08] text-foreground">
+    <div className="relative isolate min-w-0 overflow-x-clip py-8 md:py-12">
+      <div className="relative z-10 space-y-10 md:space-y-16">
+        {/* Swiss Modernism 2.0: 12-col grid, asymmetric, editorial black + pink accent */}
+        <div className="home-hero grid grid-cols-12 gap-6 md:gap-8 items-start" data-testid="home-hero">
+          <header className="home-welcome min-w-0 col-span-12 lg:col-span-7 space-y-4">
+            <p className="max-w-[calc(100%-6rem)] truncate text-sm font-semibold capitalize text-muted-foreground min-[360px]:max-w-[calc(100%-11.5rem)] tracking-wide">{todayLabel}</p>
+            <h1 className="mt-2 flex flex-col gap-1">
+              <span className="break-words font-display text-[clamp(2.2rem,7.5vw,3.5rem)] font-bold leading-[1.05] tracking-[-0.02em] text-foreground">
                 {welcome.greeting}
               </span>
-              <span className="break-words font-display text-[clamp(2.35rem,8.5vw,3.8rem)] font-extrabold leading-[1.02] text-tertiary">
+              <span className="break-words font-display text-[clamp(2.5rem,9vw,4.2rem)] font-bold leading-[0.98] tracking-[-0.03em] text-tertiary">
                 {welcome.name}
               </span>
             </h1>
-            <p className="mt-3 hidden max-w-2xl text-base font-medium leading-relaxed text-muted-foreground md:block">{welcome.subtitle}</p>
+            <p className="mt-4 hidden max-w-xl text-[17px] font-medium leading-[1.6] text-muted-foreground md:block">{welcome.subtitle}</p>
+            {/* Editorial accent line — Swiss Modernism */}
+            <div className="hidden md:block h-px w-24 bg-foreground/15 mt-6" aria-hidden="true" />
           </header>
 
-          <section aria-labelledby="resume-title" className="min-w-0">
+          <section aria-labelledby="resume-title" className="min-w-0 col-span-12 lg:col-span-5">
             {resume ? (
               <Card
                 data-testid="resume-lesson-card"

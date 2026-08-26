@@ -149,9 +149,10 @@ export default {
         "level-5": "var(--shadow-level-5)",
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        serif: ['Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Public Sans', 'Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Libre Bodoni', 'Plus Jakarta Sans', 'serif'],
+        serif: ['Libre Bodoni', 'Georgia', 'serif'],
+        body: ['Public Sans', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       keyframes: {
