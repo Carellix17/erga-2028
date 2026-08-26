@@ -57,7 +57,7 @@ export function CourseCard({
       data-auto-contrast
       style={{ "--ambient-block-ink": accent, ...style } as CSSProperties}
       className={cn(
-        "interactive-card relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 p-4 text-left shadow-level-2 sm:p-5",
+        "interactive-card relative w-full overflow-hidden rounded-card border border-border bg-card text-card-foreground p-4 text-left shadow-level-1 sm:p-5",
         className,
       )}
     >

@@ -597,7 +597,7 @@ export function PathHero({
                       ref={heroRef}
                       layoutId={`course-card-${active?.id}`}
                       transition={effectiveLayoutTransition}
-                      className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6"
+                      className="relative overflow-hidden rounded-card border border-border bg-card text-card-foreground shadow-level-1 p-5 sm:p-6"
                       data-auto-contrast
                       style={heroStyle}
                       layoutScroll

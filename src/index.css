@@ -56,19 +56,19 @@
        (accesa e cieca al buio) va in pensione. Ogni materia ha un pastello smorzato
        Opal; la versione notturna vive in .dark, cosi' badge, bordi e pallini si
        vestono da soli sia di giorno che di notte. Chiavi delle materie INVARIATE. */
---pastel-terracotta: 18 45% 45%;       /* storia 🧱 */
---pastel-polvere: 210 36% 42%;         /* matematica */
---pastel-ocra: 38 55% 36%;             /* economia */
---pastel-prugna: 320 28% 44%;          /* letteratura */
---pastel-crepuscolo: 230 22% 44%;      /* filosofia */
---pastel-mare: 185 38% 35%;            /* fisica */
---pastel-violetto: 250 28% 47%;        /* informatica */
---pastel-cipria: 350 30% 50%;          /* arte */
---pastel-grafite: 220 16% 38%;          /* diritto (prima era BIANCO-su-bianco!) */
---pastel-miele: 28 50% 42%;            /* lingue */
---pastel-neutro: 36 6% 46%;            /* generale (ripiego) */
---pastel-bosco: 145 28% 34%;           /* scienze */
---pastel-oliva: 85 26% 34%;            /* geografia */
+--pastel-terracotta: 0 0% 45%;       /* storia 🧱 — mono */
+--pastel-polvere: 0 0% 42%;         /* matematica — mono */
+--pastel-ocra: 0 0% 48%;             /* economia — mono */
+--pastel-prugna: 0 0% 44%;          /* letteratura — mono */
+--pastel-crepuscolo: 0 0% 46%;      /* filosofia — mono */
+--pastel-mare: 0 0% 40%;            /* fisica — mono */
+--pastel-violetto: 0 0% 50%;        /* informatica — mono */
+--pastel-cipria: 0 0% 52%;          /* arte — mono */
+--pastel-grafite: 0 0% 38%;          /* diritto — mono */
+--pastel-miele: 0 0% 47%;            /* lingue — mono */
+--pastel-neutro: 0 0% 46%;            /* generale — mono */
+--pastel-bosco: 0 0% 42%;           /* scienze — mono */
+--pastel-oliva: 0 0% 44%;            /* geografia — mono */
 --background: 20 10.34% 94.31%;        /* #F2F0EF — fondo chiaro, senza puntini */
 --foreground: var(--ink);
 --surface-dim: 0 0% 88%;
@@ -103,9 +103,9 @@
     /*  P24 × MONOCROMO — colore d'accento DINAMICO della materia.
        La pagina padre (o il profilo) puo' sovrascrivere --subject-accent
        per legare il colore alla materia di studio corrente. Fallback ambra. */
-    --subject-accent: #f59e0b;
-    --subject-accent-foreground: #181516;
-    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 28%, white);
+    --subject-accent: #181516;
+    --subject-accent-foreground: #F2F0EF;
+    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, white);
 --inverse-surface: var(--ink);
 --inverse-on-surface: var(--cream);
 --inverse-primary: 0 0% 62%;
@@ -153,19 +153,19 @@
 --warning-foreground: 139 0% 8%;
 --warning-container: 39 0% 15%;
 
---pastel-terracotta: 18 40% 66%;
---pastel-polvere: 210 34% 70%;
---pastel-ocra: 40 48% 64%;
---pastel-prugna: 322 30% 72%;
---pastel-crepuscolo: 230 22% 72%;
---pastel-mare: 185 30% 64%;
---pastel-violetto: 250 26% 74%;
---pastel-cipria: 350 28% 72%;
---pastel-grafite: 220 16% 70%;
---pastel-miele: 28 44% 66%;
-    --pastel-neutro: 36 6% 68%;
-    --pastel-bosco: 140 24% 66%;
-    --pastel-oliva: 85 24% 62%;
+--pastel-terracotta: 0 0% 65%;
+--pastel-polvere: 0 0% 68%;
+--pastel-ocra: 0 0% 70%;
+--pastel-prugna: 0 0% 66%;
+--pastel-crepuscolo: 0 0% 67%;
+--pastel-mare: 0 0% 64%;
+--pastel-violetto: 0 0% 70%;
+--pastel-cipria: 0 0% 72%;
+--pastel-grafite: 0 0% 65%;
+--pastel-miele: 0 0% 69%;
+    --pastel-neutro: 0 0% 68%;
+    --pastel-bosco: 0 0% 66%;
+    --pastel-oliva: 0 0% 67%;
 
     /* P33 — ombre notte con profondità: capello di luce + ombra ambiente soffusa */
     --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 1px 3px 0 hsl(0 0% 0% / 0.20), 0 1px 2px 0 hsl(0 0% 0% / 0.15);
@@ -204,9 +204,9 @@
 --border: var(--cream) / 0.10;
 --input: 0 0% 10%;
 --ring: 0 0% 80%;
-    --subject-accent: #fbbf24;
-    --subject-accent-foreground: #111111;
-    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 28%, white);
+    --subject-accent: #F2F0EF;
+    --subject-accent-foreground: #181516;
+    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, black);
 --inverse-surface: var(--cream);
 --inverse-on-surface: 0 0% 8%;
 --inverse-primary: 0 0% 40%;
@@ -283,10 +283,11 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Public Sans', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Geist', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
   }
 
   /* Titoli compatti: tracking coerente sui tre livelli del Design System. */
@@ -296,26 +297,26 @@
   }
 
   h1, .display-large {
-    font-family: 'Libre Bodoni', 'Plus Jakarta Sans', Georgia, serif;
+    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-weight: 700;
-    font-size: 2.5rem;
-    line-height: 1.02;
+    font-size: 2.25rem;
+    line-height: 1.05;
     letter-spacing: -0.02em;
     color: hsl(var(--foreground));
   }
 
   h2, .headline-large {
-    font-family: 'Libre Bodoni', 'Plus Jakarta Sans', Georgia, serif;
+    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 700;
-    font-size: 1.75rem;
-    line-height: 1.08;
+    font-size: 1.5rem;
+    line-height: 1.1;
     letter-spacing: -0.015em;
     color: hsl(var(--foreground));
   }
 
   h3, .headline-medium {
-    font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
-    font-weight: 700;
+    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 600;
     font-size: 1.25rem;
     line-height: 1.25;
     letter-spacing: -0.01em;
@@ -323,33 +324,34 @@
   }
 
   .title-large {
-    font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
-    font-weight: 700;
+    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 600;
     font-size: 1.125rem;
     line-height: 1.4;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
   }
 
-  .title-medium { font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; }
-  .title-small { font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; }
+  .title-medium { font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; letter-spacing: -0.01em; }
+  .title-small { font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; letter-spacing: 0.01em; }
 
   .body-large, .body-medium {
-    font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 400;
     line-height: 1.6;
+    letter-spacing: -0.01em;
     color: hsl(var(--foreground));
   }
   .body-small {
-    font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 400;
     font-size: 0.9375rem;
     line-height: 1.5;
     color: hsl(var(--muted-foreground));
   }
 
-  /* Etichette da registro — piccole, uppercase, tracking — Swiss Modernism */
+  /* Etichette — uppercase tracking moderno */
   .label-large, .label-medium, .label-small {
-    font-family: 'Public Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Geist Mono', 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
     text-transform: uppercase;
     font-weight: 600;
   }

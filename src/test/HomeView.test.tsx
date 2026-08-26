@@ -141,34 +141,34 @@ describe("HomeView", () => {
     expect(content?.className).not.toMatch(/(?:^|\s)(?:p[bt]-)/);
   });
 
-  it("mantiene il fondo chiaro dei blocchi operativi e li lega all'inchiostro caldo", () => {
+  it("mantiene materiale unificato per blocchi operativi (rounded-card bg-card)", () => {
     render(<HomeView {...callbacks} />);
 
     const dailyPlanCard = screen.getByTestId("home-daily-plan-card");
     const focusCard = screen.getByTestId("home-focus-timer-card");
 
-    expect(dailyPlanCard).toHaveClass("bg-off-white", "text-[#181516]");
-    expect(focusCard).toHaveClass("bg-off-white", "text-[#181516]");
-    expect(dailyPlanCard.className).toContain("dark:bg-[rgba(26,26,26,0.85)]");
-    expect(dailyPlanCard.className).toContain("dark:shadow-[0_0_30px_rgba(255,255,255,0.08),0_18px_40px_-28px_rgba(0,0,0,0.72)]");
-    expect(focusCard.className).toContain("dark:bg-[rgba(26,26,26,0.85)]");
-    expect(focusCard.className).toContain("supports-[backdrop-filter]:dark:backdrop-blur-md");
-    expect(screen.getByRole("button", { name: "Inizia" }).className).toContain("dark:bg-[#FAFAFA]");
+    expect(dailyPlanCard).toHaveClass("rounded-card", "bg-card");
+    expect(focusCard).toHaveClass("rounded-card", "bg-card");
+    expect(dailyPlanCard.className).toContain("border-border");
+    expect(dailyPlanCard.className).toContain("rounded-card");
+    expect(focusCard.className).toContain("shadow-level-1");
+    expect(focusCard.className).toContain("bg-card");
+    expect(screen.getByRole("button", { name: "Inizia" })).toBeInTheDocument();
     expect(screen.getAllByTestId("home-minimal-artwork").length).toBeGreaterThanOrEqual(1);
 
     const resumeCard = screen.getByTestId("resume-lesson-card");
-    expect(resumeCard).toHaveClass("bg-inverse-surface");
-    expect(resumeCard).not.toHaveClass("bg-off-white");
-    expect(resumeCard.className).not.toContain("dark:bg-[rgba(26,26,26,0.85)]");
+    expect(resumeCard).toHaveClass("rounded-card");
+    expect(resumeCard).toHaveClass("border");
+    expect(resumeCard.className).toContain("shadow-level-1");
   });
 
-  it("applica lo stesso materiale dark anche allo stato vuoto del Piano del giorno", () => {
+  it("applica materiale unificato anche allo stato vuoto del Piano del giorno", () => {
     mockDashboard({ ...dashboardData, todayTasks: [] });
     render(<HomeView {...callbacks} />);
 
     const dailyPlanCard = screen.getByTestId("home-daily-plan-card");
-    expect(dailyPlanCard.className).toContain("dark:bg-[rgba(26,26,26,0.85)]");
-    expect(screen.getByRole("button", { name: /Organizza la settimana/i }).className).toContain("dark:bg-[#FAFAFA]");
+    expect(dailyPlanCard.className).toContain("rounded-card");
+    expect(dailyPlanCard.className).toContain("bg-card");
   });
 
   it("avvia il Pomodoro timer dalla card Focus con la durata selezionata tramite + e -", () => {

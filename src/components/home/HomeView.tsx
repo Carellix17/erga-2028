@@ -40,9 +40,8 @@ interface HomeViewProps {
 const VISIBLE_TASKS = 3;
 
 const HOME_BLOCK_CLASS =
-  "border border-ink/[0.08] bg-off-white text-[#181516] shadow-[0_10px_30px_-24px_rgba(0,0,0,0.45)]";
-const HOME_DARK_MATERIAL_CLASS =
-  "dark:border-white/10 dark:bg-[rgba(26,26,26,0.85)] dark:text-[#FAFAFA] supports-[backdrop-filter]:dark:bg-[rgba(26,26,26,0.72)] supports-[backdrop-filter]:dark:backdrop-blur-md dark:shadow-[0_0_30px_rgba(255,255,255,0.08),0_18px_40px_-28px_rgba(0,0,0,0.72)]";
+  "rounded-card border border-border bg-card text-card-foreground shadow-level-1";
+const HOME_DARK_MATERIAL_CLASS = "";
 const HOME_DARK_TITLE_CLASS = "dark:text-[#FAFAFA]";
 const HOME_DARK_BODY_CLASS = "dark:text-[#E0E0E0]";
 const HOME_DARK_MUTED_CLASS = "dark:text-[rgba(224,224,224,0.82)]";
@@ -185,7 +184,7 @@ export function HomeView({
         {/* Swiss Modernism 2.0: 12-col grid, asymmetric, editorial black + pink accent */}
         <div className="home-hero grid grid-cols-12 gap-6 md:gap-8 items-start" data-testid="home-hero">
           <header className="home-welcome min-w-0 col-span-12 lg:col-span-7 space-y-4">
-            <p className="max-w-[calc(100%-6rem)] truncate text-sm font-semibold capitalize text-muted-foreground min-[360px]:max-w-[calc(100%-11.5rem)] tracking-wide">{todayLabel}</p>
+            <p className="inline-flex items-center gap-2 text-[13px] font-semibold tracking-wide text-foreground bg-card border border-border px-3 py-1.5 rounded-pill shadow-level-1">{todayLabel}</p>
             <h1 className="mt-2 flex flex-col gap-1">
               <span className="break-words font-display text-[clamp(2.2rem,7.5vw,3.5rem)] font-bold leading-[1.05] tracking-[-0.02em] text-foreground">
                 {welcome.greeting}
