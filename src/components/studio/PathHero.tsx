@@ -322,14 +322,14 @@ export function PathHero({
         {...(!isTransitioning ? cardMotion : {})}
         style={isTransitioning ? { zIndex: 20 } : undefined}
       >
-        <p className="label-small tracking-[0.14em] opacity-70 flex items-center gap-2">
+        <p className="label-small tracking-[0.14em] opacity-70 flex items-center gap-2 text-contrast-secondary">
           <Icon className="w-3.5 h-3.5" strokeWidth={2} />
           Percorso
         </p>
-        <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words">
+        <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words text-contrast">
           {courseDisplayName(course.file_name)}
         </h3>
-        {meta && <p className="text-xs opacity-75 mt-1">{meta}</p>}
+        {meta && <p className="text-xs opacity-75 mt-1 text-contrast-secondary">{meta}</p>}
       </CourseCard>
     );
   };
@@ -339,7 +339,7 @@ export function PathHero({
     <div className="relative">
       {/* Riga alta: etichetta + menù ⋯ */}
       <div className="flex items-center justify-between gap-3">
-        <p className="label-small tracking-[0.16em] opacity-70">
+        <p className="label-small tracking-[0.16em] opacity-70 text-contrast-secondary">
           {inPicker ? "Seleziona un percorso" : "Percorso attuale"}
         </p>
         <DropdownMenu>
@@ -418,15 +418,15 @@ export function PathHero({
         </DropdownMenu>
       </div>
 
-      {/* Titolo: nome intero — eredita l'inchiostro a contrasto del blocco */}
-      <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1">
+      {/* Titolo: nome intero — usa text-contrast per garantire visibilità su card scura in light mode */}
+      <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1 text-contrast">
         {title ?? "Il tuo percorso"}
       </h2>
 
       {/* Avanzamento */}
       {isGenerating ? (
         <>
-          <p className="mt-4 text-xs opacity-80">Erga sta trasformando il tuo materiale…</p>
+          <p className="mt-4 text-xs opacity-80 text-contrast-secondary">Erga sta trasformando il tuo materiale…</p>
           <div
             className="mt-2 h-2 rounded-full overflow-hidden"
             style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
@@ -440,10 +440,10 @@ export function PathHero({
       ) : (
         <>
           <div className="mt-4 flex items-baseline justify-between gap-3">
-            <p className="text-sm opacity-80">
+            <p className="text-sm opacity-80 text-contrast-secondary">
               {completedCount} di {totalLessons} lezioni
             </p>
-            <p className="text-sm font-bold tabular-nums">{pct}%</p>
+            <p className="text-sm font-bold tabular-nums text-contrast">{pct}%</p>
           </div>
           <div
             className="mt-2 h-2 rounded-full overflow-hidden"
@@ -597,7 +597,7 @@ export function PathHero({
                       ref={heroRef}
                       layoutId={`course-card-${active?.id}`}
                       transition={effectiveLayoutTransition}
-                      className="relative overflow-hidden rounded-card border border-border bg-card text-card-foreground shadow-level-1 p-5 sm:p-6"
+                      className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 bg-inverse-surface shadow-level-2 p-5 sm:p-6"
                       data-auto-contrast
                       style={heroStyle}
                       layoutScroll

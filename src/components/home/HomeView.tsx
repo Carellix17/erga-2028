@@ -224,7 +224,7 @@ export function HomeView({
                       {resume.courseTitle}
                     </Badge>
                   </div>
-                  <h2 id="resume-title" className="mt-3 max-w-2xl font-display text-[clamp(1.5rem,5vw,2.25rem)] font-extrabold leading-[1.12] tracking-tight">
+                  <h2 id="resume-title" className="mt-3 max-w-2xl font-display text-[clamp(1.5rem,5vw,2.25rem)] font-extrabold leading-[1.12] tracking-tight text-contrast">
                     {resume.lessonTitle}
                   </h2>
                   <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-contrast-secondary">
