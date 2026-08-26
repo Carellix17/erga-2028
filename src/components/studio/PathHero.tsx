@@ -473,7 +473,11 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={onResume}
-                  className="glass-action inline-flex items-center gap-1.5 rounded-full h-11 px-4 text-sm font-semibold"
+                  className="inline-flex items-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                  }}
                 >
                   <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Riprendi
@@ -484,7 +488,11 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={openPicker}
-                  className="glass-action inline-flex items-center justify-center gap-1.5 rounded-full h-11 flex-1 px-3 text-sm font-semibold"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                  }}
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Cambia corso
@@ -505,7 +513,11 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={onResume}
-                  className="glass-action inline-flex items-center justify-center gap-1.5 rounded-full h-11 flex-1 px-4 text-sm font-semibold"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                  }}
                 >
                   <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Riprendi
@@ -517,7 +529,11 @@ export function PathHero({
                 layout
                 type="button"
                 onClick={closePicker}
-                className="glass-action inline-flex items-center justify-center gap-1.5 rounded-full h-11 px-4 text-sm font-semibold"
+                className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                style={{
+                  backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+                  borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+                }}
               >
                 <X className="w-4 h-4 shrink-0" strokeWidth={2} />
                 Annulla
