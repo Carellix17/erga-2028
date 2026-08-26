@@ -239,7 +239,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   if (isLoading) return null;
 
   return (
-    <div className="p-4 pb-28 space-y-4 animate-fade-up">
+    <div className="p-4 pb-28 space-y-4 animate-fade-up min-w-0 overflow-x-clip">
       {suggestion && (
         <PlanSuggestion explanation={suggestion.explanation} onAccept={handleAcceptPlan} onDecline={() => setSuggestion(null)} />
       )}

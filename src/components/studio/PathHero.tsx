@@ -95,6 +95,26 @@ const heroLayoutTransition = {
   layout: { type: "spring", stiffness: 300, damping: 25 },
 } as const;
 
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const check = () => {
+      const htmlReduced = document.documentElement.classList.contains("reduce-motion");
+      setReduced(mql.matches || htmlReduced);
+    };
+    check();
+    mql.addEventListener?.("change", check);
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => {
+      mql.removeEventListener?.("change", check);
+      observer.disconnect();
+    };
+  }, []);
+  return reduced;
+}
+
 // Card esterne: compaiono con DELAY 0.25 (dopo il volo della hero), escono rapide.
 const cardMotion = {
   initial: { opacity: 0, y: 15, scale: 0.96 },
@@ -160,6 +180,8 @@ export function PathHero({
   const active = courses.find((c) => c.id === activeCourseId) ?? courses[0];
   // 🖼️ P24 — immagine della HERO (corso attivo): centralizzata, resta nei cambi stato
   const heroCover = useCourseImage(active?.id ?? null, active?.file_name ?? "");
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const effectiveLayoutTransition = prefersReducedMotion ? { layout: { duration: 0 } } : heroLayoutTransition;
   const multi = courses.length > 1;
   const pct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
   const barPct = isGenerating
@@ -296,7 +318,7 @@ export function PathHero({
         // Preserve scroll measurement: course-specific layoutId maintains continuous viewport measurement
         layoutId={`course-card-${course.id}`}
         layout
-        transition={isTransitioning ? heroLayoutTransition : undefined}
+        transition={isTransitioning ? effectiveLayoutTransition : undefined}
         {...(!isTransitioning ? cardMotion : {})}
         style={isTransitioning ? { zIndex: 20 } : undefined}
       >
@@ -451,11 +473,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={onResume}
-                  className="inline-flex items-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                  }}
+                  className="glass-action inline-flex items-center gap-1.5 rounded-full h-11 px-4 text-sm font-semibold"
                 >
                   <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Riprendi
@@ -466,11 +484,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={openPicker}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                  }}
+                  className="glass-action inline-flex items-center justify-center gap-1.5 rounded-full h-11 flex-1 px-3 text-sm font-semibold"
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Cambia corso
@@ -491,11 +505,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={onResume}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                  }}
+                  className="glass-action inline-flex items-center justify-center gap-1.5 rounded-full h-11 flex-1 px-4 text-sm font-semibold"
                 >
                   <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Riprendi
@@ -507,11 +517,7 @@ export function PathHero({
                 layout
                 type="button"
                 onClick={closePicker}
-                className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                style={{
-                  backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                  borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                }}
+                className="glass-action inline-flex items-center justify-center gap-1.5 rounded-full h-11 px-4 text-sm font-semibold"
               >
                 <X className="w-4 h-4 shrink-0" strokeWidth={2} />
                 Annulla
@@ -537,7 +543,7 @@ export function PathHero({
       <motion.div
         layout
         layoutId={transitioningId ? `course-card-${transitioningId}` : isSelectingCourse ? undefined : `course-card-${active?.id}`}
-        transition={heroLayoutTransition}
+        transition={effectiveLayoutTransition}
         className={`relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6 ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
         data-auto-contrast
         style={heroStyle}
@@ -590,7 +596,7 @@ export function PathHero({
                       layout
                       ref={heroRef}
                       layoutId={`course-card-${active?.id}`}
-                      transition={heroLayoutTransition}
+                      transition={effectiveLayoutTransition}
                       className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6"
                       data-auto-contrast
                       style={heroStyle}

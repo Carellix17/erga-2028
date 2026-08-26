@@ -515,7 +515,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName }: Ese
                 if (!contextId) setSelectedCourse(null);
                 setView("menu");
               }}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
+              className="w-11 h-11 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
             >
               <ChevronLeft className="w-5 h-5 text-foreground" />
             </button>
@@ -689,7 +689,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName }: Ese
           <div className="flex items-center gap-2">
             <button
               onClick={() => setView("menu")}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
+              className="w-11 h-11 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
               aria-label="Indietro"
             >
               <ChevronLeft className="w-5 h-5 text-foreground" />
@@ -730,7 +730,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName }: Ese
           <div className="flex items-center gap-2">
             <button
               onClick={() => setView("menu")}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
+              className="w-11 h-11 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors"
               aria-label="Indietro"
             >
               <ChevronLeft className="w-5 h-5 text-foreground" />
@@ -921,7 +921,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName }: Ese
       {/* Header with X button */}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center justify-between mb-2">
-          <button onClick={exitExercises} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors">
+          <button onClick={exitExercises} className="w-11 h-11 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors">
             <X className="w-5 h-5 text-foreground" />
           </button>
           <span className="label-small text-muted-foreground">

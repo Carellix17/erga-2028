@@ -163,7 +163,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled || isUploading}
             aria-label="Allega un'immagine"
-            className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-foreground/[0.08] disabled:opacity-38"
+            className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-foreground/[0.08] disabled:opacity-38"
           >
             <ImageIcon className="w-5 h-5" />
           </button>
@@ -188,7 +188,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
               disabled={disabled}
               aria-label={isListening ? "Interrompi dettatura vocale" : "Avvia dettatura vocale"}
               className={cn(
-                "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300",
+                "flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300",
                 isListening
                   ? "bg-destructive text-destructive-foreground animate-pulse-soft shadow-level-2"
                   : "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.08]",
@@ -206,7 +206,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             disabled={!hasContent || disabled || isUploading}
             aria-label="Invia messaggio"
             className={cn(
-              "flex-shrink-0 h-10 w-10 rounded-full transition-all duration-300 ease-m3-emphasized",
+              "flex-shrink-0 h-11 w-11 rounded-full transition-all duration-300 ease-m3-emphasized",
               hasContent
                 ? "bg-primary text-primary-foreground shadow-level-1 scale-100 opacity-100"
                 : "bg-surface-container-highest text-muted-foreground scale-90 opacity-50"

@@ -54,7 +54,7 @@ export function AppHeader({
               size="icon-sm"
               aria-label={t("common.back")}
               onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/app"))}
-              className="h-10 w-10 shrink-0 rounded-pill"
+              className="h-11 w-11 shrink-0 rounded-pill"
             >
               <ArrowLeft className="h-5 w-5" aria-hidden="true" />
             </Button>
@@ -88,7 +88,7 @@ export function AppHeader({
               size="icon-sm"
               aria-label={t("header.settings")}
               onClick={() => navigate("/app/impostazioni")}
-              className="h-10 w-10 shrink-0 rounded-pill bg-surface-container-high shadow-none hover:bg-surface-container-highest"
+              className="h-11 w-11 shrink-0 rounded-pill bg-surface-container-high shadow-none hover:bg-surface-container-highest"
             >
               <Settings className="h-5 w-5" aria-hidden="true" />
             </Button>

@@ -891,7 +891,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       {/* 🌲 P24 — il banner è il "cappello completo" della stanza: avanzamento
           con barra, Riprendi + Cambia corso, menù ⋯ (rigenera/materiali/rinomina/
           elimina). Sotto restano solo le lezioni: niente più doppioni. */}
-      <div className="studio-section-enter">
+      <div className="studio-section-enter min-w-0 overflow-x-clip">
       <PathHero
         title={heroTitle}
         completedCount={Math.max(0, Math.min(currentLessonIndex, lessons.length))}
@@ -918,7 +918,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         isRegenerating={isGenerating || !!moduleJob}
       />
       </div>
-      <div key={viewMode} className="studio-section-enter">
+      <div key={viewMode} className="studio-section-enter min-w-0 overflow-x-clip">
       {viewMode === "modules" ? (
         !isCoursePickerOpen ? (
           <ModulesOverview
