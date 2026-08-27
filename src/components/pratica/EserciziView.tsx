@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight, Cpu, Brain, Zap, FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -940,8 +940,17 @@ export function EserciziView({ onFullscreenChange, contextId, contextName }: Ese
         </div>
       </div>
 
-      {/* Exercise content */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+      {/* Exercise content — slide between exercises */}
+      <div className="flex-1 overflow-y-auto px-4 py-3">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+            className="space-y-4"
+          >
         {/* Type badge */}
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full label-small bg-surface-container-high text-muted-foreground">
@@ -1045,10 +1054,13 @@ export function EserciziView({ onFullscreenChange, contextId, contextName }: Ese
           </div>
         )}
 
-        {/* Result feedback */}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Result feedback — outside slide, fade only */}
         {showResult && (
           <div className={cn(
-            "p-4 rounded-2xl border animate-fade-up",
+            "p-4 rounded-2xl border animate-fade-up mt-4",
             results[results.length - 1]?.isCorrect
               ? "bg-success-container border-success/20"
               : "bg-error-container border-destructive/20"
