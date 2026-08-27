@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Loader2, Trash2, Timer, ClipboardCheck, Mic, PencilLine, Hammer, BookOpen, Pencil, ChevronDown, CalendarDays, CalendarRange, Target } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { it, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { StudyPlanSkeleton } from "./StudyPlanSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -298,8 +300,15 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           </div>
         </div>
 
-        {/* key = al cambio Mese/Settimana il contenuto si anima invece di tagliare di colpo */}
-        <div key={calendarMode} className="animate-fade-up">
+        {/* Calendario con transizione fluida mese/settimana — evita flash */}
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={`${calendarMode}-${selectedDate ? format(selectedDate, "yyyy-MM") : "no-date"}`}
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+          >
         {calendarMode === "month" ? (
           <>
             <Calendar
@@ -372,7 +381,8 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
             }}
           />
         )}
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Section Header */}
