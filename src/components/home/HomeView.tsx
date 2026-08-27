@@ -1,4 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
+import { motion } from "framer-motion";
 import {
   BookOpen,
   CalendarDays,
@@ -18,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { HomeDashboardSkeleton } from "./HomeDashboardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
@@ -308,11 +310,37 @@ export function HomeView({
           {tasks.length > 0 ? (
             <Card data-testid="home-daily-plan-card" className={cn(HOME_BLOCK_CLASS, HOME_DARK_MATERIAL_CLASS, "overflow-hidden rounded-lg")}>
               <CardContent className="p-2 sm:p-3">
-                <div id="today-task-list" role="list">
+                <motion.div
+                  id="today-task-list"
+                  role="list"
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: {},
+                    visible: {
+                      transition: {
+                        staggerChildren: 0.05,
+                        delayChildren: 0.1,
+                      },
+                    },
+                  }}
+                >
                   {tasks.map((task, index) => (
-                    <div
+                    <motion.div
                       key={task.id}
                       role="listitem"
+                      variants={{
+                        hidden: { opacity: 0, y: 8, scale: 0.97 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          scale: 1,
+                          transition: {
+                            duration: 0.24,
+                            ease: [0.23, 1, 0.32, 1],
+                          },
+                        },
+                      }}
                       className={cn(
                         "flex min-h-[76px] items-center gap-3 rounded-md px-2 py-3 text-foreground sm:px-3",
                         HOME_DARK_TITLE_CLASS,
@@ -335,9 +363,9 @@ export function HomeView({
                           <Timer className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
                 {hiddenTasks > 0 && (
                   <Button variant="ghost" className={cn("mt-1 min-h-11 w-full rounded-button text-foreground hover:bg-ink/[0.06]", HOME_DARK_GHOST_BUTTON_CLASS)} aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={handleToggleTasks}>
                     {showAllTasks ? t("home.today.showLess") : t("home.today.showAll", { count: hiddenTasks })}

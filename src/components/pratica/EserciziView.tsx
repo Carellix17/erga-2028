@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { BookOpen, Dumbbell, RefreshCw, CheckCircle2, XCircle, ArrowRight, Loader2, X, ChevronLeft, Check, History, ChevronRight, Cpu, Brain, Zap, FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -503,11 +504,11 @@ export function EserciziView({ onFullscreenChange, contextId, contextName }: Ese
     loadQuizResults();
   };
 
-  // Lesson picker view
+  // Lesson picker view — layoutScroll preserves scroll position
   if (showLessonPicker && selectedCourse) {
     return (
       <div className="flex flex-col h-full">
-        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-5">
+        <motion.div layoutScroll className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-5">
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
@@ -573,7 +574,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName }: Ese
               </div>
             </>
           )}
-        </div>
+        </motion.div>
 
         {!loadingLessons && lessons.length > 0 && (
           <div className="flex-shrink-0 px-4 py-3 border-t border-outline-variant/20 bg-background">

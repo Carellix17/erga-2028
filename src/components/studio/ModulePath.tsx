@@ -1,4 +1,6 @@
 import { useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import {
   Check,
   ChevronLeft,
@@ -300,8 +302,8 @@ export function ModulePath({
         </div>
       )}
 
-      {/* ── Il percorso squadrato ── */}
-      <div className="relative mx-2 mt-5" style={{ height }}>
+      {/* ── Il percorso squadrato — stagger entrance */}
+      <motion.div className="relative mx-2 mt-5" style={{ height } as any} initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06, delayChildren: 0.15 } } }}>
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox={`0 0 100 ${height}`}
@@ -324,8 +326,12 @@ export function ModulePath({
           const clickable = !isModuleGenerating && (state === "av" || state === "cur" || state === "done");
 
           return (
-            <div
+            <motion.div
               key={lesson.id}
+              variants={{
+                hidden: { opacity: 0, scale: 0.85, y: 12 },
+                visible: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 28, bounce: 0.15, duration: 0.4 } },
+              }}
               className={cn(
                 "absolute flex items-center justify-center rounded-[16px] font-display font-extrabold text-base select-none",
                 "transition-all duration-200",
@@ -403,7 +409,7 @@ export function ModulePath({
                   </span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
 
@@ -439,7 +445,7 @@ export function ModulePath({
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Bottone modulo completato */}
       {allDone && (
