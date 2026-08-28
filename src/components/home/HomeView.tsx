@@ -21,7 +21,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { HomeDashboardSkeleton } from "./HomeDashboardSkeleton";
-import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
 import { useFocus } from "@/contexts/FocusContext";
 import { useHomeDashboard, type HomeTask } from "@/hooks/useHomeDashboard";
@@ -29,6 +28,8 @@ import { useWelcomeMessage } from "@/hooks/useWelcomeMessage";
 import { useHaptics } from "@/hooks/useHaptics";
 import { getSubjectAccent } from "@/lib/subjectColors";
 import { cn } from "@/lib/utils";
+import { HomeV2 } from "./HomeV2";
+import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
 
 interface HomeViewProps {
   onOpenStudio: () => void;
@@ -60,11 +61,6 @@ interface MinimalArtworkProps {
   lightOnDarkCard?: boolean;
 }
 
-/**
- * Un piccolo segno editoriale, nero e geometrico, condiviso da tutti i blocchi
- * operativi della Home. È volutamente decorativo: il testo resta l'unica fonte
- * di significato per lettori di schermo.
- */
 function MinimalArtwork({ Icon, compact = false, lightOnDarkCard = false }: MinimalArtworkProps) {
   return (
     <span
@@ -99,6 +95,7 @@ export function HomeView({
   const { triggerLight, triggerMedium } = useHaptics();
   const [showAllTasks, setShowAllTasks] = useState(false);
   const [focusMinutes, setFocusMinutes] = useState(25);
+  const { profile: cognitiveProfile } = useCognitiveProfile();
 
   const data = dashboard.data;
   const pendingTasks = data?.todayTasks.filter((task) => !task.isCompleted).length ?? 0;
@@ -137,6 +134,13 @@ export function HomeView({
   const tasks = showAllTasks ? data.todayTasks : data.todayTasks.slice(0, VISIBLE_TASKS);
   const hiddenTasks = Math.max(0, data.todayTasks.length - VISIBLE_TASKS);
   const resume = data.resumeLesson;
+
+  // Determine heroState from data
+  const heroState = resume
+    ? ("ACTIVE_SESSION" as const)
+    : data.nextEvaluation && data.nextEvaluation.daysAway <= 1
+      ? ("CONTEXT_EVENT" as const)
+      : ("SPACED_REPETITION" as const);
 
   const handleOpenPlan = () => {
     triggerLight();
@@ -180,278 +184,110 @@ export function HomeView({
     });
   };
 
+  // Home V2 assembly with new design system tokens (slate) — modular components
   return (
-    <div className="relative isolate min-w-0 overflow-x-clip py-8 md:py-12">
-      <div className="relative z-10 space-y-10 md:space-y-16">
-        {/* Swiss Modernism 2.0: 12-col grid, asymmetric, editorial black + pink accent */}
-        <div className="home-hero grid grid-cols-12 gap-6 md:gap-8 items-start" data-testid="home-hero">
-          <header className="home-welcome min-w-0 col-span-12 lg:col-span-7 space-y-4">
-            <p className="inline-flex items-center gap-2 text-[13px] font-semibold tracking-wide text-foreground bg-card border border-border px-3 py-1.5 rounded-pill shadow-level-1">{todayLabel}</p>
-            <h1 className="mt-2 flex flex-col gap-1">
-              <span className="break-words font-display text-[clamp(2.2rem,7.5vw,3.5rem)] font-bold leading-[1.05] tracking-[-0.02em] text-foreground">
-                {welcome.greeting}
-              </span>
-              <span className="break-words font-display text-[clamp(2.5rem,9vw,4.2rem)] font-bold leading-[0.98] tracking-[-0.03em] text-tertiary">
-                {welcome.name}
-              </span>
-            </h1>
-            <p className="mt-4 hidden max-w-xl text-[17px] font-medium leading-[1.6] text-muted-foreground md:block">{welcome.subtitle}</p>
-            {/* Editorial accent line — Swiss Modernism */}
-            <div className="hidden md:block h-px w-24 bg-foreground/15 mt-6" aria-hidden="true" />
-          </header>
-
-          <section aria-labelledby="resume-title" className="min-w-0 col-span-12 lg:col-span-5">
-            {resume ? (
-              <Card
-                data-testid="resume-lesson-card"
-                data-auto-contrast
-                style={{ "--ambient-block-ink": getSubjectAccent(resume.courseTitle) } as CSSProperties}
-                className="relative h-auto overflow-hidden border-inverse-surface bg-inverse-surface"
-              >
-                <CourseCardBackground
-                  coverUrl={resume.coverUrl}
-                  subjectColor={getSubjectAccent(resume.courseTitle)}
-                  opacity={0.46}
-                />
-                <div className="relative z-10 p-5 sm:p-6">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* P28: chip e testi seguono l'inchiostro misurato sul fondo
-                        reale del blocco (--contrast-ink/--contrast-surface),
-                        così restano leggibili in entrambi i temi. */}
-                    <Badge className="gap-1.5 border-0" style={{ backgroundColor: "rgb(var(--contrast-ink))", color: "rgb(var(--contrast-surface))" }}>
-                      <Sparkles className="h-3 w-3" aria-hidden="true" />
-                      {t("home.resume.eyebrow")}
-                    </Badge>
-                    <Badge variant="outline" className="border-contrast bg-contrast-soft text-contrast">
-                      {resume.courseTitle}
-                    </Badge>
-                  </div>
-                  <h2 id="resume-title" className="mt-3 max-w-2xl font-display text-[clamp(1.5rem,5vw,2.25rem)] font-extrabold leading-[1.12] tracking-tight text-contrast">
-                    {resume.lessonTitle}
-                  </h2>
-                  <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-contrast-secondary">
-                    <span>{t("home.resume.lessonCount", { current: resume.lessonNumber, total: resume.lessonCount })}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{t("home.resume.progress", { progress: resume.progressPercent })}</span>
-                  </div>
-                  <Button
-                    size="lg"
-                    onClick={() => {
-                      triggerLight();
-                      onResumeLesson(resume.contextId, resume.lessonIndex);
-                    }}
-                    style={{ backgroundColor: "rgb(var(--contrast-ink))", color: "rgb(var(--contrast-surface))" }}
-                    className="mt-5 min-h-12 w-full gap-2 rounded-button px-6 text-sm transition-opacity hover:opacity-90 sm:w-auto sm:min-w-[220px]"
-                  >
-                    <Play className="h-4 w-4 fill-current" aria-hidden="true" />
-                    {resume.lessonNumber > 1 ? t("home.resume.continue") : t("home.resume.start")}
-                  </Button>
-                </div>
-              </Card>
-            ) : (
-              <Card className="h-auto border-card bg-card p-6 sm:p-8">
-                <div className="flex h-12 w-12 items-center justify-center rounded-card bg-surface-container-high">
-                  {data.isGenerating ? <RefreshCw className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileUp className="h-5 w-5" aria-hidden="true" />}
-                </div>
-                <h2 id="resume-title" className="mt-4 font-display text-2xl font-bold">
-                  {data.isGenerating ? t("home.resume.generatingTitle") : data.hasContexts ? t("home.resume.noLessonTitle") : t("home.resume.noContentTitle")}
-                </h2>
-                <p className="mt-2 max-w-xl text-base leading-relaxed text-muted-foreground">
-                  {data.isGenerating ? t("home.resume.generatingDescription") : data.hasContexts ? t("home.resume.noLessonDescription") : t("home.resume.noContentDescription")}
-                </p>
-                <Button
-                  className="mt-5 min-h-12 rounded-button"
-                  onClick={() => {
-                    triggerLight();
-                    if (data.hasContexts) {
-                      onOpenStudio();
-                      return;
-                    }
-                    onUpload();
-                  }}
-                >
-                  {data.hasContexts ? t("home.resume.openStudio") : t("home.resume.upload")}
-                </Button>
-              </Card>
-            )}
-          </section>
-        </div>
-
-        <section aria-labelledby="today-plan-title" className="min-w-0 space-y-4">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("home.today.eyebrow")}</p>
-              <h2 id="today-plan-title" className="mt-1 font-display text-2xl font-bold tracking-tight">{t("home.today.title")}</h2>
-            </div>
-            <Button variant="ghost" size="sm" className="min-h-11 rounded-button" onClick={handleOpenPlan}>
-              {t("home.today.openPlan")}
-            </Button>
-          </div>
-
-          {data.nextEvaluation && (
-            <button
-              type="button"
-              onClick={handleOpenPlan}
-              className={cn(
-                HOME_BLOCK_CLASS,
-                "group flex min-h-[84px] w-full items-center gap-3 rounded-lg p-4 text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-20px_rgba(0,0,0,0.38)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink dark:focus-visible:ring-black focus-visible:ring-offset-2 motion-reduce:transform-none dark:border-black/[0.08] dark:text-[#11110E]",
-              )}
-            >
-              <MinimalArtwork Icon={CalendarDays} />
-              <span className="min-w-0 flex-1">
-                <span className="block text-xs font-bold uppercase tracking-wider text-foreground/60 dark:text-black/60">
-                  {t("home.evaluation.inDays", { count: data.nextEvaluation.daysAway })}
-                </span>
-                <span className="mt-1 block truncate text-base font-bold">{data.nextEvaluation.subject} · {data.nextEvaluation.title}</span>
-              </span>
-            </button>
-          )}
-
-          {tasks.length > 0 ? (
-            <Card data-testid="home-daily-plan-card" className={cn(HOME_BLOCK_CLASS, HOME_DARK_MATERIAL_CLASS, "overflow-hidden rounded-lg")}>
-              <CardContent className="p-2 sm:p-3">
-                <motion.div
-                  id="today-task-list"
-                  role="list"
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    hidden: {},
-                    visible: {
-                      transition: {
-                        staggerChildren: 0.05,
-                        delayChildren: 0.1,
-                      },
-                    },
-                  }}
-                >
-                  {tasks.map((task, index) => (
-                    <motion.div
-                      key={task.id}
-                      role="listitem"
-                      variants={{
-                        hidden: { opacity: 0, y: 8, scale: 0.97 },
-                        visible: {
-                          opacity: 1,
-                          y: 0,
-                          scale: 1,
-                          transition: {
-                            duration: 0.24,
-                            ease: [0.23, 1, 0.32, 1],
-                          },
-                        },
-                      }}
-                      className={cn(
-                        "flex min-h-[76px] items-center gap-3 rounded-md px-2 py-3 text-foreground sm:px-3",
-                        HOME_DARK_TITLE_CLASS,
-                        index !== tasks.length - 1 && "border-b border-ink/[0.08] dark:border-white/10",
-                        task.isCompleted && "opacity-70",
-                      )}
-                    >
-                      <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-full border border-ink/15 text-foreground dark:border-white/20 dark:text-[#FAFAFA]", task.isCompleted && "bg-ink text-cream dark:bg-[#FAFAFA] dark:text-[#111111]")}>
-                        {task.isCompleted ? <Check className="h-5 w-5" aria-hidden="true" /> : task.kind === "study" ? <BookOpen className="h-5 w-5 stroke-[1.6]" aria-hidden="true" /> : <CalendarDays className="h-5 w-5 stroke-[1.6]" aria-hidden="true" />}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className={cn("break-words text-base font-bold leading-snug", HOME_DARK_TITLE_CLASS, task.isCompleted && "line-through")}>{task.title}</p>
-                        <p className={cn("mt-1 flex flex-wrap gap-x-2 text-sm text-foreground/60", HOME_DARK_MUTED_CLASS)}>
-                          <span>{task.subject}</span>
-                          {task.time && <><span aria-hidden="true">·</span><span>{task.time}</span></>}
-                        </p>
-                      </div>
-                      {task.canStartFocus && (
-                        <Button size="icon-sm" variant="outline" className={cn("h-11 w-11 shrink-0 rounded-full border-ink/15 bg-transparent text-foreground hover:bg-ink hover:text-cream", HOME_DARK_OUTLINE_BUTTON_CLASS)} aria-label={t("home.today.startFocus", { title: task.title })} onClick={() => startTaskFocus(task)}>
-                          <Timer className="h-4 w-4" aria-hidden="true" />
-                        </Button>
-                      )}
-                    </motion.div>
-                  ))}
-                </motion.div>
-                {hiddenTasks > 0 && (
-                  <Button variant="ghost" className={cn("mt-1 min-h-11 w-full rounded-button text-foreground hover:bg-ink/[0.06]", HOME_DARK_GHOST_BUTTON_CLASS)} aria-expanded={showAllTasks} aria-controls="today-task-list" onClick={handleToggleTasks}>
-                    {showAllTasks ? t("home.today.showLess") : t("home.today.showAll", { count: hiddenTasks })}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <Card data-testid="home-daily-plan-card" className={cn(HOME_BLOCK_CLASS, HOME_DARK_MATERIAL_CLASS, "rounded-lg p-5")}>
-              <MinimalArtwork Icon={Clock3} lightOnDarkCard />
-              <h3 className={cn("mt-3 font-display text-lg font-bold", HOME_DARK_TITLE_CLASS)}>{t("home.today.emptyTitle")}</h3>
-              <p className={cn("mt-1 text-base text-foreground/65", HOME_DARK_BODY_CLASS)}>{t("home.today.emptyDescription")}</p>
-              <Button variant="outline" className={cn("mt-4 min-h-11 rounded-button border-ink/15 bg-transparent text-foreground hover:bg-ink hover:text-cream", HOME_DARK_INVERTED_BUTTON_CLASS)} onClick={handleOpenPlan}>{t("home.today.organize")}</Button>
-            </Card>
-          )}
-        </section>
-
-        <section aria-labelledby="focus-timer-title" className="space-y-4 pb-2">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("home.focusTimer.eyebrow")}</p>
-            <h2 id="focus-timer-title" className="mt-1 font-display text-xl font-bold">{t("home.focusTimer.title")}</h2>
-          </div>
-          <Card data-testid="home-focus-timer-card" className={cn(HOME_BLOCK_CLASS, HOME_DARK_MATERIAL_CLASS, "rounded-lg p-5 sm:p-6")}>
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-4">
-                <MinimalArtwork Icon={Timer} lightOnDarkCard />
-                <div>
-                  <h3 className={cn("font-display text-lg font-extrabold tracking-tight text-foreground sm:text-xl", HOME_DARK_TITLE_CLASS)}>
-                    {t("home.focusTimer.cardTitle")}
-                  </h3>
-                  <p className={cn("mt-1 max-w-sm text-sm font-medium leading-relaxed text-foreground/70", HOME_DARK_BODY_CLASS)}>
-                    {t("home.focusTimer.description")}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3.5 sm:items-end">
-                <div className="flex items-center justify-between gap-4 sm:justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleAdjustFocusMinutes("decrease")}
-                    disabled={focusMinutes <= 5}
-                    aria-label={t("home.focusTimer.decreaseAria")}
-                    className={cn("h-12 w-12 rounded-full border-ink/20 bg-transparent text-foreground transition-all hover:bg-ink hover:text-cream disabled:opacity-30 active:scale-95", HOME_DARK_OUTLINE_BUTTON_CLASS)}
-                  >
-                    <Minus className="h-5 w-5" />
-                  </Button>
-
-                  <div className="min-w-[90px] text-center">
-                    <span className={cn("block font-display text-4xl font-black tabular-nums tracking-tight text-foreground sm:text-5xl", HOME_DARK_TITLE_CLASS)}>
-                      {focusMinutes}
-                    </span>
-                    <span className={cn("block text-xs font-bold uppercase tracking-wider text-foreground/60", HOME_DARK_MUTED_CLASS)}>
-                      {t("home.focusTimer.minutes")}
-                    </span>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleAdjustFocusMinutes("increase")}
-                    disabled={focusMinutes >= 180}
-                    aria-label={t("home.focusTimer.increaseAria")}
-                    className={cn("h-12 w-12 rounded-full border-ink/20 bg-transparent text-foreground transition-all hover:bg-ink hover:text-cream disabled:opacity-30 active:scale-95", HOME_DARK_OUTLINE_BUTTON_CLASS)}
-                  >
-                    <Plus className="h-5 w-5" />
-                  </Button>
-                </div>
-
-                <Button
-                  type="button"
-                  onClick={handleStartFocusTimer}
-                  aria-label={t("home.focusTimer.start")}
-                  className={cn("min-h-12 w-full gap-2 rounded-full bg-ink px-6 text-sm font-bold text-cream shadow-level-1 transition-transform hover:opacity-90 active:scale-95 sm:w-auto sm:min-w-[140px]", HOME_DARK_INVERTED_BUTTON_CLASS)}
-                >
-                  <Play className="h-4 w-4 fill-current" aria-hidden="true" />
-                  <span>{t("home.focusTimer.start")}</span>
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </section>
-      </div>
-    </div>
+    <HomeV2
+      headerProps={{
+        userName: data.displayName || "Studente",
+        streakDays: data.streakDays,
+        onSettingsClick: () => {
+          triggerLight();
+          // Settings navigation handled by parent layout
+        },
+        onAvatarClick: () => {
+          triggerLight();
+          onOpenCognitive?.();
+        },
+      }}
+      heroProps={{
+        heroState,
+        subject: resume?.courseTitle ?? "Generale",
+        lessonTitle: resume?.lessonTitle ?? (heroState === "CONTEXT_EVENT" ? "Hai saltato l'allenamento di ieri" : "Ripasso: Fotosintesi clorofilliana"),
+        retentionText:
+          heroState === "ACTIVE_SESSION"
+            ? `Ritenzione ${resume?.progressPercent ?? 78}% · ${resume ? `${resume.lessonNumber} di ${resume.lessonCount} lezioni` : "Riprendi oggi"}`
+            : heroState === "CONTEXT_EVENT"
+              ? "Riprendi il ritmo con una sessione breve"
+              : "3 concetti da ripassare per fissare la memoria",
+        progressPercent: resume?.progressPercent ?? 42,
+        badgeText: resume?.courseTitle ?? (heroState === "CONTEXT_EVENT" ? "Pausa programmata" : "Consolidamento"),
+        secondaryText: data.nextEvaluation ? `${data.nextEvaluation.subject} · ${data.nextEvaluation.title} tra ${data.nextEvaluation.daysAway} giorni` : undefined,
+        onPrimaryAction: () => {
+          triggerLight();
+          if (resume) {
+            onResumeLesson(resume.contextId, resume.lessonIndex);
+          } else {
+            onOpenStudio();
+          }
+        },
+        primaryActionLabel:
+          heroState === "ACTIVE_SESSION"
+            ? resume && resume.lessonNumber > 1
+              ? "Riprendi Lezione"
+              : "Inizia Lezione"
+            : heroState === "CONTEXT_EVENT"
+              ? "Studia ora"
+              : "Ripasso rapido",
+      }}
+      quickActionsProps={{
+        onImportPdf: () => {
+          triggerLight();
+          onUpload();
+        },
+        onQuizEspresso: () => {
+          triggerLight();
+          onOpenStudio();
+        },
+        onAskErga: () => {
+          triggerLight();
+          // Open chat — handled via custom event
+          window.dispatchEvent(new CustomEvent("erga:goto-tab", { detail: "core" }));
+        },
+        onFocusLibero: () => {
+          triggerLight();
+          focus.openSetup();
+        },
+      }}
+      cognitiveProps={{
+        cognitiveState: cognitiveProfile
+          ? cognitiveProfile.foc_score >= 70
+            ? "Focus Alto"
+            : cognitiveProfile.foc_score >= 40
+              ? "Focus Medio"
+              : "Focus Basso"
+          : "Focus Medio",
+        description: cognitiveProfile
+          ? `Logica ${cognitiveProfile.log_score} · Memoria ${cognitiveProfile.mem_score} · Calma ${cognitiveProfile.ans_score}`
+          : "Sei al picco di concentrazione oggi",
+        hexagonValue: cognitiveProfile ? Math.round((cognitiveProfile.log_score + cognitiveProfile.mem_score + cognitiveProfile.foc_score) / 3) : 78,
+        onClick: () => {
+          triggerLight();
+          onOpenCognitive?.();
+        },
+      }}
+      timelineProps={{
+        tasks: tasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          time: t.time,
+          subject: t.subject,
+          isCompleted: t.isCompleted,
+          kind: t.kind as any,
+        })),
+        onTaskClick: (id) => {
+          const task = data.todayTasks.find((t) => t.id === id);
+          if (task) startTaskFocus(task);
+        },
+        onSeeAll: hiddenTasks > 0 || showAllTasks ? handleToggleTasks : onOpenPlan,
+        title: showAllTasks ? "Tutte le attività" : "Oggi",
+        eyebrow: `Piano · ${pendingTasks} da fare`,
+      }}
+      activeTab="home"
+      onTabChange={(tab) => {
+        triggerLight();
+        if (tab === "home") return;
+        window.dispatchEvent(new CustomEvent("erga:goto-tab", { detail: tab }));
+      }}
+    />
   );
 }

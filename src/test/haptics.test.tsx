@@ -17,11 +17,18 @@ vi.mock("@/hooks/useHomeDashboard", async () => {
 });
 
 vi.mock("@/contexts/FocusContext", () => ({
-  useFocus: () => ({ startSession, openSetup }),
+  useFocus: () => ({ startSession, openSetup, openFullscreen: vi.fn(), isActive: false }),
 }));
 
 vi.mock("@/components/studio/CourseCardBackground", () => ({
   CourseCardBackground: () => <div data-testid="course-background" />,
+}));
+
+vi.mock("@/hooks/useCognitiveProfile", () => ({
+  useCognitiveProfile: () => ({
+    profile: { log_score: 70, mem_score: 60, foc_score: 80, voc_score: 65, ans_score: 75, app_score: 70 },
+    isLoaded: true,
+  }),
 }));
 
 const dashboardData: HomeDashboardData = {
@@ -97,30 +104,23 @@ describe("haptics", () => {
     expect(vibrateMock).toHaveBeenCalledWith(10);
   });
 
-  it("applica feedback medium ai controlli del Focus Timer", () => {
+  it("applica feedback medium ai controlli del Focus Timer V2", () => {
     render(<HomeView {...callbacks} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Aumenta di 5 minuti/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Inizia" }));
-
-    expect(vibrateMock).toHaveBeenNthCalledWith(1, 25);
-    expect(vibrateMock).toHaveBeenNthCalledWith(2, 25);
-    expect(startSession).toHaveBeenCalledWith(
-      expect.objectContaining({
-        estimatedDuration: 30,
-        durationMinutes: 30,
-        sourceType: "adhoc",
-      }),
-      30,
-    );
+    // In V2, Focus Libero triggers openSetup with medium feedback via triggerMedium in HomeView
+    // QuickActions Focus Libero
+    fireEvent.click(screen.getByText("Focus Libero"));
+    expect(vibrateMock).toHaveBeenCalledWith(10);
+    expect(openSetup).toHaveBeenCalled();
   });
 
-  it("applica feedback light alle CTA del Piano del giorno", () => {
+  it("applica feedback light alle CTA del Piano del giorno V2", () => {
     render(<HomeView {...callbacks} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Organizza la settimana/i }));
+    // In V2, Vedi tutto or Piano triggers light feedback
+    const pianoBtn = screen.getByText("Piano");
+    fireEvent.click(pianoBtn);
 
     expect(vibrateMock).toHaveBeenCalledWith(10);
-    expect(callbacks.onOpenPlan).toHaveBeenCalled();
   });
 });

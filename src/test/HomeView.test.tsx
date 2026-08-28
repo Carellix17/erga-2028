@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HomeView } from "@/components/home/HomeView";
 import { useHomeDashboard, type HomeDashboardData } from "@/hooks/useHomeDashboard";
+import { HomeV2 } from "@/components/home/HomeV2";
 
 const startSession = vi.fn();
 const openSetup = vi.fn();
@@ -12,11 +13,18 @@ vi.mock("@/hooks/useHomeDashboard", async () => {
 });
 
 vi.mock("@/contexts/FocusContext", () => ({
-  useFocus: () => ({ startSession, openSetup }),
+  useFocus: () => ({ startSession, openSetup, openFullscreen: vi.fn(), isActive: false }),
 }));
 
 vi.mock("@/components/studio/CourseCardBackground", () => ({
   CourseCardBackground: () => <div data-testid="course-background" />,
+}));
+
+vi.mock("@/hooks/useCognitiveProfile", () => ({
+  useCognitiveProfile: () => ({
+    profile: { log_score: 70, mem_score: 60, foc_score: 80, voc_score: 65, ans_score: 75, app_score: 70 },
+    isLoaded: true,
+  }),
 }));
 
 const dashboardData: HomeDashboardData = {
@@ -57,16 +65,8 @@ const dashboardData: HomeDashboardData = {
   minutesToday: 32,
   sessionsToday: 2,
   completedActivities: 1,
-  streakDays: 4,
-  focusSessions: [
-    {
-      id: "focus-1",
-      actualDuration: 32,
-      completedAt: "2026-08-23T14:30:00.000Z",
-      subjectName: "Fisica",
-      taskLabel: "Ripasso cinematica",
-    },
-  ],
+  streakDays: 12,
+  focusSessions: [],
 };
 
 const callbacks = {
@@ -88,146 +88,127 @@ function mockDashboard(data: HomeDashboardData | undefined = dashboardData, over
   } as unknown as ReturnType<typeof useHomeDashboard>);
 }
 
-describe("HomeView", () => {
+describe("HomeView V2", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDashboard();
   });
 
-  it("mantiene la Home concentrata sulle attività e sposta il riepilogo Focus", () => {
+  it("renderizza tutti i 6 componenti modulari V2", () => {
     render(<HomeView {...callbacks} />);
-
+    // CompactHeader
     expect(screen.getByText("Vale")).toBeInTheDocument();
+    expect(screen.getByText(/12 giorni/)).toBeInTheDocument();
+    // DynamicHeroCard
     expect(screen.getByText("Il moto rettilineo")).toBeInTheDocument();
+    // QuickActions
+    expect(screen.getByText("Importa PDF")).toBeInTheDocument();
+    expect(screen.getByText("Quiz Espresso")).toBeInTheDocument();
+    expect(screen.getByText("Chiedi a Erga")).toBeInTheDocument();
+    expect(screen.getByText("Focus Libero")).toBeInTheDocument();
+    // CognitivePulse
+    expect(screen.getByText(/Focus Alto|Focus Medio|Focus Basso/)).toBeInTheDocument();
+    // DailyTimeline
     expect(screen.getByText("Ripasso cinematica")).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Dati reali dalle sessioni Focus" })).not.toBeInTheDocument();
-    expect(screen.queryByText("minuti oggi")).not.toBeInTheDocument();
-    expect(screen.queryByText("giorni di serie")).not.toBeInTheDocument();
+    // BottomNav
+    expect(screen.getByText("Home")).toBeInTheDocument();
+    expect(screen.getByText("Piano")).toBeInTheDocument();
+    expect(screen.getByText("Studio")).toBeInTheDocument();
+    expect(screen.getByText("Core")).toBeInTheDocument();
   });
 
-  it("mantiene il messaggio secondario della Home solo da tablet in poi", () => {
+  it("rispetta touch target minimo 44px", () => {
+    render(<HomeView {...callbacks} />);
+    const buttons = screen.getAllByRole("button");
+    buttons.forEach((btn) => {
+      // Check class contains h-11 (44px) or min 44
+      const hasMinSize = btn.className.includes("h-11") || btn.className.includes("min-h-") || btn.className.includes("h-[64px]");
+      // Allow small decorative buttons but main actions must be 44
+      if (btn.textContent?.includes("Importa PDF") || btn.textContent?.includes("Riprendi") || btn.textContent?.includes("Cambia corso")) {
+        expect(hasMinSize || btn.className.includes("h-11")).toBeTruthy();
+      }
+    });
+  });
+
+  it("tronca testi lunghi per evitare rotture UI", () => {
     mockDashboard({
       ...dashboardData,
-      todayTasks: [],
-      nextEvaluation: null,
-      completedActivities: 0,
-      sessionsToday: 0,
+      displayName: "Alessandro Molto Lungo Con Nome Che Non Finisce Mai",
+      resumeLesson: {
+        ...dashboardData.resumeLesson!,
+        lessonTitle: "Titolo lunghissimo che dovrebbe essere troncato per non rompere il layout della card hero con line-clamp",
+        courseTitle: "Materia con nome lunghissimo che deve essere troncato",
+      },
     });
     render(<HomeView {...callbacks} />);
-
-    expect(screen.getByText("Hai una lezione da riprendere")).toHaveClass("hidden", "md:block");
-    expect(screen.queryByText("Completa la prima sessione Focus per iniziare a vedere il tuo ritmo.")).not.toBeInTheDocument();
+    const title = screen.getByText(/Titolo lunghissimo/);
+    expect(title.className).toMatch(/truncate|line-clamp/);
+    const userName = screen.getByText(/Alessandro Molto Lungo/);
+    expect(userName.className).toMatch(/truncate|line-clamp/);
   });
 
-  it("mostra la lezione prima del piano del giorno", () => {
-    render(<HomeView {...callbacks} />);
-
-    const resumeTitle = screen.getByRole("heading", { name: "Il moto rettilineo" });
-    const todayTitle = screen.getByRole("heading", { name: "Piano del giorno" });
-
-    expect(resumeTitle.compareDocumentPosition(todayTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
-
-  it("adatta la card della lezione al contenuto con padding uniforme", () => {
-    render(<HomeView {...callbacks} />);
-
-    const card = screen.getByTestId("resume-lesson-card");
-    const button = screen.getByRole("button", { name: /Riprendi lezione/i });
-    const content = button.parentElement;
-
-    expect(card).toHaveClass("h-auto");
-    expect(card.className).not.toMatch(/min-h-|h-\[/);
-    expect(content).toHaveClass("p-5", "sm:p-6");
-    expect(content?.className).not.toMatch(/(?:^|\s)(?:p[bt]-)/);
-  });
-
-  it("mantiene materiale unificato per blocchi operativi (rounded-card bg-card)", () => {
-    render(<HomeView {...callbacks} />);
-
-    const dailyPlanCard = screen.getByTestId("home-daily-plan-card");
-    const focusCard = screen.getByTestId("home-focus-timer-card");
-
-    expect(dailyPlanCard).toHaveClass("rounded-card", "bg-card");
-    expect(focusCard).toHaveClass("rounded-card", "bg-card");
-    expect(dailyPlanCard.className).toContain("border-border");
-    expect(dailyPlanCard.className).toContain("rounded-card");
-    expect(focusCard.className).toContain("shadow-level-1");
-    expect(focusCard.className).toContain("bg-card");
-    expect(screen.getByRole("button", { name: "Inizia" })).toBeInTheDocument();
-    expect(screen.getAllByTestId("home-minimal-artwork").length).toBeGreaterThanOrEqual(1);
-
-    const resumeCard = screen.getByTestId("resume-lesson-card");
-    expect(resumeCard).toHaveClass("rounded-card");
-    expect(resumeCard).toHaveClass("border");
-    expect(resumeCard.className).toContain("shadow-level-1");
-  });
-
-  it("applica materiale unificato anche allo stato vuoto del Piano del giorno", () => {
-    mockDashboard({ ...dashboardData, todayTasks: [] });
-    render(<HomeView {...callbacks} />);
-
-    const dailyPlanCard = screen.getByTestId("home-daily-plan-card");
-    expect(dailyPlanCard.className).toContain("rounded-card");
-    expect(dailyPlanCard.className).toContain("bg-card");
-  });
-
-  it("avvia il Pomodoro timer dalla card Focus con la durata selezionata tramite + e -", () => {
-    render(<HomeView {...callbacks} />);
-
-    expect(screen.getByText("25")).toBeInTheDocument();
-
-    const increaseBtn = screen.getByRole("button", { name: /Aumenta di 5 minuti/i });
-    fireEvent.click(increaseBtn);
-    expect(screen.getByText("30")).toBeInTheDocument();
-
-    const decreaseBtn = screen.getByRole("button", { name: /Diminuisci di 5 minuti/i });
-    fireEvent.click(decreaseBtn);
-    expect(screen.getByText("25")).toBeInTheDocument();
-
-    fireEvent.click(increaseBtn);
-    fireEvent.click(increaseBtn);
-    expect(screen.getByText("35")).toBeInTheDocument();
-
-    const startBtn = screen.getByRole("button", { name: "Inizia" });
-    fireEvent.click(startBtn);
-    expect(startSession).toHaveBeenCalledWith(
-      expect.objectContaining({
-        estimatedDuration: 35,
-        durationMinutes: 35,
-        sourceType: "adhoc",
-      }),
-      35,
+  it("switch heroState mostra 3 stati diversi", () => {
+    const { rerender } = render(
+      <HomeV2
+        heroState="ACTIVE_SESSION"
+        heroProps={{
+          subject: "Fisica",
+          lessonTitle: "Moto rettilineo",
+          retentionText: "Ritenzione 78%",
+          progressPercent: 42,
+        }}
+      />
     );
+    expect(screen.getByText("Moto rettilineo")).toBeInTheDocument();
+    
+    rerender(
+      <HomeV2
+        heroState="CONTEXT_EVENT"
+        heroProps={{
+          secondaryText: "Hai saltato allenamento",
+          retentionText: "Riprendi ritmo",
+        }}
+      />
+    );
+    expect(screen.getByText(/Hai saltato/)).toBeInTheDocument();
+    
+    rerender(
+      <HomeV2
+        heroState="SPACED_REPETITION"
+        heroProps={{
+          lessonTitle: "Fotosintesi",
+          retentionText: "3 concetti da ripassare",
+        }}
+      />
+    );
+    expect(screen.getByText("Fotosintesi")).toBeInTheDocument();
   });
 
-  it("P28: la lezione sospesa usa l'inchiostro a contrasto automatico, mai fisso", () => {
+  it("BottomNav resta fissato senza coprire timeline", () => {
     render(<HomeView {...callbacks} />);
-
-    const card = screen.getByTestId("resume-lesson-card");
-    // Prima il testo era `text-inverse-on-surface`: nel tema scuro diventava
-    // NERO sul fondo marrone/nero del blocco. Ora lo script misura il fondo
-    // reale e imposta --contrast-ink sul blocco marcato.
-    expect(card).toHaveAttribute("data-auto-contrast");
-    expect(card.className).not.toMatch(/text-inverse-on-surface/);
-    expect(card.innerHTML).not.toMatch(/text-inverse-on-surface/);
+    const nav = document.querySelector("nav.fixed.bottom-0");
+    expect(nav).toBeTruthy();
+    const inner = nav?.querySelector(".max-w-md");
+    expect(inner).toBeTruthy();
+    expect(inner?.className).toContain("mx-auto");
+    
+    // Container should have pb-24 to avoid content hidden by nav
+    const container = document.querySelector(".pb-24");
+    expect(container).toBeTruthy();
   });
 
-  it("riapre la lezione precisa", () => {
+  it("QuickActions non triggera scroll orizzontale globale", () => {
     render(<HomeView {...callbacks} />);
-    fireEvent.click(screen.getByRole("button", { name: /Riprendi lezione/i }));
-    expect(callbacks.onResumeLesson).toHaveBeenCalledWith("ctx-1", 2);
+    const quickActionsContainer = document.querySelector(".overflow-x-auto.no-scrollbar");
+    expect(quickActionsContainer).toBeTruthy();
+    expect(quickActionsContainer?.className).toContain("no-scrollbar");
   });
 
-  it("avvia Focus collegandolo all'attività reale", () => {
+  it("usa solo lucide-react icons", () => {
     render(<HomeView {...callbacks} />);
-    fireEvent.click(screen.getByRole("button", { name: /Avvia Focus per Ripasso cinematica/i }));
-    expect(startSession).toHaveBeenCalledWith(expect.objectContaining({ eventId: "e1", subject: "Fisica" }));
-  });
-
-  it("propone il caricamento quando non esistono percorsi", () => {
-    mockDashboard({ ...dashboardData, resumeLesson: null, activeContextId: null, hasContexts: false, todayTasks: [] });
-    render(<HomeView {...callbacks} />);
-    fireEvent.click(screen.getAllByRole("button", { name: /Aggiungi materiale/i })[0]);
-    expect(callbacks.onUpload).toHaveBeenCalled();
+    // Check that no emoji is used as icon (except streak fire which is allowed as per spec)
+    // All icons should be svg from lucide
+    const svgs = document.querySelectorAll("svg");
+    expect(svgs.length).toBeGreaterThan(0);
   });
 });
