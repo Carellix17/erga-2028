@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Area,
   AreaChart,
@@ -76,16 +77,91 @@ function formatMinutesForDisplay(minutes: number, short = false): string {
 }
 
 function StreakEmblem({ days }: { days: number }) {
+  const prevDaysRef = useRef(days);
+  const [isCelebrating, setIsCelebrating] = useState(false);
+
+  useEffect(() => {
+    if (days > prevDaysRef.current && days > 0) {
+      setIsCelebrating(true);
+      const timer = setTimeout(() => setIsCelebrating(false), 800);
+      return () => clearTimeout(timer);
+    }
+    prevDaysRef.current = days;
+  }, [days]);
+
+  useEffect(() => {
+    if (isCelebrating) {
+      prevDaysRef.current = days;
+    }
+  }, [isCelebrating, days]);
+
   return (
-    <div data-testid="streak-emblem" className="relative mx-auto grid h-32 w-32 place-items-center" aria-hidden="true">
+    <motion.div
+      data-testid="streak-emblem"
+      className="relative mx-auto grid h-32 w-32 place-items-center"
+      aria-hidden="true"
+      animate={
+        isCelebrating
+          ? {
+              scale: [1, 1.15, 1],
+              transition: {
+                type: "spring",
+                stiffness: 500,
+                damping: 15,
+                bounce: 0.25,
+                duration: 0.6,
+              },
+            }
+          : { scale: 1 }
+      }
+    >
       <span className="absolute inset-1 rounded-full border border-foreground/15 bg-surface-container-low" aria-hidden="true" />
       <span className="absolute inset-[0.62rem] rounded-full border border-foreground/10" aria-hidden="true" />
       <span className="absolute left-5 top-5 h-px w-8 -rotate-45 bg-foreground/30" aria-hidden="true" />
-      <Flame className="absolute -top-1.5 h-[4.6rem] w-[4.6rem] stroke-[1.35] text-foreground" aria-hidden="true" />
-      <span className="relative z-10 mt-8 font-display text-5xl font-extrabold leading-none tracking-[-0.06em] text-foreground tabular-nums">
-        {days}
-      </span>
-    </div>
+      <motion.div
+        animate={
+          isCelebrating
+            ? {
+                scale: [1, 1.2, 1],
+                y: [0, -4, 0],
+                transition: { type: "spring", stiffness: 500, damping: 12, delay: 0.05 },
+              }
+            : {}
+        }
+      >
+        <Flame className="absolute -top-1.5 h-[4.6rem] w-[4.6rem] stroke-[1.35] text-foreground" aria-hidden="true" />
+      </motion.div>
+      <AnimatePresence mode="popLayout">
+        <motion.span
+          key={days}
+          initial={{ opacity: 0, y: 12, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -12, scale: 0.9 }}
+          transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
+          className="relative z-10 mt-8 font-display text-5xl font-extrabold leading-none tracking-[-0.06em] text-foreground tabular-nums"
+        >
+          {days}
+        </motion.span>
+      </AnimatePresence>
+      {isCelebrating && (
+        <>
+          <motion.span
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: [0, 1, 0], scale: [0, 1.5, 2] }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="absolute inset-0 rounded-full border-2 border-foreground/20"
+            aria-hidden="true"
+          />
+          <motion.span
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: [0, 0.6, 0], scale: [0, 1.8, 2.5] }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
+            className="absolute inset-0 rounded-full border border-foreground/10"
+            aria-hidden="true"
+          />
+        </>
+      )}
+    </motion.div>
   );
 }
 
