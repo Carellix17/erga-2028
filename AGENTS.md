@@ -129,3 +129,15 @@ Per una modifica frontend, quando possibile:
 5. verificare assenza di overflow orizzontale e target troppo piccoli;
 6. controllare accessibilità automatica e navigazione da tastiera;
 7. spiegare in modo semplice modifiche, motivazioni, limiti e azioni richieste all'utente.
+
+## 6. Ambiente di sviluppo Base44
+
+L'app gira in preview tramite `docker-compose.base44.yml` (frontend-only; il backend è Lovable Cloud / Supabase esterno, non va eseguito in compose).
+
+- **Stack**: Vite 5 + React 18 + TypeScript, package manager Bun. Vite dev server in ascolto sulla porta 8080, mappata sulla porta host 3000.
+- **Avvio**: `docker compose -f docker-compose.base44.yml up -d`. Il container esegue `bun install` poi `bunx vite --host 0.0.0.0 --port 8080`.
+- **predev saltato**: l'hook `predev` (`bunx tsx scripts/generate-sitemap.ts`) fallisce in container Bun per un problema di risoluzione di `tsx`; il file `public/sitemap.xml` è già generato e committed, quindi si lancia Vite direttamente saltando l'hook.
+- **Env**: le chiavi Supabase (publishable/anon) e i token payments (test/live) sono già committed in `.env` / `.env.development` / `.env.production` — non servono secret esterni per avviare l'app.
+- **Host esterno**: Vite ha `allowedHosts: true` e `host: "::"`, quindi l'anteprima con hostname proxy funziona senza modifiche.
+- **Verifica**: `curl -sf -H "Host: external-preview.example.com" http://localhost:3000/` deve restituire l'HTML dell'app; i moduli sorgente sono serviti da `/src/...` (dev server, non bundle precompilato).
+- **Live reload**: le modifiche al codice sorgente si riflettono automaticamente (Vite HMR); per modifiche a compose/env/dipendenze usare `reload_preview`.
