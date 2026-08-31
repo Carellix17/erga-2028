@@ -149,8 +149,10 @@ export default {
         "level-5": "var(--shadow-level-5)",
         //  P34 — ombre tattili (Home V3): profilo leggero per card/pillole
         // glass e profondità riservata alla card corso attiva.
+        // P35 — ombra dell'eroe: goccia decisa per la card percorso su fondo scuro.
         tactile: "var(--shadow-tattile)",
         "card-active": "var(--shadow-card-active)",
+        hero: "var(--shadow-hero-card)",
       },
       fontFamily: {
         // Font self-hosted dal branch "Fonts" (dichiarati in src/index.css).

@@ -139,13 +139,20 @@ export function CourseHeroCard({
     );
   }
 
-  // ── Pelle della card corso di Studio, adattata alla Home ────────────────
+  // ── Pelle della card corso di Studio, adattata alla Home (P35) ─────────
   return (
-      <article
-        data-auto-contrast
-        className="relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 bg-inverse-surface p-4 text-left shadow-card-active sm:p-5"
-      >
+    <article
+      data-auto-contrast
+      className="relative w-full overflow-hidden rounded-card border border-white/[0.12] bg-inverse-surface p-4 text-left shadow-hero sm:p-5"
+    >
       <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} variant="studio" />
+
+      {/* Luce di spigolo (P35): filo interno chiaro SOPRA gli strati pittorici,
+          simula la luce che colpisce il bordo superiore della card. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-[5] rounded-[inherit] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.10)]"
+      />
 
       <div className="relative z-10">
         {/* Header: corso a sinistra, anello di avanzamento a destra */}
@@ -156,29 +163,26 @@ export function CourseHeroCard({
                 {eyebrowText}
               </p>
             )}
-            <h2 className="mt-1.5 break-words font-display text-lg font-extrabold leading-snug text-contrast">
+            <h2 className="mt-1 break-words font-display text-3xl font-extrabold leading-[1.05] text-contrast sm:text-4xl">
               {courseTitle}
             </h2>
           </div>
-          <ProgressRing
-            percent={progressPercent ?? 0}
-            ariaLabel={progressAriaLabel ?? `${clampPercent(progressPercent)}%`}
-          />
+          <ProgressRing percent={progressPercent ?? 0} ariaLabel={progressAriaLabel ?? `${clampPercent(progressPercent)}%`} />
         </div>
 
         {/* Corpo: lezione corrente + metadati reali (nessuna barra orizzontale) */}
-        <div className="mt-3 min-w-0">
+        <div className="mt-2 min-w-0">
           <p className="text-[17px] font-semibold leading-snug text-contrast line-clamp-2">{lessonTitle}</p>
           {lessonMetaText && (
             <p className="mt-1 truncate text-sm text-contrast-secondary">{lessonMetaText}</p>
           )}
         </div>
 
-        {/* Unica CTA: Riprendi lezione */}
+        {/* Unica CTA: vetro fumé "cool black" (P35), testo e icona in bianco */}
         <button
           type="button"
           onClick={onPrimaryCta}
-          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-inverse-on-surface text-[15px] font-semibold text-inverse-surface transition-transform duration-150 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-pill glass-cool-black text-[15px] font-semibold text-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <Play className="h-4 w-4 fill-current" aria-hidden="true" />
           {primaryCtaLabel}

@@ -77,17 +77,48 @@ describe("Superfici pulite della Home", () => {
       expect(content, name).toContain("glass-tactile");
       expect(content, name).toContain("shadow-tactile");
     }
-    // la card del corso attivo ha l'ombra più profonda riservata
+  });
+
+  it("la card percorso è sopraelevata: bordo chiaro, ombra eroe, luce di spigolo", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
-    expect(hero).toContain("shadow-card-active");
+    const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
+    const tailwind = readFileSync(join(__dirname, "..", "..", "tailwind.config.ts"), "utf8");
+
+    // contorno chiaro translucido + ombra stratificata dedicata
+    expect(hero).toContain("border-white/[0.12]");
+    expect(hero).toContain("shadow-hero");
     expect(hero).not.toContain("shadow-level-2");
+    expect(hero).toContain('shadow-[inset_0_1px_0_0_rgba(255,255,255,0.10)]');
+    expect(css).toContain("--shadow-hero-card: 0 10px 15px -3px rgba(0, 0, 0, 0.40), 0 4px 6px -2px rgba(0, 0, 0, 0.20), 0 24px 48px -12px rgba(0, 0, 0, 0.45)");
+    expect(tailwind).toContain('hero: "var(--shadow-hero-card)"');
+  });
+
+  it("la CTA 'Riprendi lezione' è in vetro fumé cool black, non nero solido", () => {
+    const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
+    const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
+
+    expect(hero).toContain("glass-cool-black");
+    expect(hero).not.toContain("bg-inverse-on-surface");
+    // il bottone vetro: nero semi-trasparente + blur + filo di luce + fallback
+    expect(css).toContain(".glass-cool-black");
+    expect(css).toContain("rgba(18, 18, 18, 0.65)");
+    expect(css).toMatch(/\.glass-cool-black[\s\S]*?backdrop-filter: blur\(12px\)/);
+    expect(css).toMatch(/prefers-reduced-transparency: reduce[\s\S]*?\.glass-cool-black/);
+    expect(css).toMatch(/html\.high-contrast \.glass-cool-black/);
+  });
+
+  it("il titolo del corso domina la gerarchia (3xl/4xl) con margini compatti", () => {
+    const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
+    expect(hero).toContain("text-3xl");
+    expect(hero).toContain("sm:text-4xl");
+    // responsivo: il titolo lungo spezza le parole senza uscire dalla card
+    expect(hero).toContain("break-words");
+    expect(hero).toContain("min-w-0");
   });
 
   it("la ciambella della card corso è responsiva per gli schermi piccoli", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     expect(hero).toContain("h-14 w-14");
     expect(hero).toContain("sm:h-16 sm:w-16");
-    // il titolo non è compresso dall'anello: colonna con min-w-0
-    expect(hero).toContain("min-w-0");
   });
 });
