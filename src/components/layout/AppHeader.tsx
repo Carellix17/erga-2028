@@ -1,4 +1,4 @@
-import { ArrowLeft, Flame, User } from "lucide-react";
+import { ArrowLeft, Flame, Settings } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -35,14 +35,8 @@ export function AppHeader({
     (root) => normalizedPath === root || normalizedPath.startsWith(`${root}/`),
   );
 
-  // Home: la barra non ha titolo né indietro, quindi la serie può ancorarsi al
-  // bordo sinistro. Il contenitore usa lo stesso padding orizzontale su
-  // entrambi i lati (px-4 / sm:px-6), perciò lo stacco della serie dal margine
-  // sinistro è identico a quello del profilo dal margine destro.
-  // Nelle altre rotte titolo e indietro occupano la sinistra: lì la serie resta
-  // accanto al profilo per non spezzare la lettura del titolo.
-  const streakOnLeft = integratedHome;
-
+  // La serie vive SEMPRE a destra, accanto alle Impostazioni. Sulla Home la
+  // barra non ha titolo: a sinistra campeggia il wordmark "erga" (solo lì).
   const streakButton = (
     <button
       type="button"
@@ -74,7 +68,13 @@ export function AppHeader({
     >
       <div className="mx-auto flex h-16 w-full max-w-lg min-w-0 items-center gap-2 px-4 sm:px-6 md:max-w-2xl lg:max-w-4xl">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          {streakOnLeft && streakButton}
+          {/* Wordmark: SOLO sulla Home, dove la barra non ha titolo.
+              È un <p>, non un titolo: l'unico h1 della Home è il saluto. */}
+          {integratedHome && !title && (
+            <p className="min-w-0 truncate font-display text-xl font-bold tracking-tight text-foreground">
+              erga
+            </p>
+          )}
 
           {showBack && (
             <Button
@@ -98,22 +98,22 @@ export function AppHeader({
         </div>
 
         <div className={cn("ml-auto flex shrink-0 items-center gap-2", integratedHome && "pointer-events-auto")}>
-          {!streakOnLeft && streakButton}
+          {streakButton}
 
-          {/* Il profilo è la casa dell'avatar: le Impostazioni vivono lì,
-              in alto a destra. L'avatar resta nascosto solo nelle rotte
-              impostazioni (che hanno già la loro navigazione con indietro). */}
+          {/* Le Impostazioni tornano in cima a destra (il profilo resta
+              raggiungibile dalla sua rotta). Nascoste solo dentro le pagine
+              impostazioni, che hanno già la loro navigazione con indietro. */}
           {!isSettingsRoute && (
             <Button
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label={t("home.header.avatarAria")}
-              title={t("home.header.avatarAria")}
-              onClick={() => navigate("/app/profilo")}
+              aria-label={t("header.settings")}
+              title={t("header.settings")}
+              onClick={() => navigate("/app/impostazioni")}
               className="h-11 w-11 shrink-0 rounded-pill bg-surface-container-high shadow-none hover:bg-surface-container-highest"
             >
-              <User className="h-5 w-5" aria-hidden="true" />
+              <Settings className="h-5 w-5" aria-hidden="true" />
             </Button>
           )}
         </div>

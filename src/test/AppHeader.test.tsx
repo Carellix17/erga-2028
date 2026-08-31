@@ -21,16 +21,19 @@ function renderHeader(title: string | null = "Studio", route = "/app", integrate
   );
 }
 
+const STREAK_NAME = "Apri le statistiche della serie: 4 giorni";
+const SETTINGS_NAME = "Apri Impostazioni";
+
 describe("AppHeader", () => {
   it("mostra il titolo a sinistra e i controlli a destra", () => {
     renderHeader("Titolo di sezione molto lungo che deve restringersi");
     const heading = screen.getByRole("heading");
-    const streak = screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" });
-    const profile = screen.getByRole("button", { name: "Apri il tuo profilo" });
+    const streak = screen.getByRole("button", { name: STREAK_NAME });
+    const settings = screen.getByRole("button", { name: SETTINGS_NAME });
 
     expect(heading).toHaveClass("truncate", "text-left");
     expect(heading.compareDocumentPosition(streak) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(streak.compareDocumentPosition(profile) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(streak.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("non mostra linee o ombre di separazione sotto l'header", () => {
@@ -49,23 +52,27 @@ describe("AppHeader", () => {
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
     expect(header).toHaveClass("absolute", "bg-transparent");
     expect(header).not.toHaveClass("sticky");
-    expect(screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: STREAK_NAME })).toBeInTheDocument();
   });
 
-  it("nella Home ancora la serie a sinistra e il profilo a destra, con lo stesso stacco dai bordi", () => {
+  it("nella Home il wordmark 'erga' sta a sinistra, serie e impostazioni a destra", () => {
     renderHeader(null, "/app", true);
-    const streak = screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" });
-    const profile = screen.getByRole("button", { name: "Apri il tuo profilo" });
-    const row = streak.parentElement?.parentElement;
+    const wordmark = screen.getByText("erga");
+    const streak = screen.getByRole("button", { name: STREAK_NAME });
+    const settings = screen.getByRole("button", { name: SETTINGS_NAME });
+    const row = wordmark.parentElement?.parentElement;
 
-    // La serie apre la riga (gruppo di sinistra), il profilo la chiude.
-    expect(streak.parentElement).not.toBe(profile.parentElement);
-    expect(row).toBe(profile.parentElement?.parentElement);
-    expect(row?.firstElementChild).toBe(streak.parentElement);
-    expect(row?.lastElementChild).toBe(profile.parentElement);
+    // Il wordmark apre la riga (gruppo di sinistra) e non è un heading:
+    // l'unico h1 della Home resta il saluto.
+    expect(wordmark.tagName).toBe("P");
+    expect(row?.firstElementChild).toBe(wordmark.parentElement);
 
-    // Stesso padding orizzontale sui due lati: lo stacco dal bordo sinistro
-    // della serie è identico a quello del profilo dal bordo destro.
+    // Serie e impostazioni chiudono la riga, nello stesso gruppo di destra.
+    expect(streak.parentElement).toBe(settings.parentElement);
+    expect(row?.lastElementChild).toBe(settings.parentElement);
+
+    // Stesso padding orizzontale sui due lati: lo stacco del wordmark dal
+    // bordo sinistro è identico a quello dei controlli dal bordo destro.
     expect(row?.className).toContain("px-4");
     expect(row?.className).toContain("sm:px-6");
 
@@ -73,12 +80,17 @@ describe("AppHeader", () => {
     expect(streak.className).toContain("pointer-events-auto");
   });
 
-  it("fuori dalla Home tiene la serie accanto al profilo, a destra del titolo", () => {
+  it("il wordmark 'erga' compare solo sulla Home, mai sulle altre sezioni", () => {
     renderHeader("Studio");
-    const streak = screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" });
-    const profile = screen.getByRole("button", { name: "Apri il tuo profilo" });
+    expect(screen.queryByText("erga")).not.toBeInTheDocument();
+  });
 
-    expect(streak.parentElement).toBe(profile.parentElement);
+  it("fuori dalla Home tiene la serie accanto alle impostazioni, a destra del titolo", () => {
+    renderHeader("Studio");
+    const streak = screen.getByRole("button", { name: STREAK_NAME });
+    const settings = screen.getByRole("button", { name: SETTINGS_NAME });
+
+    expect(streak.parentElement).toBe(settings.parentElement);
   });
 
   it.each([
@@ -86,22 +98,22 @@ describe("AppHeader", () => {
     "/app/impostazioni/aspetto",
     "/settings",
     "/settings/appearance",
-  ])("nasconde il pulsante profilo nella rotta %s", (route) => {
+  ])("nasconde il pulsante impostazioni nella rotta %s", (route) => {
     renderHeader("Impostazioni", route);
-    expect(screen.queryByRole("button", { name: "Apri il tuo profilo" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: SETTINGS_NAME })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: STREAK_NAME })).toBeInTheDocument();
   });
 
   it("apre le statistiche Focus dalla serie", () => {
     renderHeader();
-    fireEvent.click(screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" }));
+    fireEvent.click(screen.getByRole("button", { name: STREAK_NAME }));
     expect(screen.getByTestId("location")).toHaveTextContent("/app/ritmo");
   });
 
-  it("apre la rotta protetta del profilo senza parametri di sessione", () => {
+  it("apre le Impostazioni dal tasto ingranaggio, senza parametri di sessione", () => {
     renderHeader();
-    fireEvent.click(screen.getByRole("button", { name: "Apri il tuo profilo" }));
-    expect(screen.getByTestId("location")).toHaveTextContent("/app/profilo");
+    fireEvent.click(screen.getByRole("button", { name: SETTINGS_NAME }));
+    expect(screen.getByTestId("location")).toHaveTextContent("/app/impostazioni");
     expect(screen.getByTestId("location")).not.toHaveTextContent("?");
   });
 });
