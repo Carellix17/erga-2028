@@ -6,6 +6,7 @@ import { PraticaView } from "@/components/pratica/PraticaView";
 import { CoreView } from "@/components/core/CoreView";
 import { HomeView } from "@/components/home/HomeView";
 import { UploadSheet } from "@/components/upload/UploadSheet";
+import type { PraticaSubTab } from "@/components/pratica/PraticaView";
 import { useUserData } from "@/hooks/useUserData";
 import { useHasContentQuery, useLessonsCacheControls } from "@/hooks/useLessons";
 import { useGenerationRealtime } from "@/hooks/useGenerationRealtime";
@@ -37,6 +38,9 @@ const Index = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [manageFocusContextId, setManageFocusContextId] = useState<string | null>(null);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
+  // Sotto-sezione di Pratica da aprire al prossimo ingresso nella scheda
+  // (es. "Crea esercizi" o "Interrogazione" dalla Home).
+  const [praticaInitialSubTab, setPraticaInitialSubTab] = useState<PraticaSubTab>("chat");
   const [lessonLaunch, setLessonLaunch] = useState<{ contextId: string; lessonIndex: number; requestId: number } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -155,6 +159,11 @@ const Index = () => {
               changeTab("studio");
             }}
             onOpenPlan={() => changeTab("piano")}
+            onOpenPratica={(subTab) => {
+              if (subTab) setPraticaInitialSubTab(subTab);
+              changeTab("pratica");
+            }}
+            onOpenProfile={() => changeTab("core")}
             onOpenCognitive={() => setShowOnboarding(true)}
             onUpload={() => setShowUpload(true)}
           />
@@ -197,6 +206,7 @@ const Index = () => {
           <PraticaView
             hasFiles={hasFiles}
             onUploadClick={() => setShowUpload(true)}
+            defaultSubTab={praticaInitialSubTab}
             onFullscreenChange={setIsFullscreen}
           />
         )}

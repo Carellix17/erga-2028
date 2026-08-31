@@ -58,10 +58,11 @@
       "generatingDescription": "Puoi continuare a usare Erga: le lezioni appariranno appena saranno pronte.",
       "noLessonTitle": "Il percorso non ha ancora lezioni disponibili",
       "noLessonDescription": "Apri Studio per controllare la generazione o scegliere un altro percorso.",
-      "noContentTitle": "Crea il tuo primo percorso",
+      "noContentTitle": "Scegli o carica il tuo primo percorso",
       "noContentDescription": "Carica un PDF, una foto o cerca un argomento per iniziare a studiare.",
       "openStudio": "Apri Studio",
-      "upload": "Aggiungi materiale"
+      "upload": "Aggiungi materiale",
+      "studentFallback": "Studente"
     },
     "today": {
       "eyebrow": "Oggi",
@@ -101,6 +102,52 @@
       "uploadDescription": "PDF, foto o ricerca web",
       "cognitive": "Esagono",
       "cognitiveDescription": "Rivedi il profilo cognitivo"
+    },
+    "header": {
+      "avatarAria": "Apri il tuo profilo"
+    },
+    "course": {
+      "lessonsMeta": "{{current}} di {{total}} lezioni",
+      "progressAria": "Avanzamento del percorso: {{percent}}%"
+    },
+    "tools": {
+      "title": "Strumenti rapidi",
+      "upload": "Carica materiale",
+      "tutor": "AI Tutor",
+      "exercises": "Crea esercizi",
+      "interrogation": "Interrogazione"
+    },
+    "cognitive": {
+      "badge": "Profilo cognitivo",
+      "openAria": "Apri il profilo cognitivo",
+      "calibrateTitle": "Calibra il tuo Profilo Cognitivo",
+      "calibrateDescription": "Rispondi alle 18 domande veloci per adattare lezioni ed esercizi al tuo modo di pensare.",
+      "archetypes": {
+        "LOG": {
+          "title": "Il Logico-Sistemico",
+          "description": "Ragioni per schemi e catene causa-effetto: prima la struttura, poi i dettagli."
+        },
+        "MEM": {
+          "title": "L'Archivio Affidabile",
+          "description": "Memorizzi con facilità e richiami i contenuti al momento giusto."
+        },
+        "FOC": {
+          "title": "Il Focalizzato",
+          "description": "Scegli un obiettivo alla volta e lo porti a fondo senza distrazioni."
+        },
+        "VOC": {
+          "title": "L'Espositore",
+          "description": "Pensi attraverso le parole: spiegare è il tuo modo di imparare."
+        },
+        "ANS": {
+          "title": "Il Sereno",
+          "description": "Affronti lo studio con calma e reggi bene la pressione delle verifiche."
+        },
+        "APP": {
+          "title": "Il Pratico",
+          "description": "Impari facendo: esempi, esercizi e casi concreti prima della teoria."
+        }
+      }
     }
   },
   "focusStats": {

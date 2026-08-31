@@ -58,10 +58,11 @@
       "generatingDescription": "You can keep using Erga: lessons will appear as soon as they are ready.",
       "noLessonTitle": "This path has no lessons available yet",
       "noLessonDescription": "Open Studio to check generation or choose another path.",
-      "noContentTitle": "Create your first path",
+      "noContentTitle": "Choose or upload your first course",
       "noContentDescription": "Upload a PDF or photo, or search for a topic to start studying.",
       "openStudio": "Open Studio",
-      "upload": "Add material"
+      "upload": "Add material",
+      "studentFallback": "Student"
     },
     "today": {
       "eyebrow": "Today",
@@ -101,6 +102,52 @@
       "uploadDescription": "PDF, photo or web search",
       "cognitive": "Hexagon",
       "cognitiveDescription": "Review your cognitive profile"
+    },
+    "header": {
+      "avatarAria": "Open your profile"
+    },
+    "course": {
+      "lessonsMeta": "{{current}} of {{total}} lessons",
+      "progressAria": "Course progress: {{percent}}%"
+    },
+    "tools": {
+      "title": "Quick tools",
+      "upload": "Upload material",
+      "tutor": "AI Tutor",
+      "exercises": "Create exercises",
+      "interrogation": "Oral exam"
+    },
+    "cognitive": {
+      "badge": "Cognitive profile",
+      "openAria": "Open your cognitive profile",
+      "calibrateTitle": "Calibrate your Cognitive Profile",
+      "calibrateDescription": "Answer the 18 quick questions to adapt lessons and exercises to the way you think.",
+      "archetypes": {
+        "LOG": {
+          "title": "The Logical-Systemic",
+          "description": "You reason through structures and cause-effect chains: structure first, details later."
+        },
+        "MEM": {
+          "title": "The Reliable Archive",
+          "description": "You memorize easily and recall content when it matters."
+        },
+        "FOC": {
+          "title": "The Focused One",
+          "description": "You pick one goal at a time and carry it through without distractions."
+        },
+        "VOC": {
+          "title": "The Explainer",
+          "description": "You think through words: explaining is how you learn."
+        },
+        "ANS": {
+          "title": "The Calm One",
+          "description": "You study with calm and handle exam pressure well."
+        },
+        "APP": {
+          "title": "The Hands-On",
+          "description": "You learn by doing: examples, exercises and real cases before theory."
+        }
+      }
     }
   },
   "focusStats": {

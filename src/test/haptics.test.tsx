@@ -104,23 +104,21 @@ describe("haptics", () => {
     expect(vibrateMock).toHaveBeenCalledWith(10);
   });
 
-  it("applica feedback medium ai controlli del Focus Timer V2", () => {
+  it("applica feedback light agli strumenti rapidi della Home", () => {
     render(<HomeView {...callbacks} />);
 
-    // In V2, Focus Libero triggers openSetup with medium feedback via triggerMedium in HomeView
-    // QuickActions Focus Libero
-    fireEvent.click(screen.getByText("Focus Libero"));
+    // Strumento rapido "Carica materiale": feedback light + azione di upload
+    fireEvent.click(screen.getByText("Carica materiale"));
     expect(vibrateMock).toHaveBeenCalledWith(10);
-    expect(openSetup).toHaveBeenCalled();
+    expect(callbacks.onUpload).toHaveBeenCalled();
   });
 
-  it("applica feedback light alle CTA del Piano del giorno V2", () => {
+  it("applica feedback light alle CTA del piano del giorno", () => {
     render(<HomeView {...callbacks} />);
 
-    // In V2, Vedi tutto or Piano triggers light feedback
-    const pianoBtn = screen.getByText("Piano");
-    fireEvent.click(pianoBtn);
-
+    // Stato vuoto: la CTA "Organizza la settimana" porta al Piano con feedback light
+    fireEvent.click(screen.getByText(/organizza la settimana/i));
     expect(vibrateMock).toHaveBeenCalledWith(10);
+    expect(callbacks.onOpenPlan).toHaveBeenCalled();
   });
 });

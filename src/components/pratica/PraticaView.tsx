@@ -6,7 +6,7 @@ import { InterrogazioneView } from "./InterrogazioneView";
 import { EserciziView } from "./EserciziView";
 import { EmptyState } from "@/components/shared/EmptyState";
 
-type SubTab = "chat" | "interrogazione" | "esercizi";
+export type PraticaSubTab = "chat" | "interrogazione" | "esercizi";
 
 interface PraticaViewProps {
   hasFiles: boolean;
@@ -14,14 +14,14 @@ interface PraticaViewProps {
   onFullscreenChange?: (isFullscreen: boolean) => void;
   contextId?: string | null;
   contextName?: string | null;
-  defaultSubTab?: SubTab;
+  defaultSubTab?: PraticaSubTab;
   onBack?: () => void;
 }
 
 const subTabs = [
-  { id: "chat" as SubTab, label: "Chat", icon: MessageCircle, description: "Fatti spiegare" },
-  { id: "interrogazione" as SubTab, label: "Interrogazione", icon: Mic, description: "Parlare per imparare" },
-  { id: "esercizi" as SubTab, label: "Esercizi", icon: Dumbbell, description: "Allenati" },
+  { id: "chat" as PraticaSubTab, label: "Chat", icon: MessageCircle, description: "Fatti spiegare" },
+  { id: "interrogazione" as PraticaSubTab, label: "Interrogazione", icon: Mic, description: "Parlare per imparare" },
+  { id: "esercizi" as PraticaSubTab, label: "Esercizi", icon: Dumbbell, description: "Allenati" },
 ];
 
 export function PraticaView({
@@ -33,7 +33,7 @@ export function PraticaView({
   defaultSubTab = "chat",
   onBack,
 }: PraticaViewProps) {
-  const [activeSubTab, setActiveSubTab] = useState<SubTab>(defaultSubTab);
+  const [activeSubTab, setActiveSubTab] = useState<PraticaSubTab>(defaultSubTab);
   const [isExerciseFullscreen, setIsExerciseFullscreen] = useState(false);
 
   const handleFullscreenChange = (isFullscreen: boolean) => {
