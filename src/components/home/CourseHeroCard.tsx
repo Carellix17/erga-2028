@@ -51,14 +51,16 @@ function clampPercent(value: number | null | undefined): number {
   return Math.min(100, Math.max(0, Math.round(value)));
 }
 
-/** Anello di avanzamento SVG: circonferenza 100 → dash = percentuale. */
+/** Anello di avanzamento SVG: circonferenza 100 → dash = percentuale.
+ *  Dimensione responsiva (56px sul telefono, 64 da sm in su) per non
+ *  comprime né sovrapporre il titolo del corso sugli schermi piccoli. */
 function ProgressRing({ percent, ariaLabel }: { percent: number; ariaLabel: string }) {
   const p = clampPercent(percent);
   return (
     <span
       role="img"
       aria-label={ariaLabel}
-      className="relative inline-grid h-16 w-16 shrink-0 place-items-center text-contrast"
+      className="relative inline-grid h-14 w-14 shrink-0 place-items-center text-contrast sm:h-16 sm:w-16"
     >
       <svg viewBox="0 0 36 36" aria-hidden="true" className="absolute inset-0 h-full w-full -rotate-90">
         {/* traccia neutra */}
@@ -84,7 +86,7 @@ function ProgressRing({ percent, ariaLabel }: { percent: number; ariaLabel: stri
           strokeDashoffset="0"
         />
       </svg>
-      <span className="relative text-sm font-semibold tabular-nums">{p}%</span>
+      <span className="relative text-[13px] font-semibold tabular-nums sm:text-sm">{p}%</span>
     </span>
   );
 }
@@ -112,7 +114,7 @@ export function CourseHeroCard({
     return (
       <article
         className={cn(
-          "flex flex-col items-center rounded-card border border-border bg-card p-5 text-center shadow-level-1 sm:p-6",
+          "flex flex-col items-center rounded-card border border-border glass-tactile p-5 text-center shadow-tactile sm:p-6",
         )}
       >
         <span className="grid h-12 w-12 place-items-center rounded-full bg-surface-container-high">
@@ -139,15 +141,15 @@ export function CourseHeroCard({
 
   // ── Pelle della card corso di Studio, adattata alla Home ────────────────
   return (
-    <article
-      data-auto-contrast
-      className="relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 bg-inverse-surface p-4 text-left shadow-level-2 sm:p-5"
-    >
+      <article
+        data-auto-contrast
+        className="relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 bg-inverse-surface p-4 text-left shadow-card-active sm:p-5"
+      >
       <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} variant="studio" />
 
       <div className="relative z-10">
         {/* Header: corso a sinistra, anello di avanzamento a destra */}
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
             {eyebrowText && (
               <p className="label-small tracking-[0.16em] text-contrast-secondary opacity-70">
@@ -166,7 +168,7 @@ export function CourseHeroCard({
 
         {/* Corpo: lezione corrente + metadati reali (nessuna barra orizzontale) */}
         <div className="mt-3 min-w-0">
-          <p className="text-base font-medium leading-snug text-contrast line-clamp-2">{lessonTitle}</p>
+          <p className="text-[17px] font-semibold leading-snug text-contrast line-clamp-2">{lessonTitle}</p>
           {lessonMetaText && (
             <p className="mt-1 truncate text-sm text-contrast-secondary">{lessonMetaText}</p>
           )}

@@ -147,6 +147,10 @@ export default {
         "level-3": "var(--shadow-level-3)",
         "level-4": "var(--shadow-level-4)",
         "level-5": "var(--shadow-level-5)",
+        //  P34 — ombre tattili (Home V3): profilo leggero per card/pillole
+        // glass e profondità riservata alla card corso attiva.
+        tactile: "var(--shadow-tattile)",
+        "card-active": "var(--shadow-card-active)",
       },
       fontFamily: {
         sans: ['Geist', 'Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],

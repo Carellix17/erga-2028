@@ -40,4 +40,54 @@ describe("Superfici pulite della Home", () => {
     const grid = readFileSync(join(HOME_DIR, "QuickToolsGrid.tsx"), "utf8");
     expect(grid).toContain("rounded-full");
   });
+
+  it("le etichette degli strumenti rapidi non vengono mai troncate", () => {
+    const grid = readFileSync(join(HOME_DIR, "QuickToolsGrid.tsx"), "utf8");
+    expect(grid).not.toContain("truncate");
+    expect(grid).not.toContain("line-clamp");
+    // il testo può andare a capo con interlinea compatta
+    expect(grid).toContain("leading-tight");
+  });
+
+  it("i token glass e le ombre tattili sono definiti nei fogli di stile", () => {
+    const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
+    const tailwind = readFileSync(join(__dirname, "..", "..", "tailwind.config.ts"), "utf8");
+
+    // token matericità (P34) — il tema chiaro li definisce, lo scuro li adatta
+    expect(css).toContain("--glass-surface: rgba(255, 255, 255, 0.75)");
+    expect(css).toContain("--glass-card-dark: rgba(45, 36, 32, 0.85)");
+    expect(css).toContain("--glass-blur: blur(16px)");
+    expect(css).toMatch(/\.dark[\s\S]*--glass-surface: rgb\(26 26 26 \/ 0\.80\)/);
+    // ombre tattili
+    expect(css).toContain("--shadow-tattile: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04)");
+    expect(css).toContain("--shadow-card-active: 0 20px 40px -10px rgba(0, 0, 0, 0.22)");
+    // esposte come classi Tailwind semantiche
+    expect(tailwind).toContain('tactile: "var(--shadow-tattile)"');
+    expect(tailwind).toContain('"card-active": "var(--shadow-card-active)"');
+    // utility vetro con fallback per reduced-transparency e high-contrast
+    expect(css).toContain(".glass-tactile");
+    expect(css).toMatch(/prefers-reduced-transparency: reduce[\s\S]*?\.glass-tactile/);
+    expect(css).toMatch(/html\.high-contrast \.glass-tactile/);
+  });
+
+  it("le superfici della Home usano la materica glass tattile unificata", () => {
+    const files = ["QuickToolsGrid.tsx", "DailyTimeline.tsx", "CourseHeroCard.tsx"];
+    for (const name of files) {
+      const content = readFileSync(join(HOME_DIR, name), "utf8");
+      expect(content, name).toContain("glass-tactile");
+      expect(content, name).toContain("shadow-tactile");
+    }
+    // la card del corso attivo ha l'ombra più profonda riservata
+    const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
+    expect(hero).toContain("shadow-card-active");
+    expect(hero).not.toContain("shadow-level-2");
+  });
+
+  it("la ciambella della card corso è responsiva per gli schermi piccoli", () => {
+    const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
+    expect(hero).toContain("h-14 w-14");
+    expect(hero).toContain("sm:h-16 sm:w-16");
+    // il titolo non è compresso dall'anello: colonna con min-w-0
+    expect(hero).toContain("min-w-0");
+  });
 });

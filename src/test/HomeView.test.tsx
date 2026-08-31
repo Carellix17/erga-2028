@@ -168,6 +168,14 @@ describe("HomeView modulare (V3)", () => {
     });
   });
 
+  it("le etichette degli strumenti rapidi restano intere, senza troncamento", () => {
+    render(<HomeView {...callbacks} />);
+    const label = screen.getByText("Carica materiale");
+    expect(label.className).not.toMatch(/truncate|line-clamp/);
+    // la ciambella mantiene la percentuale visibile accanto al titolo
+    expect(screen.getByText("20%")).toBeInTheDocument();
+  });
+
   it("la Home spegne l'alone ambientale (no-ambient) per un fondo pulito", () => {
     const { container } = render(<HomeView {...callbacks} />);
     expect(container.firstElementChild?.className).toContain("no-ambient");
