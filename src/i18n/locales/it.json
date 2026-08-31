@@ -108,7 +108,8 @@
     },
     "course": {
       "lessonsMeta": "{{current}} di {{total}} lezioni",
-      "progressAria": "Avanzamento del percorso: {{percent}}%"
+      "progressAria": "Avanzamento del percorso: {{percent}}%",
+      "eyebrow": "Percorso attivo"
     },
     "tools": {
       "title": "Strumenti rapidi",

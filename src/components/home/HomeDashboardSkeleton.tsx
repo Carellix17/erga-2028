@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function HomeDashboardSkeleton() {
   return (
     <div
-      className="flex min-w-0 flex-col gap-5 overflow-x-clip pt-16 pb-2"
+      className="no-ambient flex min-w-0 flex-col gap-5 overflow-x-clip pt-16 pb-2"
       aria-busy="true"
       aria-label="Caricamento della Home"
     >

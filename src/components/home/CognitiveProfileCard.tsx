@@ -5,14 +5,14 @@ import type { CognitiveHexagonScores } from "@/lib/cognitiveArchetype";
 
 /**
  * CognitiveProfileCard — card orizzontale compatta, interamente cliccabile.
- * Badge "PROFILO COGNITIVO" e chevron in alto; sotto, due colonne:
- * archetipo + descrizione sintetica a sinistra, esagono SVG a destra.
- * Se il profilo non è calibrato la card mostra l'invito alla calibrazione
- * e l'esagono resta tratteggiato.
+ * Layout a due colonne con l'esagono SVG a SINISTRA e i testi a DESTRA:
+ * badge "PROFILO COGNITIVO" (con chevron di navigazione), titolo
+ * dell'archetipo e descrizione sintetica. Se il profilo non è calibrato
+ * la card mostra l'invito alla calibrazione e l'esagono resta tratteggiato.
  */
 
 export interface CognitiveProfileCardProps {
-  /** Testo del badge in alto a sinistra. */
+  /** Testo del badge in alto nella colonna testi. */
   badgeText?: string;
   /** Titolo archetipo, es. "Il Logico-Sistemico", o invito alla calibrazione. */
   title: string;
@@ -38,30 +38,30 @@ export function CognitiveProfileCard({
       onClick={onClick}
       aria-label={ariaLabel ?? title}
       className={cn(
-        "w-full cursor-pointer rounded-card border border-border bg-card p-5 text-left",
+        "w-full cursor-pointer rounded-card border border-border bg-card p-5 text-left shadow-level-1",
         "transition-colors hover:bg-surface-container-low active:bg-surface-container",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       )}
     >
-      {/* Riguardo: badge + chevron */}
-      <span className="flex items-center justify-between gap-3">
-        <span className="inline-flex h-6 items-center rounded-pill bg-surface-container px-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {badgeText}
-        </span>
-        <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-      </span>
+      {/* Corpo: esagono a sinistra, testi a destra */}
+      <span className="flex items-center gap-4">
+        <CognitiveHexagonSvg scores={scores} />
 
-      {/* Corpo: archetipo a sinistra, esagono a destra */}
-      <span className="mt-3 flex items-center gap-4">
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-lg font-semibold text-foreground">{title}</span>
+          {/* Riga affordance: badge + chevron */}
+          <span className="flex items-center justify-between gap-3">
+            <span className="inline-flex h-6 items-center rounded-pill bg-surface-container px-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {badgeText}
+            </span>
+            <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </span>
+          <span className="mt-2 block truncate text-lg font-semibold text-foreground">{title}</span>
           {description && (
             <span className="mt-1 block text-sm leading-snug text-muted-foreground line-clamp-2">
               {description}
             </span>
           )}
         </span>
-        <CognitiveHexagonSvg scores={scores} />
       </span>
     </button>
   );

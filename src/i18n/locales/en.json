@@ -108,7 +108,8 @@
     },
     "course": {
       "lessonsMeta": "{{current}} of {{total}} lessons",
-      "progressAria": "Course progress: {{percent}}%"
+      "progressAria": "Course progress: {{percent}}%",
+      "eyebrow": "Current path"
     },
     "tools": {
       "title": "Quick tools",

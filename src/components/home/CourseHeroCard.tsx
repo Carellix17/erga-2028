@@ -1,25 +1,41 @@
 import { Play, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
+import { useCourseImage } from "@/hooks/useCourseImage";
+import { getSubjectAccent } from "@/lib/subjectColors";
 
 /**
- * CourseHeroCard — card unificata del corso attivo.
+ * CourseHeroCard — card unificata del corso attivo in Home.
  *
- * Stato attivo: titolo del corso + anello di avanzamento, lezione corrente
- * con metadati reali ("7 di 28 lezioni") e CTA primaria a piena larghezza.
- * Stato vuoto (nessun corso attivo): invito elegante a scegliere o caricare
- * il primo percorso. Il colore primario del brand è riservato all'anello e
- * alla CTA: tutto il resto resta neutro.
+ * Stato attivo: stessa pelle visiva della card corso di Studio (fondo
+ * inverso, bordo sottile, copertina sfocata e accento materia) adattata
+ * alla Home: anello di avanzamento SVG in alto a destra (nessun menù ⋯),
+ * titolo della lezione corrente al centro con i metadati reali
+ * ("X di Y lezioni"), un solo pulsante "Riprendi lezione" a piena
+ * larghezza. Nessuna barra di avanzamento orizzontale.
+ *
+ * Stato vuoto (nessun corso / generazione in corso): card neutra con
+ * invito a scegliere o caricare il primo percorso.
+ *
+ * Nota: il contenitore Home è marcato `no-ambient`, quindi questa card
+ * non riceve l'alone ambientale animato: resta solo la sua ombra pulita.
  */
 
 export interface CourseHeroCardProps {
   /** Titolo del corso attivo. Se manca, la card mostra lo stato vuoto. */
   courseTitle?: string | null;
+  /** ID del percorso (serve a recuperare la copertina, come in Studio). */
+  contextId?: string | null;
+  /** Etichetta soprastante il titolo del corso, es. "Percorso attivo". */
+  eyebrowText?: string | null;
   /** Titolo della lezione da riprendere. */
   lessonTitle?: string | null;
   /** Riga di metadati sotto la lezione, es. "7 di 28 lezioni". */
   lessonMetaText?: string | null;
   /** Avanzamento del percorso 0-100. Null → nessun anello. */
   progressPercent?: number | null;
+  /** Etichetta accessibile dell'anello, es. "Avanzamento del percorso: 20%". */
+  progressAriaLabel?: string | null;
   /** Etichetta della CTA primaria, es. "Riprendi lezione". */
   primaryCtaLabel?: string | null;
   onPrimaryCta?: () => void;
@@ -42,7 +58,7 @@ function ProgressRing({ percent, ariaLabel }: { percent: number; ariaLabel: stri
     <span
       role="img"
       aria-label={ariaLabel}
-      className="relative inline-grid h-16 w-16 shrink-0 place-items-center"
+      className="relative inline-grid h-16 w-16 shrink-0 place-items-center text-contrast"
     >
       <svg viewBox="0 0 36 36" aria-hidden="true" className="absolute inset-0 h-full w-full -rotate-90">
         {/* traccia neutra */}
@@ -52,31 +68,35 @@ function ProgressRing({ percent, ariaLabel }: { percent: number; ariaLabel: stri
           r="15.9155"
           fill="none"
           strokeWidth="3.5"
-          stroke="hsl(var(--surface-container-highest))"
+          stroke="currentColor"
+          strokeOpacity={0.25}
         />
-        {/* avanzamento: unico uso del colore primario insieme alla CTA */}
+        {/* avanzamento */}
         <circle
           cx="18"
           cy="18"
           r="15.9155"
           fill="none"
           strokeWidth="3.5"
-          stroke="hsl(var(--primary))"
+          stroke="currentColor"
           strokeLinecap="round"
           strokeDasharray={`${p} ${100 - p}`}
           strokeDashoffset="0"
         />
       </svg>
-      <span className="relative text-sm font-semibold tabular-nums text-foreground">{p}%</span>
+      <span className="relative text-sm font-semibold tabular-nums">{p}%</span>
     </span>
   );
 }
 
 export function CourseHeroCard({
   courseTitle,
+  contextId,
+  eyebrowText,
   lessonTitle,
   lessonMetaText,
   progressPercent,
+  progressAriaLabel,
   primaryCtaLabel,
   onPrimaryCta,
   emptyTitle,
@@ -85,12 +105,14 @@ export function CourseHeroCard({
   onEmptyCta,
 }: CourseHeroCardProps) {
   const isActive = Boolean(courseTitle && lessonTitle && primaryCtaLabel);
+  const coverUrl = useCourseImage(isActive ? contextId : null, courseTitle ?? "");
+  const accent = getSubjectAccent(courseTitle ?? "");
 
   if (!isActive) {
     return (
       <article
         className={cn(
-          "flex flex-col items-center rounded-card border border-border bg-card p-5 text-center sm:p-6",
+          "flex flex-col items-center rounded-card border border-border bg-card p-5 text-center shadow-level-1 sm:p-6",
         )}
       >
         <span className="grid h-12 w-12 place-items-center rounded-full bg-surface-container-high">
@@ -115,33 +137,51 @@ export function CourseHeroCard({
     );
   }
 
+  // ── Pelle della card corso di Studio, adattata alla Home ────────────────
   return (
-    <article className="rounded-card border border-border bg-card p-5 sm:p-6">
-      {/* Header card: corso a sinistra, anello di avanzamento a destra */}
-      <div className="flex items-start justify-between gap-4">
-        <h2 className="min-w-0 self-center text-lg font-semibold leading-snug text-foreground">
-          <span className="block truncate">{courseTitle}</span>
-        </h2>
-        <ProgressRing percent={progressPercent ?? 0} ariaLabel={`Avanzamento: ${clampPercent(progressPercent)}%`} />
-      </div>
+    <article
+      data-auto-contrast
+      className="relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 bg-inverse-surface p-4 text-left shadow-level-2 sm:p-5"
+    >
+      <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} variant="studio" />
 
-      {/* Corpo card: lezione corrente + metadati reali */}
-      <div className="mt-3 min-w-0">
-        <p className="text-base font-medium leading-snug text-foreground line-clamp-2">{lessonTitle}</p>
-        {lessonMetaText && (
-          <p className="mt-1 truncate text-sm text-muted-foreground">{lessonMetaText}</p>
-        )}
-      </div>
+      <div className="relative z-10">
+        {/* Header: corso a sinistra, anello di avanzamento a destra */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            {eyebrowText && (
+              <p className="label-small tracking-[0.16em] text-contrast-secondary opacity-70">
+                {eyebrowText}
+              </p>
+            )}
+            <h2 className="mt-1.5 break-words font-display text-lg font-extrabold leading-snug text-contrast">
+              {courseTitle}
+            </h2>
+          </div>
+          <ProgressRing
+            percent={progressPercent ?? 0}
+            ariaLabel={progressAriaLabel ?? `${clampPercent(progressPercent)}%`}
+          />
+        </div>
 
-      {/* CTA primaria: unico pulsante pieno del colore del brand */}
-      <button
-        type="button"
-        onClick={onPrimaryCta}
-        className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-button bg-primary text-[15px] font-semibold text-primary-foreground transition-transform duration-150 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      >
-        <Play className="h-4 w-4 fill-current" aria-hidden="true" />
-        {primaryCtaLabel}
-      </button>
+        {/* Corpo: lezione corrente + metadati reali (nessuna barra orizzontale) */}
+        <div className="mt-3 min-w-0">
+          <p className="text-base font-medium leading-snug text-contrast line-clamp-2">{lessonTitle}</p>
+          {lessonMetaText && (
+            <p className="mt-1 truncate text-sm text-contrast-secondary">{lessonMetaText}</p>
+          )}
+        </div>
+
+        {/* Unica CTA: Riprendi lezione */}
+        <button
+          type="button"
+          onClick={onPrimaryCta}
+          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-inverse-on-surface text-[15px] font-semibold text-inverse-surface transition-transform duration-150 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <Play className="h-4 w-4 fill-current" aria-hidden="true" />
+          {primaryCtaLabel}
+        </button>
+      </div>
     </article>
   );
 }

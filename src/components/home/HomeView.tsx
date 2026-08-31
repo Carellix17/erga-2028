@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mic, PencilLine, RefreshCw, Sparkles, Upload } from "lucide-react";
+import { AudioLines, MessageSquare, PencilLine, RefreshCw, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -118,33 +118,33 @@ export function HomeView({
         onUpload();
       },
     },
-    {
-      id: "tutor",
-      label: t("home.tools.tutor"),
-      icon: Sparkles,
-      onClick: () => {
-        triggerLight();
-        onOpenPratica?.("chat");
+      {
+        id: "tutor",
+        label: t("home.tools.tutor"),
+        icon: MessageSquare,
+        onClick: () => {
+          triggerLight();
+          onOpenPratica?.("chat");
+        },
       },
-    },
-    {
-      id: "exercises",
-      label: t("home.tools.exercises"),
-      icon: PencilLine,
-      onClick: () => {
-        triggerLight();
-        onOpenPratica?.("esercizi");
+      {
+        id: "exercises",
+        label: t("home.tools.exercises"),
+        icon: PencilLine,
+        onClick: () => {
+          triggerLight();
+          onOpenPratica?.("esercizi");
+        },
       },
-    },
-    {
-      id: "interrogation",
-      label: t("home.tools.interrogation"),
-      icon: Mic,
-      onClick: () => {
-        triggerLight();
-        onOpenPratica?.("interrogazione");
+      {
+        id: "interrogation",
+        label: t("home.tools.interrogation"),
+        icon: AudioLines,
+        onClick: () => {
+          triggerLight();
+          onOpenPratica?.("interrogazione");
+        },
       },
-    },
   ];
 
   // ── Profilo cognitivo: archetipo reale o invito alla calibrazione ──────
@@ -157,7 +157,10 @@ export function HomeView({
     : t("home.cognitive.calibrateDescription");
 
   return (
-    <div className="flex min-w-0 flex-col gap-5 overflow-x-clip pt-16 pb-2">
+    // `no-ambient` spegne l'alone ambientale animato (P26/P27) su TUTTA la
+    // Home: il fondo resta uniforme e le card portano solo la loro ombra
+    // leggera del design system. Le altre sezioni non vengono toccate.
+    <div className="no-ambient flex min-w-0 flex-col gap-5 overflow-x-clip pt-16 pb-2">
       {/* 1. Saluto minimale + avatar */}
       <HomeHeader
         greeting={welcome.greeting}
@@ -170,6 +173,8 @@ export function HomeView({
       {/* 2. Card unificata del corso attivo */}
       <CourseHeroCard
         courseTitle={resume?.courseTitle ?? null}
+        contextId={resume?.contextId ?? null}
+        eyebrowText={t("home.course.eyebrow")}
         lessonTitle={resume?.lessonTitle ?? null}
         lessonMetaText={
           resume
@@ -177,6 +182,9 @@ export function HomeView({
             : null
         }
         progressPercent={resume?.progressPercent ?? null}
+        progressAriaLabel={
+          resume ? t("home.course.progressAria", { percent: Math.min(100, Math.max(0, Math.round(resume.progressPercent))) }) : null
+        }
         primaryCtaLabel={
           resume
             ? resume.lessonNumber > 1

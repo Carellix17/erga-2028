@@ -28,6 +28,10 @@ vi.mock("@/hooks/useCognitiveProfile", () => ({
   }),
 }));
 
+vi.mock("@/hooks/useCourseImage", () => ({
+  useCourseImage: () => null,
+}));
+
 const dashboardData: HomeDashboardData = {
   displayName: "Vale",
   resumeLesson: {
@@ -111,8 +115,11 @@ describe("HomeView modulare (V3)", () => {
     expect(heading.textContent).toContain("Vale");
     // CourseHeroCard (il corso "Fisica" appare anche come materia nel piano)
     expect(screen.getAllByText("Fisica").length).toBeGreaterThan(0);
+    expect(screen.getByText("Percorso attivo")).toBeInTheDocument();
     expect(screen.getByText("Il moto rettilineo")).toBeInTheDocument();
     expect(screen.getByText("3 di 10 lezioni")).toBeInTheDocument();
+    // Anello di avanzamento presente (nessun menù a tre puntini)
+    expect(screen.getByRole("img", { name: /avanzamento del percorso: 20%/i })).toBeInTheDocument();
     // QuickToolsGrid
     expect(screen.getByText("Carica materiale")).toBeInTheDocument();
     expect(screen.getByText("AI Tutor")).toBeInTheDocument();
@@ -176,6 +183,29 @@ describe("HomeView modulare (V3)", () => {
     expect(callbacks.onOpenCognitive).toHaveBeenCalledTimes(1);
   });
 
+  it("l'esagono sta a SINISTRA e i testi a destra nella card profilo", () => {
+    render(<HomeView {...callbacks} />);
+    const card = screen.getByRole("button", { name: /apri il profilo cognitivo/i });
+    const hexagon = card.querySelector("svg");
+    expect(hexagon).toBeTruthy();
+    const title = screen.getByText("Il Focalizzato");
+    // l'esagono precede il titolo nel documento → colonna di sinistra
+    expect(hexagon!.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("le pillole degli strumenti rapidi sono capsule rounded-full", () => {
+    render(<HomeView {...callbacks} />);
+    ["Carica materiale", "AI Tutor", "Crea esercizi", "Interrogazione"].forEach((label) => {
+      const btn = screen.getByText(label).closest("button");
+      expect(btn?.className).toContain("rounded-full");
+    });
+  });
+
+  it("la Home spegne l'alone ambientale (no-ambient) per un fondo pulito", () => {
+    const { container } = render(<HomeView {...callbacks} />);
+    expect(container.firstElementChild?.className).toContain("no-ambient");
+  });
+
   it("profilo non calibrato: invito alla calibrazione con esagono tratteggiato", () => {
     mockCognitiveProfile = null;
     render(<HomeView {...callbacks} />);
@@ -212,8 +242,9 @@ describe("HomeView modulare (V3)", () => {
     expect(root?.className).toContain("min-w-0");
     const heading = screen.getByRole("heading", { level: 1 });
     expect(heading.className).toMatch(/truncate/);
+    // Il titolo del corso segue lo stile Studio: va a capo (break-words)
     const courseTitle = screen.getByText(/Materia con nome lunghissimo/);
-    expect(courseTitle.className).toMatch(/truncate|line-clamp/);
+    expect(courseTitle.className).toMatch(/truncate|line-clamp|break-words/);
     const lessonTitle = screen.getByText(/Titolo lunghissimo/);
     expect(lessonTitle.className).toMatch(/truncate|line-clamp/);
   });

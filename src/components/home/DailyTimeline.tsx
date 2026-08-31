@@ -45,7 +45,7 @@ export function DailyTimeline({
 }: DailyTimelineProps) {
   if (tasks.length === 0) {
     return (
-      <section className="rounded-card border border-border bg-card p-5">
+      <section className="rounded-card border border-border bg-card p-5 shadow-level-1">
         <h2 className="text-lg font-semibold text-foreground">{emptyTitle}</h2>
         {emptyDescription && (
           <p className="mt-1 text-sm leading-snug text-muted-foreground">{emptyDescription}</p>
@@ -64,7 +64,7 @@ export function DailyTimeline({
   }
 
   return (
-    <section className="overflow-hidden rounded-card border border-border bg-card">
+    <section className="overflow-hidden rounded-card border border-border bg-card shadow-level-1">
       <div className="flex items-center justify-between gap-3 p-4 pb-2">
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
         {onSeeAll && (
