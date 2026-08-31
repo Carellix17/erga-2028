@@ -93,18 +93,19 @@ describe("Superfici pulite della Home", () => {
     expect(tailwind).toContain('hero: "var(--shadow-hero-card)"');
   });
 
-  it("la CTA 'Riprendi lezione' è in vetro fumé cool black, non nero solido", () => {
+  it("la CTA 'Riprendi lezione' è lo STESSO vetro della card di Studio", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
 
-    expect(hero).toContain("glass-cool-black");
+    // gemello del bottone Riprendi di PathHero: color-mix currentColor 8%/20%
+    expect(hero).toContain('"color-mix(in srgb, currentColor 8%, transparent)"');
+    expect(hero).toContain('"color-mix(in srgb, currentColor 20%, transparent)"');
+    expect(hero).toContain("rounded-full");
+    expect(hero).toContain("h-11");
+    expect(hero).not.toContain("glass-cool-black");
     expect(hero).not.toContain("bg-inverse-on-surface");
-    // il bottone vetro: nero semi-trasparente + blur + filo di luce + fallback
-    expect(css).toContain(".glass-cool-black");
-    expect(css).toContain("rgba(18, 18, 18, 0.65)");
-    expect(css).toMatch(/\.glass-cool-black[\s\S]*?backdrop-filter: blur\(12px\)/);
-    expect(css).toMatch(/prefers-reduced-transparency: reduce[\s\S]*?\.glass-cool-black/);
-    expect(css).toMatch(/html\.high-contrast \.glass-cool-black/);
+    // la vecchia classe vetro scura non deve tornare
+    expect(css).not.toContain(".glass-cool-black");
   });
 
   it("il titolo del corso domina la gerarchia (3xl/4xl) con margini compatti", () => {

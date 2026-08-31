@@ -30,9 +30,7 @@ export default defineConfig(({ mode }) => ({
         enabled: false,
       },
       injectManifest: {
-        // `ttf` aggiunto: i font self-hosted di public/fonts/ (branch Fonts)
-        // vengono pre-cachati, cosi' la tipografia resta identica offline.
-        globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2,ttf}"],
+        globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
       manifest: {

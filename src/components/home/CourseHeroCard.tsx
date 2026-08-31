@@ -178,13 +178,18 @@ export function CourseHeroCard({
           )}
         </div>
 
-        {/* Unica CTA: vetro fumé "cool black" (P35), testo e icona in bianco */}
+        {/* Unica CTA: STESSO vetro della card di Studio (PathHero):
+            currentColor 8% sfondo + 20% bordo, capsula h-11, hover/pressione */}
         <button
           type="button"
           onClick={onPrimaryCta}
-          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-pill glass-cool-black text-[15px] font-semibold text-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="text-contrast mt-4 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          style={{
+            backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
+            borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+          }}
         >
-          <Play className="h-4 w-4 fill-current" aria-hidden="true" />
+          <Play className="h-4 w-4 shrink-0 fill-current" strokeWidth={1.9} aria-hidden="true" />
           {primaryCtaLabel}
         </button>
       </div>

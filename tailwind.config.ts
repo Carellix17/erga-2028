@@ -155,14 +155,11 @@ export default {
         hero: "var(--shadow-hero-card)",
       },
       fontFamily: {
-        // Font self-hosted dal branch "Fonts" (dichiarati in src/index.css).
-        sans: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
-        serif: ['Montserrat', 'Plus Jakarta Sans', 'serif'],
-        body: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['Raleway', 'ui-monospace', 'SFMono-Regular', 'monospace'],
-        //  Il messaggio di benvenuto della Home e' l'unico posto in cui vive Radja.
-        welcome: ['Radja', 'Montserrat', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        sans: ['Geist', 'Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Geist', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+        serif: ['Geist', 'Plus Jakarta Sans', 'serif'],
+        body: ['Geist', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['Geist Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       keyframes: {
         "accordion-down": {
