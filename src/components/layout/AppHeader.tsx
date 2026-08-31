@@ -35,6 +35,33 @@ export function AppHeader({
     (root) => normalizedPath === root || normalizedPath.startsWith(`${root}/`),
   );
 
+  // Home: la barra non ha titolo né indietro, quindi la serie può ancorarsi al
+  // bordo sinistro. Il contenitore usa lo stesso padding orizzontale su
+  // entrambi i lati (px-4 / sm:px-6), perciò lo stacco della serie dal margine
+  // sinistro è identico a quello del profilo dal margine destro.
+  // Nelle altre rotte titolo e indietro occupano la sinistra: lì la serie resta
+  // accanto al profilo per non spezzare la lettura del titolo.
+  const streakOnLeft = integratedHome;
+
+  const streakButton = (
+    <button
+      type="button"
+      onClick={() => navigate("/app/ritmo")}
+      aria-label={t("header.openFocusStats", { count: streakDays })}
+      title={t("header.openFocusStats", { count: streakDays })}
+      className={cn(
+        "flex min-h-11 min-w-11 max-w-[8.5rem] shrink-0 items-center gap-1.5 rounded-pill bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        // Sulla Home la barra è un overlay senza eventi: solo i controlli
+        // reali tornano cliccabili, non l'intera fascia trasparente.
+        integratedHome && "pointer-events-auto",
+      )}
+    >
+      <Flame className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
+      <span className="truncate min-[360px]:hidden">{streakDays}</span>
+      <span className="hidden truncate min-[360px]:inline">{streakLabel}</span>
+    </button>
+  );
+
   return (
     <header
       className={cn(
@@ -47,6 +74,8 @@ export function AppHeader({
     >
       <div className="mx-auto flex h-16 w-full max-w-lg min-w-0 items-center gap-2 px-4 sm:px-6 md:max-w-2xl lg:max-w-4xl">
         <div className="flex min-w-0 flex-1 items-center gap-2">
+          {streakOnLeft && streakButton}
+
           {showBack && (
             <Button
               type="button"
@@ -69,17 +98,7 @@ export function AppHeader({
         </div>
 
         <div className={cn("ml-auto flex shrink-0 items-center gap-2", integratedHome && "pointer-events-auto")}>
-          <button
-            type="button"
-            onClick={() => navigate("/app/ritmo")}
-            aria-label={t("header.openFocusStats", { count: streakDays })}
-            title={t("header.openFocusStats", { count: streakDays })}
-            className="flex min-h-11 min-w-11 max-w-[8.5rem] items-center gap-1.5 rounded-pill bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            <Flame className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
-            <span className="truncate min-[360px]:hidden">{streakDays}</span>
-            <span className="hidden truncate min-[360px]:inline">{streakLabel}</span>
-          </button>
+          {!streakOnLeft && streakButton}
 
           {/* Il profilo è la casa dell'avatar: le Impostazioni vivono lì,
               in alto a destra. L'avatar resta nascosto solo nelle rotte
