@@ -25,8 +25,6 @@ interface HomeViewProps {
   onOpenPlan: () => void;
   /** Apre la scheda Pratica, eventualmente sulla sotto-sezione richiesta. */
   onOpenPratica?: (subTab?: PraticaSubTab) => void;
-  /** Apre il profilo personale (avatar in alto a destra). */
-  onOpenProfile?: () => void;
   onOpenCognitive?: () => void;
   onUpload: () => void;
 }
@@ -38,7 +36,6 @@ export function HomeView({
   onResumeLesson,
   onOpenPlan,
   onOpenPratica,
-  onOpenProfile,
   onOpenCognitive,
   onUpload,
 }: HomeViewProps) {
@@ -161,13 +158,11 @@ export function HomeView({
     // Home: il fondo resta uniforme e le card portano solo la loro ombra
     // leggera del design system. Le altre sezioni non vengono toccate.
     <div className="no-ambient flex min-w-0 flex-col gap-5 overflow-x-clip pt-16 pb-2">
-      {/* 1. Saluto minimale + avatar */}
+      {/* 1. Saluto minimale (l'avatar profilo sta nell'header in alto a destra) */}
       <HomeHeader
         greeting={welcome.greeting}
         userName={welcome.name || t("home.resume.studentFallback")}
         subtitle={welcome.subtitle}
-        onAvatarClick={onOpenProfile}
-        avatarAriaLabel={t("home.header.avatarAria")}
       />
 
       {/* 2. Card unificata del corso attivo */}

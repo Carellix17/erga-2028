@@ -26,11 +26,11 @@ describe("AppHeader", () => {
     renderHeader("Titolo di sezione molto lungo che deve restringersi");
     const heading = screen.getByRole("heading");
     const streak = screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" });
-    const settings = screen.getByRole("button", { name: "Apri Impostazioni" });
+    const profile = screen.getByRole("button", { name: "Apri il tuo profilo" });
 
     expect(heading).toHaveClass("truncate", "text-left");
     expect(heading.compareDocumentPosition(streak) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(streak.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(streak.compareDocumentPosition(profile) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("non mostra linee o ombre di separazione sotto l'header", () => {
@@ -57,9 +57,9 @@ describe("AppHeader", () => {
     "/app/impostazioni/aspetto",
     "/settings",
     "/settings/appearance",
-  ])("nasconde il pulsante Impostazioni nella rotta %s", (route) => {
+  ])("nasconde il pulsante profilo nella rotta %s", (route) => {
     renderHeader("Impostazioni", route);
-    expect(screen.queryByRole("button", { name: "Apri Impostazioni" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Apri il tuo profilo" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" })).toBeInTheDocument();
   });
 
@@ -69,10 +69,10 @@ describe("AppHeader", () => {
     expect(screen.getByTestId("location")).toHaveTextContent("/app/ritmo");
   });
 
-  it("apre la rotta protetta delle impostazioni senza parametri di sessione", () => {
+  it("apre la rotta protetta del profilo senza parametri di sessione", () => {
     renderHeader();
-    fireEvent.click(screen.getByRole("button", { name: "Apri Impostazioni" }));
-    expect(screen.getByTestId("location")).toHaveTextContent("/app/impostazioni");
+    fireEvent.click(screen.getByRole("button", { name: "Apri il tuo profilo" }));
+    expect(screen.getByTestId("location")).toHaveTextContent("/app/profilo");
     expect(screen.getByTestId("location")).not.toHaveTextContent("?");
   });
 });

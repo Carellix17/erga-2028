@@ -33,6 +33,7 @@ const SettingsAccessibility = lazy(() => import("./pages/settings/SettingsAccess
 const SettingsTerms = lazy(() => import("./pages/settings/SettingsTerms"));
 const SettingsLanguage = lazy(() => import("./pages/settings/SettingsLanguage"));
 const FocusStats = lazy(() => import("./pages/FocusStats"));
+const Profile = lazy(() => import("./pages/Profile"));
 // AuraLab: banco di prova dell'aura dei blocchi (P27). Caricato e registrato
 // SOLO in sviluppo (import.meta.env.DEV): non esiste nella build di produzione.
 const AuraLab = lazy(() => import("./pages/AuraLab"));
@@ -107,6 +108,7 @@ const App = () => (
             <Route path="/app/impostazioni/accessibilita" element={<ProtectedRoute><SettingsAccessibility /></ProtectedRoute>} />
             <Route path="/app/impostazioni/lingua" element={<ProtectedRoute><SettingsLanguage /></ProtectedRoute>} />
             <Route path="/app/impostazioni/termini" element={<ProtectedRoute><SettingsTerms /></ProtectedRoute>} />
+            <Route path="/app/profilo" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/app/ritmo" element={<ProtectedRoute><FocusStats /></ProtectedRoute>} />
             {import.meta.env.DEV && <Route path="/aura-lab" element={<AuraLab />} />}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
