@@ -52,6 +52,35 @@ describe("AppHeader", () => {
     expect(screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" })).toBeInTheDocument();
   });
 
+  it("nella Home ancora la serie a sinistra e il profilo a destra, con lo stesso stacco dai bordi", () => {
+    renderHeader(null, "/app", true);
+    const streak = screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" });
+    const profile = screen.getByRole("button", { name: "Apri il tuo profilo" });
+    const row = streak.parentElement?.parentElement;
+
+    // La serie apre la riga (gruppo di sinistra), il profilo la chiude.
+    expect(streak.parentElement).not.toBe(profile.parentElement);
+    expect(row).toBe(profile.parentElement?.parentElement);
+    expect(row?.firstElementChild).toBe(streak.parentElement);
+    expect(row?.lastElementChild).toBe(profile.parentElement);
+
+    // Stesso padding orizzontale sui due lati: lo stacco dal bordo sinistro
+    // della serie è identico a quello del profilo dal bordo destro.
+    expect(row?.className).toContain("px-4");
+    expect(row?.className).toContain("sm:px-6");
+
+    // L'overlay della Home non deve intercettare i tocchi fuori dai controlli.
+    expect(streak.className).toContain("pointer-events-auto");
+  });
+
+  it("fuori dalla Home tiene la serie accanto al profilo, a destra del titolo", () => {
+    renderHeader("Studio");
+    const streak = screen.getByRole("button", { name: "Apri le statistiche della serie: 4 giorni" });
+    const profile = screen.getByRole("button", { name: "Apri il tuo profilo" });
+
+    expect(streak.parentElement).toBe(profile.parentElement);
+  });
+
   it.each([
     "/app/impostazioni",
     "/app/impostazioni/aspetto",
