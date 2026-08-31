@@ -3,6 +3,41 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════
+   FONT SELF-HOSTED (branch "Fonts" del repository)
+   I tre .ttf arrivano da li' e vivono in public/fonts/.
+   - Montserrat-Light.ttf (peso 300) → sostituisce Geist in tutta l'app
+   - Raleway-Medium.ttf   (peso 500) → sostituisce Geist Mono (le etichette)
+   - Radja-q2MP5.ttf      (peso 400) → SOLO il messaggio di benvenuto della Home
+   Ogni file porta un unico peso: i 600/700 del design system vengono
+   ingrossati dal browser (sintesi del grassetto), mentre i fallback in coda
+   alle famiglie coprono i glifi mancanti (Radja e' un subset latin: 158 glifi,
+   niente emoji ne' alfabeti non latini).
+   ═══════════════════════════════════════════════════════ */
+@font-face {
+  font-family: "Montserrat";
+  src: url("/fonts/Montserrat-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Raleway";
+  src: url("/fonts/Raleway-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Radja";
+  src: url("/fonts/Radja-q2MP5.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ═══════════════════════════════════════════════════════
    ERGA MONO — FONDANEUTRO (P24)
    Mono di luce (neutro/neutro) / Mono di notte (neutro profondo),
    superfici OPACHE (vetro abolito), pill-firma neutro neutro,
@@ -301,7 +336,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Geist', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -315,7 +350,7 @@
   }
 
   h1, .display-large {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-weight: 700;
     font-size: 2.25rem;
     line-height: 1.05;
@@ -324,7 +359,7 @@
   }
 
   h2, .headline-large {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 700;
     font-size: 1.5rem;
     line-height: 1.1;
@@ -333,7 +368,7 @@
   }
 
   h3, .headline-medium {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 600;
     font-size: 1.25rem;
     line-height: 1.25;
@@ -342,25 +377,25 @@
   }
 
   .title-large {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 600;
     font-size: 1.125rem;
     line-height: 1.4;
     letter-spacing: -0.015em;
   }
 
-  .title-medium { font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; letter-spacing: -0.01em; }
-  .title-small { font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; letter-spacing: 0.01em; }
+  .title-medium { font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; letter-spacing: -0.01em; }
+  .title-small { font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; letter-spacing: 0.01em; }
 
   .body-large, .body-medium {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 400;
     line-height: 1.6;
     letter-spacing: -0.01em;
     color: hsl(var(--foreground));
   }
   .body-small {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 400;
     font-size: 0.9375rem;
     line-height: 1.5;
@@ -369,7 +404,7 @@
 
   /* Etichette — uppercase tracking moderno */
   .label-large, .label-medium, .label-small {
-    font-family: 'Geist Mono', 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Raleway', 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     text-transform: uppercase;
     font-weight: 600;
   }
