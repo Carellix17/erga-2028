@@ -10,12 +10,9 @@ import { useFocus } from "@/contexts/FocusContext";
 import { useHomeDashboard, type HomeTask } from "@/hooks/useHomeDashboard";
 import { useWelcomeMessage } from "@/hooks/useWelcomeMessage";
 import { useHaptics } from "@/hooks/useHaptics";
-import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
-import { deriveCognitiveArchetype } from "@/lib/cognitiveArchetype";
 import { HomeHeader } from "./HomeHeader";
 import { CourseHeroCard } from "./CourseHeroCard";
 import { QuickToolsGrid, type QuickToolItem } from "./QuickToolsGrid";
-import { CognitiveProfileCard } from "./CognitiveProfileCard";
 import { DailyTimeline } from "./DailyTimeline";
 import type { PraticaSubTab } from "@/components/pratica/PraticaView";
 
@@ -25,7 +22,6 @@ interface HomeViewProps {
   onOpenPlan: () => void;
   /** Apre la scheda Pratica, eventualmente sulla sotto-sezione richiesta. */
   onOpenPratica?: (subTab?: PraticaSubTab) => void;
-  onOpenCognitive?: () => void;
   onUpload: () => void;
 }
 
@@ -36,7 +32,6 @@ export function HomeView({
   onResumeLesson,
   onOpenPlan,
   onOpenPratica,
-  onOpenCognitive,
   onUpload,
 }: HomeViewProps) {
   const { t } = useTranslation();
@@ -44,7 +39,6 @@ export function HomeView({
   const focus = useFocus();
   const { triggerLight } = useHaptics();
   const [showAllTasks, setShowAllTasks] = useState(false);
-  const { profile: cognitiveProfile } = useCognitiveProfile();
 
   const data = dashboard.data;
   const pendingTasks = data?.todayTasks.filter((task) => !task.isCompleted).length ?? 0;
@@ -144,15 +138,6 @@ export function HomeView({
       },
   ];
 
-  // ── Profilo cognitivo: archetipo reale o invito alla calibrazione ──────
-  const archetype = deriveCognitiveArchetype(cognitiveProfile);
-  const cognitiveTitle = archetype
-    ? t(`home.cognitive.archetypes.${archetype.key}.title`)
-    : t("home.cognitive.calibrateTitle");
-  const cognitiveDescription = archetype
-    ? t(`home.cognitive.archetypes.${archetype.key}.description`)
-    : t("home.cognitive.calibrateDescription");
-
   return (
     // `no-ambient` spegne l'alone ambientale animato (P26/P27) su TUTTA la
     // Home: il fondo resta uniforme e le card portano solo la loro ombra
@@ -228,20 +213,7 @@ export function HomeView({
       {/* 3. Strumenti rapidi */}
       <QuickToolsGrid title={t("home.tools.title")} tools={tools} />
 
-      {/* 4. Profilo cognitivo (esagono) */}
-      <CognitiveProfileCard
-        badgeText={t("home.cognitive.badge")}
-        title={cognitiveTitle}
-        description={cognitiveDescription}
-        scores={archetype?.scores ?? null}
-        ariaLabel={t("home.cognitive.openAria")}
-        onClick={() => {
-          triggerLight();
-          onOpenCognitive?.();
-        }}
-      />
-
-      {/* 5. Piano del giorno */}
+      {/* 4. Piano del giorno */}
       <DailyTimeline
         title={t("home.today.title")}
         seeAllLabel={t("home.today.openPlan")}
