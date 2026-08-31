@@ -96,6 +96,9 @@ describe("HomeView modulare (V3)", () => {
     expect(heading.textContent).toContain("Vale");
     // CourseHeroCard (il corso "Fisica" appare anche come materia nel piano)
     expect(screen.getAllByText("Fisica").length).toBeGreaterThan(0);
+    // Titolo corto → resta al gradone (text-3xl, sm:text-4xl)
+    const courseHeading = screen.getByRole("heading", { name: "Fisica" });
+    expect(courseHeading.className).toContain("text-3xl");
     expect(screen.getByText("Percorso attivo")).toBeInTheDocument();
     expect(screen.getByText("Il moto rettilineo")).toBeInTheDocument();
     expect(screen.getByText("3 di 10 lezioni")).toBeInTheDocument();
@@ -211,6 +214,9 @@ describe("HomeView modulare (V3)", () => {
     // Il titolo del corso segue lo stile Studio: va a capo (break-words)
     const courseTitle = screen.getByText(/Materia con nome lunghissimo/);
     expect(courseTitle.className).toMatch(/truncate|line-clamp|break-words/);
+    // Titolo lungo → un gradino più piccolo (text-2xl, mai text-4xl)
+    expect(courseTitle.className).toContain("text-2xl");
+    expect(courseTitle.className).not.toContain("text-4xl");
     const lessonTitle = screen.getByText(/Titolo lunghissimo/);
     expect(lessonTitle.className).toMatch(/truncate|line-clamp/);
   });

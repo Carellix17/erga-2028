@@ -51,6 +51,10 @@ function clampPercent(value: number | null | undefined): number {
   return Math.min(100, Math.max(0, Math.round(value)));
 }
 
+/** Soglia oltre la quale il titolo del corso viene mostrato un gradino
+ *  più piccolo, per non gonfiare la card su nomi lunghi. */
+const LONG_COURSE_TITLE_THRESHOLD = 20;
+
 /** Anello di avanzamento SVG: circonferenza 100 → dash = percentuale.
  *  Dimensione responsiva (56px sul telefono, 64 da sm in su) per non
  *  comprime né sovrapporre il titolo del corso sugli schermi piccoli. */
@@ -163,7 +167,14 @@ export function CourseHeroCard({
                 {eyebrowText}
               </p>
             )}
-            <h2 className="mt-1 break-words font-display text-3xl font-extrabold leading-[1.05] text-contrast sm:text-4xl">
+            <h2
+              className={cn(
+                "mt-1 break-words font-display font-extrabold leading-[1.05] text-contrast",
+                (courseTitle ?? "").length > LONG_COURSE_TITLE_THRESHOLD
+                  ? "text-2xl sm:text-3xl"
+                  : "text-3xl sm:text-4xl",
+              )}
+            >
               {courseTitle}
             </h2>
           </div>

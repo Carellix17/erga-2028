@@ -55,9 +55,9 @@ describe("AppHeader", () => {
     expect(screen.getByRole("button", { name: STREAK_NAME })).toBeInTheDocument();
   });
 
-  it("nella Home il wordmark 'erga' sta a sinistra, serie e impostazioni a destra", () => {
+  it("nella Home il wordmark Erga sta a sinistra, serie e impostazioni a destra", () => {
     renderHeader(null, "/app", true);
-    const wordmark = screen.getByText("erga");
+    const wordmark = screen.getByText("Erga");
     const streak = screen.getByRole("button", { name: STREAK_NAME });
     const settings = screen.getByRole("button", { name: SETTINGS_NAME });
     const row = wordmark.parentElement?.parentElement;
@@ -80,9 +80,9 @@ describe("AppHeader", () => {
     expect(streak.className).toContain("pointer-events-auto");
   });
 
-  it("il wordmark 'erga' compare solo sulla Home, mai sulle altre sezioni", () => {
+  it("il wordmark Erga compare solo sulla Home, mai sulle altre sezioni", () => {
     renderHeader("Studio");
-    expect(screen.queryByText("erga")).not.toBeInTheDocument();
+    expect(screen.queryByText("Erga")).not.toBeInTheDocument();
   });
 
   it("fuori dalla Home tiene la serie accanto alle impostazioni, a destra del titolo", () => {

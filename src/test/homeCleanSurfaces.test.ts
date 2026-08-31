@@ -112,6 +112,9 @@ describe("Superfici pulite della Home", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     expect(hero).toContain("text-3xl");
     expect(hero).toContain("sm:text-4xl");
+    // titoli lunghi: un gradino sotto, per non gonfiare la card
+    expect(hero).toContain("text-2xl");
+    expect(hero).toContain("LONG_COURSE_TITLE_THRESHOLD");
     // responsivo: il titolo lungo spezza le parole senza uscire dalla card
     expect(hero).toContain("break-words");
     expect(hero).toContain("min-w-0");

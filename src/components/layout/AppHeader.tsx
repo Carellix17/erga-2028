@@ -72,7 +72,7 @@ export function AppHeader({
               È un <p>, non un titolo: l'unico h1 della Home è il saluto. */}
           {integratedHome && !title && (
             <p className="min-w-0 truncate font-display text-xl font-bold tracking-tight text-foreground">
-              erga
+              Erga
             </p>
           )}
 
