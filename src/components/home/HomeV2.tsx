@@ -44,10 +44,13 @@ export function HomeV2({
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-md mx-auto min-h-screen bg-slate-50 pb-24 overflow-x-clip">
-        <div className="px-4 py-4 space-y-5">
+        {/* Ritmo verticale Home: il saluto sta a 8px dal margine superiore
+            (metà dei 16px precedenti) e il blocco hero segue a 12px,
+            mantenendo i 20px tra gli altri blocchi. */}
+        <div className="px-4 pt-2 pb-4">
           <CompactHeader {...headerProps} />
 
-          <div className="space-y-3">
+          <div className="mt-3 space-y-3">
             <DynamicHeroCard heroState={currentHeroState} {...heroProps} />
             
             {/* Manual heroState switcher for testing - as per requirements */}
@@ -68,11 +71,13 @@ export function HomeV2({
             </div>
           </div>
 
-          <QuickActions {...quickActionsProps} />
+          <div className="mt-5 space-y-5">
+            <QuickActions {...quickActionsProps} />
 
-          <CognitivePulse {...cognitiveProps} />
+            <CognitivePulse {...cognitiveProps} />
 
-          <DailyTimeline {...timelineProps} />
+            <DailyTimeline {...timelineProps} />
+          </div>
         </div>
       </div>
 
