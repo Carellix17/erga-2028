@@ -2,7 +2,6 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HomeView } from "@/components/home/HomeView";
 import { useHomeDashboard, type HomeDashboardData } from "@/hooks/useHomeDashboard";
-import type { CognitiveProfile } from "@/hooks/useCognitiveProfile";
 
 const startSession = vi.fn();
 const openSetup = vi.fn();
@@ -14,18 +13,6 @@ vi.mock("@/hooks/useHomeDashboard", async () => {
 
 vi.mock("@/contexts/FocusContext", () => ({
   useFocus: () => ({ startSession, openSetup, openFullscreen: vi.fn(), isActive: false }),
-}));
-
-let mockCognitiveProfile: CognitiveProfile | null = {
-  nome: null, eta: null, istituto: null,
-  log_score: 70, mem_score: 60, foc_score: 80, voc_score: 65, ans_score: 75, app_score: 70,
-};
-
-vi.mock("@/hooks/useCognitiveProfile", () => ({
-  useCognitiveProfile: () => ({
-    profile: mockCognitiveProfile,
-    isLoaded: true,
-  }),
 }));
 
 vi.mock("@/hooks/useCourseImage", () => ({
@@ -79,7 +66,6 @@ const callbacks = {
   onResumeLesson: vi.fn(),
   onOpenPlan: vi.fn(),
   onOpenPratica: vi.fn(),
-  onOpenCognitive: vi.fn(),
   onUpload: vi.fn(),
 };
 
@@ -100,14 +86,10 @@ function queryHomeRoot(container: HTMLElement): HTMLElement | null {
 describe("HomeView modulare (V3)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCognitiveProfile = {
-      nome: null, eta: null, istituto: null,
-      log_score: 70, mem_score: 60, foc_score: 80, voc_score: 65, ans_score: 75, app_score: 70,
-    };
     mockDashboard();
   });
 
-  it("renderizza i componenti modulari: header, card corso, strumenti, profilo, piano del giorno", () => {
+  it("renderizza i componenti modulari: header, card corso, strumenti e piano del giorno", () => {
     render(<HomeView {...callbacks} />);
     // HomeHeader: saluto con nome reale
     const heading = screen.getByRole("heading", { level: 1 });
@@ -124,9 +106,6 @@ describe("HomeView modulare (V3)", () => {
     expect(screen.getByText("AI Tutor")).toBeInTheDocument();
     expect(screen.getByText("Crea esercizi")).toBeInTheDocument();
     expect(screen.getByText("Interrogazione")).toBeInTheDocument();
-    // CognitiveProfileCard
-    expect(screen.getByText(/profilo cognitivo/i)).toBeInTheDocument();
-    expect(screen.getByText("Il Focalizzato")).toBeInTheDocument();
     // DailyTimeline
     expect(screen.getByText("Ripasso cinematica")).toBeInTheDocument();
   });
@@ -175,21 +154,10 @@ describe("HomeView modulare (V3)", () => {
     expect(callbacks.onOpenPratica).toHaveBeenCalledWith("interrogazione");
   });
 
-  it("la card profilo cognitivo è interamente cliccabile e apre l'onboarding", () => {
+  it("non mostra né collega il profilo cognitivo dalla Home", () => {
     render(<HomeView {...callbacks} />);
-    const card = screen.getByRole("button", { name: /apri il profilo cognitivo/i });
-    fireEvent.click(card);
-    expect(callbacks.onOpenCognitive).toHaveBeenCalledTimes(1);
-  });
-
-  it("l'esagono sta a SINISTRA e i testi a destra nella card profilo", () => {
-    render(<HomeView {...callbacks} />);
-    const card = screen.getByRole("button", { name: /apri il profilo cognitivo/i });
-    const hexagon = card.querySelector("svg");
-    expect(hexagon).toBeTruthy();
-    const title = screen.getByText("Il Focalizzato");
-    // l'esagono precede il titolo nel documento → colonna di sinistra
-    expect(hexagon!.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByText(/profilo cognitivo/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /profilo cognitivo/i })).not.toBeInTheDocument();
   });
 
   it("le pillole degli strumenti rapidi sono capsule rounded-full", () => {
@@ -203,15 +171,6 @@ describe("HomeView modulare (V3)", () => {
   it("la Home spegne l'alone ambientale (no-ambient) per un fondo pulito", () => {
     const { container } = render(<HomeView {...callbacks} />);
     expect(container.firstElementChild?.className).toContain("no-ambient");
-  });
-
-  it("profilo non calibrato: invito alla calibrazione con esagono tratteggiato", () => {
-    mockCognitiveProfile = null;
-    render(<HomeView {...callbacks} />);
-    expect(screen.getByText("Calibra il tuo Profilo Cognitivo")).toBeInTheDocument();
-    const polygons = document.querySelectorAll("polygon");
-    const dashed = Array.from(polygons).some((p) => p.getAttribute("stroke-dasharray") === "4 4");
-    expect(dashed).toBeTruthy();
   });
 
   it("rispetta i target touch minimi (44px) sui controlli principali", () => {
