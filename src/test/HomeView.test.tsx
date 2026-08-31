@@ -79,7 +79,6 @@ const callbacks = {
   onResumeLesson: vi.fn(),
   onOpenPlan: vi.fn(),
   onOpenPratica: vi.fn(),
-  onOpenProfile: vi.fn(),
   onOpenCognitive: vi.fn(),
   onUpload: vi.fn(),
 };

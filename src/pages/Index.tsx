@@ -163,7 +163,6 @@ const Index = () => {
               if (subTab) setPraticaInitialSubTab(subTab);
               changeTab("pratica");
             }}
-            onOpenProfile={() => changeTab("core")}
             onOpenCognitive={() => setShowOnboarding(true)}
             onUpload={() => setShowUpload(true)}
           />

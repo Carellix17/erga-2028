@@ -1,4 +1,4 @@
-import { ArrowLeft, Flame, Settings } from "lucide-react";
+import { ArrowLeft, Flame, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -81,16 +81,20 @@ export function AppHeader({
             <span className="hidden truncate min-[360px]:inline">{streakLabel}</span>
           </button>
 
+          {/* Il profilo è la casa dell'avatar: le Impostazioni vivono lì,
+              in alto a destra. L'avatar resta nascosto solo nelle rotte
+              impostazioni (che hanno già la loro navigazione con indietro). */}
           {!isSettingsRoute && (
             <Button
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label={t("header.settings")}
-              onClick={() => navigate("/app/impostazioni")}
+              aria-label={t("home.header.avatarAria")}
+              title={t("home.header.avatarAria")}
+              onClick={() => navigate("/app/profilo")}
               className="h-11 w-11 shrink-0 rounded-pill bg-surface-container-high shadow-none hover:bg-surface-container-highest"
             >
-              <Settings className="h-5 w-5" aria-hidden="true" />
+              <User className="h-5 w-5" aria-hidden="true" />
             </Button>
           )}
         </div>
