@@ -356,7 +356,7 @@ export function LessonsList({
 
                       {/* Invito a destra: la pill "Riprendi" è in FIRMA piena */}
                       {state === "current" && !isGenerating ? (
-                        <span className="flex-shrink-0 text-xs font-bold bg-ink text-cream rounded-full px-3 py-1.5 shadow-level-1 dark:bg-cream dark:text-black">
+                        <span className="flex-shrink-0 text-xs font-bold bg-primary text-primary-foreground rounded-full px-3 py-1.5 shadow-level-1">
                           Riprendi
                         </span>
                       ) : state === "available" || state === "gate-door" ? (

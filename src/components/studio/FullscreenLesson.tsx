@@ -343,7 +343,7 @@ export function FullscreenLesson({
           <Button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="flex-1 h-12 text-base bg-ink text-cream hover:bg-ink/90 active:scale-[0.97] dark:bg-cream dark:text-black dark:hover:bg-cream-hover"
+            className="flex-1 h-12 text-base bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.97]"
             size="lg"
           >
             {currentStep === steps.length - 1
@@ -426,8 +426,8 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
       <div className={cn(
         "p-6 sm:p-7 rounded-[18px] border space-y-4 backdrop-blur-md",
         isExample
-          ? "bg-tertiary-container/60 border-tertiary/30 border-l-4 border-l-tertiary"
-          : "bg-white/70 dark:bg-neutral-900/70 border-neutral-200/50 dark:border-neutral-800/50 shadow-sm"
+          ? "bg-tertiary-container/60 border-border/50 shadow-level-1"
+          : "bg-card/70 border-border/50 shadow-level-1"
       )}>
         {segments.map((seg, i) => {
           if (seg.type === "text") {
@@ -462,7 +462,7 @@ function ExampleStep({ example }: { example: string }) {
         </div>
         <span className="label-large text-foreground">Esempio pratico</span>
       </div>
-      <div className="p-6 sm:p-7 rounded-[18px] bg-tertiary-container/60 border border-tertiary/30 border-l-4 border-l-tertiary">
+      <div className="p-6 sm:p-7 rounded-[18px] bg-tertiary-container/60 border border-border/50 shadow-level-1">
         <div className="text-[15px] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{example}</ReactMarkdown>
         </div>
@@ -501,7 +501,7 @@ function ExerciseStep({
           ))}
         </div>
       </div>
-      <div className="p-5 rounded-[18px] backdrop-blur-md bg-white/70 dark:bg-neutral-900/70 border border-neutral-200/50 dark:border-neutral-800/50 shadow-sm">
+      <div className="p-5 rounded-[18px] backdrop-blur-md border border-border/50 bg-card/70 shadow-level-1">
         <ExerciseRenderer exercise={exercise} onComplete={onComplete} isCompleted={isCompleted} />
       </div>
     </div>
@@ -790,7 +790,7 @@ function SlideAIAssistant({
                   {[0, 150, 300].map((d) => (
                     <div
                       key={d}
-                      className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce"
+                      className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-pulse"
                       style={{ animationDelay: `${d}ms` }}
                     />
                   ))}
