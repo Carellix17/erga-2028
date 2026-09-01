@@ -9,14 +9,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function HomeDashboardSkeleton() {
   return (
     <div
-      className="no-ambient flex min-w-0 flex-col gap-5 overflow-x-clip pt-16 pb-2"
+      className="no-ambient flex min-w-0 flex-col gap-6 overflow-x-clip pt-20 pb-2 sm:pt-24"
       aria-busy="true"
       aria-label="Caricamento della Home"
     >
       {/* Header: saluto + sottotitolo + avatar */}
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-2">
-          <Skeleton className="h-8 w-3/5 rounded-button" />
+          <Skeleton className="h-10 w-3/5 rounded-button sm:h-12" />
           <Skeleton className="h-4 w-2/3 rounded-full" />
         </div>
         <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
