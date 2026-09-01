@@ -301,13 +301,18 @@
 }
 
 @layer base {
+  /* Tipografia: font caricati da Google Fonts nel <link> di index.html
+     (Montserrat 100–900 per testo e titoli, Raleway 100–900 per le etichette,
+     Zalando Sans Expanded 200–900 solo per il saluto della Home).
+     Nessun font self-hosted, nessun @font-face qui: la gamma di pesi è reale,
+     quindi niente grassetti o corsivi sintetizzati. */
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Geist', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -321,7 +326,7 @@
   }
 
   h1, .display-large {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-weight: 700;
     font-size: 2.25rem;
     line-height: 1.05;
@@ -330,7 +335,7 @@
   }
 
   h2, .headline-large {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 700;
     font-size: 1.5rem;
     line-height: 1.1;
@@ -339,7 +344,7 @@
   }
 
   h3, .headline-medium {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 600;
     font-size: 1.25rem;
     line-height: 1.25;
@@ -348,25 +353,25 @@
   }
 
   .title-large {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 600;
     font-size: 1.125rem;
     line-height: 1.4;
     letter-spacing: -0.015em;
   }
 
-  .title-medium { font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; letter-spacing: -0.01em; }
-  .title-small { font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; letter-spacing: 0.01em; }
+  .title-medium { font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; letter-spacing: -0.01em; }
+  .title-small { font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; letter-spacing: 0.01em; }
 
   .body-large, .body-medium {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 400;
     line-height: 1.6;
     letter-spacing: -0.01em;
     color: hsl(var(--foreground));
   }
   .body-small {
-    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 400;
     font-size: 0.9375rem;
     line-height: 1.5;
@@ -375,7 +380,7 @@
 
   /* Etichette — uppercase tracking moderno */
   .label-large, .label-medium, .label-small {
-    font-family: 'Geist Mono', 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Raleway', ui-monospace, SFMono-Regular, monospace;
     text-transform: uppercase;
     font-weight: 600;
   }

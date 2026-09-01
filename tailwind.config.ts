@@ -155,11 +155,16 @@ export default {
         hero: "var(--shadow-hero-card)",
       },
       fontFamily: {
-        sans: ['Geist', 'Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Geist', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
-        serif: ['Geist', 'Plus Jakarta Sans', 'serif'],
-        body: ['Geist', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['Geist Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        // Font caricati da Google Fonts nel <link> di index.html, con gamma di pesi
+        // completa (Montserrat e Raleway 100–900, Zalando Sans Expanded 200–900):
+        // nessun file di font nel repo, nessun @font-face manuale.
+        sans: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+        serif: ['Montserrat', 'Plus Jakarta Sans', 'serif'],
+        body: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['Raleway', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        // Usato SOLO dal messaggio di benvenuto della Home (HomeHeader).
+        welcome: ['Zalando Sans Expanded', 'Montserrat', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {
