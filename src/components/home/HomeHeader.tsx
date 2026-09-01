@@ -20,6 +20,12 @@
  * (`font-semibold`, 600 — peso reale della famiglia, mai sintetizzato) e di
  * circa il 10% sulla misura ai tre breakpoint: la gerarchia resta intatta,
  * il blocco torna a respirare ai lati.
+ *
+ * Due righe: il saluto ("Buongiorno", "Buon pomeriggio", "Buonasera") sta
+ * sulla prima riga e il nome dell'utente va a capo sulla seconda, come nel
+ * mock della Home in landing. Restano dentro lo stesso `h1` — un solo titolo
+ * per gli screen reader — separati da due `span` a blocco; lo spazio tra i
+ * due mantiene leggibile il nome accessibile ("Buongiorno Vale").
  */
 export interface HomeHeaderProps {
   greeting?: string;
@@ -36,7 +42,14 @@ export function HomeHeader({
     <header className="flex items-start justify-between gap-3">
       <div className="min-w-0 font-welcome">
         <h1 className="text-balance break-words font-welcome text-[2rem] font-semibold leading-[1.05] tracking-tight text-foreground sm:text-[2.75rem] lg:text-[3.25rem]">
-          {greeting ? `${greeting}, ${userName}` : userName}
+          {greeting ? (
+            <>
+              <span className="block">{greeting}</span>{" "}
+              <span className="block">{userName}</span>
+            </>
+          ) : (
+            userName
+          )}
         </h1>
         {subtitle && (
           <p className="mt-2 truncate text-base leading-snug text-muted-foreground sm:mt-3">
