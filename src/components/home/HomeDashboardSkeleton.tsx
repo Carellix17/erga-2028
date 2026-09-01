@@ -13,10 +13,12 @@ export function HomeDashboardSkeleton() {
       aria-busy="true"
       aria-label="Caricamento della Home"
     >
-      {/* Header: saluto + sottotitolo + avatar */}
+      {/* Header: saluto su due righe (saluto + nome) + sottotitolo + avatar.
+          Ogni barra è alta quanto una riga del titolo (32 → 44 → 52px). */}
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-2">
-          <Skeleton className="h-10 w-3/5 rounded-button sm:h-12" />
+          <Skeleton className="h-8 w-3/5 rounded-button sm:h-11 lg:h-[3.25rem]" />
+          <Skeleton className="h-8 w-2/5 rounded-button sm:h-11 lg:h-[3.25rem]" />
           <Skeleton className="h-4 w-2/3 rounded-full" />
         </div>
         <Skeleton className="h-11 w-11 shrink-0 rounded-full" />

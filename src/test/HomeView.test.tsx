@@ -113,6 +113,20 @@ describe("HomeView modulare (V3)", () => {
     expect(screen.getByText("Ripasso cinematica")).toBeInTheDocument();
   });
 
+  it("il saluto e il nome stanno su due righe: due span a blocco nello stesso h1", () => {
+    render(<HomeView {...callbacks} />);
+    const heading = screen.getByRole("heading", { level: 1 });
+    const lines = Array.from(heading.querySelectorAll("span"));
+    expect(lines).toHaveLength(2);
+    // prima riga: solo il saluto (senza virgola né nome), seconda riga: solo il nome
+    expect(lines[0].textContent).toMatch(/^Buon(giorno|anotte|asera| pomeriggio)$/);
+    expect(lines[0].textContent).not.toContain("Vale");
+    expect(lines[1].textContent).toBe("Vale");
+    lines.forEach((line) => expect(line.className).toContain("block"));
+    // il nome accessibile resta un unico titolo leggibile, es. "Buongiorno Vale"
+    expect(heading).toHaveAccessibleName(/^Buon(giorno|anotte|asera| pomeriggio) Vale$/);
+  });
+
   it("la CTA della card corso riprende la lezione reale", () => {
     render(<HomeView {...callbacks} />);
     fireEvent.click(screen.getByRole("button", { name: /riprendi lezione/i }));
