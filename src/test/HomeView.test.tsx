@@ -195,7 +195,7 @@ describe("HomeView modulare (V3)", () => {
     });
   });
 
-  it("non provoca overflow orizzontale: contenitore con clip e testo troncato", () => {
+  it("non provoca overflow orizzontale: contenitore con clip e saluto che va a capo", () => {
     mockDashboard({
       ...dashboardData,
       displayName: "Alessandro Molto Lungo Con Nome Che Non Finisce Mai",
@@ -210,7 +210,9 @@ describe("HomeView modulare (V3)", () => {
     expect(root?.className).toContain("overflow-x-clip");
     expect(root?.className).toContain("min-w-0");
     const heading = screen.getByRole("heading", { level: 1 });
-    expect(heading.className).toMatch(/truncate/);
+    // Il saluto non si tronca: va a capo in modo bilanciato senza sfondare.
+    expect(heading.className).toMatch(/text-balance|break-words/);
+    expect(heading.className).not.toMatch(/truncate/);
     // Il titolo del corso segue lo stile Studio: va a capo (break-words)
     const courseTitle = screen.getByText(/Materia con nome lunghissimo/);
     expect(courseTitle.className).toMatch(/truncate|line-clamp|break-words/);
