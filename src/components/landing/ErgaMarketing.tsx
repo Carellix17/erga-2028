@@ -52,6 +52,7 @@ const SIGNUP_PATH = "/registrati";
 
 export const FAQ = [
   ["Per chi è pensato Erga?", "La beta è pensata soprattutto per studenti delle scuole superiori. Puoi usarla per verifiche, interrogazioni e ripassi partendo dai materiali che studi davvero."],
+  ["Cosa rende Erga diversa dalle altre app per studiare?", "Erga non genera contenuti generici: parte solo dai materiali che carichi tu — PDF, foto, appunti o una ricerca web — e li trasforma in lezioni brevi, esercizi e un piano di studio che entra nella tua settimana, adattato al tuo profilo cognitivo."],
   ["Che cos’è l’Esagono cognitivo?", "È un profilo composto da sei aree: Logica, Memoria, Focus, Lessico, Calma e Pratica. Le risposte iniziali aiutano Erga ad adattare il modo in cui presenta lezioni ed esercizi; i risultati di alcuni quiz possono aggiornare gradualmente l’area Pratica."],
   ["Come vengono protetti i miei materiali?", "L’accesso richiede un account e il sistema separa i materiali dei diversi utenti. Erga usa i file per creare le tue lezioni. L’informativa completa su privacy, conservazione e cancellazione dei dati deve essere pubblicata prima del lancio commerciale."],
   ["Quali materie posso studiare?", "Non c’è un catalogo chiuso: puoi partire da PDF, documenti, foto o da una ricerca web. La qualità del percorso dipende anche dalla chiarezza e dalla completezza del materiale fornito."],
@@ -212,7 +213,7 @@ export function ErgaMarketing() {
                 da seguire.
               </h1>
               <p className="lp-lead">
-                Carica un PDF, una foto o scegli un argomento. Erga organizza il contenuto in lezioni brevi, esercizi e un piano di studio adattato al tuo profilo.
+                Erga è l’app per studiare che trasforma PDF, foto e appunti in lezioni brevi, esercizi e un piano di studio personalizzato sul tuo profilo cognitivo.
               </p>
               <div className="lp-hero-actions">
                 <Link className="lp-btn lp-btn-red" to={SIGNUP_PATH}>
