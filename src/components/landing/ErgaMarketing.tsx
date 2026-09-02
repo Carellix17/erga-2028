@@ -206,11 +206,7 @@ export function ErgaMarketing() {
             <div>
               <p className="lp-eyebrow">Beta gratuita per le scuole superiori</p>
               <h1 className="lp-display">
-                Il tuo materiale.
-                <br />
-                Un percorso
-                <br />
-                da seguire.
+                Ogni mente ha la sua geometria
               </h1>
               <p className="lp-lead">
                 Erga è l’app per studiare che trasforma PDF, foto e appunti in lezioni brevi, esercizi e un piano di studio personalizzato sul tuo profilo cognitivo.
