@@ -1,13 +1,20 @@
-import { ChevronLeft, Dumbbell, MessageCircle, Mic } from "lucide-react";
+import { ArrowUp, AudioLines, ChevronLeft, PencilLine } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import type { PraticaSubTab } from "@/components/pratica/PraticaView";
 
 /**
- * StudioPractice — accessi dedicati alle tre modalità di pratica (P37).
+ * StudioPractice — accessi rapidi alla pratica dalla Home Studio.
  *
- * PracticeLaunchers: tre pulsanti INDIPENDENTI (niente schede condivise)
- * posti sotto la card del percorso attivo. Ogni pulsante apre una
- * sottovista esclusiva gestita da StudioView.
+ * PracticeLaunchers (P39): DUE card affiancate a tutta larghezza (griglia
+ * 2 colonne) per Esercizi e Interrogazione, con le STESSE icone della Home
+ * (PencilLine / AudioLines) e l'accento cromatico del corso attivo
+ * (variabile CSS --subject-accent, già collegata da useSubjectAccent).
+ * La Chat non è più una card: vive nella PromptBar qui sotto.
+ *
+ * PromptBar (P39): barra di input a pillola per parlare subito con l'AI.
+ * Con testo (Enter o freccia) apre la Chat e semina il messaggio; vuota,
+ * apre semplicemente la Chat. Il wrapper porta pb-32: resta sempre sopra
+ * la barra di navigazione fissa.
  *
  * SubViewHeader: intestazione con "Torna a Studio" che compare in cima
  * a ogni sottovista; nelle viste immersive (Esercizi/Interrogazione) è
@@ -15,34 +22,99 @@ import type { PraticaSubTab } from "@/components/pratica/PraticaView";
  */
 
 export interface PracticeLaunchersProps {
-  onOpen: (subView: PraticaSubTab) => void;
+  onOpenEsercizi: () => void;
+  onOpenInterrogazione: () => void;
   className?: string;
 }
 
-const LAUNCHERS: { id: PraticaSubTab; label: string; icon: typeof Dumbbell }[] = [
-  { id: "esercizi", label: "Esercizi", icon: Dumbbell },
-  { id: "interrogazione", label: "Interrogazione", icon: Mic },
-  { id: "chat", label: "Chat", icon: MessageCircle },
-];
-
-export function PracticeLaunchers({ onOpen, className }: PracticeLaunchersProps) {
+function LauncherCard({
+  label,
+  subtitle,
+  icon: Icon,
+  onClick,
+}: {
+  label: string;
+  subtitle: string;
+  icon: typeof PencilLine;
+  onClick: () => void;
+}) {
   return (
-    <div className={cn("grid grid-cols-3 gap-2 px-4 pt-3 animate-fade-up", className)}>
-      {LAUNCHERS.map(({ id, label, icon: Icon }) => (
-        <button
-          key={id}
-          type="button"
-          onClick={() => onOpen(id)}
-          aria-label={`Apri ${label}`}
-          className="interactive-card flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-border/50 bg-card px-2 py-3 shadow-tactile transition-all duration-200 ease-m3-standard hover:border-primary/30 hover:bg-surface-container-low active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
-            <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} aria-hidden="true" />
-          </span>
-          <span className="text-xs font-semibold leading-tight text-foreground">{label}</span>
-        </button>
-      ))}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`Apri ${label}`}
+      className="interactive-card flex min-h-[92px] flex-col items-start gap-2 rounded-2xl border border-subject-accent/25 bg-card p-3.5 text-left shadow-tactile transition-all duration-200 ease-m3-standard hover:border-subject-accent/50 hover:shadow-[0_0_28px_-10px_var(--subject-accent)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <span className="grid h-9 w-9 place-items-center rounded-full bg-subject-accent text-subject-accent-foreground shadow-[0_0_16px_-4px_var(--subject-accent)]">
+        <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} aria-hidden="true" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-bold leading-tight text-foreground">{label}</span>
+        <span className="mt-0.5 block truncate text-xs font-medium text-muted-foreground">{subtitle}</span>
+      </span>
+    </button>
+  );
+}
+
+export function PracticeLaunchers({ onOpenEsercizi, onOpenInterrogazione, className }: PracticeLaunchersProps) {
+  return (
+    <div className={cn("grid w-full grid-cols-2 gap-3 px-4 pt-3 animate-fade-up", className)}>
+      <LauncherCard label="Esercizi" subtitle="Quiz e flashcard" icon={PencilLine} onClick={onOpenEsercizi} />
+      <LauncherCard label="Interrogazione" subtitle="Simulazione orale" icon={AudioLines} onClick={onOpenInterrogazione} />
     </div>
+  );
+}
+
+export interface PromptBarProps {
+  /** Testo (non vuoto) digitato nella barra: apre la Chat e lo invia. */
+  onSend: (text: string) => void;
+  /** Tap su barra vuota: apre la Chat senza messaggi. */
+  onOpen: () => void;
+  className?: string;
+}
+
+export function PromptBar({ onSend, onOpen, className }: PromptBarProps) {
+  const [value, setValue] = useState("");
+
+  const submit = () => {
+    const text = value.trim(); // sanitize: niente invii di soli spazi
+    setValue("");
+    if (text) onSend(text);
+    else onOpen();
+  };
+
+  return (
+    <form
+      className={cn("px-4 pt-3 pb-32", className)}
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+    >
+      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[#16161A] py-2 pl-5 pr-2 shadow-tactile transition-colors duration-200 focus-within:border-white/20">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          placeholder="Chiedi qualcosa a Erga..."
+          aria-label="Chiedi qualcosa a Erga"
+          className="min-w-0 flex-1 bg-transparent text-sm text-white/90 outline-none placeholder:text-white/45"
+        />
+        <button
+          type="submit"
+          aria-label="Invia alla Chat"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/90 transition-all duration-200 hover:bg-white/20 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <ArrowUp className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
+        </button>
+      </div>
+    </form>
   );
 }
 

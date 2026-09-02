@@ -496,7 +496,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={onResume}
-                  className="inline-flex items-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  className="inline-flex items-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold whitespace-nowrap transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
                   style={{
                     backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
                     borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
@@ -511,7 +511,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={openPicker}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold whitespace-nowrap transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
                   style={{
                     backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
                     borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
@@ -538,7 +538,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={() => { closePicker(); onResume?.(); }}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-4 text-sm font-semibold whitespace-nowrap transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
                   style={{
                     backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
                     borderColor: "color-mix(in srgb, currentColor 20%, transparent)",

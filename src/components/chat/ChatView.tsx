@@ -26,6 +26,10 @@ interface ChatViewProps {
   hasFiles: boolean;
   onUploadClick: () => void;
   contextId?: string | null;
+  /** P39: primo messaggio "seminato" dalla barra prompter dello Studio.
+   *  Viene recapitato con lo stesso identico flusso di invio (handleSend). */
+  seedMessage?: { text: string; requestId: number } | null;
+  onSeedConsumed?: () => void;
 }
 
 type Message = {
@@ -43,7 +47,7 @@ interface TopicDoc { id: string; file_name: string; }
 /** La sentinella anti-pianto (P7): se il tubo tace oltre questo tempo, chiudiamo noi. */
 const STALL_TIMEOUT_MS = 45000;
 
-export function ChatView({ hasFiles, onUploadClick, contextId }: ChatViewProps) {
+export function ChatView({ hasFiles, onUploadClick, contextId, seedMessage, onSeedConsumed }: ChatViewProps) {
   const { t } = useTranslation();
   const welcomeMessage: Message = useMemo(() => ({
     id: "welcome", role: "assistant",
@@ -174,6 +178,20 @@ export function ChatView({ hasFiles, onUploadClick, contextId }: ChatViewProps) 
       image_url: imageUrl || null,
     });
   };
+
+  // 🌱 P39: messaggio seminato dalla PromptBar dello Studio — viene smistato
+  // all'UNICO flusso di invio esistente (handleSend via ref, così l'hook
+  // resta prima dell'early return e il numero di hook non cambia mai).
+  const sendRef = useRef<((content: string) => Promise<void>) | null>(null);
+  const seededRef = useRef<number | null>(null);
+  useEffect(() => {
+    const text = seedMessage?.text.trim();
+    if (!seedMessage || !text) return; // vuoto o solo spazi: nessuna chiamata
+    if (seededRef.current === seedMessage.requestId) return; // una volta sola
+    seededRef.current = seedMessage.requestId;
+    onSeedConsumed?.();
+    void sendRef.current?.(text);
+  }, [seedMessage, onSeedConsumed]);
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
@@ -413,6 +431,8 @@ export function ChatView({ hasFiles, onUploadClick, contextId }: ChatViewProps) 
       abortRef.current = null;
     }
   };
+
+  sendRef.current = handleSend; // ultima versione, per il seme P39
 
   // 🤖 L'agente propone, l'utente approva: esecuzione vera delle azioni.
   const handleExecuteAction = async (messageId: string, index: number, action: AgentAction, formValues?: AgentFormValues) => {

@@ -4,7 +4,7 @@ import { LessonsList } from "@/components/studio/LessonsList";
 import { LessonsListSkeleton } from "@/components/studio/LessonsListSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ModulesOverview } from "@/components/studio/ModulesOverview";
-import { BranchTopBar, PracticeLaunchers, SubViewHeader } from "@/components/studio/StudioPractice";
+import { BranchTopBar, PracticeLaunchers, PromptBar, SubViewHeader } from "@/components/studio/StudioPractice";
 
 /**
  * 🌿 P21b — Collaudo di accensione della schermata Studio in salotto
@@ -91,21 +91,73 @@ describe("P21b pilota Studio — accensione", () => {
 });
 
 describe("StudioPractice (P37) — accessi dedicati e ritorno", () => {
-  it("PracticeLaunchers espone tre pulsanti indipendenti con la destinazione giusta", () => {
-    const onOpen = vi.fn();
-    render(<PracticeLaunchers onOpen={onOpen} />);
+  it("P39 PracticeLaunchers: due card affiancate (2 colonne) con icone Home, sottotitoli e accento del corso", () => {
+    const onEsercizi = vi.fn();
+    const onInterrogazione = vi.fn();
+    const { container } = render(
+      <PracticeLaunchers onOpenEsercizi={onEsercizi} onOpenInterrogazione={onInterrogazione} />,
+    );
 
-    for (const [label, expected] of [
-      ["Esercizi", "esercizi"],
-      ["Interrogazione", "interrogazione"],
-      ["Chat", "chat"],
-    ] as const) {
-      const btn = screen.getByRole("button", { name: `Apri ${label}` });
-      expect(btn.className).toMatch(/min-h-\[76px\]/); // target touch generoso
-      fireEvent.click(btn);
-      expect(onOpen).toHaveBeenCalledWith(expected);
-    }
-    expect(onOpen).toHaveBeenCalledTimes(3);
+    const grid = container.firstElementChild as HTMLElement;
+    expect(grid.className).toMatch(/grid-cols-2/); // due colonne a tutta larghezza
+    expect(grid.className).toMatch(/gap-3/);
+
+    const esercizi = screen.getByRole("button", { name: "Apri Esercizi" });
+    expect(screen.getByText("Quiz e flashcard")).toBeTruthy();
+    const interrogazione = screen.getByRole("button", { name: "Apri Interrogazione" });
+    expect(screen.getByText("Simulazione orale")).toBeTruthy();
+
+    // ereditano l'accento cromatico del corso attivo (--subject-accent)
+    expect(esercizi.className).toMatch(/border-subject-accent/);
+    expect(interrogazione.className).toMatch(/border-subject-accent/);
+
+    fireEvent.click(esercizi);
+    expect(onEsercizi).toHaveBeenCalledTimes(1);
+    fireEvent.click(interrogazione);
+    expect(onInterrogazione).toHaveBeenCalledTimes(1);
+  });
+
+  it("P39 PromptBar: invia il testo trimmato e svuota il campo", () => {
+    const onSend = vi.fn();
+    const onOpen = vi.fn();
+    render(<PromptBar onSend={onSend} onOpen={onOpen} />);
+
+    const input = screen.getByLabelText("Chiedi qualcosa a Erga") as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "  Che cos'è la fotosintesi?  " } });
+    fireEvent.click(screen.getByRole("button", { name: "Invia alla Chat" }));
+
+    expect(onSend).toHaveBeenCalledTimes(1);
+    expect(onSend).toHaveBeenCalledWith("Che cos'è la fotosintesi?"); // sanitize/trim
+    expect(onOpen).not.toHaveBeenCalled();
+    expect(input.value).toBe(""); // campo svuotato
+  });
+
+  it("P39 PromptBar: Enter invia; vuoto o solo spazi → solo apertura della Chat", () => {
+    const onSend = vi.fn();
+    const onOpen = vi.fn();
+    render(<PromptBar onSend={onSend} onOpen={onOpen} />);
+
+    const input = screen.getByLabelText("Chiedi qualcosa a Erga");
+    fireEvent.change(input, { target: { value: "   " } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(onSend).not.toHaveBeenCalled(); // nessuna chiamata inutile all'AI
+    expect(onOpen).toHaveBeenCalledTimes(1);
+
+    fireEvent.change(input, { target: { value: "Spiegami l'induzione elettromagnetica" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(onSend).toHaveBeenCalledWith("Spiegami l'induzione elettromagnetica");
+  });
+
+  it("P39 PromptBar: pillola scura con bordo sottile e respiro sopra la navbar", () => {
+    const { container } = render(<PromptBar onSend={() => {}} onOpen={() => {}} />);
+    const form = container.firstElementChild as HTMLElement;
+    expect(form.className).toMatch(/pb-32/); // mai sotto la Bottom Navigation Bar
+    const pill = form.querySelector("div") as HTMLElement;
+    expect(pill.className).toMatch(/rounded-full/);
+    expect(pill.className).toMatch(/border-white\/10/);
+    expect(pill.className).toMatch(/bg-\[#16161A\]/);
+    // il testo scorre DENTRO l'input: la pillola non si deforma
+    expect(pill.className).toMatch(/items-center/);
   });
 
   it("SubViewHeader riporta a Studio e mostra il contesto del corso", () => {

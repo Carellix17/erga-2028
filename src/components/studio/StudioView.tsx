@@ -12,7 +12,7 @@ import { PraticaSubTab } from "@/components/pratica/PraticaView";
 import { ChatView } from "@/components/chat/ChatView";
 import { EserciziView } from "@/components/pratica/EserciziView";
 import { InterrogazioneView } from "@/components/pratica/InterrogazioneView";
-import { BranchTopBar, PracticeLaunchers, SubViewHeader } from "./StudioPractice";
+import { BranchTopBar, PracticeLaunchers, PromptBar, SubViewHeader } from "./StudioPractice";
 import { cleanCourseName } from "@/lib/courseName";
 import { getSubjectAccent } from "@/lib/subjectColors";
 import { useSubjectAccent } from "@/hooks/useSubjectAccent";
@@ -97,6 +97,14 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   }, [onFullscreenChange]);
 
   const closePratica = () => setPraticaSubView(null);
+  // 💬 P39: seme della Chat — la PromptBar semina il primo messaggio, la
+  // sottovista Chat lo recapita con il flusso di invio già esistente.
+  const [chatSeed, setChatSeed] = useState<{ text: string; requestId: number } | null>(null);
+  const openChat = (text?: string) => {
+    const t = typeof text === "string" ? text.trim() : "";
+    if (t) setChatSeed({ text: t, requestId: Date.now() });
+    setPraticaSubView("chat");
+  };
   const [isCoursePickerOpen, setIsCoursePickerOpen] = useState(false);
   const [activeModuleIndex, setActiveModuleIndex] = useState<number | null>(null);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
@@ -945,7 +953,13 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
               onBack={closePratica}
             />
             <div className="min-h-0 flex-1 overflow-hidden">
-              <ChatView hasFiles={hasFiles} onUploadClick={onUploadClick} contextId={effectiveContextId} />
+              <ChatView
+                hasFiles={hasFiles}
+                onUploadClick={onUploadClick}
+                contextId={effectiveContextId}
+                seedMessage={chatSeed}
+                onSeedConsumed={() => setChatSeed(null)}
+              />
             </div>
           </div>
         ) : (
@@ -991,7 +1005,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
             size="lg"
             onClick={onUploadClick}
             aria-label="Crea un nuovo percorso di studio"
-            className="w-full rounded-full shadow-level-1 transition-all duration-200 hover:shadow-level-2 active:scale-[0.985]"
+            className="w-full rounded-full border border-white/10 bg-[#121214] text-white/90 shadow-tactile transition-all duration-200 hover:bg-[#1a1a1f] hover:shadow-card-active active:scale-[0.985]"
           >
             <Plus className="h-4 w-4" strokeWidth={2.5} />
             Crea nuovo percorso
@@ -1027,10 +1041,17 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         isRegenerating={isGenerating || !!moduleJob}
       />
       </div>
-      {/* 🧩 P37 — tre accessi SEPARATI alla pratica, sotto la card del percorso:
-          SOLO nella Home Studio (P38), con spazio sotto per la navbar visibile. */}
+      {/* 🧩 P39 — due card di pratica affiancate (accento del corso attivo) +
+          barra prompter AI: SOLO nella Home Studio, con pb-32 che tiene tutto
+          sopra la barra di navigazione fissa. */}
       {courseViewState === "overview" && !isCoursePickerOpen && modules.length > 0 && (
-        <PracticeLaunchers onOpen={setPraticaSubView} className="pb-32" />
+        <div className="animate-fade-up">
+          <PracticeLaunchers
+            onOpenEsercizi={() => setPraticaSubView("esercizi")}
+            onOpenInterrogazione={() => setPraticaSubView("interrogazione")}
+          />
+          <PromptBar onSend={(text) => openChat(text)} onOpen={() => openChat()} />
+        </div>
       )}
         </>
       )}
