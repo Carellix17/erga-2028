@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://erga-demo.lovable.app/sitemap.xml
+Sitemap: https://erga-learning.app/sitemap.xml
