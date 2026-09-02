@@ -2,11 +2,12 @@ import type { LucideIcon } from "lucide-react";
 
 /**
  * QuickToolsGrid — griglia degli strumenti rapidi.
- * Quattro capsule (rounded-full, estremità perfettamente semicircolari)
+ * Quattro capsule glass (rounded-full, estremità perfettamente semicircolari)
  * disposte 2×2 su telefono e 4 colonne da sm in su. Le etichette non vengono
- * MAI troncate: se serve, vanno a capo con interlinea compatta.
- * P36 dark luxury: superficie SOLIDA a strati (bg-card, #141418 di notte)
- * senza filtri di sfocatura, ogni icona in chip circolare contrastato.
+ * MAI troncate: se serve, vanno a capo con interlinea compatta, così testi
+ * come "Carica materiale" restano sempre leggibili per intero.
+ * Materica: superficie translucida (.glass-tactile) + ombra tattile che si
+ * approfondisce al passaggio del dito/mouse. Nessun colore primario.
  */
 
 export interface QuickToolItem {
@@ -41,11 +42,9 @@ export function QuickToolsGrid({ title = "Strumenti rapidi", tools }: QuickTools
               key={tool.id}
               type="button"
               onClick={tool.onClick}
-              className="flex min-h-[52px] items-center gap-2.5 rounded-full border border-border bg-card px-3 py-2 text-left shadow-tactile transition-[box-shadow,transform] duration-200 ease-m3-standard hover:shadow-card-active active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex min-h-[52px] items-center gap-2.5 rounded-full border border-border glass-tactile px-4 py-2 text-left shadow-tactile transition-[box-shadow,transform] duration-200 ease-m3-standard hover:shadow-card-active active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface-container-high">
-                <Icon className="h-[18px] w-[18px] text-foreground" aria-hidden="true" />
-              </span>
+              <Icon className="h-[18px] w-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
               <span className="min-w-0 text-[15px] font-medium leading-tight text-foreground">
                 {tool.label}
               </span>

@@ -43,10 +43,10 @@ describe("app shell design system", () => {
     expect(nav).not.toContain("from-black");
   });
 
-  it("in dark mode spegne i puntini e usa il fondo antracite #0A0A0C", () => {
+  it("in dark mode spegne i puntini e usa il fondo #05090A", () => {
     const css = read("src/index.css");
-    expect(css).toContain("--background: 240 9% 4.3%");
-    expect(css).toContain("#0A0A0C");
+    expect(css).toContain("--background: 192 33% 3%");
+    expect(css).toContain("#05090A");
     const darkDot = css.match(/\.dark \.bg-dot-grid \{[\s\S]*?\}/);
     expect(darkDot?.[0]).toContain("background-image: none");
     expect(darkDot?.[0]).not.toContain("radial-gradient");

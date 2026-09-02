@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => ({
         enabled: false,
       },
       injectManifest: {
-        globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2,ttf}"],
+        globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
       manifest: {

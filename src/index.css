@@ -1,17 +1,4 @@
 @tailwind base;
-
-/* ═══ RADJA — font display dei titoli focali (P36 dark luxury) ═══
-   Self-hosted in public/fonts/ (peso unico 400, subset latino).
-   Riservato a titolo del corso in Home e macro-metriche: per il corpo
-   restano Montserrat/Raleway da Google Fonts. I grassetti sul 400 unico
-   vengono evitati: la gerarchia la fa la misura, non il peso sintetico. */
-@font-face {
-  font-family: "Radja";
-  src: url("/fonts/Radja-q2MP5.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
 @tailwind components;
 @tailwind utilities;
 
@@ -42,15 +29,6 @@
 --primary-foreground: var(--cream);
 --primary-container: 0 0% 92%;
 --on-primary-container: var(--ink);
-
-    /* ═══ P36 — DARK LUXURY / WARM MINIMALIST (pilota Home) ═══
-       Hero crema/avorio #F4F1EA con inchiostro #121214 e secondo testo
-       #4A4A4F; card secondaria dark #141418. Valori fissi per tema:
-       la gerarchia la compongono con i token inversi/semantici esistenti. */
-    --surface-cream: 42 31% 94%;          /* #F4F1EA avorio */
-    --surface-cream-foreground: 240 5% 8%;  /* #121214 inchiostro su avorio */
-    --surface-cream-muted: 240 3% 30%;    /* #4A4A4F secondo testo (≥7:1) */
-    --surface-dark-card: 240 9% 8.6%;     /* #141418 card secondaria notte */
 --secondary: 0 0% 95%;
 --secondary-foreground: var(--ink);
 --secondary-container: 0 0% 91%;
@@ -204,7 +182,7 @@
     --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.08), 0 10px 26px -6px hsl(0 0% 0% / 0.45), 0 4px 12px -2px hsl(0 0% 0% / 0.30);
     --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.09), 0 16px 36px -8px hsl(0 0% 0% / 0.50), 0 6px 16px -4px hsl(0 0% 0% / 0.35);
     --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.10), 0 20px 44px -8px hsl(0 0% 0% / 0.55), 0 8px 20px -4px hsl(0 0% 0% / 0.40);
---background: 240 9% 4.3%;             /* #0A0A0C — antracite profondo P36 */
+--background: 192 33% 3%;              /* #05090A — fondo notte, senza puntini */
 --foreground: var(--cream);            /* P29: l'inchiostro di notte è panna, non bianco */
 --surface-dim: 0 0% 6%;
 --surface-bright: 0 0% 18%;
@@ -213,7 +191,7 @@
 --surface-container: 0 0% 13%;          /* carbone #141414 */
 --surface-container-high: 0 0% 17%;  /* #1A1A1B */
 --surface-container-highest: 0 0% 21%;
---card: var(--surface-dark-card);   /* #141418 — card secondary notte */
+--card: 0 0% 14%;
 --card-foreground: var(--cream);
 
     /* ═══ token glass PENSIONATI (alias opachi per compatibilità) ═══ */
@@ -234,7 +212,7 @@
     /* Bordi e filetti: la stessa panna, appena accennata (l'alfa non cambia). */
 --outline: var(--cream) / 0.16;
 --outline-variant: var(--cream) / 0.08;
---border: var(--cream) / 0.07;
+--border: var(--cream) / 0.10;
 --input: 0 0% 10%;
 --ring: 0 0% 80%;
     --subject-accent: #F2F0EF;

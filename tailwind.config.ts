@@ -69,11 +69,6 @@ export default {
         },
         surface: {
           DEFAULT: "hsl(var(--background))",
-          //  P36 — dark luxury: hero avorio e card secondaria notte (token fissi)
-          cream: "hsl(var(--surface-cream))",
-          "cream-foreground": "hsl(var(--surface-cream-foreground))",
-          "cream-muted": "hsl(var(--surface-cream-muted))",
-          "dark-card": "hsl(var(--surface-dark-card))",
           dim: "hsl(var(--surface-dim))",
           bright: "hsl(var(--surface-bright))",
           "container-lowest": "hsl(var(--surface-container-lowest))",
@@ -170,8 +165,6 @@ export default {
         mono: ['Raleway', 'ui-monospace', 'SFMono-Regular', 'monospace'],
         // Usato SOLO dal messaggio di benvenuto della Home (HomeHeader).
         welcome: ['Zalando Sans Expanded', 'Montserrat', 'system-ui', 'sans-serif'],
-        //  P36 — Radja: titoli focali e macro-metriche della card eroe.
-        radja: ['Radja', 'Zalando Sans Expanded', 'Montserrat', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {
