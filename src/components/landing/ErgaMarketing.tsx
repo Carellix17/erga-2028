@@ -50,7 +50,7 @@ const PATHS = {
 type PathKey = keyof typeof PATHS;
 const SIGNUP_PATH = "/registrati";
 
-const FAQ = [
+export const FAQ = [
   ["Per chi è pensato Erga?", "La beta è pensata soprattutto per studenti delle scuole superiori. Puoi usarla per verifiche, interrogazioni e ripassi partendo dai materiali che studi davvero."],
   ["Che cos’è l’Esagono cognitivo?", "È un profilo composto da sei aree: Logica, Memoria, Focus, Lessico, Calma e Pratica. Le risposte iniziali aiutano Erga ad adattare il modo in cui presenta lezioni ed esercizi; i risultati di alcuni quiz possono aggiornare gradualmente l’area Pratica."],
   ["Come vengono protetti i miei materiali?", "L’accesso richiede un account e il sistema separa i materiali dei diversi utenti. Erga usa i file per creare le tue lezioni. L’informativa completa su privacy, conservazione e cancellazione dei dati deve essere pubblicata prima del lancio commerciale."],
