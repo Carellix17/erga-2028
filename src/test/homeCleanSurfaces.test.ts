@@ -70,46 +70,56 @@ describe("Superfici pulite della Home", () => {
     expect(css).toMatch(/html\.high-contrast \.glass-tactile/);
   });
 
-  it("le superfici della Home usano la materica glass tattile unificata", () => {
-    const files = ["QuickToolsGrid.tsx", "DailyTimeline.tsx", "CourseHeroCard.tsx"];
+  it("le superfici della Home sono SOLIDE a strati: nessun backdrop-filter", () => {
+    const files = readdirSync(HOME_DIR).filter((name) => name.endsWith(".tsx"));
     for (const name of files) {
       const content = readFileSync(join(HOME_DIR, name), "utf8");
-      expect(content, name).toContain("glass-tactile");
-      expect(content, name).toContain("shadow-tactile");
+      // P36: prestazioni mobile — niente blur su card o liste scorrevoli
+      expect(content, name).not.toMatch(/backdrop-filter|backdrop-blur|glass-tactile/);
     }
+    const grid = readFileSync(join(HOME_DIR, "QuickToolsGrid.tsx"), "utf8");
+    const timeline = readFileSync(join(HOME_DIR, "DailyTimeline.tsx"), "utf8");
+    expect(grid).toContain("bg-card");
+    expect(timeline).toContain("bg-card");
+    expect(grid).toContain("shadow-tactile");
+    expect(timeline).toContain("shadow-tactile");
+    // icone delle capsule in chip circolare contrastato
+    expect(grid).toContain("rounded-full");
   });
 
-  it("la card percorso è sopraelevata: bordo chiaro, ombra eroe, luce di spigolo", () => {
+  it("la card percorso è sopraelevata e di notte è la hero avorio P36", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
     const tailwind = readFileSync(join(__dirname, "..", "..", "tailwind.config.ts"), "utf8");
 
-    // contorno chiaro translucido + ombra stratificata dedicata
-    expect(hero).toContain("border-white/[0.12]");
+    // ombra stratificata dedicata + filo sottilissimo
     expect(hero).toContain("shadow-hero");
     expect(hero).not.toContain("shadow-level-2");
-    expect(hero).toContain('shadow-[inset_0_1px_0_0_rgba(255,255,255,0.10)]');
+    expect(hero).toContain("dark:border-black/[0.08]");
+    // di notte la card è avorio #F4F1EA con inchiostro #121214
+    expect(hero).toContain("dark:bg-surface-cream");
+    expect(hero).toContain("dark:text-surface-cream-foreground");
     expect(css).toContain("--shadow-hero-card: 0 10px 15px -3px rgba(0, 0, 0, 0.40), 0 4px 6px -2px rgba(0, 0, 0, 0.20), 0 24px 48px -12px rgba(0, 0, 0, 0.45)");
     expect(tailwind).toContain('hero: "var(--shadow-hero-card)"');
   });
 
-  it("la CTA 'Riprendi lezione' è lo STESSO vetro della card di Studio", () => {
+  it("la CTA 'Riprendi lezione' è una pillola scura sull'avorio (px-6)", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
 
-    // gemello del bottone Riprendi di PathHero: color-mix currentColor 8%/20%
-    expect(hero).toContain('"color-mix(in srgb, currentColor 8%, transparent)"');
-    expect(hero).toContain('"color-mix(in srgb, currentColor 20%, transparent)"');
     expect(hero).toContain("rounded-full");
-    expect(hero).toContain("h-11");
-    expect(hero).not.toContain("glass-cool-black");
-    expect(hero).not.toContain("bg-inverse-on-surface");
+    expect(hero).toContain("h-12");
+    expect(hero).toContain("px-6");
+    // scura sulla card avorio di notte, avorio sull'inchiostro di giorno
+    expect(hero).toContain("bg-inverse-on-surface");
+    expect(hero).toContain("dark:bg-surface-cream-foreground");
     // la vecchia classe vetro scura non deve tornare
     expect(css).not.toContain(".glass-cool-black");
   });
 
-  it("il titolo del corso domina la gerarchia (3xl/4xl) con margini compatti", () => {
+  it("il titolo del corso domina la gerarchia in Radja (3xl/4xl)", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
+    expect(hero).toContain("font-radja");
     expect(hero).toContain("text-3xl");
     expect(hero).toContain("sm:text-4xl");
     // titoli lunghi: un gradino sotto, per non gonfiare la card
@@ -118,6 +128,26 @@ describe("Superfici pulite della Home", () => {
     // responsivo: il titolo lungo spezza le parole senza uscire dalla card
     expect(hero).toContain("break-words");
     expect(hero).toContain("min-w-0");
+  });
+
+  it("i token P36 dark luxury sono centrali: avorio, antracite, Radja", () => {
+    const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
+    const tailwind = readFileSync(join(__dirname, "..", "..", "tailwind.config.ts"), "utf8");
+    const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
+
+    // superfici definite una volta sola e riuse ovunque
+    expect(css).toContain("--surface-cream: 42 31% 94%");
+    expect(css).toContain("--surface-cream-foreground: 240 5% 8%");
+    expect(css).toContain("--surface-cream-muted: 240 3% 30%");
+    expect(css).toContain("--surface-dark-card: 240 9% 8.6%");
+    expect(css).toContain("--background: 240 9% 4.3%");
+    expect(css).toContain("--card: var(--surface-dark-card)");
+    expect(css).toContain("--border: var(--cream) / 0.07");
+    // font display Radja self-hosted + utility Tailwind
+    expect(css).toContain('font-family: "Radja"');
+    expect(css).toContain('url("/fonts/Radja-q2MP5.ttf")');
+    expect(tailwind).toContain("radja: ['Radja'");
+    expect(hero).toContain("font-radja");
   });
 
   it("la ciambella della card corso è responsiva per gli schermi piccoli", () => {

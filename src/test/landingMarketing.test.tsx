@@ -15,11 +15,11 @@ describe("landing marketing", () => {
   it("descrive in modo trasparente la beta e il piano Pro", () => {
     renderLanding();
 
+    // Titolo hero aggiornato dalla sessione landing (un solo h1)
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      /il tuo materiale.*un percorso.*da seguire/i,
+      /ogni mente ha la sua geometria/i,
     );
-    expect(screen.getByText("Gratis, senza carta.")).toBeInTheDocument();
-    expect(screen.getByText("Non è ancora in vendita.")).toBeInTheDocument();
+    expect(screen.getByText(/beta gratuita · nessuna carta richiesta · pro in arrivo/i)).toBeInTheDocument();
     expect(document.body).not.toHaveTextContent("6,99 €");
     expect(document.body).not.toHaveTextContent("iris.p@example.org");
   });

@@ -35,6 +35,8 @@ const buttonVariants = cva(
         "icon-lg": "h-12 w-12 p-0",
         fab: "h-14 w-14 p-0",
         "fab-extended": "h-14 px-7",
+        //  P36 — pillola primaria: capsula piena con padding generoso
+        pill: "h-12 rounded-full px-6 py-3",
       },
     },
     defaultVariants: {
