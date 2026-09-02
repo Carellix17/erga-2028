@@ -2,7 +2,7 @@
 import { writeFileSync } from "fs"
 import { resolve } from "path"
 
-const BASE_URL = "https://erga-demo.lovable.app"
+const BASE_URL = "https://erga-learning.app"
 
 interface SitemapEntry {
   path: string
