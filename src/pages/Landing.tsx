@@ -31,8 +31,8 @@ export default function Landing() {
   return (
     <>
       <SeoHead
-        title="Erga — Dal tuo materiale a un percorso di studio"
-        description="Carica PDF, documenti o immagini e trasforma il materiale in lezioni brevi, esercizi e un piano di studio personalizzato. Beta gratuita per le scuole superiori."
+        title="Erga — App per studiare con piano di studio personalizzato"
+        description="Erga è l'app per studiare che trasforma PDF, foto e appunti in lezioni brevi, esercizi e un piano di studio su misura per te. Beta gratuita per le superiori."
         path="/"
         jsonLd={faqSchema}
       />
