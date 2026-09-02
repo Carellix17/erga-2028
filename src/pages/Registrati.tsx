@@ -59,9 +59,9 @@ export default function Registrati() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: "google" | "apple") => {
+  const handleOAuthSignIn = async (provider: "google" | "apple" | "microsoft") => {
     setIsSubmitting(true);
-    const providerLabel = provider === "google" ? "Google" : "Apple";
+    const providerLabel = provider === "google" ? "Google" : provider === "apple" ? "Apple" : "Microsoft";
 
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
