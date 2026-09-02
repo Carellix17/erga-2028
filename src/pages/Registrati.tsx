@@ -213,6 +213,13 @@ export default function Registrati() {
                 </svg>
                 {t("login.apple")}
               </Button>
+
+              <Button type="button" variant="outline" className="w-full h-12 border-border/60 hover:bg-secondary transition-colors" onClick={() => handleOAuthSignIn("microsoft")} disabled={isSubmitting}>
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.4 0H0v11.4h11.4V0zm12.6 0H12.6v11.4H24V0zM11.4 12.6H0V24h11.4V12.6zm12.6 0H12.6V24H24V12.6z"/>
+                </svg>
+                {t("login.microsoft")}
+              </Button>
             </div>
           </form>
         </div>

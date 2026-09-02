@@ -252,6 +252,7 @@
     "or": "or",
     "google": "Continue with Google",
     "apple": "Continue with Apple",
+    "microsoft": "Continue with Microsoft",
     "errorTitle": "Sign-in error",
     "invalidCreds": "Incorrect email or password"
   },
