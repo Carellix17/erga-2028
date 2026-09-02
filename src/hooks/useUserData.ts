@@ -68,9 +68,15 @@ export function useUserData<T>(key: string, defaultValue: T) {
     [currentUser, key, enabled, qc, query.data]
   );
 
+  // Esponiamo l'errore: un fallimento di lettura NON deve mai sembrare
+  // "dati vuoti" (vedi useCognitiveProfile per la stessa regola).
+  const isError = query.isError;
+
   return {
     data: (query.data ?? defaultValue) as T,
     updateData,
     isLoaded: query.isFetched || !enabled,
+    isError,
+    error: query.error instanceof Error ? query.error.message : query.error ? String(query.error) : null,
   };
 }

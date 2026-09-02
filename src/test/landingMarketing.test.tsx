@@ -16,7 +16,7 @@ describe("landing marketing", () => {
     renderLanding();
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      /il tuo materiale.*un percorso.*da seguire/i,
+      /ogni mente ha la sua geometria/i,
     );
     expect(screen.getByText("Gratis, senza carta.")).toBeInTheDocument();
     expect(screen.getByText("Non è ancora in vendita.")).toBeInTheDocument();

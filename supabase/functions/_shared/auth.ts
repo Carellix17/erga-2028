@@ -16,9 +16,16 @@ import { jwtVerify, createRemoteJWKSet, decodeProtectedHeader } from "https://es
 // ============================================================
 
 const PRIMARY_ORIGIN = "https://erga-demo.lovable.app";
+// Dominio custom di produzione: è il BASE_URL usato da sitemap/SEO
+// (scripts/generate-sitemap.ts, SeoHead). Se un utente arriva da qui e
+// l'origine non è in allowlist, TUTTE le Edge Function vengono bloccate
+// dal browser (CORS) e l'app interpreta il fallimento come "utente nuovo"
+// → onboarding + dati vuoti. Aggiungere qui ogni nuovo dominio custom.
+const PRODUCTION_CUSTOM_ORIGIN = "https://erga-learning.app";
 
 const ALLOWED_ORIGINS_EXACT = new Set([
   PRIMARY_ORIGIN,
+  PRODUCTION_CUSTOM_ORIGIN,
   "capacitor://localhost", // iOS (Capacitor)
 ]);
 
@@ -84,6 +91,27 @@ export function withCors(
     res.headers.append("Vary", "Origin");
     return res;
   };
+}
+
+/**
+ * Normalizza un'email per i confronti (trim + lowercase).
+ * Usata per il fallback di lettura dei dati legacy salvati sotto email
+ * invece che sotto l'UUID di auth.uid().
+ */
+export function normalizeEmail(email?: string | null): string | null {
+  if (!email) return null;
+  const value = email.trim().toLowerCase();
+  return value.length > 0 ? value : null;
+}
+
+/**
+ * Pattern LIKE letterale per confrontare una email senza che i caratteri
+ * speciali di LIKE (`%`, `_`) diventino jolly: un confronto ambiguo
+ * potrebbe associare i dati alle righe sbagliate. Usare SEMPRE con
+ * il risultato di normalizeEmail e con l'operatore PostgREST `ilike`.
+ */
+export function emailLikePattern(email: string): string {
+  return email.replace(/[\\%_]/g, (m) => "\\" + m);
 }
 
 export interface AuthResult {
