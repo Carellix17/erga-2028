@@ -70,6 +70,9 @@ interface PathHeroProps {
   /** P38: "resume" = vista moduli — un solo pulsante primario "Riprendi
    *  lezione" al posto della coppia Continua + Cambia corso. */
   variant?: "full" | "resume";
+  /** P40: presente solo nella vista moduli — al posto del menù ⋯ compare
+   *  la X che chiude i moduli e torna alla Home dello Studio. */
+  onCloseModules?: () => void;
   /** Tutti i percorsi disponibili (per "Cambia corso" e il selettore). */
   courses: CourseOption[];
   activeCourseId?: string | null;
@@ -157,6 +160,7 @@ export function PathHero({
   canResume = false,
   onResume,
   variant = "full",
+  onCloseModules,
   courses,
   activeCourseId,
   onSelectCourse,
@@ -346,6 +350,20 @@ export function PathHero({
         <p className="label-small tracking-[0.16em] opacity-70 text-contrast-secondary">
           {inPicker ? "Seleziona un percorso" : "Percorso attuale"}
         </p>
+        {!inPicker && onCloseModules ? (
+          /* ✕ P40 — vista moduli: la X chiude i moduli (nessun menù). */
+          <button
+            type="button"
+            onClick={onCloseModules}
+            aria-label="Chiudi moduli"
+            className="relative w-10 h-10 rounded-full transition-opacity duration-200 flex items-center justify-center shrink-0 hover:opacity-80 active:scale-[0.95] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            style={{
+              backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)",
+            }}
+          >
+            <X className="w-5 h-5 text-current" strokeWidth={2} />
+          </button>
+        ) : (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -420,6 +438,7 @@ export function PathHero({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
       </div>
 
       {/* Titolo: nome intero — usa text-contrast per garantire visibilità su card scura in light mode */}

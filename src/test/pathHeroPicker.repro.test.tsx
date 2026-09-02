@@ -98,4 +98,26 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     const btn = screen.getByRole("button", { name: "Riprendi lezione" }) as HTMLButtonElement;
     expect(btn.disabled).toBe(true);
   });
+
+  it("P40 vista moduli: la X sostituisce il menù ⋯ e chiude i moduli", () => {
+    const onCloseModules = vi.fn();
+    render(
+      <PathHero
+        {...base}
+        variant="resume"
+        onSelectCourse={() => {}}
+        onCloseModules={onCloseModules}
+      />,
+    );
+    expect(screen.queryByRole("button", { name: "Azioni corso" })).toBeNull(); // niente ⋯
+    const x = screen.getByRole("button", { name: "Chiudi moduli" });
+    fireEvent.click(x);
+    expect(onCloseModules).toHaveBeenCalledTimes(1);
+  });
+
+  it("P40 in panoramica il menù ⋯ resta al suo posto", () => {
+    render(<PathHero {...base} onSelectCourse={() => {}} />);
+    expect(screen.getByRole("button", { name: "Azioni corso" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Chiudi moduli" })).toBeNull();
+  });
 });

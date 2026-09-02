@@ -993,11 +993,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         />
       ) : (
         <>
-      {/* Livello 1 — "Torna a Studio" riporta alla Home senza cambiare corso. */}
-      {courseViewState === "modules" && (
-        <SubViewHeader title={heroTitle || "Studio"} onBack={backToOverview} />
-      )}
-      {/* ➕ P37 — Crea nuovo percorso: in cima, SOLO nella Home Studio (P38). */}
+      {/* ➕ P37 — Crea nuovo percorso: in cima, SOLO nella Home Studio (P38).
+          P40: niente più sotto-header "Torna a Studio" nei moduli — la X sulla
+          card del corso chiude la vista e ripristina la Home Studio. */}
       {courseViewState === "overview" && (
         <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pt-3">
           <Button
@@ -1013,11 +1011,15 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         </div>
       )}
       {/* 🌲 card del corso: in panoramica "Continua" scende alla vista moduli;
-          nella vista moduli (P38) la card mostra SOLO "Riprendi lezione",
-          al posto di Continua + Cambia corso. Il menù ⋯ resta disponibile. */}
-      <div className="studio-section-enter min-w-0 overflow-x-clip">
+          nella vista moduli (P38) la card mostra SOLO "Riprendi lezione" e la
+          X al posto del menù ⋯ (P40). Qui la card è anche STICKY: i moduli
+          scorrono fisicamente sotto di lei, che resta il punto di riferimento. */}
+      <div className={courseViewState === "modules"
+        ? "studio-section-enter min-w-0 overflow-x-clip sticky top-0 z-20 bg-background"
+        : "studio-section-enter min-w-0 overflow-x-clip"}>
       <PathHero
         variant={courseViewState === "modules" ? "resume" : "full"}
+        onCloseModules={courseViewState === "modules" ? backToOverview : undefined}
         title={heroTitle}
         completedCount={Math.max(0, Math.min(currentLessonIndex, lessons.length))}
         totalLessons={lessons.length}
@@ -1055,7 +1057,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       )}
         </>
       )}
-      <div key={courseViewState} className="studio-section-enter min-w-0 overflow-x-clip">
+      <div key={courseViewState} className="studio-section-enter relative z-10 min-w-0 overflow-x-clip">
       {courseViewState === "modules" ? (
         !isCoursePickerOpen ? (
           <ModulesOverview
