@@ -67,6 +67,9 @@ interface PathHeroProps {
   progressPercent?: number;
   canResume?: boolean;
   onResume?: () => void;
+  /** P38: "resume" = vista moduli — un solo pulsante primario "Riprendi
+   *  lezione" al posto della coppia Continua + Cambia corso. */
+  variant?: "full" | "resume";
   /** Tutti i percorsi disponibili (per "Cambia corso" e il selettore). */
   courses: CourseOption[];
   activeCourseId?: string | null;
@@ -153,6 +156,7 @@ export function PathHero({
   progressPercent = 0,
   canResume = false,
   onResume,
+  variant = "full",
   courses,
   activeCourseId,
   onSelectCourse,
@@ -458,7 +462,7 @@ export function PathHero({
       )}
 
       {/* Azioni */}
-      {!isGenerating && (canResume || multi) && (
+      {!isGenerating && (variant === "resume" || canResume || multi) && (
         <AnimatePresence mode="popLayout" initial={false}>
           {!inPicker ? (
             <motion.div
@@ -468,6 +472,25 @@ export function PathHero({
               transition={{ duration: 0.18 }}
               className="mt-5 flex items-stretch gap-2.5"
             >
+              {variant === "resume" ? (
+                /* 🧭 P38 — vista moduli: UN solo pulsante primario, ben visibile. */
+                <motion.button
+                  layout
+                  type="button"
+                  onClick={onResume}
+                  disabled={!canResume}
+                  aria-label="Riprendi lezione"
+                  className="inline-flex h-12 w-full items-center justify-center gap-1.5 rounded-full border px-5 text-sm font-bold transition-opacity duration-200 hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, currentColor 14%, transparent)",
+                    borderColor: "color-mix(in srgb, currentColor 28%, transparent)",
+                  }}
+                >
+                  <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  Riprendi lezione
+                </motion.button>
+              ) : (
+                <>
               {canResume && onResume && (
                 <motion.button
                   layout
@@ -498,6 +521,8 @@ export function PathHero({
                   Cambia corso
                 </motion.button>
               )}
+                </>
+              )}
             </motion.div>
           ) : (
             <motion.div
@@ -512,7 +537,7 @@ export function PathHero({
                 <motion.button
                   layout
                   type="button"
-                  onClick={onResume}
+                  onClick={() => { closePicker(); onResume?.(); }}
                   className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
                   style={{
                     backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",

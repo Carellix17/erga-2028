@@ -80,4 +80,20 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     render(<PathHero {...base} courses={[courses[0]]} onSelectCourse={() => {}} />);
     expect(screen.queryByText("Cambia corso")).toBeNull();
   });
+
+  it("P38 variante 'resume': UN solo pulsante primario 'Riprendi lezione', niente Cambia corso né Continua", () => {
+    const onResume = vi.fn();
+    render(<PathHero {...base} variant="resume" onResume={onResume} onSelectCourse={() => {}} />);
+    const btn = screen.getByRole("button", { name: "Riprendi lezione" });
+    fireEvent.click(btn);
+    expect(onResume).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Cambia corso")).toBeNull();
+    expect(screen.queryByText("Continua")).toBeNull();
+  });
+
+  it("P38 variante 'resume' senza lezioni pronte: il pulsante resta visibile ma disabilitato", () => {
+    render(<PathHero {...base} variant="resume" canResume={false} onResume={() => {}} onSelectCourse={() => {}} />);
+    const btn = screen.getByRole("button", { name: "Riprendi lezione" }) as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
+  });
 });

@@ -38,6 +38,8 @@ interface ModulePathProps {
   genCount: number;
   genTotal: number;
   onBack: () => void;
+  /** P38: la barra compatta del corso (BranchTopBar) sostituisce l'intestazione. */
+  hideHeader?: boolean;
   onSelectLesson: (globalIndex: number) => void;
   /** Modulo completamente completato → bottone "torna ai moduli". */
   onModuleCompleted: () => void;
@@ -74,6 +76,7 @@ export function ModulePath({
   genCount,
   genTotal,
   onBack,
+  hideHeader = false,
   onSelectLesson,
   onModuleCompleted,
   onStartFinalTest,
@@ -240,23 +243,25 @@ export function ModulePath({
     <div className="pb-32 animate-fade-in">
       {/* ── Intestazione: torna ai moduli + titolo modulo INTERO ── */}
       <div className="px-4 pt-4">
-        <div className="flex items-center gap-2.5">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={onBack}
-            aria-label="Torna ai moduli"
-            className="rounded-full shrink-0"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <div className="min-w-0">
-            <p className="label-small text-muted-foreground">Modulo {moduleIndex + 1}</p>
-            <h2 className="font-display font-extrabold text-lg leading-snug text-foreground break-words">
-              {moduleTitle}
-            </h2>
+        {!hideHeader && (
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={onBack}
+              aria-label="Torna ai moduli"
+              className="rounded-full shrink-0"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <div className="min-w-0">
+              <p className="label-small text-muted-foreground">Modulo {moduleIndex + 1}</p>
+              <h2 className="font-display font-extrabold text-lg leading-snug text-foreground break-words">
+                {moduleTitle}
+              </h2>
+            </div>
           </div>
-        </div>
+        )}
 
         {!isModuleGenerating && (
           <>

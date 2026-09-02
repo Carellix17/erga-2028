@@ -4,7 +4,7 @@ import { LessonsList } from "@/components/studio/LessonsList";
 import { LessonsListSkeleton } from "@/components/studio/LessonsListSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ModulesOverview } from "@/components/studio/ModulesOverview";
-import { PracticeLaunchers, SubViewHeader } from "@/components/studio/StudioPractice";
+import { BranchTopBar, PracticeLaunchers, SubViewHeader } from "@/components/studio/StudioPractice";
 
 /**
  * 🌿 P21b — Collaudo di accensione della schermata Studio in salotto
@@ -117,5 +117,52 @@ describe("StudioPractice (P37) — accessi dedicati e ritorno", () => {
     expect(screen.getByText("Biologia")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Torna a Studio" }));
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("P38 — navigazione progressiva del corso", () => {
+  it("BranchTopBar: barra compatta sticky con la pill glassy 'Ritorna ai moduli'", () => {
+    const onBack = vi.fn();
+    const { container } = render(
+      <BranchTopBar courseTitle="Biologia" moduleIndex={1} moduleTitle="Genetica" onBack={onBack} />,
+    );
+    const bar = container.firstElementChild as HTMLElement;
+    expect(bar.className).toMatch(/sticky top-0/); // si fissa in cima allo schermo
+    expect(bar.className).toMatch(/py-2/); // compatta: py-2 + h-9 + bordo = 53px ≤ 56px
+    expect(screen.getByText("Biologia · Modulo 2")).toBeTruthy();
+    expect(screen.getByText("Genetica")).toBeTruthy();
+    const back = screen.getByRole("button", { name: "Ritorna ai moduli" });
+    expect(back.className).toMatch(/rounded-full/); // pill
+    expect(back.className).toMatch(/bg-foreground\/10|bg-white\/10/); // glassy semi-trasparente
+    fireEvent.click(back);
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("ModulesOverview: i moduli BLOCCATI restano inaccessibili e spiegano perché", () => {
+    const onOpenModule = vi.fn();
+    render(
+      <ModulesOverview
+        modules={[
+          { index: 0, title: "Modulo 1", doneCount: 5, total: 5, state: "done" },
+          { index: 1, title: "Modulo 2", doneCount: 0, total: 5, state: "lock" },
+        ]}
+        onOpenModule={onOpenModule}
+      />,
+    );
+    expect(screen.getByText("Completa il modulo precedente")).toBeTruthy();
+    const locked = screen.getByRole("button", { name: "Modulo 2: Modulo 2" }) as HTMLButtonElement;
+    expect(locked.disabled).toBe(true);
+    fireEvent.click(locked); // jsdom non spara il click sui disabled, ma verifichiamo il contratto
+    expect(onOpenModule).not.toHaveBeenCalled();
+  });
+
+  it("ModulesOverview: anche un corso con un SOLO modulo renderizza la sua card", () => {
+    render(
+      <ModulesOverview
+        modules={[{ index: 0, title: "Unico modulo", doneCount: 2, total: 4, state: "cur" }]}
+        onOpenModule={() => {}}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Modulo 1: Unico modulo" })).toBeTruthy();
   });
 });

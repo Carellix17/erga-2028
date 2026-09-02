@@ -12,7 +12,7 @@ import { PraticaSubTab } from "@/components/pratica/PraticaView";
 import { ChatView } from "@/components/chat/ChatView";
 import { EserciziView } from "@/components/pratica/EserciziView";
 import { InterrogazioneView } from "@/components/pratica/InterrogazioneView";
-import { PracticeLaunchers, SubViewHeader } from "./StudioPractice";
+import { BranchTopBar, PracticeLaunchers, SubViewHeader } from "./StudioPractice";
 import { cleanCourseName } from "@/lib/courseName";
 import { getSubjectAccent } from "@/lib/subjectColors";
 import { useSubjectAccent } from "@/hooks/useSubjectAccent";
@@ -71,9 +71,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   const [moduleScreen, setModuleScreen] = useState<{ moduleIndex: number } | null>(null);
   const [isGeneratingLesson, setIsGeneratingLesson] = useState(false);
 
-  // 🌲 P24 — la stanza ha DUE viste: i moduli (schermata 1) e le lezioni del
-  // modulo (schermata 2, il percorso squadrato).
-  const [viewMode, setViewMode] = useState<"modules" | "lessons">("modules");
+  // 🧭 P38 — navigazione progressiva del corso: 'overview' = Home Studio
+  // (card + pratica), 'modules' = Livello 1 (schede dei moduli + "Riprendi
+  // lezione"), 'branch' = Livello 2 (percorso a ramo del modulo, navbar
+  // nascosta). Il modulo aperto nel ramo è `activeModuleIndex`.
+  const [courseViewState, setCourseViewState] = useState<"overview" | "modules" | "branch">("overview");
   // 🧩 P37 — sottoviste di pratica DEDICATE (niente schede condivise): null =
   // panoramica Studio; altrimenti una modalità esclusiva a schermo intero.
   const [praticaSubView, setPraticaSubView] = useState<PraticaSubTab | null>(null);
@@ -83,9 +85,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   // VISIBILE in panoramica e in Chat (il campo di testo resta sopra la barra
   // grazie al layout h-[calc(100vh-6rem)] -mb-24 della sottovista Chat).
   const immersiveSubView = praticaSubView === "esercizi" || praticaSubView === "interrogazione";
+  // 🧭 P38: anche il Livello 2 (percorso a ramo) è full-screen → navbar nascosta.
+  const hideNavbar = immersiveSubView || courseViewState === "branch";
   useEffect(() => {
-    onFullscreenChange?.(immersiveSubView);
-  }, [immersiveSubView, onFullscreenChange]);
+    onFullscreenChange?.(hideNavbar);
+  }, [hideNavbar, onFullscreenChange]);
   // Se la stanza si smonta con la barra nascosta (es. cambio scheda forzato
   // dagli eventi dell'agente), la navigazione torna sempre visibile.
   useEffect(() => () => {
@@ -268,9 +272,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     setCurrentLessonIndex(cachedCurrentIndex);
   }, [effectiveContextId, cachedCurrentIndex]);
 
-  // 🌲 P24 — cambio corso: si riparte dalla schermata dei moduli.
+  // 🧭 P38 — cambio corso: si riparte dalla Home Studio (Livello 0).
   useEffect(() => {
-    setViewMode("modules");
+    setCourseViewState("overview");
     setActiveModuleIndex(null);
   }, [effectiveContextId]);
 
@@ -283,7 +287,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   //   - quando l'utente apre una lezione (handleSelectLesson)
   //   - quando l'utente passa alla "prossima" (handleNext), max 1 in anticipo
   // Concorrenza: massimo UNA richiesta in volo (vedi inflightLessonsRef + isGeneratingLesson).
-  useEffect(() => { onFullscreenChange?.(activeLessonIndex !== null || showFinalTest || moduleScreen !== null); }, [activeLessonIndex, showFinalTest, moduleScreen, onFullscreenChange]);
+  useEffect(() => { onFullscreenChange?.(hideNavbar || activeLessonIndex !== null || showFinalTest || moduleScreen !== null); }, [hideNavbar, activeLessonIndex, showFinalTest, moduleScreen, onFullscreenChange]);
 
   const refetchLessons = async () => {
     invalidateContexts();
@@ -469,7 +473,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       const freshLessons = fresh.data?.lessons ?? [];
       const firstIdx = moduleRange(target).start;
       const first = freshLessons[firstIdx];
-      const stillOnModule = viewMode === "lessons" && activeModuleIndex === target;
+      const stillOnModule = courseViewState === "branch" && activeModuleIndex === target;
       if (first?.is_generated) {
         if (stillOnModule) {
           setActiveLessonIndex(firstIdx);
@@ -481,7 +485,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [moduleJob, moduleScreen, viewMode, activeModuleIndex]);
+  }, [moduleJob, moduleScreen, courseViewState, activeModuleIndex]);
 
   const handleNext = async () => {
     if (currentLessonIndex < lessons.length - 1) {
@@ -549,16 +553,32 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
 
   const activeCourseId = activeContextId ?? effectiveContextId;
 
-  // ── 🌲 P24: navigazione a due viste (moduli ↔ lezioni) ──
+  // ── 🧭 P38: navigazione progressiva (overview ↔ moduli ↔ ramo) ──
   const backToModules = () => {
     setModuleScreen(null);
     setActiveModuleIndex(null);
-    setViewMode("modules");
+    setCourseViewState("modules");
+  };
+  // Livello 1 → Livello 0: "Torna a Studio" ripristina la Home Studio senza
+  // perdere il corso selezionato.
+  const backToOverview = () => {
+    setModuleScreen(null);
+    setActiveModuleIndex(null);
+    setCourseViewState("overview");
+  };
+  // "Continua" (panoramica): scende di livello e apre la vista moduli.
+  const goToModules = () => setCourseViewState("modules");
+  // "Riprendi lezione" (vista moduli): la prima lezione non completata, lo
+  // stesso segnalibro cloud già usato dalla card percorso.
+  const resumeCurrentLesson = () => {
+    const l = lessons[currentLessonIndex];
+    if (l?.is_generated) setActiveLessonIndex(currentLessonIndex);
   };
 
   const openModule = async (moduleIndex: number) => {
     setActiveModuleIndex(moduleIndex);
-    setViewMode("lessons");
+    setCourseViewState("branch");
+    window.scrollTo(0, 0); // la barra compatta e il ramo partono dall'alto
     const modLessons = lessonsInModule(lessons, moduleIndex);
     // Modulo già in fabbrica → schermata "in generazione" (arma l'apertura a fine job).
     if (moduleJob && moduleJob.moduleIndex === moduleIndex) {
@@ -664,7 +684,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       if (isGateLesson(index, moduleJob.moduleIndex)) {
         setModuleScreen({ moduleIndex: moduleJob.moduleIndex });
         setActiveModuleIndex(moduleJob.moduleIndex);
-        setViewMode("lessons");
+        setCourseViewState("branch");
       } else {
         toast({ title: "Modulo in preparazione", description: "Questa si sblocca quando TUTTO il modulo è pronto: ti avvisiamo noi con una notifica!" });
       }
@@ -680,14 +700,14 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     if (moduleJob) {
       setModuleScreen({ moduleIndex: moduleJob.moduleIndex });
       setActiveModuleIndex(moduleJob.moduleIndex);
-      setViewMode("lessons");
+      setCourseViewState("branch");
       return;
     }
     if (isModuleFullyMissing(lessonsInModule(lessons, mIdx))) {
       // Vagone tutto da costruire → la fabbrica parte e vediamo la costruzione.
       setModuleScreen({ moduleIndex: mIdx });
       setActiveModuleIndex(mIdx);
-      setViewMode("lessons");
+      setCourseViewState("branch");
       await startModuleGeneration(mIdx, { silent: true });
     } else {
       // Vagone parzialmente pronto: ripara solo il buco, come abbiamo sempre fatto.
@@ -709,7 +729,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     handledLessonLaunchRef.current = lessonLaunch.requestId;
     setCurrentLessonIndex(index);
     setActiveModuleIndex(moduleIndexOf(index));
-    setViewMode("lessons");
+    setCourseViewState("branch");
     if (lesson?.is_generated) {
       setActiveLessonIndex(index);
       if (index > cachedCurrentIndex) updateProgress.mutate(index);
@@ -907,6 +927,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
 
   const currentLesson = activeLessonIndex !== null ? lessons[activeLessonIndex] : null;
   const allGenerated = lessons.length > 0 && lessons.every(l => l.is_generated);
+  // 🧭 P38: titolo del modulo aperto, condiviso da barra compatta e ramo.
+  const activeModuleTitle = activeModuleIndex != null
+    ? moduleTitleFor(activeModuleIndex, activeContext?.module_titles ?? null, lessons[moduleRange(activeModuleIndex).start]?.title).replace(/^Modulo \d+ · /, "")
+    : null;
 
   return (
     <>
@@ -944,35 +968,51 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         )
       ) : (
         <>
-      {/* ➕ P37 — Crea nuovo percorso: in cima, subito sopra la card attiva */}
-      <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pt-3">
-        <Button
-          type="button"
-          size="lg"
-          onClick={onUploadClick}
-          aria-label="Crea un nuovo percorso di studio"
-          className="w-full rounded-full shadow-level-1 transition-all duration-200 hover:shadow-level-2 active:scale-[0.985]"
-        >
-          <Plus className="h-4 w-4" strokeWidth={2.5} />
-          Crea nuovo percorso
-        </Button>
-      </div>
-      {/* 🌲 P24 — il banner è il "cappello completo" della stanza: avanzamento
-          con barra, Continua + Cambia corso, menù ⋯ (rigenera/materiali/rinomina/
-          elimina). Sotto restano solo le lezioni: niente più doppioni. */}
+      {/* 🧭 P38 Livello 2 — la card del corso si compatta in una barra sticky
+          glassy (≤56px): nome del corso/modulo e "Ritorna ai moduli". */}
+      {courseViewState === "branch" ? (
+        <BranchTopBar
+          courseTitle={heroTitle || contextFileName}
+          moduleIndex={activeModuleIndex ?? 0}
+          moduleTitle={activeModuleTitle ?? "Modulo"}
+          onBack={backToModules}
+        />
+      ) : (
+        <>
+      {/* Livello 1 — "Torna a Studio" riporta alla Home senza cambiare corso. */}
+      {courseViewState === "modules" && (
+        <SubViewHeader title={heroTitle || "Studio"} onBack={backToOverview} />
+      )}
+      {/* ➕ P37 — Crea nuovo percorso: in cima, SOLO nella Home Studio (P38). */}
+      {courseViewState === "overview" && (
+        <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pt-3">
+          <Button
+            type="button"
+            size="lg"
+            onClick={onUploadClick}
+            aria-label="Crea un nuovo percorso di studio"
+            className="w-full rounded-full shadow-level-1 transition-all duration-200 hover:shadow-level-2 active:scale-[0.985]"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            Crea nuovo percorso
+          </Button>
+        </div>
+      )}
+      {/* 🌲 card del corso: in panoramica "Continua" scende alla vista moduli;
+          nella vista moduli (P38) la card mostra SOLO "Riprendi lezione",
+          al posto di Continua + Cambia corso. Il menù ⋯ resta disponibile. */}
       <div className="studio-section-enter min-w-0 overflow-x-clip">
       <PathHero
+        variant={courseViewState === "modules" ? "resume" : "full"}
         title={heroTitle}
         completedCount={Math.max(0, Math.min(currentLessonIndex, lessons.length))}
         totalLessons={lessons.length}
         isGenerating={isGenerating}
         progressPercent={generationPercent}
-        canResume={!!lessons[currentLessonIndex]?.is_generated && !isGenerating}
-        onResume={() => {
-          const l = lessons[currentLessonIndex];
-          if (!l) return;
-          if (l.is_generated) setActiveLessonIndex(currentLessonIndex);
-        }}
+        canResume={courseViewState === "modules"
+          ? !!lessons[currentLessonIndex]?.is_generated && !isGenerating
+          : lessons.length > 0}
+        onResume={courseViewState === "modules" ? resumeCurrentLesson : goToModules}
         courses={allContexts}
         activeCourseId={activeCourseId}
         onSelectCourse={handleSelectCourse}
@@ -988,26 +1028,25 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       />
       </div>
       {/* 🧩 P37 — tre accessi SEPARATI alla pratica, sotto la card del percorso:
-          ognuno apre la propria sottovista esclusiva (niente schede condivise). */}
-      {viewMode === "modules" && !isCoursePickerOpen && modules.length > 0 && (
-        <PracticeLaunchers onOpen={setPraticaSubView} />
+          SOLO nella Home Studio (P38), con spazio sotto per la navbar visibile. */}
+      {courseViewState === "overview" && !isCoursePickerOpen && modules.length > 0 && (
+        <PracticeLaunchers onOpen={setPraticaSubView} className="pb-32" />
       )}
-      <div key={viewMode} className="studio-section-enter min-w-0 overflow-x-clip">
-      {viewMode === "modules" ? (
+        </>
+      )}
+      <div key={courseViewState} className="studio-section-enter min-w-0 overflow-x-clip">
+      {courseViewState === "modules" ? (
         !isCoursePickerOpen ? (
           <ModulesOverview
             modules={modules}
             onOpenModule={(idx) => void openModule(idx)}
           />
         ) : null
-      ) : (
+      ) : courseViewState === "branch" ? (
         <ModulePath
+          hideHeader
           moduleIndex={activeModuleIndex ?? 0}
-          moduleTitle={
-            activeModuleIndex != null
-              ? moduleTitleFor(activeModuleIndex, activeContext?.module_titles ?? null, lessons[moduleRange(activeModuleIndex).start]?.title).replace(/^Modulo \d+ · /, "")
-              : "Modulo"
-          }
+          moduleTitle={activeModuleTitle ?? "Modulo"}
           lessons={lessons}
           currentIndex={currentLessonIndex}
           isGeneratingLesson={isGeneratingLesson}
@@ -1024,7 +1063,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           onDeleteLesson={handleDeleteLesson}
           onRenameLesson={handleRenameLesson}
         />
-      )}
+      ) : null}
       </div>
         </>
       )}
@@ -1072,7 +1111,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       {/* 🏭 P10b: la sala d'attesa della fabbrica (fallback: la schermata
           "in generazione" del percorso la sostituisce quando si è nella vista
           lezioni del modulo) */}
-      {moduleScreen && viewMode !== "lessons" && (
+      {moduleScreen && courseViewState !== "branch" && (
         <ModuleGenerationScreen
           moduleIndex={moduleScreen.moduleIndex}
           moduleTitle={(activeContext?.module_titles?.[moduleScreen.moduleIndex] || null) ?? null}

@@ -79,3 +79,40 @@ export function SubViewHeader({ title, onBack, courseTitle, backLabel = "Torna a
     </div>
   );
 }
+
+export interface BranchTopBarProps {
+  courseTitle: string | null;
+  moduleIndex: number;
+  moduleTitle: string;
+  onBack: () => void;
+}
+
+/**
+ * P38 — Livello 2 (percorso a ramo): la card del corso si compatta in questa
+ * barra STICKY in alto (≤56px: py-2 + h-9 + bordo). Mostra il nome del corso
+ * e del modulo, con l'unico modo d'uscita: la pill glassy "Ritorna ai moduli".
+ * Sostituisce l'intestazione interna di ModulePath (hideHeader).
+ */
+export function BranchTopBar({ courseTitle, moduleIndex, moduleTitle, onBack }: BranchTopBarProps) {
+  return (
+    <div className="sticky top-0 z-30 border-b border-border/40 bg-background/80 px-4 py-2 backdrop-blur-md transition-all duration-300 ease-in-out">
+      <div className="flex h-9 items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Ritorna ai moduli"
+          className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-foreground/15 bg-foreground/10 px-3.5 text-sm font-semibold text-foreground backdrop-blur-md transition-all duration-200 hover:bg-foreground/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:border-white/20 dark:bg-white/10 dark:hover:bg-white/15"
+        >
+          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+          Ritorna ai moduli
+        </button>
+        <div className="min-w-0 text-right">
+          <p className="label-small truncate text-muted-foreground">
+            {courseTitle ? `${courseTitle} · ` : ""}Modulo {moduleIndex + 1}
+          </p>
+          <p className="truncate text-sm font-bold leading-tight text-foreground">{moduleTitle}</p>
+        </div>
+      </div>
+    </div>
+  );
+}

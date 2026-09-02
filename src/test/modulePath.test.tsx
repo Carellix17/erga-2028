@@ -85,4 +85,27 @@ describe("ModulePath — percorso squadrato delle lezioni", () => {
     expect(screen.getByText("Sto generando le lezioni…")).toBeTruthy();
     expect(screen.getByText("50%")).toBeTruthy();
   });
+
+  it("P38 con hideHeader nasconde la propria intestazione (la barra compatta la sostituisce)", () => {
+    render(
+      <ModulePath
+        moduleIndex={0}
+        moduleTitle="La Rivoluzione Industriale"
+        lessons={lessons}
+        currentIndex={1}
+        isGeneratingLesson={false}
+        isModuleGenerating={false}
+        genCount={0}
+        genTotal={4}
+        onBack={() => {}}
+        onModuleCompleted={() => {}}
+        onSelectLesson={() => {}}
+        hideHeader
+      />,
+    );
+    expect(screen.queryByRole("button", { name: "Torna ai moduli" })).toBeNull();
+    expect(screen.queryByText("La Rivoluzione Industriale")).toBeNull();
+    // i nodi del percorso restano intatti
+    expect(screen.getByText("L'Europa prima della Rivoluzione")).toBeTruthy();
+  });
 });
