@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { edgeFetch } from "@/lib/edgeFetch";
 import { useToast } from "@/hooks/use-toast";
 
 export const INSTITUTES = [
@@ -19,6 +20,18 @@ export const SUBJECTS = [
 
 export interface SubjectLevels { [subject: string]: number }
 export interface SubjectGoals { [subject: string]: number }
+
+export interface ProfilePayload {
+  institute_type?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  nickname?: string | null;
+  age?: number | null;
+  school?: string | null;
+  avatar_url?: string | null;
+  subject_levels?: Record<string, number> | null;
+  subject_goals?: Record<string, number> | null;
+}
 
 /**
  * Logica condivisa del profilo utente (dati personali, avatar, voti/obiettivi).
@@ -55,21 +68,17 @@ export function useProfileData() {
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
+  // Errore di lettura del profilo: niente più "silenzio" che sembra dati vuoti.
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadProfile = useCallback(async () => {
     if (!currentUser) return;
+    setLoadError(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, action: "get" }),
-        }
+      const data = await edgeFetch<{ profile?: ProfilePayload | null }>(
+        "user-profile",
+        { userId: currentUser, action: "get" },
       );
-      const data = await response.json();
       if (data.profile) {
         const p = data.profile;
         setInstitute(p.institute_type || "liceo_scientifico");
@@ -89,6 +98,7 @@ export function useProfileData() {
       }
     } catch (err) {
       console.error("Error loading profile:", err);
+      setLoadError(err instanceof Error ? err.message : "Impossibile caricare il profilo.");
     } finally {
       setIsLoading(false);
     }
@@ -180,27 +190,16 @@ export function useProfileData() {
     setIsSaving(true);
     setSaved(false);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-profile`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({
-            userId: currentUser, action: "save",
-            institute_type: institute, subject_levels: subjectLevels, subject_goals: subjectGoals,
-            first_name: firstName, last_name: lastName, nickname,
-            age: age ? parseInt(age) : null, school, avatar_url: avatarUrl,
-          }),
-        }
-      );
-      if (response.ok) {
-        setSaved(true);
-        setDirty(false);
-        toast({ title: "Profilo salvato! ✨", description: "I tuoi dati verranno usati per personalizzare l'esperienza." });
-        setTimeout(() => setSaved(false), 2000);
-      }
+      await edgeFetch("user-profile", {
+        userId: currentUser, action: "save",
+        institute_type: institute, subject_levels: subjectLevels, subject_goals: subjectGoals,
+        first_name: firstName, last_name: lastName, nickname,
+        age: age ? parseInt(age) : null, school, avatar_url: avatarUrl,
+      });
+      setSaved(true);
+      setDirty(false);
+      toast({ title: "Profilo salvato! ✨", description: "I tuoi dati verranno usati per personalizzare l'esperienza." });
+      setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       console.error("Error saving profile:", err);
       toast({ title: "Errore", description: "Impossibile salvare il profilo.", variant: "destructive" });
@@ -230,6 +229,7 @@ export function useProfileData() {
     institute, setInstitute,
     subjectLevels, subjectGoals,
     isLoading, isSaving, saved, dirty, setDirty,
+    loadError,
     handleAvatarChange, handleSave, handleLevelChange, handleGoalChange,
   };
 }

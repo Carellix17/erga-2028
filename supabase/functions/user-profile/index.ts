@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse, successResponse, normalizeEmail, emailLikePattern } from "../_shared/auth.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -9,13 +9,34 @@ serve(withCors(async (req) => {
 
     const auth = await validateAuth(req, body);
     const { userId, supabase } = auth;
+    const email = normalizeEmail(auth.userEmail);
 
     if (action === "get") {
-      const { data: profile } = await supabase
+      // 1) Lettura primaria per UUID (auth.uid()).
+      const { data: profile, error } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("user_id", userId)
         .maybeSingle();
+
+      if (error) {
+        console.error("user-profile get error:", error.message);
+        return errorResponse("Errore nel servizio profilo. Riprova.");
+      }
+
+      // 2) Fallback in sola lettura per dati legacy salvati sotto email
+      //    (email verificata dal JWT, confronto letterale non ambiguo).
+      if (!profile && email) {
+        const { data: legacyProfile } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .ilike("user_id", emailLikePattern(email))
+          .maybeSingle();
+        if (legacyProfile) {
+          console.warn("user-profile: legacy row found by email for", userId);
+          return successResponse({ profile: legacyProfile });
+        }
+      }
 
       return successResponse({ profile: profile || null });
     }

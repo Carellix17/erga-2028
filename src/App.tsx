@@ -26,6 +26,7 @@ const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 const Registrati = lazy(() => import("./pages/Registrati"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const SettingsIndex = lazy(() => import("./pages/settings/SettingsIndex"));
 const SettingsAccount = lazy(() => import("./pages/settings/SettingsAccount"));
 const SettingsAppearance = lazy(() => import("./pages/settings/SettingsAppearance"));
@@ -89,6 +90,7 @@ const App = () => (
           <Suspense fallback={<SplashScreen />}>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/registrati" element={<Registrati />} />
             <Route path="/cambia-password" element={<ChangePassword />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />

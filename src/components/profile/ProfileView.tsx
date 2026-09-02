@@ -68,6 +68,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
     avatarPreview,
     isUploadingAvatar,
     isLoading,
+    loadError,
     handleAvatarChange,
   } = useProfileData();
 
@@ -93,6 +94,14 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
 
   return (
     <div className="px-4 pt-4 pb-12 space-y-6 max-w-lg mx-auto animate-fade-up">
+      {loadError && (
+        <div role="alert" className="rounded-card border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
+          <p className="font-semibold">Profilo non disponibile</p>
+          <p className="text-muted-foreground">
+            Non è stato possibile leggere i tuoi dati: {loadError}
+          </p>
+        </div>
+      )}
       {/* Header: indietro a sinistra, uscita e Impostazioni in alto a destra */}
       <div className="flex items-center justify-between gap-2">
         <Button

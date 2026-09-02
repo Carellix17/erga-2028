@@ -14,7 +14,10 @@ import { SplashScreen } from "@/components/shared/SplashScreen";
 import { useSplashGate } from "@/hooks/useSplashGate";
 import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
 import { CognitiveOnboarding } from "@/components/onboarding/CognitiveOnboarding";
-import { Brain } from "lucide-react";
+import { resolveOnboardingGate } from "@/lib/onboardingGate";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Brain, AlertTriangle } from "lucide-react";
 import { useDemoHandoff } from "@/hooks/useDemoHandoff";
 import { useTranslation } from "react-i18next";
 import { SeoHead } from "@/components/SeoHead";
@@ -81,15 +84,26 @@ const Index = () => {
   const { invalidateAll, invalidateContexts, invalidateHasContent } = useLessonsCacheControls();
 
   // Cognitive onboarding gate
-  const { hasCompletedOnboarding, profile: cognitive, isLoaded: cognitiveLoaded, refresh: refreshCognitive } = useCognitiveProfile();
+  const {
+    profile: cognitive,
+    gateInput: cognitiveGateInput,
+    refresh: refreshCognitive,
+  } = useCognitiveProfile();
+  const { logout } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // 🔒 anti-regressione: un errore di lettura NON equivale a "utente nuovo".
+  // Il cancello mostra l'onboarding solo quando il server ha RISPOSTO che
+  // l'utente non ha completato il percorso cognitivo.
+  const cognitiveGate = resolveOnboardingGate(cognitiveGateInput);
+
   // Loading iniziale: solo il primo fetch, mai più tra le tab
-  const initialLoading = hasContentQuery.isLoading || !cognitiveLoaded;
+  const initialLoading = hasContentQuery.isLoading || cognitiveGate.kind === "loading";
   // 🎬 P14: terzo e ultimo cancello del sipario (cronometro condiviso)
   const splash = useSplashGate(initialLoading);
   const hasCloudContent = hasContentQuery.data ?? false;
   const hasFiles = uploadedFiles.length > 0 || hasCloudContent;
+  const hasContentError = hasContentQuery.isError;
 
   const handleUpload = (files: { name: string; size: number }[], contextId?: string) => {
     const newFiles: UploadedFile[] = files.map((file) => ({
@@ -125,9 +139,40 @@ const Index = () => {
     return <SplashScreen leaving={splash.leaving} />;
   }
 
-  // Onboarding bloccante: se l'utente non ha completato il test cognitivo,
-  // mostriamo la sequenza di slide e blocchiamo l'accesso alla dashboard.
-  if (!hasCompletedOnboarding) {
+  // ⚠️ Lettura profilo fallita (rete, CORS, Edge Function non deployata,
+  // sessione scaduta): NON mostriamo l'onboarding a un utente esistente.
+  // Blocchiamo con un errore recuperabile, con il dettaglio in chiaro.
+  if (cognitiveGate.kind === "error") {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-6">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-level-1">
+          <Brain className="mx-auto h-10 w-10 text-primary" />
+          <h1 className="mt-3 font-display text-xl font-bold tracking-tight">
+            Non riusciamo a caricare i tuoi dati
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Il tuo account esiste, ma in questo momento non è stato possibile
+            leggere il profilo.{" "}
+            {cognitiveGate.error && (
+              <span className="block text-xs text-foreground/70">
+                ({cognitiveGate.error})
+              </span>
+            )}
+          </p>
+          <div className="mt-5 flex flex-col gap-2">
+            <Button onClick={() => void refreshCognitive()}>Riprova</Button>
+            <Button variant="ghost" onClick={() => void logout()}>
+              Esci e accedi di nuovo
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Onboarding bloccante: SOLO dopo conferma positiva del server che l'utente
+  // non ha completato il test cognitivo.
+  if (cognitiveGate.kind === "ready" && cognitiveGate.showOnboarding) {
     return (
       <CognitiveOnboarding
         onCompleted={async () => {
@@ -155,6 +200,29 @@ const Index = () => {
         headerTitle={headerTitle}
         hideChrome={isFullscreen}
       >
+        {/* ⚠️ Errori di lettura dati visibili (mai "vuoto" silenzioso):
+            se il contenuto cloud non si carica, l'utente lo sa e può riprovare. */}
+        {hasContentError && (
+          <div
+            role="alert"
+            className="mb-3 flex items-start gap-2 rounded-card border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground"
+          >
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden />
+            <p>
+              Alcuni dati non si sono caricati.{" "}
+              <button
+                type="button"
+                className="font-semibold underline underline-offset-2"
+                onClick={() => {
+                  invalidateAll();
+                  invalidateHasContent();
+                }}
+              >
+                Riprova
+              </button>
+            </p>
+          </div>
+        )}
         {/* 🌲 P24 — passaggio tra stanze: dissolvenza di sola luce (200ms) */}
         <div key={activeTab} className="room-fade">
         {activeTab === "home" && (

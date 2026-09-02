@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse, successResponse, normalizeEmail, emailLikePattern } from "../_shared/auth.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -13,21 +13,59 @@ serve(withCors(async (req) => {
       return errorResponse("Unauthorized", 401);
     }
     const { userId, supabase } = auth;
+    const email = normalizeEmail(auth.userEmail);
 
     if (action === "get") {
-      const { data: cognitive } = await supabase
+      // 1) Lettura primaria: per ID utente Supabase (auth.uid()).
+      const { data: cognitiveRow, error: cogError } = await supabase
         .from("cognitive_profiles")
         .select("*")
         .eq("user_id", userId)
         .maybeSingle();
-      const { data: prof } = await supabase
+      const { data: profRow, error: profError } = await supabase
         .from("user_profiles")
         .select("has_completed_onboarding")
         .eq("user_id", userId)
         .maybeSingle();
+      let cognitive = cognitiveRow;
+      let prof = profRow;
+
+      if (cogError || profError) {
+        console.error("cognitive-profile get error:", cogError?.message, profError?.message);
+        return errorResponse("Errore nel servizio profilo cognitivo. Riprova.");
+      }
+
+      // 2) Fallback SICURO e in sola lettura: dati legacy salvati sotto email.
+      //    Attivo solo quando l'email arriva dal JWT verificato e non è stata
+      //    già trovata la riga canonica (nessun matching ambiguo).
+      if (!cognitive && email) {
+        const { data: legacyCognitive } = await supabase
+          .from("cognitive_profiles")
+          .select("*")
+          .ilike("user_id", emailLikePattern(email))
+          .maybeSingle();
+        if (legacyCognitive) {
+          console.warn("cognitive-profile: legacy row found by email for", userId);
+          cognitive = legacyCognitive;
+        }
+      }
+      if (!prof && email) {
+        const { data: legacyProf } = await supabase
+          .from("user_profiles")
+          .select("has_completed_onboarding")
+          .ilike("user_id", emailLikePattern(email))
+          .maybeSingle();
+        if (legacyProf) prof = legacyProf;
+      }
+
+      // 3) Un profilo cognitivo esistente è comunque prova di onboarding
+      //    completato: copre i profili creati prima della colonna
+      //    `has_completed_onboarding` (default false) e eventuali race.
+      const hasCompletedOnboarding = !!prof?.has_completed_onboarding || !!cognitive;
+
       return successResponse({
         cognitive: cognitive || null,
-        hasCompletedOnboarding: !!prof?.has_completed_onboarding,
+        hasCompletedOnboarding,
       });
     }
 
@@ -51,6 +89,16 @@ serve(withCors(async (req) => {
         app_score: clamp(app_score),
         updated_at: new Date().toISOString(),
       };
+
+      // Backfill sicuro a runtime: se esiste una riga legacy con l'email
+      // dell'utente verificato (ma non la riga canonica), la colleghiamo
+      // all'UUID corrente. Idempotente e senza cancellazioni: se la riga
+      // canonica esiste già, il legacy resta intatto (gestito dalla
+      // migration di backfill, che evita duplicati).
+      if (email) {
+        await linkLegacyRow(supabase, "cognitive_profiles", userId, email);
+        await linkLegacyRow(supabase, "user_profiles", userId, email);
+      }
 
       const { data: existing } = await supabase
         .from("cognitive_profiles")
@@ -129,3 +177,42 @@ serve(withCors(async (req) => {
     return errorResponse("Errore nel servizio profilo cognitivo. Riprova.");
   }
 }));
+
+/**
+ * Collega una riga legacy (user_id = email dell'utente) all'UUID corrente,
+ * SOLO se non esiste già una riga canonica per quell'UUID (niente duplicati).
+ * Il confronto usa l'email normalizzata del JWT verificato.
+ */
+async function linkLegacyRow(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- client service-role non tipizzato (pattern esistente nel progetto)
+  supabase: { from: (t: string) => any },
+  table: string,
+  userId: string,
+  email: string,
+) {
+  try {
+    const { data: canonical } = await supabase
+      .from(table)
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (canonical) return;
+
+    const { data: legacy } = await supabase
+      .from(table)
+      .select("id")
+      .ilike("user_id", emailLikePattern(email))
+      .maybeSingle();
+    if (!legacy) return;
+
+    const { error } = await supabase
+      .from(table)
+      .update({ user_id: userId })
+      .eq("id", legacy.id);
+    if (error) {
+      console.warn(`linkLegacyRow(${table}) skipped:`, error.message);
+    }
+  } catch (e) {
+    console.warn(`linkLegacyRow(${table}) failed:`, (e as Error).message);
+  }
+}

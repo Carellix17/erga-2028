@@ -14,8 +14,17 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    // Se non è loggato, via al login
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Se non è loggato, via al login conservando la destinazione in `?next=`
+    // (il Login la usa per il redirect dopo OAuth/password). Lo stato
+    // `location.state` da solo non basta: il Login legge solo `?next`.
+    const fromPath = `${location.pathname}${location.search}`;
+    return (
+      <Navigate
+        to={`/login?next=${encodeURIComponent(fromPath)}`}
+        state={{ from: location }}
+        replace
+      />
+    );
   }
 
   // Se è arrivato qui, è loggato (o con Google o con User/Pass). Fallo passare!

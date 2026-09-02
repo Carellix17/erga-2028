@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { CognitiveRadar } from "@/components/core/CognitiveRadar";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { completeOAuthSignIn, oauthCallbackUrl } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { writeDemoState, type DemoHexagon } from "@/hooks/useDemoHandoff";
@@ -593,10 +594,13 @@ function AuthWallModal({ onClose }: { onClose: () => void }) {
     setSubmitting(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/app`,
+        redirect_uri: oauthCallbackUrl("/app"),
         extraParams: { prompt: "select_account" },
       });
-      if (result.error) throw result.error;
+      // Stesso contratto di Login/Registrati: i token del flusso popup
+      // vanno applicati, e nel flusso redirect la sessione viene attesa
+      // dalla rotta /auth/callback.
+      await completeOAuthSignIn(result);
     } catch (err) {
       toast({
         title: "Errore Google",

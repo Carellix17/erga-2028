@@ -8,6 +8,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import {
+  completeOAuthSignIn,
+  oauthCallbackUrl,
+  safeNextPath,
+} from "@/lib/auth";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
@@ -28,8 +33,7 @@ export default function Login() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const rawNext = searchParams.get("next");
-  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/app";
+  const nextPath = safeNextPath(searchParams.get("next"));
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -65,19 +69,19 @@ export default function Login() {
 
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: `${window.location.origin}${nextPath}`,
+        // Callback dedicata che ATTENDE la sessione prima di navigare:
+        // niente più atterraggio diretto su /app con hash dei token.
+        redirect_uri: oauthCallbackUrl(nextPath),
         extraParams: provider === "google" ? { prompt: "select_account" } : undefined,
       });
 
-      if (result.error) {
-        throw result.error;
-      }
-
+      // Applica i token se il broker li ha restituiti direttamente
+      // (flusso popup/postMessage in anteprima Lovable). Se il browser
+      // è stato girato (redirect), la sessione arriva su /auth/callback.
+      await completeOAuthSignIn(result);
       if (result.redirected) {
         return; // Browser will redirect
       }
-
-      // Session set automatically, navigation handled by auth state
     } catch (error: unknown) {
       toast({
         title: `Errore ${providerLabel}`,

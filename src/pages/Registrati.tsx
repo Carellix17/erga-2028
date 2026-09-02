@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Brain, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,8 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import {
+  completeOAuthSignIn,
+  oauthCallbackUrl,
+  safeNextPath,
+} from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { useTranslation, Trans } from "react-i18next";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
@@ -27,11 +33,19 @@ export default function Registrati() {
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  const rawNext = searchParams.get("next");
-  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/app";
+  const nextPath = safeNextPath(searchParams.get("next"));
+
+  // Dopo il login OAuth (flusso popup/preview) la sessione arriva subito:
+  // porta l'utente alla destinazione, come fa già il Login.
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate(nextPath, { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate, nextPath]);
 
   const isLengthValid = password.length >= 8;
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
@@ -66,14 +80,13 @@ export default function Registrati() {
 
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: `${window.location.origin}${nextPath}`,
+        redirect_uri: oauthCallbackUrl(nextPath),
         extraParams: provider === "google" ? { prompt: "select_account" } : undefined,
       });
 
-      if (result.error) {
-        throw result.error;
-      }
-
+      // Stesso contratto del Login: i token del flusso popup/postMessage
+      // vanno SEMPRE applicati, altrimenti resti "loggato a metà".
+      await completeOAuthSignIn(result);
       if (result.redirected) {
         return;
       }

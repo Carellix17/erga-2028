@@ -9,6 +9,8 @@ interface AuthContextType {
   isLoading: boolean;
   isGoogleUser: boolean;
   session: Session | null;
+  /** Messaggio di eventuale errore nella lettura/ripristino della sessione. */
+  authError: string | null;
   logout: () => Promise<void>;
 }
 
@@ -17,10 +19,18 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const syncSession = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    setSession(session);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setAuthError(null);
+    } catch (e) {
+      console.error("Auth: lettura sessione fallita", e);
+      setSession(null);
+      setAuthError(e instanceof Error ? e.message : "Impossibile leggere la sessione.");
+    }
   }, []);
 
   useEffect(() => {
@@ -63,7 +73,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, currentUser, currentEmail, isLoading, isGoogleUser, session, logout }}
+      value={{
+        isAuthenticated,
+        currentUser,
+        currentEmail,
+        isLoading,
+        isGoogleUser,
+        session,
+        authError,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>
