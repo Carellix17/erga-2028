@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { User, Palette, Accessibility, FileText, ChevronRight, Languages } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
 import { useHaptics } from "@/hooks/useHaptics";
+import { SeoHead } from "@/components/SeoHead";
 
 const ITEMS = [
   { to: "/app/impostazioni/account", icon: User, title: "Generale", desc: "Dati personali e notifiche" },
@@ -16,6 +17,12 @@ export default function SettingsIndex() {
 
   return (
     <SettingsPage>
+      <SeoHead
+        title="Impostazioni — Erga"
+        description="Gestisci account, aspetto, accessibilità, lingua e termini di Erga."
+        path="/app/impostazioni"
+        noindex
+      />
       <SettingsHeader title="Impostazioni" subtitle="Gestisci il tuo account e l'app" />
       <main className="px-4 sm:px-6 py-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-3 animate-fade-up">
         {ITEMS.map(({ to, icon: Icon, title, desc }) => (

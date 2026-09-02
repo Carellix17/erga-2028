@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HomeView } from "@/components/home/HomeView";
@@ -95,9 +96,11 @@ describe("haptics", () => {
 
   it("applica feedback light ai menu impostazioni", () => {
     render(
-      <MemoryRouter>
-        <SettingsIndex />
-      </MemoryRouter>,
+      <HelmetProvider>
+        <MemoryRouter>
+          <SettingsIndex />
+        </MemoryRouter>
+      </HelmetProvider>,
     );
 
     fireEvent.click(screen.getByRole("link", { name: /Generale/i }));

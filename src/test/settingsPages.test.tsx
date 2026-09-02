@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { describe, expect, it, vi } from "vitest";
 
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
@@ -98,11 +99,13 @@ vi.mock("@/components/subscription/SubscriptionSheet", () => ({
 
 function renderSettingsPage(ui: React.ReactElement, route: string) {
   return render(
-    <MemoryRouter initialEntries={[route]}>
-      <ThemeProvider>
-        <AccessibilityProvider>{ui}</AccessibilityProvider>
-      </ThemeProvider>
-    </MemoryRouter>,
+    <HelmetProvider>
+      <MemoryRouter initialEntries={[route]}>
+        <ThemeProvider>
+          <AccessibilityProvider>{ui}</AccessibilityProvider>
+        </ThemeProvider>
+      </MemoryRouter>
+    </HelmetProvider>,
   );
 }
 
