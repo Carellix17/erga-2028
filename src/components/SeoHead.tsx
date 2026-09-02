@@ -9,13 +9,15 @@ interface SeoHeadProps {
   path: string;
   /** Set true for private/utility routes that should not be indexed. */
   noindex?: boolean;
+  /** Optional JSON-LD structured data object(s) to inject into <head>. */
+  jsonLd?: object | object[];
 }
 
 /**
  * Per-route head metadata: unique title/description and a canonical link that
  * self-references the route instead of pointing everything at the root.
  */
-export function SeoHead({ title, description, path, noindex }: SeoHeadProps) {
+export function SeoHead({ title, description, path, noindex, jsonLd }: SeoHeadProps) {
   return (
     <Helmet>
       <title>{title}</title>
@@ -27,6 +29,11 @@ export function SeoHead({ title, description, path, noindex }: SeoHeadProps) {
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       {noindex && <meta name="robots" content="noindex" />}
+      {jsonLd && (
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
+      )}
     </Helmet>
   );
 }
