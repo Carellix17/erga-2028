@@ -4,6 +4,7 @@ import { LessonsList } from "@/components/studio/LessonsList";
 import { LessonsListSkeleton } from "@/components/studio/LessonsListSkeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ModulesOverview } from "@/components/studio/ModulesOverview";
+import { PracticeLaunchers, SubViewHeader } from "@/components/studio/StudioPractice";
 
 /**
  * 🌿 P21b — Collaudo di accensione della schermata Studio in salotto
@@ -68,52 +69,53 @@ describe("P21b pilota Studio — accensione", () => {
     expect(screen.getByText("Inizia ora")).toBeTruthy();
   });
 
-  it("ModulesOverview mostra il pulsante 'Nuovo percorso di studio' e lo notifica", () => {
-    const onCreatePath = vi.fn();
+  it("ModulesOverview mostra solo le schede dei moduli e notifica l'apertura", () => {
+    // P37: Crea nuovo percorso e i tre accessi alla pratica vivono in StudioView
+    const onOpenModule = vi.fn();
     render(
       <ModulesOverview
         modules={[
           { index: 0, title: "Modulo 1", doneCount: 1, total: 5, state: "cur" },
         ]}
-        onOpenModule={() => {}}
-        onCreatePath={onCreatePath}
+        onOpenModule={onOpenModule}
       />,
     );
-    const btn = screen.getByRole("button", { name: "Crea un nuovo percorso di studio" });
-    expect(btn).toBeTruthy();
-    fireEvent.click(btn);
-    expect(onCreatePath).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: /Modulo 1/ }));
+    expect(onOpenModule).toHaveBeenCalledWith(0);
   });
 
-  it("ModulesOverview mostra i blocchi di Pratica del percorso e chiama onOpenPratica con il tab corretto", () => {
-    const onOpenPratica = vi.fn();
+  it("ModulesOverview senza moduli non renderizza nulla", () => {
+    const { container } = render(<ModulesOverview modules={[]} onOpenModule={() => {}} />);
+    expect(container.firstElementChild).toBeNull();
+  });
+});
+
+describe("StudioPractice (P37) — accessi dedicati e ritorno", () => {
+  it("PracticeLaunchers espone tre pulsanti indipendenti con la destinazione giusta", () => {
+    const onOpen = vi.fn();
+    render(<PracticeLaunchers onOpen={onOpen} />);
+
+    for (const [label, expected] of [
+      ["Esercizi", "esercizi"],
+      ["Interrogazione", "interrogazione"],
+      ["Chat", "chat"],
+    ] as const) {
+      const btn = screen.getByRole("button", { name: `Apri ${label}` });
+      expect(btn.className).toMatch(/min-h-\[76px\]/); // target touch generoso
+      fireEvent.click(btn);
+      expect(onOpen).toHaveBeenCalledWith(expected);
+    }
+    expect(onOpen).toHaveBeenCalledTimes(3);
+  });
+
+  it("SubViewHeader riporta a Studio e mostra il contesto del corso", () => {
+    const onBack = vi.fn();
     render(
-      <ModulesOverview
-        modules={[
-          { index: 0, title: "Modulo 1", doneCount: 1, total: 5, state: "cur" },
-        ]}
-        onOpenModule={() => {}}
-        onOpenPratica={onOpenPratica}
-      />,
+      <SubViewHeader title="Esercizi" courseTitle="Biologia" onBack={onBack} />,
     );
-
-    expect(screen.getByText("Pratica del percorso")).toBeTruthy();
-    expect(screen.getByText("Esercizi Mirati")).toBeTruthy();
-    expect(screen.getByText("Interrogazione")).toBeTruthy();
-    expect(screen.getByText("Chat col Tutor")).toBeTruthy();
-
-    fireEvent.click(screen.getByText("Esercizi Mirati"));
-    expect(onOpenPratica).toHaveBeenCalledWith("esercizi");
-
-    fireEvent.click(screen.getByText("Interrogazione"));
-    expect(onOpenPratica).toHaveBeenCalledWith("interrogazione");
-
-    fireEvent.click(screen.getByText("Chat col Tutor"));
-    expect(onOpenPratica).toHaveBeenCalledWith("chat");
-  });
-
-  it("ModulesOverview senza percorsi mostra comunque l'invito a crearne uno", () => {
-    render(<ModulesOverview modules={[]} onOpenModule={() => {}} onCreatePath={() => {}} />);
-    expect(screen.getByText("Nuovo percorso di studio")).toBeTruthy();
+    expect(screen.getByText("Esercizi")).toBeTruthy();
+    expect(screen.getByText("Biologia")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Torna a Studio" }));
+    expect(onBack).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,6 +1,5 @@
-import { Check, Dumbbell, Lock, MessageCircle, Mic, Play, Plus, RefreshCw } from "lucide-react";
+import { Check, Lock, Play, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 export type ModuleState = "done" | "cur" | "gen" | "lock" | "ready";
 
@@ -17,10 +16,6 @@ export interface ModuleCardData {
 interface ModulesOverviewProps {
   modules: ModuleCardData[];
   onOpenModule: (moduleIndex: number) => void;
-  /** Apre il pannello di caricamento per creare un nuovo percorso di studio. */
-  onCreatePath?: () => void;
-  /** Apre la sezione pratica per il percorso selezionato. */
-  onOpenPratica?: (tab?: "esercizi" | "interrogazione" | "chat") => void;
 }
 
 /**
@@ -29,15 +24,13 @@ interface ModulesOverviewProps {
  * numero in una targa, stato (completato / riprendi / in generazione / da
  * sbloccare / apri) e barra di avanzamento per il modulo corrente o in generazione.
  * La logica (quali moduli esistono, quanto sono completi) arriva da StudioView.
- *
- * In coda alla lista vive il pulsante "Nuovo percorso di studio": stessa
- * pill-firma nera/bianca del bottone principale dell'app (Button variant
- * "default"), stessa entrata `animate-fade-up` delle altre foglie della
- * schermata (con un filo di ritardo, così arriva DOPO le schede dei moduli)
- * e le stesse micro-transizioni al tocco (`duration-200`, `active:scale`).
+ * P37: il pulsante "Crea nuovo percorso" e i tre accessi alla pratica vivono
+ * ora in StudioView (sopra e sotto la card del percorso): qui restano solo
+ * le schede dei moduli, con padding inferiore pb-32 che tiene tutto sopra
+ * la barra di navigazione fissa.
  */
-export function ModulesOverview({ modules, onOpenModule, onCreatePath, onOpenPratica }: ModulesOverviewProps) {
-  if (modules.length === 0 && !onCreatePath) return null;
+export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps) {
+  if (modules.length === 0) return null;
 
   return (
     <div className="px-4 pt-5 pb-32 animate-fade-up">
@@ -146,96 +139,6 @@ export function ModulesOverview({ modules, onOpenModule, onCreatePath, onOpenPra
         })}
       </div>
 
-      {/* 🎯 Pratica del percorso */}
-      {onOpenPratica && modules.length > 0 && (
-        <div className="mt-8 space-y-3 animate-fade-up">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
-              Pratica del percorso
-            </p>
-            <h3 className="font-display text-lg font-bold text-foreground">
-              Mettiti alla prova
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button
-              type="button"
-              onClick={() => onOpenPratica("esercizi")}
-              className="interactive-card flex items-start gap-3 rounded-card bg-card border border-border p-4 text-left shadow-level-1 hover:border-primary/40 hover:bg-surface-container-low transition-all active:scale-[0.98]"
-            >
-              <span className="w-10 h-10 rounded-button bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
-                <Dumbbell className="w-5 h-5" />
-              </span>
-              <span className="flex-1 min-w-0">
-                <span className="block font-display font-bold text-sm text-foreground">Esercizi Mirati</span>
-                <span className="block text-xs text-muted-foreground mt-0.5 leading-snug">
-                  Quiz e domande su misura
-                </span>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onOpenPratica("interrogazione")}
-              className="interactive-card flex items-start gap-3 rounded-card bg-card border border-border p-4 text-left shadow-level-1 hover:border-primary/40 hover:bg-surface-container-low transition-all active:scale-[0.98]"
-            >
-              <span className="w-10 h-10 rounded-button bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
-                <Mic className="w-5 h-5" />
-              </span>
-              <span className="flex-1 min-w-0">
-                <span className="block font-display font-bold text-sm text-foreground">Interrogazione</span>
-                <span className="block text-xs text-muted-foreground mt-0.5 leading-snug">
-                  Simulazione vocale o domande
-                </span>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onOpenPratica("chat")}
-              className="interactive-card flex items-start gap-3 rounded-card bg-card border border-border p-4 text-left shadow-level-1 hover:border-primary/40 hover:bg-surface-container-low transition-all active:scale-[0.98]"
-            >
-              <span className="w-10 h-10 rounded-button bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
-                <MessageCircle className="w-5 h-5" />
-              </span>
-              <span className="flex-1 min-w-0">
-                <span className="block font-display font-bold text-sm text-foreground">Chat col Tutor</span>
-                <span className="block text-xs text-muted-foreground mt-0.5 leading-snug">
-                  Spiegazioni e chiarimenti
-                </span>
-              </span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ➕ Nuovo percorso: la pill-firma dell'app in coda alla lista dei moduli.
-          Entra con la stessa dissolvenza-in-salita delle altre foglie, appena
-          dopo le schede (delay), e reagisce al tocco come loro. */}
-      {onCreatePath && (
-        <div
-          className="mt-5 animate-fade-up"
-          style={{ animationDelay: "120ms" }}
-        >
-          <Button
-            type="button"
-            size="lg"
-            onClick={onCreatePath}
-            aria-label="Crea un nuovo percorso di studio"
-            className={cn(
-              "w-full rounded-full transition-all duration-200",
-              "shadow-level-1 hover:shadow-level-2 active:scale-[0.985]",
-            )}
-          >
-            <Plus className="w-4 h-4" strokeWidth={2.5} />
-            Nuovo percorso di studio
-          </Button>
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            Carica un PDF o un link: l'AI costruisce un nuovo corso di mini-lezioni.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

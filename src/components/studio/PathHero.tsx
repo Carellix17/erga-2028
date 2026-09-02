@@ -480,7 +480,7 @@ export function PathHero({
                   }}
                 >
                   <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
-                  Riprendi
+                  Continua
                 </motion.button>
               )}
               {multi && onSelectCourse && (
@@ -520,7 +520,7 @@ export function PathHero({
                   }}
                 >
                   <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
-                  Riprendi
+                  Continua
                 </motion.button>
               ) : (
                 <div className="flex-1" />

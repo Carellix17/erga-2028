@@ -22,6 +22,8 @@ describe("PathHero — selettore percorsi (morphing)", () => {
 
   it("apre il selettore: appare Annulla subito, gli altri corsi dopo la centratura", async () => {
     render(<PathHero {...base} onSelectCourse={() => {}} />);
+    // P37: il pulsante primario della card percorso si chiama "Continua"
+    expect(screen.getAllByText("Continua").length).toBeGreaterThan(0);
     fireEvent.click(screen.getByText("Cambia corso"));
     expect(screen.getByText("Annulla")).toBeTruthy();
     // gli altri corsi compaiono DOPO la centratura (fase 2)

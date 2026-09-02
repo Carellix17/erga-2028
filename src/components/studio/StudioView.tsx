@@ -8,14 +8,18 @@ import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
 import { PathHero } from "./PathHero";
-import { PraticaView } from "@/components/pratica/PraticaView";
+import { PraticaSubTab } from "@/components/pratica/PraticaView";
+import { ChatView } from "@/components/chat/ChatView";
+import { EserciziView } from "@/components/pratica/EserciziView";
+import { InterrogazioneView } from "@/components/pratica/InterrogazioneView";
+import { PracticeLaunchers, SubViewHeader } from "./StudioPractice";
 import { cleanCourseName } from "@/lib/courseName";
 import { getSubjectAccent } from "@/lib/subjectColors";
 import { useSubjectAccent } from "@/hooks/useSubjectAccent";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, Plus, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,9 +72,27 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   const [isGeneratingLesson, setIsGeneratingLesson] = useState(false);
 
   // 🌲 P24 — la stanza ha DUE viste: i moduli (schermata 1) e le lezioni del
-  // modulo (schermata 2, il percorso squadrato) + la vista pratica del percorso.
-  const [viewMode, setViewMode] = useState<"modules" | "lessons" | "pratica">("modules");
-  const [activePraticaTab, setActivePraticaTab] = useState<"esercizi" | "interrogazione" | "chat">("esercizi");
+  // modulo (schermata 2, il percorso squadrato).
+  const [viewMode, setViewMode] = useState<"modules" | "lessons">("modules");
+  // 🧩 P37 — sottoviste di pratica DEDICATE (niente schede condivise): null =
+  // panoramica Studio; altrimenti una modalità esclusiva a schermo intero.
+  const [praticaSubView, setPraticaSubView] = useState<PraticaSubTab | null>(null);
+
+  // 🧭 P37 — barra di navigazione: NASCOSTA nelle sottoviste immersive
+  // (Esercizi/Interrogazione, esperienza full-screen senza occlusioni),
+  // VISIBILE in panoramica e in Chat (il campo di testo resta sopra la barra
+  // grazie al layout h-[calc(100vh-6rem)] -mb-24 della sottovista Chat).
+  const immersiveSubView = praticaSubView === "esercizi" || praticaSubView === "interrogazione";
+  useEffect(() => {
+    onFullscreenChange?.(immersiveSubView);
+  }, [immersiveSubView, onFullscreenChange]);
+  // Se la stanza si smonta con la barra nascosta (es. cambio scheda forzato
+  // dagli eventi dell'agente), la navigazione torna sempre visibile.
+  useEffect(() => () => {
+    onFullscreenChange?.(false);
+  }, [onFullscreenChange]);
+
+  const closePratica = () => setPraticaSubView(null);
   const [isCoursePickerOpen, setIsCoursePickerOpen] = useState(false);
   const [activeModuleIndex, setActiveModuleIndex] = useState<number | null>(null);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
@@ -888,8 +910,55 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
 
   return (
     <>
+      {praticaSubView ? (
+        praticaSubView === "chat" ? (
+          /* 💬 Chat: navbar VISIBILE — altezza calibrata per tenere il campo
+             di testo sopra la barra fissa (stesso trucco già usato da Pratica). */
+          <div className="flex h-[calc(100vh-6rem)] -mb-24 flex-col animate-fade-up">
+            <SubViewHeader
+              title="Chat col Tutor"
+              courseTitle={heroTitle || contextFileName}
+              onBack={closePratica}
+            />
+            <div className="min-h-0 flex-1 overflow-hidden">
+              <ChatView hasFiles={hasFiles} onUploadClick={onUploadClick} contextId={effectiveContextId} />
+            </div>
+          </div>
+        ) : (
+          /* 🏋️ / 🎤 Esercizi e Interrogazione: sottovista ESCLUSIVA a schermo
+             pieno, navbar nascosta. Un solo pulsante per uscire: Torna a Studio. */
+          <div className="fixed inset-0 z-40 flex flex-col bg-background animate-fade-up">
+            <SubViewHeader
+              title={praticaSubView === "esercizi" ? "Esercizi" : "Interrogazione"}
+              courseTitle={heroTitle || contextFileName}
+              onBack={closePratica}
+            />
+            <div className="min-h-0 flex-1 overflow-hidden">
+              {praticaSubView === "esercizi" ? (
+                <EserciziView contextId={effectiveContextId} contextName={heroTitle || contextFileName} />
+              ) : (
+                <InterrogazioneView contextId={effectiveContextId} contextName={heroTitle || contextFileName} />
+              )}
+            </div>
+          </div>
+        )
+      ) : (
+        <>
+      {/* ➕ P37 — Crea nuovo percorso: in cima, subito sopra la card attiva */}
+      <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pt-3">
+        <Button
+          type="button"
+          size="lg"
+          onClick={onUploadClick}
+          aria-label="Crea un nuovo percorso di studio"
+          className="w-full rounded-full shadow-level-1 transition-all duration-200 hover:shadow-level-2 active:scale-[0.985]"
+        >
+          <Plus className="h-4 w-4" strokeWidth={2.5} />
+          Crea nuovo percorso
+        </Button>
+      </div>
       {/* 🌲 P24 — il banner è il "cappello completo" della stanza: avanzamento
-          con barra, Riprendi + Cambia corso, menù ⋯ (rigenera/materiali/rinomina/
+          con barra, Continua + Cambia corso, menù ⋯ (rigenera/materiali/rinomina/
           elimina). Sotto restano solo le lezioni: niente più doppioni. */}
       <div className="studio-section-enter min-w-0 overflow-x-clip">
       <PathHero
@@ -918,47 +987,19 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         isRegenerating={isGenerating || !!moduleJob}
       />
       </div>
+      {/* 🧩 P37 — tre accessi SEPARATI alla pratica, sotto la card del percorso:
+          ognuno apre la propria sottovista esclusiva (niente schede condivise). */}
+      {viewMode === "modules" && !isCoursePickerOpen && modules.length > 0 && (
+        <PracticeLaunchers onOpen={setPraticaSubView} />
+      )}
       <div key={viewMode} className="studio-section-enter min-w-0 overflow-x-clip">
       {viewMode === "modules" ? (
         !isCoursePickerOpen ? (
           <ModulesOverview
             modules={modules}
             onOpenModule={(idx) => void openModule(idx)}
-            onCreatePath={onUploadClick}
-            onOpenPratica={(tab) => {
-              setActivePraticaTab(tab || "esercizi");
-              setViewMode("pratica");
-            }}
           />
         ) : null
-      ) : viewMode === "pratica" ? (
-        <div className="flex flex-col h-full animate-fade-up">
-          <div className="px-4 py-2 flex items-center justify-between border-b border-border/40">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={backToModules}
-              className="rounded-button gap-1.5 text-muted-foreground hover:text-foreground"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Torna ai moduli</span>
-            </Button>
-            {heroTitle && (
-              <span className="text-xs font-semibold text-muted-foreground truncate max-w-[200px]">
-                {heroTitle}
-              </span>
-            )}
-          </div>
-          <PraticaView
-            hasFiles={hasFiles}
-            onUploadClick={onUploadClick}
-            onFullscreenChange={onFullscreenChange}
-            contextId={effectiveContextId}
-            contextName={heroTitle || contextFileName}
-            defaultSubTab={activePraticaTab}
-            onBack={backToModules}
-          />
-        </div>
       ) : (
         <ModulePath
           moduleIndex={activeModuleIndex ?? 0}
@@ -985,6 +1026,8 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         />
       )}
       </div>
+        </>
+      )}
 
       {activeLessonIndex !== null && currentLesson && currentLesson.is_generated && !isGeneratingLesson && (
         <FullscreenLessonGate
