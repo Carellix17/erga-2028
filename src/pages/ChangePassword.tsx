@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { SeoHead } from "@/components/SeoHead";
 
 export default function ChangePassword() {
   const [newPassword, setNewPassword] = useState("");
@@ -47,6 +48,12 @@ export default function ChangePassword() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <SeoHead
+        title="Cambia password — Erga"
+        description="Imposta una nuova password per il tuo account Erga."
+        path="/cambia-password"
+        noindex
+      />
       <div className="w-full max-w-sm animate-fade-up">
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mb-4">

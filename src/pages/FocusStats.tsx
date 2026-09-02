@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { FocusStatsDashboard } from "@/components/focus/FocusStatsDashboard";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { SeoHead } from "@/components/SeoHead";
 
 /**
  * THESIS: il ritmo di studio si legge come un registro personale, non come un gioco.
@@ -14,6 +15,12 @@ export default function FocusStats() {
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background bg-dot-grid">
+      <SeoHead
+        title="Ritmo di studio — Erga"
+        description="Le tue statistiche di concentrazione e le sessioni di studio con il timer Pomodoro."
+        path="/app/ritmo"
+        noindex
+      />
       <AppHeader title={t("focusStats.title")} subtitle={t("focusStats.subtitle")} showBack />
       <FocusStatsDashboard />
     </div>

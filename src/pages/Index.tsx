@@ -17,6 +17,7 @@ import { CognitiveOnboarding } from "@/components/onboarding/CognitiveOnboarding
 import { Brain } from "lucide-react";
 import { useDemoHandoff } from "@/hooks/useDemoHandoff";
 import { useTranslation } from "react-i18next";
+import { SeoHead } from "@/components/SeoHead";
 
 type Tab = "home" | "studio" | "piano" | "pratica" | "core";
 
@@ -142,6 +143,12 @@ const Index = () => {
 
   return (
     <>
+      <SeoHead
+        title="Studio — Erga"
+        description="Il tuo spazio di studio personale: lezioni, esercizi, piano e focus in un'unica app."
+        path="/app"
+        noindex
+      />
       <AppLayout
         activeTab={activeTab}
         onTabChange={changeTab}

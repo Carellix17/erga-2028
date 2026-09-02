@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAccessibility, type TextScale } from "@/contexts/AccessibilityContext";
 import { cn } from "@/lib/utils";
 import { useHaptics } from "@/hooks/useHaptics";
+import { SeoHead } from "@/components/SeoHead";
 
 const SCALES: { value: TextScale; label: string }[] = [
   { value: "normal", label: "Normale" },
@@ -36,6 +37,12 @@ export default function SettingsAccessibility() {
 
   return (
     <SettingsPage>
+      <SeoHead
+        title="Accessibilità — Erga"
+        description="Regola testo, contrasto e movimento per un'esperienza Erga più accessibile."
+        path="/app/impostazioni/accessibilita"
+        noindex
+      />
       <SettingsHeader title="Accessibilità" subtitle="Testo, contrasto e movimento" />
       <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-4 animate-fade-up">
         <Row icon={Type} title="Dimensione testo" desc="Ingrandisci il testo di tutta l'app se fai fatica a leggere.">

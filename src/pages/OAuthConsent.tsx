@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { SeoHead } from "@/components/SeoHead";
 
 // Minimal typed wrapper — `supabase.auth.oauth` is beta and not fully typed.
 type OAuthNs = {
@@ -77,6 +78,12 @@ export default function OAuthConsent() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6 bg-background">
+      <SeoHead
+        title="Autorizza applicazione — Erga"
+        description="Autorizza un'applicazione esterna ad accedere al tuo account Erga."
+        path="/.lovable/oauth/consent"
+        noindex
+      />
       <div className="max-w-md w-full rounded-3xl bg-card border border-border shadow-level-2 p-6">
         <h1 className="text-xl font-semibold text-foreground">
           Collega {clientName} a Erga

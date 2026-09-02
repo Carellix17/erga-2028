@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { CognitiveOnboarding } from "@/components/onboarding/CognitiveOnboarding";
 import { useCognitiveProfile } from "@/hooks/useCognitiveProfile";
+import { SeoHead } from "@/components/SeoHead";
 
 /**
  * Pagina profilo (rotta /app/profilo).
@@ -17,6 +18,12 @@ export default function Profile() {
 
   return (
     <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background">
+      <SeoHead
+        title="Profilo — Erga"
+        description="Gestisci il tuo profilo Erga, le preferenze di studio e il profilo cognitivo."
+        path="/app/profilo"
+        noindex
+      />
       <div className="w-full flex-1">
         <ProfileView onOpenCognitive={() => setShowOnboarding(true)} />
       </div>

@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfileData, INSTITUTES, SCHOOLS } from "@/hooks/useProfileData";
 import { NotificationsCard } from "@/components/profile/NotificationsCard";
 import { AccountAccessCard } from "@/components/settings/AccountAccessCard";
+import { SeoHead } from "@/components/SeoHead";
 
 export default function SettingsAccount() {
   const { toast } = useToast();
@@ -60,6 +61,12 @@ export default function SettingsAccount() {
 
   return (
     <SettingsPage>
+      <SeoHead
+        title="Impostazioni account — Erga"
+        description="Modifica i tuoi dati personali e le preferenze dell'account Erga."
+        path="/app/impostazioni/account"
+        noindex
+      />
       <SettingsHeader title="Generale" subtitle="I tuoi dati personali e preferenze" />
       <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6 animate-fade-up">
         {isLoading ? (

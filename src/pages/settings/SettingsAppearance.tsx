@@ -2,6 +2,7 @@ import { Sun, Moon, Monitor, Check } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
 import { useTheme, type Theme } from "@/contexts/ThemeContext";
 import { useHaptics } from "@/hooks/useHaptics";
+import { SeoHead } from "@/components/SeoHead";
 
 const OPTIONS: { value: Theme; label: string; desc: string; icon: typeof Sun; swatch: string }[] = [
   { value: "light", label: "Chiaro", desc: "Sfondo chiaro, testo scuro", icon: Sun, swatch: "bg-[#F2F0EF]" },
@@ -15,6 +16,12 @@ export default function SettingsAppearance() {
 
   return (
     <SettingsPage>
+      <SeoHead
+        title="Aspetto — Erga"
+        description="Personalizza tema e visualizzazione dell'app Erga."
+        path="/app/impostazioni/aspetto"
+        noindex
+      />
       <SettingsHeader title="Aspetto" subtitle="Tema e visualizzazione" />
       <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6 animate-fade-up">
         <section className="erga-settings-panel rounded-card p-5 space-y-3">

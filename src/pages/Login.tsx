@@ -11,6 +11,7 @@ import { lovable } from "@/integrations/lovable";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { SeoHead } from "@/components/SeoHead";
 
 // 🌿 P21d ERGA OPAL: la porta di casa parla il dizionario dei temi.
 // Via blob, puntini, vetro e colori scritti a mano: carta carbone/bianca,
@@ -92,6 +93,11 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <SeoHead
+        title="Accedi — Erga"
+        description="Accedi al tuo account Erga per riprendere i tuoi percorsi di studio, lezioni ed esercizi."
+        path="/login"
+      />
       <div className="w-full max-w-sm animate-fade-up">
         <div className="flex justify-end mb-2"><LanguageSwitcher /></div>
         <div className="flex flex-col items-center mb-8">

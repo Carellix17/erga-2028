@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
+import { SeoHead } from "@/components/SeoHead";
 
 const SECTIONS = [
   "1. Oggetto del servizio",
@@ -12,6 +13,11 @@ const SECTIONS = [
 export default function SettingsTerms() {
   return (
     <SettingsPage>
+      <SeoHead
+        title="Termini e condizioni — Erga"
+        description="Termini di servizio e informativa privacy di Erga."
+        path="/app/impostazioni/termini"
+      />
       <SettingsHeader title="Termini e condizioni" subtitle="Termini di servizio e privacy" />
       <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-5 animate-fade-up">
         <div className="rounded-card border border-warning/40 bg-warning/10 p-4 flex items-start gap-3">
