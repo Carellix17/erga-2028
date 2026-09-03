@@ -29,11 +29,13 @@ export async function edgeFetch<T = unknown>(
   };
 
   // Retry transient edge-runtime saturation (503/504) and rate-limits (429)
-  // with exponential backoff: 300ms → 600ms → 1.2s → 2.4s → 4.8s → 9.6s.
-  // Heavy functions (PDF/vision) can stay saturated for several seconds, so
-  // we need enough attempts to ride out a SUPABASE_EDGE_RUNTIME_ERROR burst.
+  // with exponential backoff: 300ms → 600ms → 1.2s → 2.4s → 4.8s.
+  // I fallimenti di rete (es. CORS/offline) sono ritentati al massimo 2 volte:
+  // ritentarli a lungo generava una valanga di richieste identiche.
   const maxAttempts = 6;
+  const maxNetworkAttempts = 3;
   let lastErr: unknown = null;
+
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
