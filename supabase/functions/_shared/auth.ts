@@ -26,10 +26,11 @@ const PRODUCTION_CUSTOM_ORIGIN = "https://erga-learning.app";
 const ALLOWED_ORIGINS_EXACT = new Set([
   PRIMARY_ORIGIN,
   PRODUCTION_CUSTOM_ORIGIN,
+  "https://www.erga-learning.app", // stesso dominio con www
   "capacitor://localhost", // iOS (Capacitor)
 ]);
 
-const ALLOWED_HOST_SUFFIXES = [".lovable.app", ".lovableproject.com"];
+const ALLOWED_HOST_SUFFIXES = [".lovable.app", ".lovableproject.com", ".erga-learning.app"];
 const ALLOWED_LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1"]);
 
 /**
