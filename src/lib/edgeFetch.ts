@@ -66,7 +66,10 @@ export async function edgeFetch<T = unknown>(
         await sleep(300 * Math.pow(2, attempt - 1));
         continue;
       }
-      if (attempt >= maxAttempts) throw err;
+      // Non-network errors (400/402/500, quota limits, etc.) are never
+      // retried — re-sending an identical POST would duplicate data and
+      // burn generation quota before the user even sees the error.
+      throw err;
     }
   }
 
