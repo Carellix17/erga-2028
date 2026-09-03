@@ -64,10 +64,12 @@ export async function edgeFetch<T = unknown>(
       lastErr = err;
       // Network failure (e.g. "Failed to fetch") → retry too
       const isNetwork = err instanceof TypeError;
-      if (isNetwork && attempt < maxAttempts) {
+      if (isNetwork && attempt < maxNetworkAttempts) {
         await sleep(300 * Math.pow(2, attempt - 1));
         continue;
       }
+      if (isNetwork) throw err;
+
       // Non-network errors (400/402/500, quota limits, etc.) are never
       // retried — re-sending an identical POST would duplicate data and
       // burn generation quota before the user even sees the error.
