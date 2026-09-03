@@ -21,10 +21,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
+  // ⏱️ Nessuna attesa indefinita: se il cloud non risponde entro 2s, l'avvio
+  // prosegue lo stesso (l'eventuale sessione arriverà da onAuthStateChange).
+  const SESSION_TIMEOUT_MS = 2000;
+
   const syncSession = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
+      const result = await Promise.race([
+        supabase.auth.getSession(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), SESSION_TIMEOUT_MS)),
+      ]);
+      if (result === null) {
+        // Timeout: non tocchiamo la sessione già nota, sblocchiamo e basta.
+        console.warn("Auth: lettura sessione oltre il tempo massimo, avvio sbloccato");
+        return;
+      }
+      setSession(result.data.session);
       setAuthError(null);
     } catch (e) {
       console.error("Auth: lettura sessione fallita", e);
@@ -37,11 +49,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) setSession(session);
+      // Solo assegnazione sincrona di stato: nessuna query qui dentro,
+      // altrimenti si blocca il thread di autenticazione.
+      if (!mounted) return;
+      setSession(session);
+      setIsLoading(false);
     });
 
     syncSession().finally(() => {
-      if (mounted) setTimeout(() => setIsLoading(false), 100);
+      if (mounted) setIsLoading(false);
     });
 
     const handleAppResume = () => {
@@ -60,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       document.removeEventListener("visibilitychange", handleAppResume);
     };
   }, [syncSession]);
+
 
   const isAuthenticated = !!session;
   const currentUser = session?.user?.id ?? null;
