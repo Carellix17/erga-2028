@@ -254,7 +254,20 @@
     "apple": "Continua con Apple",
     "microsoft": "Continua con Microsoft",
     "errorTitle": "Errore di accesso",
-    "invalidCreds": "Email o password non corretti"
+    "invalidCreds": "Email o password non corretti",
+    "errRequired": "Inserisci email e password per continuare",
+    "errEmail": "Il formato dell'email non è valido",
+    "forgot": "Password dimenticata?",
+    "forgotTitle": "Reimposta la password",
+    "forgotHint": "Scrivi la tua email: ti mandiamo un link per scegliere una nuova password.",
+    "forgotSend": "Invia il link di reset",
+    "forgotSent": "Email inviata! Controlla la posta in arrivo (e anche nello spam).",
+    "forgotBack": "Torna all'accesso",
+    "heroTitle": "Ogni mente ha la sua geometria.",
+    "heroBody": "Erga trasforma i tuoi materiali in percorsi di studio su misura: micro-lezioni, esercizi mirati e simulazioni orali.",
+    "heroChip1": "Micro-lezioni",
+    "heroChip2": "Esercizi mirati",
+    "heroChip3": "Simulazioni orali"
   },
   "signup": {
     "title": "Crea il tuo account",

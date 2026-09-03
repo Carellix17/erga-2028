@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Lock, Eye, EyeOff, Shield, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,17 @@ export default function ChangePassword() {
   const { currentEmail, isGoogleUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+
+  // 💌 P41: chi arriva dal link "reimposta password" atterra qui con ?code=:
+  // lo scambiamo con una sessione vera, poi updateUser può salvare la nuova
+  // password. Link scaduto o già usato → il form resta, l'errore arriva da
+  // updateUser al momento dell'invio.
+  useEffect(() => {
+    const code = searchParams.get("code");
+    if (!code) return;
+    void supabase.auth.exchangeCodeForSession(code).catch(() => {});
+  }, [searchParams]);
 
   const isLengthValid = newPassword.length >= 8;
   const passwordsMatch = newPassword === confirmPassword && confirmPassword.length > 0;
