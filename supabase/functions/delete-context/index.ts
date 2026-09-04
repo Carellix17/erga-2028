@@ -7,8 +7,15 @@ serve(withCors(async (req) => {
     const { contextId, action } = body;
 
     // Validate authentication and get userId
-    const auth = await validateAuth(req, body);
+    let auth;
+    try {
+      auth = await validateAuth(req, body);
+    } catch (authErr) {
+      console.error("delete-context auth error:", (authErr as Error).message);
+      return errorResponse("Unauthorized", 401);
+    }
     const { userId, userEmail, supabase } = auth;
+
     const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
 
     console.log(`Delete context for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
