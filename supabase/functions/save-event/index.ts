@@ -7,8 +7,15 @@ serve(withCors(async (req) => {
     const { events, action } = body;
 
     // Validate authentication and get userId
-    const auth = await validateAuth(req, body);
+    let auth;
+    try {
+      auth = await validateAuth(req, body);
+    } catch (authErr) {
+      console.error("save-event auth error:", (authErr as Error).message);
+      return errorResponse("Unauthorized", 401);
+    }
     const { userId, supabase } = auth;
+
 
     console.log(`Save event for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
 

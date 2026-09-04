@@ -236,6 +236,16 @@ export default function Login() {
                   </div>
                 ) : (
                   <form onSubmit={handleForgot} className="mt-6 space-y-4" noValidate>
+                    {formError && (
+                      <div
+                        role="alert"
+                        className="flex items-start gap-2.5 rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                      >
+                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                        <span>{formError}</span>
+                      </div>
+                    )}
+
                     <div className="space-y-2">
                       <Label htmlFor="forgot-email" className="text-sm font-medium">
                         {t("login.email")}

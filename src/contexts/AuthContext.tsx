@@ -27,12 +27,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const syncSession = useCallback(async () => {
     try {
+      const pending = supabase.auth.getSession();
+      // Anche se scade il tempo, la lettura continua: quando arriva la
+      // applichiamo comunque, così una sessione valida non va persa.
+      pending
+        .then(({ data }) => {
+          setSession(data.session);
+          setAuthError(null);
+        })
+        .catch(() => {});
+
       const result = await Promise.race([
-        supabase.auth.getSession(),
+        pending,
         new Promise<null>((resolve) => setTimeout(() => resolve(null), SESSION_TIMEOUT_MS)),
       ]);
       if (result === null) {
-        // Timeout: non tocchiamo la sessione già nota, sblocchiamo e basta.
         console.warn("Auth: lettura sessione oltre il tempo massimo, avvio sbloccato");
         return;
       }
@@ -44,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthError(e instanceof Error ? e.message : "Impossibile leggere la sessione.");
     }
   }, []);
+
 
   useEffect(() => {
     let mounted = true;

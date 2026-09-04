@@ -13,7 +13,15 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <SplashScreen leaving={splash.leaving} />;
   }
 
+  // 🛡️ Finché la sessione non è stata letta NON si può decidere se l'utente
+  // è loggato: senza questa attesa, su reti lente si finiva al login pur
+  // essendo autenticati. Il sipario è già caduto: mostriamo la sua grafica.
+  if (isLoading) {
+    return <SplashScreen leaving={false} />;
+  }
+
   if (!isAuthenticated) {
+
     // Se non è loggato, via al login conservando la destinazione in `?next=`
     // (il Login la usa per il redirect dopo OAuth/password). Lo stato
     // `location.state` da solo non basta: il Login legge solo `?next`.
