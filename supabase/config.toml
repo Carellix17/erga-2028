@@ -3,3 +3,6 @@ project_id = "xtcifacgiyekudoispdk"
 [functions]
   [functions.auth-email-hook]
     verify_jwt = false
+
+  [functions.process-email-queue]
+    verify_jwt = true
