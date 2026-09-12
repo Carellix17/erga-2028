@@ -33,12 +33,23 @@ export function AppLayout({
   return (
     <div
       className={cn(
-        "flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background bg-dot-grid md:flex-row",
+        "flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background bg-dot-grid",
         fillViewport && "h-dvh min-h-0 overflow-hidden",
       )}
     >
       {!hideChrome && <BottomNav activeTab={activeTab} onTabChange={onTabChange} />}
-      <div className={cn("relative flex min-w-0 max-w-full flex-1 flex-col", fillViewport && "min-h-0")}>
+      <div
+        className={cn(
+          "relative flex min-w-0 max-w-full flex-1 flex-col",
+          // Desktop: la nav non è più una sidebar in-flow ma una pillola
+          // verticale fissa in alto a sinistra + cerchio Core in basso a
+          // sinistra. Si riserba la "zona nav" a sinistra perché il
+          // contenuto non passi mai sotto i due elementi sospesi.
+          // (Con hideChrome il contenuto è full-bleed: nessuna zona nav.)
+          !hideChrome && "md:pl-28",
+          fillViewport && "min-h-0",
+        )}
+      >
         {!hideChrome && <AppHeader title={headerTitle} integratedHome={isHome} />}
         <main
           className={cn(
