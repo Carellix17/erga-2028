@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -144,5 +144,65 @@ describe("Impostazioni → Generale: accesso e sicurezza", () => {
     expect(screen.getByText("vale@example.com")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Cambia password/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Esci dall'account/i })).toBeInTheDocument();
+  });
+});
+
+/**
+ * Gli interruttori di Accessibilità sono passati da <Switch /> (Radix) a
+ * <PremiumToggle />. Il nuovo componente è non controllato (defaultChecked),
+ * quindi questi test fissano tre cose che prima garantiva Radix:
+ * nome accessibile, stato iniziale letto dal profilo salvato, scrittura del
+ * profilo al tocco.
+ */
+describe("Accessibilità — interruttori PremiumToggle", () => {
+  beforeEach(() => {
+    localStorage.removeItem("erga-a11y");
+    document.documentElement.classList.remove("high-contrast", "reduce-motion");
+  });
+
+  it("espone tre interruttori con nome accessibile e stato coerente coi default", () => {
+    renderSettingsPage(<SettingsAccessibility />, "/app/impostazioni/accessibilita");
+
+    expect(screen.getAllByRole("switch")).toHaveLength(3);
+    expect(screen.getByRole("switch", { name: "Alto contrasto" })).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByRole("switch", { name: "Riduci le animazioni" })).toHaveAttribute("aria-checked", "false");
+    // La lettura vocale è attiva di default.
+    expect(screen.getByRole("switch", { name: "Lettura vocale" })).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("accende l'alto contrasto: aria-checked, classe sul documento e salvataggio", () => {
+    renderSettingsPage(<SettingsAccessibility />, "/app/impostazioni/accessibilita");
+
+    const highContrast = screen.getByRole("switch", { name: "Alto contrasto" });
+    fireEvent.click(highContrast);
+
+    expect(highContrast).toHaveAttribute("aria-checked", "true");
+    expect(document.documentElement).toHaveClass("high-contrast");
+    expect(JSON.parse(localStorage.getItem("erga-a11y") ?? "{}").highContrast).toBe(true);
+  });
+
+  it("al tocco successivo spegne di nuovo l'interruttore", () => {
+    renderSettingsPage(<SettingsAccessibility />, "/app/impostazioni/accessibilita");
+
+    const highContrast = screen.getByRole("switch", { name: "Alto contrasto" });
+    fireEvent.click(highContrast);
+    fireEvent.click(highContrast);
+
+    expect(highContrast).toHaveAttribute("aria-checked", "false");
+    expect(document.documentElement).not.toHaveClass("high-contrast");
+    expect(JSON.parse(localStorage.getItem("erga-a11y") ?? "{}").highContrast).toBe(false);
+  });
+
+  it("riparte dal profilo salvato quando la pagina viene riaperta", () => {
+    localStorage.setItem(
+      "erga-a11y",
+      JSON.stringify({ textScale: "normal", highContrast: false, reduceMotion: true, ttsEnabled: false }),
+    );
+
+    renderSettingsPage(<SettingsAccessibility />, "/app/impostazioni/accessibilita");
+
+    expect(screen.getByRole("switch", { name: "Riduci le animazioni" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("switch", { name: "Lettura vocale" })).toHaveAttribute("aria-checked", "false");
+    expect(document.documentElement).toHaveClass("reduce-motion");
   });
 });

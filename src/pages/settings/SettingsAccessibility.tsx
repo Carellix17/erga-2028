@@ -1,6 +1,6 @@
 import { Type, Contrast, Wind, Volume2 } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
-import { Switch } from "@/components/ui/switch";
+import { PremiumToggle } from "@/components/ui/bouncy-toggle";
 import { useAccessibility, type TextScale } from "@/contexts/AccessibilityContext";
 import { cn } from "@/lib/utils";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -69,9 +69,9 @@ export default function SettingsAccessibility() {
         <Row icon={Contrast} title="Alto contrasto" desc="Bordi e testi più marcati per una lettura più netta.">
           <div className="flex items-center justify-between">
             <span className="body-medium text-muted-foreground">Attiva alto contrasto</span>
-            <Switch
-              checked={settings.highContrast}
-              onCheckedChange={(value) => {
+            <PremiumToggle
+              defaultChecked={settings.highContrast}
+              onChange={(value) => {
                 triggerLight();
                 update({ highContrast: value });
               }}
@@ -83,9 +83,9 @@ export default function SettingsAccessibility() {
         <Row icon={Wind} title="Riduci le animazioni" desc="Disattiva transizioni e movimenti, anche se il tuo dispositivo non lo richiede.">
           <div className="flex items-center justify-between">
             <span className="body-medium text-muted-foreground">Riduci il movimento</span>
-            <Switch
-              checked={settings.reduceMotion}
-              onCheckedChange={(value) => {
+            <PremiumToggle
+              defaultChecked={settings.reduceMotion}
+              onChange={(value) => {
                 triggerLight();
                 update({ reduceMotion: value });
               }}
@@ -97,9 +97,9 @@ export default function SettingsAccessibility() {
         <Row icon={Volume2} title="Lettura vocale" desc="Attiva di default la voce nelle interrogazioni e nelle lezioni.">
           <div className="flex items-center justify-between">
             <span className="body-medium text-muted-foreground">Voce attiva all'avvio</span>
-            <Switch
-              checked={settings.ttsEnabled}
-              onCheckedChange={(value) => {
+            <PremiumToggle
+              defaultChecked={settings.ttsEnabled}
+              onChange={(value) => {
                 triggerLight();
                 update({ ttsEnabled: value });
               }}
