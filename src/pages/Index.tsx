@@ -21,6 +21,7 @@ import { Brain, AlertTriangle } from "lucide-react";
 import { useDemoHandoff } from "@/hooks/useDemoHandoff";
 import { useTranslation } from "react-i18next";
 import { SeoHead } from "@/components/SeoHead";
+import { getAppScrollTop, setAppScrollTop } from "@/lib/appScroll";
 
 type Tab = "home" | "studio" | "piano" | "pratica" | "core";
 
@@ -48,18 +49,20 @@ const Index = () => {
   const [lessonLaunch, setLessonLaunch] = useState<{ contextId: string; lessonIndex: number; requestId: number } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // 🧭 P24 — memoria di posizione: ogni stanza riapre DOV'ERA (oggetti persistenti)
+  // 🧭 P24 — memoria di posizione: ogni stanza riapre DOV'ERA (oggetti persistenti).
+  // Su desktop lo scroll vive nella content-card (app shell), su mobile nella
+  // finestra: il helper appScroll sceglie il contenitore giusto.
   const scrollPositions = useRef<Record<Tab, number>>({ home: 0, studio: 0, piano: 0, pratica: 0, core: 0 });
   const changeTab = useCallback(
     (tab: Tab) => {
-      scrollPositions.current[activeTab] = window.scrollY;
+      scrollPositions.current[activeTab] = getAppScrollTop();
       setActiveTab(tab);
     },
     [activeTab]
   );
 
   useEffect(() => {
-    window.scrollTo(0, scrollPositions.current[activeTab]);
+    setAppScrollTop(scrollPositions.current[activeTab]);
   }, [activeTab]);
 
   // 🤖 P7 — il citofono dell'agente: la chat può chiedere di cambiare scheda

@@ -20,6 +20,21 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
+/**
+ * 🏠 App shell — Erga
+ *
+ * MOBILE (<768px): scroll del documento, navbar in basso fissa (pillola).
+ *
+ * DESKTOP/TABLET (≥768px): viewport "sigillata" (h-dvh + overflow-hidden) con
+ * due card sospese e indipendenti, stile Apple Music su macOS/iPadOS:
+ * - a sinistra la sidebar-card (vedi BottomNav): arrotondata, staccata dal
+ *   bordo, ferma mentre il contenuto scorre;
+ * - a destra la content-card: è l'UNICA a scorrere (overflow-y-auto), con
+ *   l'intestazione appiccicosa che resta in cima al suo scroll.
+ * Lo scroll dell'app su desktop avviene quindi dentro #app-scroll-view
+ * (vedi src/lib/appScroll.ts), mai sulla finestra → zero doppie scrollbar.
+ * Con hideChrome il contenuto è full-bleed (lezioni/esercizi a schermo intero).
+ */
 export function AppLayout({
   activeTab,
   onTabChange,
@@ -33,21 +48,24 @@ export function AppLayout({
   return (
     <div
       className={cn(
-        "flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background bg-dot-grid",
+        "flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background bg-dot-grid md:flex-row",
+        // 🖥️ Shell desktop: viewport sigillata con distacco perimetrale (p-3)
+        // e spazio tra le due card (gap-3). Su mobile niente cambia.
+        "md:h-dvh md:min-h-0 md:overflow-hidden md:gap-3 md:p-3",
+        // 📱 Modalità riempi-schermo (Pratica): sigillata anche su mobile
         fillViewport && "h-dvh min-h-0 overflow-hidden",
       )}
     >
       {!hideChrome && <BottomNav activeTab={activeTab} onTabChange={onTabChange} />}
       <div
+        id="app-scroll-view"
         className={cn(
           "relative flex min-w-0 max-w-full flex-1 flex-col",
-          // Desktop: la nav non è più una sidebar in-flow ma una pillola
-          // verticale fissa in alto a sinistra + cerchio Core in basso a
-          // sinistra. Si riserba la "zona nav" a sinistra perché il
-          // contenuto non passi mai sotto i due elementi sospesi.
-          // (Con hideChrome il contenuto è full-bleed: nessuna zona nav.)
-          !hideChrome && "md:pl-28",
-          fillViewport && "min-h-0",
+          // 🖥️ Content-card: superficie dedicata, angoli arrotondati, ombra.
+          // In modalità normale è lei a scorrere (header incluso); in modalità
+          // fillViewport lo scroll è gestito dalle viste interne.
+          "md:h-full md:min-h-0 md:rounded-3xl md:border md:border-border md:bg-background md:shadow-level-2",
+          fillViewport ? "min-h-0 md:overflow-hidden" : "md:overflow-x-hidden md:overflow-y-auto",
         )}
       >
         {!hideChrome && <AppHeader title={headerTitle} integratedHome={isHome} />}

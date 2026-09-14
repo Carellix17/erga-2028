@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
 import { edgeFetch } from "@/lib/edgeFetch";
+import { appScrollToTop } from "@/lib/appScroll";
 import { MODULE_SIZE, moduleIndexOf, moduleRange, moduleCount, moduleTitleFor, lessonsInModule, isModuleFullyMissing, isFirstOfModule, isInGatedModule, isGateLesson } from "@/lib/lessonModules";
 import { currentLanguage } from "@/i18n";
 import {
@@ -588,7 +589,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   const openModule = async (moduleIndex: number) => {
     setActiveModuleIndex(moduleIndex);
     setCourseViewState("branch");
-    window.scrollTo(0, 0); // la barra compatta e il ramo partono dall'alto
+    appScrollToTop(); // la barra compatta e il ramo partono dall'alto
     const modLessons = lessonsInModule(lessons, moduleIndex);
     // Modulo già in fabbrica → schermata "in generazione" (arma l'apertura a fine job).
     if (moduleJob && moduleJob.moduleIndex === moduleIndex) {
