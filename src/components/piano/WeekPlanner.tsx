@@ -227,7 +227,7 @@ export function WeekPlanner({
               <Tooltip key={b.key}>
                 <TooltipTrigger asChild>
                   <div
-                    className="absolute left-0.5 right-0.5 rounded-md text-[9px] px-1.5 overflow-hidden"
+                    className="absolute left-0.5 right-0.5 rounded-md text-[10px] px-1.5 overflow-hidden"
                     style={{ top: blockTop(b.start, gridStart) + 1, height: h, ...routineTint(b.kind, dark) }}
                   >
                     {h >= 16 && <span className="font-medium opacity-70 leading-none">{b.label}</span>}

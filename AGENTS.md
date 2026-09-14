@@ -5,6 +5,8 @@ Tutte le skill utilizzabili sono riunite in `.agents/skills/`; il catalogo è `.
 
 Prima di prendere decisioni di prodotto, leggere `PRODUCT.md`: è la fonte persistente e confermata su utenti, scopo, posizionamento, vincoli ed evidenze disponibili.
 
+Prima di prendere decisioni visive, leggere `DESIGN.md`: è la fonte confermata su colori, caratteri, spaziature, forme, elevazione e movimento (con i gettoni nel frontmatter, i componenti in `.impeccable/design.json`). In caso di dubbio su un dettaglio visivo, `DESIGN.md` ha la precedenza sulle abitudini dell'assistente; `PRODUCT.md` ha la precedenza su `DESIGN.md`.
+
 ## 1. Regole operative del progetto
 
 - Il codice sorgente ufficiale è il ramo `main` del repository GitHub.
@@ -31,7 +33,7 @@ Un effetto visivo non deve mai rendere l'app più difficile da usare, più lenta
 
 ### Frontend Design — sempre per lavori visivi
 
-Leggere `.agents/skills/frontend-design/SKILL.md` quando si creano o modificano pagine, componenti o stili.
+Leggere `.agents/skills/frontend-design/SKILL.md` quando si creano o modificano pagine, componenti o stili, insieme a `DESIGN.md` (sistema visivo confermato: colori, caratteri, spaziature, forme, movimento).
 
 Prima di scrivere codice definire:
 

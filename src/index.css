@@ -577,7 +577,9 @@
     color: hsl(var(--foreground));
   }
   .editorial-focus-title {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    /* P48 — le etichette in maiuscolo spaziato parlano Raleway (la voce
+       delle etichette nel sistema), non Plus Jakarta. */
+    font-family: 'Raleway', ui-monospace, SFMono-Regular, monospace;
     font-size: 0.7rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;

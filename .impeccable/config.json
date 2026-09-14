@@ -1,3 +1,10 @@
 {
-  "buildPath": "code"
+  "buildPath": "code",
+  "detector": {
+    "designSystem": { "enabled": true },
+    "ignoreFiles": [
+      "src/test/**",
+      "src/components/landing/**"
+    ]
+  }
 }

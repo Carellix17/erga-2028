@@ -1,0 +1,820 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-14T17:30:00Z",
+  "title": "Design System: Erga",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Inchiostro caldo",
+        "canonical": "hsl(340 6.67% 8.82%)",
+        "tonalRamp": [
+          "hsl(340 7% 15%)",
+          "hsl(340 7% 26%)",
+          "hsl(340 7% 37%)",
+          "hsl(340 7% 48%)",
+          "hsl(340 7% 60%)",
+          "hsl(340 7% 71%)",
+          "hsl(340 7% 82%)",
+          "hsl(340 7% 93%)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Carta di Erga",
+        "canonical": "hsl(20 10.34% 94.31%)",
+        "tonalRamp": [
+          "hsl(20 10% 15%)",
+          "hsl(20 10% 26%)",
+          "hsl(20 10% 37%)",
+          "hsl(20 10% 48%)",
+          "hsl(20 10% 60%)",
+          "hsl(20 10% 71%)",
+          "hsl(20 10% 82%)",
+          "hsl(20 10% 93%)"
+        ]
+      },
+      "card-light": {
+        "role": "neutral",
+        "displayName": "Superficie di lavoro",
+        "canonical": "hsl(0 0% 100%)",
+        "tonalRamp": [
+          "hsl(0 0% 15%)",
+          "hsl(0 0% 26%)",
+          "hsl(0 0% 37%)",
+          "hsl(0 0% 48%)",
+          "hsl(0 0% 60%)",
+          "hsl(0 0% 71%)",
+          "hsl(0 0% 82%)",
+          "hsl(0 0% 93%)"
+        ]
+      },
+      "night": {
+        "role": "neutral",
+        "displayName": "Antracite profondo",
+        "canonical": "hsl(240 9% 4.3%)",
+        "tonalRamp": [
+          "hsl(240 9% 15%)",
+          "hsl(240 9% 26%)",
+          "hsl(240 9% 37%)",
+          "hsl(240 9% 48%)",
+          "hsl(240 9% 60%)",
+          "hsl(240 9% 71%)",
+          "hsl(240 9% 82%)",
+          "hsl(240 9% 93%)"
+        ]
+      },
+      "card-night": {
+        "role": "neutral",
+        "displayName": "Carbone",
+        "canonical": "hsl(240 9% 8.6%)",
+        "tonalRamp": [
+          "hsl(240 9% 15%)",
+          "hsl(240 9% 26%)",
+          "hsl(240 9% 37%)",
+          "hsl(240 9% 48%)",
+          "hsl(240 9% 60%)",
+          "hsl(240 9% 71%)",
+          "hsl(240 9% 82%)",
+          "hsl(240 9% 93%)"
+        ]
+      },
+      "hero-cream": {
+        "role": "secondary",
+        "displayName": "Avorio di scena",
+        "canonical": "hsl(42 31% 94%)",
+        "tonalRamp": [
+          "hsl(42 31% 15%)",
+          "hsl(42 31% 26%)",
+          "hsl(42 31% 37%)",
+          "hsl(42 31% 48%)",
+          "hsl(42 31% 60%)",
+          "hsl(42 31% 71%)",
+          "hsl(42 31% 82%)",
+          "hsl(42 31% 93%)"
+        ]
+      },
+      "hero-ink": {
+        "role": "primary",
+        "displayName": "Inchiostro su avorio",
+        "canonical": "hsl(240 5% 8%)",
+        "tonalRamp": [
+          "hsl(240 5% 15%)",
+          "hsl(240 5% 26%)",
+          "hsl(240 5% 37%)",
+          "hsl(240 5% 48%)",
+          "hsl(240 5% 60%)",
+          "hsl(240 5% 71%)",
+          "hsl(240 5% 82%)",
+          "hsl(240 5% 93%)"
+        ]
+      },
+      "muted-foreground-light": {
+        "role": "neutral",
+        "displayName": "Secondo testo (giorno)",
+        "canonical": "hsl(0 0% 38%)",
+        "tonalRamp": [
+          "hsl(0 0% 15%)",
+          "hsl(0 0% 26%)",
+          "hsl(0 0% 37%)",
+          "hsl(0 0% 48%)",
+          "hsl(0 0% 60%)",
+          "hsl(0 0% 71%)",
+          "hsl(0 0% 82%)",
+          "hsl(0 0% 93%)"
+        ]
+      },
+      "marketing-red": {
+        "role": "tertiary",
+        "displayName": "Rosso Erga",
+        "canonical": "#E30613",
+        "tonalRamp": [
+          "hsl(356 96% 15%)",
+          "hsl(356 96% 26%)",
+          "hsl(356 96% 37%)",
+          "hsl(356 96% 48%)",
+          "hsl(356 96% 60%)",
+          "hsl(356 96% 71%)",
+          "hsl(356 96% 82%)",
+          "hsl(356 96% 93%)"
+        ]
+      },
+      "marketing-rose": {
+        "role": "tertiary",
+        "displayName": "Rosa Erga",
+        "canonical": "#C4878B",
+        "tonalRamp": [
+          "hsl(356 33% 15%)",
+          "hsl(356 33% 26%)",
+          "hsl(356 33% 37%)",
+          "hsl(356 33% 48%)",
+          "hsl(356 33% 60%)",
+          "hsl(356 33% 71%)",
+          "hsl(356 33% 82%)",
+          "hsl(356 33% 93%)"
+        ]
+      },
+      "marketing-gold": {
+        "role": "tertiary",
+        "displayName": "Oro antico (vetrina)",
+        "canonical": "#C4A574",
+        "tonalRamp": [
+          "hsl(38 38% 15%)",
+          "hsl(38 38% 26%)",
+          "hsl(38 38% 37%)",
+          "hsl(38 38% 48%)",
+          "hsl(38 38% 60%)",
+          "hsl(38 38% 71%)",
+          "hsl(38 38% 82%)",
+          "hsl(38 38% 93%)"
+        ]
+      },
+      "subject-blue": {
+        "role": "secondary",
+        "displayName": "Materia blu (Matematica)",
+        "canonical": "#2563EB",
+        "tonalRamp": [
+          "hsl(221 83% 15%)",
+          "hsl(221 83% 26%)",
+          "hsl(221 83% 37%)",
+          "hsl(221 83% 48%)",
+          "hsl(221 83% 60%)",
+          "hsl(221 83% 71%)",
+          "hsl(221 83% 82%)",
+          "hsl(221 83% 93%)"
+        ]
+      },
+      "subject-red": {
+        "role": "secondary",
+        "displayName": "Materia rossa (Letteratura)",
+        "canonical": "#DC2626",
+        "tonalRamp": [
+          "hsl(0 72% 15%)",
+          "hsl(0 72% 26%)",
+          "hsl(0 72% 37%)",
+          "hsl(0 72% 48%)",
+          "hsl(0 72% 60%)",
+          "hsl(0 72% 71%)",
+          "hsl(0 72% 82%)",
+          "hsl(0 72% 93%)"
+        ]
+      },
+      "subject-yellow": {
+        "role": "secondary",
+        "displayName": "Materia gialla (Motorie)",
+        "canonical": "#EAB308",
+        "tonalRamp": [
+          "hsl(45 93% 15%)",
+          "hsl(45 93% 26%)",
+          "hsl(45 93% 37%)",
+          "hsl(45 93% 48%)",
+          "hsl(45 93% 60%)",
+          "hsl(45 93% 71%)",
+          "hsl(45 93% 82%)",
+          "hsl(45 93% 93%)"
+        ]
+      },
+      "subject-emerald": {
+        "role": "secondary",
+        "displayName": "Materia smeraldo (Scienze)",
+        "canonical": "#059669",
+        "tonalRamp": [
+          "hsl(160 94% 15%)",
+          "hsl(160 94% 26%)",
+          "hsl(160 94% 37%)",
+          "hsl(160 94% 48%)",
+          "hsl(160 94% 60%)",
+          "hsl(160 94% 71%)",
+          "hsl(160 94% 82%)",
+          "hsl(160 94% 93%)"
+        ]
+      },
+      "subject-amber": {
+        "role": "secondary",
+        "displayName": "Materia ambra (Storia)",
+        "canonical": "#D97706",
+        "tonalRamp": [
+          "hsl(32 95% 15%)",
+          "hsl(32 95% 26%)",
+          "hsl(32 95% 37%)",
+          "hsl(32 95% 48%)",
+          "hsl(32 95% 60%)",
+          "hsl(32 95% 71%)",
+          "hsl(32 95% 82%)",
+          "hsl(32 95% 93%)"
+        ]
+      },
+      "subject-lime": {
+        "role": "secondary",
+        "displayName": "Materia lime (Geografia)",
+        "canonical": "#65A30D",
+        "tonalRamp": [
+          "hsl(84 85% 15%)",
+          "hsl(84 85% 26%)",
+          "hsl(84 85% 37%)",
+          "hsl(84 85% 48%)",
+          "hsl(84 85% 60%)",
+          "hsl(84 85% 71%)",
+          "hsl(84 85% 82%)",
+          "hsl(84 85% 93%)"
+        ]
+      },
+      "subject-cyan": {
+        "role": "secondary",
+        "displayName": "Materia ciano (Fisica)",
+        "canonical": "#0891B2",
+        "tonalRamp": [
+          "hsl(192 91% 15%)",
+          "hsl(192 91% 26%)",
+          "hsl(192 91% 37%)",
+          "hsl(192 91% 48%)",
+          "hsl(192 91% 60%)",
+          "hsl(192 91% 71%)",
+          "hsl(192 91% 82%)",
+          "hsl(192 91% 93%)"
+        ]
+      },
+      "subject-violet": {
+        "role": "secondary",
+        "displayName": "Materia viola (Filosofia)",
+        "canonical": "#7C3AED",
+        "tonalRamp": [
+          "hsl(262 83% 15%)",
+          "hsl(262 83% 26%)",
+          "hsl(262 83% 37%)",
+          "hsl(262 83% 48%)",
+          "hsl(262 83% 60%)",
+          "hsl(262 83% 71%)",
+          "hsl(262 83% 82%)",
+          "hsl(262 83% 93%)"
+        ]
+      },
+      "subject-orange": {
+        "role": "secondary",
+        "displayName": "Materia arancio (Lingue)",
+        "canonical": "#EA580C",
+        "tonalRamp": [
+          "hsl(21 90% 15%)",
+          "hsl(21 90% 26%)",
+          "hsl(21 90% 37%)",
+          "hsl(21 90% 48%)",
+          "hsl(21 90% 60%)",
+          "hsl(21 90% 71%)",
+          "hsl(21 90% 82%)",
+          "hsl(21 90% 93%)"
+        ]
+      },
+      "subject-magenta": {
+        "role": "secondary",
+        "displayName": "Materia magenta (Arte)",
+        "canonical": "#C026D3",
+        "tonalRamp": [
+          "hsl(293 73% 15%)",
+          "hsl(293 73% 26%)",
+          "hsl(293 73% 37%)",
+          "hsl(293 73% 48%)",
+          "hsl(293 73% 60%)",
+          "hsl(293 73% 71%)",
+          "hsl(293 73% 82%)",
+          "hsl(293 73% 93%)"
+        ]
+      },
+      "subject-neutral": {
+        "role": "neutral",
+        "displayName": "Materia neutra (generale)",
+        "canonical": "#94A3B8",
+        "tonalRamp": [
+          "hsl(215 20% 15%)",
+          "hsl(215 20% 26%)",
+          "hsl(215 20% 37%)",
+          "hsl(215 20% 48%)",
+          "hsl(215 20% 60%)",
+          "hsl(215 20% 71%)",
+          "hsl(215 20% 82%)",
+          "hsl(215 20% 93%)"
+        ]
+      },
+      "routine-sleep": {
+        "role": "secondary",
+        "displayName": "Routine: sonno",
+        "canonical": "#4F46E5",
+        "tonalRamp": [
+          "hsl(243 75% 15%)",
+          "hsl(243 75% 26%)",
+          "hsl(243 75% 37%)",
+          "hsl(243 75% 48%)",
+          "hsl(243 75% 60%)",
+          "hsl(243 75% 71%)",
+          "hsl(243 75% 82%)",
+          "hsl(243 75% 93%)"
+        ]
+      },
+      "routine-school": {
+        "role": "secondary",
+        "displayName": "Routine: scuola",
+        "canonical": "#64748B",
+        "tonalRamp": [
+          "hsl(215 19% 15%)",
+          "hsl(215 19% 26%)",
+          "hsl(215 19% 37%)",
+          "hsl(215 19% 48%)",
+          "hsl(215 19% 60%)",
+          "hsl(215 19% 71%)",
+          "hsl(215 19% 82%)",
+          "hsl(215 19% 93%)"
+        ]
+      },
+      "routine-meal": {
+        "role": "secondary",
+        "displayName": "Routine: pasti",
+        "canonical": "#EF4444",
+        "tonalRamp": [
+          "hsl(0 84% 15%)",
+          "hsl(0 84% 26%)",
+          "hsl(0 84% 37%)",
+          "hsl(0 84% 48%)",
+          "hsl(0 84% 60%)",
+          "hsl(0 84% 71%)",
+          "hsl(0 84% 82%)",
+          "hsl(0 84% 93%)"
+        ]
+      },
+      "routine-other": {
+        "role": "secondary",
+        "displayName": "Routine: altro",
+        "canonical": "#0D9488",
+        "tonalRamp": [
+          "hsl(173 80% 15%)",
+          "hsl(173 80% 26%)",
+          "hsl(173 80% 37%)",
+          "hsl(173 80% 48%)",
+          "hsl(173 80% 60%)",
+          "hsl(173 80% 71%)",
+          "hsl(173 80% 82%)",
+          "hsl(173 80% 93%)"
+        ]
+      },
+      "routine-mono-text": {
+        "role": "neutral",
+        "displayName": "Testo dei gettoni routine (Core)",
+        "canonical": "hsl(222 0% 22%)",
+        "tonalRamp": [
+          "hsl(222 0% 15%)",
+          "hsl(222 0% 26%)",
+          "hsl(222 0% 37%)",
+          "hsl(222 0% 48%)",
+          "hsl(222 0% 60%)",
+          "hsl(222 0% 71%)",
+          "hsl(222 0% 82%)",
+          "hsl(222 0% 93%)"
+        ]
+      },
+      "routine-mono-dot": {
+        "role": "neutral",
+        "displayName": "Puntino routine (Core)",
+        "canonical": "hsl(214 0% 64%)",
+        "tonalRamp": [
+          "hsl(214 0% 15%)",
+          "hsl(214 0% 26%)",
+          "hsl(214 0% 37%)",
+          "hsl(214 0% 48%)",
+          "hsl(214 0% 60%)",
+          "hsl(214 0% 71%)",
+          "hsl(214 0% 82%)",
+          "hsl(214 0% 93%)"
+        ]
+      },
+      "routine-mono-border": {
+        "role": "neutral",
+        "displayName": "Filetto routine (Core)",
+        "canonical": "hsl(38 0% 86% / 0.9)",
+        "tonalRamp": [
+          "hsl(38 0% 15%)",
+          "hsl(38 0% 26%)",
+          "hsl(38 0% 37%)",
+          "hsl(38 0% 48%)",
+          "hsl(38 0% 60%)",
+          "hsl(38 0% 71%)",
+          "hsl(38 0% 82%)",
+          "hsl(38 0% 93%)"
+        ]
+      },
+      "pure-black": {
+        "role": "neutral",
+        "displayName": "Nero pieno (utility)",
+        "canonical": "#000",
+        "tonalRamp": [
+          "hsl(0 0% 15%)",
+          "hsl(0 0% 26%)",
+          "hsl(0 0% 37%)",
+          "hsl(0 0% 48%)",
+          "hsl(0 0% 60%)",
+          "hsl(0 0% 71%)",
+          "hsl(0 0% 82%)",
+          "hsl(0 0% 93%)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Titolo di pagina; una sola voce per schermata."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Titoli di sezione e di card."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Righe di lista e intestazioni compatte."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Testo di lettura: lezioni, chat, descrizioni."
+      },
+      "label": {
+        "displayName": "Label (Raleway)",
+        "purpose": "Micro-titoli in maiuscolo spaziato: sezioni, stati, badge."
+      },
+      "focal": {
+        "displayName": "Voce focale (Radja)",
+        "purpose": "Titolo del percorso attivo e macro-metriche. Una per schermata."
+      },
+      "welcome": {
+        "displayName": "Saluto (Zalando Sans Expanded)",
+        "purpose": "Solo il saluto della Home."
+      },
+      "headline-medium": {
+        "displayName": "Headline medium",
+        "purpose": "Titoli di pannello e di sezione."
+      },
+      "title-large": {
+        "displayName": "Title large",
+        "purpose": "Titoli di card e righe principali."
+      },
+      "title-small": {
+        "displayName": "Title small",
+        "purpose": "Etichette di gruppo in grassetto."
+      },
+      "body-small": {
+        "displayName": "Body small",
+        "purpose": "Testo secondario ma di lettura: mai sotto i 15 px."
+      },
+      "dense-13": {
+        "displayName": "Piccolo stampato (dense)",
+        "purpose": "Metadati in superfici dense: calendario, chat, badge. Mai per il testo di lettura."
+      },
+      "label-large": {
+        "displayName": "Label large (Raleway)",
+        "purpose": "Etichette di sezione."
+      },
+      "label-small": {
+        "displayName": "Label small (Raleway)",
+        "purpose": "Micro-etichette della griglia del calendario."
+      },
+      "metric": {
+        "displayName": "Macro-metrica",
+        "purpose": "Numeri dei riepiloghi (minuti, sessioni); cifre tabulari."
+      },
+      "metric-lg": {
+        "displayName": "Macro-metrica large",
+        "purpose": "Come metric, da tablet in su."
+      },
+      "focal-large": {
+        "displayName": "Voce focale large (Radja)",
+        "purpose": "Titolo delle schermate di accesso su schermi larghi."
+      }
+    },
+    "shadows": [
+      {
+        "name": "level-1",
+        "value": "var(--shadow-level-1)",
+        "purpose": "Righe, chip, controlli posati sulla pagina."
+      },
+      {
+        "name": "level-2",
+        "value": "var(--shadow-level-2)",
+        "purpose": "Card di lavoro e pillole dell'app."
+      },
+      {
+        "name": "level-3",
+        "value": "var(--shadow-level-3)",
+        "purpose": "Fogli, dialoghi, menu sospesi."
+      },
+      {
+        "name": "tactile",
+        "value": "var(--shadow-tattile)",
+        "purpose": "Superfici della Home: profilo leggero, mai alone."
+      },
+      {
+        "name": "card-active",
+        "value": "var(--shadow-card-active)",
+        "purpose": "La card in primo piano (corso attivo)."
+      },
+      {
+        "name": "hero",
+        "value": "var(--shadow-hero-card)",
+        "purpose": "L'unica ombra profonda: la card del percorso."
+      },
+      {
+        "name": "press-inset",
+        "value": "inset 0 2px 10px hsl(0 0% 0% / 0.16)",
+        "purpose": "Affondo dei comandi tattili alla pressione (classe .press)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out (curva di casa)",
+        "value": "var(--ease-out)",
+        "purpose": "Ingressi, uscite e cambi di stato. Nessun superamento del bersaglio."
+      },
+      {
+        "name": "micro",
+        "value": "var(--motion-micro) /* 120ms */",
+        "purpose": "Risposta alla pressione."
+      },
+      {
+        "name": "standard",
+        "value": "var(--motion-standard) /* 180ms */",
+        "purpose": "Cambi di stato, hover, colori."
+      },
+      {
+        "name": "emphasized",
+        "value": "var(--motion-emphasized) /* 240ms */",
+        "purpose": "Uscite e transizioni di contenuto."
+      },
+      {
+        "name": "entrance",
+        "value": "var(--motion-entrance) /* 300ms */",
+        "purpose": "Ingresso dei contenuti: la durata massima ammessa."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      },
+      {
+        "name": "2xl",
+        "value": "1440px (contenitore 1400px)"
+      }
+    ],
+    "radii": [
+      {
+        "name": "xs",
+        "value": "0.5rem"
+      },
+      {
+        "name": "sm",
+        "value": "0.625rem"
+      },
+      {
+        "name": "md",
+        "value": "0.75rem"
+      },
+      {
+        "name": "lg",
+        "value": "1rem"
+      },
+      {
+        "name": "xl",
+        "value": "1.25rem"
+      },
+      {
+        "name": "card",
+        "value": "1.5rem"
+      },
+      {
+        "name": "button",
+        "value": "1rem"
+      },
+      {
+        "name": "sheet",
+        "value": "1.75rem"
+      },
+      {
+        "name": "pill",
+        "value": "9999px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Pulsante primario",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "L'azione principale della schermata: inchiostro pieno, testo carta, risposta immediata alla pressione.",
+      "html": "<button class=\"ds-btn-primary\">Riprendi lezione</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:10px 20px;background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-family:Montserrat,system-ui,sans-serif;font-size:.875rem;font-weight:600;letter-spacing:-.01em;border:0;border-radius:var(--radius-button);cursor:pointer;transition:transform 120ms var(--ease-out),background-color 180ms ease;}.ds-btn-primary:hover{background:hsl(var(--primary) / .9);}.ds-btn-primary:active{transform:scale(.98);}.ds-btn-primary:focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring));}"
+    },
+    {
+      "name": "Pulsante pillola",
+      "kind": "button",
+      "refersTo": "button-pill",
+      "description": "Azione di ripresa a capsula piena: la voce più forte dell'app, una per schermata.",
+      "html": "<button class=\"ds-btn-pill\">Riprendi lezione</button>",
+      "css": ".ds-btn-pill{display:inline-flex;align-items:center;justify-content:center;height:48px;padding:12px 24px;background:hsl(var(--inverse-surface));color:hsl(var(--inverse-on-surface));font-family:Montserrat,system-ui,sans-serif;font-size:.875rem;font-weight:600;border:0;border-radius:var(--radius-pill);cursor:pointer;transition:transform 120ms var(--ease-out),opacity 180ms ease;}.ds-btn-pill:hover{opacity:.92;}.ds-btn-pill:active{transform:scale(.98);}.ds-btn-pill:focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring));}"
+    },
+    {
+      "name": "Pulsante contorno",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Azione secondaria: superficie della card con un filetto di 1px.",
+      "html": "<button class=\"ds-btn-outline\">Carica materiale</button>",
+      "css": ".ds-btn-outline{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:10px 20px;background:hsl(var(--card));color:hsl(var(--foreground));font-family:Montserrat,system-ui,sans-serif;font-size:.875rem;font-weight:600;border:1px solid hsl(var(--border));border-radius:var(--radius-button);cursor:pointer;transition:background-color 180ms ease,transform 120ms var(--ease-out);}.ds-btn-outline:hover{background:hsl(var(--surface-container-high));}.ds-btn-outline:active{transform:scale(.98);}.ds-btn-outline:focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring));}"
+    },
+    {
+      "name": "Card di lavoro",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "La superficie con cui si studia: 24px di angolo, filetto sottile, ombra di contatto.",
+      "html": "<article class=\"ds-card\"><h3>Le derivate</h3><p>Ripasso guidato in 12 minuti, con esercizi mirati sui punti deboli.</p></article>",
+      "css": ".ds-card{background:hsl(var(--card));color:hsl(var(--card-foreground));border:1px solid hsl(var(--border));border-radius:var(--radius-card);padding:24px;box-shadow:var(--shadow-level-1);font-family:Montserrat,system-ui,sans-serif;}.ds-card h3{margin:0 0 8px;font-size:1.25rem;font-weight:600;line-height:1.25;letter-spacing:-.01em;}.ds-card p{margin:0;font-size:1rem;line-height:1.6;letter-spacing:-.01em;color:hsl(var(--muted-foreground));}"
+    },
+    {
+      "name": "Card focale (avorio)",
+      "kind": "card",
+      "refersTo": "card-hero",
+      "description": "Una sola per schermata: la superficie chiara su cui agire adesso. Di notte è l'unico elemento avorio della pagina.",
+      "html": "<article class=\"ds-card-hero\"><p class=\"ds-eyebrow\">Percorso attivo</p><h3>La Rivoluzione industriale</h3><button class=\"ds-cta\">Riprendi lezione</button></article>",
+      "css": ".ds-card-hero{background:#F4F1EA;color:#121214;border:1px solid rgba(0,0,0,.06);border-radius:var(--radius-card);padding:20px;box-shadow:var(--shadow-hero-card);font-family:Montserrat,system-ui,sans-serif;}.ds-card-hero .ds-eyebrow{margin:0 0 4px;font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4A4A4F;}.ds-card-hero h3{margin:0 0 16px;font-family:Radja,Zalando Sans Expanded,Montserrat,system-ui,sans-serif;font-size:1.875rem;font-weight:400;line-height:1.05;}.ds-card-hero .ds-cta{height:48px;padding:12px 24px;background:#121214;color:#F4F1EA;font-size:.875rem;font-weight:600;border:0;border-radius:var(--radius-pill);cursor:pointer;transition:transform 120ms var(--ease-out),opacity 180ms ease;}.ds-card-hero .ds-cta:hover{opacity:.92;}.ds-card-hero .ds-cta:active{transform:scale(.98);}"
+    },
+    {
+      "name": "Campo di testo",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Sempre con etichetta visibile, mai col solo segnaposto. Focus con anello di 2px.",
+      "html": "<label class=\"ds-field\"><span>Nome del percorso</span><input type=\"text\" placeholder=\"Es. Storia — capitolo 4\" /></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;font-family:Montserrat,system-ui,sans-serif;}.ds-field span{font-size:.875rem;font-weight:600;letter-spacing:-.01em;color:hsl(var(--foreground));}.ds-field input{height:44px;padding:10px 16px;background:hsl(var(--input));color:hsl(var(--foreground));font-size:1rem;border:1px solid hsl(var(--border));border-radius:var(--radius-button);transition:border-color 180ms ease,box-shadow 180ms ease;}.ds-field input::placeholder{color:hsl(var(--muted-foreground));}.ds-field input:focus-visible{outline:none;border-color:hsl(var(--ring) / .5);box-shadow:0 0 0 2px hsl(var(--ring) / .2);}"
+    },
+    {
+      "name": "Navigazione (pillola telefono / sidebar-card desktop)",
+      "kind": "nav",
+      "refersTo": "nav-pill",
+      "description": "Il guscio dell'app: pillola sospesa in basso sul telefono (con il cerchio del Core staccato accanto) e sidebar-card sospesa su desktop, con brand in cima, voci con icona ed etichetta e voce attiva in inchiostro pieno. Stesse voci, stesso ordine, stessa materia.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-tab is-active\">Home</button><button class=\"ds-tab\">Piano</button><button class=\"ds-tab\">Studio</button></nav>",
+      "css": ".ds-nav{display:inline-flex;align-items:center;gap:4px;padding:8px;background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--radius-pill);box-shadow:var(--shadow-level-2);font-family:Montserrat,system-ui,sans-serif;}.ds-tab{height:44px;min-width:84px;padding:0 16px;background:transparent;color:hsl(var(--muted-foreground));font-size:.875rem;font-weight:600;border:0;border-radius:var(--radius-pill);cursor:pointer;transition:background-color 180ms ease,color 180ms ease;}.ds-tab:hover{background:hsl(var(--surface-container-high));}.ds-tab.is-active{background:hsl(var(--primary));color:hsl(var(--primary-foreground));}.ds-tab:focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring));}"
+    },
+    {
+      "name": "Chip materia",
+      "kind": "chip",
+      "refersTo": "subject-chip",
+      "description": "Blocco del calendario: fondo tinto al 18%, contorno di 1px, puntino pieno per il riconoscimento. Solo Piano/Core.",
+      "html": "<div class=\"ds-chip\"><span class=\"ds-dot\"></span>Storia — Verifica</div>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(217 119 6 / .18);color:#0F172A;font-family:Montserrat,system-ui,sans-serif;font-size:.75rem;font-weight:600;border:1px solid rgba(217 119 6 / .42);border-radius:var(--radius-md);}.ds-dot{width:6px;height:6px;border-radius:9999px;background:#D97706;}"
+    },
+    {
+      "name": "Barra di avanzamento",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Cresce con una trasformazione (non cambiando larghezza): fluida anche sui telefoni meno potenti.",
+      "html": "<div class=\"ds-track\"><div class=\"ds-fill\" style=\"--m3-progress:.62\"></div></div>",
+      "css": ".ds-track{height:4px;background:hsl(var(--surface-container-highest));border-radius:9999px;overflow:hidden;}.ds-fill{height:100%;width:100%;background:var(--subject-accent);border-radius:9999px;transform-origin:left center;transform:scaleX(var(--m3-progress,0));transition:transform 700ms var(--ease-out);}"
+    }
+  ],
+  "narrative": {
+    "northStar": "La stanza di studio",
+    "overview": "Erga e' una stanza di studio ben ordinata: carta calda, inchiostro scuro, silenzio attorno al contenuto. Non e' una vetrina e non e' un cruscotto: e' il posto dove lo studente apre i suoi materiali e capisce da dove ricominciare. La struttura viene prima dell'espressione: poche decorazioni, superfici opache, nessun effetto che competa con il testo. La stanza ha due luci: il giorno e' off-white caldo con card bianche e inchiostro quasi nero, la notte e' antracite profondo con card carbone e testo panna. In entrambe le luci l'app resta monocroma: il colore non decora, informa. Il carattere confermato e' energico e grintoso, e si esprime con il contrasto, con i colori delle materie dove aiutano a riconoscere, e con un guscio coerente (pillola sul telefono, sidebar-card su desktop) e con comandi che rispondono alla pressione in meno di 150 ms.",
+    "keyCharacteristics": [
+      "Monocroma di giorno e di notte, con un solo accento dinamico per materia.",
+      "Superfici opache e stratificate; il vetro e' riservato al guscio (navigazione).",
+      "Angoli generosi: card a 24 px, comandi a 16 px, badge e pillole a capsula.",
+      "Tipografia editoriale: titoli stretti e decisi, etichette in maiuscolo spaziato.",
+      "Movimento breve e naturale: una sola curva di casa, nessun rimbalzo.",
+      "Testo minimo 16 px sul telefono, controlli almeno 44 x 44 px."
+    ],
+    "rules": [
+      {
+        "name": "La Regola del Palco",
+        "body": "Il fondo pagina non compete mai con il contenuto: la Home e' dichiarata no-ambient e le superfici che scorrono non hanno sfocatura. L'unica materia translucida ammessa e' quella del guscio (pillola di navigazione, schermata di avvio).",
+        "section": "Overview"
+      },
+      {
+        "name": "La Regola del Mono",
+        "body": "L'app parla una sola voce neutra. Il colore entra solo quando porta informazione: la materia nel Piano/Core, l'esito di un esercizio, il rosso di marca in vetrina.",
+        "section": "Overview"
+      },
+      {
+        "name": "La Regola del Colore che Informa",
+        "body": "Prima di aggiungere un colore, chiedersi cosa comunica. Se la risposta e' rende piu' bello, non si aggiunge.",
+        "section": "Colors"
+      },
+      {
+        "name": "La Regola dell'Avorio Unico",
+        "body": "La superficie avorio e' una risorsa scarsa: una per schermata, sull'azione focale. Due avori nella stessa vista annullano la gerarchia.",
+        "section": "Colors"
+      },
+      {
+        "name": "La Regola della Voce Unica per Livello",
+        "body": "Un solo carattere per livello gerarchico: se il titolo di una schermata usa Radja, i titoli di sezione restano Montserrat.",
+        "section": "Typography"
+      },
+      {
+        "name": "La Regola della Scala Rispettata",
+        "body": "La dimensione del testo segue la preferenza di accessibilita' dello studente (--text-scale: 1 / 1.125 / 1.28). I layout usano unita' relative.",
+        "section": "Typography"
+      },
+      {
+        "name": "La Regola del Telefono Primo",
+        "body": "Ogni schermata si progetta a 375 px e si verifica a 375 / 768 / 1024 / 1440 px prima di considerarla finita.",
+        "section": "Layout"
+      },
+      {
+        "name": "La Regola della Navigazione Unica",
+        "body": "Il guscio e' uno solo: stesse voci, stesso ordine, stessa materia su telefono e computer (pillola in basso, sidebar-card su desktop). Se una schermata ha bisogno di un menu tutto suo, il problema e' la schermata, non il menu.",
+        "section": "Layout"
+      },
+      {
+        "name": "La Regola dell'Elevazione Dichiarata Una Volta",
+        "body": "Una superficie sceglie: o un filetto, o un'ombra. Filetto e ombra larga insieme producono la card fantasma.",
+        "section": "Elevation & Depth"
+      },
+      {
+        "name": "La Regola del Filo",
+        "body": "Gli accenti colorati sono filetti da 1 px o puntini pieni, mai barre spesse su un lato della card.",
+        "section": "Shapes"
+      },
+      {
+        "name": "La Regola della Pressione Scontata",
+        "body": "Ogni comando mostra di essere stato premuto entro 150 ms (colore o scala), senza attese, timer o animazioni di ingresso.",
+        "section": "Components"
+      },
+      {
+        "name": "La Regola dei 44 px",
+        "body": "Nessun controllo toccabile scende sotto 44 x 44 px, ne' visivamente ne' come area sensibile.",
+        "section": "Components"
+      }
+    ],
+    "dos": [
+      "Usa i token del tema: si adattano da soli a giorno, notte, alto contrasto e scala del testo.",
+      "Fai entrare i contenuti con movimenti brevi (240-300 ms) e una sola curva naturale che rallenta e si ferma.",
+      "Rispetta prefers-reduced-motion, prefers-contrast e prefers-reduced-transparency.",
+      "Lascia un anello di focus visibile su tutto cio' che si raggiunge da tastiera.",
+      "Usa icone Lucide o SVG coerenti (16-24 px, stesso spessore), mai emoji.",
+      "Dichiara i dati dimostrativi come tali: Erga non inventa risultati ne' testimonianze.",
+      "Progetta gli stati vuoti, di caricamento e di errore con la stessa cura degli altri."
+    ],
+    "donts": [
+      "Niente barre colorate spesse su un lato delle card o dei blocchi.",
+      "Niente rimbalzi, molle elastiche o curve che superano il bersaglio.",
+      "Niente ombre nere pesanti, bagliori o sfocatura sulle superfici che scorrono.",
+      "Niente gradienti decorativi tra le card della Home, ne' testo con gradiente.",
+      "Niente animazioni che spostano larghezza, altezza o margini: solo trasformazione e opacita'.",
+      "Niente colore senza significato, ne' due superfici focali nella stessa schermata.",
+      "Niente testo sotto i 16 px sul telefono, e niente controlli sotto i 44 px.",
+      "Niente emoji come icone, ne' dati, prezzi o risultati inventati."
+    ]
+  }
+}
