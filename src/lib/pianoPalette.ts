@@ -3,14 +3,22 @@
  *
  * Il prodotto chiede colori distintivi per materia e routine nella vista
  * "Piano"/"Core" (riconoscimento a colpo d'occhio), con pattern dark
- * "tinted-surface": fondo al ~18% del colore, barra sinistra piena e testo
- * chiaro ad alto contrasto (WCAG AA su sfondo scuro).
+ * "tinted-surface": fondo al ~18% del colore e testo chiaro ad alto
+ * contrasto (WCAG AA su sfondo scuro).
  * Solo per il Piano: il resto dell'app resta monocroma.
  */
 
 export interface TintStyle {
   backgroundColor: string;
-  borderLeft: string;
+  /**
+   * P48 — contorno sottile (1px) nel colore della materia. Prima era una
+   * barra piena da 3-4 px sul bordo sinistro dei blocchi: il "trucco" più
+   * riconoscibile delle interfacce fatte dall'AI generica, e per giunta
+   * mangiava spazio utile nelle colonne strette del calendario.
+   * Il colore resta leggibile grazie al fondo tinto; per il puntino pieno
+   * accanto ai titoli (card del Piano) si usa `dot`.
+   */
+  border: string;
   color: string;
   /** Colore pieno per pallini/legenda. */
   dot: string;
@@ -90,9 +98,12 @@ export function tintStyle(hex: string, opts?: { alpha?: number; borderless?: boo
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   const bg = `rgba(${r} ${g} ${b} / ${alpha})`;
+  // P48 — il contorno tiene la tinta della materia ma resta un filo:
+  // più visibile al buio (dove serve staccare dalla griglia), discreto di giorno.
+  const edge = opts?.dark ? 0.55 : 0.42;
   return {
     backgroundColor: bg,
-    borderLeft: opts?.borderless ? "1px solid rgba(248 250 252 / 0.14)" : `4px solid ${hex}`,
+    border: opts?.borderless ? "1px solid rgba(148 163 184 / 0.28)" : `1px solid rgba(${r} ${g} ${b} / ${edge})`,
     // Su fondo chiaro il testo chiaro sparisce: usiamo testo scuro AA.
     color: opts?.dark ? TEXT_LIGHT : TEXT_DARK,
     dot: hex,

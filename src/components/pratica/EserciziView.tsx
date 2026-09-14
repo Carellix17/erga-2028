@@ -631,7 +631,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
       return (
         <div className="flex flex-col h-full px-4 py-6 space-y-6 overflow-y-auto">
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center animate-bounce-in shadow-level-2">
+            <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center animate-settle-in shadow-level-2">
               <Dumbbell className="w-8 h-8" />
             </div>
             <h2 className="font-display text-xl font-bold text-foreground">Esercizi Mirati</h2>

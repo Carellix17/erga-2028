@@ -27,7 +27,8 @@ describe("PlanItem", () => {
     expect(dot).toBeTruthy();
     expect(dot?.className).toContain("rounded-full");
     expect(dot?.getAttribute("aria-hidden")).toBe("true");
-    expect(container.firstElementChild?.className).not.toContain("border-l-4");
+    // La guardia copre sia 3px sia 4px (prima si fermava al solo 4).
+    expect(container.firstElementChild?.className).not.toMatch(/border-l-[34]\b/);
     expect(container.firstElementChild?.className).not.toContain(col.border);
   });
 

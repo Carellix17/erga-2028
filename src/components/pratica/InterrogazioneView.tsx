@@ -400,7 +400,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
    return (
      <div className="flex flex-col h-full px-4 sm:px-6 py-6 space-y-6 overflow-y-auto">
        <div className="text-center space-y-3">
-         <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-bounce-in">
+         <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-settle-in">
            <Mic className="w-8 h-8" />
          </div>
          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Interrogazione</h2>
@@ -435,7 +435,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  return (
  <div className="flex flex-col h-full px-4 sm:px-6 py-6 space-y-6 overflow-y-auto">
  <div className="text-center space-y-3">
- <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-bounce-in">
+ <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-settle-in">
  <Mic className="w-8 h-8" />
  </div>
  <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Interrogazione</h2>
@@ -526,7 +526,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  </button>
 
  <div className="text-center space-y-3">
- <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-bounce-in">
+ <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-settle-in">
  <MessageSquare className="w-8 h-8" />
  </div>
  <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Configura sessione</h2>
@@ -578,7 +578,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  <div className="flex flex-col h-full">
  <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-6 space-y-5">
  <div className="text-center space-y-3">
- <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-bounce-in">
+ <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-settle-in">
  <CheckCircle2 className="w-8 h-8" />
  </div>
  <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Report finale</h2>

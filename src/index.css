@@ -278,6 +278,13 @@
     --motion-standard: 180ms;
     --motion-emphasized: 240ms;
     --motion-entrance: 300ms;
+
+    /*  P48 — LE CURVE: una sola famiglia di accellerazioni naturali.
+       Gli oggetti veri rallentano mentre arrivano, non rimbalzano:
+       --ease-out è la curva di casa per ingressi, uscite e cambi di stato.
+       Niente curve che superano il punto d'arrivo (cubic-bezier con
+       valori sopra 1): il movimento si ferma dove deve. */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
     --radius: 1rem;
 
     /* ─── Elevazione — sussurri, mai palchi ─── */
@@ -960,9 +967,11 @@
     animation: m3-fade-in var(--motion-emphasized) cubic-bezier(0.05, 0.7, 0.1, 1) both;
     will-change: opacity;
   }
-  .animate-bounce-in {
-    /* 🎨 P9a — riaccesa: entra con un piccolo sobbalzo elegante (fine quiz!) */
-    animation: erga-bounce-in 320ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  .animate-settle-in {
+    /* ⚙️ P48 — sostituisce la vecchia entrata "a sobbalzo" delle icone
+       tonde (che superava il punto d'arrivo, scale 1.05). Ora è
+       un'assestatura morbida: arriva e si ferma, 280ms. */
+    animation: erga-settle-in 280ms var(--ease-out) both;
     will-change: transform, opacity;
   }
   .animate-pulse-soft {
@@ -970,10 +979,28 @@
     animation: erga-pulse-soft 2.1s ease-in-out infinite;
     will-change: transform, opacity;
   }
-  @keyframes erga-bounce-in {
-    0% { opacity: 0; transform: scale(0.7); }
-    70% { opacity: 1; transform: scale(1.05); }
+  @keyframes erga-settle-in {
+    0% { opacity: 0; transform: scale(0.94) translateY(6px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  /* ⚙️ P48 — l'apertura della pillola di avvio (SplashScreen) puntava a
+     "erga-pop": quei fotogrammi non esistevano in nessun foglio di stile,
+     quindi l'animazione non partiva mai. Ora ci sono: la pillola entra
+     crescendo di un soffio, senza superare la sua dimensione finale. */
+  @keyframes erga-pop {
+    0% { opacity: 0; transform: scale(0.92); }
     100% { opacity: 1; transform: scale(1); }
+  }
+  /* ⚙️ P48 — il lampo dell'interruttore PremiumToggle: era animate-ping
+     (un impulso INFINITO che continuava a pulsare a interruttore acceso).
+     Ora è un solo impulso, che parte quando cambi stato. */
+  .animate-ripple-once {
+    animation: erga-ripple 460ms var(--ease-out) 1 both;
+    will-change: transform, opacity;
+  }
+  @keyframes erga-ripple {
+    0% { opacity: 0.35; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.9); }
   }
   @keyframes erga-pulse-soft {
     0%, 100% { opacity: 1; transform: scale(1); }
@@ -1018,8 +1045,16 @@
   .m3-progress-indicator {
     background-color: var(--subject-accent);            /* progressi = accento materia (--subject-accent) */
     border-radius: var(--radius-full);
-    transition: width 700ms cubic-bezier(0.05, 0.7, 0.1, 1);
-    will-change: width;
+    /* ⚙️ P48 — prima cresceva cambiando la LARGHEZZA (ogni fotogramma
+       ricalcolava la pagina). Ora la barra è sempre larga quanto la
+       pista e si "srotola" con una trasformazione: stessa animazione
+       a occhio, molto più fluida sul telefono.
+       La quota 0-1 arriva dalla variabile --m3-progress. */
+    width: 100%;
+    transform-origin: left center;
+    transform: scaleX(var(--m3-progress, 0));
+    transition: transform 700ms var(--ease-out);
+    will-change: transform;
   }
 
   /* ═══════ M3 DIVIDER ═══════ */
@@ -1092,9 +1127,11 @@
   100% { opacity: 0; transform: translateX(-60px) scale(0.95); }
 }
 @keyframes feedback-correct {
+  /* ⚙️ P48 — era un'oscillazione 1 → 1.05 → 0.97 → 1 (andata e ritorno).
+     Ora è un solo respiro: la risposta giusta si "gonfia" del 3% e si
+     riassesta, senza tornare indietro. */
   0% { transform: scale(1); }
-  30% { transform: scale(1.05); }
-  60% { transform: scale(0.97); }
+  40% { transform: scale(1.03); }
   100% { transform: scale(1); }
 }
 @keyframes feedback-wrong {
@@ -1110,7 +1147,7 @@
 
 .animate-lesson-in { animation: lesson-slide-in var(--motion-entrance) cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
 .animate-lesson-out { animation: lesson-slide-out var(--motion-emphasized) cubic-bezier(0.3, 0, 0.8, 0.15) both; will-change: transform, opacity; }
-.animate-feedback-correct { animation: feedback-correct 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both; will-change: transform; }
+.animate-feedback-correct { animation: feedback-correct 340ms var(--ease-out) both; will-change: transform; }
 .animate-feedback-wrong { animation: m3-fade-in 200ms ease both; }
 .animate-option-pop { animation: option-pop 450ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
 /* Safe area */

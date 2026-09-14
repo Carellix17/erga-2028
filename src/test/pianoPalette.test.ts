@@ -42,12 +42,19 @@ describe("pianoPalette — colori materia (spec)", () => {
     expect(subjectHex("  storia  ")).toBe("#D97706");
   });
 
-  it("tinted-surface: fondo ~18% del colore, barra sinistra piena, testo chiaro in dark mode", () => {
+  it("tinted-surface: fondo ~18% del colore, contorno sottile 1px, testo chiaro in dark mode", () => {
     const t = subjectTint("Storia", true);
     expect(t.dot).toBe("#D97706");
     expect(t.backgroundColor).toMatch(/rgba\(217 119 6 \/ 0\.18\)/);
-    expect(t.borderLeft).toBe("4px solid #D97706");
+    // P48 — il bordo del blocco è un filo di 1px (era una barra piena da 4px)
+    expect(t.border).toMatch(/^1px solid rgba\(217 119 6 \/ 0\.55\)$/);
+    expect(t.border).not.toContain("4px");
     expect(t.color).toBe("#F8FAFC"); // testo chiaro WCAG AA su fondo scuro
+  });
+
+  it("di giorno il contorno è più discreto e resta comunque un filo", () => {
+    const t = subjectTint("Storia", false);
+    expect(t.border).toBe("1px solid rgba(217 119 6 / 0.42)");
   });
 
   it("in modalità chiara il testo diventa scuro (leggibile su fondo tinta)", () => {
@@ -62,7 +69,7 @@ describe("pianoPalette — colori materia (spec)", () => {
     expect(ROUTINE_HEX.meal).toBe("#EF4444");
     expect(ROUTINE_HEX.other).toBe("#0D9488");
     expect(routineTint("school").dot).toBe("#64748B");
-    expect(tintStyle("#4F46E5", { borderless: true }).borderLeft).not.toContain("4px");
+    expect(tintStyle("#4F46E5", { borderless: true }).border).toBe("1px solid rgba(148 163 184 / 0.28)");
   });
 });
 

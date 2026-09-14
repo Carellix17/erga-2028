@@ -55,10 +55,10 @@ export function SplashScreen({ leaving = false }: { leaving?: boolean }) {
           maxWidth: expanded ? 360 : 40,
           borderRadius: expanded ? 26 : 16,
           transition:
-            "max-width 560ms cubic-bezier(0.2, 0.9, 0.25, 1.05), height 560ms cubic-bezier(0.2, 0.9, 0.25, 1.05), border-radius 560ms cubic-bezier(0.2, 0.9, 0.25, 1.05)",
+            "max-width 560ms var(--ease-out), height 560ms var(--ease-out), border-radius 560ms var(--ease-out)",
           animation: continued
             ? undefined
-            : "erga-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both",
+            : "erga-pop 420ms var(--ease-out) both",
         }}
       >
         <p className="whitespace-nowrap px-5 font-display font-semibold text-[15px] tracking-tight text-primary-foreground/95 select-none">

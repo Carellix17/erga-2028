@@ -46,7 +46,7 @@ export function PremiumToggle({ defaultChecked = false, onChange, label, "aria-l
         onMouseUp={() => setIsPressed(false)}
         onMouseLeave={() => setIsPressed(false)}
         className={cn(
-          "group relative h-8 w-14 rounded-full p-1 transition-all duration-500 ease-out",
+          "group relative h-8 w-14 rounded-full p-1 transition-colors duration-300 ease-out",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           isChecked ? "bg-foreground" : "bg-muted-foreground/20",
         )}
@@ -54,7 +54,7 @@ export function PremiumToggle({ defaultChecked = false, onChange, label, "aria-l
         {/* Glow effect */}
         <div
           className={cn(
-            "absolute inset-0 rounded-full transition-opacity duration-500",
+            "absolute inset-0 rounded-full transition-opacity duration-300",
             isChecked ? "opacity-100 shadow-[0_0_20px_rgba(0,0,0,0.15)]" : "opacity-0",
           )}
         />
@@ -62,7 +62,7 @@ export function PremiumToggle({ defaultChecked = false, onChange, label, "aria-l
         {/* Track inner gradient */}
         <div
           className={cn(
-            "absolute inset-[2px] rounded-full transition-all duration-500",
+            "absolute inset-[2px] rounded-full transition-colors duration-300",
             isChecked ? "bg-gradient-to-b from-foreground to-foreground/90" : "bg-transparent",
           )}
         />
@@ -70,11 +70,16 @@ export function PremiumToggle({ defaultChecked = false, onChange, label, "aria-l
         {/* Thumb */}
         <div
           className={cn(
-            "relative h-6 w-6 rounded-full shadow-lg transition-all duration-500 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]",
+            /* ⚙️ P48 — la manopola scorre con la curva di casa, senza il
+               rimbalzo all'indietro che la faceva "oscillare" a fine corsa. */
+            "relative h-6 w-6 rounded-full shadow-lg transition-transform ease-[cubic-bezier(0.23,1,0.32,1)]",
             "bg-background",
             isChecked ? "translate-x-6" : "translate-x-0",
-            isPressed && "scale-90 duration-150",
+            isPressed && "scale-90",
           )}
+          /* Risposta al tocco immediata (110ms), ritorno morbido (300ms):
+             il pollice deve "sentire" subito la pressione. */
+          style={{ transitionDuration: isPressed ? "110ms" : "300ms" }}
         >
           {/* Thumb inner shine */}
           <div className="absolute inset-[2px] rounded-full bg-gradient-to-b from-background via-background to-muted/30" />
@@ -85,7 +90,7 @@ export function PremiumToggle({ defaultChecked = false, onChange, label, "aria-l
           {/* Status indicator dot */}
           <div
             className={cn(
-              "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500",
+              "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-300",
               isChecked
                 ? "h-2 w-2 bg-foreground opacity-100 scale-100"
                 : "h-1.5 w-1.5 bg-muted-foreground/40 opacity-100 scale-100",
@@ -95,8 +100,8 @@ export function PremiumToggle({ defaultChecked = false, onChange, label, "aria-l
           {/* Ripple effect on toggle */}
           <div
             className={cn(
-              "absolute inset-0 rounded-full transition-all duration-700",
-              isChecked ? "animate-ping bg-foreground/20 scale-150 opacity-0" : "scale-100 opacity-0",
+              "absolute inset-0 rounded-full",
+              isChecked ? "animate-ripple-once bg-foreground/20" : "scale-100 opacity-0",
             )}
             key={isChecked ? "on" : "off"}
           />

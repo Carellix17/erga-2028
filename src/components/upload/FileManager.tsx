@@ -113,7 +113,7 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
 
   if (contexts.length === 0) return (
     <div className="text-center p-8 text-muted-foreground animate-fade-up">
-      <div className="w-16 h-16 rounded-xl bg-surface-container-highest flex items-center justify-center mx-auto mb-3 animate-bounce-in">
+      <div className="w-16 h-16 rounded-xl bg-surface-container-highest flex items-center justify-center mx-auto mb-3 animate-settle-in">
         <FolderOpen className="w-8 h-8 text-muted-foreground" />
       </div>
       <p className="body-large">Nessun file caricato</p>

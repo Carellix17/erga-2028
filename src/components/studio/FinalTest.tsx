@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import type { CSSProperties } from "react";
 import { X, ChevronRight, CheckCircle2, Target, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
@@ -55,9 +56,11 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
             <X className="w-5 h-5" />
           </Button>
           <div className="flex-1 h-1 m3-progress-track">
+            {/* ⚙️ P48 — la quota viaggia come variabile (0-1): la barra si
+                srotola con una trasformazione invece di cambiare larghezza. */}
             <div
               className="h-full m3-progress-indicator"
-              style={{ width: `${progress}%` }}
+              style={{ "--m3-progress": progress / 100 } as CSSProperties}
             />
           </div>
           <span className="label-medium text-muted-foreground whitespace-nowrap">
@@ -131,7 +134,7 @@ function ResultsView({ score, correctCount, total, great }: { score: number; cor
   return (
     <div className="text-center space-y-8">
       <div
-        className="w-24 h-24 rounded-full mx-auto flex items-center justify-center animate-bounce-in shadow-level-3"
+        className="w-24 h-24 rounded-full mx-auto flex items-center justify-center animate-settle-in shadow-level-3"
         style={{ background: great ? "hsl(var(--success))" : "hsl(var(--warning))" }}
       >
         {/* 🌿 P21h — niente trofeo (decreto P21c) e niente ghost: il colore
