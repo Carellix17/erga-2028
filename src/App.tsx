@@ -113,6 +113,7 @@ const App = () => (
             <Route path="/app/impostazioni/termini" element={<ProtectedRoute><SettingsTerms /></ProtectedRoute>} />
             <Route path="/app/profilo" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/app/ritmo" element={<ProtectedRoute><FocusStats /></ProtectedRoute>} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             {import.meta.env.DEV && <Route path="/aura-lab" element={<AuraLab />} />}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
