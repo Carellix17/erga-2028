@@ -35,6 +35,7 @@ const SettingsTerms = lazy(() => import("./pages/settings/SettingsTerms"));
 const SettingsLanguage = lazy(() => import("./pages/settings/SettingsLanguage"));
 const FocusStats = lazy(() => import("./pages/FocusStats"));
 const Profile = lazy(() => import("./pages/Profile"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 // AuraLab: banco di prova dell'aura dei blocchi (P27). Caricato e registrato
 // SOLO in sviluppo (import.meta.env.DEV): non esiste nella build di produzione.
 const AuraLab = lazy(() => import("./pages/AuraLab"));
