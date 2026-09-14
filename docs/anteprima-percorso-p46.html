@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Erga — Anteprima P46: Percorsi più leggibili</title>
+<style>
+  :root{
+    --bg:#0A0A0C; --card:#141418; --border:rgba(255,255,255,.12);
+    --fg:#F4F1EA; --muted:#9B9BA3; --accent:hsl(18 55% 58%); --accent-fg:#181516;
+    --surface-high:#22222A; --pill:#1B1B21;
+    --shadow-1:0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.28);
+    --shadow-2:0 4px 16px rgba(0,0,0,.45);
+    --shadow-3:0 8px 28px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:#0E0E11; color:var(--fg);
+    font-family:Montserrat,"Segoe UI",system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased; padding:28px 18px 60px;
+  }
+  .wrap{max-width:1000px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 6px;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:13.5px;line-height:1.6;margin:0 0 26px;max-width:70ch}
+  .sub b{color:var(--fg)}
+  .frames{display:flex;flex-wrap:wrap;gap:26px}
+  .frame{flex:1 1 380px;min-width:320px}
+  .frame h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 10px;font-weight:700}
+  .phone{
+    position:relative;height:680px;border-radius:28px;background:var(--bg);
+    border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-3);
+  }
+  .scroll{height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+  .caption{color:var(--muted);font-size:12.5px;line-height:1.6;margin:12px 2px 0}
+
+  /* ───── 1. card fissa + lista moduli ───── */
+  .head{
+    position:sticky;top:0;z-index:20;background:var(--bg);padding:14px 16px 10px;
+  }
+  .course-card{
+    border-radius:24px;background:linear-gradient(160deg,#1C1A19,#141418);
+    border:1px solid rgba(255,255,255,.14);padding:16px;box-shadow:var(--shadow-2);
+  }
+  .course-card .kicker{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .course-card h3{margin:6px 0 0;font-size:18px;letter-spacing:-.01em}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+  .row .small{font-size:12px;color:var(--muted);font-weight:500}
+  .pct{font-size:15px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .bar{height:6px;border-radius:999px;background:var(--surface-high);overflow:hidden;margin-top:8px}
+  .bar > span{display:block;height:100%;border-radius:999px;background:var(--accent)}
+  .fade{
+    position:absolute;left:0;right:0;top:100%;height:24px;pointer-events:none;
+    background:linear-gradient(to bottom, var(--bg), rgba(10,10,12,.8), rgba(10,10,12,0));
+  }
+  .pill{
+    position:absolute;left:50%;top:100%;transform:translate(-50%,-8px);z-index:30;
+    margin-top:8px;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;
+    border-radius:999px;border:1px solid var(--border);background:rgba(20,20,24,.95);
+    color:var(--fg);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;
+    opacity:0;transition:opacity .18s ease, transform .18s ease;backdrop-filter:blur(12px);
+    box-shadow:var(--shadow-2);
+  }
+  .pill.on{opacity:1;transform:translate(-50%,0)}
+  .list{padding:6px 16px 40px;display:flex;flex-direction:column;gap:12px}
+  .mod{
+    display:flex;align-items:center;gap:14px;padding:16px;border-radius:24px;
+    background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow-1);text-align:left;
+  }
+  .mod .num{
+    flex:0 0 auto;width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:16px;background:var(--accent);color:var(--accent-fg);
+  }
+  .mod .num.dim{background:var(--surface-high);color:var(--muted)}
+  .mod .txt{flex:1;min-width:0}
+  .mod .title{font-size:15px;font-weight:700;line-height:1.3}
+  .mod .meta{font-size:12px;color:var(--muted);margin-top:4px;font-weight:500}
+  .mod .chip{flex:0 0 auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--surface-high);color:var(--muted)}
+  .mod .chip.done{background:#F4F1EA;color:#181516}
+  .mod .chip.cur{background:var(--accent);color:var(--accent-fg)}
+  .mod.current{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent),var(--shadow-1)}
+  .mod.locked{opacity:.6}
+
+  /* ───── 2. percorso serpentina ───── */
+  .path-head{position:sticky;top:0;z-index:20;background:var(--bg);padding:14px 16px 10px;border-bottom:1px solid var(--border)}
+  .mini-card{border-radius:24px;background:var(--card);border:1px solid var(--border);padding:12px 14px;box-shadow:var(--shadow-2)}
+  .mini-card .kicker{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .mini-card .t{font-size:15px;font-weight:700;margin-top:4px}
+  .pathbox{position:relative;margin:22px 8px 0;overflow:visible}
+  .pathbox svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .seg-base{stroke:var(--surface-high)}
+  .seg-on{stroke:var(--accent)}
+  .roww{position:absolute;left:0;right:0;display:flex;align-items:center}
+  .node{
+    position:absolute;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;
+    border-radius:999px;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums;color:var(--fg);
+    background:var(--card);border:2px solid var(--border);
+  }
+  .node.done{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);box-shadow:var(--shadow-2)}
+  .node.cur{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);box-shadow:0 0 0 2px var(--bg),0 0 0 7px color-mix(in srgb,var(--accent) 20%,transparent),var(--shadow-3)}
+  .node.lock{background:var(--surface-high);color:var(--muted)}
+  .node.trophy{border:2px solid var(--surface-high);background:var(--surface-high);color:var(--muted)}
+  .riprendi{
+    position:absolute;left:50%;top:-36px;transform:translateX(-50%);white-space:nowrap;
+    display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;
+    background:var(--accent);color:var(--accent-fg);font-size:10.5px;font-weight:800;box-shadow:var(--shadow-2);
+  }
+  .label{
+    position:absolute;top:50%;transform:translateY(-50%);border-radius:12px;background:var(--card);
+    border:1px solid var(--border);padding:10px 14px;box-shadow:var(--shadow-1);
+  }
+  .label.cur{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+  .label .k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .label .v{margin-top:2px;font-size:13px;font-weight:600;line-height:1.35;color:var(--fg);overflow-wrap:anywhere}
+  .label.lock{opacity:.8}
+  .legend{margin:16px 8px 40px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
+  .legend i{display:inline-block;width:22px;height:7px;border-radius:999px;background:var(--accent);margin-right:8px;vertical-align:middle}
+  .legend i.gray{background:var(--surface-high)}
+  .legend i.dash{background:repeating-linear-gradient(90deg,var(--surface-high) 0 5px,transparent 5px 10px)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Erga · Percorsi — come cambia la lettura</h1>
+  <p class="sub">
+    Questa è un'<b>anteprima statica</b> (stessa geometria, stessi colori) delle due novità appena scritte nel codice.
+    <b>1)</b> La lista dei moduli: la card del percorso resta inchiodata in alto, c'è una sfumatura d'uscita, la lista si apre da sola
+    sul modulo attivo e la pillola <b>↑ 2 moduli completati</b> riporta in cima con un tocco.
+    <b>2)</b> Il percorso del modulo: nodi tondi su una linea sinuosa, titoli in schede leggibili <b>fuori</b> dal nodo.
+  </p>
+
+  <div class="frames">
+    <!-- ══════════ PANNELLO 1 ══════════ -->
+    <section class="frame">
+      <h2>1 · La lista dei moduli</h2>
+      <div class="phone">
+        <div class="scroll" id="scroller">
+          <div class="head">
+            <div class="course-card">
+              <div class="kicker">Percorso attuale</div>
+              <h3>Storia — La Rivoluzione Industriale</h3>
+              <div class="row">
+                <span class="small">8 di 16 lezioni completate</span>
+                <span class="pct">50%</span>
+              </div>
+              <div class="bar"><span style="width:50%"></span></div>
+              <div class="fade"></div>
+              <button class="pill" id="pill" type="button" aria-label="Torna in cima ai moduli">
+                <span aria-hidden="true">↑</span><span id="pillText">2 moduli completati</span>
+              </button>
+            </div>
+          </div>
+          <div class="list" id="list">
+            <div class="mod" data-row="0">
+              <span class="num" aria-hidden="true">✓</span>
+              <span class="txt"><span class="title">L'Europa prima della Rivoluzione</span>
+                <span class="meta">4 di 4 lezioni</span></span>
+              <span class="chip done">Completato</span>
+            </div>
+            <div class="mod" data-row="1">
+              <span class="num" aria-hidden="true">✓</span>
+              <span class="txt"><span class="title">Le macchine e le prime fabbriche</span>
+                <span class="meta">4 di 4 lezioni</span></span>
+              <span class="chip done">Completato</span>
+            </div>
+            <div class="mod current" data-row="2">
+              <span class="num" aria-hidden="true">3</span>
+              <span class="txt"><span class="title">Operai, città e rivolte</span>
+                <span class="meta">1 di 4 lezioni · continua da dove eri</span>
+                <span class="bar" style="margin-top:10px"><span style="width:25%"></span></span></span>
+              <span class="chip cur">Riprendi</span>
+            </div>
+            <div class="mod" data-row="3">
+              <span class="num dim" aria-hidden="true">4</span>
+              <span class="txt"><span class="title">Il trionfo dell'industria</span>
+                <span class="meta">0 di 4 lezioni</span></span>
+              <span class="chip">Apri</span>
+            </div>
+            <div class="mod locked" data-row="4">
+              <span class="num dim" aria-hidden="true">🔒</span>
+              <span class="txt"><span class="title">Il secondo dopoguerra</span>
+                <span class="meta">Completa il modulo precedente</span></span>
+              <span class="chip">Da sbloccare</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="caption">La lista parte già posizionata sul modulo 3 (quello in corso): provala scorrendo — la pillola compare appena scorri e la sfumatura fa scivolare le schede sotto la card. Toccando la pillola si torna in cima con uno scorrimento morbido.</p>
+    </section>
+
+    <!-- ══════════ PANNELLO 2 ══════════ -->
+    <section class="frame">
+      <h2>2 · Il percorso del modulo</h2>
+      <div class="phone">
+        <div class="scroll">
+          <div class="path-head">
+            <div class="mini-card">
+              <div class="kicker">Modulo 3</div>
+              <div class="t">Operai, città e rivolte</div>
+            </div>
+          </div>
+          <div class="pathbox" id="pathbox"></div>
+          <div class="legend">
+            <span><i></i>tratti già fatti: pieni, nel colore della materia</span>
+            <span><i class="gray"></i>tratti futuri: grigi</span>
+            <span><i class="dash"></i>e tratteggiati</span>
+          </div>
+        </div>
+      </div>
+      <p class="caption">Un solo percorso che scende: nodi tondi (fatto = spunta, in corso = numero + “Riprendi”, da fare = numero, bloccato = lucchetto) e titoli completi nelle schede accanto, mai dentro il cerchio.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+// ─── Pannello 1: pillola + atterraggio automatico sul modulo attivo ───
+(function () {
+  const scroller = document.getElementById("scroller");
+  const pill = document.getElementById("pill");
+  let touched = false;
+  scroller.addEventListener("scroll", () => {
+    pill.classList.toggle("on", scroller.scrollTop > 12);
+  }, { passive: true });
+  pill.addEventListener("click", () => scroller.scrollTo({ top: 0, behavior: "smooth" }));
+  scroller.addEventListener("touchstart", () => { touched = true; }, { passive: true });
+  scroller.addEventListener("wheel", () => { touched = true; }, { passive: true });
+
+  function land() {
+    if (touched) return;
+    const head = document.querySelector(".head");
+    const row = scroller.querySelector('[data-row="2"]');
+    if (!row) return;
+    scroller.scrollTop = Math.max(0, row.offsetTop - head.offsetHeight - 52); // 52 = spazio della pillola + respiro
+    pill.classList.toggle("on", scroller.scrollTop > 12);
+  }
+  requestAnimationFrame(() => requestAnimationFrame(land));
+})();
+
+// ─── Pannello 2: la serpentina (stessa geometria di ModulePath.tsx) ───
+(function () {
+  const NODE = 56, STEP = 132, TROPHY = 64, CURVE = 0.42, DROP = 24, GAP = 12;
+  const COL_A = 25, COL_B = 50, COL_C = 75, MID = 50;
+  const SERPENTINE = [COL_A, COL_B, COL_C, COL_B];
+  const lessons = [
+    { t: "L'Europa prima della Rivoluzione", s: "done" },
+    { t: "Macchine a vapore e prime fabbriche", s: "cur" },
+    { t: "La nascita delle fabbriche e il lavoro degli operai nel primo Ottocento raccontato bene", s: "lock" },
+    { t: "Luddismo e rivolte operaie", s: "lock" },
+  ];
+
+  function labelLayout(i, col) {
+    const offset = (NODE / 2 + GAP) + "px";
+    if (col === COL_A) return { side: "r", pos: `left:calc(${col}% + ${offset})`, w: "min(48%,168px)" };
+    if (col === COL_C) return { side: "l", pos: `right:calc(${100 - col}% + ${offset})`, w: "min(48%,168px)" };
+    if (i % 4 === 1) return { side: "l", pos: `right:calc(${100 - col}% + ${offset})`, w: "min(34%,150px)" };
+    return { side: "r", pos: `left:calc(${col}% + ${offset})`, w: "min(34%,150px)" };
+  }
+
+  function build() {
+    const box = document.getElementById("pathbox");
+    const W = box.clientWidth;
+    const n = lessons.length;
+    const height = n * STEP + TROPHY + 70;
+    box.style.height = height + "px";
+    const X = (p) => (p / 100) * W;
+    const rowY = (i) => i * STEP + NODE / 2;
+    const trophyY = n * STEP + DROP;
+    const colOf = (i) => SERPENTINE[i % SERPENTINE.length];
+    const link = (x1, y1, x2, y2, lit) => {
+      const c = STEP * CURVE;
+      return `<path d="M ${X(x1)} ${y1} C ${X(x1)} ${y1 + c} ${X(x2)} ${y2 - c} ${X(x2)} ${y2}"
+        class="${lit ? "seg-on" : "seg-base"}" ${lit ? "" : 'stroke-dasharray="9 11"'} fill="none"/>`;
+    };
+    let segs = "";
+    segs += link(colOf(0), rowY(0), colOf(1), rowY(1), true);        // fatto → in corso: pieno
+    segs += link(colOf(1), rowY(1), colOf(2), rowY(2), false);
+    segs += link(colOf(2), rowY(2), colOf(3), rowY(3), false);
+    segs += link(colOf(3), rowY(3), MID, trophyY, false);
+
+    let rows = "";
+    lessons.forEach((l, i) => {
+      const col = colOf(i);
+      const lab = labelLayout(i, col);
+      const inner =
+        l.s === "done" ? "✓"
+        : l.s === "lock" ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>'
+        : (i + 1);
+      rows += `<div class="roww" style="top:${rowY(i) - STEP / 2}px;height:${STEP}px">
+        <div class="node ${l.s}" style="left:calc(${col}% - ${NODE / 2}px);width:${NODE}px;height:${NODE}px">
+          ${inner}
+          ${l.s === "cur" ? '<span class="riprendi"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l12 7-12 7z"/></svg>Riprendi</span>' : ""}
+        </div>
+        <div class="label ${l.s}" style="${lab.pos};width:${lab.w};max-width:${lab.w}">
+          <div class="k">Lezione ${i + 1}</div>
+          <div class="v">${l.t}</div>
+        </div>
+      </div>`;
+    });
+
+    rows += `<div class="roww" style="top:${trophyY - STEP / 2}px;height:${STEP}px">
+      <div class="node trophy" style="left:calc(${MID}% - ${TROPHY / 2}px);width:${TROPHY}px;height:${TROPHY}px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5H5v2a3 3 0 0 0 3 3M16 5h3v2a3 3 0 0 1-3 3M12 13v4M9 20h6"/></svg>
+        <div style="position:absolute;left:50%;top:calc(100% + 14px);transform:translateX(-50%);white-space:nowrap">
+          <div class="label" style="position:static;transform:none;text-align:center;padding:8px 14px">
+            <div class="k">Ultimo passo</div><div class="v" style="font-weight:800">Test finale</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+    box.innerHTML =
+      `<svg viewBox="0 0 ${W} ${height}" preserveAspectRatio="none" aria-hidden="true">
+         <g stroke-width="7" stroke-linecap="round" stroke-linejoin="round">${segs}</g>
+       </svg>${rows}`;
+  }
+
+  build();
+  window.addEventListener("resize", build);
+})();
+</script>
+</body>
+</html>

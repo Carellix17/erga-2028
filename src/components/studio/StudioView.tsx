@@ -3,7 +3,7 @@ import { FullscreenLessonGate } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
 import { GenerationProgress } from "./GenerationProgress";
 import { ModulePath } from "./ModulePath";
-import { ModulesOverview, type ModuleCardData } from "./ModulesOverview";
+import { ModulesOverview, MODULES_LAYER_ID, type ModuleCardData } from "./ModulesOverview";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
@@ -1047,6 +1047,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         freeLimitMessage={FREE_LIMIT_MESSAGE}
         isRegenerating={isGenerating || !!moduleJob}
       />
+      {/* 🧭 P46 — strato appoggiato sotto la card fissa del corso: qui la
+          schermata dei moduli infila (via portale) la sfumatura d'uscita e la
+          pillola "↑ N moduli completati". Volutamente NON posizionato: così i
+          suoi figli restano ancorati al bordo inferiore della card sticky. */}
+      {courseViewState === "modules" && <div id={MODULES_LAYER_ID} />}
           </motion.div>
         )}
       </AnimatePresence>
