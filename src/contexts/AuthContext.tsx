@@ -71,15 +71,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
 
+  const welcomeSentForSession = useRef<string | null>(null);
+
   useEffect(() => {
     let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       // Solo assegnazione sincrona di stato: nessuna query qui dentro,
       // altrimenti si blocca il thread di autenticazione.
       if (!mounted) return;
       setSession(session);
       setIsLoading(false);
+
+      // Invia la welcome email al primo accesso effettivo (signup, OAuth o
+      // conferma email). L'idempotency key previene duplicati lato server.
+      const user = session?.user;
+      if (
+        event === "SIGNED_IN" &&
+        user?.email &&
+        welcomeSentForSession.current !== user.id
+      ) {
+        welcomeSentForSession.current = user.id;
+        const name = user.user_metadata?.name || user.user_metadata?.full_name;
+        sendWelcomeEmail(user.id, user.email, typeof name === "string" ? name : undefined);
+      }
     });
 
     syncSession().finally(() => {
