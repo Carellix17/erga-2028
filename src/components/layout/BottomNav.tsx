@@ -174,7 +174,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           aria-label={t("nav.core")}
           aria-current={activeTab === "core" ? "page" : undefined}
           className={cn(
-            "fixed bottom-6 left-6 z-50 relative w-[4.5rem] h-[4.5rem] rounded-pill flex items-center justify-center shadow-level-2 transition-transform duration-150 active:scale-90",
+            "fixed bottom-6 left-6 z-50 w-[4.5rem] h-[4.5rem] rounded-pill flex items-center justify-center shadow-level-2 transition-transform duration-150 active:scale-90",
             pillMaterial,
           )}
         >
