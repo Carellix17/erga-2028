@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
 
 async function sendWelcomeEmail(userId: string, email: string, name?: string) {
   try {
@@ -16,7 +17,6 @@ async function sendWelcomeEmail(userId: string, email: string, name?: string) {
     console.error("Auth: invio welcome email fallito", error);
   }
 }
-import { Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
   isAuthenticated: boolean;
