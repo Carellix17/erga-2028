@@ -1,5 +1,21 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+
+async function sendWelcomeEmail(userId: string, email: string, name?: string) {
+  try {
+    await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "welcome",
+        recipientEmail: email,
+        idempotencyKey: `welcome-${userId}`,
+        templateData: { name },
+      },
+    });
+  } catch (error) {
+    // La welcome email non deve bloccare l'autenticazione.
+    console.error("Auth: invio welcome email fallito", error);
+  }
+}
 import { Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
