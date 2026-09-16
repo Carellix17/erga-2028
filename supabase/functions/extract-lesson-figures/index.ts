@@ -238,7 +238,7 @@ Rispondi SOLO con JSON valido, senza markdown:
 
   let content = "";
   try {
-    content = await callVisionText({ messages, max_tokens: 2500, temperature: 0.0 });
+    content = await callVisionText({ messages, max_tokens: 2500, temperature: 0.0 }, "extract-lesson-figures");
   } catch (visionErr) {
     console.error("Vision AI error (tutti i provider):", visionErr);
     return [];

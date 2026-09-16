@@ -182,7 +182,7 @@ Comincia ESATTAMENTE con: "In questa chat sei il tutor specializzato su ${ctxP.f
 CONTENUTO DEL DOCUMENTO (assaggio):
 ${sample}`,
         },
-      ], 0.4, 400);
+      ], 0.4, 400, "chat");
       return successResponse({ prompt: prompt.trim().slice(0, 1200) });
     }
 
@@ -409,12 +409,12 @@ Formato (UN oggetto, non una lista):
 Regole: "date" calcolata da oggi ("domani" = ${tomorrowISO}); titolo breve; se parla di RIPASSO usa {"action":"propose_review",...} (il titolo inizierà con "Ripasso:"); se parla di un OBIETTIVO verso una verifica usa {"action":"add_goal",...}; event_type=test per verifiche/interrogazioni/esami, assignment per compiti, study altrimenti; subject = la materia, oppure "Generale".
 Campi facoltativi in più: "eval_type" = "interrogazione" se dice interrogazione, "orale" se verifica orale, "pratica" se pratica, "compito" se compito, "scritta" altrimenti per le verifiche; "goal" = numero 1-10 se dice un voto/obiettivo (es. "con obiettivo di voto 8" o "puntando al 9"); "time" = orario in formato 24h "HH:MM" se lo dice (es. "alle 9" → "09:00", "per le 14:30" → "14:30"); "course" = nome del percorso/documento a cui la lega (es. "legata a Promessi Sposi" → "Promessi Sposi").`,
           },
-        ], 0.1, 250)
+        ], 0.1, 250, "chat")
           .then((raw) => parseForcedAction(raw, todayISO))
           .catch(() => null)
       : null;
 
-    const aiResponse = await callAIStream(apiMessages, 0.7, 1600);
+    const aiResponse = await callAIStream(apiMessages, 0.7, 1600, "chat");
 
     // Le fonti si calcolano QUI, dalla domanda dell'utente (deterministico:
     // niente dipende da quanto l'AI obbedisce alle istruzioni di citazione).

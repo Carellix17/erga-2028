@@ -12,6 +12,8 @@
  *  - After retries exhausted: next provider
  */
 
+import { logAiUsage } from "./aiUsage.ts";
+
 interface ProviderConfig {
   label: string;
   url: string;
@@ -52,6 +54,8 @@ interface AiCallOptions {
   max_tokens?: number;
   model?: string;
   stream?: boolean;
+  /** opzionale: id utente (uuid) da associare alla riga di ai_usage */
+  userId?: string;
 }
 
 function isQuotaError(status: number, body: string): boolean {
@@ -99,6 +103,7 @@ async function tryFetch(
  */
 export async function callAIWithFallback(
   opts: AiCallOptions,
+  tag?: string,
 ): Promise<Response> {
   const baseModel = opts.model || "gemini-2.5-flash";
 
@@ -117,6 +122,15 @@ export async function callAIWithFallback(
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         const resp = await tryFetch(provider.url, apiKey, opts, model, provider.label);
+
+        logAiUsage({
+          fn: tag,
+          provider: provider.label,
+          model,
+          ok: resp.ok,
+          status: resp.status,
+          userId: opts.userId,
+        });
 
         if (resp.ok) {
           console.log(`[AI] Using ${provider.label.toUpperCase()} (attempt ${attempt + 1})`);
@@ -140,6 +154,15 @@ export async function callAIWithFallback(
         console.warn(`[AI] ${provider.label} error (${resp.status}), next provider`);
         break;
       } catch (err) {
+        logAiUsage({
+          fn: tag,
+          provider: provider.label,
+          model,
+          ok: false,
+          status: null,
+          userId: opts.userId,
+        });
+
         if (attempt < maxRetries) {
           const delay = 1000 * (attempt + 1);
           console.warn(`[AI] ${provider.label} network error, retry ${attempt + 1}/${maxRetries}:`, err);
@@ -162,12 +185,13 @@ export async function callAIText(
   messages: { role: string; content: string }[],
   temperature = 0.7,
   maxTokens = 2048,
+  tag?: string,
 ): Promise<string> {
   const resp = await callAIWithFallback({
     messages,
     temperature,
     max_tokens: maxTokens,
-  });
+  }, tag);
   const data = await resp.json();
   return data.choices?.[0]?.message?.content || "";
 }
@@ -179,11 +203,12 @@ export async function callAIStream(
   messages: { role: string; content: unknown }[],
   temperature = 0.7,
   maxTokens = 1024,
+  tag?: string,
 ): Promise<Response> {
   return callAIWithFallback({
     messages,
     temperature,
     max_tokens: maxTokens,
     stream: true,
-  });
+  }, tag);
 }

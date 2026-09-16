@@ -287,7 +287,7 @@ serve(withCors(async (req) => {
       const aiText = await callAIText([
         { role: "system", content: `${languageDirective(language)} Sei un esperto accademico e docente universitario. Fornisci contenuti dettagliati, accurati e ben strutturati per lo studio. Rispondi sempre in ${languageName(language)}. Usa titoli, sottotitoli e punti elenco per organizzare il contenuto.` },
         { role: "user", content: searchPrompt },
-      ], 0.4, 8000);
+      ], 0.4, 8000, "web-search");
 
       if (!aiText) throw new Error("Nessun contenuto generato per questo argomento.");
 
