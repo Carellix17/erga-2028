@@ -43,6 +43,12 @@ interface ExchangeItem {
  content: string;
 }
 
+interface QaPair {
+ question: string;
+ answer: string;
+}
+
+
 // Module-level singleton audio so we can stop previous playback across calls
 let currentAudio: HTMLAudioElement | null = null;
 let currentObjectUrl: string | null = null;
@@ -122,6 +128,8 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  const [questionCount, setQuestionCount] = useState(0);
  const [maxQuestions, setMaxQuestions] = useState<number>(5);
  const [scores, setScores] = useState<ScoreEntry[]>([]);
+ const [qaPairs, setQaPairs] = useState<QaPair[]>([]);
+
  const [finalReport, setFinalReport] = useState<FinalReport | null>(null);
  const [isBuildingReport, setIsBuildingReport] = useState(false);
  const [isSpeaking, setIsSpeaking] = useState(false);
@@ -263,6 +271,8 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  setScore(null);
  setQuestionCount(0);
  setScores([]);
+ setQaPairs([]);
+
  setFinalReport(null);
 
  if (selectedMode ==="structured") {
@@ -293,6 +303,41 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  }
  }
  };
+ // P2: fra un turno e l'altro nessuna chiamata AI, solo un incoraggiamento locale fisso.
+ const LOCAL_ENCOURAGEMENT = "Ok! Prossima domanda.";
+
+ // P2: UNA sola chiamata `evaluate`, a fine sessione, con il dialogo completo.
+ const finalizeSession = useCallback(async (pairs: QaPair[]) => {
+ if (!pairs.length) return;
+ setIsBuildingReport(true);
+ setPhase("evaluating");
+ try {
+ const data = await callInterrogazione("evaluate", { transcript: pairs, maxQuestions });
+ const list: ScoreEntry[] = Array.isArray(data.scores) && data.scores.length
+ ? data.scores.map((s: any, i: number) => ({
+ question: Number(s?.question) || i + 1,
+ score: Number(s?.score) || 0,
+ questionText: String(s?.questionText ?? pairs[i]?.question ?? ""),
+ }))
+ : pairs.map((p, i) => ({ question: i + 1, score: 0, questionText: p.question }));
+ const avg = typeof data.average === "number"
+ ? data.average
+ : (list.reduce((a, s) => a + s.score, 0) / (list.length || 1));
+ setScores(list);
+ setFinalReport({
+ average: Math.round(avg * 10) / 10,
+ scores: list,
+ considerations: data.considerations || "Bel lavoro! Continua così.",
+ });
+ setMode("report");
+ setPhase("idle");
+ } catch {
+ toast({ title:"Errore", description:"Non riesco a generare il report finale", variant:"destructive" });
+ setPhase("question");
+ } finally {
+ setIsBuildingReport(false);
+ }
+ }, [callInterrogazione, maxQuestions, toast]);
 
  const submitAnswer = async () => {
  // Hard-stop the mic and discard any pending recognition results to avoid
@@ -306,71 +351,41 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  }
 
  setExchanges(prev => [...prev, { type:"answer", content: answer }]);
- setPhase("evaluating");
  transcriptBufferRef.current ="";
  setTranscript("");
 
- try {
- const action = mode ==="structured" ?"evaluate" :"evaluate_free";
- const isLastQuestion = mode ==="structured" && questionCount >= maxQuestions;
- const data = await callInterrogazione(action, {
- question: currentQuestion,
- answer,
- history: exchanges,
- questionNumber: questionCount,
- maxQuestions,
- });
-
- setExchanges(prev => [...prev, { type:"feedback", content: data.feedback }]);
- let updatedScores = scores;
- if (data.score !== undefined) {
- setScore(data.score);
  if (mode ==="structured") {
- updatedScores = [...scores, { question: questionCount, score: Number(data.score), questionText: currentQuestion }];
- setScores(updatedScores);
- }
+ const pairs: QaPair[] = [...qaPairs, { question: currentQuestion, answer }];
+ setQaPairs(pairs);
+
+ if (questionCount >= maxQuestions) {
+ await finalizeSession(pairs);
+ return;
  }
 
- // Sequential audio queue: wait for feedback TTS to finish before
- // revealing/speaking the next question
- await speakIfEnabled(data.feedback);
-
- if (mode ==="structured" && isLastQuestion) {
- // Build the final report
- setIsBuildingReport(true);
+ setExchanges(prev => [...prev, { type:"feedback", content: LOCAL_ENCOURAGEMENT }]);
  setPhase("evaluating");
  try {
- const reportData = await callInterrogazione("final_report", {
- history: [...exchanges, { type:"answer", content: answer }, { type:"feedback", content: data.feedback }],
- scores: updatedScores,
- });
- const avg = updatedScores.length
- ? updatedScores.reduce((a, s) => a + s.score, 0) / updatedScores.length
- : 0;
- setFinalReport({
- average: Math.round(avg * 10) / 10,
- scores: updatedScores,
- considerations: reportData.considerations ||"Bel lavoro! Continua così.",
- });
- setMode("report");
- setPhase("idle");
- } catch {
- toast({ title:"Errore", description:"Non riesco a generare il report finale", variant:"destructive" });
- setPhase("question");
- } finally {
- setIsBuildingReport(false);
- }
- } else if (data.nextQuestion && mode ==="structured") {
- setCurrentQuestion(data.nextQuestion);
- setExchanges(prev => [...prev, { type:"question", content: data.nextQuestion }]);
+ const data = await callInterrogazione("ask", { previousQuestions: pairs.map(p => p.question) });
+ setCurrentQuestion(data.question);
+ setExchanges(prev => [...prev, { type:"question", content: data.question }]);
  setQuestionCount(prev => prev + 1);
  setPhase("question");
- await speakIfEnabled(data.nextQuestion);
- } else if (data.finished) {
- setPhase("idle");
- } else {
+ await speakIfEnabled(data.question);
+ } catch {
+ toast({ title:"Errore", description:"Non riesco a generare la prossima domanda", variant:"destructive" });
  setPhase("question");
  }
+ return;
+ }
+
+ // Esposizione libera: una sola valutazione, già a fine sessione.
+ setPhase("evaluating");
+ try {
+ const data = await callInterrogazione("evaluate_free", { question: currentQuestion, answer });
+ setExchanges(prev => [...prev, { type:"feedback", content: data.feedback }]);
+ if (data.score !== undefined) setScore(data.score);
+ setPhase("idle");
  } catch {
  toast({ title:"Errore", description:"Non riesco a valutare la risposta", variant:"destructive" });
  setPhase("question");
@@ -388,9 +403,22 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  setTranscript("");
  setQuestionCount(0);
  setScores([]);
+ setQaPairs([]);
  setFinalReport(null);
  if (!contextId) setSelectedCourse(null);
  };
+
+ // Uscita anticipata da una sessione a domande: valuta quello che c'è (1 chiamata).
+ const leaveSession = () => {
+ if (mode ==="structured" && qaPairs.length > 0 && !finalReport && !isBuildingReport) {
+ stopSpeaking();
+ hardStopListening();
+ void finalizeSession(qaPairs);
+ return;
+ }
+ resetInterrogazione();
+ };
+
 
  const hasSpeech = typeof window !=="undefined" && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
@@ -670,7 +698,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  >
  {isLoadingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : ttsEnabled ? <Volume2 className={cn("w-4 h-4", isSpeaking &&"animate-pulse")} /> : <VolumeX className="w-4 h-4" />}
  </Button>
- <Button variant="ghost" size="icon" onClick={resetInterrogazione} className="rounded-full">
+ <Button variant="ghost" size="icon" onClick={leaveSession} className="rounded-full">
  <RotateCcw className="w-4 h-4" />
  </Button>
  </div>
