@@ -8,6 +8,13 @@
       "when": 1789557595808,
       "tag": "0000_create_ai_usage",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789565746784,
+      "tag": "0001_add_is_completed_to_evaluations",
+      "breakpoints": true
     }
   ]
 }

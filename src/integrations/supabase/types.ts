@@ -284,6 +284,7 @@ export type Database = {
           free_topic_title: string | null
           goal: number | null
           id: string
+          is_completed: boolean
           subject_id: string | null
           title: string
           topic_id: string | null
@@ -299,6 +300,7 @@ export type Database = {
           free_topic_title?: string | null
           goal?: number | null
           id?: string
+          is_completed?: boolean
           subject_id?: string | null
           title: string
           topic_id?: string | null
@@ -314,6 +316,7 @@ export type Database = {
           free_topic_title?: string | null
           goal?: number | null
           id?: string
+          is_completed?: boolean
           subject_id?: string | null
           title?: string
           topic_id?: string | null
