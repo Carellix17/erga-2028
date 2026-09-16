@@ -51,12 +51,19 @@ serve(withCors(async (req) => {
     };
 
     if (action === "ask") {
+      const asked = Array.isArray(body.previousQuestions)
+        ? (body.previousQuestions as string[]).filter((q) => typeof q === "string" && q.trim())
+        : [];
+      const askedBlock = asked.length
+        ? `\n\nDOMANDE GIA' FATTE (non ripeterle, cambia concetto):\n${asked.map((q, i) => `${i + 1}. ${q}`).join("\n")}`
+        : "";
       const prompt = `Sei un tutor amichevole che sta aiutando uno studente a ripassare. Usa un tono colloquiale, dai del tu, niente formalismi. Basandoti SOLO sui materiali qui sotto, fai UNA domanda chiara e diretta per capire se ha capito un concetto importante. La domanda dev'essere aperta (richiede spiegazione), non troppo lunga, in italiano semplice.
 
 MATERIALI:
-${studyContent}
+${studyContent}${askedBlock}
 
 Rispondi SOLO con la domanda, senza preamboli né virgolette.`;
+
 
       let result = (await callAI([{ role: "user", content: prompt }], 0.8)).trim();
       if (!result) {
