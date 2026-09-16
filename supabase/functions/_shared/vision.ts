@@ -14,10 +14,14 @@
  * catena di riserva del testo.
  */
 
+import { logAiUsage } from "./aiUsage.ts";
+
 interface VisionCallOptions {
   messages: { role: string; content: unknown }[];
   max_tokens?: number;
   temperature?: number;
+  /** opzionale: id utente (uuid) da associare alla riga di ai_usage */
+  userId?: string;
 }
 
 interface VisionProvider {
