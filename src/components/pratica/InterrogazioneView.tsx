@@ -43,6 +43,12 @@ interface ExchangeItem {
  content: string;
 }
 
+interface QaPair {
+ question: string;
+ answer: string;
+}
+
+
 // Module-level singleton audio so we can stop previous playback across calls
 let currentAudio: HTMLAudioElement | null = null;
 let currentObjectUrl: string | null = null;
