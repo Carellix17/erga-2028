@@ -443,6 +443,37 @@
       "altroHint": "A non-school commitment (sports, music, family…) that keeps you from studying while it lasts.",
       "altroPlaceholder": "E.g. Volleyball practice",
       "saveCompito": "Save assignment"
-    }
+    },
+    "diary": {
+      "diaryStripLabel": "Days of the week",
+      "prevWeek": "Previous week",
+      "nextWeek": "Next week",
+      "backToToday": "Back to today",
+      "tasksProgress": "{{done}} of {{total}} homework done",
+      "sectionExams": "Tests and oral exams",
+      "sectionTasks": "Homework for the day",
+      "sectionStudy": "Study sessions",
+      "addTask": "Add homework",
+      "addExam": "Add test",
+      "markDone": "Mark as done",
+      "markUndone": "Mark as to do",
+      "doneBadge": "Done",
+      "allDone": "Homework done, day in order.",
+      "noTasks": "No homework for this day.",
+      "noSubject": "No subject",
+      "countdownToday": "Today",
+      "countdownTomorrow": "Tomorrow",
+      "countdownInDays": "In {{days}} days",
+      "countdownPast": "Already past",
+      "openCourseShort": "Open the course",
+      "openCourse": "Open the course linked to {{title}}",
+      "startFocus": "Start a Focus session",
+      "taskMenu": "More actions for {{title}}",
+      "localOnly": "Checkmark on this device only",
+      "localOnlyHint": "Homework added as a personal commitment is only marked on this device: the permanent checkmark arrives with the next update.",
+      "emptyTitle": "Free day",
+      "emptyHint": "No homework or tests for this day. If you like, add one: it makes the busy days lighter."
+    },
+    "viewDiary": "Diary"
   }
 }

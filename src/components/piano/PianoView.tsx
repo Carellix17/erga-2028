@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, Trash2, Timer, ClipboardCheck, Mic, PencilLine, Hammer, BookOpen, Pencil, ChevronDown, CalendarDays, CalendarRange, Target } from "lucide-react";
+import { Plus, Loader2, Trash2, Timer, ClipboardCheck, Mic, PencilLine, Hammer, BookOpen, Pencil, ChevronDown, CalendarDays, CalendarRange, Target, NotebookPen } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { it, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
@@ -14,12 +14,16 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PlanItem } from "./PlanItem";
+import { DiaryView } from "./DiaryView";
+import { buildDiaryDay, dayDots, type DiaryEntry, type DiaryExam, type DiarySession, type DiaryTask } from "./diaryUtils";
+import { useFileContextsQuery } from "@/hooks/useFileContexts";
 import { PlanSuggestion } from "./PlanSuggestion";
 import { AddEventSheet, type EvalFormInput } from "./AddEventSheet";
 import { EditStudyEventSheet } from "./EditStudyEventSheet";
 import { WeekPlanner } from "./WeekPlanner";
 import {
   useEvaluations, useAddEvaluation, useUpdateEvaluation, useDeleteEvaluation, useDeleteAllEvaluations,
+  useToggleEvaluationCompleted,
   type Evaluation, type EvaluationType,
 } from "@/hooks/useEvaluations";
 import { useUserSubjects, type UserSubject } from "@/hooks/useUserSubjects";
@@ -43,13 +47,23 @@ import { cn } from "@/lib/utils";
 import { useFocus } from "@/contexts/FocusContext";
 import type { DayContentProps } from "react-day-picker";
 
-interface PianoViewProps { hasFiles: boolean; onUploadClick: () => void; }
+interface PianoViewProps {
+  hasFiles: boolean;
+  onUploadClick: () => void;
+  /** 📔 P49 — apre la stanza Studio su un percorso (usato dal Diario). */
+  onOpenCourse?: (contextId: string) => void;
+}
 interface PlanSuggestionData { explanation: string; studySessions: { subject: string; title: string; date: string; time?: string; }[]; }
 
-type CalendarMode = "month" | "week";
+/**
+ * 📔 P49 — le tre viste della stanza Piano.
+ * "diario" è la predefinita: la giornata di oggi, da leggere e da spuntare.
+ * "week" e "month" restano per chi vuole l'insieme (griglia oraria e calendario).
+ */
+type ViewMode = "diario" | "week" | "month";
 type DeleteScope = "study" | "all";
 
-export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
+export function PianoView({ hasFiles, onUploadClick, onOpenCourse }: PianoViewProps) {
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [editingEval, setEditingEval] = useState<Evaluation | null>(null);
   const [editingStudyEvent, setEditingStudyEvent] = useState<StudyEvent | null>(null);
@@ -59,7 +73,12 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const [eventToDelete, setEventToDelete] = useState<StudyEvent | null>(null);
   const [evalToDelete, setEvalToDelete] = useState<Evaluation | null>(null);
   const [deleteScope, setDeleteScope] = useState<DeleteScope | null>(null);
-  const [calendarMode, setCalendarMode] = useState<CalendarMode>("month");
+  const [viewMode, setViewMode] = useState<ViewMode>("diario");
+  /** Categoria e giorno con cui aprire il foglio "Aggiungi evento" dal Diario. */
+  const [sheetPreset, setSheetPreset] = useState<{ category: "verifica" | "compito" | "altro"; date: string } | null>(null);
+  /** Spunta in corso di salvataggio (una alla volta) e stato locale dei compiti "altro". */
+  const [togglingTaskId, setTogglingTaskId] = useState<string | null>(null);
+  const [localDoneIds, setLocalDoneIds] = useState<string[]>([]);
   // Elementi che si stanno "dissolvendo" prima dell'eliminazione vera
   const [exitingIds, setExitingIds] = useState<string[]>([]);
   const { currentUser } = useAuth();
@@ -81,6 +100,10 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const updateEvaluation = useUpdateEvaluation();
   const deleteEvaluation = useDeleteEvaluation();
   const deleteAllEvaluations = useDeleteAllEvaluations();
+  const toggleCompleted = useToggleEvaluationCompleted();
+  // I percorsi dello studente servono al Diario per dire a quale corso è
+  // collegata una verifica (e per aprirlo con un tocco).
+  const { data: courses = [] } = useFileContextsQuery();
   const { data: userSubjects = [] } = useUserSubjects();
   const { data: routines = [] } = useUserRoutines();
   const subjectById = new Map(userSubjects.map((s) => [s.id, s]));
@@ -92,6 +115,26 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
 
   const colorFor = (name?: string): SubjectColor | undefined =>
     name ? resolveSubjectColor(name, colorBySubjectName.get(name.toLowerCase())?.color) : undefined;
+
+  /**
+   * 📔 P49 — la giornata scelta, già pronta per il Diario: compiti da
+   * spuntare, verifiche con il conto alla rovescia, sessioni di studio.
+   * Tutto calcolato in locale dai dati che il Piano ha già in mano.
+   */
+  const diaryDay = useMemo(
+    () => buildDiaryDay({
+      date: selectedDate ?? new Date(),
+      evaluations,
+      events,
+      subjects: userSubjects,
+      courses,
+      localCompletedIds: localDoneIds,
+    }),
+    [selectedDate, evaluations, events, userSubjects, courses, localDoneIds],
+  );
+
+  const dotsForDiaryDay = (date: Date) => dayDots(date, evaluations, events, userSubjects);
+  const hasContentForDiaryDay = (date: Date) => dotsForDiaryDay(date).length > 0;
 
   const isLoading = eventsQuery.isLoading && events.length === 0;
   const isDeleting = deleteEvent.isPending;
@@ -255,6 +298,146 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     }
   };
 
+  // ══════════════════════════════════════════════════════════════════
+  // 📔 P49 — AZIONI DEL DIARIO
+  // ══════════════════════════════════════════════════════════════════
+
+  /** Apre il foglio "Aggiungi evento" già puntato su categoria e giorno. */
+  const openSheetFor = (category: "verifica" | "compito", date: Date) => {
+    setEditingEval(null);
+    setSheetPreset({ category, date: format(date, "yyyy-MM-dd") });
+    setShowAddSheet(true);
+  };
+
+  /**
+   * La spunta di un compito. Due strade, una sola verità:
+   * - compito "vero" (evaluations) → salvato nel database, con la spunta
+   *   ottimistica: l'occhio vede subito il risultato, il cloud segue;
+   * - compito creato come impegno extra (study_events, scheda "Altro") →
+   *   lo stato vive solo su questo dispositivo, e il Diario lo dichiara.
+   */
+  const handleToggleTask = async (task: DiaryTask) => {
+    const next = !task.completed;
+    if (task.entry.kind === "evaluation") {
+      setTogglingTaskId(task.id);
+      try {
+        await toggleCompleted.mutateAsync({ id: task.id, next });
+      } catch (error) {
+        toast({
+          title: t("piano.error"),
+          description: error instanceof Error ? error.message : t("piano.errorSave"),
+          variant: "destructive",
+        });
+      } finally {
+        setTogglingTaskId(null);
+      }
+      return;
+    }
+    setLocalDoneIds((prev) => (next ? [...prev, task.id] : prev.filter((id) => id !== task.id)));
+  };
+
+  /** Modifica/elimina una voce del Diario: ognuna riapre il suo foglio o la sua conferma. */
+  const handleEditEntry = (entry: DiaryEntry) => {
+    if (entry.kind === "evaluation") {
+      setEditingStudyEvent(null);
+      setEditingEval(entry.evaluation);
+      return;
+    }
+    setEditingEval(null);
+    setEditingStudyEvent(entry.event);
+  };
+
+  const handleDeleteEntry = (entry: DiaryEntry) => {
+    if (entry.kind === "evaluation") {
+      setEvalToDelete(entry.evaluation);
+      return;
+    }
+    setEventToDelete(entry.event);
+  };
+
+  const handleEditExam = (exam: DiaryExam) => handleEditEntry(exam.entry);
+  const handleDeleteExam = (exam: DiaryExam) => handleDeleteEntry(exam.entry);
+  const handleEditSession = (session: DiarySession) => handleEditEntry(session.entry);
+  const handleDeleteSession = (session: DiarySession) => handleDeleteEntry(session.entry);
+
+  /** Dal Diario a Studio: apre il percorso collegato alla verifica. */
+  const handleOpenCourse = (courseId: string) => {
+    if (!onOpenCourse) return;
+    onOpenCourse(courseId);
+  };
+
+  const handleStartFocus = () => {
+    if (focus.isActive) focus.openFullscreen();
+    else focus.openSetup();
+  };
+
+  /**
+   * 📔 P49 — le azioni pesanti della stanza: "Genera piano" (l'AI propone una
+   * settimana di studio) e Focus. Nel Diario vivono in fondo, dopo la giornata;
+   * nelle viste Settimana/Mese restano in alto, dove erano.
+   */
+  const actionsRow = (
+    <div className="flex flex-row gap-3 w-full">
+      <Button
+        size="lg"
+        onClick={generatePlan}
+        disabled={isGeneratingPlan}
+        className="flex-[2] h-14 gap-2.5 rounded-button bg-primary text-primary-foreground shadow-level-1 hover:opacity-95 active:scale-[0.98] transition-all duration-200 ease-m3-emphasized"
+      >
+        {isGeneratingPlan ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="font-display text-sm font-semibold leading-tight">{t("piano.generating")}</span>
+          </>
+        ) : (
+          <span className="font-display text-sm font-semibold leading-tight">{t("piano.generate")}</span>
+        )}
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleStartFocus}
+        className="flex-[1] h-14 gap-1.5 rounded-button border-outline-variant bg-surface-container-low hover:bg-surface-container-high active:scale-[0.98] transition-all duration-200 ease-m3-emphasized"
+      >
+        <Timer className="w-4 h-4" />
+        <span className="font-display font-semibold">
+          {focus.isActive ? t("piano.focusResume") : t("piano.focus")}
+        </span>
+      </Button>
+    </div>
+  );
+
+  /**
+   * Il menu distruttivo, isolato e discreto: "Elimina tutto" non deve mai
+   * stare a un dito di distanza da "Aggiungi compito".
+   */
+  const manageRow = (
+    <div className="flex justify-center pt-1">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={nothingToDelete}
+            aria-label={t("piano.managePlan")}
+            className="text-muted-foreground"
+          >
+            {t("piano.managePlan")}
+            <ChevronDown className="w-3 h-3 ml-1" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="center">
+          <DropdownMenuItem onSelect={() => setDeleteScope("study")}>
+            {t("piano.deleteStudyOnly")}
+          </DropdownMenuItem>
+          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setDeleteScope("all")}>
+            {t("piano.deleteEverything")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+
   const formatDate = (dateString: string) => format(new Date(dateString), "d MMM", { locale: dateLocale });
 
   const selectedDateEvents = selectedDate ? events.filter(event => isSameDay(new Date(event.event_date), selectedDate)) : [];
@@ -272,70 +455,71 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         <PlanSuggestion explanation={suggestion.explanation} onAccept={handleAcceptPlan} onDecline={() => setSuggestion(null)} />
       )}
 
-      {!suggestion && (
-        <div className="flex flex-row gap-3 w-full">
-          <Button
-            size="lg"
-            onClick={generatePlan}
-            disabled={isGeneratingPlan}
-            className="flex-[2] h-14 gap-2.5 rounded-button bg-primary text-primary-foreground shadow-level-1 hover:opacity-95 active:scale-[0.98] transition-all duration-200 ease-m3-emphasized"
-          >
-            {isGeneratingPlan ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span className="font-display text-sm font-semibold leading-tight">{t("piano.generating")}</span>
-              </>
-            ) : (
-              <span className="font-display text-sm font-semibold leading-tight">{t("piano.generate")}</span>
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => (focus.isActive ? focus.openFullscreen() : focus.openSetup())}
-            className="flex-[1] h-14 gap-1.5 rounded-button border-outline-variant bg-surface-container-low hover:bg-surface-container-high active:scale-[0.98] transition-all duration-200 ease-m3-emphasized"
-          >
-            <Timer className="w-4 h-4" />
-            <span className="font-display font-semibold">
-              {focus.isActive ? t("piano.focusResume") : t("piano.focus")}
-            </span>
-          </Button>
+
+      {/* 📔 P49 — Tre viste: Diario (predefinita), Settimana, Mese.
+          Il Diario sta davanti perché è la domanda vera dello studente:
+          "cosa devo fare oggi?". */}
+      <div className="flex justify-center">
+        <div className="grid grid-cols-3 gap-1 p-1 rounded-full bg-surface-container">
+          {([
+            { key: "diario", label: t("piano.viewDiary"), Icon: NotebookPen },
+            { key: "week", label: t("piano.week"), Icon: CalendarRange },
+            { key: "month", label: t("piano.month"), Icon: CalendarDays },
+          ] as const).map(({ key, label, Icon }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setViewMode(key)}
+              aria-pressed={viewMode === key}
+              className={cn(
+                "h-9 px-4 rounded-full text-sm font-medium transition-all flex items-center justify-center gap-1.5",
+                viewMode === key ? "bg-primary text-primary-foreground shadow-level-1" : "text-muted-foreground",
+              )}
+            >
+              <Icon className="w-4 h-4" />{label}
+            </button>
+          ))}
         </div>
+      </div>
+
+      {/* ── VISTA DIARIO ── */}
+      {viewMode === "diario" && (
+        <DiaryView
+          day={diaryDay}
+          onSelectDate={setSelectedDate}
+          dotsForDay={dotsForDiaryDay}
+          hasContentForDay={hasContentForDiaryDay}
+          togglingId={togglingTaskId}
+          onToggleTask={(task) => void handleToggleTask(task)}
+          onEditEntry={handleEditEntry}
+          onDeleteEntry={handleDeleteEntry}
+          onEditExam={handleEditExam}
+          onDeleteExam={handleDeleteExam}
+          onEditSession={handleEditSession}
+          onDeleteSession={handleDeleteSession}
+          onStartFocus={handleStartFocus}
+          onOpenCourse={handleOpenCourse}
+          onAddTask={() => openSheetFor("compito", selectedDate ?? new Date())}
+          onAddExam={() => openSheetFor("verifica", selectedDate ?? new Date())}
+        />
       )}
 
-      {/* Calendario: Mese ⇄ Settimana */}
-      <div className="m3-card-elevated rounded-card p-4">
-        <div className="flex justify-center mb-2">
-          <div className="grid grid-cols-2 gap-1 p-1 rounded-full bg-surface-container">
-            {([
-              { key: "month", label: t("piano.month"), Icon: CalendarDays },
-              { key: "week", label: t("piano.week"), Icon: CalendarRange },
-            ] as const).map(({ key, label, Icon }) => (
-              <button
-                key={key}
-                onClick={() => setCalendarMode(key)}
-                aria-pressed={calendarMode === key}
-                className={cn(
-                  "h-9 px-4 rounded-full text-sm font-medium transition-all flex items-center gap-1.5",
-                  calendarMode === key ? "bg-primary text-primary-foreground shadow-level-1" : "text-muted-foreground",
-                )}
-              >
-                <Icon className="w-4 h-4" />{label}
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* ── VISTA SETTIMANA / MESE: riga azioni + calendario + giornata scelta ── */}
+      {viewMode !== "diario" && (
+        <>
+          {!suggestion && actionsRow}
+          <div className="m3-card-elevated rounded-card p-4">
 
         {/* Calendario con transizione fluida mese/settimana — evita flash */}
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
-            key={`${calendarMode}-${selectedDate ? format(selectedDate, "yyyy-MM") : "no-date"}`}
+            key={`${viewMode}-${selectedDate ? format(selectedDate, "yyyy-MM") : "no-date"}`}
             initial={{ opacity: 0, x: 12 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }}
             transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
           >
-        {calendarMode === "month" ? (
+        {viewMode === "month" ? (
           <>
             <Calendar
               mode="single" selected={selectedDate} onSelect={setSelectedDate} locale={it}
@@ -530,10 +714,24 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         )
       )}
 
+        </>
+      )}
+
+      {/* ── AZIONI IN FONDO (vista Diario): l'AI e il Focus non rubano il
+             primo schermo alla giornata; "Elimina" resta in disparte. ── */}
+      {viewMode === "diario" && (
+        <>
+          {!suggestion && actionsRow}
+          {manageRow}
+        </>
+      )}
+
       <AddEventSheet
         open={showAddSheet || !!editingEval}
-        onOpenChange={(o) => { if (!o) { setShowAddSheet(false); setEditingEval(null); } }}
+        onOpenChange={(o) => { if (!o) { setShowAddSheet(false); setEditingEval(null); setSheetPreset(null); } }}
         initial={editingEval}
+        presetCategory={sheetPreset && !editingEval ? sheetPreset.category : undefined}
+        presetDate={sheetPreset && !editingEval ? sheetPreset.date : undefined}
         onSubmit={handleSubmitEval}
       />
 

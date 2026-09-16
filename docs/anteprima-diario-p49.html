@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Erga — Anteprima P49: la stanza Piano diventa un Diario</title>
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --bg:#0A0A0C; --card:#141418; --border:rgba(255,255,255,.12); --border-soft:rgba(255,255,255,.08);
+    --fg:#F4F1EA; --muted:#9B9BA3; --primary:#F4F1EA; --primary-fg:#121214;
+    --surface-low:#131317; --surface-high:#22222A; --danger:#F87171;
+    --shadow-1:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.28);
+    --shadow-2:0 4px 16px rgba(0,0,0,.45);
+    --mat:#2563EB; --ita:#DC2626; --sto:#D97706;
+  }
+  body{margin:0;background:#0E0E11;color:var(--fg);font-family:Montserrat,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding:26px 16px 60px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 6px;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:13.5px;line-height:1.65;margin:0 0 24px;max-width:78ch}
+  .sub b{color:var(--fg)}
+  .frames{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+  .frame{flex:1 1 360px;min-width:320px;max-width:420px}
+  .frame h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 10px;font-weight:700}
+  .phone{position:relative;height:700px;border-radius:28px;background:var(--bg);border:1px solid var(--border);overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  .scroll{height:100%;overflow-y:auto;padding:14px;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+  .caption{color:var(--muted);font-size:12.5px;line-height:1.6;margin:10px 2px 0}
+  .label-small{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+
+  /* selettore viste */
+  .views{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:999px;background:var(--surface-low);border:1px solid var(--border-soft);margin:0 auto 14px;max-width:330px}
+  .views button{height:36px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .views button.on{background:var(--primary);color:var(--primary-fg);font-weight:600}
+
+  /* nastro giorni */
+  .strip{border:1px solid var(--border-soft);background:var(--card);border-radius:24px;padding:12px;box-shadow:var(--shadow-1)}
+  .strip .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .arrow{width:34px;height:34px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+  .arrow:hover{background:var(--surface-high);color:var(--fg)}
+  .days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .day{border:0;background:transparent;border-radius:16px;padding:8px 2px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--muted);font:inherit}
+  .day:hover{background:var(--surface-high)}
+  .day.sel{background:var(--primary);color:var(--primary-fg);box-shadow:var(--shadow-1)}
+  .day .w{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;opacity:.75}
+  .day .n{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+  .day .dots{display:flex;gap:2px;height:6px;align-items:center}
+  .day .dots i{width:6px;height:6px;border-radius:999px;display:block}
+  .today-link{display:block;margin:8px auto 0;border:1px solid var(--border);background:var(--surface-low);color:var(--fg);border-radius:999px;padding:4px 12px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;cursor:pointer}
+
+  /* intestazione giorno + progresso */
+  .dayhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:16px 2px 8px}
+  .dayhead h3{margin:0;font-size:18px;letter-spacing:-.01em;text-transform:capitalize}
+  .dayhead .prog{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:3px}
+  .barwrap{display:flex;align-items:center;gap:8px;min-width:120px;flex:1;max-width:170px}
+  .bar{height:6px;border-radius:999px;background:var(--surface-high);flex:1;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:999px;background:var(--primary)}
+  .pct{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:700}
+
+  /* titoli di sezione */
+  .sect{display:flex;align-items:center;gap:8px;margin:16px 2px 10px}
+  .sect h4{margin:0;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+  .sect .count{font-size:10px;background:var(--surface-low);border:1px solid var(--border-soft);color:var(--muted);border-radius:999px;padding:2px 8px;font-weight:700}
+
+  /* card compito */
+  .task{position:relative;display:flex;gap:12px;border:1px solid var(--border-soft);background:var(--card);border-radius:24px;padding:14px;box-shadow:var(--shadow-1)}
+  .check{width:44px;height:44px;flex:0 0 auto;border:0;background:transparent;cursor:pointer;display:flex;align-items:flex-start;justify-content:center;padding-top:2px}
+  .check i{width:26px;height:26px;border-radius:999px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-style:normal;color:transparent;font-size:13px;font-weight:900}
+  .check.on i{background:var(--primary);border-color:var(--primary);color:var(--primary-fg)}
+  .task .body{flex:1;min-width:0}
+  .badges{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .chip{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:3px 10px;display:inline-flex;align-items:center;gap:6px}
+  .chip .dot{width:8px;height:8px;border-radius:999px;display:block}
+  .chip.done{background:var(--primary);color:var(--primary-fg)}
+  .task .title{margin:5px 0 0;font-size:15px;font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+  .task .note{margin:3px 0 0;font-size:13px;color:var(--muted);line-height:1.4}
+  .task.done .title{color:var(--muted);text-decoration:line-through}
+  .task.done .note{opacity:.7;text-decoration:line-through}
+  .task.done{background:var(--surface-low)}
+  .kebab{width:34px;height:34px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;line-height:1}
+  .kebab:hover{background:var(--surface-high);color:var(--fg)}
+
+  /* card verifica */
+  .exam{border-radius:24px;padding:14px;position:relative}
+  .exam .title{margin:8px 0 0;font-size:15px;font-weight:800;line-height:1.35}
+  .exam .topic{margin:3px 0 0;font-size:13px;opacity:.85}
+  .exam .meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:9px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+  .cd{border-radius:999px;padding:3px 10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:800}
+  .cd.today{background:#7F1D1D;color:#FEE2E2}
+  .cd.tomorrow{background:var(--primary);color:var(--primary-fg)}
+  .cd.soon{background:var(--surface-high);color:var(--fg)}
+  .cd.later{background:var(--surface-low);color:var(--muted)}
+  .openbtn{border:1px solid var(--border);background:var(--card);color:var(--fg);border-radius:999px;padding:5px 10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;cursor:pointer}
+
+  /* sessione studio */
+  .session{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border-soft);background:var(--card);border-radius:24px;padding:14px;box-shadow:var(--shadow-1)}
+  .session .dot{width:10px;height:10px;border-radius:999px;margin-top:5px;flex:0 0 auto}
+  .focusbtn{height:36px;border:1px solid var(--border);background:var(--surface-low);color:var(--fg);border-radius:16px;padding:0 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+
+  /* vuoto + fondo */
+  .empty{border:1px solid var(--border-soft);background:var(--card);border-radius:24px;padding:26px 18px;text-align:center;box-shadow:var(--shadow-1)}
+  .empty p{margin:8px 0 0;font-size:13px;color:var(--muted);line-height:1.5}
+  .empty strong{display:block;margin-top:10px;font-size:16px}
+  .quick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .btn{height:48px;border-radius:16px;border:0;font:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .btn.primary{background:var(--primary);color:var(--primary-fg)}
+  .btn.ghost{background:var(--surface-low);color:var(--fg);border:1px solid var(--border)}
+  .actions{display:flex;gap:12px;margin-top:16px}
+  .actions .big{flex:2;height:56px}
+  .actions .small{flex:1;height:56px}
+  .manage{display:flex;justify-content:center;margin-top:10px}
+  .manage button{background:transparent;border:0;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+  .manage button:hover{color:var(--fg)}
+  .hintbox{margin-top:10px;border:1px dashed var(--border);border-radius:16px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Erga · Piano — la stanza diventa un Diario</h1>
+  <p class="sub">
+    Anteprima statica della nuova schermata (<b>stessa struttura e stessi colori del codice appena scritto</b>).
+    Il Diario è la vista <b>predefinita</b>: si apre sulla giornata di oggi, con il nastro dei giorni in alto, le
+    verifiche con il conto alla rovescia, i compiti <b>da spuntare</b> e le sessioni di studio pronte per il Focus.
+    Settimana e Mese restano a un tocco di distanza. Le finestre qui sotto sono navigabili: <b>prova a spuntare un compito</b>.
+  </p>
+
+  <div class="frames">
+    <!-- ══════════ DIARIO ══════════ -->
+    <section class="frame">
+      <h2>1 · Diario (vista predefinita)</h2>
+      <div class="phone">
+        <div class="scroll">
+          <div class="views">
+            <button class="on" type="button">📔 Diario</button>
+            <button type="button">Settimana</button>
+            <button type="button">Mese</button>
+          </div>
+
+          <!-- nastro -->
+          <div class="strip">
+            <div class="top">
+              <button class="arrow" type="button">‹</button>
+              <span class="label-small" id="range">14 set – 20 set 2026</span>
+              <button class="arrow" type="button">›</button>
+            </div>
+            <div class="days" id="days"></div>
+            <button class="today-link" type="button">Torna a oggi</button>
+          </div>
+
+          <!-- intestazione giornata -->
+          <div class="dayhead">
+            <div>
+              <h3>mercoledì 16 settembre</h3>
+              <div class="prog">1 di 3 compiti completati</div>
+            </div>
+            <div class="barwrap">
+              <span class="bar"><i style="width:33%"></i></span>
+              <span class="pct">33%</span>
+            </div>
+          </div>
+
+          <!-- verifiche -->
+          <div class="sect"><span>🎯</span><h4>Verifiche e interrogazioni</h4><span class="count">2</span></div>
+
+          <div class="exam" style="background:rgba(220 38 38 / .18);border:1px solid rgba(220 38 38 / .55)">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+              <span class="chip"><i class="dot" style="background:#DC2626"></i>Italiano</span>
+              <span class="chip" style="background:rgba(255,255,255,.06);color:var(--fg)">✎ Scritta</span>
+              <span class="cd today" style="margin-left:auto">Oggi</span>
+            </div>
+            <p class="title">Verifica sui Promessi Sposi</p>
+            <p class="topic">Argomento: Capitoli 1-8</p>
+            <div class="meta">
+              <span>mercoledì 16 settembre · 08:30</span>
+              <span>🎯 Obiettivo 9</span>
+              <button class="openbtn" type="button">↗ Apri il percorso</button>
+            </div>
+            <button class="kebab" style="position:absolute;right:8px;top:8px" type="button">⋯</button>
+          </div>
+
+          <div class="exam" style="margin-top:10px;background:rgba(217 119 6 / .18);border:1px solid rgba(217 119 6 / .55)">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+              <span class="chip"><i class="dot" style="background:#D97706"></i>Storia</span>
+              <span class="chip" style="background:rgba(255,255,255,.06);color:var(--fg)">🎤 Interrogazione</span>
+              <span class="cd tomorrow" style="margin-left:auto">Domani</span>
+            </div>
+            <p class="title">Interrogazione sulla Rivoluzione Industriale</p>
+            <div class="meta"><span>giovedì 17 settembre</span></div>
+            <button class="kebab" style="position:absolute;right:8px;top:8px" type="button">⋯</button>
+          </div>
+
+          <!-- compiti -->
+          <div class="sect"><span>✓</span><h4>Compiti per il giorno</h4><span class="count">3</span></div>
+
+          <div class="task" data-task>
+            <button class="check" type="button" aria-label="Segna come fatto"><i>✓</i></button>
+            <div class="body">
+              <div class="badges">
+                <span class="chip" style="background:rgba(37 99 235 / .16)"><i class="dot" style="background:#2563EB"></i>Matematica</span>
+              </div>
+              <p class="title">Esercizi di algebra, pagina 42</p>
+              <p class="note">Esercizi 1-6, con il procedimento scritto</p>
+            </div>
+            <button class="kebab" type="button">⋯</button>
+          </div>
+
+          <div class="task" style="margin-top:10px" data-task>
+            <button class="check" type="button" aria-label="Segna come fatto"><i>✓</i></button>
+            <div class="body">
+              <div class="badges">
+                <span class="chip" style="background:rgba(37 99 235 / .16)"><i class="dot" style="background:#2563EB"></i>Matematica</span>
+              </div>
+              <p class="title">Ripassare le derivate composte</p>
+            </div>
+            <button class="kebab" type="button">⋯</button>
+          </div>
+
+          <div class="task done" style="margin-top:10px" data-task data-done>
+            <button class="check on" type="button" aria-label="Segna da fare"><i>✓</i></button>
+            <div class="body">
+              <div class="badges">
+                <span class="chip" style="background:rgba(220 38 38 / .16)"><i class="dot" style="background:#DC2626"></i>Italiano</span>
+                <span class="chip done">Fatto</span>
+              </div>
+              <p class="title">Leggere il capitolo 9</p>
+            </div>
+            <button class="kebab" type="button">⋯</button>
+          </div>
+
+          <!-- sessioni -->
+          <div class="sect"><span>⏱</span><h4>Sessioni di studio</h4><span class="count">1</span></div>
+          <div class="session">
+            <span class="dot" style="background:#D97706"></span>
+            <div style="flex:1;min-width:0">
+              <span class="label-small">Storia · 17:00</span>
+              <p style="margin:2px 0 0;font-size:15px;font-weight:600">Ripasso capitolo 3</p>
+            </div>
+            <button class="focusbtn" type="button">⏱ Focus</button>
+            <button class="kebab" type="button">⋯</button>
+          </div>
+
+          <!-- fondo -->
+          <div class="quick">
+            <button class="btn primary" type="button">＋ Aggiungi compito</button>
+            <button class="btn ghost" type="button">＋ Aggiungi verifica</button>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary big" type="button">Genera piano di studio</button>
+            <button class="btn ghost small" type="button">⏱ Focus</button>
+          </div>
+          <div class="manage"><button type="button">Gestisci il piano ⌄</button></div>
+        </div>
+      </div>
+      <p class="caption">La spunta funziona davvero in questa anteprima: il compito si barra e il contatore in alto cambia. Se un compito è stato creato come “impegno” (scheda Altro), la card lo dichiara: la spunta resta solo su questo dispositivo finché Lovable non applica la migrazione.</p>
+    </section>
+
+    <!-- ══════════ GIORNATA VUOTA + SETTIMANA ══════════ -->
+    <section class="frame">
+      <h2>2 · Giornata libera e vista Settimana</h2>
+      <div class="phone">
+        <div class="scroll">
+          <div class="views">
+            <button type="button">📔 Diario</button>
+            <button type="button">Settimana</button>
+            <button type="button">Mese</button>
+          </div>
+
+          <div class="strip">
+            <div class="top">
+              <button class="arrow" type="button">‹</button>
+              <span class="label-small">14 set – 20 set 2026</span>
+              <button class="arrow" type="button">›</button>
+            </div>
+            <div class="days">
+              <button class="day" type="button"><span class="w">L</span><span class="n">14</span><span class="dots"></span></button>
+              <button class="day" type="button"><span class="w">M</span><span class="n">15</span><span class="dots"></span></button>
+              <button class="day sel" type="button"><span class="w">M</span><span class="n">16</span><span class="dots"><i style="background:#DC2626"></i><i style="background:#D97706"></i></span></button>
+              <button class="day" type="button"><span class="w">G</span><span class="n">17</span><span class="dots"><i style="background:#D97706"></i></span></button>
+              <button class="day" type="button"><span class="w">V</span><span class="n">18</span><span class="dots"></span></button>
+              <button class="day" type="button"><span class="w">S</span><span class="n">19</span><span class="dots"></span></button>
+              <button class="day" type="button"><span class="w">D</span><span class="n">20</span><span class="dots"></span></button>
+            </div>
+          </div>
+
+          <div class="dayhead">
+            <div><h3>domenica 20 settembre</h3></div>
+          </div>
+
+          <div class="sect"><span>✓</span><h4>Compiti per il giorno</h4><span class="count">0</span></div>
+          <div style="border:1px dashed var(--border);border-radius:24px;padding:18px;text-align:center">
+            <p style="margin:0;font-size:15px;color:var(--muted)">Nessun compito per questo giorno.</p>
+          </div>
+
+          <div class="empty" style="margin-top:16px">
+            <span style="font-size:20px">📖</span>
+            <strong>Giornata libera</strong>
+            <p>Niente compiti né verifiche per questo giorno. Se ti va, aggiungine uno: alleggerisce i giorni pieni.</p>
+          </div>
+
+          <div class="quick">
+            <button class="btn primary" type="button">＋ Aggiungi compito</button>
+            <button class="btn ghost" type="button">＋ Aggiungi verifica</button>
+          </div>
+
+          <div class="hintbox">
+            <b style="color:var(--fg)">Vista Settimana e Mese</b> — restano come le conosci: la griglia oraria con i blocchi colorati delle materie, il calendario del mese con i pallini, la giornata scelta in fondo.
+            L'unica differenza: adesso sono <b style="color:var(--fg)">dietro</b> al Diario, non davanti.
+          </div>
+        </div>
+      </div>
+      <p class="caption">Una giornata vuota non è un errore: è una buona notizia. Il Diario lo dice con calma e ti lascia aggiungere qualcosa se vuoi.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+// ── nastro dei giorni (stessa logica: 7 giorni centrati sul giorno scelto) ──
+(function () {
+  const GIORNI = ["L","M","M","G","V","S","D"];
+  const MESI = ["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
+  const center = new Date(2026, 8, 16);           // mercoledì 16 settembre 2026
+  const oggi = new Date(2026, 8, 16);
+  const attivita = { 16: ["#DC2626", "#D97706"], 17: ["#D97706"], 18: ["#2563EB"] };
+  const box = document.getElementById("days");
+
+  const days = [];
+  for (let i = -3; i <= 3; i++) {
+    const d = new Date(center);
+    d.setDate(center.getDate() + i);
+    days.push(d);
+  }
+
+  document.getElementById("range").textContent =
+    `${days[0].getDate()} ${MESI[days[0].getMonth()]} – ${days[6].getDate()} ${MESI[days[6].getMonth()]} 2026`;
+
+  days.forEach((d) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "day" + (d.getDate() === center.getDate() ? " sel" : "");
+    const dots = (attivita[d.getDate()] || []).map((c) => `<i style="background:${c}"></i>`).join("");
+    const letter = GIORNI[(d.getDay() + 6) % 7];
+    b.innerHTML = `<span class="w">${letter}</span><span class="n">${d.getDate()}</span><span class="dots">${dots}</span>`;
+    b.addEventListener("click", () => {
+      box.querySelectorAll(".day").forEach((el) => el.classList.remove("sel"));
+      b.classList.add("sel");
+    });
+    box.appendChild(b);
+  });
+
+  // ── la spunta dei compiti, col contatore che si aggiorna (come nell'app) ──
+  function refresh() {
+    const tasks = Array.from(document.querySelectorAll("[data-task]"));
+    const done = tasks.filter((t) => t.hasAttribute("data-done")).length;
+    const pct = Math.round((done / tasks.length) * 100);
+    document.querySelector(".prog").textContent = `${done} di ${tasks.length} compiti completati`;
+    document.querySelector(".pct").textContent = `${pct}%`;
+    document.querySelector(".bar i").style.width = `${pct}%`;
+  }
+
+  document.querySelectorAll("[data-task]").forEach((task) => {
+    const check = task.querySelector(".check");
+    check.addEventListener("click", () => {
+      const wasDone = task.hasAttribute("data-done");
+      task.classList.toggle("done", !wasDone);
+      check.classList.toggle("on", !wasDone);
+      check.setAttribute("aria-label", wasDone ? "Segna come fatto" : "Segna da fare");
+      if (wasDone) task.removeAttribute("data-done");
+      else task.setAttribute("data-done", "");
+      const badges = task.querySelector(".badges");
+      const chip = badges.querySelector(".chip.done");
+      if (!wasDone && !chip) {
+        const s = document.createElement("span");
+        s.className = "chip done";
+        s.textContent = "Fatto";
+        badges.appendChild(s);
+      } else if (wasDone && chip) {
+        chip.remove();
+      }
+      refresh();
+    });
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>

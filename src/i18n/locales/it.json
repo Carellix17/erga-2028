@@ -443,6 +443,37 @@
       "altroHint": "Un impegno non scolastico (sport, musica, famiglia…) che ti impedisce di studiare mentre si svolge.",
       "altroPlaceholder": "Es. Allenamento pallavolo",
       "saveCompito": "Salva compito"
-    }
+    },
+    "diary": {
+      "diaryStripLabel": "Giorni della settimana",
+      "prevWeek": "Settimana precedente",
+      "nextWeek": "Settimana successiva",
+      "backToToday": "Torna a oggi",
+      "tasksProgress": "{{done}} di {{total}} compiti completati",
+      "sectionExams": "Verifiche e interrogazioni",
+      "sectionTasks": "Compiti per il giorno",
+      "sectionStudy": "Sessioni di studio",
+      "addTask": "Aggiungi compito",
+      "addExam": "Aggiungi verifica",
+      "markDone": "Segna come fatto",
+      "markUndone": "Segna da fare",
+      "doneBadge": "Fatto",
+      "allDone": "Compiti finiti, giornata in ordine.",
+      "noTasks": "Nessun compito per questo giorno.",
+      "noSubject": "Senza materia",
+      "countdownToday": "Oggi",
+      "countdownTomorrow": "Domani",
+      "countdownInDays": "Tra {{days}} giorni",
+      "countdownPast": "Già passata",
+      "openCourseShort": "Apri il percorso",
+      "openCourse": "Apri il percorso collegato a {{title}}",
+      "startFocus": "Avvia una sessione Focus",
+      "taskMenu": "Altre azioni per {{title}}",
+      "localOnly": "Spunta solo su questo dispositivo",
+      "localOnlyHint": "I compiti aggiunti come impegno restano segnati solo su questo dispositivo: la spunta definitiva arriva col prossimo aggiornamento.",
+      "emptyTitle": "Giornata libera",
+      "emptyHint": "Niente compiti né verifiche per questo giorno. Se ti va, aggiungine uno: alleggerisce i giorni pieni."
+    },
+    "viewDiary": "Diario"
   }
 }

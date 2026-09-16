@@ -64,10 +64,25 @@ interface AddEventSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initial?: Evaluation | null;
+  /**
+   * 📔 P49 — il foglio si può aprire già "puntato": la vista Diario lo apre
+   * sulla scheda Compito (o Verifica) e con il giorno che si sta guardando,
+   * così aggiungere non costa mai un campo in più del necessario.
+   */
+  presetCategory?: Category;
+  /** "yyyy-MM-dd" del giorno scelto nel Diario. */
+  presetDate?: string;
   onSubmit: (input: EvalFormInput, editingId: string | null) => Promise<void> | void;
 }
 
-export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEventSheetProps) {
+export function AddEventSheet({
+  open,
+  onOpenChange,
+  initial,
+  presetCategory,
+  presetDate,
+  onSubmit,
+}: AddEventSheetProps) {
   const { t } = useTranslation();
   const editingId = initial?.id ?? null;
 
@@ -116,13 +131,18 @@ export function AddEventSheet({ open, onOpenChange, initial, onSubmit }: AddEven
       setGoal(initial.goal ?? null);
       setShowNotes(!!initial.description || initial.goal != null);
     } else {
-      setCategory("verifica"); setMode("scritta"); setTitle(""); setDescription("");
-      setDate(""); setTime(""); setEndTime(""); setSubjectId(NONE);
+      // Nuovo evento: la categoria e il giorno possono arrivare dalla vista
+      // Diario (presetCategory / presetDate), altrimenti i valori di sempre.
+      setCategory(presetCategory ?? "verifica");
+      setMode("scritta"); setTitle(""); setDescription("");
+      setDate(presetDate ?? ""); setTime(""); setEndTime(""); setSubjectId(NONE);
       setTopicMode("free"); setCourseId(""); setFreeTopic("");
       setGoal(null); setShowNotes(false);
+      // Un compito nasce con la descrizione aperta: è lì che si scrive cosa c'è da fare.
+      if (presetCategory === "compito") setShowNotes(true);
     }
     setEndError(null);
-  }, [open, initial]);
+  }, [open, initial, presetCategory, presetDate]);
 
   /** Descrizione + eventuale "fino alle" (il DB ha un solo orario per evento). */
   const descriptionWithEnd = () => {

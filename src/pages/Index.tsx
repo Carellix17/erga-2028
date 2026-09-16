@@ -284,6 +284,12 @@ const Index = () => {
           <PianoView
             hasFiles={hasFiles}
             onUploadClick={() => setShowUpload(true)}
+            /* 📔 P49 — dal Diario a Studio: "Apri il percorso" di una verifica
+               porta lo studente nel percorso collegato, nella stanza giusta. */
+            onOpenCourse={(contextId) => {
+              setSelectedContextId(contextId);
+              changeTab("studio");
+            }}
           />
         )}
         {activeTab === "pratica" && (
