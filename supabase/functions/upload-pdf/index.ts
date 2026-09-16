@@ -5,6 +5,7 @@ import { withCors, errorResponse, successResponse } from "../_shared/auth.ts";
 import { mammothHtmlToMarkdown } from "../_shared/docxMarkdown.ts";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_IMAGE_SIZE = 8 * 1024 * 1024; // limite morbido per singola foto (dopo compressione client)
 const MAX_IMAGES = 20;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
