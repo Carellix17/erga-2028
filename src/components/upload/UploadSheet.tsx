@@ -88,28 +88,59 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
 
   const removeFile = (index: number) => setSelectedFiles(prev => prev.filter((_, i) => i !== index));
 
-  const handleImageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []).filter(f => ALLOWED_IMAGE_TYPES.includes(f.type));
+  // 📷 P3: ogni foto viene ricodificata PRIMA dell'upload (lato lungo 2000 px,
+  // JPEG 0.82, orientamento EXIF corretto). Mostriamo peso prima/dopo.
+  const handleImageInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const files = Array.from(input.files || []).filter(f => ALLOWED_IMAGE_TYPES.includes(f.type));
+    input.value = "";
     if (files.length === 0) return;
     const total = selectedImages.length + files.length;
     if (total > MAX_IMAGES) {
       toast({ title: "Troppi file", description: `Puoi caricare massimo ${MAX_IMAGES} foto alla volta`, variant: "destructive" });
       return;
     }
-    setSelectedImages(prev => [...prev, ...files]);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setImagePreviews(prev => [...prev, ev.target?.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
+
+    setIsCompressing(true);
+    try {
+      const results = await compressImages(files);
+      const tooBig = results.find(r => r.compressedBytes > MAX_IMAGE_BYTES);
+      if (tooBig) {
+        toast({
+          title: "Foto troppo grande",
+          description: `«${tooBig.file.name}» supera gli 8 MB anche dopo la compressione. Scattala di nuovo con una risoluzione più bassa.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedImages(prev => [...prev, ...results.map(r => r.file)]);
+      setImageBytes(prev => ({
+        original: prev.original + results.reduce((s, r) => s + r.originalBytes, 0),
+        compressed: prev.compressed + results.reduce((s, r) => s + r.compressedBytes, 0),
+      }));
+      for (const r of results) {
+        const preview = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (ev) => resolve(ev.target?.result as string);
+          reader.readAsDataURL(r.file);
+        });
+        setImagePreviews(prev => [...prev, preview]);
+      }
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setSelectedImages(prev => {
+      const removed = prev[index];
+      if (removed) setImageBytes(b => ({ original: b.original, compressed: Math.max(0, b.compressed - removed.size) }));
+      return prev.filter((_, i) => i !== index);
+    });
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
+
 
   const handleUploadImages = async () => {
     if (selectedImages.length === 0 || !currentUser) return;
