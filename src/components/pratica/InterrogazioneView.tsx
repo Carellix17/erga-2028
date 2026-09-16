@@ -128,6 +128,8 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  const [questionCount, setQuestionCount] = useState(0);
  const [maxQuestions, setMaxQuestions] = useState<number>(5);
  const [scores, setScores] = useState<ScoreEntry[]>([]);
+ const [qaPairs, setQaPairs] = useState<QaPair[]>([]);
+
  const [finalReport, setFinalReport] = useState<FinalReport | null>(null);
  const [isBuildingReport, setIsBuildingReport] = useState(false);
  const [isSpeaking, setIsSpeaking] = useState(false);
