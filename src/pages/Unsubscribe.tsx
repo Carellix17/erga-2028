@@ -49,7 +49,10 @@ export default function Unsubscribe() {
 
         if (response.ok && data.valid) {
           setStatus({ kind: "valid" });
-        } else if (data.alreadyUsed) {
+        } else if (
+          data.alreadyUsed ||
+          data.reason === "already_unsubscribed"
+        ) {
           setStatus({ kind: "already" });
         } else {
           setStatus({
