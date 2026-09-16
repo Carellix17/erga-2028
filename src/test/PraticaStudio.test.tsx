@@ -164,12 +164,12 @@ describe("Pratica integrata in Studio con contesto selezionato", () => {
     await screen.findByText("Domanda 1");
 
     for (let turn = 1; turn <= 5; turn++) {
-      await waitFor(() => expect(screen.getByText("Invia risposta")).not.toBeDisabled = undefined as never, { timeout: 0 }).catch(() => {});
       recognition.onresult?.({
         resultIndex: 0,
         results: [{ 0: { transcript: `risposta ${turn}` }, isFinal: true, length: 1 }],
       });
-      await waitFor(() => expect(screen.getByText(`risposta ${turn}`)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText(`risposta ${turn}`).length).toBeGreaterThan(0));
+
       fireEvent.click(screen.getByText("Invia risposta"));
       if (turn < 5) {
         await screen.findByText(`Domanda ${turn + 1}`);
