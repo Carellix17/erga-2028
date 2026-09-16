@@ -12,6 +12,8 @@
  *  - After retries exhausted: next provider
  */
 
+import { logAiUsage } from "./aiUsage.ts";
+
 interface ProviderConfig {
   label: string;
   url: string;
@@ -52,6 +54,8 @@ interface AiCallOptions {
   max_tokens?: number;
   model?: string;
   stream?: boolean;
+  /** opzionale: id utente (uuid) da associare alla riga di ai_usage */
+  userId?: string;
 }
 
 function isQuotaError(status: number, body: string): boolean {
