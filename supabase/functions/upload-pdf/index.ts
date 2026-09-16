@@ -143,6 +143,14 @@ serve(withCors(async (req) => {
         if (img.size > MAX_FILE_SIZE) {
           return errorResponse(`Immagine troppo grande: ${img.name}. Max 100MB.`, 400);
         }
+        // Limite morbido: dopo la compressione lato client una foto non dovrebbe mai superare gli 8 MB.
+        if (img.size > MAX_IMAGE_SIZE) {
+          return errorResponse(
+            `La foto «${img.name}» pesa ${(img.size / 1024 / 1024).toFixed(1)} MB: troppo per l'elaborazione. Riprova a selezionarla dall'app (le foto vengono ottimizzate automaticamente) oppure scattala con una risoluzione più bassa. Limite: 8 MB per foto.`,
+            400,
+          );
+        }
+
       }
 
       const contextName = formData.get("contextName") as string || `📷 ${imageFiles.length} foto`;
