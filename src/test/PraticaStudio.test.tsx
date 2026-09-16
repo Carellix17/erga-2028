@@ -127,6 +127,7 @@ describe("Pratica integrata in Studio con contesto selezionato", () => {
       abort: vi.fn(),
     };
     (window as unknown as Record<string, unknown>).SpeechRecognition = vi.fn(() => recognition);
+    Element.prototype.scrollIntoView = vi.fn();
 
     const calls: string[] = [];
     let askCount = 0;
