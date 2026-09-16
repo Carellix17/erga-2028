@@ -101,3 +101,4 @@ export async function compressImages(files: File[]): Promise<CompressionResult[]
   for (const f of files) out.push(await compressImage(f)); // sequenziale: meno memoria su telefono
   return out;
 }
+
