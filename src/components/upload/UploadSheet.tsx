@@ -13,6 +13,7 @@ import { fileContextsKey } from "@/hooks/useFileContexts";
 import { supabase } from "@/integrations/supabase/client";
 import { currentLanguage } from "@/i18n";
 import { WikiCandidatePicker, type WikiCandidate } from "./WikiCandidatePicker";
+import { compressImages, formatBytes } from "@/lib/imageCompression";
 
 
 interface UploadSheetProps {
@@ -26,12 +27,16 @@ interface UploadSheetProps {
 }
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
+/** Limite morbido per singola foto DOPO la compressione (stesso valore lato server). */
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFileDeleted, initialManageContextId }: UploadSheetProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageBytes, setImageBytes] = useState<{ original: number; compressed: number }>({ original: 0, compressed: 0 });
+  const [isCompressing, setIsCompressing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [activeTab, setActiveTab] = useState<string>("loading");
@@ -185,6 +190,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       onUpload([{ name: `📷 ${selectedImages.length} foto`, size: selectedImages.reduce((s, f) => s + f.size, 0) }], contextId);
       setSelectedImages([]);
       setImagePreviews([]);
+      setImageBytes({ original: 0, compressed: 0 });
       onOpenChange(false);
       toast({ title: "Foto caricate! 📷", description: "Ora puoi generare le lezioni dal tab Studio." });
     } catch (error) {
@@ -533,18 +539,31 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                     multiple
                     onChange={handleImageInput}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    disabled={isUploading || selectedImages.length >= MAX_IMAGES}
+                    disabled={isUploading || isCompressing || selectedImages.length >= MAX_IMAGES}
                   />
                   <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2">
                     <Camera className="w-8 h-8 text-primary-foreground" />
                   </div>
                   <p className="font-display font-semibold text-lg mb-1">Carica le tue foto</p>
                   <p className="body-small text-muted-foreground">Appunti, lavagna, libro — max {MAX_IMAGES} foto (JPG, PNG)</p>
+                  {isCompressing && (
+                    <p className="body-small text-muted-foreground mt-2 inline-flex items-center gap-1.5">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Ottimizzo le foto…
+                    </p>
+                  )}
                 </div>
 
                 {selectedImages.length > 0 && (
                   <div className="space-y-3 animate-fade-up">
-                    <h3 className="label-medium text-muted-foreground">Foto selezionate ({selectedImages.length}/{MAX_IMAGES})</h3>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h3 className="label-medium text-muted-foreground">Foto selezionate ({selectedImages.length}/{MAX_IMAGES})</h3>
+                      <p className="body-small text-muted-foreground tabular-nums">
+                        {selectedImages.length} foto → ~{formatBytes(imageBytes.compressed)}
+                        {imageBytes.original > imageBytes.compressed && (
+                          <span className="text-muted-foreground/70"> (da {formatBytes(imageBytes.original)})</span>
+                        )}
+                      </p>
+                    </div>
                     <div className="grid grid-cols-3 gap-2">
                       {imagePreviews.map((preview, index) => (
                         <div key={index} className="relative rounded-xl overflow-hidden aspect-square animate-scale-in bg-surface-container">
@@ -557,7 +576,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                             <X className="w-4 h-4" />
                           </button>
                           <div className="absolute bottom-1 left-1 bg-background shadow-level-1 rounded-full px-2 py-0.5">
-                            <span className="body-small text-xs">{(selectedImages[index]?.size / 1024 / 1024).toFixed(1)}MB</span>
+                            <span className="body-small text-xs">{formatBytes(selectedImages[index]?.size ?? 0)}</span>
                           </div>
                         </div>
                       ))}
@@ -579,7 +598,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                 )}
 
                 <div className="sticky bottom-0 bg-surface-container-high pt-3 pb-2 -mx-1 px-1 mt-auto">
-                  <Button onClick={handleUploadImages} disabled={selectedImages.length === 0 || isUploading} className="w-full h-14 text-base" size="lg">
+                  <Button onClick={handleUploadImages} disabled={selectedImages.length === 0 || isUploading || isCompressing} className="w-full h-14 text-base" size="lg">
                     {isUploading ? (
                       <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{uploadStatus || "Elaborazione..."}</>
                     ) : selectedImages.length > 0 ? (
