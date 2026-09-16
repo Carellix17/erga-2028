@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage: {
+        Row: {
+          created_at: string
+          fn: string | null
+          id: number
+          model: string | null
+          ok: boolean
+          provider: string | null
+          status: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          fn?: string | null
+          id?: never
+          model?: string | null
+          ok?: boolean
+          provider?: string | null
+          status?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          fn?: string | null
+          id?: never
+          model?: string | null
+          ok?: boolean
+          provider?: string | null
+          status?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           context_id: string | null
