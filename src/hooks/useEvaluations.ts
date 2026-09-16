@@ -119,15 +119,12 @@ export function useToggleEvaluationCompleted() {
     mutationFn: async ({ id, next }: { id: string; next: boolean }) => {
       const uid = await getUid();
       if (!uid) throw new Error("Not authenticated");
-      // 📔 P49 — la colonna `is_completed` arriva con la sua migrazione: fino a
-      // quando Lovable non l'ha applicata, i tipi generati da Supabase
-      // (src/integrations/supabase/types.ts) non la conoscono. Il cast è
-      // dichiarato qui e in nessun altro posto: appena i tipi si aggiornano
-      // (Lovable li rigenera) resta valido e si può togliere senza fretta.
-      const patch = {
+      // 📔 P49 — la colonna `is_completed` esiste ora nello schema: i tipi
+      // generati la conoscono, quindi niente più cast.
+      const patch: TablesUpdate<"evaluations"> = {
         is_completed: next,
         updated_at: new Date().toISOString(),
-      } as unknown as TablesUpdate<"evaluations">;
+      };
       const { error } = await supabase
         .from("evaluations")
         .update(patch)
