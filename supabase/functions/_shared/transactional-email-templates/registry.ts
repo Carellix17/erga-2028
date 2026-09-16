@@ -1,5 +1,5 @@
 import type { ComponentType } from 'npm:react@18.3.1'
-import { welcome } from './welcome.tsx'
+import { template as welcome } from './welcome.tsx'
 
 export interface TemplateEntry {
   component: ComponentType<any>
