@@ -271,6 +271,8 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  setScore(null);
  setQuestionCount(0);
  setScores([]);
+ setQaPairs([]);
+
  setFinalReport(null);
 
  if (selectedMode ==="structured") {
@@ -696,7 +698,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  >
  {isLoadingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : ttsEnabled ? <Volume2 className={cn("w-4 h-4", isSpeaking &&"animate-pulse")} /> : <VolumeX className="w-4 h-4" />}
  </Button>
- <Button variant="ghost" size="icon" onClick={resetInterrogazione} className="rounded-full">
+ <Button variant="ghost" size="icon" onClick={leaveSession} className="rounded-full">
  <RotateCcw className="w-4 h-4" />
  </Button>
  </div>
