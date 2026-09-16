@@ -61,7 +61,7 @@ function isTransient(status: number): boolean {
  * in caso di errore. Lancia solo se TUTTI i provider falliscono.
  * Restituisce il JSON grezzo della risposta (formato OpenAI chat completions).
  */
-export async function callVisionJson(opts: VisionCallOptions): Promise<unknown> {
+export async function callVisionJson(opts: VisionCallOptions, tag?: string): Promise<unknown> {
   const errors: string[] = [];
 
   for (const provider of VISION_PROVIDERS) {
@@ -88,6 +88,15 @@ export async function callVisionJson(opts: VisionCallOptions): Promise<unknown> 
           }),
         });
 
+        logAiUsage({
+          fn: tag,
+          provider: provider.label,
+          model: provider.model,
+          ok: resp.ok,
+          status: resp.status,
+          userId: opts.userId,
+        });
+
         if (resp.ok) {
           console.log(`[vision] using ${provider.label.toUpperCase()} (attempt ${attempt + 1})`);
           return await resp.json();
@@ -103,6 +112,14 @@ export async function callVisionJson(opts: VisionCallOptions): Promise<unknown> 
         errors.push(`${provider.label}: HTTP ${resp.status}`);
         break; // errore non transitorio → prossimo fornitore
       } catch (err) {
+        logAiUsage({
+          fn: tag,
+          provider: provider.label,
+          model: provider.model,
+          ok: false,
+          status: null,
+          userId: opts.userId,
+        });
         console.warn(`[vision] ${provider.label} network error:`, err);
         errors.push(`${provider.label}: network`);
         break;
@@ -114,8 +131,8 @@ export async function callVisionJson(opts: VisionCallOptions): Promise<unknown> 
 }
 
 /** Convenience: chiamata vision che restituisce solo il testo della risposta. */
-export async function callVisionText(opts: VisionCallOptions): Promise<string> {
-  const data = (await callVisionJson(opts)) as {
+export async function callVisionText(opts: VisionCallOptions, tag?: string): Promise<string> {
+  const data = (await callVisionJson(opts, tag)) as {
     choices?: { message?: { content?: string } }[];
   };
   return data.choices?.[0]?.message?.content || "";
