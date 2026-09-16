@@ -79,6 +79,68 @@ ${studyContent}`;
       return successResponse({ topic: result });
     }
 
+    // P2: una sola valutazione a fine sessione.
+    // Il client manda `transcript` = [{ question, answer }, ...] con TUTTI i turni
+    // e riceve direttamente il report finale (voti per domanda + considerazioni).
+    if (action === "evaluate" && Array.isArray(body.transcript) && body.transcript.length > 0) {
+      const turns = body.transcript as { question?: string; answer?: string }[];
+      const transcriptText = turns
+        .map((t, i) => `DOMANDA ${i + 1}: ${t.question ?? ""}\nRISPOSTA ${i + 1}: ${t.answer ?? ""}`)
+        .join("\n\n");
+
+      const prompt = `Sei un tutor amichevole che ha appena concluso un'interrogazione orale con uno studente. Dai del tu, tono caloroso, costruttivo e incoraggiante, niente formalismi da professore severo.
+
+MATERIALI DI STUDIO:
+${studyContent}
+
+INTERROGAZIONE COMPLETA (${turns.length} domande):
+${transcriptText}
+
+Valuta OGNI risposta separatamente e poi scrivi un'analisi finale complessiva.
+Ogni voto è un numero tra 2 e 10, con al massimo UN decimale (es. 6.5, 7, 8.5).
+L'analisi finale (4-6 frasi) deve contenere: punti di forza emersi, lacune o concetti da rivedere, 1-2 consigli pratici. Usa **grassetto** sui concetti chiave.
+
+Rispondi SOLO in JSON, senza testo prima o dopo:
+{
+  "scores": [${turns.map((_, i) => `{"question": ${i + 1}, "score": <voto>}`).join(", ")}],
+  "considerations": "testo dell'analisi finale"
+}`;
+
+      const result = await callAI([{ role: "user", content: prompt }], 0.3);
+      const jsonMatch = result.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) return errorResponse("Errore nel formato della risposta");
+
+      try {
+        const raw = jsonMatch[0]
+          .replace(/,(\s*[}\]])/g, "$1")
+          .replace(/[\x00-\x1F\x7F]/g, " ");
+        const parsed = JSON.parse(raw) as { scores?: unknown; considerations?: unknown };
+        const rawScores = Array.isArray(parsed.scores) ? parsed.scores : [];
+        const scores = turns.map((t, i) => {
+          const found = rawScores.find((s: any) => Number(s?.question) === i + 1) as any;
+          const value = Number(found?.score);
+          const safe = Number.isFinite(value) ? Math.min(10, Math.max(2, value)) : 6;
+          return {
+            question: i + 1,
+            score: Math.round(safe * 10) / 10,
+            questionText: t.question ?? "",
+          };
+        });
+        const average = scores.length
+          ? Math.round((scores.reduce((a, s) => a + s.score, 0) / scores.length) * 10) / 10
+          : 0;
+        return successResponse({
+          scores,
+          average,
+          considerations: typeof parsed.considerations === "string" && parsed.considerations.trim()
+            ? parsed.considerations.trim()
+            : "Bel lavoro! Continua così.",
+        });
+      } catch {
+        return errorResponse("Errore nel parsing della risposta");
+      }
+    }
+
     if (action === "evaluate" || action === "evaluate_free") {
       const isStructured = action === "evaluate";
       const qNum = questionNumber || 1;
@@ -87,6 +149,7 @@ ${studyContent}`;
       const historyText = (history || [])
         .map((h: any) => `${h.type === "question" ? "DOMANDA" : h.type === "answer" ? "RISPOSTA" : "FEEDBACK"}: ${h.content}`)
         .join("\n");
+
 
       const prompt = isStructured
         ? `Sei un tutor amichevole che sta aiutando uno studente a ripassare. Dai del tu, usa un tono caloroso e incoraggiante, niente formalismi da professore severo. Valuta questa risposta in modo chiaro e costruttivo.
