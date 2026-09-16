@@ -81,7 +81,7 @@ export default function Unsubscribe() {
     if (!token) return;
     setConfirming(true);
     try {
-      const { error } = await supabase.functions.invoke(
+      const { data, error } = await supabase.functions.invoke(
         "handle-email-unsubscribe",
         {
           body: { token },
@@ -92,7 +92,11 @@ export default function Unsubscribe() {
         throw error;
       }
 
-      setStatus({ kind: "success" });
+      if (data?.reason === "already_unsubscribed") {
+        setStatus({ kind: "already" });
+      } else {
+        setStatus({ kind: "success" });
+      }
     } catch (error) {
       setStatus({
         kind: "error",
