@@ -182,7 +182,7 @@ Comincia ESATTAMENTE con: "In questa chat sei il tutor specializzato su ${ctxP.f
 CONTENUTO DEL DOCUMENTO (assaggio):
 ${sample}`,
         },
-      ], 0.4, 400);
+      ], 0.4, 400, "chat");
       return successResponse({ prompt: prompt.trim().slice(0, 1200) });
     }
 
@@ -414,7 +414,7 @@ Campi facoltativi in più: "eval_type" = "interrogazione" se dice interrogazione
           .catch(() => null)
       : null;
 
-    const aiResponse = await callAIStream(apiMessages, 0.7, 1600);
+    const aiResponse = await callAIStream(apiMessages, 0.7, 1600, "chat");
 
     // Le fonti si calcolano QUI, dalla domanda dell'utente (deterministico:
     // niente dipende da quanto l'AI obbedisce alle istruzioni di citazione).

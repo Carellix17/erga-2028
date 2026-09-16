@@ -168,7 +168,7 @@ ${contextSummary}`;
 
     console.log("Calling AI for plan generation");
 
-    const responseContent = await callAIText([{ role: "user", content: prompt }], 0.7, 4096);
+    const responseContent = await callAIText([{ role: "user", content: prompt }], 0.7, 4096, "generate-plan");
     if (!responseContent) throw new Error("Risposta AI vuota");
 
     console.log("AI response:", responseContent.substring(0, 500));

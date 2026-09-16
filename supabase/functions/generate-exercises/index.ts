@@ -267,7 +267,7 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
         const content = await callAIText([
           { role: "system", content: `${languageDirective(language)} Rispondi ESCLUSIVAMENTE con un array JSON valido. Niente markdown, niente \`\`\`json, niente testo extra. Tutte le virgolette interne alle stringhe devono essere escape con \\". Niente virgole finali.` },
           { role: "user", content: prompt },
-        ], 0.3, 8192);
+        ], 0.3, 8192, "generate-exercises");
         let exercises: unknown[];
         try {
           exercises = extractJsonArray(content);

@@ -123,6 +123,7 @@ serve(withCors(async (req) => {
       ],
       0.3,
       4096,
+      "study-tutor",
     );
 
     let parsed: unknown;

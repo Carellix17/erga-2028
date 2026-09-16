@@ -86,7 +86,7 @@ async function callAI(messages: { role: string; content: string }[], temperature
     { role: "system", content: languageDirective(REQUEST_LANGUAGE) },
     ...messages,
   ];
-  return callAIText(injected, temperature, maxTokens);
+  return callAIText(injected, temperature, maxTokens, "generate-lessons");
 }
 
 /**

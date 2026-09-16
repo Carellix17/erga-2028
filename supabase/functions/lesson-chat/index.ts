@@ -69,7 +69,7 @@ Rispondi SEMPRE in ${languageName(language)}.`;
     // made the chat appear to freeze after a few tokens. We fetch the
     // full text through the same 4-tier fallback and then chunk it out
     // as SSE so the client keeps the typing effect.
-    const fullText = await callAIText(apiMessages, 0.65, 2048);
+    const fullText = await callAIText(apiMessages, 0.65, 2048, "lesson-chat");
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
