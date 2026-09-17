@@ -16,10 +16,10 @@
  *
  * Peso e larghezza: 'Zalando Sans Expanded' è già un carattere allargato,
  * quindi a `font-bold` (700) e 60px il saluto copriva l'intera larghezza
- * dello schermo e risultava "spesso". Scendiamo di un gradino sul peso
- * (`font-semibold`, 600 — peso reale della famiglia, mai sintetizzato) e di
- * circa il 10% sulla misura ai tre breakpoint: la gerarchia resta intatta,
- * il blocco torna a respirare ai lati.
+ * dello schermo e risultava "spesso". Il peso scende a `font-medium` (500 —
+ * peso reale dell'asse variabile 200–900 della famiglia, mai sintetizzato):
+ * la gerarchia regge perché la voce è unica per livello e la misura resta
+ * la più grande della pagina, ma il saluto respira e non grida.
  *
  * Due righe: il saluto ("Buongiorno", "Buon pomeriggio", "Buonasera") sta
  * sulla prima riga e il nome dell'utente va a capo sulla seconda, come nel
@@ -27,21 +27,26 @@
  * per gli screen reader — separati da due `span` a blocco; lo spazio tra i
  * due mantiene leggibile il nome accessibile ("Buongiorno Vale").
  */
+import { cn } from "@/lib/utils";
+
 export interface HomeHeaderProps {
   greeting?: string;
   userName?: string;
   subtitle?: string | null;
+  /** Classi extra per il layout esterno (es. respiro sotto il saluto). */
+  className?: string;
 }
 
 export function HomeHeader({
   greeting,
   userName = "",
   subtitle,
+  className,
 }: HomeHeaderProps) {
   return (
-    <header className="flex items-start justify-between gap-3">
+    <header className={cn("flex items-start justify-between gap-3", className)}>
       <div className="min-w-0 font-welcome">
-        <h1 className="text-balance break-words font-welcome text-[2rem] font-semibold leading-[1.05] tracking-tight text-foreground sm:text-[2.75rem] lg:text-[3.25rem]">
+        <h1 className="text-balance break-words font-welcome text-[2rem] font-medium leading-[1.05] tracking-tight text-foreground sm:text-[2.75rem] lg:text-[3.25rem]">
           {greeting ? (
             <>
               <span className="block">{greeting}</span>{" "}

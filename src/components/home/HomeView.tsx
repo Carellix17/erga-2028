@@ -142,9 +142,14 @@ export function HomeView({
     // `no-ambient` spegne l'alone ambientale animato (P26/P27) su TUTTA la
     // Home: il fondo resta uniforme e le card portano solo la loro ombra
     // leggera del design system. Le altre sezioni non vengono toccate.
-    <div className="no-ambient flex min-w-0 flex-col gap-6 overflow-x-clip pt-20 pb-2 sm:pt-24">
+    //
+    // Respiro della stanza: il saluto parte più in basso (pt-24 sm:pt-32,
+    // griglia 4px) e si stacca dal contenuto con mb-4 sopra il gap-6 comune,
+    // così l'apertura della Home è calma e il ritmo tra le card resta invariato.
+    <div className="no-ambient flex min-w-0 flex-col gap-6 overflow-x-clip pt-24 pb-2 sm:pt-32">
       {/* 1. Saluto (l'avatar profilo sta nell'header in alto a destra) */}
       <HomeHeader
+        className="mb-4"
         greeting={welcome.greeting}
         userName={welcome.name || t("home.resume.studentFallback")}
         subtitle={welcome.subtitle}
