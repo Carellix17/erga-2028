@@ -145,17 +145,17 @@ typography:
   welcome:
     fontFamily: "'Zalando Sans Expanded', Montserrat, system-ui, sans-serif"
     fontSize: "2rem"
-    fontWeight: 600
+    fontWeight: 500
     lineHeight: 1.2
   welcome-md:
     fontFamily: "'Zalando Sans Expanded', Montserrat, system-ui, sans-serif"
     fontSize: "2.75rem"
-    fontWeight: 600
+    fontWeight: 500
     lineHeight: 1.1
   welcome-lg:
     fontFamily: "'Zalando Sans Expanded', Montserrat, system-ui, sans-serif"
     fontSize: "3.25rem"
-    fontWeight: 600
+    fontWeight: 500
     lineHeight: 1.05
 rounded:
   xs: "0.5rem"

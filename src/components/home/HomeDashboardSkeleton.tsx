@@ -9,13 +9,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function HomeDashboardSkeleton() {
   return (
     <div
-      className="no-ambient flex min-w-0 flex-col gap-6 overflow-x-clip pt-20 pb-2 sm:pt-24"
+      className="no-ambient flex min-w-0 flex-col gap-6 overflow-x-clip pt-24 pb-2 sm:pt-32"
       aria-busy="true"
       aria-label="Caricamento della Home"
     >
       {/* Header: saluto su due righe (saluto + nome) + sottotitolo + avatar.
-          Ogni barra è alta quanto una riga del titolo (32 → 44 → 52px). */}
-      <header className="flex items-start justify-between gap-3">
+          Ogni barra è alta quanto una riga del titolo (32 → 44 → 52px).
+          Il mb-4 replica il respiro del HomeHeader reale: al termine del
+          caricamento nulla si sposta. */}
+      <header className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-2">
           <Skeleton className="h-8 w-3/5 rounded-button sm:h-11 lg:h-[3.25rem]" />
           <Skeleton className="h-8 w-2/5 rounded-button sm:h-11 lg:h-[3.25rem]" />
