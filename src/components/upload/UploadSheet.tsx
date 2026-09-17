@@ -108,16 +108,19 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
 
     setIsCompressing(true);
     try {
-      const results = await compressImages(files);
-      const tooBig = results.find(r => r.compressedBytes > MAX_IMAGE_BYTES);
-      if (tooBig) {
+      const all = await compressImages(files);
+      // Scarta solo le foto troppo pesanti: le altre restano selezionate.
+      const tooBig = all.filter(r => r.compressedBytes > MAX_IMAGE_BYTES);
+      const results = all.filter(r => r.compressedBytes <= MAX_IMAGE_BYTES);
+      if (tooBig.length > 0) {
+        const names = tooBig.map(r => `«${r.file.name}»`).join(", ");
         toast({
-          title: "Foto troppo grande",
-          description: `«${tooBig.file.name}» supera gli 8 MB anche dopo la compressione. Scattala di nuovo con una risoluzione più bassa.`,
+          title: tooBig.length === 1 ? "Foto troppo grande" : "Alcune foto sono troppo grandi",
+          description: `${names} ${tooBig.length === 1 ? "supera" : "superano"} gli 8 MB anche dopo la compressione: ${tooBig.length === 1 ? "non è stata aggiunta" : "non sono state aggiunte"}. Scattala di nuovo con una risoluzione più bassa.`,
           variant: "destructive",
         });
-        return;
       }
+      if (results.length === 0) return;
 
       setSelectedImages(prev => [...prev, ...results.map(r => r.file)]);
       setImageBytes(prev => ({
