@@ -4,13 +4,8 @@ import { Session } from "@supabase/supabase-js";
 
 async function sendWelcomeEmail(userId: string, email: string, name?: string) {
   try {
-    await supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "welcome",
-        recipientEmail: email,
-        idempotencyKey: `welcome-${userId}`,
-        templateData: { name },
-      },
+    await supabase.functions.invoke("send-welcome-email", {
+      body: { name },
     });
   } catch (error) {
     // La welcome email non deve bloccare l'autenticazione.
