@@ -119,12 +119,12 @@ describe("HomeView modulare (V3)", () => {
     const lines = Array.from(heading.querySelectorAll("span"));
     expect(lines).toHaveLength(2);
     // prima riga: solo il saluto (senza virgola né nome), seconda riga: solo il nome
-    expect(lines[0].textContent).toMatch(/^Buon(giorno|anotte|asera| pomeriggio)$/);
+    expect(lines[0].textContent).toMatch(/^Buon(giorno|asera)$/);
     expect(lines[0].textContent).not.toContain("Vale");
     expect(lines[1].textContent).toBe("Vale");
     lines.forEach((line) => expect(line.className).toContain("block"));
     // il nome accessibile resta un unico titolo leggibile, es. "Buongiorno Vale"
-    expect(heading).toHaveAccessibleName(/^Buon(giorno|anotte|asera| pomeriggio) Vale$/);
+    expect(heading).toHaveAccessibleName(/^Buon(giorno|asera) Vale$/);
   });
 
   it("la CTA della card corso riprende la lezione reale", () => {

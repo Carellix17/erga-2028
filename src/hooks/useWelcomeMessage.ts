@@ -15,11 +15,15 @@ interface UseWelcomeMessageOptions {
   nextEvaluationDays?: number | null;
 }
 
-function greetingKeyForHour(hour: number) {
-  if (hour < 5) return "home.greeting.night";
-  if (hour < 12) return "home.greeting.morning";
-  if (hour < 17) return "home.greeting.afternoon";
-  return "home.greeting.evening";
+/**
+ * Due soli saluti, decisi dall'ora del dispositivo:
+ * - "Buonasera" dalle 17:00 fino alle 03:00 della notte (17–23 e 0–2);
+ * - "Buongiorno" per tutto il resto della giornata (03:00–16:59).
+ * Non esistono più il saluto del pomeriggio né quello della notte.
+ */
+export function greetingKeyForHour(hour: number) {
+  if (hour >= 17 || hour < 3) return "home.greeting.evening";
+  return "home.greeting.morning";
 }
 
 /**

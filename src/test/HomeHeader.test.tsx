@@ -37,8 +37,9 @@ describe("Font del messaggio di benvenuto", () => {
     const heading = screen.getByRole("heading", { level: 1, name: "Buongiorno Vale" });
 
     expect(heading).toHaveClass(
-      "font-welcome-title", "font-medium", "text-[2.25rem]", "sm:text-[4rem]", "lg:text-[4.5rem]",
-      "leading-[1.05]", "tracking-tight", "text-balance", "break-words",
+      "font-welcome-title", "font-medium",
+      "text-[3.375rem]", "sm:text-[5.5rem]", "md:text-[6rem]", "lg:text-[6.75rem]",
+      "leading-[1.05]", "tracking-tight", "text-balance",
     );
     expect(container.querySelectorAll(".font-welcome-title")).toHaveLength(1);
     const lines = heading.querySelectorAll("span");
@@ -63,5 +64,30 @@ describe("Font del messaggio di benvenuto", () => {
   it("mantiene il nuovo font anche quando il messaggio contiene solo il nome", () => {
     render(<HomeHeader userName="Alessandro" />);
     expect(screen.getByRole("heading", { level: 1, name: "Alessandro" })).toHaveClass("font-welcome-title");
+  });
+
+  it("ingrandisce del 50% la scala del messaggio di benvenuto", () => {
+    render(<HomeHeader greeting="Buongiorno" userName="Vale" />);
+    const heading = screen.getByRole("heading", { level: 1 });
+    const rem = (prefix: string) => {
+      const match = heading.className.match(new RegExp(`${prefix}text-\\[([\\d.]+)rem\\]`));
+      return match ? Number(match[1]) : null;
+    };
+    // vecchi gradini: 2.25rem base e 4.5rem su lg → +50% esatto
+    expect(rem("(?<![a-z]:)")).toBeCloseTo(2.25 * 1.5, 5);
+    expect(rem("lg:")).toBeCloseTo(4.5 * 1.5, 5);
+    // la rampa resta monotona crescente
+    expect(rem("sm:")).toBeGreaterThan(rem("(?<![a-z]:)")!);
+    expect(rem("md:")).toBeGreaterThan(rem("sm:")!);
+    expect(rem("lg:")).toBeGreaterThan(rem("md:")!);
+  });
+
+  it("tiene il saluto su un solo rigo: break-words resta solo sul nome", () => {
+    render(<HomeHeader greeting="Buonasera" userName="Bartolomeo" />);
+    const heading = screen.getByRole("heading", { level: 1 });
+    const [greetingLine, nameLine] = Array.from(heading.querySelectorAll("span"));
+    expect(heading).not.toHaveClass("break-words");
+    expect(greetingLine).not.toHaveClass("break-words");
+    expect(nameLine).toHaveClass("break-words");
   });
 });
