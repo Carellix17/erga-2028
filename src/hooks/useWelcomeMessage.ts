@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 export interface WelcomeMessage {
   greeting: string;
   name: string;
-  subtitle: string;
+  subtitle: string | null;
 }
 
 interface UseWelcomeMessageOptions {
@@ -36,7 +36,7 @@ export function useWelcomeMessage({
   const { t } = useTranslation();
 
   return useMemo(() => {
-    let subtitle: string;
+    let subtitle: string | null;
     if (pendingTasks > 0) {
       subtitle = t("home.subtitle.pending", { count: pendingTasks });
     } else if (completedTasks > 0) {
@@ -44,7 +44,9 @@ export function useWelcomeMessage({
     } else if (nextEvaluationDays !== null && nextEvaluationDays > 0) {
       subtitle = t("home.subtitle.nextEvaluation", { count: nextEvaluationDays });
     } else if (hasResumeLesson) {
-      subtitle = t("home.subtitle.resume");
+      // Il messaggio "Hai una lezione da riprendere" è stato rimosso dalla
+      // Home: sotto il saluto non deve più comparire nulla in questo caso.
+      subtitle = null;
     } else {
       subtitle = t("home.subtitle.empty");
     }
