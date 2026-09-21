@@ -6,7 +6,7 @@ import { join } from "path";
  * 🛡️ P29 × GUARDIA DELLA PANNA — test anti-regressione del bianco.
  *
  * Nel tema SCURO l'inchiostro di Erga è l'off-white #F2F0EF, non il bianco
- * puro: su fondo notte (#05090A) il bianco pieno abbaglia. Questo test
+ * puro: su fondo notte (#11120D) il bianco pieno abbaglia. Questo test
  * fallisce se qualcuno riporta il bianco (o un quasi-bianco) dentro il
  * blocco `.dark`, o se cambia la definizione del gettone `--cream`.
  *
