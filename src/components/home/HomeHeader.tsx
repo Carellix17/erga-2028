@@ -10,10 +10,19 @@
  * Il div mantiene `font-welcome`: il sottotitolo resta in Zalando Sans Expanded.
  *
  * Scala display: il saluto resta il titolo più importante della pagina e
- * domina la gerarchia (48 → 66 → 78px, +50% rispetto alla scala precedente)
- * con interlinea serrata e tracking
+ * domina la gerarchia (36 → 64 → 72px) con interlinea serrata e tracking
  * negativo; va a capo in modo bilanciato (`text-balance`) invece di troncarsi,
  * così un nome lungo resta leggibile senza rompere il layout.
+ *
+ * I tre gradini sono calcolati, non stimati: il vincolo è che TUTTI i saluti
+ * ("Buongiorno", "Buon pomeriggio", "Buonasera") restino in un solo rigo con
+ * un margine libero a destra, mentre il nome va sempre a capo sul secondo
+ * rigo (i due span sono `block`). Il caso più largo è "Buon pomeriggio":
+ * 7,52em con `tracking-tight` (misurato su Ubuntu Sans 500 reale). I
+ * contenitori del AppLayout (max-w-lg px-4 → md:max-w-2xl → lg:max-w-4xl)
+ * lasciano almeno 288px su viewport 320px, 512px su sm e 896px su lg, quindi:
+ * base 2.25rem (margine ≥17px), sm 4rem (≥30px), lg 4.5rem (≥354px, qui il
+ * vincolo non stringe: 4.5rem tiene la rampa display senza eccessi).
  *
  * Peso: resta `font-medium` (500), ora fornito da Ubuntu Sans.
  * Dimensioni, interlinea, spaziatura e comportamento responsive non cambiano:
@@ -44,7 +53,7 @@ export function HomeHeader({
   return (
     <header className={cn("flex items-start justify-between gap-3", className)}>
       <div className="min-w-0 font-welcome">
-        <h1 className="text-balance break-words font-welcome-title text-[3rem] font-medium leading-[1.05] tracking-tight text-foreground sm:text-[4.125rem] lg:text-[4.875rem]">
+        <h1 className="text-balance break-words font-welcome-title text-[2.25rem] font-medium leading-[1.05] tracking-tight text-foreground sm:text-[4rem] lg:text-[4.5rem]">
           {greeting ? (
             <>
               <span className="block">{greeting}</span>{" "}
