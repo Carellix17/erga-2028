@@ -38,7 +38,7 @@ describe("Font del messaggio di benvenuto", () => {
 
     expect(heading).toHaveClass(
       "font-welcome-title", "font-medium",
-      "text-[3.375rem]", "sm:text-[5.5rem]", "md:text-[6rem]", "lg:text-[6.75rem]",
+      "text-[2.7rem]", "sm:text-[4.4rem]", "md:text-[4.8rem]", "lg:text-[5.4rem]",
       "leading-[1.05]", "tracking-tight", "text-balance",
     );
     expect(container.querySelectorAll(".font-welcome-title")).toHaveLength(1);
@@ -66,16 +66,18 @@ describe("Font del messaggio di benvenuto", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Alessandro" })).toHaveClass("font-welcome-title");
   });
 
-  it("ingrandisce del 50% la scala del messaggio di benvenuto", () => {
+  it("riduce del 20% la scala del messaggio di benvenuto", () => {
     render(<HomeHeader greeting="Buongiorno" userName="Vale" />);
     const heading = screen.getByRole("heading", { level: 1 });
     const rem = (prefix: string) => {
       const match = heading.className.match(new RegExp(`${prefix}text-\\[([\\d.]+)rem\\]`));
       return match ? Number(match[1]) : null;
     };
-    // vecchi gradini: 2.25rem base e 4.5rem su lg → +50% esatto
-    expect(rem("(?<![a-z]:)")).toBeCloseTo(2.25 * 1.5, 5);
-    expect(rem("lg:")).toBeCloseTo(4.5 * 1.5, 5);
+    // gradini precedenti: 3.375rem base, 5.5rem sm, 6rem md, 6.75rem lg → -20% (×0.8)
+    expect(rem("(?<![a-z]:)")).toBeCloseTo(3.375 * 0.8, 5);
+    expect(rem("sm:")).toBeCloseTo(5.5 * 0.8, 5);
+    expect(rem("md:")).toBeCloseTo(6 * 0.8, 5);
+    expect(rem("lg:")).toBeCloseTo(6.75 * 0.8, 5);
     // la rampa resta monotona crescente
     expect(rem("sm:")).toBeGreaterThan(rem("(?<![a-z]:)")!);
     expect(rem("md:")).toBeGreaterThan(rem("sm:")!);
