@@ -13,8 +13,8 @@
  * useWelcomeMessage). Il saluto del pomeriggio non esiste più: era il caso
  * più largo (7,52em) e teneva basso tutto il titolo.
  *
- * Scala display (+50% rispetto alla precedente 36 → 64 → 72px): il saluto è
- * il titolo più importante della pagina e ora domina davvero la gerarchia,
+ * Scala display (-20% rispetto alla precedente 54 → 88 → 96 → 108px): il saluto è
+ * il titolo più importante della pagina e domina la gerarchia,
  * con interlinea serrata e tracking negativo.
  *
  * I gradini sono calcolati, non stimati: il vincolo è che il saluto stia
@@ -25,12 +25,10 @@
  * Larghezze utili dei contenitori di AppLayout (max-w-lg px-4 →
  * sm:px-6 → md:max-w-2xl → lg:max-w-4xl): 288px su viewport 320px, 464px su
  * sm, 624px su md, 848px su lg. Da qui:
- * - base 3.375rem (54px → 277px, margine ~11px) = 2.25rem +50%;
- * - sm 5.5rem (88px → 452px, margine ~12px): unico gradino tenuto sotto il
- *   +50% pieno, perché a 6rem "Buongiorno" misurerebbe 493px e andrebbe a
- *   capo nei 464px disponibili a quel breakpoint;
- * - md 6rem (96px → 493px su 624px) = il +50% pieno del vecchio gradino sm;
- * - lg 6.75rem (108px → 555px su 848px) = 4.5rem +50%.
+ * - base 2.7rem (43.2px → 222px, margine ampio) = 3.375rem -20%;
+ * - sm 4.4rem (70.4px → 362px su 464px) = 5.5rem -20%;
+ * - md 4.8rem (76.8px → 394px su 624px) = 6rem -20%;
+ * - lg 5.4rem (86.4px → 444px su 848px) = 6.75rem -20%.
  *
  * Peso: resta `font-medium` (500), fornito da Ubuntu Sans.
  *
@@ -59,7 +57,7 @@ export function HomeHeader({
   return (
     <header className={cn("flex items-start justify-between gap-3", className)}>
       <div className="min-w-0 font-welcome">
-        <h1 className="text-balance font-welcome-title text-[3.375rem] font-medium leading-[1.05] tracking-tight text-foreground sm:text-[5.5rem] md:text-[6rem] lg:text-[6.75rem]">
+        <h1 className="text-balance font-welcome-title text-[2.7rem] font-medium leading-[1.05] tracking-tight text-foreground sm:text-[4.4rem] md:text-[4.8rem] lg:text-[5.4rem]">
           {greeting ? (
             <>
               <span className="block">{greeting}</span>{" "}
