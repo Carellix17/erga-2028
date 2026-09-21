@@ -143,17 +143,17 @@ typography:
     fontWeight: 400
     lineHeight: 1.05
   welcome:
-    fontFamily: "'Zalando Sans Expanded', Montserrat, system-ui, sans-serif"
+    fontFamily: "'Ubuntu Sans', Montserrat, system-ui, sans-serif"
     fontSize: "2rem"
     fontWeight: 500
     lineHeight: 1.2
   welcome-md:
-    fontFamily: "'Zalando Sans Expanded', Montserrat, system-ui, sans-serif"
+    fontFamily: "'Ubuntu Sans', Montserrat, system-ui, sans-serif"
     fontSize: "2.75rem"
     fontWeight: 500
     lineHeight: 1.1
   welcome-lg:
-    fontFamily: "'Zalando Sans Expanded', Montserrat, system-ui, sans-serif"
+    fontFamily: "'Ubuntu Sans', Montserrat, system-ui, sans-serif"
     fontSize: "3.25rem"
     fontWeight: 500
     lineHeight: 1.05
@@ -307,8 +307,10 @@ schermata, sull'azione focale. Due avori nella stessa vista annullano la gerarch
 ## Typography
 
 Erga parla con **Montserrat** per testo e titoli, **Raleway** per le etichette in
-maiuscolo e due voci speciali: **Radja** (self-hosted, peso unico 400) per il titolo
-focale delle schermate di accesso, **Zalando Sans Expanded** per il saluto della Home.
+maiuscolo e tre voci speciali: **Radja** (self-hosted, peso unico 400) per il titolo
+focale delle schermate di accesso, **Ubuntu Sans** (Google Fonts, peso 500) solo
+per il saluto e il nome nell'h1 della Home. Il sottotitolo della Home resta in
+**Zalando Sans Expanded**: la sostituzione non riguarda il contenitore né altri testi.
 
 La scala è quella dichiarata nel codice: 36 / 24 / 20 / 18 / 16 / 15 / 14 / 13 / 12 /
 11 / 10 px. Sotto i 13 px comincia il **piccolo stampato**, ammesso solo dove

@@ -174,8 +174,10 @@ export default {
         serif: ['Montserrat', 'Plus Jakarta Sans', 'serif'],
         body: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['Raleway', 'ui-monospace', 'SFMono-Regular', 'monospace'],
-        // Usato SOLO dal messaggio di benvenuto della Home (HomeHeader).
+        // Contenitore HomeHeader: mantiene il sottotitolo in Zalando Sans Expanded.
         welcome: ['Zalando Sans Expanded', 'Montserrat', 'system-ui', 'sans-serif'],
+        // Solo il saluto e il nome nell'h1 della Home; Google Fonts, peso 500.
+        'welcome-title': ['Ubuntu Sans', 'Montserrat', 'system-ui', 'sans-serif'],
         //  P36 — Radja: titoli focali e macro-metriche della card eroe.
         radja: ['Radja', 'Zalando Sans Expanded', 'Montserrat', 'system-ui', 'sans-serif'],
       },

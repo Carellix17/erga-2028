@@ -332,7 +332,8 @@
 @layer base {
   /* Tipografia: font caricati da Google Fonts nel <link> di index.html
      (Montserrat 100–900 per testo e titoli, Raleway 100–900 per le etichette,
-     Zalando Sans Expanded 200–900 solo per il saluto della Home).
+     Ubuntu Sans 500 solo per il saluto della Home; il sottotitolo mantiene
+     Zalando Sans Expanded 200–900).
      Nessun font self-hosted, nessun @font-face qui: la gamma di pesi è reale,
      quindi niente grassetti o corsivi sintetizzati. */
   * {

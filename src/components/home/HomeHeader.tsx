@@ -4,22 +4,19 @@
  * L'avatar con il profilo vive nella barra in alto a destra (AppHeader):
  * qui non c'è più alcun pulsante duplicato.
  *
- * Tipografia: il saluto è l'unico punto dell'app che usa 'Zalando Sans Expanded'
- * (utility `font-welcome`), caricato da Google Fonts con asse dei pesi 200–900.
- * La classe sta sia sul div sia sull'h1: la regola `h1 { font-family }` di
- * @layer base vince sull'ereditarietà, solo il layer utilities la scavalca.
+ * Tipografia: solo il saluto e il nome nell'h1 usano 'Ubuntu Sans'
+ * (utility `font-welcome-title`), caricato da Google Fonts nel solo peso 500.
+ * La classe va direttamente sull'h1 per scavalcare la famiglia di @layer base.
+ * Il div mantiene `font-welcome`: il sottotitolo resta in Zalando Sans Expanded.
  *
  * Scala display: il saluto resta il titolo più importante della pagina e
  * domina la gerarchia (32 → 44 → 52px) con interlinea serrata e tracking
  * negativo; va a capo in modo bilanciato (`text-balance`) invece di troncarsi,
  * così un nome lungo resta leggibile senza rompere il layout.
  *
- * Peso e larghezza: 'Zalando Sans Expanded' è già un carattere allargato,
- * quindi a `font-bold` (700) e 60px il saluto copriva l'intera larghezza
- * dello schermo e risultava "spesso". Il peso scende a `font-medium` (500 —
- * peso reale dell'asse variabile 200–900 della famiglia, mai sintetizzato):
- * la gerarchia regge perché la voce è unica per livello e la misura resta
- * la più grande della pagina, ma il saluto respira e non grida.
+ * Peso: resta `font-medium` (500), ora fornito da Ubuntu Sans.
+ * Dimensioni, interlinea, spaziatura e comportamento responsive non cambiano:
+ * cambia esclusivamente la famiglia del messaggio di benvenuto.
  *
  * Due righe: il saluto ("Buongiorno", "Buon pomeriggio", "Buonasera") sta
  * sulla prima riga e il nome dell'utente va a capo sulla seconda, come nel
@@ -46,7 +43,7 @@ export function HomeHeader({
   return (
     <header className={cn("flex items-start justify-between gap-3", className)}>
       <div className="min-w-0 font-welcome">
-        <h1 className="text-balance break-words font-welcome text-[2rem] font-medium leading-[1.05] tracking-tight text-foreground sm:text-[2.75rem] lg:text-[3.25rem]">
+        <h1 className="text-balance break-words font-welcome-title text-[2rem] font-medium leading-[1.05] tracking-tight text-foreground sm:text-[2.75rem] lg:text-[3.25rem]">
           {greeting ? (
             <>
               <span className="block">{greeting}</span>{" "}
