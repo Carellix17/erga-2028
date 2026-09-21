@@ -3,7 +3,7 @@
 /* ═══ RADJA — font display dei titoli focali (P36 dark luxury) ═══
    Self-hosted in public/fonts/ (peso unico 400, subset latino).
    Riservato a titolo del corso in Home e macro-metriche: per il corpo
-   restano Montserrat/Raleway da Google Fonts. I grassetti sul 400 unico
+   restano Montserrat/Ubuntu Sans da Google Fonts. I grassetti sul 400 unico
    vengono evitati: la gerarchia la fa la misura, non il peso sintetico. */
 @font-face {
   font-family: "Radja";
@@ -331,8 +331,8 @@
 
 @layer base {
   /* Tipografia: font caricati da Google Fonts nel <link> di index.html
-     (Montserrat 100–900 per testo e titoli, Raleway 100–900 per le etichette,
-     Ubuntu Sans 500 solo per il saluto della Home; il sottotitolo mantiene
+     (Montserrat 100–900 per testo e titoli, Ubuntu Sans 100–800 per le etichette
+     e per il saluto della Home; il sottotitolo mantiene
      Zalando Sans Expanded 200–900).
      Nessun font self-hosted, nessun @font-face qui: la gamma di pesi è reale,
      quindi niente grassetti o corsivi sintetizzati. */
@@ -410,7 +410,7 @@
 
   /* Etichette — uppercase tracking moderno */
   .label-large, .label-medium, .label-small {
-    font-family: 'Raleway', ui-monospace, SFMono-Regular, monospace;
+    font-family: 'Ubuntu Sans', ui-monospace, SFMono-Regular, monospace;
     text-transform: uppercase;
     font-weight: 600;
   }
@@ -578,9 +578,9 @@
     color: hsl(var(--foreground));
   }
   .editorial-focus-title {
-    /* P48 — le etichette in maiuscolo spaziato parlano Raleway (la voce
+    /* P48 — le etichette in maiuscolo spaziato parlano Ubuntu Sans (la voce
        delle etichette nel sistema), non Plus Jakarta. */
-    font-family: 'Raleway', ui-monospace, SFMono-Regular, monospace;
+    font-family: 'Ubuntu Sans', ui-monospace, SFMono-Regular, monospace;
     font-size: 0.7rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
