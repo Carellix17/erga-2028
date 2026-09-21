@@ -14,13 +14,14 @@ export function HomeDashboardSkeleton() {
       aria-label="Caricamento della Home"
     >
       {/* Header: saluto su due righe (saluto + nome) + sottotitolo + avatar.
-          Ogni barra è alta quanto una riga del titolo (36 → 64 → 72px).
+          Ogni barra è alta quanto una riga del titolo dopo l'ingrandimento
+          del 50% (54 → 88 → 96 → 108px, ×1.05 di interlinea).
           Il mb-4 replica il respiro del HomeHeader reale: al termine del
           caricamento nulla si sposta. */}
       <header className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-2">
-          <Skeleton className="h-9 w-3/5 rounded-button sm:h-16 lg:h-[4.5rem]" />
-          <Skeleton className="h-9 w-2/5 rounded-button sm:h-16 lg:h-[4.5rem]" />
+          <Skeleton className="h-[3.5rem] w-3/5 rounded-button sm:h-[5.75rem] md:h-[6.25rem] lg:h-[7.125rem]" />
+          <Skeleton className="h-[3.5rem] w-2/5 rounded-button sm:h-[5.75rem] md:h-[6.25rem] lg:h-[7.125rem]" />
           <Skeleton className="h-4 w-2/3 rounded-full" />
         </div>
         <Skeleton className="h-11 w-11 shrink-0 rounded-full" />

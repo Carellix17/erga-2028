@@ -95,7 +95,7 @@ export function PhoneHome({
   return (
     <div className="lp-phone-view flex min-h-[580px] flex-col gap-2.5 px-2.5 pb-20 pt-8">
       <header className="lp-phone-home-block px-0.5 pt-1">
-        <p className="text-[16px] font-extrabold leading-tight tracking-tight text-neutral-900">Buon pomeriggio</p>
+        <p className="text-[16px] font-extrabold leading-tight tracking-tight text-neutral-900">Buongiorno</p>
         <p className="text-[18px] font-extrabold leading-tight tracking-tight text-neutral-600">Alessandro</p>
         <p className="mt-1 text-[9px] font-medium text-neutral-600">Riprendi da dove avevi lasciato.</p>
       </header>

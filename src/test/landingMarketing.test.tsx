@@ -68,7 +68,7 @@ describe("landing marketing", () => {
   it("mostra la vera struttura della Home e aggiorna la materia scelta", () => {
     renderLanding();
 
-    expect(screen.getByText("Buon pomeriggio")).toBeInTheDocument();
+    expect(screen.getByText("Buongiorno")).toBeInTheDocument();
     expect(screen.getByText("Preparazione lezione")).toBeInTheDocument();
     expect(screen.getByText("Piano del giorno")).toBeInTheDocument();
 
