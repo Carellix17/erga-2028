@@ -204,7 +204,7 @@
     --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.08), 0 10px 26px -6px hsl(0 0% 0% / 0.45), 0 4px 12px -2px hsl(0 0% 0% / 0.30);
     --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.09), 0 16px 36px -8px hsl(0 0% 0% / 0.50), 0 6px 16px -4px hsl(0 0% 0% / 0.35);
     --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.10), 0 20px 44px -8px hsl(0 0% 0% / 0.55), 0 8px 20px -4px hsl(0 0% 0% / 0.40);
---background: 240 9% 4.3%;             /* #0A0A0C — antracite profondo P36 */
+--background: 72 16.13% 6.08%;            /* #11120D — fondo notte (oliva quasi nero) */
 --foreground: var(--cream);            /* P29: l'inchiostro di notte è panna, non bianco */
 --surface-dim: 0 0% 6%;
 --surface-bright: 0 0% 18%;
@@ -1189,7 +1189,7 @@ html.high-contrast {
 }
 html.high-contrast.dark {
   /* P30: anche in alto contrasto la notte usa l'off-white, non il bianco puro
-     (#F2F0EF sul fondo #05090A resta ben oltre l'AAA). */
+     (#F2F0EF sul fondo #11120D resta ben oltre l'AAA). */
   --outline: var(--cream) / 0.6;
   --outline-variant: var(--cream) / 0.42;
   --border: var(--cream) / 0.42;
@@ -1347,7 +1347,7 @@ html.high-contrast .glass-action-strong {
     P24 × MONOCROMO — FONDO, ACCENTO MATERIA, CALLOUT
    .bg-dot-grid        → superficie piatta: il tema chiaro usa
                          #F2F0EF e non mostra più la vecchia matrice;
-                         in .dark il fondo resta #05090A, sempre piatto;
+                         in .dark il fondo resta #11120D, sempre piatto;
    .subject-callout    → box d'evidenziazione tinti col colore della
                          materia corrente (--subject-accent), con
                          fallback su --subject-accent-light;
@@ -1360,7 +1360,7 @@ html.high-contrast .glass-action-strong {
   background-image: none;
   background-size: auto;
 }
-/* P26 — di notte i puntini restano spenti: il fondo è piatto #05090A. */
+/* P26 — di notte i puntini restano spenti: il fondo è piatto #11120D. */
 .dark .bg-dot-grid {
   background-image: none;
 }

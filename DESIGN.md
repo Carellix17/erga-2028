@@ -9,7 +9,7 @@ colors:
   muted-foreground-light: "hsl(0 0% 38%)"    # secondo testo di giorno (≥4.5:1)
   border-light: "hsl(340 6.67% 8.82% / 0.12)"
   # ── Tema notte ───────────────────────────────────────────────────────
-  night: "hsl(240 9% 4.3%)"                  # #0A0A0C — antracite profondo
+  night: "hsl(72 16.13% 6.08%)"              # #11120D — fondo notte (oliva quasi nero)
   card-night: "hsl(240 9% 8.6%)"             # #141418 — card secondaria di notte
   muted-foreground-night: "hsl(0 0% 72%)"
   border-night: "hsl(20 10.34% 94.31% / 0.07)"
@@ -235,7 +235,7 @@ struttura viene prima dell'espressione — poche decorazioni, superfici opache,
 nessun effetto che competa con il testo.
 
 La stanza ha due luci: **il giorno** è off-white caldo (#F2F0EF) con card bianche e
-inchiostro quasi nero (#181516); **la notte** è antracite profondo (#0A0A0C) con
+inchiostro quasi nero (#181516); **la notte** è un oliva quasi nero (#11120D) con
 card carbone (#141418) e testo panna, mai bianco puro. In entrambe le luci l'app
 resta **monocroma**: il colore non decora, informa. Dove il colore compare, ha un
 significato preciso — il vivido delle materie nel Piano e nel Core, il verde e il
@@ -268,14 +268,14 @@ rosso di marca in vetrina. Se un colore non dice nulla, diventa grigio.
 ## Colors
 
 Il sistema è costruito su **due luci e una tinta**. Le due luci sono il tema
-chiaro (carta) e il tema notte (antracite); la tinta è l'inchiostro caldo di Erga,
+chiaro (carta) e il tema notte (oliva quasi nero); la tinta è l'inchiostro caldo di Erga,
 un quasi-nero con una punta di rosso (#181516), che di notte diventa panna.
 
 **Ruoli, non sfumature.** I token sono raggruppati per ruolo (superfici, contenitori,
 bordi, testo, semantica) e non per tinta: cambiando il tema, un componente non
 cambia una sola riga di codice, cambia solo il valore del token.
 
-- **Superfici.** `background` (carta di giorno, antracite di notte) + la famiglia
+- **Superfici.** `background` (carta di giorno, oliva quasi nero di notte) + la famiglia
   `surface-container-*` per gli strati intermedi. La gerarchia nasce dagli strati,
   non dalle ombre.
 - **Contenitori.** `card` è la superficie di lavoro (bianca di giorno, #141418 di

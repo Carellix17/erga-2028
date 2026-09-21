@@ -140,7 +140,7 @@ describe("Superfici pulite della Home", () => {
     expect(css).toContain("--surface-cream-foreground: 240 5% 8%");
     expect(css).toContain("--surface-cream-muted: 240 3% 30%");
     expect(css).toContain("--surface-dark-card: 240 9% 8.6%");
-    expect(css).toContain("--background: 240 9% 4.3%");
+    expect(css).toContain("--background: 72 16.13% 6.08%");
     expect(css).toContain("--card: var(--surface-dark-card)");
     expect(css).toContain("--border: var(--cream) / 0.07");
     // font display Radja self-hosted + utility Tailwind
