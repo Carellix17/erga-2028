@@ -167,13 +167,13 @@ export default {
       },
       fontFamily: {
         // Font caricati da Google Fonts nel <link> di index.html, con gamma di pesi
-        // completa (Montserrat e Raleway 100–900, Zalando Sans Expanded 200–900):
+        // completa (Montserrat 100–900, Ubuntu Sans 100–800, Zalando Sans Expanded 200–900):
         // nessun file di font nel repo, nessun @font-face manuale.
         sans: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
         display: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
         serif: ['Montserrat', 'Plus Jakarta Sans', 'serif'],
         body: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['Raleway', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        mono: ['Ubuntu Sans', 'ui-monospace', 'SFMono-Regular', 'monospace'],
         // Contenitore HomeHeader: mantiene il sottotitolo in Zalando Sans Expanded.
         welcome: ['Zalando Sans Expanded', 'Montserrat', 'system-ui', 'sans-serif'],
         // Solo il saluto e il nome nell'h1 della Home; Google Fonts, peso 500.

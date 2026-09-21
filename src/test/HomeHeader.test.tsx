@@ -8,7 +8,7 @@ import tailwindConfig from "../../tailwind.config";
 const fontFamilies = tailwindConfig.theme.extend.fontFamily;
 
 describe("Font del messaggio di benvenuto", () => {
-  it("carica Ubuntu Sans 500 da Google Fonts senza rimuovere gli altri font", () => {
+  it("carica Ubuntu Sans da Google Fonts senza rimuovere gli altri font", () => {
     const html = readFileSync(resolve(__dirname, "../../index.html"), "utf8");
     const doc = new DOMParser().parseFromString(html, "text/html");
     const link = doc.querySelector<HTMLLinkElement>('link[rel="stylesheet"][href^="https://fonts.googleapis.com/css2"]');
@@ -18,18 +18,16 @@ describe("Font del messaggio di benvenuto", () => {
     expect(url.searchParams.getAll("family")).toEqual([
       "Montserrat:ital,wght@0,100..900;1,100..900",
       "Plus Jakarta Sans:wght@400;500;600;700;800",
-      "Raleway:ital,wght@0,100..900;1,100..900",
-      "Ubuntu Sans:wght@500",
+      "Ubuntu Sans:ital,wght@0,100..800;1,100..800",
       "Zalando Sans Expanded:ital,wght@0,200..900;1,200..900",
     ]);
     expect(url.searchParams.get("display")).toBe("swap");
   });
 
-  it("limita Ubuntu Sans alla nuova utility del titolo, lasciando invariata la famiglia del contenitore", () => {
+  it("configura Ubuntu Sans per il titolo di benvenuto e per le etichette, lasciando invariata la famiglia del contenitore", () => {
     expect(fontFamilies["welcome-title"]).toEqual(["Ubuntu Sans", "Montserrat", "system-ui", "sans-serif"]);
+    expect(fontFamilies.mono).toEqual(["Ubuntu Sans", "ui-monospace", "SFMono-Regular", "monospace"]);
     expect(fontFamilies.welcome).toEqual(["Zalando Sans Expanded", "Montserrat", "system-ui", "sans-serif"]);
-    expect(Object.entries(fontFamilies).filter(([, stack]) => stack.includes("Ubuntu Sans")).map(([name]) => name))
-      .toEqual(["welcome-title"]);
   });
 
   it("applica Ubuntu Sans solo all'h1 preservando peso, scala e le due righe accessibili", () => {

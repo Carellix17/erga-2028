@@ -473,7 +473,7 @@
         "purpose": "Testo di lettura: lezioni, chat, descrizioni."
       },
       "label": {
-        "displayName": "Label (Raleway)",
+        "displayName": "Label (Ubuntu Sans)",
         "purpose": "Micro-titoli in maiuscolo spaziato: sezioni, stati, badge."
       },
       "focal": {
@@ -505,11 +505,11 @@
         "purpose": "Metadati in superfici dense: calendario, chat, badge. Mai per il testo di lettura."
       },
       "label-large": {
-        "displayName": "Label large (Raleway)",
+        "displayName": "Label large (Ubuntu Sans)",
         "purpose": "Etichette di sezione."
       },
       "label-small": {
-        "displayName": "Label small (Raleway)",
+        "displayName": "Label small (Ubuntu Sans)",
         "purpose": "Micro-etichette della griglia del calendario."
       },
       "metric": {

@@ -103,18 +103,18 @@ typography:
     fontSize: "0.8125rem"
     lineHeight: 1.4
   label-large:
-    fontFamily: "Raleway, ui-monospace, SFMono-Regular, monospace"
+    fontFamily: "Ubuntu Sans, ui-monospace, SFMono-Regular, monospace"
     fontSize: "0.75rem"
     fontWeight: 600
     letterSpacing: "0.1em"
   label:
-    fontFamily: "Raleway, ui-monospace, SFMono-Regular, monospace"
+    fontFamily: "Ubuntu Sans, ui-monospace, SFMono-Regular, monospace"
     fontSize: "0.6875rem"
     fontWeight: 600
     letterSpacing: "0.12em"
     fontFeature: "uppercase"
   label-small:
-    fontFamily: "Raleway, ui-monospace, SFMono-Regular, monospace"
+    fontFamily: "Ubuntu Sans, ui-monospace, SFMono-Regular, monospace"
     fontSize: "0.625rem"
     fontWeight: 600
     letterSpacing: "0.14em"
@@ -306,10 +306,9 @@ schermata, sull'azione focale. Due avori nella stessa vista annullano la gerarch
 
 ## Typography
 
-Erga parla con **Montserrat** per testo e titoli, **Raleway** per le etichette in
-maiuscolo e tre voci speciali: **Radja** (self-hosted, peso unico 400) per il titolo
-focale delle schermate di accesso, **Ubuntu Sans** (Google Fonts, peso 500) solo
-per il saluto e il nome nell'h1 della Home. Il sottotitolo della Home resta in
+Erga parla con **Montserrat** per testo e titoli, **Ubuntu Sans** per le etichette in
+maiuscolo e per il saluto e il nome nell'h1 della Home, e due voci speciali: **Radja** (self-hosted, peso unico 400) per il titolo
+focale delle schermate di accesso. Il sottotitolo della Home resta in
 **Zalando Sans Expanded**: la sostituzione non riguarda il contenitore né altri testi.
 
 La scala è quella dichiarata nel codice: 36 / 24 / 20 / 18 / 16 / 15 / 14 / 13 / 12 /
@@ -322,7 +321,7 @@ della chat).
   si riconosce dalla misura e dal peso, non dal colore.
 - **Testo** (body 1 rem, interlinea 1.6): spaziatura −0.01 em, larghezza di lettura
   65–75 caratteri. Su telefono il corpo non scende mai sotto 16 px.
-- **Etichette** (Raleway, maiuscolo, 10–12 px, spaziatura 0.10–0.14 em): solo per
+- **Etichette** (Ubuntu Sans, maiuscolo, 10–12 px, spaziatura 0.10–0.14 em): solo per
   micro-titoli di sezione e stati, mai per frasi.
 - **Macro-metriche** (1.8 rem / 2.1 rem, peso 800, cifre tabulari, spaziatura
   −0.04 em): i numeri dei riepiloghi (minuti di Focus, sessioni). Un solo numero
