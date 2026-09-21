@@ -37,7 +37,7 @@ describe("Font del messaggio di benvenuto", () => {
     const heading = screen.getByRole("heading", { level: 1, name: "Buongiorno Vale" });
 
     expect(heading).toHaveClass(
-      "font-welcome-title", "font-medium", "text-[3rem]", "sm:text-[4.125rem]", "lg:text-[4.875rem]",
+      "font-welcome-title", "font-medium", "text-[2.25rem]", "sm:text-[4rem]", "lg:text-[4.5rem]",
       "leading-[1.05]", "tracking-tight", "text-balance", "break-words",
     );
     expect(container.querySelectorAll(".font-welcome-title")).toHaveLength(1);
