@@ -144,17 +144,17 @@ typography:
     lineHeight: 1.05
   welcome:
     fontFamily: "'Ubuntu Sans', Montserrat, system-ui, sans-serif"
-    fontSize: "2rem"
+    fontSize: "3rem"
     fontWeight: 500
-    lineHeight: 1.2
+    lineHeight: 1.05
   welcome-md:
     fontFamily: "'Ubuntu Sans', Montserrat, system-ui, sans-serif"
-    fontSize: "2.75rem"
+    fontSize: "4.125rem"
     fontWeight: 500
-    lineHeight: 1.1
+    lineHeight: 1.05
   welcome-lg:
     fontFamily: "'Ubuntu Sans', Montserrat, system-ui, sans-serif"
-    fontSize: "3.25rem"
+    fontSize: "4.875rem"
     fontWeight: 500
     lineHeight: 1.05
 rounded:
