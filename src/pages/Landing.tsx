@@ -18,6 +18,17 @@ const faqSchema = {
   })),
 };
 
+const appSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Erga",
+  applicationCategory: "EducationalApplication",
+  operatingSystem: "Web",
+  url: "https://erga-learning.app/",
+  description: "App per studiare che trasforma PDF, foto e appunti in lezioni, esercizi e un piano di studio personalizzato.",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Accesso gratuito durante la beta" },
+};
+
 export default function Landing() {
   const { isAuthenticated, isLoading } = useAuth();
   const splash = useSplashGate(isLoading);
@@ -34,7 +45,7 @@ export default function Landing() {
         title="Erga — App per studiare con piano di studio personalizzato"
         description="Erga è l'app per studiare che trasforma PDF, foto e appunti in lezioni brevi, esercizi e un piano di studio su misura per te. Beta gratuita per le superiori."
         path="/"
-        jsonLd={faqSchema}
+        jsonLd={[faqSchema, appSchema]}
       />
       <ErgaMarketing />
     </>
