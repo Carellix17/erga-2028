@@ -24,6 +24,11 @@ e-commerce, publishers, agencies). Orchestrates 24 sub-skills (21 core + 1 frame
 integration + 2 extension mirrors) and 18 sub-agents. A separate optional Firecrawl
 extension is also installable (see "Optional Extensions" below).
 
+
+## Moduli inclusi (skill unica)
+
+Tutte le sotto-skill dell'archivio sono raccolte in `references/modules/<nome>.md` (es. `/seo technical` → `references/modules/seo-technical.md`). Prima di eseguire un comando leggi il modulo corrispondente. I riferimenti a `claude-seo run`, sub-agent e script Python del repository originale non sono disponibili qui: esegui le stesse analisi con gli strumenti a disposizione (lettura del codice, ricerca web, Semrush, Search Console).
+
 ## Quick Reference
 
 | Command | What it does |
