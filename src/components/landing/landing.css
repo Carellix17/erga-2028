@@ -207,24 +207,6 @@
   .erga-lp .lp-hero-actions .lp-btn { width: 100%; }
 }
 
-.erga-lp .lp-chooser { margin-top: 1.7rem; }
-.erga-lp .lp-chooser-label {
-  display: block; font-size: 0.72rem; font-weight: 700;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--lp-ink-3); margin-bottom: 0.65rem;
-}
-.erga-lp .lp-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.erga-lp .lp-pill {
-  min-height: 44px; padding: 0.6rem 0.95rem; border-radius: 999px;
-  border: 1px solid var(--lp-line-strong); background: #fff;
-  font-size: 1rem; font-weight: 650;
-  transition: background 180ms var(--lp-ease), color 180ms var(--lp-ease), border-color 180ms var(--lp-ease);
-}
-.erga-lp .lp-pill:hover { border-color: var(--lp-ink); }
-.erga-lp .lp-pill[aria-pressed="true"] {
-  background: var(--lp-ink); color: #fff; border-color: var(--lp-ink);
-}
-
 .erga-lp .lp-stage { position: relative; min-height: 520px; display: grid; place-items: center; }
 .erga-lp .lp-hex-orbit { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
 .erga-lp .lp-hex-orbit svg { width: min(100%, 480px); height: auto; }
@@ -240,10 +222,6 @@
 .erga-lp .lp-sec-head .lp-h2 { margin: 0.7rem 0 0.8rem; }
 
 .erga-lp .lp-proof { padding: 1.2rem 0 3.5rem; border-bottom: 1px solid var(--lp-line); }
-.erga-lp .lp-proof-label {
-  margin-bottom: 0.8rem; text-align: center;
-  color: var(--lp-ink-3); font-size: 0.85rem; font-weight: 650;
-}
 .erga-lp .lp-proof-row {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0; color: var(--lp-ink-2); border: 1px solid var(--lp-line-strong); border-radius: 20px; overflow: hidden;
@@ -251,14 +229,6 @@
 }
 .erga-lp .lp-proof-row span { min-height: 60px; display: grid; place-items: center; padding: .75rem; text-align: center; border-right: 1px solid var(--lp-line); border-bottom: 1px solid var(--lp-line); }
 @media (min-width: 760px) { .erga-lp .lp-proof-row { grid-template-columns: repeat(4, minmax(0, 1fr)); } .erga-lp .lp-proof-row span { border-bottom: 0; } }
-.erga-lp .lp-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2.5rem; }
-@media (min-width: 800px) { .erga-lp .lp-stats { grid-template-columns: repeat(4, 1fr); } }
-.erga-lp .lp-stat {
-  background: var(--lp-elev); border: 1px solid var(--lp-line); border-radius: 18px; padding: 1.25rem 1.2rem;
-}
-.erga-lp .lp-stat b { display: block; font-size: 1.55rem; letter-spacing: -0.04em; font-weight: 750; }
-.erga-lp .lp-stat .lp-small { display: block; margin-top: 0.25rem; font-size: 1rem; line-height: 1.5; }
-.erga-lp .lp-stat b em { color: var(--lp-red); font-style: normal; }
 
 .erga-lp .lp-show { background: #0a0a0a; color: var(--lp-off-white); overflow: hidden; }
 .erga-lp .lp-show .lp-h2 { color: var(--lp-off-white); }
@@ -492,16 +462,6 @@
   .erga-lp .lp-journey-grid { grid-template-columns: minmax(0, 1fr) minmax(360px, .82fr); gap: 3rem; padding: 2rem; }
   .erga-lp .lp-journey-copy { padding: 2rem; }
 }
-.erga-lp .lp-journey-visual-head,
-.erga-lp .lp-journey-visual-foot {
-  position: absolute; z-index: 4; left: 1.4rem; right: 1.4rem;
-  display: flex; justify-content: space-between; gap: 1rem; align-items: center;
-}
-.erga-lp .lp-journey-visual-head { top: 1.25rem; color: #a1a1a6; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; }
-.erga-lp .lp-journey-visual-head strong { color: #fff; }
-.erga-lp .lp-journey-visual-foot { bottom: 1.3rem; align-items: flex-end; }
-.erga-lp .lp-journey-visual-foot span { color: var(--lp-rose); font-size: 0.72rem; font-weight: 750; text-transform: uppercase; letter-spacing: 0.1em; }
-.erga-lp .lp-journey-visual-foot strong { max-width: 20ch; text-align: right; font-size: 1rem; }
 .erga-lp .lp-journey-canvas { position: absolute; inset: 4.3rem 1.4rem 4.5rem; overflow: hidden; border-radius: 22px; background: #141414; border: 1px solid rgba(255,255,255,.09); }
 .erga-lp .lp-journey-rail { position: absolute; z-index: 4; left: 16px; top: 20px; bottom: 20px; width: 2px; background: rgba(255,255,255,.08); }
 .erga-lp .lp-journey-rail span { display: block; width: 100%; height: 100%; transform-origin: top; background: var(--lp-red); transition: transform 280ms var(--lp-ease); }

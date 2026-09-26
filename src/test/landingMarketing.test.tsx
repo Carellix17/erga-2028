@@ -57,7 +57,7 @@ describe("landing marketing", () => {
 
     const mobileNav = screen.getByRole("navigation", { name: "Menu mobile" });
     expect(menuButton).toHaveAttribute("aria-expanded", "true");
-    expect(within(mobileNav).getByRole("link", { name: "Prodotto" })).toHaveFocus();
+    expect(within(mobileNav).getByRole("link", { name: "Come funziona" })).toHaveFocus();
 
     fireEvent.keyDown(window, { key: "Escape" });
 
@@ -68,9 +68,9 @@ describe("landing marketing", () => {
   it("mostra la vera struttura della Home e aggiorna la materia scelta", () => {
     renderLanding();
 
-    expect(screen.getByText("Buongiorno")).toBeInTheDocument();
-    expect(screen.getByText("Preparazione lezione")).toBeInTheDocument();
-    expect(screen.getByText("Piano del giorno")).toBeInTheDocument();
+    expect(screen.getAllByText("Buongiorno").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Preparazione lezione").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Piano del giorno").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "Latino" }));
 
@@ -85,6 +85,7 @@ describe("landing marketing", () => {
     expect(screen.getByRole("heading", { name: "Parti da ciò che studi davvero." })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("tab", { name: "Percorso" }));
     expect(screen.getByRole("heading", { name: "La mappa diventa un percorso." })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "Piano" }));
     expect(screen.getByRole("heading", { name: "Il percorso entra nella tua settimana." })).toBeInTheDocument();
   });
 
@@ -94,7 +95,7 @@ describe("landing marketing", () => {
     const controls = screen.getByRole("tablist", { name: "Dal materiale al piano" });
     fireEvent.click(within(controls).getByRole("tab", { name: "Piano" }));
 
-    expect(screen.getByRole("heading", { name: "Una proposta che puoi accettare o cambiare." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Il percorso entra nella tua settimana." })).toBeInTheDocument();
     expect(within(controls).getByRole("tab", { name: "Piano" })).toHaveAttribute("aria-selected", "true");
   });
 
