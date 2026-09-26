@@ -16,34 +16,6 @@ import { MaterialJourney } from "./MaterialJourney";
 import { PhoneHome, PhoneShell } from "./PhoneMocks";
 import "./landing.css";
 
-const PATHS = {
-  fisica: {
-    subject: "Fisica",
-    title: "Cinematica e moto rettilineo",
-    time: "15:30",
-    duration: 18,
-    progress: 68,
-    tasks: ["Ripassa le formule del moto", "8 esercizi sulla velocità", "Richiamo attivo finale"],
-  },
-  sposi: {
-    subject: "Italiano",
-    title: "I Promessi Sposi · Capitoli 9–12",
-    time: "16:10",
-    duration: 19,
-    progress: 45,
-    tasks: ["Mappa dei personaggi", "Passo guidato sul capitolo 10", "5 domande per l’orale"],
-  },
-  latino: {
-    subject: "Latino",
-    title: "Sintassi dei casi",
-    time: "16:40",
-    duration: 18,
-    progress: 52,
-    tasks: ["Schema dei casi", "Riconoscimento delle desinenze", "Versione guidata"],
-  },
-} as const;
-
-type PathKey = keyof typeof PATHS;
 const SIGNUP_PATH = "/registrati";
 
 export const FAQ = [
