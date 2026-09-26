@@ -57,7 +57,7 @@ describe("landing marketing", () => {
 
     const mobileNav = screen.getByRole("navigation", { name: "Menu mobile" });
     expect(menuButton).toHaveAttribute("aria-expanded", "true");
-    expect(within(mobileNav).getByRole("link", { name: "Prodotto" })).toHaveFocus();
+    expect(within(mobileNav).getByRole("link", { name: "Come funziona" })).toHaveFocus();
 
     fireEvent.keyDown(window, { key: "Escape" });
 
@@ -68,11 +68,11 @@ describe("landing marketing", () => {
   it("mostra la vera struttura della Home e aggiorna la materia scelta", () => {
     renderLanding();
 
-    expect(screen.getByText("Buongiorno")).toBeInTheDocument();
-    expect(screen.getByText("Preparazione lezione")).toBeInTheDocument();
-    expect(screen.getByText("Piano del giorno")).toBeInTheDocument();
+    expect(screen.getAllByText("Buongiorno").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Preparazione lezione").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Piano del giorno").length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole("button", { name: "Latino · Sintassi dei casi" }));
+    fireEvent.click(screen.getByRole("button", { name: "Latino" }));
 
     expect(screen.getAllByText("Sintassi dei casi").length).toBeGreaterThan(0);
     expect(screen.getByText("Schema dei casi")).toBeInTheDocument();
@@ -83,29 +83,29 @@ describe("landing marketing", () => {
     renderLanding();
 
     expect(screen.getByRole("heading", { name: "Parti da ciò che studi davvero." })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Erga trova il filo." })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "Percorso" }));
     expect(screen.getByRole("heading", { name: "La mappa diventa un percorso." })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "Piano" }));
     expect(screen.getByRole("heading", { name: "Il percorso entra nella tua settimana." })).toBeInTheDocument();
   });
 
   it("mostra una sola anteprima e permette di cambiare vista", () => {
     renderLanding();
 
-    const controls = screen.getByRole("group", { name: "Scegli l’anteprima dell’app" });
-    fireEvent.click(within(controls).getByRole("button", { name: "Piano" }));
+    const controls = screen.getByRole("tablist", { name: "Dal materiale al piano" });
+    fireEvent.click(within(controls).getByRole("tab", { name: "Piano" }));
 
-    expect(screen.getByRole("heading", { name: "Una proposta che puoi accettare o cambiare." })).toBeInTheDocument();
-    expect(screen.getByText("Vista mese e settimana")).toBeInTheDocument();
-    expect(within(controls).getByRole("button", { name: "Piano" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("heading", { name: "Il percorso entra nella tua settimana." })).toBeInTheDocument();
+    expect(within(controls).getByRole("tab", { name: "Piano" })).toHaveAttribute("aria-selected", "true");
   });
 
   it("non sovrappone la navigazione alla lezione a schermo intero", () => {
     const { container } = renderLanding();
-    const controls = screen.getByRole("group", { name: "Scegli l’anteprima dell’app" });
+    const controls = screen.getByRole("tablist", { name: "Dal materiale al piano" });
 
-    fireEvent.click(within(controls).getByRole("button", { name: "Lezione" }));
+    fireEvent.click(within(controls).getByRole("tab", { name: "Percorso" }));
 
     expect(container.querySelector(".lp-showcase-phone nav")).not.toBeInTheDocument();
-    expect(screen.getByText("Continua →")).toBeInTheDocument();
+    expect(screen.getByText("Le basi della cinematica")).toBeInTheDocument();
   });
 });

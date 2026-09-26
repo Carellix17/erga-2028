@@ -22,7 +22,7 @@ export function SeoHead({ title, description, path, noindex, jsonLd }: SeoHeadPr
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
-      <link rel="canonical" href={path} />
+      <link rel="canonical" href={`${BASE_URL}${path}`} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:url" content={`${BASE_URL}${path}`} />
