@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useHomeDashboard } from "@/hooks/useHomeDashboard";
+import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
 
 interface AppHeaderProps {
@@ -35,6 +36,10 @@ export function AppHeader({
     (root) => normalizedPath === root || normalizedPath.startsWith(`${root}/`),
   );
 
+  // Dati abbonamento
+  const { tier } = useSubscription();
+  const tierLabel = tier === "beta" ? "Beta" : tier === "pro" ? "Pro" : "Free";
+
   // La serie vive SEMPRE a destra, accanto alle Impostazioni. Sulla Home la
   // barra non ha titolo: a sinistra campeggia il wordmark "erga" (solo lì).
   const streakButton = (
@@ -44,7 +49,7 @@ export function AppHeader({
       aria-label={t("header.openFocusStats", { count: streakDays })}
       title={t("header.openFocusStats", { count: streakDays })}
       className={cn(
-        "flex min-h-11 min-w-11 max-w-[8.5rem] shrink-0 items-center gap-1.5 rounded-pill bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "flex min-h-11 min-w-11 max-w-[8.5rem] shrink-0 items-center gap-1.5 bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         // Sulla Home la barra è un overlay senza eventi: solo i controlli
         // reali tornano cliccabili, non l'intera fascia trasparente.
         integratedHome && "pointer-events-auto",
@@ -53,6 +58,22 @@ export function AppHeader({
       <Flame className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
       <span className="truncate min-[360px]:hidden">{streakDays}</span>
       <span className="hidden truncate min-[360px]:inline">{streakLabel}</span>
+    </button>
+  );
+
+  // Pulsante abbonamento a sinistra
+  const subscriptionButton = (
+    <button
+      type="button"
+      onClick={() => navigate("/app/impostazioni")}
+      aria-label={t("header.subscriptionPlan", { plan: tierLabel })}
+      title={t("header.subscriptionPlan", { plan: tierLabel })}
+      className={cn(
+        "flex min-h-11 min-w-11 max-w-[8.5rem] shrink-0 items-center gap-1.5 bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        integratedHome && "pointer-events-auto",
+      )}
+    >
+      <span className="truncate">{tierLabel}</span>
     </button>
   );
 
@@ -68,9 +89,12 @@ export function AppHeader({
     >
       <div className="mx-auto flex h-16 w-full max-w-lg min-w-0 items-center gap-2 px-4 sm:px-6 md:max-w-2xl lg:max-w-4xl border-b border-[#FFFBF4]">
         <div className="flex min-w-0 flex-1 items-center gap-2">
+          {/* Pulsante abbonamento a sinistra, separato con linea */}
+          {subscriptionButton}
+          <div className="h-6 w-px bg-[#FFFBF4]" />
+
           {/* Wordmark: SOLO sulla Home, dove la barra non ha titolo.
               È un <p>, non un titolo: l'unico h1 della Home è il saluto. */}
-
 
           {showBack && (
             <Button
@@ -79,7 +103,7 @@ export function AppHeader({
               size="icon-sm"
               aria-label={t("common.back")}
               onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/app"))}
-              className="h-11 w-11 shrink-0 rounded-pill"
+              className="h-11 w-11 shrink-0"
             >
               <ArrowLeft className="h-5 w-5" aria-hidden="true" />
             </Button>
@@ -95,7 +119,7 @@ export function AppHeader({
 
         <div className={cn("ml-auto flex shrink-0 items-center gap-2", integratedHome && "pointer-events-auto")}>
           {streakButton}
-
+          <div className="h-6 w-px bg-[#FFFBF4]" />
           {/* Le Impostazioni tornano in cima a destra (il profilo resta
               raggiungibile dalla sua rotta). Nascoste solo dentro le pagine
               impostazioni, che hanno già la loro navigazione con indietro. */}
@@ -107,7 +131,7 @@ export function AppHeader({
               aria-label={t("header.settings")}
               title={t("header.settings")}
               onClick={() => navigate("/app/impostazioni")}
-              className="h-11 w-11 shrink-0 rounded-pill bg-surface-container-high shadow-none hover:bg-surface-container-highest"
+              className="h-11 w-11 shrink-0 bg-surface-container-high shadow-none hover:bg-surface-container-highest"
             >
               <Settings className="h-5 w-5" aria-hidden="true" />
             </Button>
