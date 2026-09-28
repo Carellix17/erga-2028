@@ -118,10 +118,10 @@ export function CourseHeroCard({
     return (
       <article
         className={cn(
-          "flex flex-col items-center rounded-card border border-border glass-tactile p-5 text-center shadow-tactile sm:p-6",
+          "flex flex-col items-center border border-[#FFFBF4] glass-tactile p-5 text-center shadow-tactile sm:p-6",
         )}
       >
-        <span className="grid h-12 w-12 place-items-center rounded-full bg-surface-container-high">
+        <span className="grid h-12 w-12 place-items-center bg-surface-container-high">
           <BookOpen className="h-6 w-6 text-foreground" aria-hidden="true" />
         </span>
         <h2 className="mt-3 text-lg font-semibold text-foreground">
@@ -134,7 +134,7 @@ export function CourseHeroCard({
           <button
             type="button"
             onClick={onEmptyCta}
-            className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-button bg-primary text-[15px] font-semibold text-primary-foreground transition-transform duration-150 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="mt-5 flex h-12 w-full items-center justify-center gap-2 bg-primary text-[15px] font-semibold text-primary-foreground transition-transform duration-150 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {emptyCtaLabel}
           </button>
@@ -147,7 +147,7 @@ export function CourseHeroCard({
   return (
     <article
       data-auto-contrast
-      className="relative w-full overflow-hidden rounded-card border border-white/[0.12] bg-inverse-surface p-4 text-left shadow-hero sm:p-5"
+      className="relative w-full overflow-hidden border border-[#FFFBF4] bg-inverse-surface p-4 text-left shadow-hero sm:p-5"
     >
       <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} variant="studio" />
 
@@ -155,7 +155,7 @@ export function CourseHeroCard({
           simula la luce che colpisce il bordo superiore della card. */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[5] rounded-[inherit] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.10)]"
+        className="pointer-events-none absolute inset-0 z-[5] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.10)]"
       />
 
       <div className="relative z-10">
@@ -194,7 +194,7 @@ export function CourseHeroCard({
         <button
           type="button"
           onClick={onPrimaryCta}
-          className="text-contrast mt-4 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="text-contrast mt-4 inline-flex h-11 w-full items-center justify-center gap-1.5 border px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           style={{
             backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
             borderColor: "color-mix(in srgb, currentColor 20%, transparent)",

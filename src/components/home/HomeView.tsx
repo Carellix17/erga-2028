@@ -57,11 +57,11 @@ export function HomeView({
   if (dashboard.isError || !data) {
     return (
       <div className="pb-10 pt-20">
-        <Card className="mx-auto max-w-xl border-destructive/25 bg-card p-6 text-center">
+        <Card className="mx-auto max-w-xl border border-[#FFFBF4] bg-card p-6 text-center">
           <RefreshCw className="mx-auto h-8 w-8 text-destructive" aria-hidden="true" />
           <h1 className="mt-4 font-display text-xl font-bold">{t("home.error.title")}</h1>
           <p className="mt-2 text-base text-muted-foreground">{t("home.error.description")}</p>
-          <Button className="mt-5 min-h-12 rounded-button" onClick={() => dashboard.refetch()}>
+          <Button className="mt-5 min-h-12" onClick={() => dashboard.refetch()}>
             {t("home.error.retry")}
           </Button>
         </Card>
