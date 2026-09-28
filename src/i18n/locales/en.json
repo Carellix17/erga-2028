@@ -25,7 +25,8 @@
     "streak_one": "{{count}} day",
     "streak_other": "{{count}} days",
     "openFocusStats_one": "Open streak statistics: {{count}} day",
-    "openFocusStats_other": "Open streak statistics: {{count}} days"
+    "openFocusStats_other": "Open streak statistics: {{count}} days",
+    "subscriptionPlan": "Plan {{plan}}"
   },
   "home": {
     "greeting": {
