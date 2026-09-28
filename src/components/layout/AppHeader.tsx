@@ -66,15 +66,11 @@ export function AppHeader({
         className,
       )}
     >
-      <div className="mx-auto flex h-16 w-full max-w-lg min-w-0 items-center gap-2 px-4 sm:px-6 md:max-w-2xl lg:max-w-4xl">
+      <div className="mx-auto flex h-16 w-full max-w-lg min-w-0 items-center gap-2 px-4 sm:px-6 md:max-w-2xl lg:max-w-4xl border-b border-[#FFFBF4]">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           {/* Wordmark: SOLO sulla Home, dove la barra non ha titolo.
               È un <p>, non un titolo: l'unico h1 della Home è il saluto. */}
-          {integratedHome && !title && (
-            <p className="min-w-0 truncate font-display text-xl font-bold tracking-tight text-foreground">
-              Erga
-            </p>
-          )}
+
 
           {showBack && (
             <Button

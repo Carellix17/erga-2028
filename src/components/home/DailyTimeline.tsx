@@ -45,7 +45,7 @@ export function DailyTimeline({
 }: DailyTimelineProps) {
   if (tasks.length === 0) {
     return (
-      <section className="rounded-card border border-border/50 bg-card p-5 shadow-tactile">
+      <section className="border border-[#FFFBF4] bg-card p-5 shadow-tactile">
         <h2 className="text-lg font-semibold text-foreground">{emptyTitle}</h2>
         {emptyDescription && (
           <p className="mt-1 text-sm leading-snug text-muted-foreground">{emptyDescription}</p>
@@ -54,7 +54,7 @@ export function DailyTimeline({
           <button
             type="button"
             onClick={onSeeAll}
-            className="mt-4 flex h-11 w-full items-center justify-center rounded-button border border-border bg-surface-container-high text-[15px] font-medium text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="mt-4 flex h-11 w-full items-center justify-center border border-[#FFFBF4] bg-surface-container-high text-[15px] font-medium text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {emptyCtaLabel}
           </button>
@@ -64,14 +64,14 @@ export function DailyTimeline({
   }
 
   return (
-    <section className="overflow-hidden rounded-card border border-border/50 bg-card shadow-tactile">
+    <section className="overflow-hidden border border-[#FFFBF4] bg-card shadow-tactile">
       <div className="flex items-center justify-between gap-3 p-4 pb-2">
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
         {onSeeAll && (
           <button
             type="button"
             onClick={onSeeAll}
-            className="flex h-11 items-center rounded-pill bg-surface-container px-4 text-sm font-medium text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-11 items-center bg-surface-container px-4 text-sm font-medium text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {seeAllLabel}
           </button>
@@ -82,18 +82,18 @@ export function DailyTimeline({
         {tasks.map((task) => {
           const Icon = taskIcon(task.kind);
           return (
-            <li key={task.id} className="border-t border-border/60 first:border-t-0">
+            <li key={task.id} className="border-t border-[#FFFBF4] first:border-t-0">
               <button
                 type="button"
                 onClick={() => onTaskClick?.(task.id)}
-                className="flex min-h-[60px] w-full items-center gap-3 rounded-button px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="flex min-h-[60px] w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <span
                   className={cn(
-                    "grid h-11 w-11 shrink-0 place-items-center rounded-full",
+                    "grid h-11 w-11 shrink-0 place-items-center",
                     task.isCompleted
                       ? "bg-primary text-primary-foreground"
-                      : "border border-border bg-surface-container-high text-foreground",
+                      : "border border-[#FFFBF4] bg-surface-container-high text-foreground",
                   )}
                 >
                   {task.isCompleted ? (
