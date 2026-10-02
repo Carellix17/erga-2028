@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -14,6 +15,7 @@ interface MultipleChoiceProps {
 export function MultipleChoice({
   question, options, correctIndex, onComplete, isCompleted,
 }: MultipleChoiceProps) {
+  const { t } = useTranslation();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -104,9 +106,9 @@ export function MultipleChoice({
             ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100"
             : "border-rose-500/40 bg-rose-500/15 text-rose-900 dark:bg-rose-950/40 dark:text-rose-100"
         )}>
-          {isCorrect ? "Perfetto! 🎉" : "La risposta corretta è evidenziata sopra."}
+          {isCorrect ? t("exercise.perfect") : t("exercise.correctHighlighted")}
           {!isCorrect && (
-            <span className="sr-only"> La risposta corretta era: {options[correctIndex]}.</span>
+            <span className="sr-only"> {t("exercise.correctWas", { answer: options[correctIndex] })}</span>
           )}
         </div>
       )}

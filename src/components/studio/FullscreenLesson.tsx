@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, CheckCircle2, Loader2, Sparkles, Send, Bot, User as UserIcon, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { currentLanguage } from "@/i18n";
@@ -61,7 +62,9 @@ interface FullscreenLessonProps {
   lessonNumber: number;
   totalLessons: number;
   onClose: () => void;
-  onComplete: () => void;
+  /** 🅐 FONDAMENTA — al termine porta con sé l'esito degli esercizi, così la
+   * schermata chiamante può registrare «lezione completata» nel database. */
+  onComplete: (result: { correct: number; total: number }) => void;
   isLastLesson: boolean;
   nextLessonId?: string | null;
 }
@@ -74,7 +77,14 @@ interface Step {
   explanationPartIndex?: number;
 }
 
-function parseExplanationParts(explanation: string): ExplanationPart[] {
+/** Titoli di riserva quando l'AI non ha fornito titoli di parte:
+ * tradotti dalla chiamante (i18n), con valore neutro per usi diretti. */
+const FALLBACK_LABELS = { explanation: "Spiegazione", part: (n: number) => `Parte ${n}` };
+
+function parseExplanationParts(
+  explanation: string,
+  labels: { explanation: string; part: (n: number) => string } = FALLBACK_LABELS,
+): ExplanationPart[] {
   try {
     const parsed = JSON.parse(explanation);
     if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].part_title) {
@@ -84,7 +94,7 @@ function parseExplanationParts(explanation: string): ExplanationPart[] {
 
   const lines = explanation.split(/\n/).filter(l => l.trim());
   if (lines.length <= 1) {
-    return [{ part_title: "Spiegazione", content: explanation }];
+    return [{ part_title: labels.explanation, content: explanation }];
   }
 
   const parts: ExplanationPart[] = [];
@@ -95,7 +105,7 @@ function parseExplanationParts(explanation: string): ExplanationPart[] {
     const trimmed = line.trim();
     if (trimmed.startsWith("•") || trimmed.startsWith("-") || trimmed.startsWith("*")) {
       if (currentContent) {
-        parts.push({ part_title: `Parte ${partIndex + 1}`, content: currentContent.trim() });
+        parts.push({ part_title: labels.part(partIndex + 1), content: currentContent.trim() });
         partIndex++;
       }
       currentContent = trimmed.replace(/^[•\-*]\s*/, "");
@@ -104,10 +114,10 @@ function parseExplanationParts(explanation: string): ExplanationPart[] {
     }
   }
   if (currentContent) {
-    parts.push({ part_title: `Parte ${partIndex + 1}`, content: currentContent.trim() });
+    parts.push({ part_title: labels.part(partIndex + 1), content: currentContent.trim() });
   }
 
-  return parts.length > 0 ? parts : [{ part_title: "Spiegazione", content: explanation }];
+  return parts.length > 0 ? parts : [{ part_title: labels.explanation, content: explanation }];
 }
 
 function buildSteps(explanationParts: ExplanationPart[], exercises: Exercise[], hasExample: boolean): Step[] {
@@ -136,8 +146,16 @@ function scrollToTop(el: HTMLElement | null) {
 export function FullscreenLesson({
   lesson, lessonNumber, totalLessons, onClose, onComplete, isLastLesson, nextLessonId,
 }: FullscreenLessonProps) {
+  const { t } = useTranslation();
   const { isActive: focusActive } = useFocus();
-  const explanationParts = useMemo(() => parseExplanationParts(lesson.explanation), [lesson.explanation]);
+  const explanationParts = useMemo(
+    () =>
+      parseExplanationParts(lesson.explanation, {
+        explanation: t("lesson.explanationFallback"),
+        part: (n) => t("lesson.partFallback", { number: n }),
+      }),
+    [lesson.explanation, t],
+  );
   const { figures, loading: figuresLoading } = useLessonFigures(lesson.id);
 
   // Pre-fetch the next lesson's figures so they're already cached
@@ -205,21 +223,21 @@ export function FullscreenLesson({
   const currentSlideText = useMemo(() => {
     switch (step.type) {
       case "concept":
-        return `Concetto chiave:\n${lesson.concept}`;
+        return `${t("lesson.keyConcept")}:\n${lesson.concept}`;
       case "explanation_part": {
         const p = explanationParts[step.explanationPartIndex ?? 0];
         return p ? `${p.part_title}\n\n${p.content}` : "";
       }
       case "example":
-        return `Esempio pratico:\n${lesson.example ?? ""}`;
+        return `${t("lesson.practicalExample")}:\n${lesson.example ?? ""}`;
       case "exercise": {
         const ex = exercises[step.exerciseIndex ?? 0] as (Exercise & { prompt?: string }) | undefined;
-        return ex ? `Esercizio corrente:\n${ex.question ?? ex.prompt ?? JSON.stringify(ex)}` : "";
+        return ex ? `${t("lesson.currentExercise")}\n${ex.question ?? ex.prompt ?? JSON.stringify(ex)}` : "";
       }
       default:
-        return `Riepilogo lezione: ${lesson.title}`;
+        return `${t("lesson.summaryOf")} ${lesson.title}`;
     }
-  }, [step, lesson, explanationParts, exercises]);
+  }, [step, lesson, explanationParts, exercises, t]);
 
   const gotoStep = useCallback((next: number) => {
     const target = Math.max(0, next);
@@ -246,9 +264,13 @@ export function FullscreenLesson({
     } else {
       // Percorso finito: il segnalibro non serve più.
       clearLessonResume(lesson.id);
-      onComplete();
+      // 🅐 FONDAMENTA — l'esito degli esercizi viaggia con il completamento.
+      onComplete({
+        correct: Object.values(exerciseResults).filter(Boolean).length,
+        total: exercises.length,
+      });
     }
-  }, [currentStep, steps.length, onComplete, isAnimating, gotoStep, lesson.id]);
+  }, [currentStep, steps.length, onComplete, isAnimating, gotoStep, lesson.id, exerciseResults, exercises.length]);
 
   const handleBack = useCallback(() => {
     if (isAnimating || currentStep === 0) return;
@@ -283,7 +305,9 @@ export function FullscreenLesson({
   // ♿ P50 — La lezione è una finestra a schermo pieno: ESC per uscire e fuoco
   // dentro (i lettori di schermo non restano sulla pagina sotto). Se è aperto
   // il pannello del tutor, l'ESC chiude QUEL pannello e non la lezione.
+  const previouslyFocusedRef = useRef<Element | null>(null);
   useEffect(() => {
+    previouslyFocusedRef.current = document.activeElement;
     rootRef.current?.focus?.();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
@@ -292,7 +316,10 @@ export function FullscreenLesson({
       onClose();
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      (previouslyFocusedRef.current as HTMLElement | null)?.focus?.();
+    };
   }, [onClose]);
 
   const handleExerciseComplete = useCallback(
@@ -318,7 +345,7 @@ export function FullscreenLesson({
       ref={rootRef}
       role="dialog"
       aria-modal="true"
-      aria-label={`Lezione ${lessonNumber} di ${totalLessons}: ${lesson.title}`}
+      aria-label={`${t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })}: ${lesson.title}`}
       tabIndex={-1}
       className="no-halo fixed inset-0 z-50 bg-background flex flex-col animate-lesson-sheet-in focus:outline-none"
     >
@@ -331,7 +358,7 @@ export function FullscreenLesson({
               size="icon-sm"
               onClick={handleBack}
               className="rounded-full -ml-1 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Torna indietro"
+              aria-label={t("lesson.back")}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -341,7 +368,7 @@ export function FullscreenLesson({
               size="icon-sm"
               onClick={onClose}
               className="rounded-full -ml-1 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Chiudi lezione"
+              aria-label={t("lesson.close")}
             >
               <X className="w-5 h-5" />
             </Button>
@@ -352,7 +379,7 @@ export function FullscreenLesson({
               size="icon-sm"
               onClick={onClose}
               className="rounded-full text-muted-foreground/70 hover:text-foreground transition-colors"
-              aria-label="Chiudi lezione"
+              aria-label={t("lesson.close")}
             >
               <X className="w-4 h-4" />
             </Button>
@@ -381,7 +408,7 @@ export function FullscreenLesson({
           )}
         </div>
         <p className="text-xs text-muted-foreground text-center">
-          Lezione {lessonNumber} di {totalLessons} · <span className="text-foreground font-semibold">{lesson.title}</span>
+          {t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })} · <span className="text-foreground font-semibold">{lesson.title}</span>
         </p>
       </div>
 
@@ -395,14 +422,14 @@ export function FullscreenLesson({
             >
               <RotateCcw className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.75} />
               <p className="body-small text-muted-foreground flex-1">
-                Ripresa dalla slide {currentStep + 1} di {steps.length}
+                {t("lesson.resumeNotice", { number: currentStep + 1, total: steps.length })}
               </p>
               <button
                 type="button"
                 onClick={handleRestart}
                 className="label-medium text-primary underline underline-offset-2 shrink-0"
               >
-                Ricomincia
+                {t("lesson.restart")}
               </button>
             </div>
           )}
@@ -456,10 +483,10 @@ export function FullscreenLesson({
             size="lg"
           >
             {currentStep === steps.length - 1
-              ? isLastLesson ? "Completa percorso" : "Prossima lezione"
+              ? isLastLesson ? t("lesson.completePath") : t("lesson.nextLesson")
               : step.type === "exercise" && !currentExerciseAnswered
-                ? "Rispondi per continuare"
-                : "Continua"}
+                ? t("lesson.answerToContinue")
+                : t("lesson.continue")}
             {(canContinue || step.type !== "exercise") && <ChevronRight className="w-5 h-5 ml-1" />}
           </Button>
         </div>
@@ -471,6 +498,7 @@ export function FullscreenLesson({
 /* ── Step Components ── */
 
 function ConceptStep({ concept }: { concept: string }) {
+  const { t } = useTranslation();
   return (
     <div className="text-center space-y-6">
       <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center mx-auto">
@@ -478,7 +506,7 @@ function ConceptStep({ concept }: { concept: string }) {
       </div>
       <div>
         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-semibold mb-4">
-          Concetto chiave
+          {t("lesson.keyConcept")}
         </div>
         <div className="text-xl font-normal tracking-tight leading-[1.7] prose prose-sm max-w-none mx-auto px-2 prose-p:font-normal prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-secondary prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{concept}</ReactMarkdown>
@@ -489,6 +517,7 @@ function ConceptStep({ concept }: { concept: string }) {
 }
 
 function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoading }: { part: ExplanationPart; partNumber: number; totalParts: number; figures: LessonFigure[]; figuresLoading: boolean }) {
+  const { t } = useTranslation();
   const isExample = part.part_title.startsWith("📌") || part.part_title.startsWith("🔍");
 
   const segments = useMemo(() => {
@@ -553,7 +582,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
           return (
             <div key={i} className="rounded-2xl bg-surface-container-highest/60 border-2 border-dashed border-outline-variant/60 p-6 flex flex-col items-center justify-center gap-2 min-h-[140px]">
               <Loader2 className="w-6 h-6 text-foreground animate-spin" />
-              <p className="body-small text-muted-foreground">Caricamento figura…</p>
+              <p className="body-small text-muted-foreground">{t("lesson.loadingFigure")}</p>
             </div>
           );
         })}
@@ -563,13 +592,14 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
 }
 
 function ExampleStep({ example }: { example: string }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center">
           <Lightbulb className="w-4 h-4 text-accent-foreground" strokeWidth={1.75} />
         </div>
-        <span className="label-large text-foreground">Esempio pratico</span>
+        <span className="label-large text-foreground">{t("lesson.practicalExample")}</span>
       </div>
       <div className="p-6 sm:p-7 rounded-[18px] bg-tertiary-container/60 border border-border/50 shadow-level-1">
         <div className="text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
@@ -586,6 +616,7 @@ function ExerciseStep({
   exercise: Exercise; exerciseNumber: number; totalExercises: number;
   onComplete: (correct: boolean) => void; isCompleted: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -594,8 +625,8 @@ function ExerciseStep({
             <Dumbbell className="w-5 h-5 text-foreground" strokeWidth={1.75} />
           </div>
           <div>
-            <span className="label-large text-foreground">Esercizio {exerciseNumber}</span>
-            <p className="body-small text-muted-foreground">{exerciseNumber} di {totalExercises}</p>
+            <span className="label-large text-foreground">{t("lesson.exercise", { number: exerciseNumber })}</span>
+            <p className="body-small text-muted-foreground">{t("lesson.exerciseOf", { number: exerciseNumber, total: totalExercises })}</p>
           </div>
         </div>
         <div className="flex gap-1.5">
@@ -618,6 +649,7 @@ function ExerciseStep({
 }
 
 function SummaryStep({ correctCount, totalExercises, isLastLesson, orphanFigures }: { correctCount: number; totalExercises: number; isLastLesson: boolean; orphanFigures: LessonFigure[] }) {
+  const { t } = useTranslation();
   const percentage = totalExercises > 0 ? Math.round((correctCount / totalExercises) * 100) : 0;
 
   return (
@@ -628,23 +660,23 @@ function SummaryStep({ correctCount, totalExercises, isLastLesson, orphanFigures
 
       <div>
         <p className="font-display font-bold text-2xl mb-2 text-foreground">
-          Lezione completata
+          {t("lesson.lessonCompleted")}
         </p>
         <p className="text-sm text-muted-foreground">
-          {correctCount}/{totalExercises} esercizi corretti · {percentage}%
+          {t("lesson.exercisesCorrect", { correct: correctCount, total: totalExercises, percent: percentage })}
         </p>
       </div>
 
       <p className="body-small text-muted-foreground">
-        {isLastLesson ? "Premi per completare il percorso." : "Premi per passare alla prossima lezione."}
+        {isLastLesson ? t("lesson.pressToComplete") : t("lesson.pressToNext")}
       </p>
 
       {orphanFigures.length > 0 && (
         <div className="mt-6 pt-6 border-t border-outline-variant/40 text-left">
           <LessonFigureGallery
             figures={orphanFigures}
-            title="Altre immagini dal materiale"
-            subtitle="Figure estratte ma non citate nel testo"
+            title={t("lesson.otherImages")}
+            subtitle={t("lesson.figuresNotCited")}
             compact
           />
         </div>
@@ -670,6 +702,7 @@ function SlideAIAssistant({
   lessonTitle: string;
   stepKey: number;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<SlideAIMessage[]>([]);
   const [input, setInput] = useState("");
@@ -771,8 +804,7 @@ function SlideAIAssistant({
     const seed: SlideAIMessage = {
       id: "seed-" + stepKey,
       role: "user",
-      content:
-        "Fornisci una spiegazione approfondita, chiara e con esempi del contenuto della slide qui sopra. Struttura la risposta in paragrafi brevi.",
+      content: t("lesson.aiSeedPrompt"),
     };
     callAI([seed])
       .catch(() =>
@@ -780,12 +812,12 @@ function SlideAIAssistant({
           {
             id: "err",
             role: "assistant",
-            content: "Non sono riuscito a generare la spiegazione. Riprova tra poco.",
+            content: t("lesson.aiError"),
           },
         ])
       )
       .finally(() => setIsLoading(false));
-  }, [open, stepKey, callAI]);
+  }, [open, stepKey, callAI, t]);
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
@@ -800,12 +832,12 @@ function SlideAIAssistant({
     } catch {
       setMessages((prev) => [
         ...prev,
-        { id: String(Date.now() + 1), role: "assistant", content: "Errore nella risposta. Riprova." },
+        { id: String(Date.now() + 1), role: "assistant", content: t("lesson.aiReplyError") },
       ]);
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages, callAI]);
+  }, [input, isLoading, messages, callAI, t]);
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
@@ -816,8 +848,8 @@ function SlideAIAssistant({
             "bg-card text-foreground border border-outline-variant/60",
             "hover:bg-surface-container-high transition-colors"
           )}
-          aria-label="Spiegami meglio questa slide"
-          title="Spiegami meglio"
+          aria-label={t("lesson.explainBetterSlide")}
+          title={t("lesson.explainBetter")}
         >
           {/* Tre linee orizzontali stile Google Docs, quella di mezzo più corta — nessuna scritta (P7) */}
           <svg
@@ -846,7 +878,7 @@ function SlideAIAssistant({
             <Sparkles className="w-4 h-4 text-foreground" strokeWidth={1.75} />
           </div>
           <div className="flex-1 min-w-0">
-            <SheetTitle className="label-medium font-semibold text-foreground truncate">Tutor AI</SheetTitle>
+            <SheetTitle className="label-medium font-semibold text-foreground truncate">{t("lesson.tutor")}</SheetTitle>
             <p className="label-small text-muted-foreground truncate">{lessonTitle}</p>
           </div>
         </SheetHeader>
@@ -923,7 +955,7 @@ function SlideAIAssistant({
                   handleSend();
                 }
               }}
-              placeholder="Chiedi qualcosa su questa slide…"
+              placeholder={t("lesson.askPlaceholder")}
               rows={1}
               disabled={isLoading}
               className={cn(
@@ -963,6 +995,7 @@ export function FullscreenLessonGate({
   meta: LessonMeta;
   contextId: string | null;
 }) {
+  const { t } = useTranslation();
   const lessonQuery = useLessonQuery(contextId, meta.lesson_order);
   const full = lessonQuery.data;
 
@@ -975,12 +1008,12 @@ export function FullscreenLessonGate({
         <p className="font-display font-bold text-lg text-foreground text-center px-8 max-w-sm">
           {meta.title}
         </p>
-        <p className="text-sm text-muted-foreground">Apro la lezione…</p>
+        <p className="text-sm text-muted-foreground">{t("lesson.openingLesson")}</p>
         <button
           onClick={props.onClose}
           className="text-sm text-muted-foreground underline underline-offset-2 mt-2"
         >
-          chiudi
+          {t("lesson.closeLink")}
         </button>
       </div>
     );

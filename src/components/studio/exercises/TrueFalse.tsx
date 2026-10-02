@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -13,6 +14,7 @@ interface TrueFalseProps {
 export function TrueFalse({
   statement, correct, onComplete, isCompleted,
 }: TrueFalseProps) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<boolean | null>(null);
   const [showResult, setShowResult] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -74,7 +76,7 @@ export function TrueFalse({
                 showResult && isCorrectOption && "text-emerald-900 dark:text-emerald-100",
                 showResult && isSelected && !isCorrectOption && "text-rose-900 dark:text-rose-100",
               )}>
-                {value ? "Vero" : "Falso"}
+                {value ? t("exercise.true") : t("exercise.false")}
               </span>
             </button>
           );
@@ -91,7 +93,7 @@ export function TrueFalse({
             ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100"
             : "border-rose-500/40 bg-rose-500/15 text-rose-900 dark:bg-rose-950/40 dark:text-rose-100"
         )}>
-          {isCorrect ? "Esatto! 🎉" : `L'affermazione è ${correct ? "vera" : "falsa"}.`}
+          {isCorrect ? t("exercise.exact") : correct ? t("exercise.statementIsTrue") : t("exercise.statementIsFalse")}
         </div>
       )}
     </div>

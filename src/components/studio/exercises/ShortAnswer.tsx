@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, AlertCircle, Send } from "lucide-react";
@@ -14,6 +15,7 @@ interface ShortAnswerProps {
 export function ShortAnswer({
   question, expectedKeywords, onComplete, isCompleted,
 }: ShortAnswerProps) {
+  const { t } = useTranslation();
   const [answer, setAnswer] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [matchedKeywords, setMatchedKeywords] = useState<string[]>([]);
@@ -37,7 +39,7 @@ export function ShortAnswer({
       <Textarea
         value={answer}
         onChange={(e) => setAnswer(e.target.value)}
-        placeholder="Scrivi la tua risposta..."
+        placeholder={t("exercise.writeAnswer")}
         className="min-h-[100px] rounded-2xl border-2 border-outline-variant focus:border-primary"
         disabled={showResult}
       />
@@ -45,7 +47,7 @@ export function ShortAnswer({
       {!showResult && (
         <Button onClick={handleSubmit} disabled={!answer.trim()} className="w-full h-12 rounded-2xl">
           <Send className="w-4 h-4 mr-2" />
-          Verifica
+          {t("exercise.verify")}
         </Button>
       )}
 
@@ -56,14 +58,14 @@ export function ShortAnswer({
             isGood ? "bg-success-container text-success animate-feedback-correct" : "bg-warning/10 text-warning animate-feedback-wrong"
           )}>
             {isGood ? (
-              <><CheckCircle2 className="w-5 h-5" /> Ottima risposta! 🎉</>
+              <><CheckCircle2 className="w-5 h-5" /> {t("exercise.greatAnswer")}</>
             ) : (
-              <><AlertCircle className="w-5 h-5" /> Puoi fare di meglio! 💪</>
+              <><AlertCircle className="w-5 h-5" /> {t("exercise.tryBetter")}</>
             )}
           </div>
 
           <div className="p-4 rounded-2xl bg-surface-container-low">
-            <p className="label-medium text-muted-foreground mb-2">Concetti chiave:</p>
+            <p className="label-medium text-muted-foreground mb-2">{t("exercise.keyConcepts")}</p>
             <div className="flex flex-wrap gap-2">
               {expectedKeywords.map((keyword, index) => (
                 <span

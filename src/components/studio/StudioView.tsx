@@ -32,6 +32,8 @@ import {
   useStudyContextsQuery,
   useUpdateLessonProgress,
   useLessonsCacheControls,
+  useMarkLessonComplete,
+  useSaveFinalTestResult,
   fetchLessonsList,
   fetchLessonFull,
   lessonsKeys,
@@ -250,6 +252,12 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     [lessonsQuery.data?.lessons],
   );
   const cachedCurrentIndex = lessonsQuery.data?.currentIndex ?? 0;
+  // 🅐 FONDAMENTA — la memoria vera: spunte delle lezioni completate ed
+  // esito del test finale, salvati nel database (best-effort, silenzioso).
+  const completedOrders = lessonsQuery.data?.completed ?? [];
+  const finalTestResult = lessonsQuery.data?.finalTest ?? null;
+  const markLessonComplete = useMarkLessonComplete(effectiveContextId);
+  const saveFinalTestResult = useSaveFinalTestResult(effectiveContextId);
   const updateProgress = useUpdateLessonProgress(effectiveContextId);
   const { invalidateList, invalidateContexts, setLessonsList } = useLessonsCacheControls();
   const queryClient = useQueryClient(); // ⚡ P16: la manopola della dispensa
@@ -1108,6 +1116,8 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
               showFinalTest={allGenerated}
               onStartFinalTest={handleStartFinalTest}
               isLoadingFinalTest={isLoadingFinalTest}
+              completedOrders={completedOrders}
+              finalTestScore={finalTestResult?.score ?? null}
               onRegenerateLesson={handleRegenerateLesson}
               onDeleteLesson={handleDeleteLesson}
               onRenameLesson={handleRenameLesson}
@@ -1125,11 +1135,18 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           lessonNumber={activeLessonIndex + 1}
           totalLessons={lessons.length}
           onClose={() => setActiveLessonIndex(null)}
-          onComplete={() => {
+          onComplete={(result) => {
             const nextIndex = activeLessonIndex < lessons.length - 1 ? activeLessonIndex + 1 : activeLessonIndex;
             setCurrentLessonIndex(nextIndex);
             setActiveLessonIndex(null);
             if (nextIndex > cachedCurrentIndex) updateProgress.mutate(nextIndex);
+            // 🅐 FONDAMENTA — registra la lezione completata con l'esito
+            // degli esercizi (best-effort: se il backend non è pronto, silenzio).
+            markLessonComplete.mutate({
+              lessonIndex: activeLessonIndex,
+              correct: result.correct,
+              total: result.total,
+            });
             // 🌲 P24: finito l'ultimo passo di un modulo → torna alla schermata
             // dei moduli (il prossimo mostra "in generazione" se parte la fabbrica).
             if (nextIndex < lessons.length && isFirstOfModule(nextIndex)) {
@@ -1176,9 +1193,12 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         <FinalTest
           exercises={finalTestExercises}
           onClose={() => setShowFinalTest(false)}
-          onComplete={() => { setShowFinalTest(false);
+          onComplete={(result) => { setShowFinalTest(false);
             backToModules();
-            toast({ title: "Complimenti!", description: "Hai completato il percorso e il test finale!" }); }}
+            // 🅐 FONDAMENTA — l'esito del test finale viene salvato: la
+            // prossima volta il punteggio resta sul percorso.
+            saveFinalTestResult.mutate(result);
+            toast({ title: "Complimenti!", description: `Hai completato il percorso e il test finale con ${result.score}%!` }); }}
         />
       )}
     </>

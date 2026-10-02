@@ -46,6 +46,12 @@ interface ModulePathProps {
   onStartFinalTest?: () => void;
   isLoadingFinalTest?: boolean;
   showFinalTest?: boolean;
+  /** 🅐 FONDAMENTA — ordini (lesson_order) delle lezioni completate DAVVERO
+   * (registrate nel database): il nodo prende la spunta anche se l'utente
+   * è tornato indietro nel percorso. */
+  completedOrders?: number[];
+  /** 🅐 FONDAMENTA — punteggio dell'ultimo test finale salvato (0-100). */
+  finalTestScore?: number | null;
   onRegenerateLesson?: (lessonIndex: number) => Promise<void> | void;
   onDeleteLesson?: (lessonId: string) => Promise<void> | void;
   onRenameLesson?: (lessonId: string, newTitle: string) => Promise<void> | void;
@@ -92,6 +98,8 @@ export function ModulePath({
   onStartFinalTest,
   isLoadingFinalTest,
   showFinalTest,
+  completedOrders,
+  finalTestScore,
   onRegenerateLesson,
   onDeleteLesson,
   onRenameLesson,
@@ -203,8 +211,14 @@ export function ModulePath({
     [lessons, range.start, range.end],
   );
 
+  // 🅐 FONDAMENTA — una lezione è «fatta» se è prima dell'indice corrente
+  // (comportamento storico) OPPURE se è registrata come completata nel
+  // database: così le spunte sopravvivono anche a ritorni e ripensamenti.
+  const completedSet = useMemo(() => new Set(completedOrders ?? []), [completedOrders]);
+
   const stateOf = (globalIndex: number, lesson: LessonLike): NodeState => {
-    const isCompleted = globalIndex < currentIndex;
+    const order = lesson.lesson_order ?? globalIndex;
+    const isCompleted = globalIndex < currentIndex || completedSet.has(order);
     const isCurrent = globalIndex === currentIndex;
     const isLocked = !lesson.is_generated && globalIndex > currentIndex;
     if (isGeneratingLesson && isCurrent) return "gen";
@@ -214,8 +228,11 @@ export function ModulePath({
     return "av";
   };
 
-  const allDone = modLessons.length > 0 && modLessons.every(({ globalIndex }) => globalIndex < currentIndex);
-  const doneCount = modLessons.filter(({ globalIndex }) => globalIndex < currentIndex).length;
+  const isLessonDone = (globalIndex: number, lesson: LessonLike) =>
+    globalIndex < currentIndex || completedSet.has(lesson.lesson_order ?? globalIndex);
+
+  const allDone = modLessons.length > 0 && modLessons.every(({ lesson, globalIndex }) => isLessonDone(globalIndex, lesson));
+  const doneCount = modLessons.filter(({ lesson, globalIndex }) => isLessonDone(globalIndex, lesson)).length;
   const pct = modLessons.length > 0 ? Math.round((doneCount / modLessons.length) * 100) : 0;
 
   const n = Math.max(modLessons.length, 1);
@@ -517,6 +534,12 @@ export function ModulePath({
               <div className="rounded-xl border border-border bg-card px-3.5 py-2 text-center shadow-level-1">
                 <span className="label-small block text-muted-foreground">Ultimo passo</span>
                 <span className="block text-[13px] font-bold text-foreground">Test finale</span>
+                {/* 🅐 FONDAMENTA — l'esito dell'ultimo test fatto resta visibile */}
+                {typeof finalTestScore === "number" && (
+                  <span className="block text-[11px] font-semibold text-muted-foreground">
+                    Ultimo esito: {finalTestScore}%
+                  </span>
+                )}
               </div>
             </div>
           </div>

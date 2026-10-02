@@ -1,5 +1,7 @@
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { FullscreenLesson } from "@/components/studio/FullscreenLesson";
 import { MultipleChoice } from "@/components/studio/exercises/MultipleChoice";
 import { prepareLessonExercises } from "@/lib/lessonExercises";
@@ -232,5 +234,78 @@ describe("P50 feedback degli esercizi — annuncio ai lettori di schermo", () =>
     expect(onComplete).toHaveBeenCalledWith(false);
     const annuncio = screen.getByRole("status");
     expect(annuncio.textContent).toMatch(/La risposta corretta era: Anidride carbonica/);
+  });
+});
+
+
+describe("🅐 FONDAMENTA — gating, esito del completamento e testo scalabile", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    document.documentElement.classList.remove("reduce-motion");
+  });
+
+  afterEach(() => {
+    cleanup();
+    document.documentElement.classList.remove("reduce-motion");
+  });
+
+  /** Avanza di n passi rispondendo agli esercizi quando servito. */
+  async function attraversa(n: number) {
+    for (let i = 0; i < n; i++) {
+      const avanzaBtn = screen.queryByRole("button", {
+        name: /^(continua|rispondi per continuare|prossima lezione|completa percorso)$/i,
+      });
+      if (!avanzaBtn) return; // lezione già completata
+      if (avanzaBtn.hasAttribute("disabled")) {
+        const candidati = screen
+          .getAllByRole("button")
+          .filter((b) => !b.hasAttribute("disabled"))
+          .filter((b) => /ossigeno|anidride|azoto|elio|vero|falso/i.test(b.textContent ?? ""));
+        expect(candidati.length).toBeGreaterThan(0);
+        fireEvent.click(candidati[0]);
+        // auto-invio del quiz: attende il reveal
+        await waitFor(
+          () =>
+            expect(
+              screen.getByRole("button", {
+                name: /^(continua|rispondi per continuare|prossima lezione|completa percorso)$/i,
+              }),
+            ).toBeEnabled(),
+          { timeout: 3000 },
+        );
+      }
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: /^(continua|rispondi per continuare|prossima lezione|completa percorso)$/i,
+        }),
+      );
+      // transizione tra passi (250 ms se il movimento non è ridotto)
+      await new Promise((r) => setTimeout(r, 320));
+    }
+  }
+
+  it("il pulsante resta bloccato finché l'esercizio non è risposto", () => {
+    window.localStorage.setItem(
+      "erga:lesson-resume:lezione-1",
+      JSON.stringify({ step: 4, savedAt: Date.now() }),
+    );
+    renderReader();
+    const btn = screen.getByRole("button", { name: /rispondi per continuare/i });
+    expect(btn).toBeDisabled();
+  });
+
+  it("a fine lezione consegna l'esito {correct, total} a onComplete", async () => {
+    const { onComplete } = renderReader();
+    // 7 passi: concept, 2 parti, esempio, 2 esercizi, sintesi
+    await attraversa(7);
+    expect(onComplete).toHaveBeenCalledWith({ correct: expect.any(Number), total: 2 });
+  });
+
+  it("nessuna misura di testo in pixel fissi: solo rem (il cursore «testo grande» funziona)", () => {
+    const srcFile = readFileSync(
+      join(__dirname, "..", "..", "src", "components", "studio", "FullscreenLesson.tsx"),
+      "utf8",
+    );
+    expect(srcFile.match(/text-\[\d+px\]/g)).toBeNull();
   });
 });

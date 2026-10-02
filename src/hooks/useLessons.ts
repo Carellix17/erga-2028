@@ -24,6 +24,24 @@ export interface Lesson extends LessonMeta {
   exercises?: Exercise[];
 }
 
+/** 🅐 FONDAMENTA — esito dell'ultimo test finale di un percorso. */
+export interface FinalTestResult {
+  score: number;
+  correct?: number;
+  total?: number;
+  at?: string;
+}
+
+/** La lista percorsi/lezioni come arriva dal server (con la nuova memoria). */
+export interface LessonsListData {
+  lessons: LessonMeta[];
+  currentIndex: number;
+  /** Ordini (lesson_order) delle lezioni completate davvero. */
+  completed: number[];
+  /** Esito dell'ultimo test finale, se è stato fatto e salvato. */
+  finalTest: FinalTestResult | null;
+}
+
 export interface StudyContextSummary {
   id: string;
   file_name: string;
@@ -70,11 +88,23 @@ export const lessonsKeys = {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // ⚡ P16: il fattorino della lista — ora porta solo il plico LEGGERO.
-export async function fetchLessonsList(userId: string | null, contextId: string | null | undefined) {
+// 🅐 FONDAMENTA — porta anche le spunte (lezioni completate) e l'esito
+// dell'ultimo test finale; se il server non li manda ancora, valori neutri.
+export async function fetchLessonsList(userId: string | null, contextId: string | null | undefined): Promise<LessonsListData> {
   const body: Record<string, unknown> = { userId, action: "get" };
   if (contextId) body.contextId = contextId;
-  const data = await edgeFetch<{ lessons?: LessonMeta[]; currentIndex?: number }>("get-lessons", body);
-  return { lessons: data.lessons ?? [], currentIndex: data.currentIndex ?? 0 };
+  const data = await edgeFetch<{
+    lessons?: LessonMeta[];
+    currentIndex?: number;
+    completed?: number[];
+    finalTest?: FinalTestResult | null;
+  }>("get-lessons", body);
+  return {
+    lessons: data.lessons ?? [],
+    currentIndex: data.currentIndex ?? 0,
+    completed: data.completed ?? [],
+    finalTest: data.finalTest ?? null,
+  };
 }
 
 // ⚡ P16: il contenuto completo di UNA lezione — si chiede solo quando serve.
@@ -87,7 +117,7 @@ export async function fetchLessonFull(userId: string, contextId: string, lessonI
 
 export function useLessonsQuery(contextId: string | null | undefined) {
   const { currentUser } = useAuth();
-  return useQuery<{ lessons: LessonMeta[]; currentIndex: number }>({
+  return useQuery<LessonsListData>({
     queryKey: lessonsKeys.list(currentUser, contextId),
     queryFn: () => fetchLessonsList(currentUser, contextId),
     enabled: !!currentUser,
@@ -166,6 +196,60 @@ export function useUpdateLessonProgress(contextId: string | null | undefined) {
       if (ctx?.previous) {
         qc.setQueryData(lessonsKeys.list(currentUser, contextId), ctx.previous);
       }
+    },
+  });
+}
+
+// 🅐 FONDAMENTA — registra «lezione completata» (con esito esercizi).
+// Best-effort: se il backend non è ancora aggiornato, l'errore resta nel
+// console — mai rovinare la lettura di una lezione per una spunta.
+export function useMarkLessonComplete(contextId: string | null | undefined) {
+  const { currentUser } = useAuth();
+  const qc = useQueryClient();
+
+  return useTrackedMutation<unknown, Error, { lessonIndex: number; correct?: number; total?: number }>({
+    mutationFn: async (vars) => {
+      const body: Record<string, unknown> = {
+        userId: currentUser,
+        action: "markLessonComplete",
+        lessonIndex: vars.lessonIndex,
+      };
+      if (vars.correct !== undefined) body.correct = vars.correct;
+      if (vars.total !== undefined) body.total = vars.total;
+      if (contextId) body.contextId = contextId;
+      return edgeFetch("get-lessons", body);
+    },
+    onError: (err) => {
+      console.warn("[fondamenta] lezione completata non registrata:", err.message);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: lessonsKeys.list(currentUser, contextId) });
+    },
+  });
+}
+
+// 🅐 FONDAMENTA — salva l'esito dell'ultimo test finale del percorso.
+export function useSaveFinalTestResult(contextId: string | null | undefined) {
+  const { currentUser } = useAuth();
+  const qc = useQueryClient();
+
+  return useTrackedMutation<unknown, Error, { score: number; correct: number; total: number }>({
+    mutationFn: async (vars) => {
+      const body: Record<string, unknown> = {
+        userId: currentUser,
+        action: "saveFinalTest",
+        score: vars.score,
+        correct: vars.correct,
+        total: vars.total,
+      };
+      if (contextId) body.contextId = contextId;
+      return edgeFetch("get-lessons", body);
+    },
+    onError: (err) => {
+      console.warn("[fondamenta] esito test finale non salvato:", err.message);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: lessonsKeys.list(currentUser, contextId) });
     },
   });
 }

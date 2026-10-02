@@ -24,7 +24,6 @@ const QUIZ_FEEDBACK_ALLOWLIST = [
   "src/components/studio/exercises/MultipleChoice.tsx",
   "src/components/studio/exercises/TrueFalse.tsx",
   "src/components/studio/exercises/FillBlank.tsx",
-  "src/components/studio/StudyTutorView.tsx",
   "src/components/pratica/EserciziView.tsx",
   "src/components/pratica/InterrogazioneView.tsx",
 ].map((p) => p.replace(/\//g, sep));

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { MultipleChoice } from "./MultipleChoice";
 import { TrueFalse } from "./TrueFalse";
 import { FillBlank } from "./FillBlank";
@@ -22,6 +23,7 @@ interface ExerciseRendererProps {
 }
 
 export function ExerciseRenderer({ exercise, onComplete, isCompleted }: ExerciseRendererProps) {
+  const { t } = useTranslation();
   switch (exercise.type) {
     case "multiple_choice":
       return (
@@ -67,7 +69,7 @@ export function ExerciseRenderer({ exercise, onComplete, isCompleted }: Exercise
     default:
       return (
         <div className="p-4 bg-muted rounded-xl text-muted-foreground">
-          Tipo di esercizio non riconosciuto
+          {t("exercise.unknownType")}
         </div>
       );
   }

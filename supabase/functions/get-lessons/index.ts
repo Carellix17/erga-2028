@@ -47,7 +47,11 @@ serve(withCors(async (req) => {
 
       const { data: lessons, error: lessonsError } = await lessonsQuery;
 
-      // Get progress (per-context when contextId provided, else global)
+      // Get progress (per-context when contextId provided, else global).
+      // 🅐 FONDAMENTA — portiamo con noi anche le lezioni completate e
+      // l'esito dell'ultimo test finale. Se la migrazione non è ancora
+      // applicata, ricadiamo sulla lettura leggera di prima (mai rompere
+      // la lista per un campo mancante).
       let progressQuery = supabase
         .from("lesson_progress")
         .select("current_lesson_index")
@@ -55,17 +59,37 @@ serve(withCors(async (req) => {
       progressQuery = contextId
         ? progressQuery.eq("context_id", contextId)
         : progressQuery.is("context_id", null);
-      const { data: progress } = await progressQuery.maybeSingle();
+      let progress: { current_lesson_index?: number; completed_lessons?: unknown; final_test?: unknown } | null = null;
+      try {
+        const full = progressQuery.select(
+          "current_lesson_index, completed_lessons, final_test",
+        );
+        const { data } = await full.maybeSingle();
+        progress = data ?? null;
+      } catch {
+        const { data } = await progressQuery.maybeSingle();
+        progress = data ?? null;
+      }
 
       if (lessonsError) {
         console.error("Lessons error:", lessonsError);
         throw new Error("Errore nel caricamento delle lezioni");
       }
 
+      // Gli «ordini» delle lezioni completate, per le spunte sul percorso.
+      const completedRaw = Array.isArray(progress?.completed_lessons)
+        ? (progress!.completed_lessons as Array<{ order?: number }>)
+        : [];
+      const completed = completedRaw
+        .map((c) => (typeof c?.order === "number" ? c.order : null))
+        .filter((o): o is number => o !== null);
+
       return successResponse({
         success: true,
         lessons: lessons || [],
         currentIndex: progress?.current_lesson_index || 0,
+        completed,
+        finalTest: (progress?.final_test as Record<string, unknown> | null) ?? null,
       });
     }
 
@@ -122,6 +146,103 @@ serve(withCors(async (req) => {
       if (error) {
         console.error("Progress error:", error);
         throw new Error("Errore nell'aggiornamento del progresso");
+      }
+
+      return successResponse({ success: true });
+    }
+
+    // 🅐 FONDAMENTA — registra «lezione completata» con l'esito degli
+    // esercizi. Idempotente: rifare la lezione sostituisce la vecchia voce.
+    if (action === "markLessonComplete" && lessonIndex !== undefined) {
+      const correct = typeof body.correct === "number" ? body.correct : null;
+      const total = typeof body.total === "number" ? body.total : null;
+
+      let existingQuery = supabase
+        .from("lesson_progress")
+        .select("id, completed_lessons")
+        .eq("user_id", userId);
+      existingQuery = contextId
+        ? existingQuery.eq("context_id", contextId)
+        : existingQuery.is("context_id", null);
+      const { data: existing, error: readError } = await existingQuery.maybeSingle();
+      if (readError) throw new Error("Errore nella lettura del progresso");
+
+      const entry = {
+        order: lessonIndex,
+        at: new Date().toISOString(),
+        ...(correct !== null ? { correct } : {}),
+        ...(total !== null ? { total } : {}),
+      };
+
+      const prevList = Array.isArray(existing?.completed_lessons)
+        ? (existing!.completed_lessons as Array<{ order?: number }>)
+        : [];
+      // sostituisce la voce con lo stesso ordine, altrimenti accoda
+      const nextList = [
+        ...prevList.filter((c) => c?.order !== lessonIndex),
+        entry,
+      ];
+
+      const { error } = existing
+        ? await supabase
+            .from("lesson_progress")
+            .update({ completed_lessons: nextList, updated_at: new Date().toISOString() })
+            .eq("id", existing.id)
+        : await supabase.from("lesson_progress").insert({
+            user_id: userId,
+            context_id: contextId ?? null,
+            current_lesson_index: lessonIndex,
+            completed_lessons: nextList,
+            updated_at: new Date().toISOString(),
+          });
+
+      if (error) {
+        console.error("markLessonComplete error:", error);
+        throw new Error("Errore nel registrare la lezione completata");
+      }
+
+      return successResponse({ success: true, completedCount: nextList.length });
+    }
+
+    // 🅐 FONDAMENTA — salva l'esito dell'ultimo test finale del percorso.
+    if (action === "saveFinalTest") {
+      const score = typeof body.score === "number" ? body.score : null;
+      const correct = typeof body.correct === "number" ? body.correct : null;
+      const total = typeof body.total === "number" ? body.total : null;
+      if (score === null) return errorResponse("Punteggio mancante", 400);
+
+      const finalTest = {
+        score,
+        ...(correct !== null ? { correct } : {}),
+        ...(total !== null ? { total } : {}),
+        at: new Date().toISOString(),
+      };
+
+      let existingQuery = supabase
+        .from("lesson_progress")
+        .select("id")
+        .eq("user_id", userId);
+      existingQuery = contextId
+        ? existingQuery.eq("context_id", contextId)
+        : existingQuery.is("context_id", null);
+      const { data: existing, error: readError } = await existingQuery.maybeSingle();
+      if (readError) throw new Error("Errore nella lettura del progresso");
+
+      const { error } = existing
+        ? await supabase
+            .from("lesson_progress")
+            .update({ final_test: finalTest, updated_at: new Date().toISOString() })
+            .eq("id", existing.id)
+        : await supabase.from("lesson_progress").insert({
+            user_id: userId,
+            context_id: contextId ?? null,
+            final_test: finalTest,
+            updated_at: new Date().toISOString(),
+          });
+
+      if (error) {
+        console.error("saveFinalTest error:", error);
+        throw new Error("Errore nel salvataggio del test finale");
       }
 
       return successResponse({ success: true });

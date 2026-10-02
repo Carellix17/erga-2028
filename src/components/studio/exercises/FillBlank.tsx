@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, XCircle, Send } from "lucide-react";
@@ -14,6 +15,7 @@ interface FillBlankProps {
 export function FillBlank({
   sentenceWithBlank, correctAnswer, onComplete, isCompleted,
 }: FillBlankProps) {
+  const { t } = useTranslation();
   const [answer, setAnswer] = useState("");
   const [showResult, setShowResult] = useState(false);
 
@@ -67,7 +69,7 @@ export function FillBlank({
           className="w-full h-12 rounded-2xl"
         >
           <Send className="w-4 h-4 mr-2" />
-          Verifica
+          {t("exercise.verify")}
         </Button>
       )}
 
@@ -75,11 +77,11 @@ export function FillBlank({
         <div role="status" aria-live="polite" className="animate-fade-up">
           {isCorrect ? (
             <div className="p-4 rounded-2xl text-center font-medium border border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
-              Esatto! 🎉
+              {t("exercise.exact")}
             </div>
           ) : (
             <div className="p-4 rounded-2xl bg-surface-container-low text-center border border-emerald-500/30">
-              <p className="body-small text-muted-foreground mb-1">Risposta corretta:</p>
+              <p className="body-small text-muted-foreground mb-1">{t("exercise.correctAnswer")}</p>
               <p className="title-medium text-emerald-700 dark:text-emerald-300 font-bold">{correctAnswer}</p>
             </div>
           )}

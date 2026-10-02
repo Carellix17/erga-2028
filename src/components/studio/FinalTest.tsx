@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import { X, ChevronRight, CheckCircle2, Target, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
@@ -9,15 +10,19 @@ import { cn } from "@/lib/utils";
 interface FinalTestProps {
   exercises: Exercise[];
   onClose: () => void;
-  onComplete: () => void;
+  /** 🅐 FONDAMENTA — al termine porta con sé l'esito, così la schermata
+   * chiamante può salvarlo nel database. */
+  onComplete: (result: { score: number; correct: number; total: number }) => void;
 }
 
 export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [results, setResults] = useState<Record<number, boolean>>({});
   const [answered, setAnswered] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<Element | null>(null);
 
   // P50 — anche nel test finale le opzioni arrivano mescolate (ordine stabile,
   // diverso da quello scritto dall'AI: la risposta non è mai al "posto solito").
@@ -27,16 +32,25 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
   );
 
   const total = prepared.length;
+  const correctCount = Object.values(results).filter(Boolean).length;
+  const score = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+  const great = score >= 70;
 
   // ♿ P50 — test finale a schermo pieno: ESC per uscire e fuoco dentro.
+  // 🅐 FONDAMENTA — e il focus torna al mittente alla chiusura.
   useEffect(() => {
+    previouslyFocusedRef.current = document.activeElement;
     rootRef.current?.focus?.();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      (previouslyFocusedRef.current as HTMLElement | null)?.focus?.();
+    };
   }, [onClose]);
+
   const progress = showResults ? 100 : ((currentIndex + 1) / (total + 1)) * 100;
 
   const handleAnswer = useCallback((correct: boolean) => {
@@ -46,7 +60,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
 
   const handleContinue = useCallback(() => {
     if (showResults) {
-      onComplete();
+      onComplete({ score, correct: correctCount, total });
       return;
     }
     if (currentIndex < total - 1) {
@@ -55,18 +69,14 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
     } else {
       setShowResults(true);
     }
-  }, [currentIndex, total, showResults, onComplete]);
-
-  const correctCount = Object.values(results).filter(Boolean).length;
-  const score = total > 0 ? Math.round((correctCount / total) * 100) : 0;
-  const great = score >= 70;
+  }, [currentIndex, total, showResults, onComplete, score, correctCount]);
 
   return (
     <div
       ref={rootRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Test finale"
+      aria-label={t("finalTest.title")}
       tabIndex={-1}
       className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in focus:outline-none"
     >
@@ -78,6 +88,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
             size="icon-sm"
             onClick={onClose}
             className="rounded-full"
+            aria-label={t("finalTest.close")}
           >
             <X className="w-5 h-5" />
           </Button>
@@ -90,13 +101,13 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
             />
           </div>
           <span className="label-medium text-muted-foreground whitespace-nowrap">
-            {showResults ? "Risultati" : `${currentIndex + 1}/${total}`}
+            {showResults ? t("finalTest.results") : `${currentIndex + 1}/${total}`}
           </span>
         </div>
         <div className="flex items-center justify-center gap-2">
           <Target className="w-4 h-4 text-primary" />
           <p className="body-small text-muted-foreground text-center">
-            <span className="text-foreground title-small">Test Finale</span> · Verifica le tue conoscenze
+            <span className="text-foreground title-small">{t("finalTest.title")}</span> · {t("finalTest.subtitle")}
           </p>
         </div>
       </div>
@@ -116,10 +127,10 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
                     </div>
                     <div>
                       <span className="label-large uppercase tracking-wide text-muted-foreground">
-                        Domanda
+                        {t("finalTest.question")}
                       </span>
                       <p className="body-small text-muted-foreground">
-                        {currentIndex + 1} di {total}
+                        {t("lesson.exerciseOf", { number: currentIndex + 1, total })}
                       </p>
                     </div>
                   </div>
@@ -148,7 +159,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
           )}
           size="lg"
         >
-          {showResults ? "Chiudi" : currentIndex === total - 1 ? "Vedi risultati" : "Continua"}
+          {showResults ? t("finalTest.closeButton") : currentIndex === total - 1 ? t("finalTest.seeResults") : t("lesson.continue")}
           <ChevronRight className="w-5 h-5 ml-1" />
         </Button>
       </div>
@@ -157,8 +168,9 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
 }
 
 function ResultsView({ score, correctCount, total, great }: { score: number; correctCount: number; total: number; great: boolean }) {
+  const { t } = useTranslation();
   return (
-    <div className="text-center space-y-8">
+    <div role="status" className="text-center space-y-8">
       <div
         className="w-24 h-24 rounded-full mx-auto flex items-center justify-center animate-settle-in shadow-level-3"
         style={{ background: great ? "hsl(var(--success))" : "hsl(var(--warning))" }}
@@ -173,19 +185,18 @@ function ResultsView({ score, correctCount, total, great }: { score: number; cor
           {score}%
         </p>
         <p className={cn("font-display font-bold text-2xl mb-2", great ? "text-success" : "text-warning")}>
-          {great ? "Ottimo risultato" : "Puoi migliorare"}
+          {great ? t("finalTest.great") : t("finalTest.improve")}
         </p>
         <p className="body-medium text-muted-foreground">
-          Hai risposto correttamente a{" "}
-          <span className="font-semibold">{correctCount}</span> domande su{" "}
-          <span className="font-semibold">{total}</span>.
+          {t("finalTest.answeredCorrectly", {
+            correct: <span className="font-semibold">{correctCount}</span>,
+            total: <span className="font-semibold">{total}</span>,
+          })}
         </p>
       </div>
 
       <p className="body-small text-muted-foreground">
-        {great
-          ? "Hai dimostrato un'ottima padronanza degli argomenti!"
-          : "Rivedi le lezioni e riprova il test per migliorare."}
+        {great ? t("finalTest.greatHint") : t("finalTest.improveHint")}
       </p>
     </div>
   );

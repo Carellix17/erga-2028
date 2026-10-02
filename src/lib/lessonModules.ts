@@ -5,7 +5,7 @@
 // "generateModule") costruisce TUTTO il vagone e ti avvisa con una notifica.
 // ⚠️ MODULE_SIZE deve restare allineato con il server
 //    (supabase/functions/generate-lessons/index.ts) e con il sentiero
-//    zig-zag (LessonsList importa la costante da qui).
+//    zig-zag (ModulePath e StudioView usano la costante da qui).
 
 export const MODULE_SIZE = 4;
 
