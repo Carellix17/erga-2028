@@ -215,3 +215,32 @@ Il ripasso diluito e il tutor che conosce la lezione sono ciò che distingue Erg
 ---
 
 *Documento di analisi. Nessuna riga di codice modificata. Le prossime mosse si concordano qui.*
+
+---
+
+## 9. Stato dei lavori — aggiornato al 3 ottobre 2026 (commit `d96ab9b`)
+
+### ✅ Fatto: il pacchetto P50 «il lettore diventa tuo» (🅐 parziale + prima parte di 🅑
+
+| Punto dell'analisi | Cosa è stato fatto |
+|---|---|
+| **P4** (risposte sempre al solito posto) | Nuovo `src/lib/lessonExercises.ts`: le opzioni vengono mescolate in modo **deterministico** (stesso esercizio → stesso ordine) con la risposta corretta rimappata. Attivo **anche** nel test finale. Mescolare non rompe niente: l'esercizio sbagliato o malformato torna intatto. |
+| **P2** (nessuna memoria) | Nuovo `src/lib/lessonResume.ts`: la lezione **riprende dalla slide esatta** dove l'eri lasciata, con l'avviso «Ripresa dalla slide N · Ricomincia». Memoria sul dispositivo, scade dopo 30 giorni, nessuna modifica al database. |
+| **P12** (niente ESC, muto ai lettori di schermo) | Il lettore è ora una finestra dichiarata (`role="dialog"`, `aria-modal`, nome della lezione), il fuoco entra dentro, **ESC chiude** — e se è aperto il pannello del tutor chiude *quello*, non la lezione. I feedback degli esercizi sono annunciati (`role="status"` + `aria-live`) e chi sbaglia sente anche **qual era** la risposta corretta. |
+| **P13** (riduci-movimento ignorato) | Con «Riduci movimento» attivo sono saltate sia la pausa di 250 ms tra le slide sia i 300 ms dei quiz: il risultato arriva subito. |
+| **P10** (testo non scalabile) | Le misure fisse in pixel del lettore (`15px`, `14px`) sono diventate `rem`: **il cursore dell'accessibilità ora funziona anche dentro la lezione**. |
+| **P1** (parziale) | Ogni nuova slide parte **dall'alto** (lo `contentRef` dichiarato e mai usato ora serve davvero: prima si ereditava lo scroll della slide precedente). In più: feedback positivo mancante aggiunto a «Riempi lo spazio», il timer dell'animazione non sopravvive più alla chiusura, via il campo morto `duration`. |
+| **P16** (nessun test) | **27 test nuovi** (il lettore ne aveva zero): avanzamento, avviso di ripartenza, memoria della slide, ESC (anche col tutor aperto), semantica di finestra, mescolamento e annunci vocali. |
+
+**Misurato dopo il lavoro:** `tsc` 0 errori · `vite build` ok · detector `[]` sui file toccati · test **440 passati / 19 falliti** (i 19 sono **preesistenti**, vedi nota) · **0 nuovi fallimenti** introdotti.
+
+> ⚠️ **Nota di salute (non è colpa di P50).** Sul ramo corrente gli ultimi aggiornamenti di Lovable (PR #83 e #84, Home «squadrata» e intestazione con pulsante abbonamento) hanno **rotto 14 test** che prima passavano: `AppHeader.test.tsx` (12), `HomeView.test.tsx` (1), `haptics.test.tsx` (1). Verificato su una copia pulita del ramo: il conteggio dei fallimenti è identico (19) con e senza P50. I 5 di `homeCleanSurfaces` restano quelli che avevi già deciso di lasciare stare.
+
+### ⏳ Ancora da fare (in ordine di valore)
+
+1. **🅑 Il percorso, seconda parte** — scroll continuo o meno tocchi, sintesi sempre a portata, traguardo di fine modulo, lezione che si ricorda di essere finita.
+2. **P11 — lingua** — il lettore e gli esercizi hanno le scritte in italiano dentro il codice: serve una sezione di traduzioni dedicata (`lesson.*` in `it.json`/`en.json`).
+3. **P3 + P9 — il test finale che conta** — salvare esito e data (richiede una piccola modifica al database → prompt pronto per Lovable), e dire alla Home cosa è stato studiato.
+4. **P6/P7 — il maestro** (🅒) — ripasso diluito degli errori, tutor che conosce tutta la lezione, lettura ad alta voce, esercizi di scrittura accesi.
+5. **P15 — pulizia** — `LessonsList.tsx` (508 righe) e `StudyTutorView.tsx` (306) non sono usati da nessuna schermata: vanno rimossi con i loro test.
+6. **P18 — costi** — una schermata che dica quanto costano le generazioni (il registro `ai_usage` esiste già).
