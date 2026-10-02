@@ -71,10 +71,18 @@ export function FillBlank({
         </Button>
       )}
 
-      {showResult && !isCorrect && (
-        <div className="p-4 rounded-2xl bg-surface-container-low text-center animate-fade-up border border-emerald-500/30">
-          <p className="body-small text-muted-foreground mb-1">Risposta corretta:</p>
-          <p className="title-medium text-emerald-700 dark:text-emerald-300 font-bold">{correctAnswer}</p>
+      {showResult && (
+        <div role="status" aria-live="polite" className="animate-fade-up">
+          {isCorrect ? (
+            <div className="p-4 rounded-2xl text-center font-medium border border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
+              Esatto! 🎉
+            </div>
+          ) : (
+            <div className="p-4 rounded-2xl bg-surface-container-low text-center border border-emerald-500/30">
+              <p className="body-small text-muted-foreground mb-1">Risposta corretta:</p>
+              <p className="title-medium text-emerald-700 dark:text-emerald-300 font-bold">{correctAnswer}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

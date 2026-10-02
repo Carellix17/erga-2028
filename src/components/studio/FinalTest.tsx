@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import type { CSSProperties } from "react";
 import { X, ChevronRight, CheckCircle2, Target, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
+import { prepareLessonExercises } from "@/lib/lessonExercises";
 import { cn } from "@/lib/utils";
 
 interface FinalTestProps {
@@ -16,8 +17,26 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
   const [results, setResults] = useState<Record<number, boolean>>({});
   const [answered, setAnswered] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  const total = exercises.length;
+  // P50 — anche nel test finale le opzioni arrivano mescolate (ordine stabile,
+  // diverso da quello scritto dall'AI: la risposta non è mai al "posto solito").
+  const prepared = useMemo(
+    () => prepareLessonExercises(exercises, "test-finale"),
+    [exercises],
+  );
+
+  const total = prepared.length;
+
+  // ♿ P50 — test finale a schermo pieno: ESC per uscire e fuoco dentro.
+  useEffect(() => {
+    rootRef.current?.focus?.();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
   const progress = showResults ? 100 : ((currentIndex + 1) / (total + 1)) * 100;
 
   const handleAnswer = useCallback((correct: boolean) => {
@@ -43,7 +62,14 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
   const great = score >= 70;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
+    <div
+      ref={rootRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Test finale"
+      tabIndex={-1}
+      className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in focus:outline-none"
+    >
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
         <div className="flex items-center gap-3 mb-3">
@@ -100,7 +126,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
                 </div>
                 <div className="p-5 rounded-xl bg-surface-container-high">
                   <ExerciseRenderer
-                    exercise={exercises[currentIndex]}
+                    exercise={prepared[currentIndex]}
                     onComplete={handleAnswer}
                     isCompleted={answered}
                   />

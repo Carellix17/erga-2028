@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 interface TrueFalseProps {
   statement: string;
@@ -14,14 +15,21 @@ export function TrueFalse({
 }: TrueFalseProps) {
   const [selected, setSelected] = useState<boolean | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const handleSelect = (value: boolean) => {
     if (showResult) return;
     setSelected(value);
-    setTimeout(() => {
+    const reveal = () => {
       setShowResult(true);
       onComplete(value === correct);
-    }, 300);
+    };
+    // Con «riduci movimento» attivo il risultato arriva subito.
+    if (prefersReducedMotion) {
+      reveal();
+      return;
+    }
+    setTimeout(reveal, 300);
   };
 
   const isCorrect = selected === correct;
@@ -74,7 +82,10 @@ export function TrueFalse({
       </div>
 
       {showResult && (
-        <div className={cn(
+        <div
+          role="status"
+          aria-live="polite"
+          className={cn(
           "p-4 rounded-2xl text-center font-medium animate-fade-up border",
           isCorrect
             ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100"

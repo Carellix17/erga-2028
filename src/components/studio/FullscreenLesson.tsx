@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, CheckCircle2, Loader2, Sparkles, Send, Bot, User as UserIcon } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, CheckCircle2, Loader2, Sparkles, Send, Bot, User as UserIcon, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { currentLanguage } from "@/i18n";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,9 @@ import { useLessonFigures, prefetchLessonFigures, type LessonFigure } from "@/ho
 import { LessonFigureGallery } from "./LessonFigureGallery";
 import { useFocus } from "@/contexts/FocusContext";
 import { FocusPill } from "@/components/focus/FocusPill";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { prepareLessonExercises } from "@/lib/lessonExercises";
+import { readLessonResume, saveLessonResume, clearLessonResume } from "@/lib/lessonResume";
 
 /**
  * P21c ERGA OPAL: la sala-lezione si è fatta sobria.
@@ -54,7 +57,6 @@ interface FullscreenLessonProps {
     explanation: string;
     example?: string;
     exercises?: Exercise[];
-    duration: number;
   };
   lessonNumber: number;
   totalLessons: number;
@@ -108,18 +110,27 @@ function parseExplanationParts(explanation: string): ExplanationPart[] {
   return parts.length > 0 ? parts : [{ part_title: "Spiegazione", content: explanation }];
 }
 
-function buildSteps(lesson: FullscreenLessonProps["lesson"], explanationParts: ExplanationPart[]): Step[] {
+function buildSteps(explanationParts: ExplanationPart[], exercises: Exercise[], hasExample: boolean): Step[] {
   const steps: Step[] = [{ type: "concept" }];
   explanationParts.forEach((_, i) => {
     steps.push({ type: "explanation_part", explanationPartIndex: i });
   });
-  if (lesson.example) steps.push({ type: "example" });
-  const exercises = lesson.exercises || [];
+  if (hasExample) steps.push({ type: "example" });
   exercises.forEach((_, i) => {
     steps.push({ type: "exercise", exerciseIndex: i });
   });
   if (exercises.length > 0) steps.push({ type: "summary" });
   return steps;
+}
+
+/** Scroll in cima robusto (jsdom non implementa scrollTo: mai far esplodere nulla). */
+function scrollToTop(el: HTMLElement | null) {
+  if (!el) return;
+  try {
+    el.scrollTo?.({ top: 0 });
+  } catch {
+    el.scrollTop = 0;
+  }
 }
 
 export function FullscreenLesson({
@@ -135,7 +146,18 @@ export function FullscreenLesson({
     if (nextLessonId) prefetchLessonFigures(nextLessonId);
   }, [nextLessonId]);
 
-  const steps = useMemo(() => buildSteps(lesson, explanationParts), [lesson, explanationParts]);
+  // P50 — Gli esercizi entrano in scena con le opzioni MESCOLATE. L'ordine è
+  // stabile (dipende dall'impronta dell'esercizio, non dal momento): tornare
+  // indietro o riaprire la lezione non fa ballare le risposte sotto il dito.
+  const exercises = useMemo(
+    () => prepareLessonExercises(lesson.exercises, lesson.id || "lezione"),
+    [lesson.exercises, lesson.id],
+  );
+
+  const steps = useMemo(
+    () => buildSteps(explanationParts, exercises, Boolean(lesson.example)),
+    [explanationParts, exercises, lesson.example],
+  );
 
   // Compute which figure indices are referenced in the lesson text, so we can
   // surface unreferenced (“orphan”) figures only in the summary as a fallback.
@@ -156,15 +178,28 @@ export function FullscreenLesson({
     [figures, referencedFigureIndices]
   );
 
-  const [currentStep, setCurrentStep] = useState(0);
+  // 🌿 P50 — SI RIPARTE DA DOVE ERI (dentro la lezione, non solo tra le lezioni).
+  // La memoria vive sul dispositivo, scade dopo 30 giorni e non tocca il database.
+  const initialStep = useMemo(() => {
+    const saved = readLessonResume(lesson.id)?.step ?? 0;
+    return Math.min(Math.max(0, saved), Math.max(0, steps.length - 1));
+  }, [lesson.id, steps.length]);
+
+  const [currentStep, setCurrentStep] = useState(initialStep);
+  const [showResumeNotice, setShowResumeNotice] = useState(initialStep > 0);
   const [exerciseResults, setExerciseResults] = useState<Record<number, boolean>>({});
   const [currentExerciseAnswered, setCurrentExerciseAnswered] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const stepTimerRef = useRef<number | null>(null);
+
+  // ♿ P50 — «Riduci movimento» vale anche per le pause del lettore: chi lo
+  // attiva non deve aspettare un'animazione che non vede.
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const stepDelayMs = prefersReducedMotion ? 0 : 250;
 
   const step = steps[currentStep];
-  const exercises = useMemo(() => lesson.exercises || [], [lesson.exercises]);
 
   // Testo della slide attualmente visibile — passato all'assistente AI.
   const currentSlideText = useMemo(() => {
@@ -186,30 +221,79 @@ export function FullscreenLesson({
     }
   }, [step, lesson, explanationParts, exercises]);
 
+  const gotoStep = useCallback((next: number) => {
+    const target = Math.max(0, next);
+    if (stepDelayMs === 0) {
+      setCurrentStep(target);
+      setCurrentExerciseAnswered(false);
+      setIsAnimating(false);
+      return;
+    }
+    setIsAnimating(true);
+    stepTimerRef.current = window.setTimeout(() => {
+      setCurrentStep(target);
+      setCurrentExerciseAnswered(false);
+      setIsAnimating(false);
+      stepTimerRef.current = null;
+    }, stepDelayMs);
+  }, [stepDelayMs]);
+
   const handleContinue = useCallback(() => {
     if (isAnimating) return;
-    setIsAnimating(true);
-
     if (currentStep < steps.length - 1) {
-      setTimeout(() => {
-        setCurrentStep(s => s + 1);
-        setCurrentExerciseAnswered(false);
-        setIsAnimating(false);
-      }, 250);
+      setShowResumeNotice(false);
+      gotoStep(currentStep + 1);
     } else {
+      // Percorso finito: il segnalibro non serve più.
+      clearLessonResume(lesson.id);
       onComplete();
     }
-  }, [currentStep, steps, onComplete, isAnimating]);
+  }, [currentStep, steps.length, onComplete, isAnimating, gotoStep, lesson.id]);
 
   const handleBack = useCallback(() => {
     if (isAnimating || currentStep === 0) return;
-    setIsAnimating(true);
-    setTimeout(() => {
-      setCurrentStep(s => Math.max(0, s - 1));
-      setCurrentExerciseAnswered(false);
-      setIsAnimating(false);
-    }, 250);
-  }, [currentStep, isAnimating]);
+    setShowResumeNotice(false);
+    gotoStep(currentStep - 1);
+  }, [currentStep, isAnimating, gotoStep]);
+
+  const handleRestart = useCallback(() => {
+    clearLessonResume(lesson.id);
+    setShowResumeNotice(false);
+    setExerciseResults({});
+    setCurrentExerciseAnswered(false);
+    setCurrentStep(0);
+    scrollToTop(contentRef.current);
+  }, [lesson.id]);
+
+  // 💾 Segna il punto a ogni cambio slide (solo oltre la prima).
+  useEffect(() => {
+    if (currentStep > 0) saveLessonResume(lesson.id, currentStep);
+  }, [lesson.id, currentStep]);
+
+  // 🧹 Il timer della transizione non deve sopravvivere alla chiusura.
+  useEffect(() => () => {
+    if (stepTimerRef.current !== null) window.clearTimeout(stepTimerRef.current);
+  }, []);
+
+  // 📜 Ogni slide nuova parte dall'alto (prima ereditava lo scroll precedente).
+  useEffect(() => {
+    scrollToTop(contentRef.current);
+  }, [currentStep]);
+
+  // ♿ P50 — La lezione è una finestra a schermo pieno: ESC per uscire e fuoco
+  // dentro (i lettori di schermo non restano sulla pagina sotto). Se è aperto
+  // il pannello del tutor, l'ESC chiude QUEL pannello e non la lezione.
+  useEffect(() => {
+    rootRef.current?.focus?.();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      const openDialog = document.querySelector('[role="dialog"][data-state="open"]');
+      if (openDialog && openDialog !== rootRef.current) return;
+      onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
 
   const handleExerciseComplete = useCallback(
     (correct: boolean) => {
@@ -230,7 +314,14 @@ export function FullscreenLesson({
   return (
     // P24 — il foglio che sale: la lezione entra dal basso arrotondata
     // e si apre a schermo pieno (animate-lesson-sheet-in)
-    <div ref={rootRef} className="no-halo fixed inset-0 z-50 bg-background flex flex-col animate-lesson-sheet-in">
+    <div
+      ref={rootRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Lezione ${lessonNumber} di ${totalLessons}: ${lesson.title}`}
+      tabIndex={-1}
+      className="no-halo fixed inset-0 z-50 bg-background flex flex-col animate-lesson-sheet-in focus:outline-none"
+    >
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
         <div className="flex items-center gap-2 mb-2">
@@ -297,6 +388,24 @@ export function FullscreenLesson({
       {/* Content area */}
       <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col" ref={contentRef}>
         <div className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full">
+          {showResumeNotice && (
+            <div
+              role="status"
+              className="mb-4 flex items-center gap-2 rounded-2xl border border-border/50 bg-card/80 px-3.5 py-2.5"
+            >
+              <RotateCcw className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.75} />
+              <p className="body-small text-muted-foreground flex-1">
+                Ripresa dalla slide {currentStep + 1} di {steps.length}
+              </p>
+              <button
+                type="button"
+                onClick={handleRestart}
+                className="label-medium text-primary underline underline-offset-2 shrink-0"
+              >
+                Ricomincia
+              </button>
+            </div>
+          )}
           <div key={currentStep} className={cn("animate-lesson-in", isAnimating && "animate-lesson-out")}>
             {step.type === "concept" && <ConceptStep concept={lesson.concept} />}
             {step.type === "explanation_part" && step.explanationPartIndex !== undefined && (
@@ -432,7 +541,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
         {segments.map((seg, i) => {
           if (seg.type === "text") {
             return seg.value.trim() ? (
-              <div key={i} className="text-[15px] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:text-foreground/80 prose-p:leading-[1.7] prose-p:my-3 prose-strong:font-semibold prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-outline-variant/60 prose-th:bg-secondary/70 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60 prose-hr:my-4 prose-hr:border-outline-variant/60">
+              <div key={i} className="text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:text-foreground/80 prose-p:leading-[1.7] prose-p:my-3 prose-strong:font-semibold prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-outline-variant/60 prose-th:bg-secondary/70 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60 prose-hr:my-4 prose-hr:border-outline-variant/60">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ blockquote: CalloutBlockquote }}>{seg.value}</ReactMarkdown>
               </div>
             ) : null;
@@ -463,7 +572,7 @@ function ExampleStep({ example }: { example: string }) {
         <span className="label-large text-foreground">Esempio pratico</span>
       </div>
       <div className="p-6 sm:p-7 rounded-[18px] bg-tertiary-container/60 border border-border/50 shadow-level-1">
-        <div className="text-[15px] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
+        <div className="text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{example}</ReactMarkdown>
         </div>
       </div>
@@ -766,7 +875,7 @@ function SlideAIAssistant({
               </div>
               <div
                 className={cn(
-                  "max-w-[82%] px-3.5 py-2.5 rounded-2xl text-[14px] leading-relaxed",
+                  "max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed",
                   msg.role === "assistant"
                     ? "bg-surface-container-high text-foreground rounded-bl-md prose prose-sm max-w-none prose-p:my-2"
                     : "bg-primary text-primary-foreground rounded-br-md whitespace-pre-wrap"
@@ -886,7 +995,6 @@ export function FullscreenLessonGate({
         explanation: full.explanation ?? "",
         example: full.example,
         exercises: full.exercises,
-        duration: 5,
       }}
       {...props}
     />

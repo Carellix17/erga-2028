@@ -50,7 +50,7 @@ export function ShortAnswer({
       )}
 
       {showResult && (
-        <div className="space-y-3 animate-fade-up">
+        <div role="status" aria-live="polite" className="space-y-3 animate-fade-up">
           <div className={cn(
             "p-4 rounded-2xl font-medium flex items-center gap-2",
             isGood ? "bg-success-container text-success animate-feedback-correct" : "bg-warning/10 text-warning animate-feedback-wrong"

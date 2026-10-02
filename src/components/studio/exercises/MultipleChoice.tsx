@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 interface MultipleChoiceProps {
   question: string;
@@ -15,15 +16,22 @@ export function MultipleChoice({
 }: MultipleChoiceProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const handleSelect = (index: number) => {
     if (showResult) return;
     setSelectedIndex(index);
-    // Auto-submit on tap like Duolingo
-    setTimeout(() => {
+    const reveal = () => {
       setShowResult(true);
       onComplete(index === correctIndex);
-    }, 300);
+    };
+    // Auto-invio al tocco (stile Duolingo). Con «riduci movimento» attivo il
+    // risultato arriva subito: la pausa serviva solo a far vedere l'animazione.
+    if (prefersReducedMotion) {
+      reveal();
+      return;
+    }
+    setTimeout(reveal, 300);
   };
 
   const isCorrect = selectedIndex === correctIndex;
@@ -87,13 +95,19 @@ export function MultipleChoice({
       </div>
 
       {showResult && (
-        <div className={cn(
+        <div
+          role="status"
+          aria-live="polite"
+          className={cn(
           "p-4 rounded-2xl text-center font-medium flex items-center justify-center gap-2 animate-fade-up border",
           isCorrect
             ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100"
             : "border-rose-500/40 bg-rose-500/15 text-rose-900 dark:bg-rose-950/40 dark:text-rose-100"
         )}>
           {isCorrect ? "Perfetto! 🎉" : "La risposta corretta è evidenziata sopra."}
+          {!isCorrect && (
+            <span className="sr-only"> La risposta corretta era: {options[correctIndex]}.</span>
+          )}
         </div>
       )}
     </div>
