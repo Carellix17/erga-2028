@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, AlertCircle, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MathText } from "../MathText";
 
 interface ShortAnswerProps {
   question: string;
@@ -34,7 +35,7 @@ export function ShortAnswer({
 
   return (
     <div className="space-y-5">
-      <p className="title-medium text-foreground">{question}</p>
+      <p className="title-medium text-foreground"><MathText text={question} /></p>
       
       <Textarea
         value={answer}

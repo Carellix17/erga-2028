@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { MathText } from "../MathText";
 
 interface TrueFalseProps {
   statement: string;
@@ -38,7 +39,7 @@ export function TrueFalse({
 
   return (
     <div className="space-y-5">
-      <p className="title-medium text-foreground leading-relaxed">{statement}</p>
+      <p className="title-medium text-foreground leading-relaxed"><MathText text={statement} /></p>
       
       <div className="grid grid-cols-2 gap-3">
         {[true, false].map((value) => {

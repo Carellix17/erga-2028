@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MathText } from "../MathText";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 interface MultipleChoiceProps {
@@ -40,7 +41,7 @@ export function MultipleChoice({
 
   return (
     <div className="space-y-5">
-      <p className="title-medium text-foreground">{question}</p>
+      <p className="title-medium text-foreground"><MathText text={question} /></p>
       
       <div className="space-y-2.5">
         {options.map((option, index) => {
@@ -88,7 +89,7 @@ export function MultipleChoice({
                   showResult && isCorrectOption && "text-emerald-900 dark:text-emerald-100 font-medium",
                   showResult && isSelected && !isCorrectOption && "text-rose-900 dark:text-rose-100 font-medium",
                 )}>
-                  {option}
+                  <MathText text={option} />
                 </span>
               </div>
             </button>

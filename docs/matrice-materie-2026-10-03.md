@@ -105,7 +105,7 @@ Il nuovo design system dell'app è deciso e la Minilezione ne è la prima applic
 ## 9. La roadmap (due fiumi che si incontrano)
 
 **Fiume 1 — Il motore (backend):**
-**Pacchetto 1 ✅ costruito il 3 ottobre (fondamenta dati: passaporto v1/v2 + materia nel DB, registro costi con token e durata, fix bug spunte alla rigenerazione, notifiche oneste)** → motore scientifico (DeepSeek + formule + widget + generatore esercizi con chat socratica) → motore letteratura/storia/filosofia (grafo + conversazione) → lingue + latino → sociali + informatica → storia dell'arte.
+**Pacchetto 1 ✅ costruito il 3 ottobre (fondamenta dati: passaporto v1/v2 + materia nel DB, registro costi con token e durata, fix bug spunte alla rigenerazione, notifiche oneste)** → **Pacchetto 2a ✅ costruito il 3 ottobre (rilevatore di materia con euristica gratis + verifica AI; instradamento DeepSeek V4 Flash via OpenRouter per matematica/fisica/chimica con paracadute Gemini; regole di scrittura scientifiche: formule LaTeX in mostra con anatomia dei simboli, esempio svolto passo-passo, esercizi numerici con spiegazione; formule impaginate da KaTeX nel lettore — Markdown GFM invariato per chi non ha formule)** → 2b widget interattivi (biblioteca: parabola, moto, forze, equilibrio, gas, offerta/domanda, esecutore codice) → 2c generatore di esercizi con chat socratica + sezione dedicata scientifiche → motore letteratura/storia/filosofia (grafo + conversazione) → lingue + latino → sociali + informatica → storia dell'arte.
 
 **Fiume 2 — Il design (frontend):**
 **Minilezione** (una veste per famiglia, priorità) → Tavolo (Home) → Studio (Cantieri + Banco degli Strumenti) → Piano e Pratica → modalità chiara "Carta da Incisione".
@@ -119,6 +119,6 @@ Ogni pacchetto: costruito, testato, spinto su GitHub separatamente; quando tocca
 1. **Il file del tutor** — le caratteristiche del tutor "non zerbino" vanno allegate (promesso).
 2. ~~Marginalia, quiz e navigazione della Minilezione~~ — ✅ deciso il 3 ottobre: vedi `docs/minilezione-v2-2026-10-03.md` (marginalia a colonna/linguetta, checkpoint in linea, un blocco alla volta, narrazione a blocchi + chat al seguito).
 3. **Geografia** — confermare la collocazione con la Storia.
-4. **Verifica `:free`** di DeepSeek V4 Flash all'attivazione della chiave.
+4. **Verifica `:free`** di DeepSeek V4 Flash dal vivo: la chiave OpenRouter è già nei segreti Lovable (`OPENROUTER_SEPTEMBER_2026`); il codice prova prima `deepseek/deepseek-v4-flash:free`, poi il gradino a pagamento, poi Gemini. Da confermare sui primi percorsi scientifici reali (registro ai_usage: provider "openrouter").
 
 *Documento di design. Nessuna riga di codice modificata alla data odierna.*

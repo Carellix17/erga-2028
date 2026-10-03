@@ -8,8 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { useLessonQuery, type LessonMeta } from "@/hooks/useLessons";
 import { cn } from "@/lib/utils";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { LessonMarkdown } from "./LessonMarkdown";
 import { PdfCrop } from "./PdfCrop";
 import { useLessonFigures, prefetchLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
 import { LessonFigureGallery } from "./LessonFigureGallery";
@@ -509,7 +508,7 @@ function ConceptStep({ concept }: { concept: string }) {
           {t("lesson.keyConcept")}
         </div>
         <div className="text-xl font-normal tracking-tight leading-[1.7] prose prose-sm max-w-none mx-auto px-2 prose-p:font-normal prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-secondary prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{concept}</ReactMarkdown>
+          <LessonMarkdown>{concept}</LessonMarkdown>
         </div>
       </div>
     </div>
@@ -571,7 +570,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
           if (seg.type === "text") {
             return seg.value.trim() ? (
               <div key={i} className="text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:text-foreground/80 prose-p:leading-[1.7] prose-p:my-3 prose-strong:font-semibold prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-outline-variant/60 prose-th:bg-secondary/70 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60 prose-hr:my-4 prose-hr:border-outline-variant/60">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ blockquote: CalloutBlockquote }}>{seg.value}</ReactMarkdown>
+                <LessonMarkdown components={{ blockquote: CalloutBlockquote }}>{seg.value}</LessonMarkdown>
               </div>
             ) : null;
           }
@@ -603,7 +602,7 @@ function ExampleStep({ example }: { example: string }) {
       </div>
       <div className="p-6 sm:p-7 rounded-[18px] bg-tertiary-container/60 border border-border/50 shadow-level-1">
         <div className="text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{example}</ReactMarkdown>
+          <LessonMarkdown>{example}</LessonMarkdown>
         </div>
       </div>
     </div>
@@ -914,7 +913,7 @@ function SlideAIAssistant({
                 )}
               >
                 {msg.role === "assistant" ? (
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content || "…"}</ReactMarkdown>
+                  <LessonMarkdown>{msg.content || "…"}</LessonMarkdown>
                 ) : (
                   msg.content
                 )}

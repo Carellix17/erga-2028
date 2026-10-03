@@ -3,6 +3,13 @@ import { withCors, validateAuth, errorResponse, successResponse } from "../_shar
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 import { buildModulePush, buildPathPush } from "../_shared/modulePush.ts";
+import {
+  detectSubject,
+  isScientificFamily,
+  buildScientificLessonPrompt,
+  SCIENTIFIC_SYSTEM_MESSAGE,
+} from "../_shared/subjects.ts";
+import { tryOpenRouterText } from "../_shared/openrouter.ts";
 
 const MAX_CONTEXT_CHARS = 80000;
 const FREE_GENERATION_LIMIT = 5;
@@ -150,6 +157,34 @@ serve(withCors(async (req) => {
 
     console.log(`Generate lessons for user: ${userId} (legacy: ${legacyUserId}) (authenticated: ${auth.isAuthenticated})`);
 
+    // 🧭 PERCORSI 2.0 — IL CENTRALINO DELLA LEZIONE: le materie scientifiche
+    // passano da DeepSeek (OpenRouter, con gradino gratuito e gradino a
+    // pagamento); tutte le altre dalla catena Gemini classica. Se DeepSeek
+    // non risponde, il paracadute è la catena classica: la lezione nasce comunque.
+    const callLessonAI = async (
+      messages: { role: string; content: string }[],
+      temperature: number,
+      maxTokens: number,
+      scientific: boolean,
+    ): Promise<string> => {
+      const injected = [
+        { role: "system", content: languageDirective(REQUEST_LANGUAGE) },
+        ...messages,
+      ];
+      if (scientific) {
+        const viaDeep = await tryOpenRouterText({
+          messages: injected,
+          temperature,
+          maxTokens,
+          tag: "generate-lessons",
+          userId,
+        });
+        if (viaDeep !== null) return viaDeep;
+        console.warn("[2.0] Lezione scientifica servita dalla catena Gemini (paracadute)");
+      }
+      return callAIText(injected, temperature, maxTokens, "generate-lessons");
+    };
+
     // 🏭 P10b IL TORNIO: la generazione del CONTENUTO di una lezione, estratta
     // dall'azione "generateLesson" e resa macchina riutilizzabile — così la
     // fabbrica dei moduli (e il primo modulo caldo) tornisce con lo stesso stampo.
@@ -265,7 +300,21 @@ ${list}
 Usa ciascun token [FIG:N] SOLO dove il testo parla proprio di ciò che quell'immagine mostra (vedi elenco sopra).` + figureRules;
       }
 
-      const prompt = `Sei un TUTOR DIDATTICO esperto. Il tuo compito NON è riassumere o riproporre frasi del materiale: devi RIELABORARE e RISTRUTTURARE i concetti da zero, con parole tue, in una lezione didatticamente ottimale.
+      // 🧭 PERCORSI 2.0 — che famiglia di materia è questo percorso?
+      // (null se il percorso è v1 senza materia rilevata, o se la migrazione
+      // del passaporto non è ancora applicata: si genera come sempre, zero rischi)
+      let subjectFamily: string | null = null;
+      if (lessons.context_id) {
+        const { data: ctxFam } = await supabase
+          .from("study_contexts")
+          .select("subject_family")
+          .eq("id", lessons.context_id)
+          .maybeSingle();
+        subjectFamily = ((ctxFam as { subject_family?: string } | null) ?? null)?.subject_family ?? null;
+      }
+      const scientific = isScientificFamily(subjectFamily);
+
+      const finanzPrompt = `Sei un TUTOR DIDATTICO esperto. Il tuo compito NON è riassumere o riproporre frasi del materiale: devi RIELABORARE e RISTRUTTURARE i concetti da zero, con parole tue, in una lezione didatticamente ottimale.
 ${profileContext}${pageRangeInfo}
 
 IMPORTANTE: Rispondi SOLO con un oggetto JSON valido. NON aggiungere testo prima o dopo il JSON. SOLO JSON puro.
@@ -384,10 +433,30 @@ JSON richiesto (rispetta esattamente questa forma):
 MATERIALE DI STUDIO (fonte da rielaborare, MAI da copiare):
 ${studyContent}`;
 
-      const content = await callAI([
-        { role: "system", content: "Sei un tutor didattico in stile carosello/Finanz. Genera lezioni a SLIDE CALIBRATE: 6-8 slide di teoria (ognuna 30-50 parole, MAI meno di 30, MAI più di 50) + 3-4 slide-quiz. Una slide = una micro-idea sviluppata con frasi complete. Ogni part_title inizia con un'emoji tematica. In OGNI slide includi almeno un BOX colorato con sintassi blockquote: '> 💡/⭐/🎯/⚡ ...' = box giallo (insight), '> 🛡️/⚠️/🔥/❗ ...' = box rosa (attenzione), '> 📊/🧭/🔎/📌/📐 ...' = box blu (dato/definizione). Usa **grassetto** sulle parole-pivot per favorire lo skimming. VIETATI muri di testo (>50 parole/slide) e slide vuote (<30 parole). Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url." },
-        { role: "user", content: prompt }
-      ], 0.35, 7000);
+      // 🧭 PERCORSI 2.0 — il vestito giusto per la materia: le scientifiche
+      // hanno regole proprie (formule LaTeX, anatomia, esempio svolto) e il
+      // cervello DeepSeek; tutte le altre seguono il stampo classico.
+      const prompt = scientific
+        ? buildScientificLessonPrompt({
+            title: String(lessons.title || ""),
+            profileContext,
+            pageRangeInfo,
+            figureInstructions,
+            studyContent,
+          })
+        : finanzPrompt;
+
+      const content = await callLessonAI(
+        [
+          scientific
+            ? { role: "system", content: SCIENTIFIC_SYSTEM_MESSAGE }
+            : { role: "system", content: "Sei un tutor didattico in stile carosello/Finanz. Genera lezioni a SLIDE CALIBRATE: 6-8 slide di teoria (ognuna 30-50 parole, MAI meno di 30, MAI più di 50) + 3-4 slide-quiz. Una slide = una micro-idea sviluppata con frasi complete. Ogni part_title inizia con un'emoji tematica. In OGNI slide includi almeno un BOX colorato con sintassi blockquote: '> 💡/⭐/🎯/⚡ ...' = box giallo (insight), '> 🛡️/⚠️/🔥/❗ ...' = box rosa (attenzione), '> 📊/🧭/🔎/📌/📐 ...' = box blu (dato/definizione). Usa **grassetto** sulle parole-pivot per favorire lo skimming. VIETATI muri di testo (>50 parole/slide) e slide vuote (<30 parole). Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url." },
+          { role: "user", content: prompt },
+        ],
+        0.35,
+        7000,
+        scientific,
+      );
 
       console.log("AI lesson response (first 300 chars):", content.substring(0, 300));
       const lessonData = extractJson(content) as Record<string, unknown>;
@@ -817,6 +886,35 @@ ${studyContent}`;
     // 🗺️ P6 — lavoriamo sul contenuto COMPLETO (la troncatura serve solo per
     // i payload AI). Marcatori e lunghezza reali guidano la scala delle lezioni.
     const fullContent = String(ctxPre.content);
+
+    // 🧭 PERCORSI 2.0 — IL RILEVATORE: di che materia stiamo parlando?
+    // Prima le parole chiave (gratis), poi — solo se serve — una chiamata AI
+    // leggera. Mai bloccante: se tutto fallisce, si genera come sempre.
+    const detection = await detectSubject({
+      fileName: String(ctxPre.file_name || ""),
+      sample: fullContent.substring(0, 4000),
+      aiCall: async (detectorPrompt: string) => {
+        try {
+          return await callAI([{ role: "user", content: detectorPrompt }], 0, 600);
+        } catch {
+          return "";
+        }
+      },
+    });
+    console.log(
+      `[2.0] materia rilevata: ${detection.family} — ${detection.subject} ` +
+        `(sicurezza ${detection.confidence}/100, fonte: ${detection.source})`,
+    );
+    // Passaporto: la materia si scrive sul percorso (non fatale se la colonna
+    // manca — migrazione 20261003150000 — il percorso procede uguale).
+    const { error: passportError } = await supabase
+      .from("study_contexts")
+      .update({ subject_family: detection.family, subject: detection.subject })
+      .eq("id", contextId);
+    if (passportError) {
+      console.warn("[2.0] passaporto non aggiornato (migrazione applicata?):", passportError.message);
+    }
+
     const combinedContent = `FILE: ${ctxPre.file_name}\n${fullContent}`.substring(0, MAX_CONTEXT_CHARS);
 
     // Stima la complessità del documento per scalare dinamicamente il numero di lezioni

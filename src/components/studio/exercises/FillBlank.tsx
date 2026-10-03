@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, XCircle, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MathText } from "../MathText";
 
 interface FillBlankProps {
   sentenceWithBlank: string;
@@ -33,7 +34,7 @@ export function FillBlank({
       <div className="title-medium text-foreground leading-relaxed p-4 rounded-2xl bg-surface-container">
         {parts.map((part, index) => (
           <span key={index}>
-            {part}
+            <MathText text={part} />
             {index < parts.length - 1 && (
               <span className="inline-block mx-1 align-middle">
                 {showResult ? (
