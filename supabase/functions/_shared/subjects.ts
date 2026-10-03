@@ -231,7 +231,7 @@ export async function detectSubject(
 // ── 3. LE REGOLE DI SCRITTA SCIENTIFICHE (il vestito di mat/fis/chim) ────────
 
 export const SCIENTIFIC_SYSTEM_MESSAGE =
-  "Sei un docente di materie scientifiche per le superiori. Generi lezioni a SLIDE (6-8 di teoria + 3-4 esercizi) con le FORMULE IN PRIMO PIANO: ogni formula in mostra va scritta in LaTeX con i delimitatori $$ su righe proprie (apertura $$, formula, chiusura $$); i simboli nella prosa con $…$ inline. Mai formule «in parole». Subito dopo ogni formula viene la sua ANATOMIA: cosa significa ogni simbolo e in che unità si misura. Almeno una slide contiene un ESEMPIO SVOLTO passo-passo con numeri concreti e unità di misura. Tono preciso e asciutto: niente aneddoti, niente aggettivi decorativi, niente prosa fumosa. Rispondi ESCLUSIVAMENTE con JSON valido nel formato richiesto.";
+  "Sei un docente di materie scientifiche per le superiori. Generi lezioni a SLIDE (6-8 di teoria + 3-4 esercizi) con le FORMULE IN PRIMO PIANO: ogni formula in mostra va scritta in LaTeX con i delimitatori $$ su righe proprie (apertura $$, formula, chiusura $$); i simboli nella prosa con $…$ inline. Mai formule «in parole». Subito dopo ogni formula viene la sua ANATOMIA: cosa significa ogni simbolo e in che unità si misura. Almeno una slide contiene un ESEMPIO SVOLTO passo-passo con numeri concreti e unità di misura. Se un concetto lo richiede, puoi inserire UNA simulazione interattiva (blocco ```widget col solo JSON richiesto). Tono preciso e asciutto: niente aneddoti, niente aggettivi decorativi, niente prosa fumosa. Rispondi ESCLUSIVAMENTE con JSON valido nel formato richiesto.";
 
 export interface ScientificPromptInput {
   title: string;
@@ -296,8 +296,27 @@ REGOLA DI FOCUS: la lezione tratta SOLO l'argomento del titolo, in profondità.
 - Per OGNI esercizio scrivi anche "explanation": 1-2 frasi che mostrano come si arriva alla risposta (verrà mostrata dopo la risposta).
 - Le domande testano la COMPRENSIONE e l'APPLICAZIONE, non il riconoscimento di frasi del testo.
 
+════════════════════════════════════════
+5) IL WIDGET INTERATTIVO (massimo UNO per lezione)
+════════════════════════════════════════
+- Se (e solo se) un concetto si comprende meglio MANIPOLANDOLO, inserisci una simulazione interattiva già costruita, che lo studente controlla con i cursori.
+- Per inserirla usa un blocco di codice con SOLO una riga JSON (niente testo fuori dal JSON):
+\`\`\`widget
+{"type": "parabola", "a": 1, "b": 0, "c": -3, "caption": "Sposta i coefficienti e osserva vertice e radici"}
+\`\`\`
+- "caption" è una frase brevissima (max 12 parole) nella lingua della lezione, che dice cosa osservare.
+- Tipi disponibili (usa SOLO questi nomi, valori dentro gli intervalli):
+  • parabola — y = ax² + bx + c. Parametri: a (-5..5), b (-10..10), c (-10..10). Per: equazioni di secondo grado, vertice, delta, radici.
+  • retta — y = mx + q. Parametri: m (-5..5), q (-10..10). Per: proporzionalità, pendenza, intercette.
+  • proiettile — moto parabolico. Parametri: v0 (1..50, m/s), angolo (5..85, gradi). Per: moto bidimensionale, gittata, altezza massima.
+  • piano-inclinato — forze su un piano inclinato. Parametri: angolo (0..60, gradi), massa (0.1..20, kg), attrito (0..1). Per: componenti del peso, attrito.
+  • ph — scala del pH. Parametro: ph (0..14). Per: acidità, basicità, concentrazione [H+].
+  • gas — legge dei gas P·V = nRT. Parametri: n (0.1..5, mol), T (100..600, K), V (1..50, L). Per: pressione, volume, temperatura.
+  • mercato — offerta e domanda. Parametri: domanda (1..20), offerta (1..20). Per: equilibrio di mercato (economia).
+- Regole: UNO solo per lezione; collocalo nella slide GIUSTA (dopo la formula o l'esempio che illustra); scegli valori di partenza che mostrino un caso interessante; se nessun tipo è pertinente NON inserire nulla — la maggior parte delle lezioni va benissimo senza.
+
 ${input.figureInstructions ? `════════════════════════════════════════
-5) FIGURE
+6) FIGURE
 ════════════════════════════════════════
 - DIVIETO ASSOLUTO di descrivere immagini a parole. Per riferirti a un elemento visivo del PDF usa SOLO il token [FIG:n].
 - NON usare mai il campo "image_url".
@@ -311,6 +330,7 @@ JSON richiesto (rispetta esattamente questa forma):
     { "part_title": "📚 …", "content": "… formula in mostra con $$ su righe proprie, poi l'anatomia dei simboli …" },
     { "part_title": "🔬 Esempio svolto", "content": "1. …\\n2. …\\n3. **Risultato:** …" },
     { "part_title": "💡 …", "content": "…\\n\\n> ⚠️ …" },
+    { "part_title": "🖐 Prova tu", "content": "Sposta i cursori e osserva cosa cambia:\\n\\n\`\`\`widget\\n{\"type\": \"parabola\", \"a\": 1, \"b\": 0, \"c\": -3, \"caption\": \"Osserva il vertice\"}\\n\`\`\`" },
     { "part_title": "🧭 In sintesi", "content": "1. **…**\\n2. **…**\\n3. **…**" }
   ],
   "example": "un caso concreto finale (3-5 frasi), nuovo rispetto alla lezione",

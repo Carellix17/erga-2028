@@ -140,9 +140,9 @@ describe("🧭 il vestito scientifico (formule in primo piano)", () => {
   it("le figure entrano nel prompt quando previste, e restano fuori quando non ci sono", () => {
     const conFigure = buildScientificLessonPrompt({ ...base, figureInstructions: "FIGURE DAL PDF: token [FIG:0]" });
     expect(conFigure).toContain("[FIG:0]");
-    expect(conFigure).toContain("5) FIGURE");
+    expect(conFigure).toContain("6) FIGURE");
     const senzaFigure = buildScientificLessonPrompt(base);
-    expect(senzaFigure).not.toContain("5) FIGURE");
+    expect(senzaFigure).not.toContain("6) FIGURE");
   });
 
   it("profilo e intervallo pagine passano al vestito scientifico", () => {
