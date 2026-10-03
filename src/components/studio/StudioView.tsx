@@ -121,15 +121,6 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   };
   // 🏋️ Percorsi 2.0 — la Palestra esiste solo per i corsi scientifici.
   const [isScientific, setIsScientific] = useState(false);
-  useEffect(() => {
-    let alive = true;
-    setIsScientific(false);
-    if (!effectiveContextId) return;
-    fetchContextSubjectInfo(effectiveContextId)
-      .then((info) => { if (alive) setIsScientific(info.subject_family === "scientifiche"); })
-      .catch(() => { if (alive) setIsScientific(false); });
-    return () => { alive = false; };
-  }, [effectiveContextId]);
   const [isCoursePickerOpen, setIsCoursePickerOpen] = useState(false);
   const [activeModuleIndex, setActiveModuleIndex] = useState<number | null>(null);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
@@ -210,6 +201,16 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     // 🔖 P11a: niente ripiego "ultimo generato" prima che il segnalibro sia arrivato
     (lastViewedLoaded ? allContexts[0]?.id : null) ||
     null;
+
+  useEffect(() => {
+    let alive = true;
+    setIsScientific(false);
+    if (!effectiveContextId) return;
+    fetchContextSubjectInfo(effectiveContextId)
+      .then((info) => { if (alive) setIsScientific(info.subject_family === "scientifiche"); })
+      .catch(() => { if (alive) setIsScientific(false); });
+    return () => { alive = false; };
+  }, [effectiveContextId]);
 
   const activeContext = allContexts.find((c) => c.id === effectiveContextId) || null;
 
