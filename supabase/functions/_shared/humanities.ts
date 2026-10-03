@@ -40,6 +40,12 @@ import {
   LINGUE_FINAL_TEST_LINE,
   LATINO_FINAL_TEST_LINE,
 } from "./languages.ts";
+import {
+  buildArtLessonPrompt,
+  ART_SYSTEM_MESSAGE,
+  ART_PLAN_GUIDANCE,
+  ART_FINAL_TEST_LINE,
+} from "./art.ts";
 
 export type FamilyLessonInput = ScientificPromptInput;
 
@@ -252,6 +258,7 @@ export function buildLessonPromptForFamily(
   if (family === "filosofia") return buildPhilosophyLessonPrompt(input);
   if (family === "lingue") return buildLanguageLessonPrompt(input);
   if (family === "latino") return buildLatinLessonPrompt(input);
+  if (family === "arte") return buildArtLessonPrompt(input);
   return null;
 }
 
@@ -263,6 +270,7 @@ export function familySystemMessage(family: string | null | undefined): string |
   if (family === "filosofia") return PHILOSOPHY_SYSTEM_MESSAGE;
   if (family === "lingue") return LINGUE_SYSTEM_MESSAGE;
   if (family === "latino") return LATINO_SYSTEM_MESSAGE;
+  if (family === "arte") return ART_SYSTEM_MESSAGE;
   return null;
 }
 
@@ -271,7 +279,7 @@ export function familySystemMessage(family: string | null | undefined): string |
  * più, i dialoghi delle lingue vive tengono voce, il resto resta preciso.
  */
 export function lessonTemperature(family: string | null | undefined): number {
-  if (isHumanitiesFamily(family)) return 0.45;
+  if (isHumanitiesFamily(family) || family === "arte") return 0.45;
   if (family === "lingue") return 0.4;
   return 0.35;
 }
@@ -308,6 +316,8 @@ export function buildPlanFamilyGuidance(family: string | null | undefined): stri
       return LANGUAGE_PLAN_GUIDANCE;
     case "latino":
       return LATIN_PLAN_GUIDANCE;
+    case "arte":
+      return ART_PLAN_GUIDANCE;
     case "scientifiche":
       return `10. IMPRONTA DI MATERIA (SCIENZE): un modulo = un argomento tecnico coerente; le lezioni in progressione (prerequisiti → concetto → applicazioni), senza mescolare argomenti distanti nello stesso modulo.
 `;
@@ -332,7 +342,7 @@ export function finalTestFamilyLine(family: string | null | undefined): string {
     case "latino":
       return LATINO_FINAL_TEST_LINE;
     case "arte":
-      return "\n5. IMPRONTA (STORIA DELL'ARTE): riconoscimento di opere, periodi e contesti.";
+      return ART_FINAL_TEST_LINE;
     default:
       return "";
   }
