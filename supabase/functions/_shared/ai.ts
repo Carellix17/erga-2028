@@ -13,6 +13,7 @@
  */
 
 import { logAiUsage } from "./aiUsage.ts";
+import { extractUsageTokens } from "./usage.ts";
 
 interface ProviderConfig {
   label: string;
@@ -121,21 +122,59 @@ export async function callAIWithFallback(
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
+        const startedAt = Date.now();
         const resp = await tryFetch(provider.url, apiKey, opts, model, provider.label);
+        const durationMs = Date.now() - startedAt;
+
+        if (resp.ok) {
+          console.log(`[AI] Using ${provider.label.toUpperCase()} (attempt ${attempt + 1})`);
+          // 🧾 Pacchetto 1 — contabilità onesta: per le chiamate riuscite
+          // leggiamo i token da una FOTOCOPIA della risposta (clone), così
+          // il corpo originale resta integro per il chiamante. Lo streaming
+          // non riporta i token nel corpo: registra solo la durata.
+          if (opts.stream) {
+            logAiUsage({
+              fn: tag, provider: provider.label, model, ok: true,
+              status: resp.status, userId: opts.userId, durationMs,
+            });
+          } else {
+            try {
+              const cloned = resp.clone();
+              void (async () => {
+                try {
+                  const data = await cloned.json();
+                  const tokens = extractUsageTokens(data);
+                  logAiUsage({
+                    fn: tag, provider: provider.label, model, ok: true,
+                    status: resp.status, userId: opts.userId, durationMs,
+                    ...tokens,
+                  });
+                } catch {
+                  logAiUsage({
+                    fn: tag, provider: provider.label, model, ok: true,
+                    status: resp.status, userId: opts.userId, durationMs,
+                  });
+                }
+              })();
+            } catch {
+              logAiUsage({
+                fn: tag, provider: provider.label, model, ok: true,
+                status: resp.status, userId: opts.userId, durationMs,
+              });
+            }
+          }
+          return resp;
+        }
 
         logAiUsage({
           fn: tag,
           provider: provider.label,
           model,
-          ok: resp.ok,
+          ok: false,
           status: resp.status,
           userId: opts.userId,
+          durationMs,
         });
-
-        if (resp.ok) {
-          console.log(`[AI] Using ${provider.label.toUpperCase()} (attempt ${attempt + 1})`);
-          return resp;
-        }
 
         const errBody = await resp.text();
 

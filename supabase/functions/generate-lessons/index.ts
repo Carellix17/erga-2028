@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
+import { buildModulePush, buildPathPush } from "../_shared/modulePush.ts";
 
 const MAX_CONTEXT_CHARS = 80000;
 const FREE_GENERATION_LIMIT = 5;
@@ -656,13 +657,18 @@ ${studyContent}`;
             }).eq("id", contextId);
           }
           await finish();
-          console.log(`[P10b] modulo ${moduleIndex} completato per contesto ${contextId}: ${done}/${missing.length} lezioni`);
+          console.log(`[P10b] modulo ${moduleIndex} per contesto ${contextId}: ${done}/${missing.length} lezioni generate`);
           try {
             const { sendPushToUser } = await import("../_shared/push.ts");
-            const cleanName = String(ctx.file_name || "il tuo materiale").replace(/\.[^.]+$/, "");
+            // 🔔 Pacchetto 1: la notifica dice COSA è successo davvero.
+            const pushMsg = buildModulePush({
+              done,
+              total: missing.length,
+              moduleIndex,
+              fileName: ctx.file_name,
+            });
             await sendPushToUser(supabase, userId, {
-              title: `Modulo ${moduleIndex + 1} pronto 📚`,
-              body: `Le nuove lezioni di «${cleanName}» ti aspettano sul sentiero: apri e riparti da dove eri!`,
+              ...pushMsg,
               url: "/?tab=studio",
               tag: `module-${contextId}-${moduleIndex}`,
             });
@@ -670,6 +676,22 @@ ${studyContent}`;
         } catch (moduleErr) {
           console.error(`[P10b] fabbrica del modulo ${moduleIndex} in errore:`, moduleErr);
           await finish();
+          // 🔔 Pacchetto 1: prima questo ramo era MUTO — lo studente restava
+          // ad aspettare una notifica che non arrivava mai. Ora avvisa.
+          try {
+            const { sendPushToUser } = await import("../_shared/push.ts");
+            const pushMsg = buildModulePush({
+              done,
+              total: missing.length,
+              moduleIndex,
+              fileName: ctx.file_name,
+            });
+            await sendPushToUser(supabase, userId, {
+              ...pushMsg,
+              url: "/?tab=studio",
+              tag: `module-${contextId}-${moduleIndex}`,
+            });
+          } catch (e) { console.error("[push] notify module failure failed:", e); }
         }
       };
 
@@ -949,9 +971,12 @@ ${documentSection}`;
         // 🧹 P10a TABULA RASA: rigenerando il percorso si azzera anche il contatore
         // dei progressi, altrimenti le nuove lezioni "eredita(va)no" i completamenti
         // del percorso vecchio (bug segnalato dall'utente).
+        // 🧭 Pacchetto 1: si azzerano anche le SPUNTE (completed_lessons) e il
+        // VOTO del test finale (final_test) — facevano riferimento a titoli e
+        // contenuti del percorso precedente, ormai cancellati.
         const { error: progressResetError } = await supabase
           .from("lesson_progress")
-          .update({ current_lesson_index: 0 })
+          .update({ current_lesson_index: 0, completed_lessons: [], final_test: null })
           .eq("user_id", userId).eq("context_id", contextId);
         if (progressResetError) {
           // Non fatale: per un percorso appena caricato la riga può non esistere ancora.
@@ -972,13 +997,13 @@ ${documentSection}`;
         // limite beta, mi fermo: il percorso resta valido e la fabbrica dei
         // moduli completerà il lavoro on demand.
         const warmCount = Math.min(MODULE_SIZE, titles.length);
+        let warmDone = 0; // 🔔 Pacchetto 1: visibile anche alla notifica finale (verità sui fatti)
         if (warmCount > 0) {
           const { data: warmRows } = await supabase
             .from("mini_lessons").select("*")
             .eq("user_id", userId).eq("context_id", contextId)
             .gte("lesson_order", 0).lt("lesson_order", warmCount)
             .order("lesson_order");
-          let warmDone = 0;
           for (const warmRow of warmRows ?? []) {
             if (!ctxPre.is_demo) {
               const { data: prof } = await supabase.from("user_profiles").select("generation_count").eq("user_id", userId).maybeSingle();
@@ -1008,12 +1033,12 @@ ${documentSection}`;
           module_titles: moduleTitles,
         }).eq("id", contextId);
 
-        console.log(`✅ Background generation complete for context ${contextId}: ${titles.length} lessons`);
+        console.log(`✅ Background generation complete for context ${contextId}: ${titles.length} lessons (${warmDone}/${warmCount} già calde)`);
         try {
           const { sendPushToUser } = await import("../_shared/push.ts");
           await sendPushToUser(supabase, userId, {
-            title: "Percorso pronto 🚀",
-            body: `Il sentiero di «${String(ctxPre?.file_name || "il tuo materiale").replace(/\\.[^.]+$/, "")}» è pronto e le prime lezioni sono già calde: inizia subito!`,
+            // 🔔 Pacchetto 1: "le prime lezioni sono già calde" solo se lo sono DAVVERO.
+            ...buildPathPush({ warmDone, warmCount, fileName: ctxPre?.file_name }),
             url: "/?tab=studio",
             tag: `lessons-${contextId}`,
           });

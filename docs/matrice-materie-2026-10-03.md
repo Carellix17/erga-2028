@@ -105,7 +105,7 @@ Il nuovo design system dell'app è deciso e la Minilezione ne è la prima applic
 ## 9. La roadmap (due fiumi che si incontrano)
 
 **Fiume 1 — Il motore (backend):**
-fondamenta dati (versionamento v1/v2, fix bug spunte alla rigenerazione, contabilità token) → **motore scientifico** (DeepSeek + formule + widget + generatore esercizi con chat socratica) → motore letteratura/storia/filosofia (grafo + conversazione) → lingue + latino → sociali + informatica → storia dell'arte.
+**Pacchetto 1 ✅ costruito il 3 ottobre (fondamenta dati: passaporto v1/v2 + materia nel DB, registro costi con token e durata, fix bug spunte alla rigenerazione, notifiche oneste)** → motore scientifico (DeepSeek + formule + widget + generatore esercizi con chat socratica) → motore letteratura/storia/filosofia (grafo + conversazione) → lingue + latino → sociali + informatica → storia dell'arte.
 
 **Fiume 2 — Il design (frontend):**
 **Minilezione** (una veste per famiglia, priorità) → Tavolo (Home) → Studio (Cantieri + Banco degli Strumenti) → Piano e Pratica → modalità chiara "Carta da Incisione".

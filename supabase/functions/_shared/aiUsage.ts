@@ -14,6 +14,12 @@ export interface AiUsageRow {
   ok: boolean;
   status?: number | null;
   userId?: string | null;
+  /** 🧾 Pacchetto 1: contabilità onesta (solo per le chiamate riuscite). */
+  promptTokens?: number | null;
+  completionTokens?: number | null;
+  totalTokens?: number | null;
+  /** Millisecondi fra la richiesta e la risposta del provider. */
+  durationMs?: number | null;
 }
 
 const UUID_RE =
@@ -43,6 +49,10 @@ export function logAiUsage(row: AiUsageRow): void {
         model: row.model ?? null,
         ok: row.ok,
         status: row.status ?? null,
+        prompt_tokens: row.promptTokens ?? null,
+        completion_tokens: row.completionTokens ?? null,
+        total_tokens: row.totalTokens ?? null,
+        duration_ms: row.durationMs ?? null,
       }),
     })
       .then(() => {})
