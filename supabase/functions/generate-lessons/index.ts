@@ -6,10 +6,15 @@ import { buildModulePush, buildPathPush } from "../_shared/modulePush.ts";
 import {
   detectSubject,
   isScientificFamily,
-  buildScientificLessonPrompt,
-  SCIENTIFIC_SYSTEM_MESSAGE,
 } from "../_shared/subjects.ts";
 import { tryOpenRouterText } from "../_shared/openrouter.ts";
+import {
+  buildLessonPromptForFamily,
+  familySystemMessage,
+  lessonTemperature,
+  buildPlanFamilyGuidance,
+  finalTestFamilyLine,
+} from "../_shared/humanities.ts";
 
 const MAX_CONTEXT_CHARS = 80000;
 const FREE_GENERATION_LIMIT = 5;
@@ -87,6 +92,9 @@ import {
   maxPageNumber,
   isLongDocument,
 } from "../_shared/pagemap.ts";
+
+// 🧭 Percorsi 2.0 — il sistema dello stampo classico (famiglie senza vestito proprio).
+const FINANZ_SYSTEM_MESSAGE = "Sei un tutor didattico in stile carosello/Finanz. Genera lezioni a SLIDE CALIBRATE: 6-8 slide di teoria (ognuna 30-50 parole, MAI meno di 30, MAI più di 50) + 3-4 slide-quiz. Una slide = una micro-idea sviluppata con frasi complete. Ogni part_title inizia con un'emoji tematica. In OGNI slide includi almeno un BOX colorato con sintassi blockquote: '> 💡/⭐/🎯/⚡ ...' = box giallo (insight), '> 🛡️/⚠️/🔥/❗ ...' = box rosa (attenzione), '> 📊/🧭/🔎/📌/📐 ...' = box blu (dato/definizione). Usa **grassetto** sulle parole-pivot per favorire lo skimming. VIETATI muri di testo (>50 parole/slide) e slide vuote (<30 parole). Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url.";
 
 let REQUEST_LANGUAGE: "it" | "en" = "it";
 async function callAI(messages: { role: string; content: string }[], temperature = 0.1, maxTokens = 4000): Promise<string> {
@@ -436,24 +444,21 @@ ${studyContent}`;
       // 🧭 PERCORSI 2.0 — il vestito giusto per la materia: le scientifiche
       // hanno regole proprie (formule LaTeX, anatomia, esempio svolto) e il
       // cervello DeepSeek; tutte le altre seguono il stampo classico.
-      const prompt = scientific
-        ? buildScientificLessonPrompt({
-            title: String(lessons.title || ""),
-            profileContext,
-            pageRangeInfo,
-            figureInstructions,
-            studyContent,
-          })
-        : finanzPrompt;
+      const familyPrompt = buildLessonPromptForFamily(subjectFamily, {
+        title: String(lessons.title || ""),
+        profileContext,
+        pageRangeInfo,
+        figureInstructions,
+        studyContent,
+      });
+      const prompt = familyPrompt ?? finanzPrompt;
 
       const content = await callLessonAI(
         [
-          scientific
-            ? { role: "system", content: SCIENTIFIC_SYSTEM_MESSAGE }
-            : { role: "system", content: "Sei un tutor didattico in stile carosello/Finanz. Genera lezioni a SLIDE CALIBRATE: 6-8 slide di teoria (ognuna 30-50 parole, MAI meno di 30, MAI più di 50) + 3-4 slide-quiz. Una slide = una micro-idea sviluppata con frasi complete. Ogni part_title inizia con un'emoji tematica. In OGNI slide includi almeno un BOX colorato con sintassi blockquote: '> 💡/⭐/🎯/⚡ ...' = box giallo (insight), '> 🛡️/⚠️/🔥/❗ ...' = box rosa (attenzione), '> 📊/🧭/🔎/📌/📐 ...' = box blu (dato/definizione). Usa **grassetto** sulle parole-pivot per favorire lo skimming. VIETATI muri di testo (>50 parole/slide) e slide vuote (<30 parole). Rispondi ESCLUSIVAMENTE con JSON valido. Vietato copiare frasi letterali dal materiale (max 7 parole consecutive identiche). Per le figure del PDF usa SOLO i token [FIG:n]; mai descrizioni testuali di immagini; mai il campo image_url." },
+          { role: "system", content: familySystemMessage(subjectFamily) ?? FINANZ_SYSTEM_MESSAGE },
           { role: "user", content: prompt },
         ],
-        0.35,
+        lessonTemperature(subjectFamily),
         7000,
         scientific,
       );
@@ -786,6 +791,18 @@ ${studyContent}`;
 
       const topicsSummary = allLessons.map((l: { title: string; concept: string }, i: number) => `${i + 1}. ${l.title}: ${l.concept}`).join("\n");
 
+      // 🧭 Percorsi 2.0 — l'impronta della materia anche nel test finale.
+      let finalTestFamily: string | null = null;
+      if (contextId) {
+        const { data: ctxFam } = await supabase
+          .from("study_contexts")
+          .select("subject_family")
+          .eq("id", contextId)
+          .maybeSingle();
+        finalTestFamily = ((ctxFam as { subject_family?: string } | null) ?? null)?.subject_family ?? null;
+      }
+      const finalTestLine = finalTestFamilyLine(finalTestFamily);
+
       let studyContent = "";
       if (contextId) {
         const { data: ctx } = await supabase.from("study_contexts").select("content, file_name").eq("id", contextId).eq("user_id", userId).single();
@@ -815,7 +832,7 @@ REGOLE:
 1. Esattamente ${Math.min(allLessons.length * 2, 10)} domande.
 2. Copri TUTTI gli argomenti.
 3. Domande DIVERSE da quelle delle lezioni.
-4. Usa SOLO "multiple_choice" e "true_false" (NO short_answer, NO fill_blank). Alterna i due tipi.
+4. Usa SOLO "multiple_choice" e "true_false" (NO short_answer, NO fill_blank). Alterna i due tipi.${finalTestLine}
 
 JSON richiesto:
 [
@@ -974,6 +991,10 @@ ${_outline}`
           : `TESTO DA ANALIZZARE:
 ${combinedContent}`;
 
+        // 🧭 Percorsi 2.0 — l'impronta della materia: il piano nasce già con la
+        // forma giusta per la famiglia (autori/correnti, cronologia, problemi).
+        const planFamilyGuidance = buildPlanFamilyGuidance(detection.family);
+
         const titlesPrompt = `Analizza il materiale fornito e crea un piano di studi strutturato, PROPORZIONATO alla reale complessità del documento.
 
 IMPORTANTE: Rispondi SOLO con un array JSON valido. SOLO JSON puro.${_longDoc ? "\n\n⚠️ DOCUMENTO LUNGO: non ricevi il testo integrale ma la MAPPA pagina-per-pagina più l'estratto integrale dell'inizio. Il piano DEVE coprire anche le pagine FINALI del documento." : ""}
@@ -992,7 +1013,7 @@ REGOLE:
 7. Ogni titolo deve essere specifico e descrivere chiaramente il singolo concetto trattato (no titoli generici tipo "Introduzione", "Parte 2").
 ${mappingRule}
 9. TITOLI DEI MODULI (OBBLIGATORIO): il percorso è diviso in MODULI da 4 lezioni consecutive (l'ultimo può essere più corto). Per OGNI lezione indica anche "module_title": un nome breve del modulo tematico cui appartiene (2-5 parole, stile capitolo, es. "Le basi della cellula"). RAGGRUPPA le lezioni per AFFINITÀ tematica: le lezioni dello stesso modulo DEVONO avere LO STESSO module_title.
-
+${planFamilyGuidance}
 ESEMPIO: Se il materiale parla di "La cellula", NON creare una lezione "La cellula e le sue parti". Crea invece: "La membrana cellulare", "Il nucleo", "I mitocondri", "Il reticolo endoplasmatico", etc.
 
 Output richiesto:
