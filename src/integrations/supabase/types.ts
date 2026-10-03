@@ -434,22 +434,28 @@ export type Database = {
       }
       lesson_progress: {
         Row: {
+          completed_lessons: Json
           context_id: string | null
           current_lesson_index: number
+          final_test: Json | null
           id: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          completed_lessons?: Json
           context_id?: string | null
           current_lesson_index?: number
+          final_test?: Json | null
           id?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          completed_lessons?: Json
           context_id?: string | null
           current_lesson_index?: number
+          final_test?: Json | null
           id?: string
           updated_at?: string
           user_id?: string
