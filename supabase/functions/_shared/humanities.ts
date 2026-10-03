@@ -17,6 +17,10 @@
  * (concept, explanation_parts, example, exercises): nessuna modifica
  * al client serve per vedere la differenza.
  *
+ * Questo modulo è anche il GUARDAROBA che instrada OGNI famiglia al suo
+ * vestito: umanistici qui, scientifico in subjects.ts, lingue e latino in
+ * languages.ts.
+ *
  * Modulo PURO (zero Deno): collaudabile da vitest come subjects.ts.
  */
 
@@ -26,6 +30,16 @@ import {
   SCIENTIFIC_SYSTEM_MESSAGE,
   type ScientificPromptInput,
 } from "./subjects.ts";
+import {
+  buildLanguageLessonPrompt,
+  buildLatinLessonPrompt,
+  LINGUE_SYSTEM_MESSAGE,
+  LATINO_SYSTEM_MESSAGE,
+  LANGUAGE_PLAN_GUIDANCE,
+  LATIN_PLAN_GUIDANCE,
+  LINGUE_FINAL_TEST_LINE,
+  LATINO_FINAL_TEST_LINE,
+} from "./languages.ts";
 
 export type FamilyLessonInput = ScientificPromptInput;
 
@@ -236,6 +250,8 @@ export function buildLessonPromptForFamily(
   if (family === "letteratura") return buildLiteratureLessonPrompt(input);
   if (family === "storiche") return buildHistoryLessonPrompt(input);
   if (family === "filosofia") return buildPhilosophyLessonPrompt(input);
+  if (family === "lingue") return buildLanguageLessonPrompt(input);
+  if (family === "latino") return buildLatinLessonPrompt(input);
   return null;
 }
 
@@ -245,12 +261,19 @@ export function familySystemMessage(family: string | null | undefined): string |
   if (family === "letteratura") return LITERATURE_SYSTEM_MESSAGE;
   if (family === "storiche") return HISTORY_SYSTEM_MESSAGE;
   if (family === "filosofia") return PHILOSOPHY_SYSTEM_MESSAGE;
+  if (family === "lingue") return LINGUE_SYSTEM_MESSAGE;
+  if (family === "latino") return LATINO_SYSTEM_MESSAGE;
   return null;
 }
 
-/** La temperatura della lezione: il racconto respira un filo di più. */
+/**
+ * La temperatura della lezione: il racconto umanistico respira un filo di
+ * più, i dialoghi delle lingue vive tengono voce, il resto resta preciso.
+ */
 export function lessonTemperature(family: string | null | undefined): number {
-  return isHumanitiesFamily(family) ? 0.45 : 0.35;
+  if (isHumanitiesFamily(family)) return 0.45;
+  if (family === "lingue") return 0.4;
+  return 0.35;
 }
 
 // ── L'IMPRONTA DI MATERIA NEL PIANO DI STUDI ────────────────────────────────
@@ -281,6 +304,10 @@ export function buildPlanFamilyGuidance(family: string | null | undefined): stri
    - Sequenza consigliata: prima i PROBLEMI di fondo (che domanda si pone questa filosofia), poi le risposte degli autori.
    - Dentro un autore: il problema che eredita, la sua risposta, le opere, le obiezioni che ha affrontato.
 `;
+    case "lingue":
+      return LANGUAGE_PLAN_GUIDANCE;
+    case "latino":
+      return LATIN_PLAN_GUIDANCE;
     case "scientifiche":
       return `10. IMPRONTA DI MATERIA (SCIENZE): un modulo = un argomento tecnico coerente; le lezioni in progressione (prerequisiti → concetto → applicazioni), senza mescolare argomenti distanti nello stesso modulo.
 `;
@@ -300,6 +327,10 @@ export function finalTestFamilyLine(family: string | null | undefined): string {
       return "\n5. IMPRONTA (STORIA/GEOGRAFIA): privilegia le relazioni causa-effetto e le conseguenze; includi date da collocare e personaggi col loro ruolo.";
     case "filosofia":
       return "\n5. IMPRONTA (FILOSOFIA): domande su tesi, obiezioni e confronti fra autori («cosa risponderebbe X a Y?»).";
+    case "lingue":
+      return LINGUE_FINAL_TEST_LINE;
+    case "latino":
+      return LATINO_FINAL_TEST_LINE;
     case "arte":
       return "\n5. IMPRONTA (STORIA DELL'ARTE): riconoscimento di opere, periodi e contesti.";
     default:

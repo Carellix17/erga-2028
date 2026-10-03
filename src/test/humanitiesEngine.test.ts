@@ -40,7 +40,7 @@ describe("📖 l'instradatore", () => {
   });
 
   it("le famiglie senza vestito tornano allo stampo classico (null)", () => {
-    for (const fam of ["lingue", "latino", "sociali", "informatica", "arte", "generale", null, undefined, "futurismo"]) {
+    for (const fam of ["sociali", "informatica", "arte", "generale", null, undefined, "futurismo"]) {
       expect(buildLessonPromptForFamily(fam, base)).toBeNull();
     }
   });
@@ -50,7 +50,6 @@ describe("📖 l'instradatore", () => {
     expect(familySystemMessage("storiche")).toBe(HISTORY_SYSTEM_MESSAGE);
     expect(familySystemMessage("filosofia")).toBe(PHILOSOPHY_SYSTEM_MESSAGE);
     expect(familySystemMessage("scientifiche")).toBe(SCIENTIFIC_SYSTEM_MESSAGE);
-    expect(familySystemMessage("lingue")).toBeNull();
     expect(familySystemMessage(null)).toBeNull();
   });
 
@@ -59,7 +58,8 @@ describe("📖 l'instradatore", () => {
     expect(lessonTemperature("storiche")).toBe(0.45);
     expect(lessonTemperature("filosofia")).toBe(0.45);
     expect(lessonTemperature("scientifiche")).toBe(0.35);
-    expect(lessonTemperature("lingue")).toBe(0.35);
+    expect(lessonTemperature("latino")).toBe(0.35);
+    expect(lessonTemperature("lingue")).toBe(0.4); // il dialogo tiene voce
     expect(lessonTemperature(null)).toBe(0.35);
   });
 
@@ -227,7 +227,7 @@ describe("📖 l'impronta di materia nel piano di studi", () => {
   });
 
   it("famiglie senza impronta: stringa vuota (il piano resta classico)", () => {
-    for (const fam of ["lingue", "latino", "sociali", "informatica", "arte", "generale", null, undefined]) {
+    for (const fam of ["sociali", "informatica", "arte", "generale", null, undefined]) {
       expect(buildPlanFamilyGuidance(fam)).toBe("");
     }
   });
@@ -243,7 +243,7 @@ describe("📖 l'impronta nel test finale", () => {
   });
 
   it("famiglie generiche: nessuna riga extra", () => {
-    expect(finalTestFamilyLine("lingue")).toBe("");
+    expect(finalTestFamilyLine("sociali")).toBe("");
     expect(finalTestFamilyLine(null)).toBe("");
   });
 });
