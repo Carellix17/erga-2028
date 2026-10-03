@@ -43,7 +43,7 @@ Prima di scrivere codice definire:
 - i limiti tecnici;
 - l'elemento distintivo che la rende riconoscibile.
 
-Per Erga la direzione predefinita è **editoriale, minimale, autorevole ma vicina agli studenti**. Mantenere il marchio nero, bianco, rosso e rosa salvo richiesta esplicita. Evitare interfacce generiche da prodotto AI, decorazioni casuali e pattern copiati senza relazione con lo studio.
+Per Erga la direzione visiva è definita da `DESIGN.md` (versione 1.1, redesign): strumento di studio contemporaneo, geometria squadrata, carta e inchiostro, atmosfera astratta per materia, accento **ottanio** come base proposta della prima implementazione. La vetrina marketing conserva i suoi gettoni isolati (`--lp-*`). Le scelte della veste precedente ("Bisturi Editoriale": ossidiana obbligatoria, Rosso Lacca, Playfair/Inter/Roboto Mono, immagini in bianco e nero, mirino laser) non si applicano più. Lo stato della migrazione è in `docs/registro-redesign-2026-10-03.md`. Evitare interfacce generiche da prodotto AI, decorazioni casual e pattern copiati senza relazione con lo studio.
 
 ### UI/UX Pro Max — ricerca strutturata prima delle modifiche ampie
 

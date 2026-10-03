@@ -1,28 +1,58 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-14T17:30:00Z",
-  "title": "Design System: Erga",
+  "generatedAt": "2026-10-03T16:30:00Z",
+  "title": "Design System: Erga — redesign 1.1",
   "extensions": {
     "colorMeta": {
-      "ink": {
+      "brand": {
         "role": "primary",
-        "displayName": "Inchiostro caldo",
-        "canonical": "hsl(340 6.67% 8.82%)",
+        "displayName": "Ottanio di marca",
+        "canonical": "#087F83",
         "tonalRamp": [
-          "hsl(340 7% 15%)",
-          "hsl(340 7% 26%)",
-          "hsl(340 7% 37%)",
-          "hsl(340 7% 48%)",
-          "hsl(340 7% 60%)",
-          "hsl(340 7% 71%)",
-          "hsl(340 7% 82%)",
-          "hsl(340 7% 93%)"
+          "hsl(182 88% 15%)",
+          "hsl(182 88% 26%)",
+          "hsl(182 88% 37%)",
+          "hsl(182 88% 48%)",
+          "hsl(182 88% 60%)",
+          "hsl(182 88% 71%)",
+          "hsl(182 88% 82%)",
+          "hsl(182 88% 93%)"
+        ]
+      },
+      "brand-deep": {
+        "role": "primary",
+        "displayName": "Ottanio profondo",
+        "canonical": "#07585C",
+        "tonalRamp": [
+          "hsl(183 86% 15%)",
+          "hsl(183 86% 26%)",
+          "hsl(183 86% 37%)",
+          "hsl(183 86% 48%)",
+          "hsl(183 86% 60%)",
+          "hsl(183 86% 71%)",
+          "hsl(183 86% 82%)",
+          "hsl(183 86% 93%)"
+        ]
+      },
+      "brand-tint": {
+        "role": "secondary",
+        "displayName": "Tinta di marca",
+        "canonical": "#E8F2F0",
+        "tonalRamp": [
+          "hsl(168 28% 15%)",
+          "hsl(168 28% 26%)",
+          "hsl(168 28% 37%)",
+          "hsl(168 28% 48%)",
+          "hsl(168 28% 60%)",
+          "hsl(168 28% 71%)",
+          "hsl(168 28% 82%)",
+          "hsl(168 28% 93%)"
         ]
       },
       "paper": {
         "role": "neutral",
-        "displayName": "Carta di Erga",
-        "canonical": "hsl(20 10.34% 94.31%)",
+        "displayName": "Carta",
+        "canonical": "#F2F0EF",
         "tonalRamp": [
           "hsl(20 10% 15%)",
           "hsl(20 10% 26%)",
@@ -34,10 +64,10 @@
           "hsl(20 10% 93%)"
         ]
       },
-      "card-light": {
+      "surface": {
         "role": "neutral",
-        "displayName": "Superficie di lavoro",
-        "canonical": "hsl(0 0% 100%)",
+        "displayName": "Superficie elevata",
+        "canonical": "#FFFFFF",
         "tonalRamp": [
           "hsl(0 0% 15%)",
           "hsl(0 0% 26%)",
@@ -49,79 +79,154 @@
           "hsl(0 0% 93%)"
         ]
       },
-      "night": {
-        "role": "neutral",
-        "displayName": "Antracite profondo",
-        "canonical": "hsl(240 9% 4.3%)",
-        "tonalRamp": [
-          "hsl(240 9% 15%)",
-          "hsl(240 9% 26%)",
-          "hsl(240 9% 37%)",
-          "hsl(240 9% 48%)",
-          "hsl(240 9% 60%)",
-          "hsl(240 9% 71%)",
-          "hsl(240 9% 82%)",
-          "hsl(240 9% 93%)"
-        ]
-      },
-      "card-night": {
-        "role": "neutral",
-        "displayName": "Carbone",
-        "canonical": "hsl(240 9% 8.6%)",
-        "tonalRamp": [
-          "hsl(240 9% 15%)",
-          "hsl(240 9% 26%)",
-          "hsl(240 9% 37%)",
-          "hsl(240 9% 48%)",
-          "hsl(240 9% 60%)",
-          "hsl(240 9% 71%)",
-          "hsl(240 9% 82%)",
-          "hsl(240 9% 93%)"
-        ]
-      },
-      "hero-cream": {
-        "role": "secondary",
-        "displayName": "Avorio di scena",
-        "canonical": "hsl(42 31% 94%)",
-        "tonalRamp": [
-          "hsl(42 31% 15%)",
-          "hsl(42 31% 26%)",
-          "hsl(42 31% 37%)",
-          "hsl(42 31% 48%)",
-          "hsl(42 31% 60%)",
-          "hsl(42 31% 71%)",
-          "hsl(42 31% 82%)",
-          "hsl(42 31% 93%)"
-        ]
-      },
-      "hero-ink": {
+      "ink": {
         "role": "primary",
-        "displayName": "Inchiostro su avorio",
-        "canonical": "hsl(240 5% 8%)",
+        "displayName": "Inchiostro",
+        "canonical": "#181516",
         "tonalRamp": [
-          "hsl(240 5% 15%)",
-          "hsl(240 5% 26%)",
-          "hsl(240 5% 37%)",
-          "hsl(240 5% 48%)",
-          "hsl(240 5% 60%)",
-          "hsl(240 5% 71%)",
-          "hsl(240 5% 82%)",
-          "hsl(240 5% 93%)"
+          "hsl(340 7% 15%)",
+          "hsl(340 7% 26%)",
+          "hsl(340 7% 37%)",
+          "hsl(340 7% 48%)",
+          "hsl(340 7% 60%)",
+          "hsl(340 7% 71%)",
+          "hsl(340 7% 82%)",
+          "hsl(340 7% 93%)"
         ]
       },
-      "muted-foreground-light": {
+      "ink-muted": {
         "role": "neutral",
-        "displayName": "Secondo testo (giorno)",
-        "canonical": "hsl(0 0% 38%)",
+        "displayName": "Testo secondario",
+        "canonical": "#625D59",
         "tonalRamp": [
-          "hsl(0 0% 15%)",
-          "hsl(0 0% 26%)",
-          "hsl(0 0% 37%)",
-          "hsl(0 0% 48%)",
-          "hsl(0 0% 60%)",
-          "hsl(0 0% 71%)",
-          "hsl(0 0% 82%)",
-          "hsl(0 0% 93%)"
+          "hsl(27 5% 15%)",
+          "hsl(27 5% 26%)",
+          "hsl(27 5% 37%)",
+          "hsl(27 5% 48%)",
+          "hsl(27 5% 60%)",
+          "hsl(27 5% 71%)",
+          "hsl(27 5% 82%)",
+          "hsl(27 5% 93%)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Bordo",
+        "canonical": "#D6D5D0",
+        "tonalRamp": [
+          "hsl(50 7% 15%)",
+          "hsl(50 7% 26%)",
+          "hsl(50 7% 37%)",
+          "hsl(50 7% 48%)",
+          "hsl(50 7% 60%)",
+          "hsl(50 7% 71%)",
+          "hsl(50 7% 82%)",
+          "hsl(50 7% 93%)"
+        ]
+      },
+      "night-bg": {
+        "role": "neutral",
+        "displayName": "Fondo notte (proposta)",
+        "canonical": "#101717",
+        "tonalRamp": [
+          "hsl(180 18% 15%)",
+          "hsl(180 18% 26%)",
+          "hsl(180 18% 37%)",
+          "hsl(180 18% 48%)",
+          "hsl(180 18% 60%)",
+          "hsl(180 18% 71%)",
+          "hsl(180 18% 82%)",
+          "hsl(180 18% 93%)"
+        ]
+      },
+      "night-surface": {
+        "role": "neutral",
+        "displayName": "Superficie notte (proposta)",
+        "canonical": "#141D1D",
+        "tonalRamp": [
+          "hsl(180 18% 15%)",
+          "hsl(180 18% 26%)",
+          "hsl(180 18% 37%)",
+          "hsl(180 18% 48%)",
+          "hsl(180 18% 60%)",
+          "hsl(180 18% 71%)",
+          "hsl(180 18% 82%)",
+          "hsl(180 18% 93%)"
+        ]
+      },
+      "night-elevated": {
+        "role": "neutral",
+        "displayName": "Superficie elevata notte",
+        "canonical": "#1B2828",
+        "tonalRamp": [
+          "hsl(180 19% 15%)",
+          "hsl(180 19% 26%)",
+          "hsl(180 19% 37%)",
+          "hsl(180 19% 48%)",
+          "hsl(180 19% 60%)",
+          "hsl(180 19% 71%)",
+          "hsl(180 19% 82%)",
+          "hsl(180 19% 93%)"
+        ]
+      },
+      "night-text": {
+        "role": "neutral",
+        "displayName": "Testo notte",
+        "canonical": "#F2F0EF",
+        "tonalRamp": [
+          "hsl(20 10% 15%)",
+          "hsl(20 10% 26%)",
+          "hsl(20 10% 37%)",
+          "hsl(20 10% 48%)",
+          "hsl(20 10% 60%)",
+          "hsl(20 10% 71%)",
+          "hsl(20 10% 82%)",
+          "hsl(20 10% 93%)"
+        ]
+      },
+      "night-muted": {
+        "role": "neutral",
+        "displayName": "Testo secondario notte",
+        "canonical": "#B8C6C3",
+        "tonalRamp": [
+          "hsl(167 11% 15%)",
+          "hsl(167 11% 26%)",
+          "hsl(167 11% 37%)",
+          "hsl(167 11% 48%)",
+          "hsl(167 11% 60%)",
+          "hsl(167 11% 71%)",
+          "hsl(167 11% 82%)",
+          "hsl(167 11% 93%)"
+        ]
+      },
+      "night-accent": {
+        "role": "secondary",
+        "displayName": "Accento chiaro notte",
+        "canonical": "#8ECFD0",
+        "tonalRamp": [
+          "hsl(181 41% 15%)",
+          "hsl(181 41% 26%)",
+          "hsl(181 41% 37%)",
+          "hsl(181 41% 48%)",
+          "hsl(181 41% 60%)",
+          "hsl(181 41% 71%)",
+          "hsl(181 41% 82%)",
+          "hsl(181 41% 93%)"
+        ]
+      },
+      "night-border": {
+        "role": "neutral",
+        "displayName": "Bordo notte",
+        "canonical": "#3D5351",
+        "tonalRamp": [
+          "hsl(175 15% 15%)",
+          "hsl(175 15% 26%)",
+          "hsl(175 15% 37%)",
+          "hsl(175 15% 48%)",
+          "hsl(175 15% 60%)",
+          "hsl(175 15% 71%)",
+          "hsl(175 15% 82%)",
+          "hsl(175 15% 93%)"
         ]
       },
       "marketing-red": {
@@ -438,155 +543,94 @@
           "hsl(38 0% 82%)",
           "hsl(38 0% 93%)"
         ]
-      },
-      "pure-black": {
-        "role": "neutral",
-        "displayName": "Nero pieno (utility)",
-        "canonical": "#000",
-        "tonalRamp": [
-          "hsl(0 0% 15%)",
-          "hsl(0 0% 26%)",
-          "hsl(0 0% 37%)",
-          "hsl(0 0% 48%)",
-          "hsl(0 0% 60%)",
-          "hsl(0 0% 71%)",
-          "hsl(0 0% 82%)",
-          "hsl(0 0% 93%)"
-        ]
       }
     },
     "typographyMeta": {
       "display": {
-        "displayName": "Display",
-        "purpose": "Titolo di pagina; una sola voce per schermata."
+        "displayName": "Display (Ubuntu Sans)",
+        "purpose": "Saluto e titolo protagonista: 32–44 px adattivi, una voce per schermata."
       },
-      "headline": {
-        "displayName": "Headline",
-        "purpose": "Titoli di sezione e di card."
+      "section": {
+        "displayName": "Titolo di sezione",
+        "purpose": "Titoli di sezione e pannello: 24–32 px."
       },
-      "title": {
-        "displayName": "Title",
-        "purpose": "Righe di lista e intestazioni compatte."
+      "card-title": {
+        "displayName": "Titolo di card / lezione",
+        "purpose": "Titoli di card, lezione e modulo: 20–24 px."
       },
-      "body": {
-        "displayName": "Body",
-        "purpose": "Testo di lettura: lezioni, chat, descrizioni."
+      "didactic": {
+        "displayName": "Testo didattico",
+        "purpose": "Lettura delle lezioni: 18 px (17 su contesti stretti), interlinea 1.6. Font da validare su contenuti reali."
+      },
+      "interface": {
+        "displayName": "Testo di interfaccia",
+        "purpose": "Etichette dei comandi e testo corrente dell'app: 16 px."
       },
       "label": {
-        "displayName": "Label (Ubuntu Sans)",
-        "purpose": "Micro-titoli in maiuscolo spaziato: sezioni, stati, badge."
-      },
-      "focal": {
-        "displayName": "Voce focale (Radja)",
-        "purpose": "Titolo del percorso attivo e macro-metriche. Una per schermata."
-      },
-      "welcome": {
-        "displayName": "Saluto (Ubuntu Sans)",
-        "purpose": "Solo il saluto della Home."
-      },
-      "headline-medium": {
-        "displayName": "Headline medium",
-        "purpose": "Titoli di pannello e di sezione."
-      },
-      "title-large": {
-        "displayName": "Title large",
-        "purpose": "Titoli di card e righe principali."
-      },
-      "title-small": {
-        "displayName": "Title small",
-        "purpose": "Etichette di gruppo in grassetto."
-      },
-      "body-small": {
-        "displayName": "Body small",
-        "purpose": "Testo secondario ma di lettura: mai sotto i 15 px."
-      },
-      "dense-13": {
-        "displayName": "Piccolo stampato (dense)",
-        "purpose": "Metadati in superfici dense: calendario, chat, badge. Mai per il testo di lettura."
-      },
-      "label-large": {
-        "displayName": "Label large (Ubuntu Sans)",
-        "purpose": "Etichette di sezione."
-      },
-      "label-small": {
-        "displayName": "Label small (Ubuntu Sans)",
-        "purpose": "Micro-etichette della griglia del calendario."
+        "displayName": "Label / metadato",
+        "purpose": "Metadati e micro-titoli: 13–14 px. Mai spiegazioni a questa misura."
       },
       "metric": {
         "displayName": "Macro-metrica",
-        "purpose": "Numeri dei riepiloghi (minuti, sessioni); cifre tabulari."
+        "purpose": "Numeri di grafici e riepiloghi: cifre stabili e confrontabili."
       },
-      "metric-lg": {
-        "displayName": "Macro-metrica large",
-        "purpose": "Come metric, da tablet in su."
-      },
-      "focal-large": {
-        "displayName": "Voce focale large (Radja)",
-        "purpose": "Titolo delle schermate di accesso su schermi larghi."
+      "welcome": {
+        "displayName": "Saluto (Ubuntu Sans)",
+        "purpose": "Il saluto della Home: decisione consolidata, da conservare."
       }
     },
     "shadows": [
       {
-        "name": "level-1",
-        "value": "var(--shadow-level-1)",
-        "purpose": "Righe, chip, controlli posati sulla pagina."
+        "name": "ordinaria",
+        "value": "0 2px 6px rgba(24,21,22,0.06)",
+        "purpose": "Elementi ordinari: ombra minima quando utile."
       },
       {
-        "name": "level-2",
-        "value": "var(--shadow-level-2)",
-        "purpose": "Card di lavoro e pillole dell'app."
+        "name": "protagonista",
+        "value": "0 10px 28px rgba(24,21,22,0.12), 0 2px 6px rgba(24,21,22,0.05)",
+        "purpose": "Protagonisti e card del percorso."
       },
       {
-        "name": "level-3",
-        "value": "var(--shadow-level-3)",
-        "purpose": "Fogli, dialoghi, menu sospesi."
-      },
-      {
-        "name": "tactile",
-        "value": "var(--shadow-tattile)",
-        "purpose": "Superfici della Home: profilo leggero, mai alone."
-      },
-      {
-        "name": "card-active",
-        "value": "var(--shadow-card-active)",
-        "purpose": "La card in primo piano (corso attivo)."
-      },
-      {
-        "name": "hero",
-        "value": "var(--shadow-hero-card)",
-        "purpose": "L'unica ombra profonda: la card del percorso."
+        "name": "overlay",
+        "value": "0 18px 48px rgba(24,21,22,0.18)",
+        "purpose": "Overlay e dialoghi."
       },
       {
         "name": "press-inset",
         "value": "inset 0 2px 10px hsl(0 0% 0% / 0.16)",
-        "purpose": "Affondo dei comandi tattili alla pressione (classe .press)."
+        "purpose": "Affondo dei comandi alla pressione (classe .press): comportamento esistente conservato."
+      },
+      {
+        "name": "nota-notte",
+        "value": "—",
+        "purpose": "In notte ridurre la dipendenza dall'ombra nera: distinguere i livelli con superficie e bordo."
       }
     ],
     "motion": [
       {
-        "name": "ease-out (curva di casa)",
-        "value": "var(--ease-out)",
-        "purpose": "Ingressi, uscite e cambi di stato. Nessun superamento del bersaglio."
+        "name": "feedback",
+        "value": "100–160 ms (base 120 ms)",
+        "purpose": "Feedback locale alla pressione."
       },
       {
-        "name": "micro",
-        "value": "var(--motion-micro) /* 120ms */",
-        "purpose": "Risposta alla pressione."
+        "name": "panel",
+        "value": "180–260 ms (base 220 ms)",
+        "purpose": "Apertura di menu e pannelli."
       },
       {
-        "name": "standard",
-        "value": "var(--motion-standard) /* 180ms */",
-        "purpose": "Cambi di stato, hover, colori."
+        "name": "passaggio",
+        "value": "180–300 ms (base 240 ms)",
+        "purpose": "Transizione tra passaggi."
       },
       {
-        "name": "emphasized",
-        "value": "var(--motion-emphasized) /* 240ms */",
-        "purpose": "Uscite e transizioni di contenuto."
+        "name": "trasformazione",
+        "value": "300–500 ms o molla equivalente, senza rimbalzo vistoso",
+        "purpose": "Card → percorso, modulo → lezione."
       },
       {
-        "name": "entrance",
-        "value": "var(--motion-entrance) /* 300ms */",
-        "purpose": "Ingresso dei contenuti: la durata massima ammessa."
+        "name": "movimento-ridotto",
+        "value": "prefers-reduced-motion",
+        "purpose": "Sostituire traslazioni e morph estesi con aggiornamenti immediati o dissolvenze brevi. La comprensione non deve dipendere dall'animazione."
       }
     ],
     "breakpoints": [
@@ -607,46 +651,58 @@
         "value": "1280px"
       },
       {
-        "name": "2xl",
-        "value": "1440px (contenitore 1400px)"
+        "name": "nav-dock",
+        "value": "< 768px: dock inferiore flottante unico (proposta da verificare, §9)"
+      },
+      {
+        "name": "nav-rail",
+        "value": "768–1199px: rail laterale compatta con etichette (proposta)"
+      },
+      {
+        "name": "nav-sidebar",
+        "value": "≥ 1200px: sidebar con etichette e spazio (proposta)"
       }
     ],
     "radii": [
       {
-        "name": "xs",
-        "value": "0.5rem"
-      },
-      {
-        "name": "sm",
-        "value": "0.625rem"
-      },
-      {
-        "name": "md",
-        "value": "0.75rem"
-      },
-      {
-        "name": "lg",
-        "value": "1rem"
-      },
-      {
-        "name": "xl",
-        "value": "1.25rem"
-      },
-      {
         "name": "card",
-        "value": "1.5rem"
+        "value": "0px"
+      },
+      {
+        "name": "panel",
+        "value": "0px"
       },
       {
         "name": "button",
-        "value": "1rem"
+        "value": "0px"
       },
       {
-        "name": "sheet",
-        "value": "1.75rem"
+        "name": "input",
+        "value": "0px"
       },
       {
-        "name": "pill",
-        "value": "9999px"
+        "name": "dialog",
+        "value": "0px"
+      },
+      {
+        "name": "menu",
+        "value": "0px"
+      },
+      {
+        "name": "dock",
+        "value": "0px"
+      },
+      {
+        "name": "callout",
+        "value": "0px"
+      },
+      {
+        "name": "badge",
+        "value": "0px"
+      },
+      {
+        "name": "content-circle",
+        "value": "9999px (solo contenuto: avatar, radio nativi, esagono cognitivo, grafici — §3)"
       }
     ]
   },
@@ -655,166 +711,98 @@
       "name": "Pulsante primario",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "L'azione principale della schermata: inchiostro pieno, testo carta, risposta immediata alla pressione.",
-      "html": "<button class=\"ds-btn-primary\">Riprendi lezione</button>",
-      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:10px 20px;background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-family:Montserrat,system-ui,sans-serif;font-size:.875rem;font-weight:600;letter-spacing:-.01em;border:0;border-radius:var(--radius-button);cursor:pointer;transition:transform 120ms var(--ease-out),background-color 180ms ease;}.ds-btn-primary:hover{background:hsl(var(--primary) / .9);}.ds-btn-primary:active{transform:scale(.98);}.ds-btn-primary:focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring));}"
+      "description": "Ottanio pieno, testo bianco, 44 px. Un'azione dominante per contesto, label concreta (Continua, Salva evento).",
+      "html": "<button class=\"ds-btn-primary\">Continua</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:10px 20px;background:#087F83;color:#FFFFFF;font:500 1rem/1.4 'Ubuntu Sans',system-ui,sans-serif;border:0;border-radius:0;cursor:pointer}"
     },
     {
-      "name": "Pulsante pillola",
+      "name": "Pulsante secondario",
       "kind": "button",
-      "refersTo": "button-pill",
-      "description": "Azione di ripresa a capsula piena: la voce più forte dell'app, una per schermata.",
-      "html": "<button class=\"ds-btn-pill\">Riprendi lezione</button>",
-      "css": ".ds-btn-pill{display:inline-flex;align-items:center;justify-content:center;height:48px;padding:12px 24px;background:hsl(var(--inverse-surface));color:hsl(var(--inverse-on-surface));font-family:Montserrat,system-ui,sans-serif;font-size:.875rem;font-weight:600;border:0;border-radius:var(--radius-pill);cursor:pointer;transition:transform 120ms var(--ease-out),opacity 180ms ease;}.ds-btn-pill:hover{opacity:.92;}.ds-btn-pill:active{transform:scale(.98);}.ds-btn-pill:focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring));}"
+      "refersTo": "button-secondary",
+      "description": "Superficie o fondo tinto, bordo quando necessario, angoli zero.",
+      "html": "<button class=\"ds-btn-secondary\">Apri elenco</button>",
+      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;height:44px;padding:10px 20px;background:#FFFFFF;color:#181516;border:1px solid #D6D5D0;border-radius:0;cursor:pointer}"
     },
     {
-      "name": "Pulsante contorno",
+      "name": "Pulsante discreto",
       "kind": "button",
-      "refersTo": "button-outline",
-      "description": "Azione secondaria: superficie della card con un filetto di 1px.",
-      "html": "<button class=\"ds-btn-outline\">Carica materiale</button>",
-      "css": ".ds-btn-outline{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:10px 20px;background:hsl(var(--card));color:hsl(var(--foreground));font-family:Montserrat,system-ui,sans-serif;font-size:.875rem;font-weight:600;border:1px solid hsl(var(--border));border-radius:var(--radius-button);cursor:pointer;transition:background-color 180ms ease,transform 120ms var(--ease-out);}.ds-btn-outline:hover{background:hsl(var(--surface-container-high));}.ds-btn-outline:active{transform:scale(.98);}.ds-btn-outline:focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring));}"
+      "refersTo": "button-quiet",
+      "description": "Testo e icona per azioni subordinate; tono profondo di marca, non ottanio chiaro su carta.",
+      "html": "<button class=\"ds-btn-quiet\">Annulla</button>",
+      "css": ".ds-btn-quiet{background:transparent;color:#07585C;border:0;border-radius:0;height:44px;cursor:pointer}"
     },
     {
-      "name": "Card di lavoro",
+      "name": "Pulsante traslucido",
+      "kind": "button",
+      "refersTo": "button-translucent",
+      "description": "Variante limitata alla card atmosferica del corso (Continua semiopaco): fondo sufficiente a mantenere contrasto sulle zone chiare. Non quarto stile generico.",
+      "html": "<button class=\"ds-btn-translucent\">Continua</button>",
+      "css": ".ds-btn-translucent{background:rgba(255,255,255,.72);color:#181516;border:1px solid rgba(24,21,22,.25);border-radius:0;height:44px;cursor:pointer}"
+    },
+    {
+      "name": "Card",
       "kind": "card",
       "refersTo": "card",
-      "description": "La superficie con cui si studia: 24px di angolo, filetto sottile, ombra di contatto.",
-      "html": "<article class=\"ds-card\"><h3>Le derivate</h3><p>Ripasso guidato in 12 minuti, con esercizi mirati sui punti deboli.</p></article>",
-      "css": ".ds-card{background:hsl(var(--card));color:hsl(var(--card-foreground));border:1px solid hsl(var(--border));border-radius:var(--radius-card);padding:24px;box-shadow:var(--shadow-level-1);font-family:Montserrat,system-ui,sans-serif;}.ds-card h3{margin:0 0 8px;font-size:1.25rem;font-weight:600;line-height:1.25;letter-spacing:-.01em;}.ds-card p{margin:0;font-size:1rem;line-height:1.6;letter-spacing:-.01em;color:hsl(var(--muted-foreground));}"
+      "description": "Superficie opaca, bordo 1 px, ombra ordinaria; angoli zero; padding 16–24 px.",
+      "html": "<div class=\"ds-card\">…</div>",
+      "css": ".ds-card{background:#FFFFFF;color:#181516;border:1px solid #D6D5D0;border-radius:0;padding:16px 24px;box-shadow:0 2px 6px rgba(24,21,22,.06)}"
     },
     {
-      "name": "Card focale (avorio)",
+      "name": "Card corso",
       "kind": "card",
-      "refersTo": "card-hero",
-      "description": "Una sola per schermata: la superficie chiara su cui agire adesso. Di notte è l'unico elemento avorio della pagina.",
-      "html": "<article class=\"ds-card-hero\"><p class=\"ds-eyebrow\">Percorso attivo</p><h3>La Rivoluzione industriale</h3><button class=\"ds-cta\">Riprendi lezione</button></article>",
-      "css": ".ds-card-hero{background:#F4F1EA;color:#121214;border:1px solid rgba(0,0,0,.06);border-radius:var(--radius-card);padding:20px;box-shadow:var(--shadow-hero-card);font-family:Montserrat,system-ui,sans-serif;}.ds-card-hero .ds-eyebrow{margin:0 0 4px;font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4A4A4F;}.ds-card-hero h3{margin:0 0 16px;font-family:Radja,Zalando Sans Expanded,Montserrat,system-ui,sans-serif;font-size:1.875rem;font-weight:400;line-height:1.05;}.ds-card-hero .ds-cta{height:48px;padding:12px 24px;background:#121214;color:#F4F1EA;font-size:.875rem;font-weight:600;border:0;border-radius:var(--radius-pill);cursor:pointer;transition:transform 120ms var(--ease-out),opacity 180ms ease;}.ds-card-hero .ds-cta:hover{opacity:.92;}.ds-card-hero .ds-cta:active{transform:scale(.98);}"
+      "refersTo": "card-course",
+      "description": "Composizione astratta con grammatica comune; la materia modifica la famiglia cromatica; zone stabili per titolo, avanzamento e azione; conserva identità come intestazione del percorso.",
+      "html": "<div class=\"ds-card-course\">…</div>",
+      "css": ".ds-card-course{position:relative;border-radius:0;padding:24px 32px;color:#F2F0EF;background:linear-gradient(135deg,#0B3A3D,#087F83)}"
     },
     {
       "name": "Campo di testo",
       "kind": "input",
       "refersTo": "input",
-      "description": "Sempre con etichetta visibile, mai col solo segnaposto. Focus con anello di 2px.",
-      "html": "<label class=\"ds-field\"><span>Nome del percorso</span><input type=\"text\" placeholder=\"Es. Storia — capitolo 4\" /></label>",
-      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;font-family:Montserrat,system-ui,sans-serif;}.ds-field span{font-size:.875rem;font-weight:600;letter-spacing:-.01em;color:hsl(var(--foreground));}.ds-field input{height:44px;padding:10px 16px;background:hsl(var(--input));color:hsl(var(--foreground));font-size:1rem;border:1px solid hsl(var(--border));border-radius:var(--radius-button);transition:border-color 180ms ease,box-shadow 180ms ease;}.ds-field input::placeholder{color:hsl(var(--muted-foreground));}.ds-field input:focus-visible{outline:none;border-color:hsl(var(--ring) / .5);box-shadow:0 0 0 2px hsl(var(--ring) / .2);}"
+      "description": "Squadrato, label persistente (mai solo placeholder), stato focus visibile, errore vicino al campo.",
+      "html": "<input class=\"ds-input\" />",
+      "css": ".ds-input{height:44px;background:#FFFFFF;color:#181516;border:1px solid #D6D5D0;border-radius:0;padding:0 16px}"
     },
     {
-      "name": "Navigazione (pillola telefono / sidebar-card desktop)",
-      "kind": "nav",
-      "refersTo": "nav-pill",
-      "description": "Il guscio dell'app: pillola sospesa in basso sul telefono (con il cerchio del Core staccato accanto) e sidebar-card sospesa su desktop, con brand in cima, voci con icona ed etichetta e voce attiva in inchiostro pieno. Stesse voci, stesso ordine, stessa materia.",
-      "html": "<nav class=\"ds-nav\"><button class=\"ds-tab is-active\">Home</button><button class=\"ds-tab\">Piano</button><button class=\"ds-tab\">Studio</button></nav>",
-      "css": ".ds-nav{display:inline-flex;align-items:center;gap:4px;padding:8px;background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--radius-pill);box-shadow:var(--shadow-level-2);font-family:Montserrat,system-ui,sans-serif;}.ds-tab{height:44px;min-width:84px;padding:0 16px;background:transparent;color:hsl(var(--muted-foreground));font-size:.875rem;font-weight:600;border:0;border-radius:var(--radius-pill);cursor:pointer;transition:background-color 180ms ease,color 180ms ease;}.ds-tab:hover{background:hsl(var(--surface-container-high));}.ds-tab.is-active{background:hsl(var(--primary));color:hsl(var(--primary-foreground));}.ds-tab:focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring));}"
-    },
-    {
-      "name": "Chip materia",
-      "kind": "chip",
-      "refersTo": "subject-chip",
-      "description": "Blocco del calendario: fondo tinto al 18%, contorno di 1px, puntino pieno per il riconoscimento. Solo Piano/Core.",
-      "html": "<div class=\"ds-chip\"><span class=\"ds-dot\"></span>Storia — Verifica</div>",
-      "css": ".ds-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(217 119 6 / .18);color:#0F172A;font-family:Montserrat,system-ui,sans-serif;font-size:.75rem;font-weight:600;border:1px solid rgba(217 119 6 / .42);border-radius:var(--radius-md);}.ds-dot{width:6px;height:6px;border-radius:9999px;background:#D97706;}"
-    },
-    {
-      "name": "Barra di avanzamento",
-      "kind": "custom",
-      "refersTo": "card",
-      "description": "Cresce con una trasformazione (non cambiando larghezza): fluida anche sui telefoni meno potenti.",
-      "html": "<div class=\"ds-track\"><div class=\"ds-fill\" style=\"--m3-progress:.62\"></div></div>",
-      "css": ".ds-track{height:4px;background:hsl(var(--surface-container-highest));border-radius:9999px;overflow:hidden;}.ds-fill{height:100%;width:100%;background:var(--subject-accent);border-radius:9999px;transform-origin:left center;transform:scaleX(var(--m3-progress,0));transition:transform 700ms var(--ease-out);}"
+      "name": "Dock di navigazione",
+      "kind": "navigation",
+      "refersTo": "nav-dock",
+      "description": "Sotto 768 px: dock inferiore flottante unico, rettangolare, opaco o quasi; quattro destinazioni con etichette persistenti (Home, Piano, Studio, Core); Core non è un cerchio staccato.",
+      "html": "<nav class=\"ds-dock\">…</nav>",
+      "css": ".ds-dock{display:flex;border-radius:0;border:1px solid #D6D5D0;box-shadow:0 10px 28px rgba(24,21,22,.12)}"
     }
   ],
   "narrative": {
-    "northStar": "La stanza di studio",
-    "overview": "Erga e' una stanza di studio ben ordinata: carta calda, inchiostro scuro, silenzio attorno al contenuto. Non e' una vetrina e non e' un cruscotto: e' il posto dove lo studente apre i suoi materiali e capisce da dove ricominciare. La struttura viene prima dell'espressione: poche decorazioni, superfici opache, nessun effetto che competa con il testo. La stanza ha due luci: il giorno e' off-white caldo con card bianche e inchiostro quasi nero, la notte e' antracite profondo con card carbone e testo panna. In entrambe le luci l'app resta monocroma: il colore non decora, informa. Il carattere confermato e' energico e grintoso, e si esprime con il contrasto, con i colori delle materie dove aiutano a riconoscere, e con un guscio coerente (pillola sul telefono, sidebar-card su desktop) e con comandi che rispondono alla pressione in meno di 150 ms.",
+    "northStar": "Strumento di studio contemporaneo",
+    "overview": "Erga è uno strumento di studio contemporaneo, personale e curato: sagome rettangolari e proporzioni precise, carta e inchiostro con profondità controllata, atmosfera astratta legata alle materie, tipografia riconoscibile e transizioni che conservano l'identità dell'oggetto. Energia nel marchio, concentrazione nell'uso: il coinvolgimento serve lo studio. Non un'interfaccia militare, non una console tecnica, non un gioco di premi e bagliori.",
     "keyCharacteristics": [
-      "Monocroma di giorno e di notte, con un solo accento dinamico per materia.",
-      "Superfici opache e stratificate; il vetro e' riservato al guscio (navigazione).",
-      "Angoli generosi: card a 24 px, comandi a 16 px, badge e pillole a capsula.",
-      "Tipografia editoriale: titoli stretti e decisi, etichette in maiuscolo spaziato.",
-      "Movimento breve e naturale: una sola curva di casa, nessun rimbalzo.",
-      "Testo minimo 16 px sul telefono, controlli almeno 44 x 44 px."
+      "Geometria squadrata come caratteristica dell'intero prodotto (raggio 0; cerchi solo nel contenuto).",
+      "Matericità: superfici, ombre e risposta alle interazioni.",
+      "Composizioni astratte per le card dei corsi; la materia modifica la famiglia cromatica.",
+      "Ubuntu Sans del saluto conservato; direzione iniziale Ubuntu Sans per titoli e interfaccia.",
+      "Palette ottanio (#087F83) come base proposta della prima implementazione.",
+      "Navigazione principale flottante e unificata: Home, Piano, Studio, Core.",
+      "Lezioni coinvolgenti con diagrammi animati e piccole interazioni; varietà funzionale, non carosello.",
+      "Percorso visuale con prerequisiti e alternativa Elenco sempre disponibile."
     ],
     "rules": [
-      {
-        "name": "La Regola del Palco",
-        "body": "Il fondo pagina non compete mai con il contenuto: la Home e' dichiarata no-ambient e le superfici che scorrono non hanno sfocatura. L'unica materia translucida ammessa e' quella del guscio (pillola di navigazione, schermata di avvio).",
-        "section": "Overview"
-      },
-      {
-        "name": "La Regola del Mono",
-        "body": "L'app parla una sola voce neutra. Il colore entra solo quando porta informazione: la materia nel Piano/Core, l'esito di un esercizio, il rosso di marca in vetrina.",
-        "section": "Overview"
-      },
-      {
-        "name": "La Regola del Colore che Informa",
-        "body": "Prima di aggiungere un colore, chiedersi cosa comunica. Se la risposta e' rende piu' bello, non si aggiunge.",
-        "section": "Colors"
-      },
-      {
-        "name": "La Regola dell'Avorio Unico",
-        "body": "La superficie avorio e' una risorsa scarsa: una per schermata, sull'azione focale. Due avori nella stessa vista annullano la gerarchia.",
-        "section": "Colors"
-      },
-      {
-        "name": "La Regola della Voce Unica per Livello",
-        "body": "Un solo carattere per livello gerarchico: se il titolo di una schermata usa Radja, i titoli di sezione restano Montserrat.",
-        "section": "Typography"
-      },
-      {
-        "name": "La Regola della Scala Rispettata",
-        "body": "La dimensione del testo segue la preferenza di accessibilita' dello studente (--text-scale: 1 / 1.125 / 1.28). I layout usano unita' relative.",
-        "section": "Typography"
-      },
-      {
-        "name": "La Regola del Telefono Primo",
-        "body": "Ogni schermata si progetta a 375 px e si verifica a 375 / 768 / 1024 / 1440 px prima di considerarla finita.",
-        "section": "Layout"
-      },
-      {
-        "name": "La Regola della Navigazione Unica",
-        "body": "Il guscio e' uno solo: stesse voci, stesso ordine, stessa materia su telefono e computer (pillola in basso, sidebar-card su desktop). Se una schermata ha bisogno di un menu tutto suo, il problema e' la schermata, non il menu.",
-        "section": "Layout"
-      },
-      {
-        "name": "La Regola dell'Elevazione Dichiarata Una Volta",
-        "body": "Una superficie sceglie: o un filetto, o un'ombra. Filetto e ombra larga insieme producono la card fantasma.",
-        "section": "Elevation & Depth"
-      },
-      {
-        "name": "La Regola del Filo",
-        "body": "Gli accenti colorati sono filetti da 1 px o puntini pieni, mai barre spesse su un lato della card.",
-        "section": "Shapes"
-      },
-      {
-        "name": "La Regola della Pressione Scontata",
-        "body": "Ogni comando mostra di essere stato premuto entro 150 ms (colore o scala), senza attese, timer o animazioni di ingresso.",
-        "section": "Components"
-      },
-      {
-        "name": "La Regola dei 44 px",
-        "body": "Nessun controllo toccabile scende sotto 44 x 44 px, ne' visivamente ne' come area sensibile.",
-        "section": "Components"
-      }
+      "Marca, materia e stato sono ruoli distinti: il colore materia vive in zone delimitate, non colora tutti i pulsanti; gli stati hanno anche testo, simbolo o struttura oltre al colore.",
+      "Il rosso è per errore o distruzione, non secondo accento permanente.",
+      "Niente foto sfocata riconoscibile al posto dell'astrazione; niente blur necessario per leggere.",
+      "Movimento che comunica continuità, relazione e risultato; mai respiro continuo mentre si legge.",
+      "Accessibilità: obiettivo WCAG 2.2 AA con verifiche effettive."
     ],
     "dos": [
-      "Usa i token del tema: si adattano da soli a giorno, notte, alto contrasto e scala del testo.",
-      "Fai entrare i contenuti con movimenti brevi (240-300 ms) e una sola curva naturale che rallenta e si ferma.",
-      "Rispetta prefers-reduced-motion, prefers-contrast e prefers-reduced-transparency.",
-      "Lascia un anello di focus visibile su tutto cio' che si raggiunge da tastiera.",
-      "Usa icone Lucide o SVG coerenti (16-24 px, stesso spessore), mai emoji.",
-      "Dichiara i dati dimostrativi come tali: Erga non inventa risultati ne' testimonianze.",
-      "Progetta gli stati vuoti, di caricamento e di errore con la stessa cura degli altri."
+      "Usare i token semantici condivisi, mai colori hardcoded per ricreare un tema dentro una singola schermata.",
+      "Verificare 320/390/768/1280 CSS px, giorno/notte, testo ingrandito, tastiera e movimento ridotto.",
+      "Partire dalla biblioteca di otto widget esistente e uniformarla, prima di aggiungerne altri.",
+      "Conservare bozze, risposte, progresso e contesto attraverso il redesign."
     ],
     "donts": [
-      "Niente barre colorate spesse su un lato delle card o dei blocchi.",
-      "Niente rimbalzi, molle elastiche o curve che superano il bersaglio.",
-      "Niente ombre nere pesanti, bagliori o sfocatura sulle superfici che scorrono.",
-      "Niente gradienti decorativi tra le card della Home, ne' testo con gradiente.",
-      "Niente animazioni che spostano larghezza, altezza o margini: solo trasformazione e opacita'.",
-      "Niente colore senza significato, ne' due superfici focali nella stessa schermata.",
-      "Niente testo sotto i 16 px sul telefono, e niente controlli sotto i 44 px.",
-      "Niente emoji come icone, ne' dati, prezzi o risultati inventati."
+      "Niente pillole e capsule come stile generico; niente smussi arbitrari al posto della squadratura.",
+      "Niente mirino laser, bagliori o attese decorative prima di un comando.",
+      "Niente dati fittizi presentati come reali; niente funzionalità simulate.",
+      "Non adottare rosso lacca, Playfair/Inter/Roboto Mono, ossidiana obbligatoria o immagini in bianco e nero: non guidano questo redesign."
     ]
   }
 }
