@@ -16,33 +16,45 @@ export type Database = {
     Tables: {
       ai_usage: {
         Row: {
+          completion_tokens: number | null
           created_at: string
+          duration_ms: number | null
           fn: string | null
           id: number
           model: string | null
           ok: boolean
+          prompt_tokens: number | null
           provider: string | null
           status: number | null
+          total_tokens: number | null
           user_id: string | null
         }
         Insert: {
+          completion_tokens?: number | null
           created_at?: string
+          duration_ms?: number | null
           fn?: string | null
           id?: never
           model?: string | null
           ok?: boolean
+          prompt_tokens?: number | null
           provider?: string | null
           status?: number | null
+          total_tokens?: number | null
           user_id?: string | null
         }
         Update: {
+          completion_tokens?: number | null
           created_at?: string
+          duration_ms?: number | null
           fn?: string | null
           id?: never
           model?: string | null
           ok?: boolean
+          prompt_tokens?: number | null
           provider?: string | null
           status?: number | null
+          total_tokens?: number | null
           user_id?: string | null
         }
         Relationships: []
@@ -608,7 +620,10 @@ export type Database = {
           is_demo: boolean
           module_titles: string[] | null
           new_material_pending: boolean
+          path_version: number
           processing_status: string | null
+          subject: string | null
+          subject_family: string | null
           user_id: string
         }
         Insert: {
@@ -626,7 +641,10 @@ export type Database = {
           is_demo?: boolean
           module_titles?: string[] | null
           new_material_pending?: boolean
+          path_version?: number
           processing_status?: string | null
+          subject?: string | null
+          subject_family?: string | null
           user_id: string
         }
         Update: {
@@ -644,7 +662,10 @@ export type Database = {
           is_demo?: boolean
           module_titles?: string[] | null
           new_material_pending?: boolean
+          path_version?: number
           processing_status?: string | null
+          subject?: string | null
+          subject_family?: string | null
           user_id?: string
         }
         Relationships: []

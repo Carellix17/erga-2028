@@ -22,6 +22,13 @@
       "when": 1790986927791,
       "tag": "0002_fondamenta_lesson_completion",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791031309439,
+      "tag": "0003_percorsi_v2_fondamenta",
+      "breakpoints": true
     }
   ]
 }
