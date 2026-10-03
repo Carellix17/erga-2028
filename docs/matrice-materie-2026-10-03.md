@@ -117,7 +117,7 @@ Ogni pacchetto: costruito, testato, spinto su GitHub separatamente; quando tocca
 ## 10. Cosa manca (domande aperte)
 
 1. **Il file del tutor** — le caratteristiche del tutor "non zerbino" vanno allegate (promesso).
-2. **Marginalia, quiz e navigazione della Minilezione** — in discussione adesso.
+2. ~~Marginalia, quiz e navigazione della Minilezione~~ — ✅ deciso il 3 ottobre: vedi `docs/minilezione-v2-2026-10-03.md` (marginalia a colonna/linguetta, checkpoint in linea, un blocco alla volta, narrazione a blocchi + chat al seguito).
 3. **Geografia** — confermare la collocazione con la Storia.
 4. **Verifica `:free`** di DeepSeek V4 Flash all'attivazione della chiave.
 
