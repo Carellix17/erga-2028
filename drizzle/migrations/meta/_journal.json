@@ -15,6 +15,13 @@
       "when": 1789565746784,
       "tag": "0001_add_is_completed_to_evaluations",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790986927791,
+      "tag": "0002_fondamenta_lesson_completion",
+      "breakpoints": true
     }
   ]
 }
