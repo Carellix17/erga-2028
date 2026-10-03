@@ -26,6 +26,7 @@ const QUIZ_FEEDBACK_ALLOWLIST = [
   "src/components/studio/exercises/FillBlank.tsx",
   "src/components/pratica/EserciziView.tsx",
   "src/components/pratica/InterrogazioneView.tsx",
+  "src/components/pratica/ScientificGymView.tsx",
 ].map((p) => p.replace(/\//g, sep));
 
 function walk(dir: string): string[] {

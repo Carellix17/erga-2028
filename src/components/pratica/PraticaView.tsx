@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { MessageCircle, Mic, Dumbbell } from "lucide-react";
+import { useEffect, useState } from "react";
+import { MessageCircle, Mic, Dumbbell, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChatView } from "@/components/chat/ChatView";
 import { InterrogazioneView } from "./InterrogazioneView";
 import { EserciziView } from "./EserciziView";
+import { ScientificGymView } from "./ScientificGymView";
+import { fetchContextSubjectInfo } from "@/lib/subjectFamily";
 import { EmptyState } from "@/components/shared/EmptyState";
 
-export type PraticaSubTab = "chat" | "interrogazione" | "esercizi";
+export type PraticaSubTab = "chat" | "interrogazione" | "esercizi" | "palestra";
 
 interface PraticaViewProps {
   hasFiles: boolean;
@@ -22,6 +24,7 @@ const subTabs = [
   { id: "chat" as PraticaSubTab, label: "Chat", icon: MessageCircle, description: "Fatti spiegare" },
   { id: "interrogazione" as PraticaSubTab, label: "Interrogazione", icon: Mic, description: "Parlare per imparare" },
   { id: "esercizi" as PraticaSubTab, label: "Esercizi", icon: Dumbbell, description: "Allenati" },
+  { id: "palestra" as PraticaSubTab, label: "Palestra", icon: FlaskConical, description: "Esercizi con tutor" },
 ];
 
 export function PraticaView({
@@ -35,6 +38,24 @@ export function PraticaView({
 }: PraticaViewProps) {
   const [activeSubTab, setActiveSubTab] = useState<PraticaSubTab>(defaultSubTab);
   const [isExerciseFullscreen, setIsExerciseFullscreen] = useState(false);
+  // 🏋️ Percorsi 2.0 — la Palestra esiste solo per i percorsi scientifici
+  // (matematica, fisica, chimica): la scheda compare solo allora.
+  const [isScientific, setIsScientific] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    setIsScientific(false);
+    if (!contextId) return;
+    fetchContextSubjectInfo(contextId)
+      .then((info) => { if (alive) setIsScientific(info.subject_family === "scientifiche"); })
+      .catch(() => { if (alive) setIsScientific(false); });
+    return () => { alive = false; };
+  }, [contextId]);
+
+  // Se il percorso attivo non è scientifico ma la Palestra è aperta, si rientra.
+  useEffect(() => {
+    if (activeSubTab === "palestra" && !isScientific) setActiveSubTab("chat");
+  }, [activeSubTab, isScientific]);
 
   const handleFullscreenChange = (isFullscreen: boolean) => {
     setIsExerciseFullscreen(isFullscreen);
@@ -43,13 +64,14 @@ export function PraticaView({
 
   if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
 
+
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col pb-[env(safe-area-inset-bottom)]">
       {/* Sub-tab selector - hidden during exercises fullscreen */}
       {!isExerciseFullscreen && (
         <div className="sticky top-16 z-30 -mx-4 flex-shrink-0 bg-background/95 px-4 pb-2 pt-2 backdrop-blur-md sm:-mx-6 sm:px-6">
           <div className="flex gap-1.5 rounded-card bg-surface-container p-1">
-            {subTabs.map((tab) => {
+            {subTabs.filter((tab) => tab.id !== "palestra" || isScientific).map((tab) => {
               const Icon = tab.icon;
               const isActive = activeSubTab === tab.id;
               return (
@@ -82,6 +104,9 @@ export function PraticaView({
         )}
         {activeSubTab === "esercizi" && (
           <EserciziView onFullscreenChange={handleFullscreenChange} contextId={contextId} contextName={contextName} />
+        )}
+        {activeSubTab === "palestra" && (
+          <ScientificGymView contextId={contextId} contextName={contextName} />
         )}
       </div>
     </div>
