@@ -8,10 +8,12 @@ import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
 import { PathHero } from "./PathHero";
-import { PraticaSubTab } from "@/components/pratica/PraticaView";
 import { EserciziView } from "@/components/pratica/EserciziView";
 import { InterrogazioneView } from "@/components/pratica/InterrogazioneView";
-import { ModuleHeaderCard, PracticeLaunchers, SheetDrawer } from "./StudioPractice";
+import { ScientificGymView } from "@/components/pratica/ScientificGymView";
+import { ChatView } from "@/components/chat/ChatView";
+import { ModuleHeaderCard, PracticeLaunchers, SheetDrawer, type StudioTool } from "./StudioPractice";
+import { fetchContextSubjectInfo } from "@/lib/subjectFamily";
 import { AnimatePresence, motion } from "framer-motion";
 import { cleanCourseName } from "@/lib/courseName";
 import { getSubjectAccent } from "@/lib/subjectColors";
@@ -55,14 +57,19 @@ interface StudioViewProps {
   selectedContextId?: string | null;
   lessonLaunch?: { contextId: string; lessonIndex: number; requestId: number } | null;
   onLessonLaunchHandled?: () => void;
+  /** 🧭 Percorsi 2.0 — strumento di Studio da aprire all'ingresso
+   *  (chat/esercizi/interrogazione/palestra), es. dalle pillole della Home. */
+  toolLaunch?: { tool: StudioTool; requestId: number } | null;
+  onToolLaunchHandled?: () => void;
   onClearContext?: () => void;
   onOpenCourseMaterials?: (contextId: string) => void;
   onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
-export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonLaunch, onLessonLaunchHandled, onClearContext, onOpenCourseMaterials, onFullscreenChange }: StudioViewProps) {
+export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonLaunch, onLessonLaunchHandled, toolLaunch, onToolLaunchHandled, onClearContext, onOpenCourseMaterials, onFullscreenChange }: StudioViewProps) {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const handledLessonLaunchRef = useRef<number | null>(null);
+  const handledToolLaunchRef = useRef<number | null>(null);
   // `localStarting` copre la finestra tra il click "Genera" e la prima scrittura
   // di `generation_status='generating'` da parte del backend. Lo stato vero
   // arriva via Realtime dalla riga di `study_contexts`.
@@ -81,12 +88,12 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   const [courseViewState, setCourseViewState] = useState<"overview" | "modules" | "branch">("overview");
   // 🧩 P37 — sottoviste di pratica DEDICATE (niente schede condivise): null =
   // panoramica Studio; altrimenti una modalità esclusiva a schermo intero.
-  const [praticaSubView, setPraticaSubView] = useState<PraticaSubTab | null>(null);
+  const [studioSubView, setStudioSubView] = useState<StudioTool | null>(null);
 
   // 🧭 P37 — barra di navigazione: NASCOSTA nelle sottoviste immersive
   // (Esercizi/Interrogazione, esperienza full-screen senza occlusioni),
   // VISIBILE in panoramica.
-  const immersiveSubView = praticaSubView === "esercizi" || praticaSubView === "interrogazione";
+  const immersiveSubView = studioSubView !== null;
   // 🧭 P38: anche il Livello 2 (percorso a ramo) è full-screen → navbar nascosta.
   const hideNavbar = immersiveSubView || courseViewState === "branch";
   useEffect(() => {
@@ -101,15 +108,28 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   // P42 — passo del bottom sheet: "select" (scelta modalità, ~88% del viewport)
   // → "active" (sessione in corso, schermo intero). Si resetta a ogni apertura.
   const [drawerStep, setDrawerStep] = useState<"select" | "active">("select");
-  const openPractice = (sub: "esercizi" | "interrogazione") => {
-    if (praticaSubView) return; // guardia anti doppio tocco
-    setDrawerStep("select");
-    setPraticaSubView(sub);
+  const openPractice = (sub: StudioTool) => {
+    if (studioSubView) return; // guardia anti doppio tocco
+    // Chat e Palestra sono sessioni a schermo intero da subito (niente passo
+    // di scelta: il foglio apre direttamente "active").
+    setDrawerStep(sub === "chat" || sub === "palestra" ? "active" : "select");
+    setStudioSubView(sub);
   };
   const closePratica = () => {
-    setPraticaSubView(null);
+    setStudioSubView(null);
     setDrawerStep("select");
   };
+  // 🏋️ Percorsi 2.0 — la Palestra esiste solo per i corsi scientifici.
+  const [isScientific, setIsScientific] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    setIsScientific(false);
+    if (!effectiveContextId) return;
+    fetchContextSubjectInfo(effectiveContextId)
+      .then((info) => { if (alive) setIsScientific(info.subject_family === "scientifiche"); })
+      .catch(() => { if (alive) setIsScientific(false); });
+    return () => { alive = false; };
+  }, [effectiveContextId]);
   const [isCoursePickerOpen, setIsCoursePickerOpen] = useState(false);
   const [activeModuleIndex, setActiveModuleIndex] = useState<number | null>(null);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
@@ -738,6 +758,18 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
 
   // La Home può chiedere di riaprire una lezione precisa. Aspettiamo che il
   // contesto e la lista siano disponibili, poi apriamo direttamente il lettore.
+  // 🧭 Percorsi 2.0 — apertura di uno strumento richiesta dall'esterno
+  // (pillole della Home, azioni della chat): come lessonLaunch, una volta sola.
+  useEffect(() => {
+    if (!toolLaunch) return;
+    if (handledToolLaunchRef.current === toolLaunch.requestId) return;
+    handledToolLaunchRef.current = toolLaunch.requestId;
+    setDrawerStep(toolLaunch.tool === "chat" || toolLaunch.tool === "palestra" ? "active" : "select");
+    setStudioSubView(toolLaunch.tool);
+    onToolLaunchHandled?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- apertura one-shot, come lessonLaunch
+  }, [toolLaunch]);
+
   useEffect(() => {
     if (!lessonLaunch) return;
     if (handledLessonLaunchRef.current === lessonLaunch.requestId) return;
@@ -953,29 +985,41 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
 
   return (
     <>
-      {praticaSubView ? (
+      {studioSubView ? (
         /* 🏋️ / 🎤 P43 — foglio che SCIVOLA dal basso (300ms) sopra lo Studio
            ancora montato e visibile, sfocato dal backdrop (mai nero pieno).
            In sessione sale a schermo intero; la X chiude tutto e il foglio
            riscende (AnimatePresence gestisce l'uscita). */
         <AnimatePresence>
           <SheetDrawer
-            key={praticaSubView}
-            title={praticaSubView === "esercizi" ? "Esercizi" : "Interrogazione"}
+            key={studioSubView}
+            title={
+              studioSubView === "chat" ? "Chat"
+              : studioSubView === "esercizi" ? "Esercizi"
+              : studioSubView === "interrogazione" ? "Interrogazione"
+              : "Palestra"
+            }
             step={drawerStep}
             onClose={closePratica}
           >
-            {praticaSubView === "esercizi" ? (
+            {studioSubView === "chat" ? (
+              <ChatView hasFiles={hasFiles} onUploadClick={onUploadClick} contextId={effectiveContextId} />
+            ) : studioSubView === "esercizi" ? (
               <EserciziView
                 contextId={effectiveContextId}
                 contextName={heroTitle || contextFileName}
                 onSessionStart={() => setDrawerStep("active")}
               />
-            ) : (
+            ) : studioSubView === "interrogazione" ? (
               <InterrogazioneView
                 contextId={effectiveContextId}
                 contextName={heroTitle || contextFileName}
                 onSessionStart={() => setDrawerStep("active")}
+              />
+            ) : (
+              <ScientificGymView
+                contextId={effectiveContextId}
+                contextName={heroTitle || contextFileName}
               />
             )}
           </SheetDrawer>
@@ -1069,8 +1113,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           nella scheda Pratica), e rubava spazio alla Home. */}
       {courseViewState === "overview" && !isCoursePickerOpen && modules.length > 0 && (
         <PracticeLaunchers
+          onOpenChat={() => openPractice("chat")}
           onOpenEsercizi={() => openPractice("esercizi")}
           onOpenInterrogazione={() => openPractice("interrogazione")}
+          onOpenPalestra={isScientific ? () => openPractice("palestra") : undefined}
         />
       )}
       {/* 🧭 P42 — lista dei moduli e albero delle lezioni si danno il cambio

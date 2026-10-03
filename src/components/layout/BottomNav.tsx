@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
-export type Tab = "home" | "studio" | "piano" | "pratica" | "core";
+export type Tab = "home" | "studio" | "piano" | "core";
 
 interface BottomNavProps {
   activeTab: Tab;
@@ -20,7 +20,8 @@ const tabs = [
 // vetro chiaro (bg-white/90 + blur), bordo definito, voce attiva in
 // NERO PIENO (stile bottoni primari) e indicatore neutro.
 // Core: cerchio staccato AL LATO (esagono, il centro di personalizzazione),
-// stesso materiale della pillola. Pratica vive nella Home.
+// stesso materiale della pillola. Gli strumenti (chat, esercizi,
+// interrogazione, palestra) vivono nel Banco di Studio.
 //
 // DESKTOP (≥768px): sidebar-card sospesa stile Apple Music su macOS/iPadOS —
 // arrotondata (rounded-3xl), staccata dal bordo della finestra, FERMA mentre

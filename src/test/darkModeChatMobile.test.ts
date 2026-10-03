@@ -22,8 +22,13 @@ describe("P45 — viste a schermo pieno (input sempre visibile)", () => {
     expect(studio).not.toMatch(/-mb-24/);
   });
 
-  it("la pagina usa fillViewport per la stanza Pratica (campo sempre sopra la navbar)", () => {
-    expect(index).toMatch(/fillViewport=\{activeTab === "pratica"\}/);
+  it("gli strumenti vivono in Studio come overlay (niente stanza Pratica sepolta sotto la navbar)", () => {
+    // 🧭 Percorsi 2.0: Pratica è stata assorbita da Studio — chat, esercizi,
+    // interrogazione e palestra aprono nel foglio fisso (SheetDrawer) sopra
+    // la stanza: il campo di input non può finire sotto la navbar.
+    expect(index).not.toMatch(/"pratica"/);
+    expect(studio).toMatch(/<SheetDrawer/);
+    expect(studio).toMatch(/studioSubView === "chat"/);
   });
 });
 

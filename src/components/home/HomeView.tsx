@@ -14,14 +14,14 @@ import { HomeHeader } from "./HomeHeader";
 import { CourseHeroCard } from "./CourseHeroCard";
 import { QuickToolsGrid, type QuickToolItem } from "./QuickToolsGrid";
 import { DailyTimeline } from "./DailyTimeline";
-import type { PraticaSubTab } from "@/components/pratica/PraticaView";
+import type { StudioTool } from "@/components/studio/StudioPractice";
 
 interface HomeViewProps {
   onOpenStudio: () => void;
   onResumeLesson: (contextId: string, lessonIndex: number) => void;
   onOpenPlan: () => void;
   /** Apre la scheda Pratica, eventualmente sulla sotto-sezione richiesta. */
-  onOpenPratica?: (subTab?: PraticaSubTab) => void;
+  onOpenStudioTool?: (tool: StudioTool) => void;
   onUpload: () => void;
 }
 
@@ -31,7 +31,7 @@ export function HomeView({
   onOpenStudio,
   onResumeLesson,
   onOpenPlan,
-  onOpenPratica,
+  onOpenStudioTool,
   onUpload,
 }: HomeViewProps) {
   const { t } = useTranslation();
@@ -115,7 +115,7 @@ export function HomeView({
         icon: MessageSquare,
         onClick: () => {
           triggerLight();
-          onOpenPratica?.("chat");
+          onOpenStudioTool?.("chat");
         },
       },
       {
@@ -124,7 +124,7 @@ export function HomeView({
         icon: PencilLine,
         onClick: () => {
           triggerLight();
-          onOpenPratica?.("esercizi");
+          onOpenStudioTool?.("esercizi");
         },
       },
       {
@@ -133,7 +133,7 @@ export function HomeView({
         icon: AudioLines,
         onClick: () => {
           triggerLight();
-          onOpenPratica?.("interrogazione");
+          onOpenStudioTool?.("interrogazione");
         },
       },
   ];

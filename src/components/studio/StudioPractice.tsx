@@ -1,4 +1,4 @@
-import { AudioLines, ChevronLeft, PencilLine, X } from "lucide-react";
+import { AudioLines, ChevronLeft, FlaskConical, MessageCircle, PencilLine, X } from "lucide-react";
 import { useEffect, useRef, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -11,8 +11,8 @@ import { CourseCardBackground } from "./CourseCardBackground";
  * 2 colonne) per Esercizi e Interrogazione, con le STESSE icone della Home
  * (PencilLine / AudioLines) e l'accento cromatico del corso attivo
  * (variabile CSS --subject-accent, già collegata da useSubjectAccent).
- * Niente barra "Chiedi qualcosa a Erga" nella Home Studio: la chat con
- * l'AI vive dentro la singola lezione (e nella scheda Pratica).
+ * La chat con l'AI è uno strumento del Banco (P50: la vecchia sezione
+ * Pratica è stata assorbita da Studio, insieme a Palestra scientifica).
  *
  * SheetDrawer (P42): fondo mobile (bottom sheet) con backdrop sfocato e
  * due scatti (scelta ~88% → sessione schermo intero) usato da Esercizi e
@@ -23,9 +23,19 @@ import { CourseCardBackground } from "./CourseCardBackground";
  * SubViewHeader: intestazione con "Torna a Studio" per le sottoviste.
  */
 
+/**
+ * 🧭 PERCORSI 2.0 — Strumento di Studio da aprire a schermo intero.
+ * Pratica non esiste più come sezione: ogni funzione (chat, esercizi,
+ * interrogazione, palestra scientifica) è uno strumento del Banco in Studio.
+ */
+export type StudioTool = "chat" | "esercizi" | "interrogazione" | "palestra";
+
 export interface PracticeLaunchersProps {
+  onOpenChat: () => void;
   onOpenEsercizi: () => void;
   onOpenInterrogazione: () => void;
+  /** Presente solo per i percorsi scientifici (matematica, fisica, chimica). */
+  onOpenPalestra?: () => void;
   className?: string;
 }
 
@@ -58,11 +68,15 @@ function LauncherCard({
   );
 }
 
-export function PracticeLaunchers({ onOpenEsercizi, onOpenInterrogazione, className }: PracticeLaunchersProps) {
+export function PracticeLaunchers({ onOpenChat, onOpenEsercizi, onOpenInterrogazione, onOpenPalestra, className }: PracticeLaunchersProps) {
   return (
     <div className={cn("grid w-full grid-cols-2 gap-3 px-4 pt-3 animate-fade-up", className)}>
+      <LauncherCard label="Chat" subtitle="Chiedi a Erga" icon={MessageCircle} onClick={onOpenChat} />
       <LauncherCard label="Esercizi" subtitle="Quiz e flashcard" icon={PencilLine} onClick={onOpenEsercizi} />
       <LauncherCard label="Interrogazione" subtitle="Simulazione orale" icon={AudioLines} onClick={onOpenInterrogazione} />
+      {onOpenPalestra && (
+        <LauncherCard label="Palestra" subtitle="Tutor socratico" icon={FlaskConical} onClick={onOpenPalestra} />
+      )}
     </div>
   );
 }

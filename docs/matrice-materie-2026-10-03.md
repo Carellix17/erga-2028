@@ -46,7 +46,7 @@ Oggi tutte le lezioni nascono dallo stesso stampo (6–8 slide da 30–50 parole
 | 🎨 **Storia dell'arte** | Storia dell'arte | Gemini | Grafo-mappa: periodo al centro → luoghi → opere | Sempre con l'opera davanti agli occhi (OCR dal PDF + immagini enciclopediche); tablet-first, telefono a card sovrapposte | Riconoscimento opere, confronto, contesto |
 | 📐 **Disegno tecnico** | — | — | — | ❌ Escluso per ora | — |
 
-**Nota:** la Geografia è collocata con la Storia (mappa + luoghi). Da confermare se si vuole diverso.
+**Nota:** la Geografia è collocata con la Storia (mappa + luoghi) — confermato il 3 ottobre.
 
 ---
 
@@ -88,6 +88,7 @@ Il nuovo design system dell'app è deciso e la Minilezione ne è la prima applic
 - **Tipografia:** Playfair Display (titoli) / Inter (lettura) / Roboto Mono (telemetria: `MOD_02 // 18 MIN // 62% INCISO`).
 - **Iconografia:** incisioni e litografie da Wikipedia Commons, bianco/nero ad alto contrasto a riposo, colore all'attivazione. Solo per Corso e Moduli, mai sulle singole lezioni.
 - **Studio:** due blocchi (Cantieri Aperti + Banco degli Strumenti); selettore corsi a dorsi d'archivio (fisarmonica desktop, swipe mobile); Grafo del corso verticale con toggle Topologia/Elenco.
+- **Pratica non esiste più (3 ottobre):** chat, esercizi, interrogazione e palestra scientifica sono strumenti del Banco di Studio, apribili dalle card di accesso (pillole della Home incluse).
 - **Punti ancora aperti:** Tavolo (Home), Minilezione (in definizione, priorità), Piano, Pratica, modalità chiara "Carta da Incisione", formattazione titoli sui dorsi.
 
 ---
@@ -118,7 +119,6 @@ Ogni pacchetto: costruito, testato, spinto su GitHub separatamente; quando tocca
 
 1. **Il file del tutor** — le caratteristiche del tutor "non zerbino" vanno allegate (promesso).
 2. ~~Marginalia, quiz e navigazione della Minilezione~~ — ✅ deciso il 3 ottobre: vedi `docs/minilezione-v2-2026-10-03.md` (marginalia a colonna/linguetta, checkpoint in linea, un blocco alla volta, narrazione a blocchi + chat al seguito).
-3. **Geografia** — confermare la collocazione con la Storia.
-4. **Verifica `:free`** di DeepSeek V4 Flash dal vivo: la chiave OpenRouter è già nei segreti Lovable (`OPENROUTER_SEPTEMBER_2026`); il codice prova prima `deepseek/deepseek-v4-flash:free`, poi il gradino a pagamento, poi Gemini. Da confermare sui primi percorsi scientifici reali (registro ai_usage: provider "openrouter").
+3. **Verifica `:free`** di DeepSeek V4 Flash dal vivo: la chiave OpenRouter è già nei segreti Lovable (`OPENROUTER_SEPTEMBER_2026`); il codice prova prima `deepseek/deepseek-v4-flash:free`, poi il gradino a pagamento, poi Gemini. Da confermare sui primi percorsi scientifici reali (registro ai_usage: provider "openrouter").
 
 *Documento di design. Nessuna riga di codice modificata alla data odierna.*

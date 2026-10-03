@@ -18,8 +18,8 @@ import { cn } from "@/lib/utils";
  *
  * Esercizi numerici con verifica immediata, suggerimenti progressivi,
  * soluzione passo-passo e chat socratica. Visibile solo per i percorsi
- * di matematica, fisica e chimica (la scheda è nascosta da PraticaView,
- * qui c'è la guardia di sicurezza).
+ * di matematica, fisica e chimica (la card si mostra solo in Studio per
+ * i corsi scientifici; qui resta la guardia di sicurezza).
  */
 
 type Stage = "idle" | "generating" | "playing" | "done";

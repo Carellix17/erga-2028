@@ -487,7 +487,7 @@ export function ChatView({ hasFiles, onUploadClick, contextId, seedMessage, onSe
         queryClient.invalidateQueries({ queryKey: studyEventsKeys.all(currentUser) });
         toast({ title: t("chat.actions.eventAdded"), description: `${finalTitle} · ${date}` });
       } else if (action.kind === "goto_quiz") {
-        window.dispatchEvent(new CustomEvent("erga:goto-tab", { detail: "pratica" }));
+        window.dispatchEvent(new CustomEvent("erga:goto-tab", { detail: { tab: "studio", tool: "esercizi" } }));
         toast({ title: t("chat.actions.gotoQuiz") });
       } else if (action.kind === "goto_lesson") {
         window.dispatchEvent(new CustomEvent("erga:goto-tab", { detail: "studio" }));

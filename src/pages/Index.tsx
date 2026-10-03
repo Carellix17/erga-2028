@@ -2,11 +2,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StudioView } from "@/components/studio/StudioView";
 import { PianoView } from "@/components/piano/PianoView";
-import { PraticaView } from "@/components/pratica/PraticaView";
 import { CoreView } from "@/components/core/CoreView";
 import { HomeView } from "@/components/home/HomeView";
 import { UploadSheet } from "@/components/upload/UploadSheet";
-import type { PraticaSubTab } from "@/components/pratica/PraticaView";
 import { useUserData } from "@/hooks/useUserData";
 import { useHasContentQuery, useLessonsCacheControls } from "@/hooks/useLessons";
 import { useGenerationRealtime } from "@/hooks/useGenerationRealtime";
@@ -19,11 +17,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Brain, AlertTriangle } from "lucide-react";
 import { useDemoHandoff } from "@/hooks/useDemoHandoff";
+import type { StudioTool } from "@/components/studio/StudioPractice";
 import { useTranslation } from "react-i18next";
 import { SeoHead } from "@/components/SeoHead";
 import { getAppScrollTop, setAppScrollTop } from "@/lib/appScroll";
 
-type Tab = "home" | "studio" | "piano" | "pratica" | "core";
+type Tab = "home" | "studio" | "piano" | "core";
 
 interface UploadedFile {
   name: string;
@@ -43,16 +42,16 @@ const Index = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [manageFocusContextId, setManageFocusContextId] = useState<string | null>(null);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
-  // Sotto-sezione di Pratica da aprire al prossimo ingresso nella scheda
-  // (es. "Crea esercizi" o "Interrogazione" dalla Home).
-  const [praticaInitialSubTab, setPraticaInitialSubTab] = useState<PraticaSubTab>("chat");
+  // 🧭 Percorsi 2.0 — strumento di Studio da aprire al prossimo ingresso
+  // (es. "Chat", "Esercizi" o "Palestra" dalle pillole della Home o dalla chat).
+  const [toolLaunch, setToolLaunch] = useState<{ tool: StudioTool; requestId: number } | null>(null);
   const [lessonLaunch, setLessonLaunch] = useState<{ contextId: string; lessonIndex: number; requestId: number } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // 🧭 P24 — memoria di posizione: ogni stanza riapre DOV'ERA (oggetti persistenti).
   // Su desktop lo scroll vive nella content-card (app shell), su mobile nella
   // finestra: il helper appScroll sceglie il contenitore giusto.
-  const scrollPositions = useRef<Record<Tab, number>>({ home: 0, studio: 0, piano: 0, pratica: 0, core: 0 });
+  const scrollPositions = useRef<Record<Tab, number>>({ home: 0, studio: 0, piano: 0, core: 0 });
   const changeTab = useCallback(
     (tab: Tab) => {
       scrollPositions.current[activeTab] = getAppScrollTop();
@@ -69,8 +68,20 @@ const Index = () => {
   // ("portami agli esercizi", "apri le lezioni") senza conoscere la app.
   useEffect(() => {
     const handler = (e: Event) => {
-      const tab = (e as CustomEvent<string>).detail;
-      if (tab === "home" || tab === "studio" || tab === "piano" || tab === "pratica" || tab === "core") {
+      const detail = (e as CustomEvent<string | { tab: string; tool?: StudioTool }>).detail;
+      // 🧭 Percorsi 2.0: il payload può essere una scheda ("studio") oppure
+      // { tab, tool } per aprire direttamente uno strumento di Studio.
+      if (typeof detail === "object" && detail !== null) {
+        if (detail.tab === "studio" && detail.tool) {
+          setToolLaunch({ tool: detail.tool, requestId: Date.now() });
+          changeTab("studio");
+        } else if (detail.tab === "home" || detail.tab === "studio" || detail.tab === "piano" || detail.tab === "core") {
+          changeTab(detail.tab);
+        }
+        return;
+      }
+      const tab = detail;
+      if (tab === "home" || tab === "studio" || tab === "piano" || tab === "core") {
         changeTab(tab);
       }
     };
@@ -202,7 +213,6 @@ const Index = () => {
         onTabChange={changeTab}
         headerTitle={headerTitle}
         hideChrome={isFullscreen}
-        fillViewport={activeTab === "pratica"}
       >
         {/* ⚠️ Errori di lettura dati visibili (mai "vuoto" silenzioso):
             se il contenuto cloud non si carica, l'utente lo sa e può riprovare. */}
@@ -228,14 +238,7 @@ const Index = () => {
           </div>
         )}
         {/* 🌲 P24 — passaggio tra stanze: dissolvenza di sola luce (200ms) */}
-        <div
-          key={activeTab}
-          className={
-            activeTab === "pratica"
-              ? "room-fade flex min-h-0 flex-1 flex-col"
-              : "room-fade"
-          }
-        >
+        <div key={activeTab} className="room-fade">
         {activeTab === "home" && (
           <HomeView
             onOpenStudio={() => changeTab("studio")}
@@ -245,9 +248,9 @@ const Index = () => {
               changeTab("studio");
             }}
             onOpenPlan={() => changeTab("piano")}
-            onOpenPratica={(subTab) => {
-              if (subTab) setPraticaInitialSubTab(subTab);
-              changeTab("pratica");
+            onOpenStudioTool={(tool) => {
+              setToolLaunch({ tool, requestId: Date.now() });
+              changeTab("studio");
             }}
             onUpload={() => setShowUpload(true)}
           />
@@ -272,6 +275,8 @@ const Index = () => {
             selectedContextId={selectedContextId}
             lessonLaunch={lessonLaunch}
             onLessonLaunchHandled={() => setLessonLaunch(null)}
+            toolLaunch={toolLaunch}
+            onToolLaunchHandled={() => setToolLaunch(null)}
             onClearContext={() => setSelectedContextId(null)}
             onOpenCourseMaterials={(contextId) => {
               setManageFocusContextId(contextId);
@@ -284,14 +289,6 @@ const Index = () => {
           <PianoView
             hasFiles={hasFiles}
             onUploadClick={() => setShowUpload(true)}
-          />
-        )}
-        {activeTab === "pratica" && (
-          <PraticaView
-            hasFiles={hasFiles}
-            onUploadClick={() => setShowUpload(true)}
-            defaultSubTab={praticaInitialSubTab}
-            onFullscreenChange={setIsFullscreen}
           />
         )}
         {activeTab === "core" && (

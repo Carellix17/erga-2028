@@ -46,21 +46,34 @@ describe("P21b pilota Studio — accensione", () => {
 });
 
 describe("StudioPractice (P37) — accessi dedicati e ritorno", () => {
-  it("P39 PracticeLaunchers: due card affiancate (2 colonne) con icone Home, sottotitoli e accento del corso", () => {
+  it("P39/P50 PracticeLaunchers: il Banco di Studio — chat, esercizi, interrogazione (+ palestra per i corsi scientifici)", () => {
+    const onChat = vi.fn();
     const onEsercizi = vi.fn();
     const onInterrogazione = vi.fn();
+    const onPalestra = vi.fn();
     const { container } = render(
-      <PracticeLaunchers onOpenEsercizi={onEsercizi} onOpenInterrogazione={onInterrogazione} />,
+      <PracticeLaunchers
+        onOpenChat={onChat}
+        onOpenEsercizi={onEsercizi}
+        onOpenInterrogazione={onInterrogazione}
+      />,
     );
 
     const grid = container.firstElementChild as HTMLElement;
     expect(grid.className).toMatch(/grid-cols-2/); // due colonne a tutta larghezza
     expect(grid.className).toMatch(/gap-3/);
 
+    // senza palestra: tre strumenti (chat + esercizi + interrogazione)
+    const chat = screen.getByRole("button", { name: "Apri Chat" });
+    expect(screen.getByText("Chiedi a Erga")).toBeTruthy();
     const esercizi = screen.getByRole("button", { name: "Apri Esercizi" });
     expect(screen.getByText("Quiz e flashcard")).toBeTruthy();
     const interrogazione = screen.getByRole("button", { name: "Apri Interrogazione" });
     expect(screen.getByText("Simulazione orale")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Apri Palestra" })).toBeNull();
+
+    fireEvent.click(chat);
+    expect(onChat).toHaveBeenCalledTimes(1);
 
     // ereditano l'accento cromatico del corso attivo (--subject-accent)
     expect(esercizi.className).toMatch(/border-subject-accent/);
@@ -70,6 +83,21 @@ describe("StudioPractice (P37) — accessi dedicati e ritorno", () => {
     expect(onEsercizi).toHaveBeenCalledTimes(1);
     fireEvent.click(interrogazione);
     expect(onInterrogazione).toHaveBeenCalledTimes(1);
+
+    // con la palestra (corso scientifico): quarta card
+    const palestraRender = render(
+      <PracticeLaunchers
+        onOpenChat={onChat}
+        onOpenEsercizi={onEsercizi}
+        onOpenInterrogazione={onInterrogazione}
+        onOpenPalestra={onPalestra}
+      />,
+    );
+    const palestra = screen.getByRole("button", { name: "Apri Palestra" });
+    expect(screen.getByText("Tutor socratico")).toBeTruthy();
+    fireEvent.click(palestra);
+    expect(onPalestra).toHaveBeenCalledTimes(1);
+    palestraRender.unmount();
   });
 
   it("SubViewHeader riporta a Studio e mostra il contesto del corso", () => {

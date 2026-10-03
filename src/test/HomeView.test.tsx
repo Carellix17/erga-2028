@@ -65,7 +65,7 @@ const callbacks = {
   onOpenStudio: vi.fn(),
   onResumeLesson: vi.fn(),
   onOpenPlan: vi.fn(),
-  onOpenPratica: vi.fn(),
+  onOpenStudioTool: vi.fn(),
   onUpload: vi.fn(),
 };
 
@@ -164,11 +164,11 @@ describe("HomeView modulare (V3)", () => {
     fireEvent.click(screen.getByText("Carica materiale"));
     expect(callbacks.onUpload).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByText("AI Tutor"));
-    expect(callbacks.onOpenPratica).toHaveBeenCalledWith("chat");
+    expect(callbacks.onOpenStudioTool).toHaveBeenCalledWith("chat");
     fireEvent.click(screen.getByText("Crea esercizi"));
-    expect(callbacks.onOpenPratica).toHaveBeenCalledWith("esercizi");
+    expect(callbacks.onOpenStudioTool).toHaveBeenCalledWith("esercizi");
     fireEvent.click(screen.getByText("Interrogazione"));
-    expect(callbacks.onOpenPratica).toHaveBeenCalledWith("interrogazione");
+    expect(callbacks.onOpenStudioTool).toHaveBeenCalledWith("interrogazione");
   });
 
   it("non mostra né collega il profilo cognitivo dalla Home", () => {

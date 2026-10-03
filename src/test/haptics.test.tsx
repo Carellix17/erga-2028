@@ -51,7 +51,7 @@ const callbacks = {
   onOpenStudio: vi.fn(),
   onResumeLesson: vi.fn(),
   onOpenPlan: vi.fn(),
-  onOpenPratica: vi.fn(),
+  onOpenStudioTool: vi.fn(),
   onOpenCognitive: vi.fn(),
   onUpload: vi.fn(),
 };

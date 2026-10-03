@@ -3,7 +3,7 @@
  *
  * Legge dal backend (get-lessons, azione listContexts) la famiglia di
  * materia e i titoli dei moduli del percorso attivo, con un piccolo cache
- * in memoria per non rifare la chiamata a ogni tab. Usato da PraticaView
+ * in memoria per non rifare la chiamata a ogni tab. Usato da StudioView
  * per mostrare la Palestra solo per matematica, fisica e chimica.
  */
 
