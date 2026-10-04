@@ -390,7 +390,7 @@ export function FullscreenLesson({
               <div
                 key={i}
                 className={cn(
-                  "flex-1 rounded-full transition-all duration-500 ease-m3-emphasized",
+                  "flex-1 rounded-sm transition-all duration-500 ease-m3-emphasized",
                   i <= currentStep ? "bg-primary" : "bg-surface-container-highest"
                 )}
               />
@@ -504,7 +504,7 @@ function ConceptStep({ concept }: { concept: string }) {
         <Lightbulb className="w-6 h-6 text-foreground" strokeWidth={1.75} />
       </div>
       <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-semibold mb-4">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-secondary text-muted-foreground text-xs font-semibold mb-4">
           {t("lesson.keyConcept")}
         </div>
         <div className="font-reading text-xl font-normal tracking-tight leading-[1.7] prose prose-sm max-w-none mx-auto px-2 prose-p:font-normal prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-secondary prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
@@ -554,17 +554,17 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
           <span className="label-large text-foreground">{part.part_title}</span>
           <div className="flex items-center gap-1 mt-1.5">
             {Array.from({ length: totalParts }).map((_, i) => (
-              <div key={i} className={cn("h-1 rounded-full flex-1 transition-all duration-300",
+              <div key={i} className={cn("h-1 rounded-sm flex-1 transition-all duration-300",
                 i < partNumber ? "bg-primary" : "bg-surface-container-highest")} />
             ))}
           </div>
         </div>
       </div>
       <div className={cn(
-        "p-6 sm:p-7 rounded-[18px] border space-y-4 backdrop-blur-md",
+        "p-6 sm:p-7 rounded-card border space-y-4",
         isExample
-          ? "bg-tertiary-container/60 border-border/50 shadow-level-1"
-          : "bg-card/70 border-border/50 shadow-level-1"
+          ? "bg-tertiary-container border-border/50 shadow-level-1"
+          : "bg-card border-border/50 shadow-level-1"
       )}>
         {segments.map((seg, i) => {
           if (seg.type === "text") {
@@ -600,7 +600,7 @@ function ExampleStep({ example }: { example: string }) {
         </div>
         <span className="label-large text-foreground">{t("lesson.practicalExample")}</span>
       </div>
-      <div className="p-6 sm:p-7 rounded-[18px] bg-tertiary-container/60 border border-border/50 shadow-level-1">
+      <div className="p-6 sm:p-7 rounded-card bg-tertiary-container border border-border/50 shadow-level-1">
         <div className="font-reading text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
           <LessonMarkdown>{example}</LessonMarkdown>
         </div>
@@ -640,7 +640,7 @@ function ExerciseStep({
           ))}
         </div>
       </div>
-      <div className="p-5 rounded-[18px] backdrop-blur-md border border-border/50 bg-card/70 shadow-level-1">
+      <div className="p-5 rounded-card border border-border/50 bg-card shadow-level-1">
         <ExerciseRenderer exercise={exercise} onComplete={onComplete} isCompleted={isCompleted} />
       </div>
     </div>
@@ -843,7 +843,7 @@ function SlideAIAssistant({
       <SheetTrigger asChild>
         <button
           className={cn(
-            "h-12 w-12 rounded-[14px] flex items-center justify-center flex-shrink-0",
+            "h-12 w-12 rounded-button flex items-center justify-center flex-shrink-0",
             "bg-card text-foreground border border-outline-variant/60",
             "hover:bg-surface-container-high transition-colors"
           )}

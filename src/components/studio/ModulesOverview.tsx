@@ -232,7 +232,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute left-1/2 top-full z-30 mt-2 inline-flex h-9 -translate-x-1/2 items-center gap-1.5 rounded-pill border border-border bg-card/95 px-3.5 text-xs font-bold text-foreground shadow-level-2 backdrop-blur-md"
+            className="absolute left-1/2 top-full z-30 mt-2 inline-flex h-9 -translate-x-1/2 items-center gap-1.5 rounded-button border border-border bg-card px-3.5 text-xs font-bold text-foreground shadow-level-2"
           >
             <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.6} />
             {completedBefore === 1 ? "1 modulo completato" : `${completedBefore} moduli completati`}
@@ -333,10 +333,10 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                   {subtitle}
                 </span>
                 {(isCur || isGen) && (
-                  <span className="block mt-2.5 h-1.5 rounded-full bg-surface-container-high overflow-hidden">
+                  <span className="block mt-2.5 h-1.5 rounded-sm bg-surface-container-high overflow-hidden">
                     <span
                       className={cn(
-                        "block h-full rounded-full transition-all duration-500",
+                        "block h-full rounded-sm transition-all duration-500",
                         isGen ? "bg-subject-accent" : "bg-subject-accent",
                       )}
                       style={{ width: `${isGen ? (m.genPercent ?? 0) : pct}%` }}

@@ -26,7 +26,7 @@ Chi lavora a un pacchetto aggiorna qui lo stato. La migrazione dell'interfaccia 
 | **D0 — Identità e documentazione** | DESIGN.md 1.1 integrato (frontmatter token del sistema di destinazione), `.impeccable/design.json` allineato (schema 2), AGENTS.md / Matrice / Minilezione riconciliate, questo registro | ✅ **fatto, 3 ottobre 2026** |
 | **D1 — Fondamenta** | Token nel runtime (palette ottanio giorno/notte, raggio 0, ombre §6, ruoli tipografici interfaccia/lettura, token di marca), grammatica dei componenti condivisi, revisione di `noGreen.test.ts` | ✅ **runtime consegnato 3 ottobre 2026** (verifica visiva in app da confermare; geometria locale residua inventariata qui sotto) |
 | **D2 — Navigazione e Home** | Dock flottante rettangolare unico (Core incluso) + rail 768–1199 + sidebar ≥1200; Home con gerarchia §10 (riprendi → prossimo impegno → strumenti) | ✅ **consegnato 3 ottobre 2026** (verifica visiva in app da confermare; anteprima verificabile: `docs/anteprima-navigazione-home-d2.html`) |
-| **D3 — Studio e lezioni** | Cantieri + Banco, mappa percorso (spina + nodi, prerequisiti consigliati) con alternativa Elenco; scene didattiche partendo dagli otto widget esistenti | ⬜ |
+| **D3 — Studio e continuità delle card** | Grammatica condivisa su card corso, selettore, intestazioni modulo, lezioni e Banco; transizioni audited (movimento ridotto sull'ingresso card, cleanup timer cambio corso) | ✅ **consegnato 3 ottobre 2026** (mappa con prerequisiti e scene didattiche restano evoluzioni funzionali separate, vedi §2 D6+) |
 | **D4 — Esercizi, interrogazione e Piano** | Ingressi degli strumenti del Banco; calendario squadrato coerente nei due temi | ⬜ |
 | **D5 — Core e landing** | Coerenza della schermata Core esistente; landing nella stessa identità, confini degli stili marketing preservati | ⬜ |
 | **D6+ — Evoluzioni funzionali separate** | Mappa con dipendenze reali e loro generazione/validazione; nuovi componenti didattici interattivi; aggiunta di impegni in linguaggio naturale (contratto dati + AI/backend); metriche future di Core | ⬜ incarichi separati, mai nel redesign visivo |
@@ -79,6 +79,19 @@ Presenza nel codice **non** significa pubblicato online: i deploy passano da Lov
 - **Card corso** (`CourseHeroCard.tsx`): bordi tokenizzati (`border-border`), CTA semiopaca al 12% (più solida, §6), stato vuoto su superficie opaca (niente glass), composizione astratta per materia invariata (già conforme), titolo in Ubuntu Sans (`font-display` D1). `QuickToolsGrid`/`DailyTimeline`: bordi `#FFFBF4` → token.
 - **Test**: dock D2 in `appShellDesignSystem`; i 4 test P36 di `homeCleanSurfaces` riscritti alle attese D2 (erano pre-esistenti falliti su una veste mai completata); nuovo test ordine §10 in `HomeView.test`. Suite: **625 pass / 13 fail** (solo AppHeader 13 + haptics 1, pre-esistenti, header non toccato da D2).
 - **Anteprima verificabile**: `docs/anteprima-navigazione-home-d2.html` — dock/rail/sidebar, card per materia scura/chiara, stato vuoto, giorno/notte. Non è uno screenshot del prodotto.
+
+## 4quater. D3 — cosa è cambiato (3 ottobre 2026)
+
+**Struttura invariata, veste migrata** (nessun override sopra le vecchie card: le classi locali sono state sostituite). Cantieri Aperti e Banco degli Strumenti restano distinti; chat/esercizi/interrogazione nel Banco, palestra solo per famiglia scientifica; la lezione si continua senza passare dagli strumenti (percorso diretto invariato).
+
+- **Migrazione stili** (literal → token della grammatica D1/D2): selettore corsi (`rounded-[20px]`→`rounded-card`, menu `rounded-md`, dialog rinomina `rounded-dialog`, drawer `rounded-t-dialog`); PathHero (bottoni rinomina `rounded-button`, progresso `rounded-sm`); ModulesOverview (pillola flottante → solida squadrata senza blur, progressi `rounded-sm`); ModulePath (banner `rounded-card`, progressi allineati a `progress.tsx`); lezioni FullscreenLesson (card concetto/esempio/esercizio `rounded-card` e **solide senza backdrop-blur** — §6: il blur non serve a leggere; badge, segmenti e punti di progresso squadrati); FinalTest, ModuleGenerationScreen, GenerationProgress, CourseCardSkeleton; StudioView (CTA di generazione **tokenizzata**: era `bg-[#121214]` hardcodato, ora ottanio `bg-primary`).
+- **Bagliori ritirati** (§4): la card del Banco e l'icona del tool non hanno più le ombre-lume `var(--subject-accent)`; hover = `shadow-card-active`.
+- **Transizioni audited senza riscritture**: il morph corso→percorso (layoutId per-corso) già preservava scroll e identità dell'oggetto, con guardia ai doppi clic — invariato. Due migliorie mirate: l'ingresso delle card nel portale (delay 0,25s) ora è **saltato con movimento ridotto** (prima solo il layout morph lo rispettava); i timer del cambio corso (60/650ms) sono **tracciati in ref e puliti allo smontaggio** (uscita rapida a metà volo non lascia più timer pendenti né il body bloccato).
+- **Verifiche**: suite 625 pass / 13 fail pre-esistenti (AppHeader 13 + haptics 1), tsc OK, build OK, detector OK (residui = type ramp 15px ecc., in inventario). Flussi coperti dai test esistenti (studioViews 11, darkModeChatMobile 5) più la suite P50.
+
+### Inventario residuo D3+ (type ramp e geometrie residue)
+- Dimensioni tipografiche letterali nelle superfici Studio/lezioni (`text-[15px]`, `text-[10.5px]`, `text-[0.9375rem]`): il ramp D1 non ha il passo 15px; si decide col pacchetto lezioni.
+- `rounded-full` superstite in studio: cerchi legittimi (orbs della composizione, avatar, icone circolari, cerchi di stato) — verificato a campione.
 
 ## 5. Punti ancora aperti (proposte da validare, non decisioni)
 

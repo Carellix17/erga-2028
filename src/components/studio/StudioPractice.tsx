@@ -55,9 +55,9 @@ function LauncherCard({
       type="button"
       onClick={onClick}
       aria-label={`Apri ${label}`}
-      className="interactive-card flex min-h-[92px] flex-col items-start gap-2 rounded-2xl border border-subject-accent/25 bg-card p-3.5 text-left shadow-tactile transition-all duration-200 ease-m3-standard hover:border-subject-accent/50 hover:shadow-[0_0_28px_-10px_var(--subject-accent)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="interactive-card flex min-h-[92px] flex-col items-start gap-2 rounded-card border border-subject-accent/25 bg-card p-3.5 text-left shadow-tactile transition-all duration-200 ease-m3-standard hover:border-subject-accent/50 hover:shadow-card-active active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
-      <span className="grid h-9 w-9 place-items-center rounded-full bg-subject-accent text-subject-accent-foreground shadow-[0_0_16px_-4px_var(--subject-accent)]">
+      <span className="grid h-9 w-9 place-items-center rounded-full bg-subject-accent text-subject-accent-foreground shadow-level-1">
         <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} aria-hidden="true" />
       </span>
       <span className="min-w-0">
@@ -100,7 +100,7 @@ export function SubViewHeader({ title, onBack, courseTitle, backLabel = "Torna a
         type="button"
         onClick={onBack}
         aria-label={backLabel}
-        className="flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-surface-container-high hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex h-11 items-center gap-1.5 rounded-button px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-surface-container-high hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         {backLabel}
@@ -225,7 +225,7 @@ export function SheetDrawer({ title, step, onClose, children }: SheetDrawerProps
       >
         {/* Fascia fissa: maniglia + X sempre nello stesso punto in alto a destra */}
         <div className="relative flex h-14 shrink-0 items-center justify-center">
-          <div className="h-1.5 w-12 rounded-full bg-muted-foreground/35" aria-hidden="true" />
+          <div className="h-1.5 w-12 rounded-sm bg-muted-foreground/35" aria-hidden="true" />
           <button
             ref={closeRef}
             type="button"

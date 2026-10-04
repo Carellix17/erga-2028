@@ -213,7 +213,7 @@ export function CourseSelector({
             onPointerCancel={clearLongPress}
             onContextMenu={(e) => e.preventDefault()}
             className={cn(
-              "flex-1 min-w-0 flex items-center gap-3.5 bg-card rounded-[20px] px-4 py-3.5 text-left select-none touch-none",
+              "flex-1 min-w-0 flex items-center gap-3.5 bg-card rounded-card px-4 py-3.5 text-left select-none touch-none",
               "transition-colors duration-200",
               multi && "hover:bg-surface-container-high active:bg-surface-container-highest",
             )}
@@ -245,7 +245,7 @@ export function CourseSelector({
               type="button"
               aria-label="Azioni corso"
               onClick={() => setMenuOpen((v) => !v)}
-              className="w-[52px] rounded-[20px] bg-card hover:bg-surface-container-high active:bg-surface-container-highest transition-colors duration-200 flex items-center justify-center flex-shrink-0"
+              className="w-[52px] rounded-card bg-card hover:bg-surface-container-high active:bg-surface-container-highest transition-colors duration-200 flex items-center justify-center flex-shrink-0"
             >
               <MoreHorizontal className="w-5 h-5 text-foreground" />
             </button>
@@ -261,7 +261,7 @@ export function CourseSelector({
             role="menu"
             style={{ top: menuPos.top, right: menuPos.right }}
             className={cn(
-              "fixed z-[86] min-w-[200px] rounded-[18px] bg-popover shadow-level-3 border border-outline-variant/60 p-1.5",
+              "fixed z-[86] min-w-[200px] rounded-md bg-popover shadow-level-3 border border-outline-variant/60 p-1.5",
               "animate-in fade-in-0 zoom-in-95 duration-200 ease-m3-emphasized-decel origin-top-right",
             )}
           >
@@ -327,7 +327,7 @@ export function CourseSelector({
             aria-label="Seleziona un percorso"
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              "w-full max-w-sm bg-popover rounded-[24px] shadow-level-3 p-5",
+              "w-full max-w-sm bg-popover rounded-dialog shadow-level-3 p-5",
               "animate-in fade-in-0 zoom-in-95 duration-300 ease-m3-emphasized-decel",
             )}
           >
@@ -386,7 +386,7 @@ export function CourseSelector({
       )}
 
       <Drawer open={!!renameCourse} onOpenChange={(o) => !o && setRenameCourse(null)}>
-        <DrawerContent className="rounded-t-[32px]">
+        <DrawerContent className="rounded-t-dialog">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center gap-2 font-display text-2xl">
               <Pencil className="w-5 h-5 text-foreground" strokeWidth={1.75} />
@@ -411,14 +411,14 @@ export function CourseSelector({
           <DrawerFooter className="flex-row gap-3">
             <Button
               variant="outline"
-              className="flex-1 h-12 rounded-full"
+              className="flex-1 h-12 rounded-button"
               onClick={() => setRenameCourse(null)}
               disabled={isSaving}
             >
               Annulla
             </Button>
             <Button
-              className="flex-1 h-12 rounded-full"
+              className="flex-1 h-12 rounded-button"
               onClick={handleSaveRename}
               disabled={isSaving || !renameValue.trim()}
             >

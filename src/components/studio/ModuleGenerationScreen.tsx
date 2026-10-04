@@ -93,7 +93,7 @@ export function ModuleGenerationScreen({
             <div className="w-14 h-14 rounded-2xl bg-card shadow-level-1 flex items-center justify-center">
               <Factory className="w-7 h-7 text-foreground" strokeWidth={1.5} />
             </div>
-            <div className="absolute -bottom-1.5 -right-1.5 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-[10px] font-bold">
+            <div className="absolute -bottom-1.5 -right-1.5 bg-primary text-primary-foreground rounded-sm px-2 py-0.5 text-[10px] font-bold">
               Modulo {moduleIndex + 1}
             </div>
           </div>
@@ -115,9 +115,9 @@ export function ModuleGenerationScreen({
         </div>
 
         {/* Barra di avanzamento */}
-        <div className="h-2 rounded-full bg-secondary overflow-hidden mb-3">
+        <div className="h-2 rounded-sm bg-secondary overflow-hidden mb-3">
           <div
-            className="h-full rounded-full bg-primary transition-all duration-300"
+            className="h-full rounded-sm bg-primary transition-all duration-300"
             style={{ width: `${animatedProgress}%` }}
           />
         </div>

@@ -950,7 +950,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
              "L'AI analizzerà i tuoi materiali e creerà un percorso di mini-lezioni personalizzato."}
           </p>
           {contextFileName && (
-            <p className="text-xs text-foreground font-medium mt-3 bg-secondary inline-block px-3 py-1.5 rounded-full">{contextFileName}</p>
+            <p className="text-xs text-foreground font-medium mt-3 bg-secondary inline-block px-3 py-1.5 rounded-sm">{contextFileName}</p>
           )}
         </div>
         
@@ -1035,7 +1035,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
             size="lg"
             onClick={onUploadClick}
             aria-label="Crea un nuovo percorso di studio"
-            className="w-full rounded-full border border-white/10 bg-[#121214] text-white/90 shadow-tactile transition-all duration-200 hover:bg-[#1a1a1f] hover:shadow-card-active active:scale-[0.985]"
+            className="w-full rounded-button border border-border bg-primary text-primary-foreground shadow-tactile transition-all duration-200 hover:bg-primary/90 hover:shadow-card-active active:scale-[0.985]"
           >
             <Plus className="h-4 w-4" strokeWidth={2.5} />
             Crea nuovo percorso

@@ -87,7 +87,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
             variant="ghost"
             size="icon-sm"
             onClick={onClose}
-            className="rounded-full"
+            className="rounded-button"
             aria-label={t("finalTest.close")}
           >
             <X className="w-5 h-5" />

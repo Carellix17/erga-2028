@@ -329,9 +329,9 @@ export function ModulePath({
               </p>
               <p className="text-sm font-bold text-subject-accent tabular-nums">{pct}%</p>
             </div>
-            <div className="h-1.5 bg-secondary rounded-full overflow-hidden mt-1.5">
+            <div className="h-1.5 bg-secondary rounded-sm overflow-hidden mt-1.5">
               <div
-                className="h-full rounded-full bg-subject-accent transition-all duration-700 ease-m3-emphasized"
+                className="h-full rounded-sm bg-subject-accent transition-all duration-700 ease-m3-emphasized"
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -341,8 +341,8 @@ export function ModulePath({
 
       {/* ── Banner "in generazione" ── */}
       {isModuleGenerating && (
-        <div className="mx-4 mt-4 rounded-[20px] bg-card border border-border p-4 flex items-center gap-3.5 animate-fade-up">
-          <span className="w-10 h-10 rounded-[14px] bg-surface-container-high flex items-center justify-center flex-shrink-0">
+        <div className="mx-4 mt-4 rounded-card bg-card border border-border p-4 flex items-center gap-3.5 animate-fade-up">
+          <span className="w-10 h-10 rounded-button bg-surface-container-high flex items-center justify-center flex-shrink-0">
             <Loader2 className="w-5 h-5 text-tertiary animate-spin" />
           </span>
           <div className="flex-1 min-w-0">
@@ -357,9 +357,9 @@ export function ModulePath({
         </div>
       )}
       {isModuleGenerating && genTotal > 0 && (
-        <div className="mx-4 mt-3 h-1.5 rounded-full bg-secondary overflow-hidden">
+        <div className="mx-4 mt-3 h-1.5 rounded-sm bg-secondary overflow-hidden">
           <div
-            className="h-full rounded-full bg-subject-accent transition-all duration-500"
+            className="h-full rounded-sm bg-subject-accent transition-all duration-500"
             style={{ width: `${Math.max(4, Math.min(100, (genCount / genTotal) * 100))}%` }}
           />
         </div>

@@ -224,6 +224,8 @@ export function PathHero({
 
   // La pagina di sfondo NON deve scrollare durante la selezione — mantieni bloccato durante transizione
   const prevOverflowRef = useRef<string>("");
+  // Timer della transizione corso → percorso: tracciati per il cleanup.
+  const transitionTimersRef = useRef<number[]>([]);
   useEffect(() => {
     if (isSelectingCourse) {
       prevOverflowRef.current = document.body.style.overflow;
@@ -237,6 +239,16 @@ export function PathHero({
       }
     };
   }, [isSelectingCourse, transitioningId]);
+
+  // Uscita rapida / smontaggio a metà transizione: ferma i timer pendenti
+  // e restituisce lo scroll al documento.
+  useEffect(() => {
+    return () => {
+      transitionTimersRef.current.forEach((t) => window.clearTimeout(t));
+      transitionTimersRef.current = [];
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   const openPicker = useCallback(() => {
     setIsSelectingCourse(true);
@@ -264,23 +276,29 @@ export function PathHero({
     isTransitioningRef.current = true;
     setTransitioningId(course.id);
 
+    // I timer della transizione vivono in un ref: se il componente smonta a
+    // metà volo (uscita rapida da Studio), il cleanup li ferma invece di
+    // toccare lo stato di un componente morto o lasciare il body bloccato.
+    transitionTimersRef.current.forEach((t) => window.clearTimeout(t));
+    transitionTimersRef.current = [];
+
     // Keep scroll position intact during FLIP measurement via layoutScroll
     requestAnimationFrame(() => {
       if (listRef.current) {
         listRef.current.scrollTop = scrollTop;
       }
       // Defer unmounting until after layout animation has captured First position
-      setTimeout(() => {
+      transitionTimersRef.current.push(window.setTimeout(() => {
         closePicker();
-      }, 60);
+      }, 60));
     });
 
     // Clear transitioning after animation completes
-    setTimeout(() => {
+    transitionTimersRef.current.push(window.setTimeout(() => {
       setTransitioningId(null);
       isTransitioningRef.current = false;
       document.body.style.overflow = prevOverflowRef.current || "";
-    }, 650);
+    }, 650));
   }, [activeCourseId, closePicker, onSelectCourse]);
 
   const handleSaveRename = async () => {
@@ -327,7 +345,7 @@ export function PathHero({
         layoutId={`course-card-${course.id}`}
         layout
         transition={isTransitioning ? effectiveLayoutTransition : undefined}
-        {...(!isTransitioning ? cardMotion : {})}
+        {...(!isTransitioning && !prefersReducedMotion ? cardMotion : {})}
         style={isTransitioning ? { zIndex: 20 } : undefined}
       >
         <p className="label-small tracking-[0.14em] opacity-70 flex items-center gap-2 text-contrast-secondary">
@@ -451,7 +469,7 @@ export function PathHero({
         <>
           <p className="mt-4 text-xs opacity-80 text-contrast-secondary">Erga sta trasformando il tuo materiale…</p>
           <div
-            className="mt-2 h-2 rounded-full overflow-hidden"
+            className="mt-2 h-2 rounded-sm overflow-hidden"
             style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
           >
             <div
@@ -721,14 +739,14 @@ export function PathHero({
           <DrawerFooter className="flex-row gap-3">
             <Button
               variant="outline"
-              className="flex-1 h-12 rounded-full"
+              className="flex-1 h-12 rounded-button"
               onClick={() => setRenameOpen(false)}
               disabled={isSavingRename}
             >
               Annulla
             </Button>
             <Button
-              className="flex-1 h-12 rounded-full"
+              className="flex-1 h-12 rounded-button"
               onClick={handleSaveRename}
               disabled={isSavingRename || !renameValue.trim()}
             >
