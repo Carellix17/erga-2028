@@ -42,10 +42,21 @@ describe("app shell design system", () => {
     expect(input).toContain("bg-card");
   });
 
-  it("non usa più il gradiente nero hardcoded nella navigazione mobile", () => {
+  it("D2: navigazione mobile = dock flottante rettangolare unico, opaco, Core incluso", () => {
     const nav = read("src/components/layout/BottomNav.tsx");
-    expect(nav).toContain("from-background");
+    // dock opaco: niente aloni a gradiente sopra la barra
     expect(nav).not.toContain("from-black");
+    expect(nav).not.toContain("bg-gradient-to-t");
+    // safe area riservata e dock rettangolare (raggio 0 del sistema)
+    expect(nav).toContain("env(safe-area-inset-bottom");
+    // Core è una voce del dock come le altre: niente cerchio separato
+    expect(nav).toContain('{ id: "core" as Tab, i18nKey: "nav.core"');
+    expect(nav).not.toContain("w-[4.5rem] h-[4.5rem]");
+    // selezione: indicatore geometrico ottanio + semantica accessibile
+    expect(nav).toContain("bg-brand");
+    expect(nav).toContain("aria-current");
+    // etichette persistenti su ogni voce
+    expect(nav).not.toContain('aria-label={t("nav.core")}');
   });
 
   it("in dark mode spegne i puntini e usa il fondo notte #101717 (D1)", () => {

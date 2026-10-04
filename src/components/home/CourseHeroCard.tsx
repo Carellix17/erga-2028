@@ -118,7 +118,7 @@ export function CourseHeroCard({
     return (
       <article
         className={cn(
-          "flex flex-col items-center border border-[#FFFBF4] glass-tactile p-5 text-center shadow-tactile sm:p-6",
+          "flex flex-col items-center border border-border bg-card p-5 text-center shadow-tactile sm:p-6",
         )}
       >
         <span className="grid h-12 w-12 place-items-center bg-surface-container-high">
@@ -147,7 +147,7 @@ export function CourseHeroCard({
   return (
     <article
       data-auto-contrast
-      className="relative w-full overflow-hidden border border-[#FFFBF4] bg-inverse-surface p-4 text-left shadow-hero sm:p-5"
+      className="relative w-full overflow-hidden border border-border bg-inverse-surface p-4 text-left shadow-hero sm:p-5"
     >
       <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} variant="studio" />
 
@@ -189,15 +189,16 @@ export function CourseHeroCard({
           )}
         </div>
 
-        {/* Unica CTA: STESSO vetro della card di Studio (PathHero):
-            currentColor 8% sfondo + 20% bordo, capsula h-11, hover/pressione */}
+        {/* Unica CTA — semiopaca (§6): fondo al 12% di currentColor, bordo al 24%:
+            abbastanza solida per restare leggibile sulle zone chiare della
+            composizione; stessa grammatica della CTA della card Studio. */}
         <button
           type="button"
           onClick={onPrimaryCta}
           className="text-contrast mt-4 inline-flex h-11 w-full items-center justify-center gap-1.5 border px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           style={{
-            backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-            borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
+            backgroundColor: "color-mix(in srgb, currentColor 12%, transparent)",
+            borderColor: "color-mix(in srgb, currentColor 24%, transparent)",
           }}
         >
           <Play className="h-4 w-4 shrink-0 fill-current" strokeWidth={1.9} aria-hidden="true" />

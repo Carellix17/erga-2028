@@ -23,12 +23,12 @@ interface AppLayoutProps {
 /**
  * 🏠 App shell — Erga
  *
- * MOBILE (<768px): scroll del documento, navbar in basso fissa (pillola).
+ * MOBILE (<768px): scroll del documento, dock flottante rettangolare in basso.
  *
  * DESKTOP/TABLET (≥768px): viewport "sigillata" (h-dvh + overflow-hidden) con
- * due card sospese e indipendenti, stile Apple Music su macOS/iPadOS:
- * - a sinistra la sidebar-card (vedi BottomNav): arrotondata, staccata dal
- *   bordo, ferma mentre il contenuto scorre;
+ * due superfici sospese e indipendenti, squadrate (D2):
+ * - a sinistra la rail (768–1199px) o la sidebar (≥1200px), vedi BottomNav:
+ *   staccata dal bordo, ferma mentre il contenuto scorre;
  * - a destra la content-card: è l'UNICA a scorrere (overflow-y-auto), con
  *   l'intestazione appiccicosa che resta in cima al suo scroll.
  * Lo scroll dell'app su desktop avviene quindi dentro #app-scroll-view
@@ -64,14 +64,16 @@ export function AppLayout({
           // 🖥️ Content-card: superficie dedicata, angoli arrotondati, ombra.
           // In modalità normale è lei a scorrere (header incluso); in modalità
           // fillViewport lo scroll è gestito dalle viste interne.
-          "md:h-full md:min-h-0 md:rounded-3xl md:border md:border-border md:bg-background md:shadow-level-2",
+          "md:h-full md:min-h-0 md:rounded-card md:border md:border-border md:bg-background md:shadow-level-2",
           fillViewport ? "min-h-0 md:overflow-hidden" : "md:overflow-x-hidden md:overflow-y-auto",
         )}
       >
         {!hideChrome && <AppHeader title={headerTitle} integratedHome={isHome} />}
         <main
           className={cn(
-            "mx-auto w-full max-w-lg overflow-visible px-4 pb-24 sm:px-6 md:max-w-2xl md:pb-6 lg:max-w-4xl",
+            // D2: lo spazio del dock è riservato dal contenuto, safe area compresa
+          // (il dock è fisso e non copre mai l'ultima riga).
+          "mx-auto w-full max-w-lg overflow-visible px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 md:max-w-2xl md:pb-6 lg:max-w-4xl",
             fillViewport && "flex min-h-0 flex-1 flex-col overflow-hidden",
           )}
         >

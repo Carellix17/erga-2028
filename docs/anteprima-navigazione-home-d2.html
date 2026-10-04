@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Erga — D2 · Navigazione e Home (anteprima verificabile)</title>
+<style>
+  /* ═══ Token D1/D2 — copiati 1:1 da src/index.css (src di verità) ═══ */
+  :root{
+    --brand:#087F83; --brand-deep:#07585C; --brand-tint:#E8F2F0;
+    --paper:#F2F0EF; --surface:#FFFFFF; --ink:#181516; --ink-muted:#625D59;
+    --border:#D6D5D0;
+    --shadow-ordinary:0 2px 6px rgba(24,21,22,.06);
+    --shadow-hero:0 10px 28px rgba(24,21,22,.12),0 2px 6px rgba(24,21,22,.05);
+    --shadow-overlay:0 18px 48px rgba(24,21,22,.18);
+    --contrast-ink:242,240,239;
+  }
+  .dark{
+    --brand-deep:#8ECFD0; --brand-tint:#141D1D;
+    --paper:#101717; --surface:#141D1D; --ink:#F2F0EF; --ink-muted:#B8C6C3;
+    --border:#3D5351;
+    --shadow-ordinary:inset 0 1px 0 0 hsl(0 0% 100%/.04);
+    --shadow-hero:inset 0 1px 0 0 hsl(0 0% 100%/.05),0 6px 16px hsl(0 0% 0%/.30);
+    --shadow-overlay:inset 0 1px 0 0 hsl(0 0% 100%/.06),0 14px 32px hsl(0 0% 0%/.40);
+    --contrast-ink:242,240,239;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#26262a;color:#eee;font:14px/1.5 "Ubuntu Sans",system-ui,sans-serif;padding:24px}
+  h1{font-size:20px;margin-bottom:4px}
+  .sub{color:#aaa;margin-bottom:18px;font-size:13px}
+  .toggle{position:sticky;top:0;z-index:99;display:flex;gap:8px;margin-bottom:20px}
+  .toggle button{border:1px solid #666;background:#333;color:#fff;padding:8px 16px;cursor:pointer;font:600 13px "Ubuntu Sans"}
+  .toggle button[aria-pressed="true"]{background:#087F83;border-color:#087F83}
+  .frame{background:var(--paper);color:var(--ink);border:1px solid #444;overflow:hidden;position:relative;transition:background .2s}
+  .caption{color:#999;font:600 12px/1 "Ubuntu Sans";text-transform:uppercase;letter-spacing:.08em;margin:26px 0 8px}
+
+  /* ── SALUTO (Ubuntu Sans, conservato) ── */
+  .greeting{font-family:"Ubuntu Sans";font-weight:500;font-size:40px;line-height:1.05;letter-spacing:-.01em}
+  .subtitle{font-family:"Ubuntu Sans";font-size:15px;color:var(--ink-muted);margin-top:6px}
+
+  /* ── CARD CORSO (composizione astratta per materia, come CourseCardBackground "studio") ── */
+  .hero{position:relative;overflow:hidden;border:1px solid var(--border);background:rgb(var(--contrast-ink));color:rgb(var(--contrast-ink));box-shadow:var(--shadow-hero);padding:18px}
+  .hero .base{position:absolute;inset:0}
+  .hero .descent{position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.08) 50%,rgba(0,0,0,.55))}
+  .hero .orb-main{position:absolute;top:-96px;right:-96px;width:264px;height:264px;border-radius:9999px;filter:blur(6px);opacity:.42}
+  .hero .orb-sec{position:absolute;top:-24px;left:-88px;width:176px;height:176px;border-radius:9999px;filter:blur(18px);opacity:.38}
+  .hero .content{position:relative;z-index:2}
+  .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+  .hero h3{font-size:28px;font-weight:800;line-height:1.05;margin-top:4px;word-break:break-word}
+  .lesson{font-size:17px;font-weight:600;margin-top:10px;line-height:1.3}
+  .meta{font-size:14px;opacity:.85;margin-top:4px}
+  .ring{position:absolute;top:16px;right:16px;width:56px;height:56px}
+  .cta{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;height:44px;margin-top:16px;border:1px solid;font:600 14px "Ubuntu Sans";cursor:pointer}
+  /* semiopaca §6: 12% currentColor + bordo 24% */
+  .cta{background:color-mix(in srgb,currentColor 12%,transparent);border-color:color-mix(in srgb,currentColor 24%,transparent)}
+  .cta:hover{opacity:.8}
+
+  /* ── SEZIONI ── */
+  .card{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-ordinary);padding:16px}
+  .card h4{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-muted)}
+  .task{display:flex;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--border)}
+  .task:first-of-type{border-top:0;margin-top:8px}
+  .chip{width:8px;height:8px;border-radius:9999px;background:var(--brand)}
+  .tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .tool{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-ordinary);min-height:52px;padding:8px 12px;font:500 15px "Ubuntu Sans"}
+  .tool .ic{width:32px;height:32px;display:grid;place-items:center;background:var(--brand-tint);color:var(--brand-deep);font-size:15px}
+
+  /* ── NAV: dock mobile ── */
+  .dock{position:absolute;bottom:12px;left:12px;right:12px;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-overlay)}
+  .dock .v{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:64px;padding:8px 0;font:500 13px/1 "Ubuntu Sans";color:var(--ink-muted)}
+  .dock .v.active{color:var(--brand-deep);font-weight:600}
+  .dock .v.active::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;background:var(--brand)}
+  .icn{width:22px;height:22px;display:grid;place-items:center;font-size:17px}
+
+  /* ── NAV: rail e sidebar ── */
+  .rail{display:flex;flex-direction:column;gap:8px;padding:12px 8px;overflow:auto}
+  .rail .v{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0;font:500 13px/1 "Ubuntu Sans";color:var(--ink-muted)}
+  .rail .v.active{background:var(--brand-tint);color:var(--brand-deep);font-weight:600}
+  .rail .v.active::before{content:"";position:absolute;top:4px;left:50%;transform:translateX(-50%);width:24px;height:3px;background:var(--brand)}
+  .sidebar .v{flex-direction:row;gap:12px;justify-content:flex-start;padding:10px 12px;font-size:15px}
+  .sidebar .v.active::before{top:50%;left:0;transform:translate(0,-50%);width:3px;height:20px}
+
+  .shell{display:flex;gap:12px;padding:12px;background:#1b1b1e}
+  .shell .navcard{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-ordinary);flex:0 0 auto}
+  .brandrow{display:flex;align-items:center;gap:8px;justify-content:center;padding:16px 8px 12px;font-weight:700;font-size:18px}
+  .sidebar .brandrow{justify-content:flex-start;padding:20px 18px}
+  .content{flex:1;background:var(--paper);border:1px solid var(--border);box-shadow:var(--shadow-ordinary);overflow:auto;padding:20px;min-width:0}
+  .col{display:flex;flex-direction:column;gap:20px}
+</style>
+</head>
+<body>
+<h1>Erga · Pacchetto D2 — Navigazione e Home</h1>
+<p class="sub">Anteprima statica verificabile dei componenti con i token reali di D1/D2 (dock &lt;768 · rail 768–1199 · sidebar ≥1200 · card corso per materia · giorno/notte). Non è uno screenshot del prodotto: dopo l'Update le stesse viste si verificano nell'app.</p>
+
+<div class="toggle" role="group" aria-label="Tema">
+  <button id="btnLight" aria-pressed="true" onclick="setTheme(false)">☀ Giorno</button>
+  <button id="btnDark" aria-pressed="false" onclick="setTheme(true)">🌙 Notte</button>
+</div>
+
+<!-- ═══════════ TELEFONO 390px ═══════════ -->
+<p class="caption">Telefono · 390px · dock flottante rettangolare unico (Core incluso)</p>
+<div class="frame" id="phone" style="width:390px;height:720px">
+  <div style="padding:56px 16px 96px;display:flex;flex-direction:column;gap:20px">
+    <div><div class="greeting">Buono studio, Chiara</div><div class="subtitle">Hai 2 impegni oggi. La verifica è tra 4 giorni.</div></div>
+
+    <!-- Card corso · materia SCURA (fisica) -->
+    <article class="hero">
+      <div class="base" style="background:linear-gradient(180deg,rgb(46,74,76) 0%,rgb(38,63,65) 34%,rgb(33,55,57) 68%,rgb(28,47,49) 100%)"></div>
+      <div class="orb-main" style="background:rgb(151,180,181)"></div>
+      <div class="orb-sec" style="background:rgb(170,196,197)"></div>
+      <div class="descent"></div>
+      <svg class="ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="3.5"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="25 75"/><text x="18" y="21.5" text-anchor="middle" font-size="8" fill="currentColor" font-weight="600">25%</text></svg>
+      <div class="content">
+        <p class="eyebrow">Percorso attivo</p>
+        <h3>Moto e forze</h3>
+        <p class="lesson">Il piano inclinato</p>
+        <p class="meta">7 di 28 lezioni</p>
+        <button class="cta">▶ Riprendi lezione</button>
+      </div>
+    </article>
+
+    <section class="card">
+      <h4>Piano del giorno</h4>
+      <div class="task"><span class="chip"></span><div><div style="font-weight:600">Ripasso fisica</div><div style="font-size:13px;color:var(--ink-muted)">16:30 · 40 min</div></div></div>
+      <div class="task"><span class="chip" style="background:var(--ink-muted)"></span><div><div style="font-weight:600">Verifica storia</div><div style="font-size:13px;color:var(--ink-muted)">tra 4 giorni</div></div></div>
+    </section>
+
+    <section>
+      <h4 style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-muted)">Strumenti rapidi</h4>
+      <div class="tools">
+        <div class="tool"><span class="ic">↑</span>Carica materiale</div>
+        <div class="tool"><span class="ic">💬</span>AI Tutor</div>
+        <div class="tool"><span class="ic">✎</span>Crea esercizi</div>
+        <div class="tool"><span class="ic">🎙</span>Interrogazione</div>
+      </div>
+    </section>
+  </div>
+  <nav class="dock" aria-label="Navigazione principale">
+    <div class="v active"><span class="icn">⌂</span>Home</div>
+    <div class="v"><span class="icn">▤</span>Piano</div>
+    <div class="v"><span class="icn">▣</span>Studio</div>
+    <div class="v"><span class="icn">⬡</span>Core</div>
+  </nav>
+</div>
+
+<!-- ═══════════ TELEFONO: variante materia CHIARA (matematica) + card vuota ═══════════ -->
+<p class="caption">Telefono · 390px · materia chiara (matematica) e stato vuoto</p>
+<div style="display:flex;gap:20px;flex-wrap:wrap">
+<div class="frame" id="phone2" style="width:390px;height:560px">
+  <div style="padding:40px 16px 24px;display:flex;flex-direction:column;gap:20px">
+    <div><div class="greeting" style="font-size:34px">Buono studio</div></div>
+    <article class="hero">
+      <div class="base" style="background:linear-gradient(180deg,rgb(86,98,120) 0%,rgb(74,86,108) 34%,rgb(64,75,96) 68%,rgb(55,65,84) 100%)"></div>
+      <div class="orb-main" style="background:rgb(150,160,180)"></div>
+      <div class="orb-sec" style="background:rgb(175,183,200)"></div>
+      <div class="descent"></div>
+      <div class="content">
+        <p class="eyebrow">Percorso attivo</p>
+        <h3>Analisi · derivate</h3>
+        <p class="lesson">La regola della catena</p>
+        <p class="meta">12 di 24 lezioni</p>
+        <button class="cta">▶ Riprendi lezione</button>
+      </div>
+    </article>
+    <p style="font-size:12px;color:var(--ink-muted)">La CTA resta leggibile anche sulle composizioni più chiare: fondo semiopaco al 12% + zona bassa più scura (§6).</p>
+  </div>
+</div>
+<div class="frame" id="phone3" style="width:390px;height:560px">
+  <div style="padding:40px 16px 24px;display:flex;flex-direction:column;gap:20px">
+    <div><div class="greeting" style="font-size:34px">Ciao</div></div>
+    <article class="card" style="text-align:center;padding:24px">
+      <div style="width:48px;height:48px;display:grid;place-items:center;margin:0 auto;background:var(--brand-tint);color:var(--brand-deep);font-size:20px">▣</div>
+      <h3 style="font-size:18px;margin-top:12px">Scegli o carica il tuo primo percorso</h3>
+      <p style="font-size:14px;color:var(--ink-muted);margin-top:6px">Carica un PDF o una foto dei tuoi materiali: Erga costruisce il percorso.</p>
+      <button class="cta" style="background:var(--brand);border-color:var(--brand);color:#fff">Carica materiale</button>
+    </article>
+    <p style="font-size:12px;color:var(--ink-muted)">Stato vuoto: superficie solida, CTA ottanio pieno (testo bianco), nessun dato inventato.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ FINESTRA MEDIA 900px · RAIL ═══════════ -->
+<p class="caption">Finestra media · 900px · rail compatta con etichette (768–1199px)</p>
+<div class="shell" id="medium" style="width:900px;max-width:100%;height:560px">
+  <div class="navcard" style="width:84px;display:flex;flex-direction:column">
+    <div class="brandrow">⬢</div>
+    <div class="rail" style="flex:1">
+      <div class="v active"><span class="icn">⌂</span>Home</div>
+      <div class="v"><span class="icn">▤</span>Piano</div>
+      <div class="v"><span class="icn">▣</span>Studio</div>
+      <div class="v"><span class="icn">⬡</span>Core</div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="col">
+      <div><div class="greeting" style="font-size:34px">Buono studio, Chiara</div><div class="subtitle">Hai 2 impegni oggi.</div></div>
+      <article class="hero">
+        <div class="base" style="background:linear-gradient(180deg,rgb(126,84,92) 0%,rgb(108,72,80) 34%,rgb(94,63,70) 68%,rgb(82,55,61) 100%)"></div>
+        <div class="orb-main" style="background:rgb(186,146,152)"></div>
+        <div class="orb-sec" style="background:rgb(205,170,175)"></div>
+        <div class="descent"></div>
+        <div class="content">
+          <p class="eyebrow">Percorso attivo</p>
+          <h3>La guerra dei cent'anni</h3>
+          <p class="lesson">Le origini del conflitto</p>
+          <p class="meta">3 di 12 lezioni</p>
+          <button class="cta">▶ Riprendi lezione</button>
+        </div>
+      </article>
+      <section class="card"><h4>Piano del giorno</h4>
+        <div class="task"><span class="chip"></span><div><div style="font-weight:600">Ripasso storia</div><div style="font-size:13px;color:var(--ink-muted)">16:30</div></div></div>
+      </section>
+      <section><h4 style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-muted)">Strumenti rapidi</h4>
+        <div class="tools" style="grid-template-columns:repeat(4,1fr)">
+          <div class="tool"><span class="ic">↑</span>Carica materiale</div><div class="tool"><span class="ic">💬</span>AI Tutor</div><div class="tool"><span class="ic">✎</span>Crea esercizi</div><div class="tool"><span class="ic">🎙</span>Interrogazione</div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ DESKTOP 1280px · SIDEBAR ═══════════ -->
+<p class="caption">Desktop · 1280px · sidebar con etichette e spazio (≥1200px)</p>
+<div class="shell" id="desktop" style="width:1280px;max-width:100%;height:600px">
+  <div class="navcard sidebar" style="width:256px;display:flex;flex-direction:column">
+    <div class="brandrow">⬢&nbsp;Erga</div>
+    <div class="rail" style="flex:1;padding:8px 12px">
+      <div class="v active"><span class="icn">⌂</span>Home</div>
+      <div class="v"><span class="icn">▤</span>Piano</div>
+      <div class="v"><span class="icn">▣</span>Studio</div>
+      <div class="v"><span class="icn">⬡</span>Core</div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="col">
+      <div><div class="greeting" style="font-size:38px">Buono studio, Chiara</div><div class="subtitle">La verifica di storia è tra 4 giorni: oggi conviene il ripasso attivo.</div></div>
+      <article class="hero" style="padding:24px">
+        <div class="base" style="background:linear-gradient(180deg,rgb(46,74,76) 0%,rgb(38,63,65) 34%,rgb(33,55,57) 68%,rgb(28,47,49) 100%)"></div>
+        <div class="orb-main" style="background:rgb(151,180,181)"></div>
+        <div class="orb-sec" style="background:rgb(170,196,197)"></div>
+        <div class="descent"></div>
+        <div class="content">
+          <p class="eyebrow">Percorso attivo</p>
+          <h3 style="font-size:36px">Moto e forze</h3>
+          <p class="lesson">Il piano inclinato</p>
+          <p class="meta">7 di 28 lezioni</p>
+          <button class="cta" style="max-width:340px">▶ Riprendi lezione</button>
+        </div>
+      </article>
+      <section class="card"><h4>Piano del giorno</h4>
+        <div class="task"><span class="chip"></span><div><div style="font-weight:600">Ripasso fisica</div><div style="font-size:13px;color:var(--ink-muted)">16:30 · 40 min</div></div></div>
+        <div class="task"><span class="chip" style="background:var(--ink-muted)"></span><div><div style="font-weight:600">Verifica storia</div><div style="font-size:13px;color:var(--ink-muted)">tra 4 giorni</div></div></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<p class="caption">Note di verifica</p>
+<ul style="color:#bbb;font-size:13px;max-width:720px;line-height:1.7">
+  <li>Dock: 4 voci etichettate nello stesso ordine (Home · Piano · Studio · Core), barretta ottanio sulla voce attiva, nessun cerchio separato.</li>
+  <li>Card corso: composizione astratta derivata dal colore materia (base a 3 tappe + due luci),Continua semiopaco, ombra protagonista, angoli 0.</li>
+  <li>Ordine Home: saluto → ripresa (card corso) → Piano del giorno → Strumenti rapidi (§10).</li>
+  <li>Il toggle qui sopra prova entrambi i temi su TUTTE le viste contemporaneamente.</li>
+</ul>
+
+<script>
+function setTheme(dark){
+  document.querySelectorAll('.frame,.shell').forEach(el=>el.classList.toggle('dark',dark));
+  document.getElementById('btnLight').setAttribute('aria-pressed',String(!dark));
+  document.getElementById('btnDark').setAttribute('aria-pressed',String(dark));
+}
+</script>
+</body>
+</html>

@@ -87,39 +87,39 @@ describe("Superfici pulite della Home", () => {
     expect(grid).toContain("rounded-full");
   });
 
-  it("la card percorso è sopraelevata e di notte è la hero avorio P36", () => {
+  it("D2: la card corso è protagonista — squadrata, sollevata, composizione astratta per materia", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
-    const tailwind = readFileSync(join(__dirname, "..", "..", "tailwind.config.ts"), "utf8");
 
-    // ombra stratificata dedicata + filo sottilissimo
+    // ombra protagonista (§6) e composizione astratta condivisa con Studio
     expect(hero).toContain("shadow-hero");
     expect(hero).not.toContain("shadow-level-2");
-    expect(hero).toContain("dark:border-black/[0.08]");
-    // di notte la card è avorio #F4F1EA con inchiostro #121214
-    expect(hero).toContain("dark:bg-surface-cream");
-    expect(hero).toContain("dark:text-surface-cream-foreground");
-    expect(css).toContain("--shadow-hero-card: 0 10px 15px -3px rgba(0, 0, 0, 0.40), 0 4px 6px -2px rgba(0, 0, 0, 0.20), 0 24px 48px -12px rgba(0, 0, 0, 0.45)");
-    expect(tailwind).toContain('hero: "var(--shadow-hero-card)"');
+    expect(hero).toContain("CourseCardBackground");
+    expect(hero).toContain("getSubjectAccent");
+    // geometria squadrata: niente capsule, bordo dal token
+    expect(hero).not.toContain("rounded-full");
+    expect(hero).toContain("border-border");
+    // ombra protagonista D1 al posto della vecchia goccia P35
+    expect(css).toContain("--shadow-hero-card: 0 10px 28px rgba(24, 21, 22, 0.14)");
   });
 
-  it("la CTA 'Riprendi lezione' è una pillola scura sull'avorio (px-6)", () => {
+  it("D2: la CTA 'Continua' è semiopaca, a piena larghezza e senza capsule", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
 
-    expect(hero).toContain("rounded-full");
-    expect(hero).toContain("h-12");
-    expect(hero).toContain("px-6");
-    // scura sulla card avorio di notte, avorio sull'inchiostro di giorno
-    expect(hero).toContain("bg-inverse-on-surface");
-    expect(hero).toContain("dark:bg-surface-cream-foreground");
+    expect(hero).toContain("h-11");
+    expect(hero).toContain("w-full");
+    // semiopaca con fondo sufficiente (§6): 12% di currentColor + bordo 24%
+    expect(hero).toContain("color-mix(in srgb, currentColor 12%, transparent)");
+    expect(hero).toContain("color-mix(in srgb, currentColor 24%, transparent)");
+    expect(hero).not.toContain("rounded-full");
     // la vecchia classe vetro scura non deve tornare
     expect(css).not.toContain(".glass-cool-black");
   });
 
-  it("il titolo del corso domina la gerarchia in Radja (3xl/4xl)", () => {
+  it("D2: il titolo del corso domina la gerarchia in Ubuntu Sans (3xl/4xl)", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
-    expect(hero).toContain("font-radja");
+    expect(hero).toContain("font-display");
     expect(hero).toContain("text-3xl");
     expect(hero).toContain("sm:text-4xl");
     // titoli lunghi: un gradino sotto, per non gonfiare la card
@@ -128,26 +128,21 @@ describe("Superfici pulite della Home", () => {
     // responsivo: il titolo lungo spezza le parole senza uscire dalla card
     expect(hero).toContain("break-words");
     expect(hero).toContain("min-w-0");
+    // la voce focale Radja non guida più il redesign (DESIGN.md 1.1)
+    expect(hero).not.toContain("font-radja");
   });
 
-  it("i token P36 dark luxury sono centrali: avorio, antracite, Radja", () => {
+  it("D2: i token della veste — materia viva, notte teal, ombre controllate", () => {
     const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
-    const tailwind = readFileSync(join(__dirname, "..", "..", "tailwind.config.ts"), "utf8");
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
 
-    // superfici definite una volta sola e riuse ovunque
-    expect(css).toContain("--surface-cream: 42 31% 94%");
-    expect(css).toContain("--surface-cream-foreground: 240 5% 8%");
-    expect(css).toContain("--surface-cream-muted: 240 3% 30%");
-    expect(css).toContain("--surface-dark-card: 240 9% 8.6%");
-    expect(css).toContain("--background: 72 16.13% 6.08%");
+    // notte proposta del §4 e superficie card
+    expect(css).toContain("--background: 180 18% 7.6%");
     expect(css).toContain("--card: var(--surface-dark-card)");
-    expect(css).toContain("--border: var(--cream) / 0.07");
-    // font display Radja self-hosted + utility Tailwind
-    expect(css).toContain('font-family: "Radja"');
-    expect(css).toContain('url("/fonts/Radja-q2MP5.ttf")');
-    expect(tailwind).toContain("radja: ['Radja'");
-    expect(hero).toContain("font-radja");
+    // la composizione parte dal colore materia, non da un gradiente identico
+    expect(hero).toContain("subjectColor");
+    // ombre dei tre livelli (§6)
+    expect(css).toContain("--shadow-level-3: 0 10px 28px rgba(24, 21, 22, 0.12)");
   });
 
   it("la ciambella della card corso è responsiva per gli schermi piccoli", () => {

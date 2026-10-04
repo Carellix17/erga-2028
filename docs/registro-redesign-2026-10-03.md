@@ -25,7 +25,7 @@ Chi lavora a un pacchetto aggiorna qui lo stato. La migrazione dell'interfaccia 
 |---|---|---|
 | **D0 — Identità e documentazione** | DESIGN.md 1.1 integrato (frontmatter token del sistema di destinazione), `.impeccable/design.json` allineato (schema 2), AGENTS.md / Matrice / Minilezione riconciliate, questo registro | ✅ **fatto, 3 ottobre 2026** |
 | **D1 — Fondamenta** | Token nel runtime (palette ottanio giorno/notte, raggio 0, ombre §6, ruoli tipografici interfaccia/lettura, token di marca), grammatica dei componenti condivisi, revisione di `noGreen.test.ts` | ✅ **runtime consegnato 3 ottobre 2026** (verifica visiva in app da confermare; geometria locale residua inventariata qui sotto) |
-| **D2 — Navigazione e Home** | Dock/rail/sidebar unificati; Home con gerarchia (riprendi → prossimo impegno → strumenti) | ⬜ |
+| **D2 — Navigazione e Home** | Dock flottante rettangolare unico (Core incluso) + rail 768–1199 + sidebar ≥1200; Home con gerarchia §10 (riprendi → prossimo impegno → strumenti) | ✅ **consegnato 3 ottobre 2026** (verifica visiva in app da confermare; anteprima verificabile: `docs/anteprima-navigazione-home-d2.html`) |
 | **D3 — Studio e lezioni** | Cantieri + Banco, mappa percorso (spina + nodi, prerequisiti consigliati) con alternativa Elenco; scene didattiche partendo dagli otto widget esistenti | ⬜ |
 | **D4 — Esercizi, interrogazione e Piano** | Ingressi degli strumenti del Banco; calendario squadrato coerente nei due temi | ⬜ |
 | **D5 — Core e landing** | Coerenza della schermata Core esistente; landing nella stessa identità, confini degli stili marketing preservati | ⬜ |
@@ -70,6 +70,15 @@ Presenza nel codice **non** significa pubblicato online: i deploy passano da Lov
 - Voci M3 ereditate: varianti Button `fab*`/`tonal`/`elevated` e contenitori `surface-container-*` (funzionanti, da ritirare quando le sezioni migrano).
 - Pillola di navigazione (`BottomNav`/`--nav-surface`) e card avorio `--surface-cream`: si ridisegnano in D2.
 - Pastelli materia ancora in versione mono (`--pastel-*`): la loro vivificazione è affare della sezione corsi (D3), con i colori materia vivi già documentati in `DESIGN.md`/`design.json`.
+
+## 4ter. D2 — cosa è cambiato (3 ottobre 2026)
+
+- **Navigazione unificata** (`BottomNav.tsx` riscritto): quattro destinazioni etichettate Home · Piano · Studio · Core nello stesso ordine su ogni formato. Telefono: UN dock flottante rettangolare (opaco, `shadow-level-3`, safe area, Core incluso — niente più cerchio separato); 768–1199: rail sospesa compatta (icone + etichette); ≥1200: sidebar (brand esteso, menu che scorre da solo). Selezione = testo `brand-deep` + barretta geometrica `bg-brand` (animata con layoutId, poi ferma) + `aria-current`. La nav non sparisce con lo scroll; le sessioni immersive continuano a usare `hideChrome`.
+- **Shell** (`AppLayout.tsx`): content-card squadrata (`rounded-card`), spazio del dock riservato dal contenuto con `calc(5.5rem + safe-area)`.
+- **Home** (`HomeView.tsx`): ordine §10 — saluto → card corso (ripresa) → Piano del giorno → Strumenti rapidi. Strumenti e ripresa invariati nelle destinazioni (Studio/lezioni, nessuna Pratica autonoma).
+- **Card corso** (`CourseHeroCard.tsx`): bordi tokenizzati (`border-border`), CTA semiopaca al 12% (più solida, §6), stato vuoto su superficie opaca (niente glass), composizione astratta per materia invariata (già conforme), titolo in Ubuntu Sans (`font-display` D1). `QuickToolsGrid`/`DailyTimeline`: bordi `#FFFBF4` → token.
+- **Test**: dock D2 in `appShellDesignSystem`; i 4 test P36 di `homeCleanSurfaces` riscritti alle attese D2 (erano pre-esistenti falliti su una veste mai completata); nuovo test ordine §10 in `HomeView.test`. Suite: **625 pass / 13 fail** (solo AppHeader 13 + haptics 1, pre-esistenti, header non toccato da D2).
+- **Anteprima verificabile**: `docs/anteprima-navigazione-home-d2.html` — dock/rail/sidebar, card per materia scura/chiara, stato vuoto, giorno/notte. Non è uno screenshot del prodotto.
 
 ## 5. Punti ancora aperti (proposte da validare, non decisioni)
 

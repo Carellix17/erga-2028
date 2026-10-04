@@ -215,10 +215,8 @@ export function HomeView({
         }
       />
 
-      {/* 3. Strumenti rapidi */}
-      <QuickToolsGrid title={t("home.tools.title")} tools={tools} />
-
-      {/* 4. Piano del giorno */}
+      {/* 3. Prossimo impegno: il Piano del giorno (§10: ripresa → prossimo
+          impegno → strumenti rapidi e informazioni secondarie) */}
       <DailyTimeline
         title={t("home.today.title")}
         seeAllLabel={t("home.today.openPlan")}
@@ -239,6 +237,9 @@ export function HomeView({
         }}
         onSeeAll={hiddenTasks > 0 || showAllTasks ? handleToggleTasks : handleOpenPlan}
       />
+
+      {/* 4. Strumenti rapidi (aprono gli strumenti del Banco in Studio) */}
+      <QuickToolsGrid title={t("home.tools.title")} tools={tools} />
     </div>
   );
 }

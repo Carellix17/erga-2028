@@ -177,6 +177,16 @@ describe("HomeView modulare (V3)", () => {
     expect(screen.queryByRole("button", { name: /profilo cognitivo/i })).not.toBeInTheDocument();
   });
 
+  it("D2: il prossimo impegno viene prima degli strumenti rapidi (§10)", () => {
+    render(<HomeView {...callbacks} />);
+    const timeline = screen.getByRole("heading", { name: /piano del giorno/i });
+    const tools = screen.getByRole("heading", { name: /strumenti rapidi/i });
+    // il Piano del giorno precede gli Strumenti rapidi nell'ordine del DOM
+    expect(
+      timeline.compareDocumentPosition(tools) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("gli strumenti rapidi non sono capsule: grammatica squadrata (D1)", () => {
     render(<HomeView {...callbacks} />);
     ["Carica materiale", "AI Tutor", "Crea esercizi", "Interrogazione"].forEach((label) => {

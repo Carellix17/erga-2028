@@ -15,7 +15,8 @@
     "piano": "Planner",
     "pratica": "Practice",
     "core": "Core",
-    "home": "Home"
+    "home": "Home",
+    "ariaPrimary": "Main navigation"
   },
   "header": {
     "upload": "Upload",
