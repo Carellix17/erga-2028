@@ -40,7 +40,7 @@ const plans = [
     icon: Brain,
     gradient: "from-primary via-secondary to-tertiary",
     badgeText: "Attivo",
-    badgeClass: "bg-primary/10 text-primary border-primary/20",
+    badgeClass: "bg-primary/10 text-brand-deep border-primary/20",
     features: betaFeatures,
     isCurrent: true,
   },
@@ -115,7 +115,7 @@ export function SubscriptionSheet({ open, onOpenChange, currentTier }: Subscript
                   )}>
                     <feature.icon className={cn(
                       "w-4.5 h-4.5",
-                      feature.available ? "text-primary" : "text-muted-foreground"
+                      feature.available ? "text-brand-deep" : "text-muted-foreground"
                     )} />
                   </div>
                   <div className="flex-1 min-w-0">

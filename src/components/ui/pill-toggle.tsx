@@ -48,7 +48,7 @@ export function PillToggle<T extends string | number>({
       aria-label={aria["aria-label"]}
       className={cn(
         track
-          ? "grid gap-2 p-1 rounded-full bg-surface-container"
+          ? "grid gap-2 p-1 rounded-button bg-surface-container"
           : cn("flex flex-wrap", size === "sm" ? "gap-1.5" : "gap-2"),
         className,
       )}
@@ -64,7 +64,7 @@ export function PillToggle<T extends string | number>({
             aria-checked={active}
             onClick={() => onChange(opt.value)}
             className={cn(
-              "rounded-full font-medium transition-all duration-300 ease-m3-emphasized active:scale-95",
+              "rounded-button font-medium transition-all duration-300 ease-m3-emphasized active:scale-95",
               size === "sm" ? (track ? "h-9 text-sm" : "px-3 h-8 text-[11px]") : "h-10 text-sm",
               !track && size === "md" && "px-3",
               grow && "flex-1",

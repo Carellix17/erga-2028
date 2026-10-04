@@ -38,8 +38,8 @@ export function LineWidget({ spec }: { spec: WidgetSpec }) {
       <svg viewBox="0 0 320 200" className="w-full h-auto" role="img" aria-label="Grafico della retta">
         {plot.hasXAxis && <line x1={8} y1={plot.y0} x2={312} y2={plot.y0} className="stroke-current text-muted-foreground/30" strokeWidth={1} />}
         {plot.hasYAxis && <line x1={plot.x0} y1={8} x2={plot.x0} y2={192} className="stroke-current text-muted-foreground/30" strokeWidth={1} />}
-        <polyline points={curvePoints(plot, f)} fill="none" className="stroke-current text-primary" strokeWidth={2.5} />
-        <circle cx={plot.px(0)} cy={plot.py(q)} r={4.5} className="fill-current text-primary" />
+        <polyline points={curvePoints(plot, f)} fill="none" className="stroke-current text-brand-deep" strokeWidth={2.5} />
+        <circle cx={plot.px(0)} cy={plot.py(q)} r={4.5} className="fill-current text-brand-deep" />
       </svg>
       {def.params.map((p) => {
         const value = p.key === "m" ? m : q;

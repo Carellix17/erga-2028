@@ -17,14 +17,14 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 state-layer",
         ghost: "text-foreground hover:bg-foreground/[0.08]",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-brand-deep underline-offset-4 hover:underline",
         tonal: "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 state-layer",
-        fab: "bg-primary-container text-primary shadow-level-0 hover:opacity-90 state-layer",
+        fab: "bg-primary-container text-brand-deep shadow-level-0 hover:opacity-90 state-layer",
         "fab-secondary":
           "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 state-layer",
         "fab-tertiary":
           "bg-tertiary-container text-tertiary shadow-level-0 hover:opacity-90 state-layer",
-        elevated: "bg-surface-container-low text-primary shadow-level-1 hover:opacity-90 state-layer",
+        elevated: "bg-surface-container-low text-brand-deep shadow-level-1 hover:opacity-90 state-layer",
       },
       size: {
         default: "h-11 px-5 py-2.5",
@@ -35,8 +35,9 @@ const buttonVariants = cva(
         "icon-lg": "h-12 w-12 p-0",
         fab: "h-14 w-14 p-0",
         "fab-extended": "h-14 px-7",
-        //  P36 — pillola primaria: capsula piena con padding generoso
-        pill: "h-12 rounded-full px-6 py-3",
+        //  D1 — la vecchia capsula entra nella grammatica squadrata:
+        //  stessa taglia generosa, angolo del sistema (0px).
+        pill: "h-12 rounded-button px-6 py-3",
       },
     },
     defaultVariants: {

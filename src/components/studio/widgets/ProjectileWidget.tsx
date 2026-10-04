@@ -51,8 +51,8 @@ export function ProjectileWidget({ spec }: { spec: WidgetSpec }) {
       <svg viewBox="0 0 320 190" className="w-full h-auto" role="img" aria-label="Traiettoria del proiettile">
         <line x1={8} y1={plot.py(0)} x2={312} y2={plot.py(0)} className="stroke-current text-muted-foreground/40" strokeWidth={1.5} />
         <line x1={plot.px(R / 2)} y1={plot.py(H)} x2={plot.px(R / 2)} y2={plot.py(0)} className="stroke-current text-muted-foreground/40" strokeWidth={1} strokeDasharray="4 3" />
-        <polyline points={pts.join(" ")} fill="none" className="stroke-current text-primary" strokeWidth={2.5} />
-        <circle cx={plot.px(R / 2)} cy={plot.py(H)} r={4} className="fill-current text-primary" />
+        <polyline points={pts.join(" ")} fill="none" className="stroke-current text-brand-deep" strokeWidth={2.5} />
+        <circle cx={plot.px(R / 2)} cy={plot.py(H)} r={4} className="fill-current text-brand-deep" />
         <text x={plot.px(R / 2)} y={plot.py(H) - 6} textAnchor="middle" className="fill-current text-muted-foreground" fontSize={10} fontFamily="monospace">
           h={nice(H, 1)} m
         </text>

@@ -105,7 +105,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
           </span>
         </div>
         <div className="flex items-center justify-center gap-2">
-          <Target className="w-4 h-4 text-primary" />
+          <Target className="w-4 h-4 text-brand-deep" />
           <p className="body-small text-muted-foreground text-center">
             <span className="text-foreground title-small">{t("finalTest.title")}</span> · {t("finalTest.subtitle")}
           </p>

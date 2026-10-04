@@ -231,7 +231,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
       <div className="mx-auto max-w-2xl space-y-5">
         {/* Intestazione */}
         <div className="flex items-start gap-3">
-          <div className="rounded-2xl bg-primary/10 p-2.5 text-primary">
+          <div className="rounded-2xl bg-primary/10 p-2.5 text-brand-deep">
             <Dumbbell className="w-5 h-5" />
           </div>
           <div>
@@ -252,7 +252,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
                   className={cn(
                     "rounded-full border px-3.5 py-1.5 text-sm transition-colors",
                     moduleIndex === null
-                      ? "border-primary bg-primary/10 text-primary"
+                      ? "border-primary bg-primary/10 text-brand-deep"
                       : "border-outline-variant text-muted-foreground hover:bg-surface-container",
                   )}
                 >
@@ -265,7 +265,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
                     className={cn(
                       "rounded-full border px-3.5 py-1.5 text-sm transition-colors",
                       moduleIndex === i
-                        ? "border-primary bg-primary/10 text-primary"
+                        ? "border-primary bg-primary/10 text-brand-deep"
                         : "border-outline-variant text-muted-foreground hover:bg-surface-container",
                     )}
                   >
@@ -290,7 +290,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
         {/* Preparazione */}
         {stage === "generating" && (
           <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-outline-variant bg-surface-container-lowest p-8 text-center">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <Loader2 className="w-8 h-8 animate-spin text-brand-deep" />
             <p className="title-medium text-foreground">{t("gym.generating")}</p>
             <p className="body-medium text-muted-foreground">{t("gym.generatingNote")}</p>
           </div>
@@ -415,7 +415,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
         {stage === "done" && (
           <div className="space-y-4 rounded-2xl border-2 border-outline-variant bg-surface-container-lowest p-6 text-center">
             <p className="title-large text-foreground">{t("gym.doneTitle")}</p>
-            <p className="font-mono text-3xl text-primary">
+            <p className="font-mono text-3xl text-brand-deep">
               {score}/{exercises.length}
             </p>
             <p className="body-medium text-muted-foreground">{t("gym.doneScore", { correct: score, total: exercises.length })}</p>
@@ -437,7 +437,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
         <SheetContent side="right" className="flex w-full flex-col sm:max-w-md">
           <SheetHeader className="pb-2">
             <SheetTitle className="flex items-center gap-2 text-left">
-              <MessageCircle className="w-4 h-4 text-primary" /> {t("gym.tutorTitle")}
+              <MessageCircle className="w-4 h-4 text-brand-deep" /> {t("gym.tutorTitle")}
             </SheetTitle>
           </SheetHeader>
           <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-2">

@@ -149,7 +149,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
             {avatarPreview ? (
               <img src={avatarPreview} alt="Foto profilo utente" className="w-full h-full object-cover" />
             ) : (
-              <UserCircle2 className="w-12 h-12 text-primary" aria-hidden="true" />
+              <UserCircle2 className="w-12 h-12 text-brand-deep" aria-hidden="true" />
             )}
             <div className="absolute inset-0 bg-foreground/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               {isUploadingAvatar ? (
@@ -168,7 +168,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
           {/* Piccolo blocco piano abbonamento sotto il nome */}
           <button
             onClick={() => setShowSubscription(true)}
-            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill bg-primary-container text-primary text-xs font-semibold hover:opacity-90 transition-opacity"
+            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill bg-primary-container text-brand-deep text-xs font-semibold hover:opacity-90 transition-opacity"
           >
             <TierIcon className="w-3.5 h-3.5" aria-hidden="true" />
             {tierMeta[tier].label}

@@ -50,7 +50,7 @@ export function MarketWidget({ spec }: { spec: WidgetSpec }) {
         <text x={305} y={plot.py(0) - 6} textAnchor="end" className="fill-current text-muted-foreground" fontSize={10} fontFamily="monospace">q</text>
         <text x={plot.px(0) + 6} y={16} className="fill-current text-muted-foreground" fontSize={10} fontFamily="monospace">p</text>
         {/* domanda */}
-        <polyline points={demandPts} fill="none" className="stroke-current text-primary" strokeWidth={2.5} />
+        <polyline points={demandPts} fill="none" className="stroke-current text-brand-deep" strokeWidth={2.5} />
         {/* offerta */}
         <polyline points={supplyPts} fill="none" className="stroke-current text-amber-600" strokeWidth={2.5} />
         {hasEq && (

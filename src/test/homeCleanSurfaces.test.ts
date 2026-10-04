@@ -57,10 +57,10 @@ describe("Superfici pulite della Home", () => {
     expect(css).toContain("--glass-surface: rgba(255, 255, 255, 0.75)");
     expect(css).toContain("--glass-card-dark: rgba(45, 36, 32, 0.85)");
     expect(css).toContain("--glass-blur: blur(16px)");
-    expect(css).toMatch(/\.dark[\s\S]*--glass-surface: rgb\(26 26 26 \/ 0\.80\)/);
-    // ombre tattili
-    expect(css).toContain("--shadow-tattile: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04)");
-    expect(css).toContain("--shadow-card-active: 0 20px 40px -10px rgba(0, 0, 0, 0.22)");
+    expect(css).toMatch(/\.dark[\s\S]*--glass-surface: rgb\(20 29 29 \/ 0\.85\)/);
+    // ombre tattili (D1, DESIGN.md 1.1 §6: ordinaria e protagonista)
+    expect(css).toContain("--shadow-tattile: 0 2px 6px rgba(24, 21, 22, 0.06)");
+    expect(css).toContain("--shadow-card-active: 0 10px 28px rgba(24, 21, 22, 0.12), 0 2px 6px rgba(24, 21, 22, 0.05)");
     // esposte come classi Tailwind semantiche
     expect(tailwind).toContain('tactile: "var(--shadow-tattile)"');
     expect(tailwind).toContain('"card-active": "var(--shadow-card-active)"');

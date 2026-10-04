@@ -110,7 +110,7 @@ export function GenerationProgress({
               {fileName ? `${fileName} · ` : ""}le nuove lezioni entrano qui sotto
             </p>
           </div>
-          <span className="text-lg font-extrabold tabular-nums text-primary flex-shrink-0">
+          <span className="text-lg font-extrabold tabular-nums text-brand-deep flex-shrink-0">
             {Math.round(animatedProgress)}%
           </span>
         </div>

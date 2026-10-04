@@ -72,7 +72,7 @@ export function FocusSetupDialog({ open, onOpenChange, onStart }: Props) {
       <DialogContent className="rounded-3xl max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-display">
-            <Timer className="w-5 h-5 text-primary" />
+            <Timer className="w-5 h-5 text-brand-deep" />
             Cosa vuoi studiare?
           </DialogTitle>
           <DialogDescription>

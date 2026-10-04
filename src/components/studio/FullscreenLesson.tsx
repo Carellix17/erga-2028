@@ -426,7 +426,7 @@ export function FullscreenLesson({
               <button
                 type="button"
                 onClick={handleRestart}
-                className="label-medium text-primary underline underline-offset-2 shrink-0"
+                className="label-medium text-brand-deep underline underline-offset-2 shrink-0"
               >
                 {t("lesson.restart")}
               </button>
@@ -507,7 +507,7 @@ function ConceptStep({ concept }: { concept: string }) {
         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-semibold mb-4">
           {t("lesson.keyConcept")}
         </div>
-        <div className="text-xl font-normal tracking-tight leading-[1.7] prose prose-sm max-w-none mx-auto px-2 prose-p:font-normal prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-secondary prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
+        <div className="font-reading text-xl font-normal tracking-tight leading-[1.7] prose prose-sm max-w-none mx-auto px-2 prose-p:font-normal prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-secondary prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
           <LessonMarkdown>{concept}</LessonMarkdown>
         </div>
       </div>
@@ -569,7 +569,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
         {segments.map((seg, i) => {
           if (seg.type === "text") {
             return seg.value.trim() ? (
-              <div key={i} className="text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:text-foreground/80 prose-p:leading-[1.7] prose-p:my-3 prose-strong:font-semibold prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-outline-variant/60 prose-th:bg-secondary/70 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60 prose-hr:my-4 prose-hr:border-outline-variant/60">
+              <div key={i} className="font-reading text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:text-foreground/80 prose-p:leading-[1.7] prose-p:my-3 prose-strong:font-semibold prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-outline-variant/60 prose-th:bg-secondary/70 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60 prose-hr:my-4 prose-hr:border-outline-variant/60">
                 <LessonMarkdown components={{ blockquote: CalloutBlockquote }}>{seg.value}</LessonMarkdown>
               </div>
             ) : null;
@@ -601,7 +601,7 @@ function ExampleStep({ example }: { example: string }) {
         <span className="label-large text-foreground">{t("lesson.practicalExample")}</span>
       </div>
       <div className="p-6 sm:p-7 rounded-[18px] bg-tertiary-container/60 border border-border/50 shadow-level-1">
-        <div className="text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
+        <div className="font-reading text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
           <LessonMarkdown>{example}</LessonMarkdown>
         </div>
       </div>

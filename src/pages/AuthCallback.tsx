@@ -127,7 +127,7 @@ export default function AuthCallback({
         noindex
       />
       <div className="flex flex-col items-center gap-4 text-muted-foreground">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
+        <Loader2 className="h-8 w-8 animate-spin text-brand-deep" aria-hidden />
         <p className="text-sm">Completamento dell'accesso…</p>
       </div>
     </main>

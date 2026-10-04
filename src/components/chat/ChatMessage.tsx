@@ -36,7 +36,7 @@ function SourceChip({ source }: { source: ChatSource }) {
         onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-left hover:bg-surface-container-highest transition-colors"
       >
-        <BookOpen className="w-3 h-3 text-primary flex-shrink-0" />
+        <BookOpen className="w-3 h-3 text-brand-deep flex-shrink-0" />
         <span className="flex-1 min-w-0 truncate text-[11px] font-medium text-foreground/80">
           {source.file}
           {pageLabel && <span className="text-muted-foreground"> · {pageLabel}</span>}

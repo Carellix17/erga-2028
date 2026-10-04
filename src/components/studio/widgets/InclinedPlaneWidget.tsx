@@ -69,12 +69,12 @@ export function InclinedPlaneWidget({ spec }: { spec: WidgetSpec }) {
         <line x1={base.x} y1={base.y} x2={base.x + inclineLen * Math.cos(th)} y2={base.y} className="stroke-current text-muted-foreground/40" strokeWidth={1} strokeDasharray="4 3" />
         {/* blocco */}
         <g transform={`translate(${mid.x} ${mid.y}) rotate(${-deg})`}>
-          <rect x={-11} y={-22} width={22} height={22} className="fill-current text-primary/20 stroke-current text-primary" strokeWidth={1.5} />
+          <rect x={-11} y={-22} width={22} height={22} className="fill-current text-brand-deep/20 stroke-current text-brand-deep" strokeWidth={1.5} />
         </g>
         {/* peso (verso il basso) */}
         <line x1={mid.x} y1={mid.y} x2={mid.x} y2={mid.y + wLen} strokeWidth={2} markerEnd="url(#wa-arrow)" className="stroke-current text-rose-500" />
         {/* componente parallela al piano */}
-        <line x1={mid.x} y1={mid.y} x2={mid.x + ux * Fpar * scale} y2={mid.y + uy * Fpar * scale} strokeWidth={2} markerEnd="url(#wa-arrow)" className="stroke-current text-primary" strokeDasharray="5 3" />
+        <line x1={mid.x} y1={mid.y} x2={mid.x + ux * Fpar * scale} y2={mid.y + uy * Fpar * scale} strokeWidth={2} markerEnd="url(#wa-arrow)" className="stroke-current text-brand-deep" strokeDasharray="5 3" />
         {/* componente perpendicolare */}
         <line x1={mid.x} y1={mid.y} x2={mid.x + nx * N * scale} y2={mid.y - ny * N * scale} strokeWidth={2} markerEnd="url(#wa-arrow)" className="stroke-current text-sky-600" strokeDasharray="5 3" />
         <text x={base.x + 6} y={base.y - 6} className="fill-current text-muted-foreground" fontSize={11} fontFamily="monospace">

@@ -568,7 +568,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  <div className="p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-5">
  <div className="flex items-baseline justify-between">
  <span className="label-large font-semibold tracking-tight text-foreground">Numero di domande</span>
- <span className="font-display text-4xl font-bold text-primary tabular-nums">{maxQuestions}</span>
+ <span className="font-display text-4xl font-bold text-brand-deep tabular-nums">{maxQuestions}</span>
  </div>
  <Slider
  min={3}

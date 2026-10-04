@@ -231,7 +231,7 @@ export default function Login() {
                     role="status"
                     className="mt-6 flex items-start gap-2.5 rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-foreground"
                   >
-                    <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                    <Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand-deep" aria-hidden="true" />
                     <span>{t("login.forgotSent")}</span>
                   </div>
                 ) : (
@@ -336,7 +336,7 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => { setShowForgot(true); setForgotEmail(email); }}
-                        className="text-xs font-semibold text-primary transition-colors hover:underline"
+                        className="text-xs font-semibold text-brand-deep transition-colors hover:underline"
                       >
                         {t("login.forgot")}
                       </button>
@@ -350,7 +350,7 @@ export default function Login() {
 
                   <p className="text-center text-sm text-muted-foreground">
                     {t("login.noAccount")}{" "}
-                    <Link to="/registrati" className="font-medium text-primary hover:underline">
+                    <Link to="/registrati" className="font-medium text-brand-deep hover:underline">
                       {t("login.goSignup")}
                     </Link>
                   </p>

@@ -49,7 +49,7 @@ export default function SettingsAppearance() {
                     </p>
                     <p className="body-small text-muted-foreground">{opt.desc}</p>
                   </div>
-                  {active && <Check className="w-5 h-5 text-primary shrink-0" />}
+                  {active && <Check className="w-5 h-5 text-brand-deep shrink-0" />}
                 </button>
               );
             })}

@@ -6,9 +6,13 @@ import { join } from "path";
  * 🛡️ P29 × GUARDIA DELLA PANNA — test anti-regressione del bianco.
  *
  * Nel tema SCURO l'inchiostro di Erga è l'off-white #F2F0EF, non il bianco
- * puro: su fondo notte (#11120D) il bianco pieno abbaglia. Questo test
- * fallisce se qualcuno riporta il bianco (o un quasi-bianco) dentro il
- * blocco `.dark`, o se cambia la definizione del gettone `--cream`.
+ * puro: su fondo notte (#101717, DESIGN.md 1.1) il bianco pieno abbaglia.
+ * Questo test fallisce se qualcuno riporta il bianco (o un quasi-bianco)
+ * dentro il blocco `.dark`, o se cambia la definizione del gettone `--cream`.
+ *
+ * Eccezione D1 (DESIGN.md 1.1 §4): --primary-foreground di notte è bianco
+ * pieno PERCHE' è testo sul riempimento ottanio (#087F83), non una tinta di
+ * superficie: il documento lo prescrive esplicitamente.
  *
  * Nota: il tema CHIARO e la landing marketing restano volutamente
  * bianchi — qui non vengono toccati.
@@ -87,11 +91,13 @@ describe("Guardia dell'off-white (#F2F0EF nel tema scuro)", () => {
   it("nessun gettone del tema scuro torna al bianco puro o a un quasi-bianco", () => {
     // Le ombre sono veli tecnici (capello di luce): restano bianche apposta.
     const isShadow = (name: string) => name.startsWith("--shadow-");
+    // D1: testo bianco sul riempimento ottanio, prescritto dal DESIGN.md 1.1 §4.
+    const isBrandInkOnFill = (name: string) => name === "--primary-foreground";
     const problems: string[] = [];
 
     for (const body of darkBlocks()) {
       for (const [name, value] of tokenLines(body)) {
-        if (isShadow(name)) continue;
+        if (isShadow(name) || isBrandInkOnFill(name)) continue;
         // bianco puro o grigio chiarissimo (>= 85%) usato come tinta piena
         const grey = value.match(/^0 0%\s+([\d.]+)%/);
         if (grey && Number(grey[1]) >= 85) {
@@ -106,25 +112,33 @@ describe("Guardia dell'off-white (#F2F0EF nel tema scuro)", () => {
     expect(problems).toEqual([]);
   });
 
-  it("i gettoni di inchiostro del tema scuro puntano a --cream", () => {
+  it("i gettoni di testo del tema scuro puntano a --cream o all'accento chiaro di marca (D1)", () => {
     const merged = darkBlocks().join("\n");
     const tokens = Object.fromEntries(tokenLines(merged));
-    const inks = [
+    // Testo corrente: panna #F2F0EF (via --cream), come sempre.
+    const creamInks = [
       "--foreground",
       "--card-foreground",
       "--popover-foreground",
-      "--accent-foreground",
-      "--primary",
       "--nav-foreground",
       "--sidebar-foreground",
-      "--border",
-      "--outline",
-      "--outline-variant",
     ];
-    for (const token of inks) {
+    for (const token of creamInks) {
       expect(tokens[token], `${token} manca nel blocco .dark`).toBeDefined();
       expect(tokens[token], `${token} non usa var(--cream)`).toContain("var(--cream)");
     }
+    // D1: i valori di marca si leggono nel blocco .dark PRINCIPALE (quello
+    // che dichiara il fondo #101717): il merge includerebbe anche gli
+    // override legittimi di accessibilità (es. html.high-contrast .dark).
+    const main = darkBlocks().find((b) => b.includes("--background: 180 18% 7.6%"));
+    expect(main, "manca il blocco .dark principale D1").toBeDefined();
+    const dark = Object.fromEntries(tokenLines(main!));
+    // testo di marca e selezioni di notte = accento chiaro #8ECFD0;
+    // riempimento d'azione = ottanio; bordo = #3D5351 (DESIGN.md 1.1 §4).
+    expect(dark["--brand-deep"]).toBe("181 41% 69%");
+    expect(dark["--accent-foreground"]).toBe("181 41% 69%");
+    expect(dark["--primary"]).toBe("182 88% 27%");
+    expect(dark["--border"]).toBe("175 15% 28%");
   });
 
   it("l'inchiostro automatico dei blocchi colorati è off-white, non bianco", () => {

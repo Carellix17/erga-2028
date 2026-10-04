@@ -177,11 +177,13 @@ describe("HomeView modulare (V3)", () => {
     expect(screen.queryByRole("button", { name: /profilo cognitivo/i })).not.toBeInTheDocument();
   });
 
-  it("le pillole degli strumenti rapidi sono capsule rounded-full", () => {
+  it("gli strumenti rapidi non sono capsule: grammatica squadrata (D1)", () => {
     render(<HomeView {...callbacks} />);
     ["Carica materiale", "AI Tutor", "Crea esercizi", "Interrogazione"].forEach((label) => {
       const btn = screen.getByText(label).closest("button");
-      expect(btn?.className).toContain("rounded-full");
+      // DESIGN.md 1.1 §3/§8: niente pillole e capsule come stile generico.
+      expect(btn?.className).not.toContain("rounded-full");
+      expect(btn?.className).not.toContain("rounded-[999");
     });
   });
 

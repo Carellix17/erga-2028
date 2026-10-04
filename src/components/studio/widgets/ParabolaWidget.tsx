@@ -50,7 +50,7 @@ export function ParabolaWidget({ spec }: { spec: WidgetSpec }) {
       <svg viewBox="0 0 320 200" className="w-full h-auto" role="img" aria-label="Grafico della parabola">
         {plot.hasXAxis && <line x1={8} y1={plot.y0} x2={312} y2={plot.y0} className="stroke-current text-muted-foreground/30" strokeWidth={1} />}
         {plot.hasYAxis && <line x1={plot.x0} y1={8} x2={plot.x0} y2={192} className="stroke-current text-muted-foreground/30" strokeWidth={1} />}
-        <polyline points={curvePoints(plot, f)} fill="none" className="stroke-current text-primary" strokeWidth={2.5} />
+        <polyline points={curvePoints(plot, f)} fill="none" className="stroke-current text-brand-deep" strokeWidth={2.5} />
         {roots.map((r, i) => (
           Number.isFinite(r) && plot.w.xmin <= r && r <= plot.w.xmax ? (
             <circle key={i} cx={plot.px(r)} cy={plot.py(0)} r={4} className="fill-current text-foreground" />
@@ -58,7 +58,7 @@ export function ParabolaWidget({ spec }: { spec: WidgetSpec }) {
         ))}
         {hasQuad && Number.isFinite(yv) && plot.w.ymin <= yv && yv <= plot.w.ymax ? (
           <>
-            <circle cx={plot.px(xv)} cy={plot.py(yv)} r={4.5} className="fill-current text-primary" />
+            <circle cx={plot.px(xv)} cy={plot.py(yv)} r={4.5} className="fill-current text-brand-deep" />
             <text x={plot.px(xv)} y={plot.py(yv) + (a > 0 ? -8 : 14)} textAnchor="middle" className="fill-current text-muted-foreground" fontSize={10} fontFamily="monospace">
               V({nice(xv)}; {nice(yv)})
             </text>

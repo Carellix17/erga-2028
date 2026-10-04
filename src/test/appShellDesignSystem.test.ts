@@ -6,15 +6,20 @@ const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
 describe("app shell design system", () => {
-  it("espone radius semantici e marcatamente morbidi per card, bottoni e pillole", () => {
+  it("espone radius semantici squadrati: 0 per contenitori e controlli, cerchio solo nel contenuto (D1)", () => {
     const tailwind = read("tailwind.config.ts");
     const css = read("src/index.css");
     expect(tailwind).toContain('card: "var(--radius-card)"');
     expect(tailwind).toContain('button: "var(--radius-button)"');
     expect(tailwind).toContain('pill: "var(--radius-pill)"');
-    expect(css).toContain("--radius-card: 1.5rem");
-    expect(css).toContain("--radius-button: 1rem");
-    expect(css).toContain("--radius-media: 1.5rem");
+    // DESIGN.md 1.1 §3: raggio 0 per card, pulsanti, dialoghi, dock e callout;
+    // --radius-full resta l'unica capsula (avatar, radio, esagono, grafici).
+    expect(css).toContain("--radius-card: 0px");
+    expect(css).toContain("--radius-button: 0px");
+    expect(css).toContain("--radius-media: 0px");
+    expect(css).toContain("--radius-pill: 0px");
+    expect(css).toContain("--radius-dialog: 0px");
+    expect(css).toContain("--radius-full: 9999px");
   });
 
   it("usa AppLayout e non applica più l'alone nero globale", () => {
@@ -43,10 +48,11 @@ describe("app shell design system", () => {
     expect(nav).not.toContain("from-black");
   });
 
-  it("in dark mode spegne i puntini e usa il fondo notte #11120D", () => {
+  it("in dark mode spegne i puntini e usa il fondo notte #101717 (D1)", () => {
     const css = read("src/index.css");
-    expect(css).toContain("--background: 72 16.13% 6.08%");
-    expect(css).toContain("#11120D");
+    // DESIGN.md 1.1 §4: fondo notte proposto #101717 (teal profondo)
+    expect(css).toContain("--background: 180 18% 7.6%");
+    expect(css).toContain("#101717");
     const darkDot = css.match(/\.dark \.bg-dot-grid \{[\s\S]*?\}/);
     expect(darkDot?.[0]).toContain("background-image: none");
     expect(darkDot?.[0]).not.toContain("radial-gradient");
@@ -61,7 +67,10 @@ describe("app shell design system", () => {
     const lightDot = css.match(/\.bg-dot-grid \{[\s\S]*?\}/);
     expect(lightDot?.[0]).toContain("background-image: none");
     expect(lightDot?.[0]).not.toContain("radial-gradient");
-    expect(css).toContain("--primary: var(--ink)");
+    // D1: l'azione primaria è l'ottanio di marca (DESIGN.md 1.1 §4),
+    // non più l'inchiostro della veste monocroma.
+    expect(css).toContain("--primary: 182 88% 27%");
+    expect(css).toContain("--brand-deep: 183 86% 19%");
     expect(css).toContain("--inverse-surface: var(--ink)");
     expect(css).toContain("--aura-void: hsl(20 10.34% 94.31%)");
     expect(css).toContain("--ambient-ink: hsl(var(--ink))");

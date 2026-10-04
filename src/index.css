@@ -16,11 +16,12 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════
-   ERGA MONO — FONDANEUTRO (P24)
-   Mono di luce (neutro/neutro) / Mono di notte (neutro profondo),
-   superfici OPACHE (vetro abolito), pill-firma neutro neutro,
-   Plus Jakarta Sans ovunque, neutro come voce di casa.
-   REGOLA DEL PALCO: intonsa (vedi sotto, mai toccarla).
+   ERGA — FONDAMENTA 1.1 (pacchetto D1, DESIGN.md v1.1)
+   Marca ottanio (#087F83) per azione e accento; carta #F2F0EF,
+   inchiostro #181516, notte teal #101717. Geometria squadrata
+   (raggio 0, cerchi solo nel contenuto). Marca, materia e stato
+   restano ruoli distinti. Eredita la struttura P24/P36:
+   superfici opache, regola del palco, motion di casa.
    ═══════════════════════════════════════════════════════ */
 
 @layer base {
@@ -38,10 +39,16 @@
     --off-white: 242 240 239;
     /* Inchiostro caldo dei blocchi e dei controlli chiari: #181516. */
     --ink: 340 6.67% 8.82%;
---primary: var(--ink);                 /* #181516 — la pill-firma chiara */
---primary-foreground: var(--cream);
---primary-container: 0 0% 92%;
---on-primary-container: var(--ink);
+--primary: 182 88% 27%;               /* #087F83 — ottanio: pulsanti pieni, indicatore attivo (DESIGN.md 1.1 §4) */
+    /*  D1 — FAMIGLIA DI MARCA (DESIGN.md 1.1 §4). L'ottanio pieno è per i
+       riempimenti; il TESTO di marca sulla carta usa il tono profondo
+       (#07585C, ~7:1); la tinta per fondi secondari e selezioni. */
+    --brand: 182 88% 27%;               /* #087F83 */
+    --brand-deep: 183 86% 19%;          /* #07585C — testo di marca (di notte: accento chiaro) */
+    --brand-tint: 168 28% 93%;          /* #E8F2F0 */
+--primary-foreground: 0 0% 100%;  /* bianco su ottanio */
+--primary-container: 168 28% 93%;    /* #E8F2F0 tinta di marca */
+--on-primary-container: 183 86% 19%;  /* #07585C tono profondo */
 
     /* ═══ P36 — DARK LUXURY / WARM MINIMALIST (pilota Home) ═══
        Hero crema/avorio #F4F1EA con inchiostro #121214 e secondo testo
@@ -50,29 +57,29 @@
     --surface-cream: 42 31% 94%;          /* #F4F1EA avorio */
     --surface-cream-foreground: 240 5% 8%;  /* #121214 inchiostro su avorio */
     --surface-cream-muted: 240 3% 30%;    /* #4A4A4F secondo testo (≥7:1) */
-    --surface-dark-card: 240 9% 8.6%;     /* #141418 card secondaria notte */
---secondary: 0 0% 95%;
---secondary-foreground: var(--ink);
---secondary-container: 0 0% 91%;
---on-secondary-container: var(--ink);
+    --surface-dark-card: 180 18% 9.4%;    /* #141D1D superficie notte */
+--secondary: 168 28% 93%;   /* #E8F2F0 — selezioni e contesti secondari (tinta) */
+--secondary-foreground: 183 86% 19%;
+--secondary-container: 168 24% 91%;
+--on-secondary-container: 183 86% 19%;
 --tertiary: 0 0% 32%;                /* grigio medio (monocromo) */
 --tertiary-foreground: var(--cream);
 --tertiary-container: 0 0% 93%;
 --on-tertiary-container: var(--ink);
 --gold-antique: 0 0% 45%;
 --gold-antique-soft: 0 0% 93%;
---destructive: 8 0% 43%;
-    --destructive-foreground: var(--cream);
---error-container: 12 0% 93%;
---on-error-container: 9 0% 20%;
---success: 0 0% 25%;
---success-foreground: var(--cream);
---success-container: 0 0% 90%;
---on-success-container: 0 0% 12%;
---warning: 40 0% 32%;
-    --warning-foreground: var(--cream);
---warning-container: 41 0% 88%;
---on-warning-container: 41 0% 14%;
+--destructive: 4 68% 40%;   /* rosso semantico per errore o distruzione (§4) */
+    --destructive-foreground: 0 0% 100%;
+--error-container: 4 70% 93%;
+--on-error-container: 4 70% 20%;
+--success: 152 55% 32%;   /* verde semantico: solo esito, mai tinta generica */
+--success-foreground: 0 0% 100%;
+--success-container: 152 45% 92%;
+--on-success-container: 152 60% 16%;
+--warning: 28 80% 34%;
+    --warning-foreground: 0 0% 100%;
+--warning-container: 28 70% 92%;
+--on-warning-container: 28 80% 14%;
 
     /*  P21e — PASTELLI DOMATI delle materie: la vecchia famiglia orchidea/iride
        (accesa e cieca al buio) va in pensione. Ogni materia ha un pastello smorzato
@@ -122,14 +129,14 @@
 --popover: 0 0% 100%;
 --popover-foreground: var(--ink);
 --muted: 0 0% 94%;
---muted-foreground: 0 0% 38%;
---accent: 0 0% 93%;                  /* grigio tenue per selezioni (monocromo) */
---accent-foreground: var(--ink);
+--muted-foreground: 27 5% 37%;   /* #625D59 testo secondario */
+--accent: 168 28% 93%;               /* #E8F2F0 — selezioni leggere */
+--accent-foreground: 183 86% 19%;
 --outline: var(--ink) / 0.25;
 --outline-variant: var(--ink) / 0.12;
---border: var(--ink) / 0.12;
+--border: 50 7% 83%;      /* #D6D5D0 — separazioni, mai unico segnale */
 --input: 0 0% 100%;
---ring: var(--ink);
+--ring: 182 88% 27%;      /* ottanio: focus visibile */
 --scrim: 0 0% 0%;
     /*  P24 × MONOCROMO — colore d'accento DINAMICO della materia.
        La pagina padre (o il profilo) puo' sovrascrivere --subject-accent
@@ -159,30 +166,32 @@
 
   .dark {
     --off-white: 242 240 239;
---primary: var(--cream);
---primary-foreground: 0 0% 0%;
---primary-container: 0 0% 24%;
---on-primary-container: var(--cream);
---secondary: 0 0% 12%;
---secondary-foreground: var(--cream);
---secondary-container: 0 0% 18%;
---on-secondary-container: var(--cream);
+--primary: 182 88% 27%;      /* ottanio anche di notte: pulsante pieno, testo bianco (§4) */
+--brand-deep: 181 41% 69%;      /* di notte il testo di marca è l'accento chiaro #8ECFD0 */
+--brand-tint: 180 15% 16%;
+--primary-foreground: 0 0% 100%;
+--primary-container: 180 20% 22%;
+--on-primary-container: 181 41% 69%;  /* #8ECFD0 accento chiaro */
+--secondary: 180 15% 16%;
+--secondary-foreground: 181 41% 69%;
+--secondary-container: 180 15% 18%;
+--on-secondary-container: 181 41% 69%;
 --tertiary: 0 0% 78%;
 --tertiary-foreground: 0 0% 8%;
 --tertiary-container: 0 0% 24%;
 --on-tertiary-container: var(--cream);
 --gold-antique: 0 0% 60%;
 --gold-antique-soft: 0 0% 16%;
---destructive: 9 0% 64%;
+--destructive: 4 70% 62%;
     --destructive-foreground: 0 0% 8%;
---error-container: 7 0% 15%;
---on-error-container: 10 0% 81%;
---success: 0 0% 82%;
+--error-container: 4 30% 18%;
+--on-error-container: 4 70% 80%;
+--success: 152 45% 70%;
 --success-foreground: 0 0% 8%;
---success-container: 0 0% 18%;
---warning: 40 0% 61%;
+--success-container: 152 25% 16%;
+--warning: 28 80% 70%;
 --warning-foreground: 139 0% 8%;
---warning-container: 39 0% 15%;
+--warning-container: 28 30% 16%;
 
 --pastel-terracotta: 0 0% 65%;
 --pastel-polvere: 0 0% 68%;
@@ -199,20 +208,22 @@
     --pastel-oliva: 0 0% 67%;
 
     /* P33 — ombre notte con profondità: capello di luce + ombra ambiente soffusa */
-    --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 1px 3px 0 hsl(0 0% 0% / 0.20), 0 1px 2px 0 hsl(0 0% 0% / 0.15);
-    --shadow-level-2: inset 0 1px 0 0 hsl(0 0% 100% / 0.07), 0 4px 12px -2px hsl(0 0% 0% / 0.35), 0 2px 6px -1px hsl(0 0% 0% / 0.25);
-    --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.08), 0 10px 26px -6px hsl(0 0% 0% / 0.45), 0 4px 12px -2px hsl(0 0% 0% / 0.30);
-    --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.09), 0 16px 36px -8px hsl(0 0% 0% / 0.50), 0 6px 16px -4px hsl(0 0% 0% / 0.35);
-    --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.10), 0 20px 44px -8px hsl(0 0% 0% / 0.55), 0 8px 20px -4px hsl(0 0% 0% / 0.40);
---background: 72 16.13% 6.08%;            /* #11120D — fondo notte (oliva quasi nero) */
+    /*  D1 — NOTTE (§6): meno dipendenza dall'ombra nera; i livelli si
+       distinguono con superficie e bordo. Capello di luce + ombre corte. */
+    --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.04);
+    --shadow-level-2: inset 0 1px 0 0 hsl(0 0% 100% / 0.04), 0 2px 8px hsl(0 0% 0% / 0.25);
+    --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.05), 0 6px 16px hsl(0 0% 0% / 0.30);
+    --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 10px 24px hsl(0 0% 0% / 0.35);
+    --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 14px 32px hsl(0 0% 0% / 0.40);
+--background: 180 18% 7.6%;          /* #101717 — fondo notte proposto (DESIGN.md 1.1 §4) */
 --foreground: var(--cream);            /* P29: l'inchiostro di notte è panna, non bianco */
---surface-dim: 0 0% 6%;
---surface-bright: 0 0% 18%;
---surface-container-lowest: 0 0% 5%;
---surface-container-low: 0 0% 10%;
---surface-container: 0 0% 13%;          /* carbone #141414 */
---surface-container-high: 0 0% 17%;  /* #1A1A1B */
---surface-container-highest: 0 0% 21%;
+--surface-dim: 180 18% 6%;
+--surface-bright: 180 14% 20%;
+--surface-container-lowest: 180 16% 6%;
+--surface-container-low: 180 17% 10%;
+--surface-container: 180 17% 13%;
+--surface-container-high: 180 16% 16%;
+--surface-container-highest: 180 15% 20%;
 --card: var(--surface-dark-card);   /* #141418 — card secondary notte */
 --card-foreground: var(--cream);
 
@@ -224,19 +235,19 @@
     --glass-border: hsl(var(--border));
     --glass-inset: hsl(0 0% 0% / 0);
     /* P34 — vetro carbone per la notte */
-    --glass-surface: rgb(26 26 26 / 0.80);
---popover: 0 0% 12%;
+    --glass-surface: rgb(20 29 29 / 0.85);
+--popover: 180 16% 16%;          /* #1B2828 superficie elevata notte */
 --popover-foreground: var(--cream);
---muted: 0 0% 12%;
---muted-foreground: 0 0% 72%;
---accent: 0 0% 20%;                 /* grigio tenue su nero (monocromo) */
---accent-foreground: var(--cream);
+--muted: 180 14% 14%;
+--muted-foreground: 167 11% 75%;  /* #B8C6C3 */
+--accent: 180 15% 18%;               /* selezioni leggere di notte */
+--accent-foreground: 181 41% 69%;
     /* Bordi e filetti: la stessa panna, appena accennata (l'alfa non cambia). */
---outline: var(--cream) / 0.16;
---outline-variant: var(--cream) / 0.08;
---border: var(--cream) / 0.07;
---input: 0 0% 10%;
---ring: 0 0% 80%;
+--outline: 175 12% 65%;
+--outline-variant: 175 12% 40%;
+--border: 175 15% 28%;      /* #3D5351 */
+--input: 180 15% 13%;
+--ring: 181 41% 69%;       /* #8ECFD0 accento chiaro di notte */
     --subject-accent: #F2F0EF;
     --subject-accent-foreground: #181516;
     --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, black);
@@ -253,23 +264,27 @@
 --sidebar-ring: 0 0% 80%;
 
     /*  P24 — firme del guscio: nav a pillola (neutro di notte) e puntino neutro */
---nav-surface: 0 0% 12%;
+--nav-surface: 180 15% 12%;
 --nav-foreground: var(--cream);
   }
 
   :root {
-    /* ─── Radii Erga — card morbide a 24px, controlli a 16px, badge a pillola ─── */
-    --radius-xs: 0.5rem;
-    --radius-sm: 0.625rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1rem;
-    --radius-xl: 1.25rem;
-    --radius-2xl: 1.5rem;
-    --radius-card: 1.5rem;
-    --radius-button: 1rem;
-    --radius-pill: 9999px;
-    --radius-dialog: 1.5rem;
-    --radius-media: 1.5rem;
+    /* ─── D1 — GEOMETRIA SQUADRATA (DESIGN.md 1.1 §3): raggio 0 per card,
+       pannelli, pulsanti, input, dialoghi, dock, selettori, menu e callout.
+       Vietate pillole e capsule come stile generico. --radius-full resta
+       l'unica eccezione: cerchi che appartengono al contenuto o a una
+       convenzione necessaria (avatar, radio, esagono, grafici). ─── */
+    --radius-xs: 0px;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
+    --radius-2xl: 0px;
+    --radius-card: 0px;
+    --radius-button: 0px;
+    --radius-pill: 0px;
+    --radius-dialog: 0px;
+    --radius-media: 0px;
     --radius-full: 9999px;
 
     /*  P24 — GRAMMATICA MOTION: poche durate, sempre uguali
@@ -285,7 +300,7 @@
        Niente curve che superano il punto d'arrivo (cubic-bezier con
        valori sopra 1): il movimento si ferma dove deve. */
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-    --radius: 1rem;
+    --radius: 0px;   /* D1: raggio base zero */
 
     /* ─── Elevazione — sussurri, mai palchi ─── */
     --shadow-level-0: none;
@@ -293,24 +308,27 @@
        Ora ogni livello = ombra di CONTATTO (vicina, netta) + ombra d'AMBIENTE
        (larga, soffusa): le superfici prendono peso, lo stile non cambia.
        Stessi nomi di gettone = si propaga da solo in tutta la casa. */
-    --shadow-level-1: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.04);
-    --shadow-level-2: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.10);
-    --shadow-level-3: 0 2px 4px 0 rgba(0, 0, 0, 0.07), 0 10px 26px -6px rgba(0, 0, 0, 0.14);
-    --shadow-level-4: 0 3px 6px 0 rgba(0, 0, 0, 0.08), 0 16px 36px -8px rgba(0, 0, 0, 0.17);
-    --shadow-level-5: 0 4px 8px 0 rgba(0, 0, 0, 0.10), 0 20px 44px -8px rgba(0, 0, 0, 0.26);
+    /*  D1 — PROFONDITÀ CONTROLLATA (DESIGN.md 1.1 §6): ordinaria per gli
+       elementi, protagonista per i fuochi, overlay per i sospesi. Stessi
+       nomi = tutta l'app si allinea da sola. */
+    --shadow-level-1: 0 2px 6px rgba(24, 21, 22, 0.06);                                  /* ordinaria */
+    --shadow-level-2: 0 4px 10px rgba(24, 21, 22, 0.08), 0 1px 3px rgba(24, 21, 22, 0.05);
+    --shadow-level-3: 0 10px 28px rgba(24, 21, 22, 0.12), 0 2px 6px rgba(24, 21, 22, 0.05);  /* protagonista */
+    --shadow-level-4: 0 14px 36px rgba(24, 21, 22, 0.15), 0 2px 6px rgba(24, 21, 22, 0.06);
+    --shadow-level-5: 0 18px 48px rgba(24, 21, 22, 0.18);                                 /* overlay */
 
     /*  P34 — OMBRE TATTILI (Home V3): profilo deciso ma leggero.
        Tattile = elevazione morbida per card e pillole glass;
        card-active = profondità maggiore riservata alla card corso attiva.
        Entrambe scivolano SOTTO la superficie: nessun alone sul fondo. */
-    --shadow-tattile: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
-    --shadow-card-active: 0 20px 40px -10px rgba(0, 0, 0, 0.22);
+    --shadow-tattile: 0 2px 6px rgba(24, 21, 22, 0.06);   /* D1: profilo leggero = ordinaria */
+    --shadow-card-active: 0 10px 28px rgba(24, 21, 22, 0.12), 0 2px 6px rgba(24, 21, 22, 0.05);  /* D1: protagonista */
 
     /*  P35 — EROE SOPRAELEVATO: la card del percorso vive su fondo scuro,
        dove un'ombra leggera scompare. Goccia esterna più decisa (tre strati
        che si sommano in profondità); l'alone interno chiaro è reso
        dall'overlay dedicato dentro la card, sopra gli strati pittorici. */
-    --shadow-hero-card: 0 10px 15px -3px rgba(0, 0, 0, 0.40), 0 4px 6px -2px rgba(0, 0, 0, 0.20), 0 24px 48px -12px rgba(0, 0, 0, 0.45);
+    --shadow-hero-card: 0 10px 28px rgba(24, 21, 22, 0.14), 0 2px 6px rgba(24, 21, 22, 0.06), 0 18px 48px rgba(24, 21, 22, 0.10);  /* D1: protagonista composita */
 
     --state-hover: 0.06;
     --state-focus: 0.08;
@@ -321,11 +339,11 @@
   /* La variante scura deve restare dopo i default: evita che la cascata
      riapplichi le ombre chiare quando cambia il tema. */
   .dark {
-    --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
-    --shadow-level-2: inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
-    --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.06);
-    --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.07);
-    --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
+    --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.04);
+    --shadow-level-2: inset 0 1px 0 0 hsl(0 0% 100% / 0.04), 0 2px 8px hsl(0 0% 0% / 0.25);
+    --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.05), 0 6px 16px hsl(0 0% 0% / 0.30);
+    --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 10px 24px hsl(0 0% 0% / 0.35);
+    --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 14px 32px hsl(0 0% 0% / 0.40);
   }
 }
 
@@ -342,11 +360,16 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Montserrat', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    /*  D1 — RUOLO TIPOGRAFICO "INTERFACCIA" (DESIGN.md 1.1 §5): Ubuntu Sans
+       per titoli e interfaccia; il testo didattico usa il ruolo LETTURA
+       (font-reading, Montserrat in attesa di validazione su contenuti reali).
+       Il saluto della Home resta Ubuntu Sans (welcome-title). KaTeX conserva
+       i propri font. Nessun nuovo font caricato: Ubuntu Sans era già attivo
+       per etichette e saluto. */
+    font-family: 'Ubuntu Sans', 'Montserrat', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    letter-spacing: -0.01em;
   }
 
   /* Titoli compatti: tracking coerente sui tre livelli del Design System. */
@@ -501,21 +524,21 @@
 .force-light {
   color-scheme: light;
   --off-white: 242 240 239;
---primary: 0 0% 9%;
+--primary: 182 88% 27%;   /* D1: ottanio anche nella vetrina forzata */
 --primary-foreground: 0 0% 100%;
---primary-container: 0 0% 92%;
---secondary: 0 0% 95%;
---secondary-foreground: 0 0% 15%;
---secondary-container: 0 0% 91%;
+--primary-container: 168 28% 93%;
+--secondary: 168 28% 93%;
+--secondary-foreground: 183 86% 19%;
+--secondary-container: 168 24% 91%;
 --tertiary: 0 0% 32%;
 --tertiary-foreground: 0 0% 100%;
 --tertiary-container: 0 0% 93%;
---destructive: 8 0% 43%;
+--destructive: 4 68% 40%;
   --destructive-foreground: 0 0% 100%;
 --error-container: 12 0% 93%;
---success: 0 0% 25%;
---warning: 40 0% 32%;
---background: 0 0% 98%;
+--success: 152 55% 32%;
+--warning: 28 80% 34%;
+--background: 20 10% 94%;   /* #F2F0EF carta */
 --foreground: 0 0% 8%;
 --surface-dim: 0 0% 88%;
 --surface-bright: 0 0% 100%;
@@ -529,18 +552,18 @@
 --popover: 0 0% 100%;
 --popover-foreground: 0 0% 8%;
 --muted: 0 0% 94%;
---muted-foreground: 0 0% 38%;
---accent: 0 0% 93%;
---accent-foreground: 0 0% 12%;
+--muted-foreground: 27 5% 37%;
+--accent: 168 28% 93%;
+--accent-foreground: 183 86% 19%;
 --outline: 0 0% 24% / 0.25;
 --outline-variant: 0 0% 24% / 0.12;
---border: 0 0% 24% / 0.12;
+--border: 50 7% 83%;
 --input: 0 0% 100%;
-  --shadow-level-1: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.04);
-  --shadow-level-2: 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.10);
-  --shadow-level-3: 0 2px 4px 0 rgba(0, 0, 0, 0.07), 0 10px 26px -6px rgba(0, 0, 0, 0.14);
-  --shadow-level-4: 0 3px 6px 0 rgba(0, 0, 0, 0.08), 0 16px 36px -8px rgba(0, 0, 0, 0.17);
-  --shadow-level-5: 0 4px 8px 0 rgba(0, 0, 0, 0.10), 0 20px 44px -8px rgba(0, 0, 0, 0.26);
+  --shadow-level-1: 0 2px 6px rgba(24, 21, 22, 0.06);
+  --shadow-level-2: 0 4px 10px rgba(24, 21, 22, 0.08), 0 1px 3px rgba(24, 21, 22, 0.05);
+  --shadow-level-3: 0 10px 28px rgba(24, 21, 22, 0.12), 0 2px 6px rgba(24, 21, 22, 0.05);
+  --shadow-level-4: 0 14px 36px rgba(24, 21, 22, 0.15), 0 2px 6px rgba(24, 21, 22, 0.06);
+  --shadow-level-5: 0 18px 48px rgba(24, 21, 22, 0.18);
 }
   /* ═══════ CINEMATIC ENTER ═══════
      Soft fade + micro scale-up. No bounce. */

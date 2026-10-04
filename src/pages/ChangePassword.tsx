@@ -92,7 +92,7 @@ export default function ChangePassword() {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-                <div className={cn("flex items-center gap-1 text-xs", isLengthValid ? "text-primary" : "text-muted-foreground")}>
+                <div className={cn("flex items-center gap-1 text-xs", isLengthValid ? "text-brand-deep" : "text-muted-foreground")}>
                   {isLengthValid && <Check className="w-3 h-3" />}
                   <span>Minimo 8 caratteri</span>
                 </div>
@@ -105,7 +105,7 @@ export default function ChangePassword() {
                   <Input id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Ripeti la password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="pl-10" autoComplete="new-password" required />
                 </div>
                 {confirmPassword.length > 0 && (
-                  <div className={cn("flex items-center gap-1 text-xs", passwordsMatch ? "text-primary" : "text-destructive")}>
+                  <div className={cn("flex items-center gap-1 text-xs", passwordsMatch ? "text-brand-deep" : "text-destructive")}>
                     {passwordsMatch && <Check className="w-3 h-3" />}
                     <span>{passwordsMatch ? "Le password corrispondono" : "Le password non corrispondono"}</span>
                   </div>

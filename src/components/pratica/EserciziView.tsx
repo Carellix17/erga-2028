@@ -594,7 +594,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                 <div className="mb-4 p-3 rounded-2xl bg-surface-container-low border border-outline-variant/30">
                   <div className="flex items-center justify-between mb-2">
                     <span className="label-medium text-foreground">Numero di esercizi</span>
-                    <span className="label-large font-display font-bold text-primary">{exerciseCount}</span>
+                    <span className="label-large font-display font-bold text-brand-deep">{exerciseCount}</span>
                   </div>
                   <Slider
                     value={[exerciseCount]}
@@ -721,7 +721,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                   onClick={() => loadLessonsForCourse(course.id)}
                   className="w-full flex items-center gap-3 p-4 rounded-2xl border bg-surface-container border-outline-variant/30 hover:bg-surface-container-high transition-all active:scale-[0.98]"
                 >
-                  <BookOpen className="w-5 h-5 text-primary flex-shrink-0" />
+                  <BookOpen className="w-5 h-5 text-brand-deep flex-shrink-0" />
                   <span className="label-large text-foreground truncate">
                     {course.file_name.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}
                   </span>
@@ -1189,7 +1189,7 @@ function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: Ge
       <div className="text-center mb-6">
         <span className="text-4xl font-display font-bold text-foreground">{Math.round(progress)}%</span>
         {courseName && (
-          <p className="body-small text-primary font-medium mt-1 bg-primary-container px-3 py-1 rounded-full inline-block">
+          <p className="body-small text-brand-deep font-medium mt-1 bg-primary-container px-3 py-1 rounded-full inline-block">
             {courseName}
           </p>
         )}
@@ -1222,7 +1222,7 @@ function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: Ge
               <div className="flex-1 min-w-0">
                 <p className={cn(
                   "label-large leading-tight",
-                  isActive && "text-primary font-semibold",
+                  isActive && "text-brand-deep font-semibold",
                   isComplete && "text-success"
                 )}>
                   {step.label}{isActive && dots}

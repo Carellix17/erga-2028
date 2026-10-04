@@ -132,6 +132,14 @@ export default {
           DEFAULT: "hsl(var(--nav-surface))",
           foreground: "hsl(var(--nav-foreground))",
         },
+        //  D1 — famiglia di marca (DESIGN.md 1.1 §4): riempimento ottanio,
+        //  testo di marca col tono profondo (duale: accento chiaro di notte),
+        //  tinta per selezioni e contesti secondari.
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          deep: "hsl(var(--brand-deep))",
+          tint: "hsl(var(--brand-tint))",
+        },
         //  P24 × MONOCROMO — accento dinamico della materia (var CSS)
         "subject-accent": "var(--subject-accent)",
         "subject-accent-foreground": "var(--subject-accent-foreground)",
@@ -169,10 +177,15 @@ export default {
         // Font caricati da Google Fonts nel <link> di index.html, con gamma di pesi
         // completa (Montserrat 100–900, Ubuntu Sans 100–800, Zalando Sans Expanded 200–900):
         // nessun file di font nel repo, nessun @font-face manuale.
-        sans: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+        // D1 (DESIGN.md 1.1 §5) — due ruoli tipografici espliciti:
+        //  · INTERFACCIA (sans/display/body): Ubuntu Sans per titoli e UI;
+        //  · LETTURA (reading): Montserrat sul testo didattico, in attesa di
+        //    validare Ubuntu Sans su contenuti reali. Nessun nuovo font caricato.
+        sans: ['Ubuntu Sans', 'Montserrat', 'Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Ubuntu Sans', 'Montserrat', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
         serif: ['Montserrat', 'Plus Jakarta Sans', 'serif'],
-        body: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+        body: ['Ubuntu Sans', 'Montserrat', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        reading: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['Ubuntu Sans', 'ui-monospace', 'SFMono-Regular', 'monospace'],
         // Contenitore HomeHeader: mantiene il sottotitolo in Zalando Sans Expanded.
         welcome: ['Zalando Sans Expanded', 'Montserrat', 'system-ui', 'sans-serif'],

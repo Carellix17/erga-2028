@@ -425,21 +425,21 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                   </p>
                   <div className="grid gap-3">
                     <Button type="button" style={{ animationDelay: "80ms" }} onClick={() => setLoadingTab("upload")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40 leaf-rise">
-                      <FileText className="w-5 h-5 text-primary" />
+                      <FileText className="w-5 h-5 text-brand-deep" />
                       <div className="text-left">
                         <p className="font-medium">Carica PDF</p>
                         <p className="body-small text-muted-foreground">Appunti, dispense o documenti</p>
                       </div>
                     </Button>
                     <Button type="button" style={{ animationDelay: "160ms" }} onClick={() => setLoadingTab("photos")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40 leaf-rise">
-                      <Camera className="w-5 h-5 text-primary" />
+                      <Camera className="w-5 h-5 text-brand-deep" />
                       <div className="text-left">
                         <p className="font-medium">Carica foto</p>
                         <p className="body-small text-muted-foreground">Scatta o scegli immagini</p>
                       </div>
                     </Button>
                     <Button type="button" style={{ animationDelay: "240ms" }} onClick={() => setLoadingTab("web")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40 leaf-rise">
-                      <Globe className="w-5 h-5 text-primary" />
+                      <Globe className="w-5 h-5 text-brand-deep" />
                       <div className="text-left">
                         <p className="font-medium">Ricerca web</p>
                         <p className="body-small text-muted-foreground">Contenuti reali da Wikipedia, o un manuale AI</p>
@@ -483,7 +483,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                             <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center",
                               file.size > MAX_FILE_SIZE ? "bg-destructive/20" : "bg-primary-container"
                             )}>
-                              <FileText className={cn("w-5 h-5", file.size > MAX_FILE_SIZE ? "text-destructive" : "text-primary")} />
+                              <FileText className={cn("w-5 h-5", file.size > MAX_FILE_SIZE ? "text-destructive" : "text-brand-deep")} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <span className="body-medium font-medium truncate block">{file.name}</span>

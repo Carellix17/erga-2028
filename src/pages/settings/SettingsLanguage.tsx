@@ -50,7 +50,7 @@ export default function SettingsLanguage() {
                     {opt.value}
                   </span>
                   <span className="min-w-0 flex-1 title-medium text-foreground">{t(opt.labelKey)}</span>
-                  {active && <Check className="w-5 h-5 text-primary shrink-0" />}
+                  {active && <Check className="w-5 h-5 text-brand-deep shrink-0" />}
                 </button>
               );
             })}

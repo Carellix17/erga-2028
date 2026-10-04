@@ -211,7 +211,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                           )}
                         >
                           <span>{opt}</span>
-                          {active && <Check className="w-4 h-4 text-primary shrink-0" />}
+                          {active && <Check className="w-4 h-4 text-brand-deep shrink-0" />}
                         </button>
                       );
                     })}
@@ -269,7 +269,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
 
             {currentSlide === "saving" && (
               <div className="text-center space-y-5 py-10 animate-fade-up">
-                <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
+                <Loader2 className="w-10 h-10 text-brand-deep animate-spin mx-auto" />
                 <p className="text-base font-medium">Calcolo il tuo Esagono Cognitivo…</p>
               </div>
             )}
@@ -321,7 +321,7 @@ function SlideShell({ title, subtitle, children }: { title: string; subtitle?: s
   return (
     <div className="space-y-5 animate-fade-up">
       <div>
-        {subtitle && <p className="text-[11px] font-semibold tracking-wider text-primary uppercase mb-2">{subtitle}</p>}
+        {subtitle && <p className="text-[11px] font-semibold tracking-wider text-brand-deep uppercase mb-2">{subtitle}</p>}
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight">{title}</h2>
       </div>
       <div>{children}</div>

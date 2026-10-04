@@ -3,17 +3,28 @@ import { readFileSync, readdirSync, statSync } from "fs";
 import { join, sep } from "path";
 
 /**
- * 🛡️ P24 × CACCIATORE DI VERDI — test anti-regressione del monocromo.
- * Ogni commit che introduce una tonalità verde (classi Tailwind green/
- * emerald/teal/lime/sage, hue HSL 60-180 con saturazione, hex della vecchia
- * palette bosco, theme-color verdi) FARÀ FALLIRE la suite.
- * È il motivo per cui "il verde non torna più".
+ * 🛡️ CACCIATORE DI VERDI — controlli di regressione del sistema colore.
  *
- * 🚦 ECCEZIONE FEEDBACK QUIZ (bug-fix UX): le componenti che validano le
- * risposte possono usare emerald (corretto) e rose (sbagliato). Il feedback
- * verde/rosso esplicito è un requisito di accessibilità (WCAG): senza colori,
- * chi risponde non distingue a colpo d'occhio esito giusto/sbagliato.
- * Ovunque ALTROVE il monocromo resta legge.
+ * Dal pacchetto D1 (DESIGN.md 1.1) l'identità non è più monocroma, ma i
+ * ruoli restano netti e questo test li difende:
+ *   · MARCA — l'ottanio (#087F83 e famiglia) vive SOLO nei token di tema
+ *     (index.css / tailwind.config.ts): si usa via classi semantiche
+ *     (bg-primary, text-brand-deep…), mai come tinta libera;
+ *   · MATERIA — i colori delle materie restano confinati ai loro token
+ *     (--pastel-*, --subject-accent);
+ *   · STATO — il feedback semantico (esito corretto/sbagliato) è ammesso
+ *     SOLO nei componenti che validano risposte (allowlist qui sotto).
+ *
+ * Restano VIETATI come regressione reale: le classi Tailwind verdi e teal
+ * (green/emerald/teal/lime/sage), gli hex della vecchia palette bosco e i
+ * teal Tailwind usati come tinta libera, i hue HSL 60-189 con saturazione
+ * fuori dai file di tema, e le theme-color verdi.
+ *
+ * 🚦 ECCEZIONE FEEDBACK QUIZ: le componenti che validano le risposte possono
+ * usare emerald (corretto) e rose (sbagliato). NOTA WCAG: verde e rosso NON
+ * sono una coppia obbligatoria — il criterio 1.4.1 (Use of Color) chiede che
+ * il colore non sia l'unico veicolo dell'informazione. Il feedback ha quindi
+ * anche testo, icona o struttura; il colore è un rinforzo, non l'unica voce.
  */
 
 const SRC = join(__dirname, "..", "..", "src");
@@ -43,18 +54,25 @@ function walk(dir: string): string[] {
 const GREEN_CLASS_RE =
   /\b(?:bg|text|border|ring|from|to|via|fill|stroke|shadow|outline)-(?:green|emerald|teal|lime|sage)(?:-\d+|\/\d+)?\b/i;
 
-// Hue HSL 60-180 con saturazione significativa (>5%): spettro del verde
-const GREEN_HSL_RE = /hsl\(\s*(?:var\([^)]*\)\s*)?(1[0-7][0-9]|7[0-9]|8[0-9]|9[0-9]|1[0-4][0-9])\s+[1-9][0-9]?%?\s/;
+// Hue HSL 60-189 con saturazione significativa: spettro del verde e del
+// ciano/teal generico. I token di tema dichiarati in index.css usano canali
+// grezzi ("168 28% 93%") senza hsl(), quindi questa regex mira solo agli
+// usi liberi di hsl() con hue verde/ciano fuori dal tema.
+const GREEN_HSL_RE = /hsl\(\s*(?:var\([^)]*\)\s*)?(6[0-9]|7[0-9]|8[0-9]|9[0-9]|1[0-8][0-9])\s+[1-9][0-9]?%?\s/;
 
-// Hex della vecchia palette bosco / verde salvia
+// Hex della vecchia palette bosco / verde salvia + teal Tailwind usati come
+// tinta libera. La marca ottanio (#087F83) è un token di tema, non una tinta
+// libera. NOTA: #0d9488 NON è in lista perché è un colore materia legittimo
+// della palette del Piano (src/lib/pianoPalette.ts) — ruolo materia, non marca.
 const GREEN_HEX = [
   "0f2014", "19321f", "1d3a26", "12231a", "23402c", "0c1f12", "14301d",
   "17301f", "4f845a", "9dbfa4", "f3f7f4", "e5ede7", "d5e2d8", "2e7d46",
   "3c6946", "315439", "72a17b", "a9c4b1", "5a655d", "2f3f34", "b3f05c",
+  "0f766e", "14b8a6", "2dd4bf",
 ];
 const HEX_RE = new RegExp(`#(${GREEN_HEX.join("|")})`, "i");
 
-describe("Cacciatore di verdi (monocromo)", () => {
+describe("Cacciatore di verdi (ruoli colore D1: marca/materia/stato)", () => {
   const files = walk(SRC);
   const problems: string[] = [];
 

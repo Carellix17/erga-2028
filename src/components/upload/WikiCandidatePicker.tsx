@@ -55,7 +55,7 @@ export function WikiCandidatePicker({ candidates, pickingTitle, disabled, onPick
                 )}
               </div>
               {pickingTitle === c.title && (
-                <Loader2 className="w-4 h-4 animate-spin shrink-0 mt-1 text-primary" />
+                <Loader2 className="w-4 h-4 animate-spin shrink-0 mt-1 text-brand-deep" />
               )}
             </button>
           ))}

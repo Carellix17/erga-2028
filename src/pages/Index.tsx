@@ -160,7 +160,7 @@ const Index = () => {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background p-6">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-level-1">
-          <Brain className="mx-auto h-10 w-10 text-primary" />
+          <Brain className="mx-auto h-10 w-10 text-brand-deep" />
           <h1 className="mt-3 font-display text-xl font-bold tracking-tight">
             Non riusciamo a caricare i tuoi dati
           </h1>
@@ -261,7 +261,7 @@ const Index = () => {
             onClick={() => setShowOnboarding(true)}
             className="interactive-card mt-4 mb-2 flex w-full items-center gap-3 rounded-card border border-border bg-card px-4 py-3 text-left"
           >
-            <Brain className="w-5 h-5 text-primary shrink-0" />
+            <Brain className="w-5 h-5 text-brand-deep shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold">Personalizza Erga al massimo</p>
               <p className="text-xs text-muted-foreground">Calcola il tuo Esagono Cognitivo in 2 minuti.</p>

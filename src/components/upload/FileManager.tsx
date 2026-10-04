@@ -107,7 +107,7 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
   // ── Caricamento / vuoto ──
   if (isLoading && contexts.length === 0) return (
     <div className="flex items-center justify-center p-8">
-      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      <Loader2 className="w-6 h-6 animate-spin text-brand-deep" />
     </div>
   );
 
@@ -170,7 +170,7 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
                   style={{ animationDelay: `${i * 60}ms` }}
                 >
                   <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5 text-primary" />
+                    <Icon className="w-5 h-5 text-brand-deep" />
                   </div>
                   <p className="flex-1 min-w-0 title-small truncate">{name}</p>
                   <Button
@@ -268,7 +268,7 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center flex-shrink-0">
-                {isWeb ? <Globe className="w-5 h-5 text-primary" /> : <PackageOpen className="w-5 h-5 text-primary" />}
+                {isWeb ? <Globe className="w-5 h-5 text-brand-deep" /> : <PackageOpen className="w-5 h-5 text-brand-deep" />}
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <p className="title-small truncate">{context.file_name}</p>

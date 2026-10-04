@@ -84,7 +84,7 @@ export function NotificationsCard() {
   return (
     <div className="m3-card-elevated rounded-3xl p-5 space-y-4">
       <div className="flex items-center gap-2">
-        <Bell className="w-5 h-5 text-primary" />
+        <Bell className="w-5 h-5 text-brand-deep" />
         <h2 className="title-medium font-display text-foreground">Notifiche push</h2>
       </div>
       <p className="body-small text-muted-foreground -mt-2">

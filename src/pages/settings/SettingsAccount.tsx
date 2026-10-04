@@ -130,7 +130,7 @@ export default function SettingsAccount() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="label-medium text-muted-foreground">Nickname <span className="text-primary">(usato dal chatbot)</span></Label>
+                <Label className="label-medium text-muted-foreground">Nickname <span className="text-brand-deep">(usato dal chatbot)</span></Label>
                 <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-button h-12 bg-card border border-outline-variant/60" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

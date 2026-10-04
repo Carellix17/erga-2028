@@ -435,7 +435,7 @@ export function AddEventSheet({
                 <button
                   type="button"
                   onClick={() => setShowNotes(!showNotes)}
-                  className="text-sm font-semibold text-primary hover:underline"
+                  className="text-sm font-semibold text-brand-deep hover:underline"
                 >
                   {showNotes ? t("piano.sheet.hideNotes") : t("piano.sheet.addNotes")}
                 </button>
@@ -446,7 +446,7 @@ export function AddEventSheet({
                       <div className="flex items-center justify-between">
                         <Label className="label-large">{t("piano.sheet.goalLabel")}</Label>
                         {/* Indicatore visivo del voto scelto (null finché non toccato) */}
-                        <span className="label-large font-bold text-primary">
+                        <span className="label-large font-bold text-brand-deep">
                           {goal != null ? goal.toFixed(goal % 1 ? 1 : 0) : "—"}
                         </span>
                       </div>

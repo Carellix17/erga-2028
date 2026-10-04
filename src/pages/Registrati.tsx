@@ -205,7 +205,7 @@ export default function Registrati() {
 
             <p className="text-center text-sm text-muted-foreground">
               {t("signup.haveAccount")}{" "}
-              <Link to="/login" className="text-primary font-medium hover:underline">
+              <Link to="/login" className="text-brand-deep font-medium hover:underline">
                 {t("signup.goLogin")}
               </Link>
             </p>
