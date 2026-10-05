@@ -63,7 +63,7 @@ function tokenLines(body: string): [string, string][] {
     });
 }
 
-describe("Guardia dell'off-white (#F2F0EF nel tema scuro)", () => {
+describe("Guardia della panna (#F4F1E7 nel tema scuro)", () => {
   it("il gettone --cream esiste ed è esattamente #F2F0EF", () => {
     const match = css.match(/--cream:\s*([^;]+);/);
     expect(match, "manca il gettone --cream in :root").not.toBeNull();
@@ -85,7 +85,7 @@ describe("Guardia dell'off-white (#F2F0EF nel tema scuro)", () => {
       .map((c) => c.toString(16).padStart(2, "0"))
       .join("")
       .toUpperCase()}`;
-    expect(hex).toBe("#F2F0EF");
+    expect(hex).toBe("#F4F1E7");
   });
 
   it("nessun gettone del tema scuro torna al bianco puro o a un quasi-bianco", () => {
@@ -130,15 +130,15 @@ describe("Guardia dell'off-white (#F2F0EF nel tema scuro)", () => {
     // D1: i valori di marca si leggono nel blocco .dark PRINCIPALE (quello
     // che dichiara il fondo #101717): il merge includerebbe anche gli
     // override legittimi di accessibilità (es. html.high-contrast .dark).
-    const main = darkBlocks().find((b) => b.includes("--background: 180 18% 7.6%"));
+    const main = darkBlocks().find((b) => b.includes("--background: 40 5% 13%"));
     expect(main, "manca il blocco .dark principale D1").toBeDefined();
     const dark = Object.fromEntries(tokenLines(main!));
-    // testo di marca e selezioni di notte = accento chiaro #8ECFD0;
-    // riempimento d'azione = ottanio; bordo = #3D5351 (DESIGN.md 1.1 §4).
-    expect(dark["--brand-deep"]).toBe("181 41% 69%");
-    expect(dark["--accent-foreground"]).toBe("181 41% 69%");
-    expect(dark["--primary"]).toBe("182 88% 27%");
-    expect(dark["--border"]).toBe("175 15% 28%");
+    // V2-01 (DESIGN.md 2.1 §3): di notte testo e azioni = panna #F4F1E7,
+    // azione primaria chiara con testo inchiostro; bordo = #4B4842.
+    expect(dark["--brand-deep"]).toBe("46 37% 93%");
+    expect(dark["--accent-foreground"]).toBe("46 37% 93%");
+    expect(dark["--primary"]).toBe("46 37% 93%");
+    expect(dark["--border"]).toBe("40 6% 28%");
   });
 
   it("l'inchiostro automatico dei blocchi colorati è off-white, non bianco", () => {

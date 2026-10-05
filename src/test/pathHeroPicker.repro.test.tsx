@@ -41,12 +41,16 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     // --contrast-ink; titoli e testi lo ereditano.
     const heroHeading = screen.getByRole("heading", { name: "Storia" });
     expect(heroHeading).not.toHaveClass("text-white");
-    expect(heroHeading.closest("[data-auto-contrast]")).not.toBeNull();
+    // V2-01: l'inchiostro della copertina arriva dal resolver condiviso
+    // (courseCoverVars imposta --contrast-ink in base alla famiglia).
+    const coverHost = heroHeading.closest<HTMLElement>("[style*='--contrast-ink']");
+    expect(coverHost).not.toBeNull();
+    expect(coverHost!.getAttribute("style")).toMatch(/--contrast-ink:\s*\d+ \d+ \d+/);
 
     fireEvent.click(screen.getByText("Cambia corso"));
     const otherCourseTitle = await screen.findByRole("heading", { name: "matematica" });
     expect(otherCourseTitle).not.toHaveClass("text-white");
-    expect(otherCourseTitle.closest("[data-auto-contrast]")).not.toBeNull();
+    expect(otherCourseTitle.closest<HTMLElement>("[style*='--contrast-ink']")).not.toBeNull();
   });
 
   it("notifica al genitore l'apertura/chiusura del selettore", () => {

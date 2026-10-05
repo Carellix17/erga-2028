@@ -19,12 +19,12 @@ import { prepareLessonExercises } from "@/lib/lessonExercises";
 import { readLessonResume, saveLessonResume, clearLessonResume } from "@/lib/lessonResume";
 
 /**
- * P21c ERGA OPAL: la sala-lezione si è fatta sobria.
- * Via il tasto di vetro, via XP e coriandoli, via il fondo a puntini:
- * restano i contenuti, la barra a segmenti e i box-pastello nel testo
- * (DECISIONE DEL CAPO: i pastelli restano — ma ora esistono anche in
- * versione notturna, così sul nero non accecano).
- * La LOGICA (step, quiz, figure, prefetch, assistente) è intatta.
+ * FullscreenLesson — lettore della lezione (pilota V2-01, DESIGN.md 2.1 §13).
+ * Carta nitida per la lettura (mai vetro), titolo di scena in Lora,
+ * spiegazione Inter 18px allineata a sinistra, accento materia su
+ * esempio e callout, azione primaria inchiostro a pillola.
+ * La LOGICA (step, quiz, figure, prefetch, assistente, ripresa) è intatta:
+ * nessun contratto v2, nessuna nuova chiamata backend.
  */
 
 // P24 × MONOCROMO — i box d'evidenziazione usano l'ACCENTO MATERIA
@@ -34,7 +34,7 @@ function CalloutBlockquote({ children }: { children?: React.ReactNode }) {
   return (
     <div
       className={cn(
-        "subject-callout my-3 px-4 py-3 rounded-2xl border body-medium leading-relaxed [&>p]:m-0 [&_strong]:font-semibold"
+        "subject-callout body-medium my-3 rounded-card px-4 py-3 leading-relaxed [&>p]:m-0 [&_strong]:font-semibold"
       )}
     >
       {children}
@@ -417,7 +417,7 @@ export function FullscreenLesson({
           {showResumeNotice && (
             <div
               role="status"
-              className="mb-4 flex items-center gap-2 rounded-2xl border border-border/50 bg-card/80 px-3.5 py-2.5"
+              className="mb-4 flex items-center gap-2 rounded-control border border-border bg-card px-3.5 py-2.5"
             >
               <RotateCcw className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.75} />
               <p className="body-small text-muted-foreground flex-1">
@@ -426,7 +426,7 @@ export function FullscreenLesson({
               <button
                 type="button"
                 onClick={handleRestart}
-                className="label-medium text-brand-deep underline underline-offset-2 shrink-0"
+                className="label-medium text-foreground underline underline-offset-2 shrink-0"
               >
                 {t("lesson.restart")}
               </button>
@@ -499,17 +499,14 @@ export function FullscreenLesson({
 function ConceptStep({ concept }: { concept: string }) {
   const { t } = useTranslation();
   return (
-    <div className="text-center space-y-6">
-      <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center mx-auto">
-        <Lightbulb className="w-6 h-6 text-foreground" strokeWidth={1.75} />
+    // V2-01 (DESIGN.md 2.1 §5): il concetto è il TITOLO DI SCENA della
+    // lezione — Lora 500, allineato a sinistra, misura da titolo.
+    <div className="space-y-5 text-left">
+      <div className="inline-flex items-center gap-1.5 rounded-pill bg-secondary px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+        {t("lesson.keyConcept")}
       </div>
-      <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-secondary text-muted-foreground text-xs font-semibold mb-4">
-          {t("lesson.keyConcept")}
-        </div>
-        <div className="font-reading text-xl font-normal tracking-tight leading-[1.7] prose prose-sm max-w-none mx-auto px-2 prose-p:font-normal prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-secondary prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
-          <LessonMarkdown>{concept}</LessonMarkdown>
-        </div>
+      <div className="font-display text-[1.625rem] font-medium leading-[1.3] tracking-[-0.01em] text-foreground sm:text-3xl prose prose-sm max-w-none p-0 prose-p:font-medium prose-p:leading-[1.3] prose-p:my-0 prose-table:rounded-card prose-table:overflow-hidden prose-th:bg-secondary prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
+        <LessonMarkdown>{concept}</LessonMarkdown>
       </div>
     </div>
   );
@@ -560,16 +557,18 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
           </div>
         </div>
       </div>
+      {/* V2-01: la spiegazione vive su CARTA NITIDA (mai vetro): bordo
+          filetto pieno, ombra foglio; l'esempio porta l'accento materia. */}
       <div className={cn(
-        "p-6 sm:p-7 rounded-card border space-y-4",
+        "space-y-4 rounded-card border p-5 shadow-tactile sm:p-6",
         isExample
-          ? "bg-tertiary-container border-border/50 shadow-level-1"
-          : "bg-card border-border/50 shadow-level-1"
+          ? "subject-callout"
+          : "border-border bg-card"
       )}>
         {segments.map((seg, i) => {
           if (seg.type === "text") {
             return seg.value.trim() ? (
-              <div key={i} className="font-reading text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:text-foreground/80 prose-p:leading-[1.7] prose-p:my-3 prose-strong:font-semibold prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-2xl prose-table:overflow-hidden prose-table:border prose-table:border-outline-variant/60 prose-th:bg-secondary/70 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60 prose-hr:my-4 prose-hr:border-outline-variant/60">
+              <div key={i} className="font-reading text-[1.125rem] font-normal text-foreground/90 leading-[1.65] prose prose-sm max-w-none prose-p:font-normal prose-p:text-foreground/90 prose-p:leading-[1.65] prose-p:my-3 prose-strong:font-semibold prose-strong:text-foreground prose-em:text-foreground/90 prose-table:my-4 prose-table:rounded-card prose-table:overflow-hidden prose-table:border prose-table:border-outline-variant/60 prose-th:bg-secondary/70 prose-th:text-foreground prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60 prose-hr:my-4 prose-hr:border-outline-variant/60">
                 <LessonMarkdown components={{ blockquote: CalloutBlockquote }}>{seg.value}</LessonMarkdown>
               </div>
             ) : null;
@@ -600,8 +599,10 @@ function ExampleStep({ example }: { example: string }) {
         </div>
         <span className="label-large text-foreground">{t("lesson.practicalExample")}</span>
       </div>
-      <div className="p-6 sm:p-7 rounded-card bg-tertiary-container border border-border/50 shadow-level-1">
-        <div className="font-reading text-[0.9375rem] font-normal text-foreground/80 leading-[1.7] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.7] prose-strong:font-semibold prose-table:rounded-2xl prose-table:overflow-hidden prose-th:bg-tertiary-container/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
+      {/* V2-01: l'esempio porta l'ACCENTO MATERIA (tinta leggera del colore
+          del corso, bordo al 30%): stesso trattamento dei callout della lettura. */}
+      <div className="subject-callout space-y-4 rounded-card p-5 shadow-tactile sm:p-6">
+        <div className="font-reading text-[1.125rem] font-normal text-foreground/90 leading-[1.65] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.65] prose-strong:font-semibold prose-table:rounded-card prose-table:overflow-hidden prose-th:bg-secondary/70 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
           <LessonMarkdown>{example}</LessonMarkdown>
         </div>
       </div>
@@ -640,7 +641,7 @@ function ExerciseStep({
           ))}
         </div>
       </div>
-      <div className="p-5 rounded-card border border-border/50 bg-card shadow-level-1">
+      <div className="rounded-card border border-border bg-card p-5 shadow-tactile">
         <ExerciseRenderer exercise={exercise} onComplete={onComplete} isCompleted={isCompleted} />
       </div>
     </div>
@@ -658,7 +659,7 @@ function SummaryStep({ correctCount, totalExercises, isLastLesson, orphanFigures
       </div>
 
       <div>
-        <p className="font-display font-bold text-2xl mb-2 text-foreground">
+        <p className="mb-2 font-display text-2xl font-medium leading-tight text-foreground">
           {t("lesson.lessonCompleted")}
         </p>
         <p className="text-sm text-muted-foreground">

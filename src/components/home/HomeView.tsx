@@ -57,9 +57,9 @@ export function HomeView({
   if (dashboard.isError || !data) {
     return (
       <div className="pb-10 pt-20">
-        <Card className="mx-auto max-w-xl border border-[#FFFBF4] bg-card p-6 text-center">
+        <Card className="mx-auto max-w-xl rounded-card border border-border bg-card p-6 text-center">
           <RefreshCw className="mx-auto h-8 w-8 text-destructive" aria-hidden="true" />
-          <h1 className="mt-4 font-display text-xl font-bold">{t("home.error.title")}</h1>
+          <h1 className="mt-4 text-xl font-semibold">{t("home.error.title")}</h1>
           <p className="mt-2 text-base text-muted-foreground">{t("home.error.description")}</p>
           <Button className="mt-5 min-h-12" onClick={() => dashboard.refetch()}>
             {t("home.error.retry")}
@@ -139,14 +139,10 @@ export function HomeView({
   ];
 
   return (
-    // `no-ambient` spegne l'alone ambientale animato (P26/P27) su TUTTA la
-    // Home: il fondo resta uniforme e le card portano solo la loro ombra
-    // leggera del design system. Le altre sezioni non vengono toccate.
-    //
-    // Respiro della stanza: il saluto parte più in basso (pt-24 sm:pt-32,
-    // griglia 4px) e si stacca dal contenuto con mb-4 sopra il gap-6 comune,
-    // così l'apertura della Home è calma e il ritmo tra le card resta invariato.
-    <div className="no-ambient flex min-w-0 flex-col gap-6 overflow-x-clip pt-24 pb-2 sm:pt-32">
+    // V2-01: il tavolo è piatto (niente aloni né texture), il saluto serif
+    // è compatto e parte più vicino (pt-20 sm:pt-28); mb-4 sotto il saluto
+    // sopra il gap-6 comune tiene il ritmo tra le card.
+    <div className="flex min-w-0 flex-col gap-6 overflow-x-clip pt-20 pb-2 sm:pt-28">
       {/* 1. Saluto (l'avatar profilo sta nell'header in alto a destra) */}
       <HomeHeader
         className="mb-4"

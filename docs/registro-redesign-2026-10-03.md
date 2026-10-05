@@ -1,8 +1,8 @@
 # Registro del redesign — Erga
 
-**Aperto:** 3 ottobre 2026 · **Aggiornato:** 5 ottobre 2026 (V2-00)
+**Aperto:** 3 ottobre 2026 · **Aggiornato:** 5 ottobre 2026 (V2-01 pilota)
 **Fonte di verità grafica:** `DESIGN.md` versione 2.1 «Carta contemporanea» (integrata il 5 ottobre 2026, commit di V2-00).
-**Runtime:** l'app mostra ancora la **veste 1** (pacchetti D1–D3 della sequenza storica). Nessuna schermata è stata ancora migrata alla 2.1.
+**Runtime:** il pilota V2-01 è nel repository: **Home, lezione (lettore), shell e navigazione sono in veste 2.1**; il resto (strumenti, Piano, Core, impostazioni, landing/accesso) mostra ancora stili v1 ripuntati sui token — si migra nelle tappe del rollout.
 **Base di partenza sequenza 1:** commit `f54e237` (stato del repository verificato dalla specifica v1: Pratica assorbita da Studio, palestra scientifica, otto widget, motori per materia).
 
 Questo è l'**unico registro** dei lavori del redesign: stato dei pacchetti, cosa esiste già, punti aperti.
@@ -51,7 +51,7 @@ I vecchi pacchetti D4–D13 della sequenza 1 (righe qui sotto) **non si eseguono
 | Tappa | Contenuto | Stato |
 |---|---|---|
 | **V2-00 — Allineare le fonti** | DESIGN.md 2.1 integrato verbatim (frontmatter token di destinazione + nota d'integrazione), `design.json` rigenerato, AGENTS.md/Matrice/Minilezione riconciliate solo nella parte grafica, registro aggiornato, inventario test di stile col piano di migrazione. **Nessun file in `src/` toccato; nessun Update Lovable necessario** (documentazione). | ✅ **fatto, 5 ottobre 2026** |
-| **V2-01 — Pilota** | Home completa + **una lezione rappresentativa esistente** col minimo sistema condiviso (token 2.1, Lora/Inter, materiali, dock/rail/sidebar, identità corso), **incluso un caso matematico/interattivo**. Dati reali nella UI; fixture sintetiche solo in prove isolate dichiarate. **Viste reali telefono/desktop, giorno/notte** — non mockup HTML. | ⬜ **prossimo passo, da valutare dal proprietario prima del rollout** |
+| **V2-01 — Pilota** | Home completa + lettore lezione col minimo sistema condiviso (token 2.1, Lora/Inter, materiali, dock/rail/sidebar, identità corso centralizzata con contrasto garantito), formule KaTeX verificate. Dati reali nella UI. Preview live apribile. | ✅ **consegnato 5 ottobre 2026 — in attesa di valutazione del proprietario prima del rollout** |
 | **Rollout — 6 tappe** | 1 sistema+shell · 2 Studio/card/selettore/transizioni · 3 lettore+widget+strumenti · 4 Piano/Core/impostazioni · 5 landing/accesso · 6… | ⬜ dopo la valutazione del pilota (piano completo in DESIGN.md 2.1 §18) |
 | **Evoluzioni funzionali** | Prerequisiti consigliati, scene didattiche v2, impegni in linguaggio naturale, metriche Core | ⬜ incarichi separati, mai nel redesign visivo |
 
@@ -68,16 +68,37 @@ Presenza nel codice **non** significa pubblicato online: i deploy passano da Lov
 - **Motori per materia** (fiume del backend): scientifico (DeepSeek V4 Flash via OpenRouter + formule + widget), letteratura, storia/geografia, filosofia, lingue vive, latino, storia dell'arte; sociali e informatica rinviati a più tardi.
 - **KaTeX** con output MathML accessibile; **i18n** it/en; colori materie e routine (informano, non decorano); vetrina marketing isolata (`--lp-*`); fondamenta dati v1/v2 (compatibilità dei percorsi v1 da mantenere).
 
-## 4. Il runtime oggi (dichiarazione onesta, post V2-00)
+## 4. Il runtime oggi (dichiarazione onesta, post V2-01)
 
-L'app mostra ancora la **veste 1** (D1–D3), cioè: palette ottanio `#087F83` giorno/notte `#101717`, raggio 0 (tranne cerchi semantici), Ubuntu Sans (interfaccia) + Montserrat (lettura), dock rettangolare D2, card tokenizzate D3. **Cambiare la documentazione non ha ridisegnato l'app.**
+**Veste 2.1 nel pilota:** Home (saluto serif compatto, copertina corso con composizione astratta + satinato, piano del giorno su carta, strumenti rapidi), lettore lezione (titoli Lora, lettura Inter 18px, esempio/callout con accento materia, azione primaria inchiostro), shell e navigazione (dock arrotondato, rail 768–1023, sidebar ≥1024), token globali (tavolo avorio #F6F3EB / notte #22211F, carta #FFFEF9 / #2D2C29, inchiostro #252623, raggi 8/16/24/32/pill, Lora+Inter caricati).
 
-- D1/D2/D3 sono nel repository spinto; la pubblicazione su Lovable (Update, solo frontend) **non è mai stata confermata dal proprietario**.
-- **V2-00 non richiede alcun Update Lovable**: ha toccato solo documentazione e strumenti (`DESIGN.md`, `.impeccable/design.json`, `AGENTS.md`, `docs/`).
-- **Font 2.1 non caricati:** Lora e Inter non sono nel bundle; il pilota V2-01 li aggiunge (o verifica equivalenti già presenti) prima di usarli.
-- `theme-color`, saluto e token di marca restano v1 finché il pilota non li sostituisce.
+**Ancora v1 (ripuntata sui token, da migrare nelle tappe):** strumenti del Banco (chat/esercizi/interrogazione/palestra), Piano, Core, impostazioni, profilo, landing/accesso (Radja al Login), onboarding. La selezione `brand-*` e i chip `primary/10 + brand-deep` sono ora inchiostro per propagazione dei token.
+
+- V2-00/V2-01 sono nel repository; la pubblicazione su Lovable (Update, solo frontend) **non è mai stata confermata dal proprietario** — il pilota si valuta nella preview o dopo un Update.
+- Verifica visiva: il pilota è apribile in preview (server di sviluppo); **nessuno screenshot è stato verificato dall'agente** (nessun browser nel suo ambiente). La qualità visiva la valuta il proprietario.
 
 **Verifiche eseguite in V2-00 (5 ottobre 2026):** YAML del frontmatter di `DESIGN.md` valido (39 colori, 8 ruoli tipografici, 7 raggi, 10 spacing, 7 componenti); `context.mjs` legge la 2.1 senza errori; `design.json` valido e letto dal detector (14 segnalazioni, **tutte in `src/index.css`**: 7 Montserrat, 5 colori, 2 raggi — è il gap v1→v2.1 atteso, concentrato nel file dei token, si chiude in V2-01); suite **625 pass / 13 fail pre-esistenti** identica alla baseline D3; `noGreen` verde; `tsc --noEmit` OK; `vite build` OK. Controlli **non** eseguiti: verifica visiva in app e screenshot (nessuna schermata è cambiata; il runtime resta veste 1).
+
+### V2-01 — cosa è entrato nel runtime (5 ottobre 2026)
+
+**Sistema condiviso (minimo indispensabile):**
+- **Token 2.1 in `index.css`/`tailwind.config.ts`** (stessi nomi, nuovi valori): tavolo avorio `#F6F3EB` / notte `#22211F`, carta `#FFFEF9` / `#2D2C29`, inchiostro `#252623` / notte `#F4F1E7`, line `#DEDCD2`/`#4B4842`, control-line `#888B7A`/`#918B80`; raggi 8/16/24/32 + nav 24 + pill 999 (aggiunti `--radius-hero/nav`); ombre corte (foglio/protagonista/overlay) senza aloni; motion + `--motion-path 360ms` e curva di casa `cubic-bezier(0.22,1,0.36,1)`. **Marca e selezione = inchiostro** (`--brand/-deep/-tint` ripuntati; l'ottanio #087F83 non esiste più nel tema). `theme-color` → `#22211F`/`#F6F3EB`.
+- **Font:** link Google → **Lora + Inter variable 400–700**; `font-display/serif` = Lora, `sans/body/reading` = Inter; Ubuntu Sans, Montserrat e Zalando Sans eliminati dai ruoli (Radja resta self-hosted al solo Login). Pastelli materia **vivificati** (erano in monocromo grigio dal P24) giorno+notte; fix `pastel-bosco/oliva` mai mappate in Tailwind.
+- **`src/lib/courseIdentity.ts` (nuovo):** UNICO punto corso→materia→palette. Famiglia light/deep assegnata alla materia (non tutte le copertine uguali), **campo con contrasto ≥ 4,5:1 garantito iterativamente**, layout 0–2 stabile per corso, personalizzazioni (`customKey`) e fallback inclusi, variabili `--contrast-ink` per il testo.
+- **`CourseCardBackground` riscritto:** campo pieno + 2–3 forme nette per variante (orbita/orizzonte/spigolo) + **grana condivisa** (feTurbulence 5%, `cover-grain`). Niente più orb sfocati, né cover Wikipedia sfocate, né gradienti.
+- **Velo satinato `.btn-satin`:** carta 80% giorno / 85% notte, blur locale 10px, testo opaco, bordo discreto, focus separato, fallback carta piena (`@supports` / reduced-transparency / high-contrast). Solo su Continua/Riprendi/Scegli delle copertine.
+
+**Home:** saluto serif compatto 32/40/48px (Lora 500, due righe accessibili); `CourseHeroCard` riscritto (copertina raggio 32, anello progresso, titolo Lora, CTA satinata a pillola; stato vuoto breve su carta); piano del giorno su carta quieta (chip 14px, «Vedi tutto» sobrio); strumenti rapidi come card; skeleton allineato.
+
+**Lezione (lettore):** concetto = titolo di scena Lora 500; spiegazione Inter 18px lh 1.65 su carta con filetto; esempio e callout con accento materia (`subject-callout` riallineato: tinta 9% + bordo 30%); esercizi su carta; primario inchiostro a pillola; **KaTeX/MathML intatto** con scroll locale per formule/tabelle larghe (`.katex-display`, `.prose table`). Nessun contratto v2, nessuna nuova chiamata backend: logica step/quiz/figure/ripresa invariata.
+
+**Shell e navigazione:** dock mobile **arrotondato** (radius-nav 24, carta opaca, ombra overlay, safe area), selezione **inchiostro senza barrette**; rail 768–1023; **sidebar da 1024** (decisione del pilota sulla contraddizione D2 ≥1200 vs 2.1 §10 ≥1024); via `bg-dot-grid` (tavolo piatto); rimossi il **sistema aura/halo** (P26/P27), la pagina dev `/aura-lab` e i token glass P34 (nessun consumatore rimasto).
+
+**Condivisione minima con Studio (autorizzata dall'incarico):** `CourseCard` e `PathHero` usano il nuovo sistema copertina (stessa identità del corso tra viste) con CTA satinata su CourseCard; rimossi gli orb decorativi e `data-auto-contrast` dalle copertine (l'inchiostro ora è esplicito per famiglia; lo script autoContrast resta per StudioPractice fino alla tappa 2).
+
+**Verifiche eseguite:** suite **631 pass / 13 fail pre-esistenti** (AppHeader 12 + haptics 1; baseline 625→631 per i nuovi test); `tsc` OK; `vite build` OK; detector 16 segnalazioni tutte in `index.css` (10 = Inter segnalato come font comune: **scelta deliberata della specifica 2.1 §5**; 4 colori e 2 raggi letterali in zone legacy/vetrina → tappa 5); **nuova suite `courseIdentity.test.ts`**: contrasto ≥ 4,5:1 per ogni materia, personalizzazione e fallback, sui campi E sui compositi satinati giorno/notte; test aggiornati senza cancellazioni (appShell 10, homeCleanSurfaces 10, HomeHeader 7, HomeView, creamNotWhite panna #F4F1E7, ThemeContext, pathHeroPicker, courseCardBackground 5).
+
+**Controlli NON eseguiti (dichiarati):** nessuna verifica visiva con browser/screenshot (ambiente senza browser): 320/390/768/1280, zoom 200%, tastiera/focus reale, movimento ridotto reale e resa dei font vanno valutati dal proprietario nella preview; nessun flusso con dati reali alterato (nessuna risposta inviata, nessuna lezione completata, nessun impegno toccato).
 
 ## 5. Inventario dei test di stile v1 e piano di migrazione
 
@@ -85,20 +106,20 @@ Questi test **difendono la veste 1 e oggi sono corretti**: si migrano alle rispe
 
 | Test / suite | Che cosa impone (v1) | Quando migra |
 |---|---|---|
-| `src/test/noGreen.test.ts` | Ruoli colore v1: marca ottanio solo via token di tema; materia confinata ai suoi token; feedback semantico solo nei validatori (allowlist 6 file); vietati hex/hue verdi liberi. **La policy dei ruoli sopravvive alla 2.1** (i valori cambiano, i ruoli no): si aggiornano i token di marca nel pilota. | V2-01 (token marca) |
-| `src/test/appShellDesignSystem.test.ts` | Dock D2 squadrato: `bg-brand`, safe-area, Core incluso, rail/sidebar. | V2-01 + tappa 1 |
-| `src/test/homeCleanSurfaces.test.ts` | 4 test P36 riscritti in D2: `border-border`, niente `rounded-full`, CTA `color-mix` 12/24%, `font-display` 3xl. | V2-01 |
-| `src/test/HomeView.test.tsx` | Ordine §10 v1 (saluto → corso → Piano → Strumenti) + grammatica squadrata. L'ordine si riversa nella 2.1 (§9); la grammatica cambia. | V2-01 |
+| `src/test/noGreen.test.ts` | Ruoli colore v1: marca ottanio solo via token di tema; materia confinata ai suoi token; feedback semantico solo nei validatori (allowlist 6 file); vietati hex/hue verdi liberi. **La policy dei ruoli sopravvive alla 2.1** (i valori cambiano, i ruoli no): si aggiornano i token di marca nel pilota. | ✅ migrati in V2-01 (brand = inchiostro; policy ruoli invariata) |
+| `src/test/appShellDesignSystem.test.ts` | Dock D2 squadrato: `bg-brand`, safe-area, Core incluso, rail/sidebar. | ✅ migrati in V2-01 (dock arrotondato, selezione inchiostro) |
+| `src/test/homeCleanSurfaces.test.ts` | 4 test P36 riscritti in D2: `border-border`, niente `rounded-full`, CTA `color-mix` 12/24%, `font-display` 3xl. | ✅ migrati in V2-01 (riscritti alle prescrizioni 2.1) |
+| `src/test/HomeView.test.tsx` | Ordine §10 v1 (saluto → corso → Piano → Strumenti) + grammatica squadrata. L'ordine si riversa nella 2.1 (§9); la grammatica cambia. | ✅ migrati in V2-01 (riscritti alle prescrizioni 2.1) |
 | `src/test/creamNotWhite.test.ts` | Superfici carta v1. | V2-01 / tappa 1 |
 | `src/test/darkModeChatMobile.test.ts` | Drawer notturno v1. | Tappa 3 (lettore+strumenti) |
-| Registro §7 (archivio: 4bis/4ter/4quater) | Valori citati D1/D2/D3 (ottanio, raggio 0, Ubuntu Sans). Restano come documento del runtime attuale. | consultazione; si chiudono a pilota concluso |
+| Registro §7 (archivio: 4bis/4ter/4quater) | Valori citati D1/D2/D3 (ottanio, raggio 0, Ubuntu Sans). Restano come documento del runtime attuale. | consultazione; §7 archivio aggiornato col pilota |
 
 **`noGreen` — policy conservata (revisione D1):** il colore di marca solo via token di tema; materia confinata ai suoi token (`--pastel-*`, palette del Piano); feedback semantico solo nei componenti che validano risposte (allowlist invariata, 6 file). Vietati: classi Tailwind verdi/teal, hex bosco/teal liberi, hue HSL 60–189 fuori tema, theme-color verdi. Il commento WCAG 1.4.1 corretto in D1 resta valido: il colore non è mai l'unico veicolo (testo e struttura ci sono sempre).
 
 ## 6. Punti ancora aperti (proposte da validare nel pilota, non decisioni)
 
-- **Contraddizione operativa reale:** DESIGN.md 2.1 §10 vuole rail 768–1023 e sidebar da **1024**; D2 ha implementato sidebar a **≥1200** (xl). La 2.1 stessa demanda («soglie da verificare sul contenuto»): si decide in V2-01 sulle schermate reali.
-- Lora e Inter: caricamento o equivalenti già presenti; pesi esatti (400/500 + 400/500/600) e resa su contenuti reali.
+- ~~Soglie navigazione~~ **deciso in V2-01:** rail 768–1023, sidebar ≥1024 come da 2.1 §10 (da confermare visivamente dal proprietario).
+- ~~Lora e Inter~~ **caricati in V2-01** (variable 400–700); resa su contenuti reali da confermare visivamente.
 - Saturazione delle superfici materia, grana, resa notturna delle copertine: validazione visiva nel pilota.
 - Saluto della Home: font serif (Lora) e misura «compact» — da verificare accanto alle copertine.
 - Prerequisiti **consigliati** con possibilità di proseguire: nessun blocco rigido senza decisione di prodotto.

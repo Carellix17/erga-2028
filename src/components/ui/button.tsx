@@ -9,8 +9,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // V2-01 (DESIGN.md 2.1 §6): l'azione primaria è inchiostro a
+        // PILLOLA; gli altri variant restano controlli (raggio 16).
         default:
-          "bg-primary text-primary-foreground shadow-level-0 hover:bg-primary/90",
+          "rounded-pill bg-primary text-primary-foreground shadow-level-0 hover:bg-primary/90",
         destructive: "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90 state-layer",
         outline:
           "border border-border bg-card text-foreground hover:bg-surface-container-high",
@@ -35,9 +37,8 @@ const buttonVariants = cva(
         "icon-lg": "h-12 w-12 p-0",
         fab: "h-14 w-14 p-0",
         "fab-extended": "h-14 px-7",
-        //  D1 — la vecchia capsula entra nella grammatica squadrata:
-        //  stessa taglia generosa, angolo del sistema (0px).
-        pill: "h-12 rounded-button px-6 py-3",
+        //  V2-01 — la taglia generosa torna pillola (angolo del sistema).
+        pill: "h-12 rounded-pill px-6 py-3",
       },
     },
     defaultVariants: {

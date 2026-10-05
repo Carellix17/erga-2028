@@ -18,10 +18,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
-import { getSubjectAccent, getAccentForeground } from "@/lib/subjectColors";
+import { getAccentForeground } from "@/lib/subjectColors";
+import { courseCoverVars } from "@/lib/courseIdentity";
 import { CourseCard, courseDisplayName } from "./CourseCard";
 import { CourseCardBackground } from "./CourseCardBackground";
-import { useCourseImage } from "@/hooks/useCourseImage";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -187,7 +187,6 @@ export function PathHero({
 
   const active = courses.find((c) => c.id === activeCourseId) ?? courses[0];
   // 🖼️ P24 — immagine della HERO (corso attivo): centralizzata, resta nei cambi stato
-  const heroCover = useCourseImage(active?.id ?? null, active?.file_name ?? "");
   const prefersReducedMotion = usePrefersReducedMotion();
   const effectiveLayoutTransition = prefersReducedMotion ? { layout: { duration: 0 } } : heroLayoutTransition;
   const multi = courses.length > 1;
@@ -607,13 +606,11 @@ export function PathHero({
     </div>
   );
 
-  // Lo sfondo lo gestisce CourseCardBackground (base scura + glow materia).
-  // P28: il testo NON è più legato al tema (in dark mode diventava nero su
-  // fondo scuro): il blocco porta `data-auto-contrast` e lo script misura il
-  // fondo reale e imposta l'inchiostro a contrasto (--contrast-ink).
-  const heroStyle = {
-    "--ambient-block-ink": getSubjectAccent(active?.file_name ?? ""),
-  } as CSSProperties;
+  // V2-01: la copertina arriva dal resolver condiviso (courseIdentity):
+  // campo materia + composizione astratta + grana; l'inchiostro del testo
+  // è quello della famiglia (light→inchiostro, deep→carta), garantito
+  // ≥ 4,5:1 dal resolver e dai test. Niente più orb sfocati né auto-contrast.
+  const { style: heroStyle } = courseCoverVars(active?.file_name ?? "");
 
   return (
     <section className="px-4 pt-4">
@@ -622,18 +619,11 @@ export function PathHero({
         layout
         layoutId={transitioningId ? `course-card-${transitioningId}` : isSelectingCourse ? undefined : `course-card-${active?.id}`}
         transition={effectiveLayoutTransition}
-        className={`relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2 p-5 sm:p-6 ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
-        data-auto-contrast
+        className={`relative overflow-hidden rounded-hero border border-border bg-card shadow-level-2 p-5 sm:p-6 ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
+       
         style={heroStyle}
       >
-          <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
-          <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
-          <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
-          <CourseCardBackground
-            coverUrl={heroCover}
-            subjectColor={getSubjectAccent(active?.file_name ?? "")}
-            variant="studio"
-          />
+          <CourseCardBackground courseName={active?.file_name ?? ""} />
           {heroInner(false)}
         </motion.div>
 
@@ -675,19 +665,12 @@ export function PathHero({
                       ref={heroRef}
                       layoutId={`course-card-${active?.id}`}
                       transition={effectiveLayoutTransition}
-                      className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 bg-inverse-surface shadow-level-2 p-5 sm:p-6"
-                      data-auto-contrast
+                      className="relative overflow-hidden rounded-hero border border-border bg-card shadow-level-2 p-5 sm:p-6"
+                     
                       style={heroStyle}
                       layoutScroll
                     >
-                      <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
-                      <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
-                      <div className="absolute left-1/3 -bottom-24 w-40 h-40 rounded-full bg-current opacity-[0.04]" aria-hidden />
-                      <CourseCardBackground
-                        coverUrl={heroCover}
-                        subjectColor={getSubjectAccent(active?.file_name ?? "")}
-                        variant="studio"
-                      />
+                      <CourseCardBackground courseName={active?.file_name ?? ""} />
                       {heroInner(true)}
                     </motion.div>
 

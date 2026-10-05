@@ -127,14 +127,18 @@ export default {
         "pastel-grafite": "hsl(var(--pastel-grafite))",
         "pastel-miele": "hsl(var(--pastel-miele))",
         "pastel-neutro": "hsl(var(--pastel-neutro))",
+        //  V2-01 — fix: scienze e geografia usano queste chiavi da sempre
+        //  ma non erano mappate (chips senza pelle nel D1 monocromo).
+        "pastel-bosco": "hsl(var(--pastel-bosco))",
+        "pastel-oliva": "hsl(var(--pastel-oliva))",
         //  P24 — firme del guscio: nav a pillola (neutro) e puntino neutro
         nav: {
           DEFAULT: "hsl(var(--nav-surface))",
           foreground: "hsl(var(--nav-foreground))",
         },
-        //  D1 — famiglia di marca (DESIGN.md 1.1 §4): riempimento ottanio,
-        //  testo di marca col tono profondo (duale: accento chiaro di notte),
-        //  tinta per selezioni e contesti secondari.
+        //  V2-01 — famiglia di marca (DESIGN.md 2.1 §4): inchiostro.
+        //  I ruoli restano (riempimento, testo, tinta di selezione) ma la
+        //  tinta è l'inchiostro del sistema: niente più ottanio.
         brand: {
           DEFAULT: "hsl(var(--brand))",
           deep: "hsl(var(--brand-deep))",
@@ -146,6 +150,8 @@ export default {
         "subject-accent-light": "var(--subject-accent-light)",
       },
       borderRadius: {
+        hero: "var(--radius-hero)",
+        nav: "var(--radius-nav)",
         xs: "var(--radius-xs)",
         sm: "var(--radius-sm)",
         md: "var(--radius-md)",
@@ -174,25 +180,19 @@ export default {
         hero: "var(--shadow-hero-card)",
       },
       fontFamily: {
-        // Font caricati da Google Fonts nel <link> di index.html, con gamma di pesi
-        // completa (Montserrat 100–900, Ubuntu Sans 100–800, Zalando Sans Expanded 200–900):
-        // nessun file di font nel repo, nessun @font-face manuale.
-        // D1 (DESIGN.md 1.1 §5) — due ruoli tipografici espliciti:
-        //  · INTERFACCIA (sans/display/body): Ubuntu Sans per titoli e UI;
-        //  · LETTURA (reading): Montserrat sul testo didattico, in attesa di
-        //    validare Ubuntu Sans su contenuti reali. Nessun nuovo font caricato.
-        sans: ['Ubuntu Sans', 'Montserrat', 'Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Ubuntu Sans', 'Montserrat', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
-        serif: ['Montserrat', 'Plus Jakarta Sans', 'serif'],
-        body: ['Ubuntu Sans', 'Montserrat', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
-        reading: ['Montserrat', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['Ubuntu Sans', 'ui-monospace', 'SFMono-Regular', 'monospace'],
-        // Contenitore HomeHeader: mantiene il sottotitolo in Zalando Sans Expanded.
-        welcome: ['Zalando Sans Expanded', 'Montserrat', 'system-ui', 'sans-serif'],
-        // Solo il saluto e il nome nell'h1 della Home; Google Fonts, peso 500.
-        'welcome-title': ['Ubuntu Sans', 'Montserrat', 'system-ui', 'sans-serif'],
-        //  P36 — Radja: titoli focali e macro-metriche della card eroe.
-        radja: ['Radja', 'Zalando Sans Expanded', 'Montserrat', 'system-ui', 'sans-serif'],
+        // V2-01 (DESIGN.md 2.1 §5) — due voci, caricate da Google Fonts nel
+        // <link> di index.html come family variable (400–700):
+        //  · INTERFACCIA e LETTURA (sans/display/body/reading): Inter;
+        //  · TITOLI SERIF (display/serif): Lora 400/500, proposta iniziale.
+        // Radja resta self-hosted per la sola voce focale del Login (tappa 5).
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Lora', 'Georgia', 'serif'],
+        serif: ['Lora', 'Georgia', 'serif'],
+        body: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        reading: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
+        //  P36 — Radja: voce focale del Login.
+        radja: ['Radja', 'Lora', 'Georgia', 'serif'],
       },
       keyframes: {
         "accordion-down": {

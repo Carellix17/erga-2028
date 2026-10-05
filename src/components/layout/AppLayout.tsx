@@ -48,7 +48,7 @@ export function AppLayout({
   return (
     <div
       className={cn(
-        "flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background bg-dot-grid md:flex-row",
+        "flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background md:flex-row",
         // 🖥️ Shell desktop: viewport sigillata con distacco perimetrale (p-3)
         // e spazio tra le due card (gap-3). Su mobile niente cambia.
         "md:h-dvh md:min-h-0 md:overflow-hidden md:gap-3 md:p-3",

@@ -1,30 +1,25 @@
 import { Play, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
-import { useCourseImage } from "@/hooks/useCourseImage";
-import { getSubjectAccent } from "@/lib/subjectColors";
+import { courseCoverVars } from "@/lib/courseIdentity";
 
 /**
- * CourseHeroCard — card unificata del corso attivo in Home.
+ * CourseHeroCard — V2-01 (DESIGN.md 2.1 §4, §9).
  *
- * Stato attivo: stessa pelle visiva della card corso di Studio (fondo
- * inverso, bordo sottile, copertina sfocata e accento materia) adattata
- * alla Home: anello di avanzamento SVG in alto a destra (nessun menù ⋯),
- * titolo della lezione corrente al centro con i metadati reali
- * ("X di Y lezioni"), un solo pulsante "Riprendi lezione" a piena
- * larghezza. Nessuna barra di avanzamento orizzontale.
+ * Stato attivo: copertina colorata del corso (campo materia + composizione
+ * astratta + grana, raggio 32) con l'inchiostro garantito dalla famiglia
+ * (light → inchiostro, deep → carta). Progresso reale con anello; titolo
+ * del corso in Lora (font-display); azione «Riprendi/Continua» SATINATA a
+ * pillola — l'unica superficie con velo, perché vive sulla copertina.
  *
- * Stato vuoto (nessun corso / generazione in corso): card neutra con
- * invito a scegliere o caricare il primo percorso.
- *
- * Nota: il contenitore Home è marcato `no-ambient`, quindi questa card
- * non riceve l'alone ambientale animato: resta solo la sua ombra pulita.
+ * Stato vuoto (nessun corso / generazione in corso): carta breve e utile,
+ * icona, due righe, un'azione — niente grande pannello vuoto.
  */
 
 export interface CourseHeroCardProps {
   /** Titolo del corso attivo. Se manca, la card mostra lo stato vuoto. */
   courseTitle?: string | null;
-  /** ID del percorso (serve a recuperare la copertina, come in Studio). */
+  /** ID del percorso (informazione per i consumatori futuri). */
   contextId?: string | null;
   /** Etichetta soprastante il titolo del corso, es. "Percorso attivo". */
   eyebrowText?: string | null;
@@ -51,13 +46,8 @@ function clampPercent(value: number | null | undefined): number {
   return Math.min(100, Math.max(0, Math.round(value)));
 }
 
-/** Soglia oltre la quale il titolo del corso viene mostrato un gradino
- *  più piccolo, per non gonfiare la card su nomi lunghi. */
-const LONG_COURSE_TITLE_THRESHOLD = 20;
-
-/** Anello di avanzamento SVG: circonferenza 100 → dash = percentuale.
- *  Dimensione responsiva (56px sul telefono, 64 da sm in su) per non
- *  comprime né sovrapporre il titolo del corso sugli schermi piccoli. */
+/** Anello di avanzamento SVG (contenuto: il cerchio è ammesso).
+ *  Il tratto segue l'inchiostro della copertina (currentColor). */
 function ProgressRing({ percent, ariaLabel }: { percent: number; ariaLabel: string }) {
   const p = clampPercent(percent);
   return (
@@ -67,17 +57,7 @@ function ProgressRing({ percent, ariaLabel }: { percent: number; ariaLabel: stri
       className="relative inline-grid h-14 w-14 shrink-0 place-items-center text-contrast sm:h-16 sm:w-16"
     >
       <svg viewBox="0 0 36 36" aria-hidden="true" className="absolute inset-0 h-full w-full -rotate-90">
-        {/* traccia neutra */}
-        <circle
-          cx="18"
-          cy="18"
-          r="15.9155"
-          fill="none"
-          strokeWidth="3.5"
-          stroke="currentColor"
-          strokeOpacity={0.25}
-        />
-        {/* avanzamento */}
+        <circle cx="18" cy="18" r="15.9155" fill="none" strokeWidth="3.5" stroke="currentColor" strokeOpacity={0.28} />
         <circle
           cx="18"
           cy="18"
@@ -111,17 +91,13 @@ export function CourseHeroCard({
   onEmptyCta,
 }: CourseHeroCardProps) {
   const isActive = Boolean(courseTitle && lessonTitle && primaryCtaLabel);
-  const coverUrl = useCourseImage(isActive ? contextId : null, courseTitle ?? "");
-  const accent = getSubjectAccent(courseTitle ?? "");
+  const { cover, style } = courseCoverVars(courseTitle ?? "");
 
   if (!isActive) {
+    // ── Stato vuoto: breve, utile, su carta (2.1 §9) ──────────────────
     return (
-      <article
-        className={cn(
-          "flex flex-col items-center border border-border bg-card p-5 text-center shadow-tactile sm:p-6",
-        )}
-      >
-        <span className="grid h-12 w-12 place-items-center bg-surface-container-high">
+      <article className="flex flex-col items-center rounded-card border border-border bg-card p-5 text-center shadow-tactile sm:p-6">
+        <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-surface-container-high">
           <BookOpen className="h-6 w-6 text-foreground" aria-hidden="true" />
         </span>
         <h2 className="mt-3 text-lg font-semibold text-foreground">
@@ -134,7 +110,7 @@ export function CourseHeroCard({
           <button
             type="button"
             onClick={onEmptyCta}
-            className="mt-5 flex h-12 w-full items-center justify-center gap-2 bg-primary text-[15px] font-semibold text-primary-foreground transition-transform duration-150 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-primary text-[15px] font-semibold text-primary-foreground transition-transform duration-150 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {emptyCtaLabel}
           </button>
@@ -143,68 +119,51 @@ export function CourseHeroCard({
     );
   }
 
-  // ── Pelle della card corso di Studio, adattata alla Home (P35) ─────────
+  // ── Copertina del corso protagonista (2.1 §4) ──────────────────────
   return (
     <article
-      data-auto-contrast
-      className="relative w-full overflow-hidden border border-border bg-inverse-surface p-4 text-left shadow-hero sm:p-5"
+      className={cn("relative w-full overflow-hidden rounded-hero border border-border shadow-level-3")}
+      style={style}
     >
-      <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} variant="studio" />
+      <CourseCardBackground courseName={courseTitle ?? ""} />
 
-      {/* Luce di spigolo (P35): filo interno chiaro SOPRA gli strati pittorici,
-          simula la luce che colpisce il bordo superiore della card. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[5] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.10)]"
-      />
-
-      <div className="relative z-10">
-        {/* Header: corso a sinistra, anello di avanzamento a destra */}
+      <div className="relative z-10 p-5 text-left sm:p-6">
+        {/* Header: corso a sinistra (Lora), anello di avanzamento a destra */}
         <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
             {eyebrowText && (
-              <p className="label-small tracking-[0.16em] text-contrast-secondary opacity-70">
+              <p className="text-[13px] font-medium leading-none tracking-[0.08em] text-contrast-secondary">
                 {eyebrowText}
               </p>
             )}
-            <h2
-              className={cn(
-                "mt-1 break-words font-display font-extrabold leading-[1.05] text-contrast",
-                (courseTitle ?? "").length > LONG_COURSE_TITLE_THRESHOLD
-                  ? "text-2xl sm:text-3xl"
-                  : "text-3xl sm:text-4xl",
-              )}
-            >
+            <h2 className="mt-1.5 break-words font-display text-[1.75rem] font-medium leading-[1.12] tracking-[-0.01em] text-contrast sm:text-3xl">
               {courseTitle}
             </h2>
           </div>
-          <ProgressRing percent={progressPercent ?? 0} ariaLabel={progressAriaLabel ?? `${clampPercent(progressPercent)}%`} />
+          <ProgressRing
+            percent={progressPercent ?? 0}
+            ariaLabel={progressAriaLabel ?? `${clampPercent(progressPercent)}%`}
+          />
         </div>
 
-        {/* Corpo: lezione corrente + metadati reali (nessuna barra orizzontale) */}
-        <div className="mt-2 min-w-0">
-          <p className="text-[17px] font-semibold leading-snug text-contrast line-clamp-2">{lessonTitle}</p>
+        {/* Lezione corrente + metadati reali */}
+        <div className="mt-2.5 min-w-0">
+          <p className="line-clamp-2 text-[15px] font-medium leading-snug text-contrast">{lessonTitle}</p>
           {lessonMetaText && (
-            <p className="mt-1 truncate text-sm text-contrast-secondary">{lessonMetaText}</p>
+            <p className="mt-1 text-sm leading-snug text-contrast-secondary">{lessonMetaText}</p>
           )}
         </div>
 
-        {/* Unica CTA — semiopaca (§6): fondo al 12% di currentColor, bordo al 24%:
-            abbastanza solida per restare leggibile sulle zone chiare della
-            composizione; stessa grammatica della CTA della card Studio. */}
-        <button
-          type="button"
-          onClick={onPrimaryCta}
-          className="text-contrast mt-4 inline-flex h-11 w-full items-center justify-center gap-1.5 border px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          style={{
-            backgroundColor: "color-mix(in srgb, currentColor 12%, transparent)",
-            borderColor: "color-mix(in srgb, currentColor 24%, transparent)",
-          }}
-        >
+        {/* Azione principale della copertina: velo satinato a pillola (2.1 §4).
+            Testo inchiostro opaco, blur locale SOLO sul fondo del controllo. */}
+        <button type="button" onClick={onPrimaryCta} className="btn-satin mt-5 w-full">
           <Play className="h-4 w-4 shrink-0 fill-current" strokeWidth={1.9} aria-hidden="true" />
           {primaryCtaLabel}
         </button>
       </div>
+
+      {/* Identificabile dai test e dal detector: famiglia della copertina. */}
+      <span className="hidden" data-cover-family={cover.family} aria-hidden="true" />
     </article>
   );
 }

@@ -2,8 +2,7 @@ import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
-import { getSubjectAccent } from "@/lib/subjectColors";
-import { useCourseImage } from "@/hooks/useCourseImage";
+import { courseCoverVars } from "@/lib/courseIdentity";
 import { CourseCardBackground } from "./CourseCardBackground";
 
 export interface CourseCardData {
@@ -46,29 +45,26 @@ export function CourseCard({
   style,
   ...motionProps
 }: CourseCardProps & CourseCardMotionProps) {
-  const coverUrl = useCourseImage(noImage ? null : course.id, course.file_name);
-  const accent = getSubjectAccent(course.file_name);
+  // V2-01: identità del corso dal resolver condiviso (stessa pelle in
+  // Home, Studio, selettore e modulo); niente foto Wikipedia sfocate.
+  const { style: coverStyle } = courseCoverVars(course.file_name);
 
   return (
     <motion.button
       {...motionProps}
       type="button"
       onClick={() => onSelect(course)}
-      data-auto-contrast
-      style={{ "--ambient-block-ink": accent, ...style } as CSSProperties}
+      style={{ ...coverStyle, ...style } as CSSProperties}
       className={cn(
-        "interactive-card relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 bg-inverse-surface p-4 text-left shadow-level-2 sm:p-5",
+        "relative w-full overflow-hidden rounded-hero border border-border bg-card p-4 text-left shadow-level-2 sm:p-5",
         className,
       )}
     >
-      <CourseCardBackground coverUrl={coverUrl} subjectColor={accent} variant="studio" />
+      <CourseCardBackground courseName={course.file_name} />
       <div className="relative z-10">
         {children}
-        <span
-          className="mt-3.5 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-pill border border-contrast bg-contrast-soft text-sm font-semibold"
-        >
-          {actionLabel}
-        </span>
+        {/* «Scegli» sulla copertina: velo satinato a pillola (2.1 §4). */}
+        <span className="btn-satin mt-3.5 h-10 w-full text-sm">{actionLabel}</span>
       </div>
     </motion.button>
   );

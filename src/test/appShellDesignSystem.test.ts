@@ -5,28 +5,44 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
+/**
+ * App shell del pilota V2-01 (DESIGN.md 2.1 «Carta contemporanea»).
+ * Le prescrizioni D1/D2 (raggio 0, dock rettangolare, ottanio, aura dei
+ * blocchi) sono archiviate: questi controlli difendono la veste 2.1.
+ */
+
 describe("app shell design system", () => {
-  it("espone radius semantici squadrati: 0 per contenitori e controlli, cerchio solo nel contenuto (D1)", () => {
+  it("espone radius semantici con la gerarchia 8/16/24/32 e pillola per le azioni (2.1 §6)", () => {
     const tailwind = read("tailwind.config.ts");
     const css = read("src/index.css");
     expect(tailwind).toContain('card: "var(--radius-card)"');
     expect(tailwind).toContain('button: "var(--radius-button)"');
     expect(tailwind).toContain('pill: "var(--radius-pill)"');
-    // DESIGN.md 1.1 §3: raggio 0 per card, pulsanti, dialoghi, dock e callout;
-    // --radius-full resta l'unica capsula (avatar, radio, esagono, grafici).
-    expect(css).toContain("--radius-card: 0px");
-    expect(css).toContain("--radius-button: 0px");
-    expect(css).toContain("--radius-media: 0px");
-    expect(css).toContain("--radius-pill: 0px");
-    expect(css).toContain("--radius-dialog: 0px");
+    expect(tailwind).toContain('hero: "var(--radius-hero)"');
+    expect(tailwind).toContain('nav: "var(--radius-nav)"');
+    // DESIGN.md 2.1 §6: 8 dettagli, 16 controlli, 24 card e dock,
+    // 32 fogli protagonisti e sheet, pillola per le azioni.
+    expect(css).toContain("--radius-sm: 8px");
+    expect(css).toContain("--radius-md: 16px");
+    expect(css).toContain("--radius-card: 24px");
+    expect(css).toContain("--radius-hero: 32px");
+    expect(css).toContain("--radius-nav: 24px");
+    expect(css).toContain("--radius-dialog: 32px");
+    expect(css).toContain("--radius-button: 16px");
+    expect(css).toContain("--radius-pill: 999px");
     expect(css).toContain("--radius-full: 9999px");
+    // niente raggio zero residuo
+    expect(css).not.toContain(": 0px;");
   });
 
-  it("usa AppLayout e non applica più l'alone nero globale", () => {
+  it("usa AppLayout e non applica aloni globali né texture sul tavolo", () => {
     const index = read("src/pages/Index.tsx");
     expect(index).toContain("<AppLayout");
     expect(index).not.toContain("dot-halo-scope");
     expect(index).not.toContain("<BottomNav");
+    // il tavolo è piatto: la vecchia matrice di puntini non esiste più
+    const layout = read("src/components/layout/AppLayout.tsx");
+    expect(layout).not.toContain("bg-dot-grid");
   });
 
   it("mantiene i componenti base legati ai token del tema", () => {
@@ -42,103 +58,86 @@ describe("app shell design system", () => {
     expect(input).toContain("bg-card");
   });
 
-  it("D2: navigazione mobile = dock flottante rettangolare unico, opaco, Core incluso", () => {
+  it("l'azione primaria è inchiostro a pillola (2.1 §4/§6)", () => {
+    const button = read("src/components/ui/button.tsx");
+    expect(button).toMatch(/default:\s*\n\s*"rounded-pill bg-primary/);
+    const css = read("src/index.css");
+    // inchiostro #252623 di giorno, carta chiara #F4F1E7 di notte
+    expect(css).toContain("--primary: 80 4% 14%");
+    expect(css).toMatch(/\.dark \{[\s\S]*?--primary: 46 37% 93%/);
+  });
+
+  it("V2-01: navigazione mobile = dock flottante ARROTONDATO, opaco, selezione inchiostro", () => {
     const nav = read("src/components/layout/BottomNav.tsx");
     // dock opaco: niente aloni a gradiente sopra la barra
     expect(nav).not.toContain("from-black");
     expect(nav).not.toContain("bg-gradient-to-t");
-    // safe area riservata e dock rettangolare (raggio 0 del sistema)
+    // safe area riservata e dock arrotondato (radius-nav 24, 2.1 §10)
     expect(nav).toContain("env(safe-area-inset-bottom");
-    // Core è una voce del dock come le altre: niente cerchio separato
+    expect(nav).toContain("rounded-nav");
+    // Core è una voce del dock come le altre
     expect(nav).toContain('{ id: "core" as Tab, i18nKey: "nav.core"');
-    expect(nav).not.toContain("w-[4.5rem] h-[4.5rem]");
-    // selezione: indicatore geometrico ottanio + semantica accessibile
-    expect(nav).toContain("bg-brand");
+    // selezione = inchiostro, senza barrette d'accento (2.1 §10)
+    expect(nav).not.toContain("bg-brand");
     expect(nav).toContain("aria-current");
+    expect(nav).toContain('isActive ? "font-semibold text-foreground"');
     // etichette persistenti su ogni voce
     expect(nav).not.toContain('aria-label={t("nav.core")}');
   });
 
-  it("in dark mode spegne i puntini e usa il fondo notte #101717 (D1)", () => {
-    const css = read("src/index.css");
-    // DESIGN.md 1.1 §4: fondo notte proposto #101717 (teal profondo)
-    expect(css).toContain("--background: 180 18% 7.6%");
-    expect(css).toContain("#101717");
-    const darkDot = css.match(/\.dark \.bg-dot-grid \{[\s\S]*?\}/);
-    expect(darkDot?.[0]).toContain("background-image: none");
-    expect(darkDot?.[0]).not.toContain("radial-gradient");
+  it("V2-01: sidebar da 1024px e rail 768–1023 (soglie §10, decisione del pilota)", () => {
+    const nav = read("src/components/layout/BottomNav.tsx");
+    expect(nav).toContain("md:flex md:h-full md:w-[84px]");
+    expect(nav).toContain("lg:w-64");
+    expect(nav).not.toContain("xl:w-64");
   });
 
-  it("in light mode usa il fondo #F2F0EF e l'inchiostro #181516 senza alterare la notte", () => {
+  it("in dark mode usa il tavolo notte #22211F e la carta #2D2C29 (2.1 §3)", () => {
+    const css = read("src/index.css");
+    expect(css).toContain("--background: 40 5% 13%");
+    expect(css).toContain("--card: 40 5% 17%");
+    expect(css).toContain("--border: 40 6% 28%");
+    expect(css).toContain("--input: 39 7% 54%");
+  });
+
+  it("in light mode usa il tavolo avorio #F6F3EB e l'inchiostro #252623 (2.1 §3)", () => {
     const css = read("src/index.css");
     const tailwind = read("tailwind.config.ts");
-    expect(css).toContain("--background: 20 10.34% 94.31%");
-    expect(css).toContain("--ink: 340 6.67% 8.82%");
-    expect(css).toContain("/* P32 — il fondo chiaro è #F2F0EF, senza texture né puntini. */");
-    const lightDot = css.match(/\.bg-dot-grid \{[\s\S]*?\}/);
-    expect(lightDot?.[0]).toContain("background-image: none");
-    expect(lightDot?.[0]).not.toContain("radial-gradient");
-    // D1: l'azione primaria è l'ottanio di marca (DESIGN.md 1.1 §4),
-    // non più l'inchiostro della veste monocroma.
-    expect(css).toContain("--primary: 182 88% 27%");
-    expect(css).toContain("--brand-deep: 183 86% 19%");
-    expect(css).toContain("--inverse-surface: var(--ink)");
-    expect(css).toContain("--aura-void: hsl(20 10.34% 94.31%)");
-    expect(css).toContain("--ambient-ink: hsl(var(--ink))");
+    expect(css).toContain("--background: 44 38% 94%");
+    expect(css).toContain("--ink: 80 4% 14%");
+    expect(css).toContain("--card: 50 100% 99%");
+    expect(css).toContain("--border: 50 15% 85%");
+    // marca e selezione = inchiostro, non più ottanio (2.1 §4)
+    expect(css).not.toContain("087F83");
+    expect(css).not.toContain("8ECFD0");
+    expect(css).toContain("--brand-deep: 80 4% 14%");
     expect(tailwind).toContain('ink: "hsl(var(--ink) / <alpha-value>)"');
   });
 
-  it("applica il margine ambiente solo ai blocchi, non ai campi di testo", () => {
+  it("il sistema aura/margine ambiente è stato rimosso (macchie sfumate: mai più)", () => {
     const css = read("src/index.css");
-    expect(css).toContain("P26 — MARGINE AMBIENTE DEI BLOCCHI");
-    expect(css).toContain("ambient-margin-pulse");
-    expect(css).toContain("ambient-margin-breathe");
-    expect(css).toContain("--ambient-block-ink");
-    expect(css).toContain(":not(input, textarea, select");
-    expect(css).toContain(".m3-text-field-filled");
-    expect(css).toContain(".no-ambient");
-    expect(css).not.toMatch(/\.dark [^{]*\b(h1|h2|p|span)\b[^{]*ambient-margin/);
-  });
-
-  it("anima l'aura dei blocchi in entrambi i temi mescolando tinta e fondo", () => {
-    const css = read("src/index.css");
-    expect(css).toContain("P27 — AURA ANIMATA DEI BLOCCHI");
-    // sfumatura conica che gira lentamente attorno al bordo
-    expect(css).toContain("@keyframes ambient-margin-drift");
-    expect(css).toContain("conic-gradient(");
-    expect(css).toContain("from var(--aura-angle)");
-    expect(css).toMatch(/ambient-margin-drift \d+s linear infinite/);
-    // il fondo con cui si mescola la tinta: #F2F0EF di giorno, nero di notte
-    expect(css).toMatch(/:root \{[\s\S]*?--aura-void: hsl\(20 10\.34% 94\.31%\);/);
-    expect(css).toMatch(/:root \{[\s\S]*?--ambient-ink: hsl\(var\(--ink\)\);/);
-    expect(css).toMatch(/\.dark \{[\s\S]*?--aura-void: hsl\(0 0% 0%\);/);
-    // la tinta arriva dal blocco stesso (o dal colore materia inline)
-    expect(css).toContain("--aura-ink: var(--ambient-block-ink, var(--ambient-ink));");
-  });
-
-  it("mantiene l'aura discreta: niente campi di testo, meno moto su telefono e con reduced motion", () => {
-    const css = read("src/index.css");
-    const aura = css.slice(css.indexOf("P27 — AURA ANIMATA DEI BLOCCHI"));
-    // il pseudo-elemento resta escluso da input, campi e sottoalberi opt-out
-    expect(aura).toMatch(/::after[\s\S]*?content: ""/);
-    expect(aura).toContain(":not(input, textarea, select");
-    expect(aura).toContain(".no-ambient");
-    // telefono: nessuna rotazione, solo respiro
-    expect(aura).toMatch(/@media \(max-width: 640px\)[\s\S]*?animation: ambient-margin-breathe/);
-    // preferenze di movimento ridotto
-    expect(aura).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?animation: none/);
-    expect(aura).toMatch(/html\.reduce-motion[\s\S]*?animation: none/);
-    expect(aura).toMatch(/@media \(prefers-contrast: more\)[\s\S]*?content: none/);
-  });
-
-  it("espone la pagina /aura-lab solo in sviluppo, con toggle tema e tinte d'esempio", () => {
+    expect(css).not.toContain("P26 — MARGINE AMBIENTE");
+    expect(css).not.toContain("P27 — AURA ANIMATA");
+    expect(css).not.toContain("@keyframes ambient-margin-drift");
+    expect(css).not.toContain("--aura-void");
+    expect(css).not.toContain("--ambient-block-ink");
+    // la pagina banco-di-prova dell'aura non esiste più
     const app = read("src/App.tsx");
-    // registrata SOLO dietro import.meta.env.DEV
-    expect(app).toContain('import("./pages/AuraLab")');
-    expect(app).toContain('import.meta.env.DEV && <Route path="/aura-lab"');
-    const page = read("src/pages/AuraLab.tsx");
-    expect(page).toContain("useTheme");
-    expect(page).toContain("--ambient-block-ink");
-    expect(page).toContain("no-halo");
+    expect(app).not.toContain("AuraLab");
+    expect(app).not.toContain("/aura-lab");
+  });
+
+  it("tipografia: Lora per i titoli serif, Inter per interfaccia e lettura (2.1 §5)", () => {
+    const tailwind = read("tailwind.config.ts");
+    const html = read("index.html");
+    expect(tailwind).toContain("display: ['Lora', 'Georgia', 'serif']");
+    expect(tailwind).toContain("sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']");
+    expect(tailwind).toContain("reading: ['Inter', 'system-ui', '-apple-system', 'sans-serif']");
+    expect(html).toContain("family=Lora");
+    expect(html).toContain("family=Inter");
+    // Ubuntu Sans e Montserrat non sono più ruoli del prodotto
+    expect(html).not.toContain("Ubuntu+Sans");
+    expect(html).not.toContain("Montserrat");
+    expect(tailwind).not.toContain("welcome-title");
   });
 });

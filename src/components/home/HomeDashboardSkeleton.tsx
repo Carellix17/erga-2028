@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function HomeDashboardSkeleton() {
   return (
     <div
-      className="no-ambient flex min-w-0 flex-col gap-6 overflow-x-clip pt-24 pb-2 sm:pt-32"
+      className="flex min-w-0 flex-col gap-6 overflow-x-clip pt-20 pb-2 sm:pt-28"
       aria-busy="true"
       aria-label="Caricamento della Home"
     >
@@ -20,15 +20,15 @@ export function HomeDashboardSkeleton() {
           caricamento nulla si sposta. */}
       <header className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-2">
-          <Skeleton className="h-[2.85rem] w-3/5 sm:h-[4.625rem] md:h-[5rem] lg:h-[5.7rem]" />
-          <Skeleton className="h-[2.85rem] w-2/5 sm:h-[4.625rem] md:h-[5rem] lg:h-[5.7rem]" />
+          <Skeleton className="h-[2.35rem] w-3/5 rounded-xl sm:h-[2.9rem] lg:h-[3.5rem]" />
+          <Skeleton className="h-[2.35rem] w-2/5 rounded-xl sm:h-[2.9rem] lg:h-[3.5rem]" />
           <Skeleton className="h-4 w-2/3" />
         </div>
-        <Skeleton className="h-11 w-11 shrink-0" />
+        <Skeleton className="h-11 w-11 shrink-0 rounded-[14px]" />
       </header>
 
       {/* Card corso: titolo + anello, lezione, metadati, CTA */}
-      <div className="border border-[#FFFBF4] bg-card p-5 sm:p-6">
+      <div className="rounded-hero border border-border bg-card p-5 shadow-level-3 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <Skeleton className="h-6 w-1/2" />
           <Skeleton className="h-16 w-16 shrink-0" />
@@ -37,7 +37,7 @@ export function HomeDashboardSkeleton() {
           <Skeleton className="h-5 w-3/4" />
           <Skeleton className="h-4 w-1/2" />
         </div>
-        <Skeleton className="mt-5 h-12 w-full" />
+        <Skeleton className="mt-5 h-12 w-full rounded-pill" />
       </div>
 
       {/* Strumenti rapidi: titolo + griglia 2×2 */}

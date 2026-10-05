@@ -1,10 +1,9 @@
 @tailwind base;
 
-/* ═══ RADJA — font display dei titoli focali (P36 dark luxury) ═══
+/* ═══ RADJA — font display della voce focale del Login (P36) ═══
    Self-hosted in public/fonts/ (peso unico 400, subset latino).
-   Riservato a titolo del corso in Home e macro-metriche: per il corpo
-   restano Montserrat/Ubuntu Sans da Google Fonts. I grassetti sul 400 unico
-   vengono evitati: la gerarchia la fa la misura, non il peso sintetico. */
+   V2-01: fuori dal pilota (landing/accesso = tappa 5); i titoli del
+   prodotto usano Lora. Grassetti sul 400 unico evitati. */
 @font-face {
   font-family: "Radja";
   src: url("/fonts/Radja-q2MP5.ttf") format("truetype");
@@ -16,319 +15,283 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════
-   ERGA — FONDAMENTA 1.1 (pacchetto D1, DESIGN.md v1.1)
-   Marca ottanio (#087F83) per azione e accento; carta #F2F0EF,
-   inchiostro #181516, notte teal #101717. Geometria squadrata
-   (raggio 0, cerchi solo nel contenuto). Marca, materia e stato
-   restano ruoli distinti. Eredita la struttura P24/P36:
-   superfici opache, regola del palco, motion di casa.
+   ERGA — FONDAMENTA 2.1 «Carta contemporanea» (V2-01, DESIGN.md v2.1)
+   Tavolo avorio, carta opaca, copertine di materia, velo satinato
+   locale. Inchiostro #252623 per testo e azioni; notte #22211F.
+   Raggi 8/16/24/32, ombre corte, marca e selezione in inchiostro.
+   Marca, materia e stato restano ruoli distinti (policy noGreen).
    ═══════════════════════════════════════════════════════ */
 
 @layer base {
   :root {
-    /*  P30 — OFF-WHITE UNIFICATO (#F2F0EF)
-       Tutti i vecchi quasi-bianchi caldi/crema confluiscono nello stesso
-       riferimento neutro dell'app. `--cream` resta come alias compatibile
-       per i componenti esistenti, ma il colore reale è l'off-white di Erga.
-       Canali HSL grezzi per gli usi `hsl(var(--cream))` e relativi alpha. */
-    --cream: 20 10.34% 94.31%;
-    --cream-hover: 236 233 232; /* #ECE9E8: hover neutro leggermente più scuro. */
-    /* Off-white neutro per le superfici chiare dell'app: #F2F0EF.
-       È in canali RGB grezzi per poterlo usare in Tailwind come
-       bg-off-white/text-off-white anche con eventuale opacità. */
-    --off-white: 242 240 239;
-    /* Inchiostro caldo dei blocchi e dei controlli chiari: #181516. */
-    --ink: 340 6.67% 8.82%;
---primary: 182 88% 27%;               /* #087F83 — ottanio: pulsanti pieni, indicatore attivo (DESIGN.md 1.1 §4) */
-    /*  D1 — FAMIGLIA DI MARCA (DESIGN.md 1.1 §4). L'ottanio pieno è per i
-       riempimenti; il TESTO di marca sulla carta usa il tono profondo
-       (#07585C, ~7:1); la tinta per fondi secondari e selezioni. */
-    --brand: 182 88% 27%;               /* #087F83 */
-    --brand-deep: 183 86% 19%;          /* #07585C — testo di marca (di notte: accento chiaro) */
-    --brand-tint: 168 28% 93%;          /* #E8F2F0 */
---primary-foreground: 0 0% 100%;  /* bianco su ottanio */
---primary-container: 168 28% 93%;    /* #E8F2F0 tinta di marca */
---on-primary-container: 183 86% 19%;  /* #07585C tono profondo */
+    /* ─── Materiali (DESIGN.md 2.1 §3) ───
+       --cream è la panna #F4F1E7 (l'inchiostro di notte); resta alias
+       compatibile per i componenti che la usano come testo chiaro. */
+    --cream: 46 37% 93%;               /* #F4F1E7 panna */
+    --cream-hover: 236 233 223;        /* #ECE9DF: hover della carta */
+    /* Carta #FFFEF9 in canali RGB grezzi per gli usi con opacità. */
+    --off-white: 255 254 249;
+    /* Inchiostro caldo di testo e azioni primarie: #252623. */
+    --ink: 80 4% 14%;
 
-    /* ═══ P36 — DARK LUXURY / WARM MINIMALIST (pilota Home) ═══
-       Hero crema/avorio #F4F1EA con inchiostro #121214 e secondo testo
-       #4A4A4F; card secondaria dark #141418. Valori fissi per tema:
-       la gerarchia la compongono con i token inversi/semantici esistenti. */
-    --surface-cream: 42 31% 94%;          /* #F4F1EA avorio */
-    --surface-cream-foreground: 240 5% 8%;  /* #121214 inchiostro su avorio */
-    --surface-cream-muted: 240 3% 30%;    /* #4A4A4F secondo testo (≥7:1) */
-    --surface-dark-card: 180 18% 9.4%;    /* #141D1D superficie notte */
---secondary: 168 28% 93%;   /* #E8F2F0 — selezioni e contesti secondari (tinta) */
---secondary-foreground: 183 86% 19%;
---secondary-container: 168 24% 91%;
---on-secondary-container: 183 86% 19%;
---tertiary: 0 0% 32%;                /* grigio medio (monocromo) */
---tertiary-foreground: var(--cream);
---tertiary-container: 0 0% 93%;
---on-tertiary-container: var(--ink);
---gold-antique: 0 0% 45%;
---gold-antique-soft: 0 0% 93%;
---destructive: 4 68% 40%;   /* rosso semantico per errore o distruzione (§4) */
+    /* ─── Azione primaria = inchiostro (2.1 §4: niente ottanio) ─── */
+    --primary: 80 4% 14%;              /* #252623 inchiostro */
+    --primary-foreground: 50 100% 99%; /* #FFFEF9 carta */
+    --primary-container: 46 25% 90%;   /* #ECE9DF carta quieta */
+    --on-primary-container: 80 4% 14%;
+
+    /* ─── Marca e selezione = inchiostro (ruoli mantenuti, tinta nuova) ─── */
+    --brand: 80 4% 14%;                /* riempimenti di marca */
+    --brand-deep: 80 4% 14%;           /* testo di marca: inchiostro */
+    --brand-tint: 46 25% 90%;          /* selezioni e tinte leggere */
+
+    /* ─── Superfici legacy riallineate ai materiali ─── */
+    --surface-cream: 44 38% 94%;          /* #F6F3EB avorio del tavolo */
+    --surface-cream-foreground: 80 4% 14%;
+    --surface-cream-muted: 68 4% 38%;
+    --surface-dark-card: 45 5% 17%;       /* #2D2C29 carta della notte */
+
+    --secondary: 46 25% 90%;           /* #ECE9DF carta quieta */
+    --secondary-foreground: 80 4% 14%;
+    --secondary-container: 46 20% 88%;
+    --on-secondary-container: 80 4% 14%;
+    --tertiary: 68 4% 38%;             /* inchiostro attenuato */
+    --tertiary-foreground: var(--cream);
+    --tertiary-container: 46 15% 90%;
+    --on-tertiary-container: var(--ink);
+    --gold-antique: 45 8% 45%;
+    --gold-antique-soft: 46 20% 90%;
+
+    /* ─── Stato: semantici intatti, solo esito (2.1 §8) ─── */
+    --destructive: 4 68% 40%;
     --destructive-foreground: 0 0% 100%;
---error-container: 4 70% 93%;
---on-error-container: 4 70% 20%;
---success: 152 55% 32%;   /* verde semantico: solo esito, mai tinta generica */
---success-foreground: 0 0% 100%;
---success-container: 152 45% 92%;
---on-success-container: 152 60% 16%;
---warning: 28 80% 34%;
+    --error-container: 4 70% 93%;
+    --on-error-container: 4 70% 20%;
+    --success: 152 55% 32%;
+    --success-foreground: 0 0% 100%;
+    --success-container: 152 45% 92%;
+    --on-success-container: 152 60% 16%;
+    --warning: 28 80% 34%;
     --warning-foreground: 0 0% 100%;
---warning-container: 28 70% 92%;
---on-warning-container: 28 80% 14%;
+    --warning-container: 28 70% 92%;
+    --on-warning-container: 28 80% 14%;
 
-    /*  P21e — PASTELLI DOMATI delle materie: la vecchia famiglia orchidea/iride
-       (accesa e cieca al buio) va in pensione. Ogni materia ha un pastello smorzato
-       Opal; la versione notturna vive in .dark, cosi' badge, bordi e pallini si
-       vestono da soli sia di giorno che di notte. Chiavi delle materie INVARIATE. */
---pastel-terracotta: 0 0% 45%;       /* storia 🧱 — mono */
---pastel-polvere: 0 0% 42%;         /* matematica — mono */
---pastel-ocra: 0 0% 48%;             /* economia — mono */
---pastel-prugna: 0 0% 44%;          /* letteratura — mono */
---pastel-crepuscolo: 0 0% 46%;      /* filosofia — mono */
---pastel-mare: 0 0% 40%;            /* fisica — mono */
---pastel-violetto: 0 0% 50%;        /* informatica — mono */
---pastel-cipria: 0 0% 52%;          /* arte — mono */
---pastel-grafite: 0 0% 38%;          /* diritto — mono */
---pastel-miele: 0 0% 47%;            /* lingue — mono */
---pastel-neutro: 0 0% 46%;            /* generale — mono */
---pastel-bosco: 0 0% 42%;           /* scienze — mono */
---pastel-oliva: 0 0% 44%;            /* geografia — mono */
---background: 20 10.34% 94.31%;        /* #F2F0EF — fondo chiaro, senza puntini */
---foreground: var(--ink);
---surface-dim: 0 0% 88%;
---surface-bright: 0 0% 100%;
---surface-container-lowest: 0 0% 100%;
---surface-container-low: 0 0% 97%;
---surface-container: 0 0% 95%;
---surface-container-high: 0 0% 92%;
---surface-container-highest: 0 0% 89%;
---card: 0 0% 100%;
---card-foreground: var(--ink);
+    /*  P21e → V2-01 — PASTELLI MATERIA VIVI: ogni materia torna al suo
+        colore (erano in monocromo dal P24). Chiavi invariato; di notte la
+        versione schiarita. Ruolo: chips, badge, bordi — la copertina usa
+        courseIdentity (campo + contrasto garantito). */
+    --pastel-terracotta: 18 45% 45%;    /* storia */
+    --pastel-polvere: 210 36% 42%;      /* matematica */
+    --pastel-ocra: 38 55% 36%;          /* economia */
+    --pastel-prugna: 320 28% 44%;       /* letteratura */
+    --pastel-crepuscolo: 230 22% 44%;   /* filosofia */
+    --pastel-mare: 185 38% 35%;         /* fisica */
+    --pastel-violetto: 250 28% 47%;     /* informatica */
+    --pastel-cipria: 350 30% 50%;       /* arte */
+    --pastel-grafite: 220 16% 38%;      /* diritto */
+    --pastel-miele: 28 50% 42%;         /* lingue */
+    --pastel-neutro: 45 12% 45%;        /* generale */
+    --pastel-bosco: 145 28% 34%;        /* scienze */
+    --pastel-oliva: 85 26% 34%;         /* geografia */
 
-    /* ═══ token glass PENSIONATI (alias opachi per compatibilità) ═══ */
-    --glass-surface-1: hsl(var(--surface-container-low));
-    --glass-surface-2: hsl(var(--surface-container));
-    --glass-surface-3: hsl(var(--surface-container-high));
-    --glass-surface-hover: hsl(var(--surface-container-highest));
+    /* ─── Il tavolo e la carta (2.1 §3) ─── */
+    --background: 44 38% 94%;        /* #F6F3EB tavolo avorio */
+    --foreground: var(--ink);
+    --surface-dim: 46 20% 88%;
+    --surface-bright: 50 100% 99%;
+    --surface-container-lowest: 50 100% 99%;
+    --surface-container-low: 46 30% 96%;
+    --surface-container: 46 25% 93%;
+    --surface-container-high: 46 22% 90%;
+    --surface-container-highest: 46 20% 86%;
+    --card: 50 100% 99%;             /* #FFFEF9 carta opaca */
+    --card-foreground: var(--ink);
+
+    /*  Alias opachi dei vecchi token glass (superfici = carta/quieta). */
+    --glass-surface-1: hsl(46 30% 96%);
+    --glass-surface-2: hsl(46 25% 93%);
+    --glass-surface-3: hsl(46 22% 90%);
+    --glass-surface-hover: hsl(46 20% 86%);
     --glass-border: hsl(var(--border));
     --glass-inset: hsl(0 0% 0% / 0);
 
-    /* ═══ P34 — GLASS TATTIVO (Home V3): materia translucida unificata ═══
-       Superficie vetro per le card chiare + blur. I radius richiesti
-       (card 24px / bottone 16px / pillola 9999px) coincidono già con
-       --radius-card/button/pill; --glass-border resta l'alias tematico
-       definito qui sopra (un bianco fisso romperebbe il tema scuro). */
-    --glass-surface: rgba(255, 255, 255, 0.75);
-    --glass-card-dark: rgba(45, 36, 32, 0.85);
-    --glass-blur: blur(16px);
---popover: 0 0% 100%;
---popover-foreground: var(--ink);
---muted: 0 0% 94%;
---muted-foreground: 27 5% 37%;   /* #625D59 testo secondario */
---accent: 168 28% 93%;               /* #E8F2F0 — selezioni leggere */
---accent-foreground: 183 86% 19%;
---outline: var(--ink) / 0.25;
---outline-variant: var(--ink) / 0.12;
---border: 50 7% 83%;      /* #D6D5D0 — separazioni, mai unico segnale */
---input: 0 0% 100%;
---ring: 182 88% 27%;      /* ottanio: focus visibile */
---scrim: 0 0% 0%;
-    /*  P24 × MONOCROMO — colore d'accento DINAMICO della materia.
-       La pagina padre (o il profilo) puo' sovrascrivere --subject-accent
-       per legare il colore alla materia di studio corrente. Fallback ambra. */
-    --subject-accent: #181516;
-    --subject-accent-foreground: #F2F0EF;
-    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, white);
---inverse-surface: var(--ink);
---inverse-on-surface: var(--cream);
---inverse-primary: 0 0% 62%;
---sidebar-background: 0 0% 100%;
---sidebar-foreground: var(--ink);
---sidebar-primary: var(--ink);
---sidebar-primary-foreground: var(--cream);
---sidebar-accent: 0 0% 95%;
---sidebar-accent-foreground: var(--ink);
---sidebar-border: var(--ink) / 0.12;
---sidebar-ring: var(--ink);
+    --popover: 50 100% 99%;
+    --popover-foreground: var(--ink);
+    --muted: 46 25% 92%;
+    --muted-foreground: 68 4% 38%;    /* #65665E inchiostro attenuato */
+    --accent: 46 25% 90%;             /* selezioni leggere: carta quieta */
+    --accent-foreground: 80 4% 14%;
+    --outline: var(--ink) / 0.25;
+    --outline-variant: var(--ink) / 0.12;
+    --border: 50 15% 85%;             /* #DEDCD2 filetto */
+    --input: 71 7% 51%;               /* #888B7A contorno di controllo */
+    --ring: 80 4% 14%;                /* focus = inchiostro (2.1 §3) */
+    --scrim: 0 0% 0%;
 
-    /*  P24 — firme del guscio: nav a pillola (neutro) e puntino neutro */
---nav-surface: var(--ink);
---nav-foreground: var(--cream);
+    /*  V2-01 — accento DINAMICO della materia (fallback inchiostro).
+        La pagina di Studio lo sovrascrive col corso attivo. */
+    --subject-accent: #252623;
+    --subject-accent-foreground: #FFFEF9;
+    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, white);
+
+    --inverse-surface: var(--ink);
+    --inverse-on-surface: var(--cream);
+    --inverse-primary: 46 37% 93%;
+    --sidebar-background: 50 100% 99%;
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: var(--ink);
+    --sidebar-primary-foreground: var(--cream);
+    --sidebar-accent: 46 25% 93%;
+    --sidebar-accent-foreground: var(--ink);
+    --sidebar-border: var(--ink) / 0.12;
+    --sidebar-ring: var(--ink);
+
+    /*  Guscio: dock/rail/sidebar in carta (2.1 §10). */
+    --nav-surface: 50 100% 99%;
+    --nav-foreground: var(--ink);
 
     /* Scala del testo (Accessibilità) */
     --text-scale: 1;
   }
 
   .dark {
-    --off-white: 242 240 239;
---primary: 182 88% 27%;      /* ottanio anche di notte: pulsante pieno, testo bianco (§4) */
---brand-deep: 181 41% 69%;      /* di notte il testo di marca è l'accento chiaro #8ECFD0 */
---brand-tint: 180 15% 16%;
---primary-foreground: 0 0% 100%;
---primary-container: 180 20% 22%;
---on-primary-container: 181 41% 69%;  /* #8ECFD0 accento chiaro */
---secondary: 180 15% 16%;
---secondary-foreground: 181 41% 69%;
---secondary-container: 180 15% 18%;
---on-secondary-container: 181 41% 69%;
---tertiary: 0 0% 78%;
---tertiary-foreground: 0 0% 8%;
---tertiary-container: 0 0% 24%;
---on-tertiary-container: var(--cream);
---gold-antique: 0 0% 60%;
---gold-antique-soft: 0 0% 16%;
---destructive: 4 70% 62%;
+    /* ─── Notte (2.1 §3): tavolo #22211F, carta #2D2C29, inchiostro #F4F1E7.
+       L'azione primaria diventa carta chiara con testo inchiostro:
+       inversione dichiarata dalla specifica, non automatica altrove. ─── */
+    --primary: 46 37% 93%;             /* #F4F1E7 */
+    --primary-foreground: 80 4% 14%;   /* #252623 */
+    --primary-container: 40 6% 21%;
+    --on-primary-container: 46 37% 93%;
+    --brand: 46 37% 93%;
+    --brand-deep: 46 37% 93%;          /* testo di marca di notte: panna */
+    --brand-tint: 40 6% 21%;
+    --secondary: 40 6% 21%;
+    --secondary-foreground: 46 37% 93%;
+    --secondary-container: 40 6% 23%;
+    --on-secondary-container: 46 37% 93%;
+    --tertiary: 44 12% 76%;
+    --tertiary-foreground: 40 5% 13%;
+    --tertiary-container: 40 6% 24%;
+    --on-tertiary-container: var(--cream);
+    --gold-antique: 45 12% 65%;
+    --gold-antique-soft: 40 6% 18%;
+    --destructive: 4 70% 62%;
     --destructive-foreground: 0 0% 8%;
---error-container: 4 30% 18%;
---on-error-container: 4 70% 80%;
---success: 152 45% 70%;
---success-foreground: 0 0% 8%;
---success-container: 152 25% 16%;
---warning: 28 80% 70%;
---warning-foreground: 139 0% 8%;
---warning-container: 28 30% 16%;
+    --error-container: 4 30% 18%;
+    --on-error-container: 4 70% 80%;
+    --success: 152 45% 70%;
+    --success-foreground: 0 0% 8%;
+    --success-container: 152 25% 16%;
+    --warning: 28 80% 70%;
+    --warning-foreground: 139 0% 8%;
+    --warning-container: 28 30% 16%;
 
---pastel-terracotta: 0 0% 65%;
---pastel-polvere: 0 0% 68%;
---pastel-ocra: 0 0% 70%;
---pastel-prugna: 0 0% 66%;
---pastel-crepuscolo: 0 0% 67%;
---pastel-mare: 0 0% 64%;
---pastel-violetto: 0 0% 70%;
---pastel-cipria: 0 0% 72%;
---pastel-grafite: 0 0% 65%;
---pastel-miele: 0 0% 69%;
-    --pastel-neutro: 0 0% 68%;
-    --pastel-bosco: 0 0% 66%;
-    --pastel-oliva: 0 0% 67%;
+    /* Pastelli materia, versione notte (chiariti per restare leggibili). */
+    --pastel-terracotta: 18 40% 68%;
+    --pastel-polvere: 210 32% 68%;
+    --pastel-ocra: 38 48% 68%;
+    --pastel-prugna: 320 26% 68%;
+    --pastel-crepuscolo: 230 20% 68%;
+    --pastel-mare: 185 34% 64%;
+    --pastel-violetto: 250 24% 70%;
+    --pastel-cipria: 350 28% 72%;
+    --pastel-grafite: 220 14% 65%;
+    --pastel-miele: 28 44% 68%;
+    --pastel-neutro: 45 10% 68%;
+    --pastel-bosco: 145 26% 64%;
+    --pastel-oliva: 85 24% 64%;
 
-    /* P33 — ombre notte con profondità: capello di luce + ombra ambiente soffusa */
-    /*  D1 — NOTTE (§6): meno dipendenza dall'ombra nera; i livelli si
-       distinguono con superficie e bordo. Capello di luce + ombre corte. */
-    --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.04);
-    --shadow-level-2: inset 0 1px 0 0 hsl(0 0% 100% / 0.04), 0 2px 8px hsl(0 0% 0% / 0.25);
-    --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.05), 0 6px 16px hsl(0 0% 0% / 0.30);
-    --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 10px 24px hsl(0 0% 0% / 0.35);
-    --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 14px 32px hsl(0 0% 0% / 0.40);
---background: 180 18% 7.6%;          /* #101717 — fondo notte proposto (DESIGN.md 1.1 §4) */
---foreground: var(--cream);            /* P29: l'inchiostro di notte è panna, non bianco */
---surface-dim: 180 18% 6%;
---surface-bright: 180 14% 20%;
---surface-container-lowest: 180 16% 6%;
---surface-container-low: 180 17% 10%;
---surface-container: 180 17% 13%;
---surface-container-high: 180 16% 16%;
---surface-container-highest: 180 15% 20%;
---card: var(--surface-dark-card);   /* #141418 — card secondary notte */
---card-foreground: var(--cream);
+    --background: 40 5% 13%;          /* #22211F tavolo notte */
+    --foreground: var(--cream);        /* #F4F1E7 inchiostro di notte */
+    --surface-dim: 40 5% 10%;
+    --surface-bright: 40 5% 26%;
+    --surface-container-lowest: 40 5% 11%;
+    --surface-container-low: 40 5% 15%;
+    --surface-container: 40 5% 17%;
+    --surface-container-high: 40 6% 21%;
+    --surface-container-highest: 40 6% 25%;
+    --card: 40 5% 17%;                /* #2D2C29 carta notte */
+    --card-foreground: var(--cream);
 
-    /* ═══ token glass PENSIONATI (alias opachi per compatibilità) ═══ */
-    --glass-surface-1: hsl(var(--surface-container-low));
-    --glass-surface-2: hsl(var(--surface-container));
-    --glass-surface-3: hsl(var(--surface-container-high));
-    --glass-surface-hover: hsl(var(--surface-container-highest));
+    --glass-surface-1: hsl(40 5% 15%);
+    --glass-surface-2: hsl(40 5% 17%);
+    --glass-surface-3: hsl(40 6% 21%);
+    --glass-surface-hover: hsl(40 6% 25%);
     --glass-border: hsl(var(--border));
     --glass-inset: hsl(0 0% 0% / 0);
-    /* P34 — vetro carbone per la notte */
-    --glass-surface: rgb(20 29 29 / 0.85);
---popover: 180 16% 16%;          /* #1B2828 superficie elevata notte */
---popover-foreground: var(--cream);
---muted: 180 14% 14%;
---muted-foreground: 167 11% 75%;  /* #B8C6C3 */
---accent: 180 15% 18%;               /* selezioni leggere di notte */
---accent-foreground: 181 41% 69%;
-    /* Bordi e filetti: la stessa panna, appena accennata (l'alfa non cambia). */
---outline: 175 12% 65%;
---outline-variant: 175 12% 40%;
---border: 175 15% 28%;      /* #3D5351 */
---input: 180 15% 13%;
---ring: 181 41% 69%;       /* #8ECFD0 accento chiaro di notte */
-    --subject-accent: #F2F0EF;
-    --subject-accent-foreground: #181516;
-    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, black);
---inverse-surface: var(--cream);
---inverse-on-surface: 0 0% 8%;
---inverse-primary: 0 0% 40%;
---sidebar-background: 0 0% 8%;
---sidebar-foreground: var(--cream);
---sidebar-primary: var(--cream);
---sidebar-primary-foreground: 0 0% 0%;
---sidebar-accent: 0 0% 20%;
---sidebar-accent-foreground: var(--cream);
---sidebar-border: var(--cream) / 0.10;
---sidebar-ring: 0 0% 80%;
 
-    /*  P24 — firme del guscio: nav a pillola (neutro di notte) e puntino neutro */
---nav-surface: 180 15% 12%;
---nav-foreground: var(--cream);
+    --popover: 40 5% 17%;
+    --popover-foreground: var(--cream);
+    --muted: 40 6% 18%;
+    --muted-foreground: 44 12% 76%;   /* #C9C5BA */
+    --accent: 40 6% 21%;
+    --accent-foreground: 46 37% 93%;
+    --outline: 44 12% 76%;
+    --outline-variant: 40 6% 34%;
+    --border: 40 6% 28%;              /* #4B4842 */
+    --input: 39 7% 54%;               /* #918B80 contorno di controllo */
+    --ring: 46 37% 93%;               /* focus = inchiostro di notte */
+    --subject-accent: #F4F1E7;
+    --subject-accent-foreground: #252623;
+    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, black);
+    --inverse-surface: var(--cream);
+    --inverse-on-surface: 40 5% 13%;
+    --inverse-primary: 80 4% 14%;
+    --sidebar-background: 40 5% 15%;
+    --sidebar-foreground: var(--cream);
+    --sidebar-primary: var(--cream);
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 40 6% 22%;
+    --sidebar-accent-foreground: var(--cream);
+    --sidebar-border: var(--cream) / 0.10;
+    --sidebar-ring: 0 0% 80%;
+    --nav-surface: 40 5% 15%;
+    --nav-foreground: var(--cream);
   }
 
   :root {
-    /* ─── D1 — GEOMETRIA SQUADRATA (DESIGN.md 1.1 §3): raggio 0 per card,
-       pannelli, pulsanti, input, dialoghi, dock, selettori, menu e callout.
-       Vietate pillole e capsule come stile generico. --radius-full resta
-       l'unica eccezione: cerchi che appartengono al contenuto o a una
-       convenzione necessaria (avatar, radio, esagono, grafici). ─── */
-    --radius-xs: 0px;
-    --radius-sm: 0px;
-    --radius-md: 0px;
-    --radius-lg: 0px;
-    --radius-xl: 0px;
-    --radius-2xl: 0px;
-    --radius-card: 0px;
-    --radius-button: 0px;
-    --radius-pill: 0px;
-    --radius-dialog: 0px;
-    --radius-media: 0px;
+    /* ─── V2-01 — GEOMETRIA COME GERARCHIA (DESIGN.md 2.1 §6):
+       8 dettagli · 16 controlli · 24 card e dock · 32 fogli protagonisti
+       e sheet · pillola per le azioni. --radius-full resta per i cerchi
+       del contenuto (avatar, radio, esagono, grafici). ─── */
+    --radius-xs: 8px;
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-2xl: 32px;
+    --radius-card: 24px;
+    --radius-hero: 32px;
+    --radius-nav: 24px;
+    --radius-button: 16px;
+    --radius-pill: 999px;
+    --radius-dialog: 32px;
+    --radius-media: 16px;
     --radius-full: 9999px;
 
-    /*  P24 — GRAMMATICA MOTION: poche durate, sempre uguali
-       micro 120 · standard 180 · enfatizzato 240 · ingresso 300 */
-    --motion-micro: 120ms;
-    --motion-standard: 180ms;
-    --motion-emphasized: 240ms;
-    --motion-entrance: 300ms;
+    /*  Motion di casa (2.1 §7): pressione breve, pochi tempi condivisi. */
+    --motion-micro: 120ms;      /* pressione */
+    --motion-standard: 180ms;   /* cambio di stato, cambio sezione */
+    --motion-emphasized: 240ms; /* espansione */
+    --motion-entrance: 300ms;   /* ingresso, sheet */
+    --motion-path: 360ms;       /* corso → percorso → modulo (320–420) */
 
-    /*  P48 — LE CURVE: una sola famiglia di accellerazioni naturali.
-       Gli oggetti veri rallentano mentre arrivano, non rimbalzano:
-       --ease-out è la curva di casa per ingressi, uscite e cambi di stato.
-       Niente curve che superano il punto d'arrivo (cubic-bezier con
-       valori sopra 1): il movimento si ferma dove deve. */
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-    --radius: 0px;   /* D1: raggio base zero */
+    /*  V2-01 — curva di casa: rallenta arrivando, senza rimbalzo. */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --radius: 8px;
 
-    /* ─── Elevazione — sussurri, mai palchi ─── */
+    /* ─── Ombre corte, senza aloni grigi (2.1 §6) ─── */
     --shadow-level-0: none;
-    /*  P22 — MATERIAL DEPTH: una sola mano timida non bastava (effetto foglio).
-       Ora ogni livello = ombra di CONTATTO (vicina, netta) + ombra d'AMBIENTE
-       (larga, soffusa): le superfici prendono peso, lo stile non cambia.
-       Stessi nomi di gettone = si propaga da solo in tutta la casa. */
-    /*  D1 — PROFONDITÀ CONTROLLATA (DESIGN.md 1.1 §6): ordinaria per gli
-       elementi, protagonista per i fuochi, overlay per i sospesi. Stessi
-       nomi = tutta l'app si allinea da sola. */
-    --shadow-level-1: 0 2px 6px rgba(24, 21, 22, 0.06);                                  /* ordinaria */
-    --shadow-level-2: 0 4px 10px rgba(24, 21, 22, 0.08), 0 1px 3px rgba(24, 21, 22, 0.05);
-    --shadow-level-3: 0 10px 28px rgba(24, 21, 22, 0.12), 0 2px 6px rgba(24, 21, 22, 0.05);  /* protagonista */
-    --shadow-level-4: 0 14px 36px rgba(24, 21, 22, 0.15), 0 2px 6px rgba(24, 21, 22, 0.06);
-    --shadow-level-5: 0 18px 48px rgba(24, 21, 22, 0.18);                                 /* overlay */
+    --shadow-level-1: 0 1px 2px rgba(37, 38, 35, 0.04), 0 4px 12px rgba(37, 38, 35, 0.03);   /* foglio */
+    --shadow-level-2: 0 1px 2px rgba(37, 38, 35, 0.05), 0 6px 16px rgba(37, 38, 35, 0.05);
+    --shadow-level-3: 0 2px 4px rgba(37, 38, 35, 0.04), 0 10px 24px rgba(37, 38, 35, 0.08);  /* protagonista */
+    --shadow-level-4: 0 2px 4px rgba(37, 38, 35, 0.05), 0 12px 28px rgba(37, 38, 35, 0.10);
+    --shadow-level-5: 0 6px 24px rgba(37, 38, 35, 0.10);                                    /* overlay */
 
-    /*  P34 — OMBRE TATTILI (Home V3): profilo deciso ma leggero.
-       Tattile = elevazione morbida per card e pillole glass;
-       card-active = profondità maggiore riservata alla card corso attiva.
-       Entrambe scivolano SOTTO la superficie: nessun alone sul fondo. */
-    --shadow-tattile: 0 2px 6px rgba(24, 21, 22, 0.06);   /* D1: profilo leggero = ordinaria */
-    --shadow-card-active: 0 10px 28px rgba(24, 21, 22, 0.12), 0 2px 6px rgba(24, 21, 22, 0.05);  /* D1: protagonista */
-
-    /*  P35 — EROE SOPRAELEVATO: la card del percorso vive su fondo scuro,
-       dove un'ombra leggera scompare. Goccia esterna più decisa (tre strati
-       che si sommano in profondità); l'alone interno chiaro è reso
-       dall'overlay dedicato dentro la card, sopra gli strati pittorici. */
-    --shadow-hero-card: 0 10px 28px rgba(24, 21, 22, 0.14), 0 2px 6px rgba(24, 21, 22, 0.06), 0 18px 48px rgba(24, 21, 22, 0.10);  /* D1: protagonista composita */
+    /*  Alias storici → stesse ombre del sistema (foglio/protagonista). */
+    --shadow-tattile: 0 1px 2px rgba(37, 38, 35, 0.04), 0 4px 12px rgba(37, 38, 35, 0.03);
+    --shadow-card-active: 0 2px 4px rgba(37, 38, 35, 0.04), 0 10px 24px rgba(37, 38, 35, 0.08);
+    --shadow-hero-card: 0 2px 4px rgba(37, 38, 35, 0.04), 0 10px 24px rgba(37, 38, 35, 0.08);
 
     --state-hover: 0.06;
     --state-focus: 0.08;
@@ -336,37 +299,30 @@
     --state-dragged: 0.14;
   }
 
-  /* La variante scura deve restare dopo i default: evita che la cascata
-     riapplichi le ombre chiare quando cambia il tema. */
+  /*  Notte: l'ombra conta meno — superficie e bordo distinguono (2.1 §6). */
   .dark {
-    --shadow-level-1: inset 0 1px 0 0 hsl(0 0% 100% / 0.04);
-    --shadow-level-2: inset 0 1px 0 0 hsl(0 0% 100% / 0.04), 0 2px 8px hsl(0 0% 0% / 0.25);
-    --shadow-level-3: inset 0 1px 0 0 hsl(0 0% 100% / 0.05), 0 6px 16px hsl(0 0% 0% / 0.30);
-    --shadow-level-4: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 10px 24px hsl(0 0% 0% / 0.35);
-    --shadow-level-5: inset 0 1px 0 0 hsl(0 0% 100% / 0.06), 0 14px 32px hsl(0 0% 0% / 0.40);
+    --shadow-level-1: 0 1px 2px rgba(0, 0, 0, 0.25);
+    --shadow-level-2: 0 2px 8px rgba(0, 0, 0, 0.28);
+    --shadow-level-3: 0 6px 16px rgba(0, 0, 0, 0.32);
+    --shadow-level-4: 0 10px 24px rgba(0, 0, 0, 0.36);
+    --shadow-level-5: 0 14px 32px rgba(0, 0, 0, 0.40);
   }
 }
-
 @layer base {
-  /* Tipografia: font caricati da Google Fonts nel <link> di index.html
-     (Montserrat 100–900 per testo e titoli, Ubuntu Sans 100–800 per le etichette
-     e per il saluto della Home; il sottotitolo mantiene
-     Zalando Sans Expanded 200–900).
-     Nessun font self-hosted, nessun @font-face qui: la gamma di pesi è reale,
-     quindi niente grassetti o corsivi sintetizzati. */
+  /* Tipografia (DESIGN.md 2.1 §5): Inter 400–700 per interfaccia e lettura,
+     Lora 400–700 per i titoli serif — entrambe variable, dal <link> di
+     index.html. Radja resta self-hosted per la sola voce focale del Login.
+     KaTeX conserva i propri font. Nessun grassetto sintetico. */
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
-    /*  D1 — RUOLO TIPOGRAFICO "INTERFACCIA" (DESIGN.md 1.1 §5): Ubuntu Sans
-       per titoli e interfaccia; il testo didattico usa il ruolo LETTURA
-       (font-reading, Montserrat in attesa di validazione su contenuti reali).
-       Il saluto della Home resta Ubuntu Sans (welcome-title). KaTeX conserva
-       i propri font. Nessun nuovo font caricato: Ubuntu Sans era già attivo
-       per etichette e saluto. */
-    font-family: 'Ubuntu Sans', 'Montserrat', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    /*  V2-01 — RUOLO TIPOGRAFICO "INTERFACCIA" (DESIGN.md 2.1 §5): Inter per
+       interfaccia e lettura; i titoli serif (saluto, corso, concetto) usano
+       il ruolo DISPLAY (font-display → Lora, vedi tailwind.config). */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -379,7 +335,7 @@
   }
 
   h1, .display-large {
-    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-weight: 700;
     font-size: 2.25rem;
     line-height: 1.05;
@@ -388,7 +344,7 @@
   }
 
   h2, .headline-large {
-    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-weight: 700;
     font-size: 1.5rem;
     line-height: 1.1;
@@ -397,7 +353,7 @@
   }
 
   h3, .headline-medium {
-    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-weight: 600;
     font-size: 1.25rem;
     line-height: 1.25;
@@ -406,25 +362,25 @@
   }
 
   .title-large {
-    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-weight: 600;
     font-size: 1.125rem;
     line-height: 1.4;
     letter-spacing: -0.015em;
   }
 
-  .title-medium { font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; letter-spacing: -0.01em; }
-  .title-small { font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; letter-spacing: 0.01em; }
+  .title-medium { font-family: 'Inter', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; letter-spacing: -0.01em; }
+  .title-small { font-family: 'Inter', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; letter-spacing: 0.01em; }
 
   .body-large, .body-medium {
-    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-weight: 400;
     line-height: 1.6;
     letter-spacing: -0.01em;
     color: hsl(var(--foreground));
   }
   .body-small {
-    font-family: 'Montserrat', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-weight: 400;
     font-size: 0.9375rem;
     line-height: 1.5;
@@ -433,7 +389,7 @@
 
   /* Etichette — uppercase tracking moderno */
   .label-large, .label-medium, .label-small {
-    font-family: 'Ubuntu Sans', ui-monospace, SFMono-Regular, monospace;
+    font-family: 'Inter', system-ui, sans-serif;
     text-transform: uppercase;
     font-weight: 600;
   }
@@ -477,40 +433,8 @@
      Translucido + blur da token, tema-aware (chiaro di giorno, carbone
      di notte). Il bordo resta disegnato dalle classi border-* del tema.
      Fallback opaco per reduced-transparency e high-contrast. */
-  .glass-tactile {
-    background-color: var(--glass-surface);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-  }
-  @media (prefers-reduced-transparency: reduce) {
-    .glass-tactile {
-      background-color: hsl(var(--card));
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-    }
-  }
-  html.high-contrast .glass-tactile {
-    background-color: hsl(var(--card));
-    backdrop-filter: none;
-  }
-  @supports not (backdrop-filter: blur(1px)) {
-    .glass-tactile { background-color: hsl(var(--card)); }
-  }
-  .glass-interactive {
-    transition: background-color 220ms ease-out;
-  }
-
   /* Text on glass must stay heavy & high contrast */
   .on-glass { font-weight: 500; color: hsl(var(--foreground)); }
-
-  /* Orb ambient abolite (P21a): classe conservata innocua per i file che
-     ancora la usano; sparirà loro con i pacchi P21b-d. */
-  .bg-ambient { position: relative; isolation: isolate; }
-  .bg-ambient::before { content: none; }
-  @keyframes ambient-drift {
-    0%   { transform: translate3d(0, 0, 0) scale(1); }
-    100% { transform: translate3d(0, -2%, 0) scale(1.06); }
-  }
 
   /* ═══════ GRADIENT ACCENTS ═══════ */
   .gradient-primary {
@@ -601,9 +525,8 @@
     color: hsl(var(--foreground));
   }
   .editorial-focus-title {
-    /* P48 — le etichette in maiuscolo spaziato parlano Ubuntu Sans (la voce
-       delle etichette nel sistema), non Plus Jakarta. */
-    font-family: 'Ubuntu Sans', ui-monospace, SFMono-Regular, monospace;
+    /* V2-01: le etichette parlano Inter (ruolo interfaccia). */
+    font-family: 'Inter', system-ui, sans-serif;
     font-size: 0.7rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -1171,11 +1094,11 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
-.animate-lesson-in { animation: lesson-slide-in var(--motion-entrance) cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
+.animate-lesson-in { animation: lesson-slide-in var(--motion-entrance) var(--ease-out) both; will-change: transform, opacity; }
 .animate-lesson-out { animation: lesson-slide-out var(--motion-emphasized) cubic-bezier(0.3, 0, 0.8, 0.15) both; will-change: transform, opacity; }
 .animate-feedback-correct { animation: feedback-correct 340ms var(--ease-out) both; will-change: transform; }
 .animate-feedback-wrong { animation: m3-fade-in 200ms ease both; }
-.animate-option-pop { animation: option-pop 450ms cubic-bezier(0.05, 0.7, 0.1, 1) both; will-change: transform, opacity; }
+.animate-option-pop { animation: option-pop 450ms var(--ease-out) both; will-change: transform, opacity; }
 /* Safe area */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
 
@@ -1233,160 +1156,13 @@ html.reduce-motion *::after {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-    P24 × APPLE — MATERIALE TRASLUCIDO CON FISICA DELLA LUCE
-   .glass-panel → superficie traslucida con:
-     · GRADIENTE DI RIFRAZIONE interno (luce che entra dall'alto);
-     · SPECULAR HIGHLIGHT sul bordo superiore (inset 1px bianco);
-     · OMBRA A DOPPIO STRATO: occlusione stretta alla base + ombra
-       ambient morbida per staccare dal fondo;
-     · blur leggero dove supportato; senza backdrop-filter degrada a
-       velo semitrasparente (72%) sempre leggibile.
-   .glass-hero  → variante "hero": highlight più marcato, ombra più
-       profonda, gradiente più presente (per la card principale).
-   .glass-panel.is-active → stato attivo (es. timer in corso): bordo
-       neutro + alone luminoso.
-   .press       → micro-interazione tattile: scala 0.98 + leggero
-       abbassamento di luminosità + rientro dell'ombra (inset) al
-       tocco. Puro CSS, nessun JS, 60fps.
+    V2-01 — ACCENTO MATERIA E CALLOUT (DESIGN.md 2.1 §13)
+   Il fondo del tavolo è piatto (bg-background, nessuna texture).
+   .subject-callout → box d'evidenziazione della lettura, tinta del
+                      colore materia (--subject-accent), testo pieno.
+   utility accent   → bg/text/border-subject-accent (e -soft) per
+                      badge, barre e bordi dinamici.
    ═══════════════════════════════════════════════════════════════ */
-.glass-panel {
-  background-color: hsl(var(--card) / 0.72);
-  background-image:
-    linear-gradient(to bottom, hsl(0 0% 100% / 0.55), hsl(0 0% 100% / 0.06));
-  border: 1px solid hsl(var(--ink) / 0.08);
-  box-shadow:
-    inset 0 1px 0 0 hsl(0 0% 100% / 0.65),
-    inset 0 -1px 0 0 hsl(0 0% 0% / 0.03),
-    0 10px 30px -10px hsl(0 0% 0% / 0.18),
-    0 2px 6px -1px hsl(0 0% 0% / 0.10);
-}
-@supports (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px)) {
-  .glass-panel {
-    -webkit-backdrop-filter: blur(16px) saturate(1.35);
-    backdrop-filter: blur(16px) saturate(1.35);
-  }
-}
-.dark .glass-panel {
-  background-color: hsl(var(--card) / 0.62);
-  background-image:
-    linear-gradient(to bottom, hsl(0 0% 100% / 0.10), hsl(0 0% 100% / 0.02));
-  border-color: hsl(0 0% 100% / 0.12);
-  box-shadow:
-    inset 0 1px 0 0 hsl(0 0% 100% / 0.10),
-    inset 0 -1px 0 0 hsl(0 0% 0% / 0.22),
-    0 10px 30px -10px hsl(0 0% 0% / 0.55),
-    0 2px 6px -1px hsl(0 0% 0% / 0.35);
-}
-
-.glass-hero {
-  background-image:
-    linear-gradient(to bottom, hsl(0 0% 100% / 0.68), hsl(0 0% 100% / 0.12));
-  box-shadow:
-    inset 0 1px 0 0 hsl(0 0% 100% / 0.85),
-    inset 0 -1px 0 0 hsl(0 0% 0% / 0.03),
-    0 16px 40px -12px hsl(0 0% 0% / 0.26),
-    0 3px 8px -1px hsl(0 0% 0% / 0.12);
-}
-.dark .glass-hero {
-  background-image:
-    linear-gradient(to bottom, hsl(0 0% 100% / 0.13), hsl(0 0% 100% / 0.03));
-  box-shadow:
-    inset 0 1px 0 0 hsl(0 0% 100% / 0.14),
-    inset 0 -1px 0 0 hsl(0 0% 0% / 0.24),
-    0 16px 40px -12px hsl(0 0% 0% / 0.6),
-    0 3px 8px -1px hsl(0 0% 0% / 0.4);
-}
-
-.glass-panel.is-active {
-  border-color: color-mix(in srgb, var(--subject-accent) 55%, transparent);
-  box-shadow:
-    inset 0 1px 0 0 hsl(0 0% 100% / 0.7),
-    0 10px 30px -10px color-mix(in srgb, var(--subject-accent) 25%, transparent),
-    0 2px 6px -1px hsl(0 0% 0% / 0.10);
-}
-
-.press {
-  transition: transform 150ms ease-out, filter 150ms ease-out, box-shadow 150ms ease-out;
-  will-change: transform;
-}
-.press:active {
-  transform: scale(0.98);
-  filter: brightness(0.96);
-  box-shadow: inset 0 2px 10px hsl(0 0% 0% / 0.16);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   P33 — GLASS ACTION — bottoni traslucidi per card scure (PathHero)
-   Stile vetro: 8% currentColor bg + 20% border + blur 8px
-   Usato per Riprendi / Cambia corso — mantiene leggibilità su
-   immagini di copertina variabili. Fallback solido per
-   prefers-reduced-transparency e high-contrast.
-   ═══════════════════════════════════════════════════════════════ */
-.glass-action {
-  background-color: color-mix(in srgb, currentColor 8%, transparent);
-  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: background-color 180ms ease, border-color 180ms ease, transform 150ms ease, opacity 180ms ease;
-}
-.glass-action:hover {
-  background-color: color-mix(in srgb, currentColor 12%, transparent);
-  border-color: color-mix(in srgb, currentColor 28%, transparent);
-}
-.glass-action:active {
-  transform: scale(0.97);
-  background-color: color-mix(in srgb, currentColor 14%, transparent);
-}
-.glass-action-strong {
-  background-color: color-mix(in srgb, currentColor 15%, transparent);
-  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-@media (prefers-reduced-transparency: reduce) {
-  .glass-action,
-  .glass-action-strong {
-    background-color: hsl(var(--surface-container-high));
-    border-color: hsl(var(--border));
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-}
-html.high-contrast .glass-action,
-html.high-contrast .glass-action-strong {
-  background-color: hsl(var(--surface-container-highest));
-  border-color: hsl(var(--border));
-  backdrop-filter: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .glass-action,
-  .glass-action-strong {
-    transition-duration: 0.01ms !important;
-  }
-}
-
-
-/* ═══════════════════════════════════════════════════════════════
-    P24 × MONOCROMO — FONDO, ACCENTO MATERIA, CALLOUT
-   .bg-dot-grid        → superficie piatta: il tema chiaro usa
-                         #F2F0EF e non mostra più la vecchia matrice;
-                         in .dark il fondo resta #11120D, sempre piatto;
-   .subject-callout    → box d'evidenziazione tinti col colore della
-                         materia corrente (--subject-accent), con
-                         fallback su --subject-accent-light;
-   utility accent      → bg/text/border-subject-accent (e -soft) per
-                         badge, barre e bordi dinamici.
-   ═══════════════════════════════════════════════════════════════ */
-.bg-dot-grid {
-  /* P32 — il fondo chiaro è #F2F0EF, senza texture né puntini. */
-  background-color: hsl(var(--background));
-  background-image: none;
-  background-size: auto;
-}
-/* P26 — di notte i puntini restano spenti: il fondo è piatto #11120D. */
-.dark .bg-dot-grid {
-  background-image: none;
-}
 
 .bg-subject-accent { background-color: var(--subject-accent); }
 .text-subject-accent { color: var(--subject-accent); }
@@ -1400,230 +1176,10 @@ html.high-contrast .glass-action-strong {
 }
 
 .subject-callout {
-  background-color: var(--subject-accent-light);
-  background-color: color-mix(in srgb, var(--subject-accent) 10%, transparent);
-  border-color: color-mix(in srgb, var(--subject-accent) 30%, transparent);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-    P26 — MARGINE AMBIENTE DEI BLOCCHI
-    P27 — AURA ANIMATA DEI BLOCCHI (chiaro + scuro)
-   Attorno ai bordi dei BLOCCHI di contenuto (card, pannelli,
-   callout) vive una sfumatura lenta che gira piano e respira.
-   Non è un alone nero: è la TINTA DEL BLOCCO mescolata al fondo
-   della stanza — nero in modalità scura, #F2F0EF in modalità
-   chiara. Un blocco marroncino avrà quindi un'aura marroncino/nera
-   di notte e marroncino/beige di giorno.
-
-   · Vale in ENTRAMBI i temi: cambia solo il colore di fondo con
-     cui la tinta viene mescolata (--aura-void): #F2F0EF di giorno,
-     nero di notte.
-   · Solo i BLOCCHI di primo livello. Niente campi di testo
-     (input/textarea/select), niente righe singole (h-9…h-12),
-     niente figli annidati (chip, icone, barre).
-   · --ambient-block-ink (inline) vince: le card corso ci mettono
-     il colore materia. Altrimenti si eredita il gettone --card o
-     la famiglia bg-* del blocco.
-   · ::after (mai ::before: .state-layer lo usa già) dipinge la
-     sfumatura conica sfocata che scivola attorno al bordo;
-     box-shadow tiene un filetto colorato e un respiro anche
-     quando overflow nascosto taglia il pseudo-elemento.
-   · Movimento LENTO e non invadente: giro completo in 28s,
-     respiro in 11s, nessun cambio di layout (solo pittura).
-     Su telefono la rotazione si spegne e resta il respiro.
-   · Rispetta prefers-reduced-motion / html.reduce-motion (regole
-     globali più in alto) e prefers-contrast: more.
-   Opt-out: .no-halo / .no-ambient (e i loro sottoalberi).
-   ═══════════════════════════════════════════════════════════════ */
-
-@property --ambient-alpha {
-  syntax: "<number>";
-  inherits: false;
-  initial-value: 0.2;
-}
-
-@property --aura-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
-/* Respiro dell'opacità della sfumatura esterna. */
-@keyframes ambient-margin-breathe {
-  0%, 100% { opacity: 0.34; }
-  50%      { opacity: 0.62; }
-}
-
-/* Respiro del filetto colorato (box-shadow) attorno al bordo. */
-@keyframes ambient-margin-pulse {
-  0%, 100% { --ambient-alpha: 0.22; }
-  50%      { --ambient-alpha: 0.42; }
-}
-
-/* Deriva lenta: la sfumatura conica gira attorno al blocco. */
-@keyframes ambient-margin-drift {
-  from { --aura-angle: 0deg; }
-  to   { --aura-angle: 360deg; }
-}
-
-/* ─── Fondo della stanza con cui si mescola la tinta del blocco ─── */
-:root {
-  --aura-void: hsl(20 10.34% 94.31%);         /* giorno: #F2F0EF */
-  /* P32 — nel tema chiaro i margini dei blocchi usano lo stesso
-     inchiostro caldo #181516 dei controlli in contrasto. */
-  --ambient-ink: hsl(var(--ink));
-  --aura-strength: 1;
-}
-.dark {
-  --aura-void: hsl(0 0% 0%);              /* notte: nero */
-  /* Di notte la tinta è schiarita del 42% (mescolata verso il bianco):
-     sul carbone una card scura produrrebbe un alone invisibile. */
-  --ambient-ink: color-mix(in srgb, hsl(var(--card)) 58%, hsl(0 0% 100%));
-  --aura-strength: 1;
-}
-
-/* ─── Da dove arriva la tinta quando il blocco è colorato ─── */
-[class*="bg-warning"] { --ambient-ink: hsl(var(--warning)); }
-[class*="bg-error"] { --ambient-ink: hsl(var(--destructive)); }
-[class*="bg-success"] { --ambient-ink: hsl(var(--success)); }
-[class*="bg-inverse"] { --ambient-ink: hsl(var(--inverse-surface)); }
-[class*="bg-subject-accent"],
-.subject-callout { --ambient-ink: var(--subject-accent); }
-
-:is(
-  .ambient-block,
-  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
-  [class*="m3-card-"],
-  .glass-panel,
-  .glass-hero,
-  .editorial-focus,
-  .subject-callout
-):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *) {
-  --aura-ink: var(--ambient-block-ink, var(--ambient-ink));
-  --ambient-glow: var(--aura-ink);
-  position: relative;
-}
-
-/* Il filetto colorato (che sovrascrive l'ombra) resta al buio: di giorno
-   le card mantengono la loro elevazione e ricevono solo l'aura del ::after. */
-.dark :is(
-  .ambient-block,
-  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
-  [class*="m3-card-"],
-  .glass-panel,
-  .glass-hero,
-  .editorial-focus,
-  .subject-callout
-):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *) {
-  box-shadow:
-    var(--shadow-level-1),
-    0 0 0 1px color-mix(in srgb, var(--aura-ink) calc(var(--ambient-alpha) * 55%), transparent),
-    0 12px 28px -8px color-mix(in srgb, var(--aura-ink) calc(var(--ambient-alpha) * 80%), transparent);
-  animation: ambient-margin-pulse 11s ease-in-out infinite;
-}
-
-:is(
-  .ambient-block,
-  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
-  [class*="m3-card-"],
-  .glass-panel,
-  .glass-hero,
-  .editorial-focus,
-  .subject-callout
-):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *)::after {
-  content: "";
-  position: absolute;
-  inset: -14px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: -1;
-  /* Ripiego per browser senza @property: tinta piena e sfocata. */
-  background-color: var(--aura-ink);
-  background-image: conic-gradient(
-    from var(--aura-angle),
-    color-mix(in srgb, var(--aura-ink) calc(92% * var(--aura-strength)), var(--aura-void)) 0deg,
-    var(--aura-void) 55deg,
-    color-mix(in srgb, var(--aura-ink) calc(70% * var(--aura-strength)), var(--aura-void)) 130deg,
-    var(--aura-void) 195deg,
-    color-mix(in srgb, var(--aura-ink) calc(100% * var(--aura-strength)), var(--aura-void)) 265deg,
-    var(--aura-void) 320deg,
-    color-mix(in srgb, var(--aura-ink) calc(92% * var(--aura-strength)), var(--aura-void)) 360deg
-  );
-  filter: blur(20px);
-  opacity: 0.45;
-  animation:
-    ambient-margin-drift 28s linear infinite,
-    ambient-margin-breathe 11s ease-in-out infinite;
-}
-
-/* I blocchi che portano il colore materia (card corso, hero del percorso)
-   hanno overflow nascosto: il pseudo-elemento viene tagliato. Di giorno la
-   sfumatura vive quindi anche nel box-shadow, tinta materia su bianco. */
-:is([style*="ambient-block-ink"]).rounded-card:not(.no-halo, .no-ambient, [data-no-halo]) {
-  box-shadow:
-    var(--shadow-level-2),
-    0 0 0 1px color-mix(in srgb, var(--aura-ink) calc(var(--ambient-alpha) * 60%), transparent),
-    0 14px 34px -10px color-mix(in srgb, var(--aura-ink) calc(var(--ambient-alpha) * 90%), transparent);
-  animation: ambient-margin-pulse 11s ease-in-out infinite;
-}
-
-/* Telefono: niente rotazione (solo pittura leggera), aura più stretta. */
-@media (max-width: 640px) {
-  :is(
-  .ambient-block,
-  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
-  [class*="m3-card-"],
-  .glass-panel,
-  .glass-hero,
-  .editorial-focus,
-  .subject-callout
-):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *)::after {
-    inset: -10px;
-    filter: blur(14px);
-    animation: ambient-margin-breathe 11s ease-in-out infinite;
-  }
-}
-
-@media (prefers-contrast: more) {
-  .dark :is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) {
-    animation: none;
-    box-shadow: var(--shadow-level-1);
-  }
-  :is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) {
-    animation: none;
-  }
-  .dark :is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout)::after,
-  :is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout)::after {
-    content: none;
-  }
-}
-
-/* Movimento ridotto: l'aura resta, ferma e discreta. */
-@media (prefers-reduced-motion: reduce) {
-  :is(
-  .ambient-block,
-  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
-  [class*="m3-card-"],
-  .glass-panel,
-  .glass-hero,
-  .editorial-focus,
-  .subject-callout
-):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *)::after {
-    animation: none;
-    opacity: 0.22;
-  }
-}
-html.reduce-motion :is(
-  .ambient-block,
-  .rounded-card:is([class*="bg-"], [class*="border"], [class*="shadow-level"], [style*="ambient-block-ink"]),
-  [class*="m3-card-"],
-  .glass-panel,
-  .glass-hero,
-  .editorial-focus,
-  .subject-callout
-):not(:is(.ambient-block, .rounded-card, [class*="m3-card-"], .glass-panel, .glass-hero, .editorial-focus, .subject-callout) *):not(input, textarea, select, p, label, [role="textbox"], .m3-text-field-filled, .m3-text-field-outlined, .h-12, .h-11, .h-10, .h-9, .animate-pulse, .w-12, .w-10, .w-9, .no-halo, .no-halo *, .no-ambient, .no-ambient *, [data-no-halo], [data-no-halo] *)::after {
-  animation: none;
-  opacity: 0.22;
+  /* V2-01 (DESIGN.md 2.1 §13): accento materia della lettura — tinta
+     leggera del colore del corso, bordo al 30%, testo inchiostro pieno. */
+  background-color: color-mix(in srgb, var(--subject-accent) 9%, hsl(var(--card)));
+  border: 1px solid color-mix(in srgb, var(--subject-accent) 30%, hsl(var(--border)));
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1656,3 +1212,110 @@ html.reduce-motion :is(
 
 /* Testo che ha per sfondo l'inchiostro stesso (es. chip chiare). */
 .text-contrast-surface { color: rgb(var(--contrast-surface, 24 21 22)); }
+
+/* ═══════════════════════════════════════════════════════════════
+   V2-01 — VELO SATINATO LOCALE (DESIGN.md 2.1 §4)
+   Solo per Continua/Riprendi/Scegli sulle copertine. Il fondo è
+   carta all'80% (giorno) / 85% (notte) con blur LOCALE 8–12px;
+   testo inchiostro OPACO; bordo discreto; focus separato.
+   La trasparenza riguarda il fondo, mai il testo. Fallback: carta
+   piena senza blur (browser senza supporto, trasparenza ridotta,
+   contrasto elevato).
+   ═══════════════════════════════════════════════════════════════ */
+.btn-satin {
+  --satin-bg: 255 254 249; /* #FFFEF9 carta (giorno) */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  background-color: rgb(var(--satin-bg) / 0.8);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgb(var(--satin-bg) / 0.55);
+  color: hsl(var(--foreground));
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform var(--motion-micro) var(--ease-out),
+    background-color var(--motion-micro) var(--ease-out);
+}
+.btn-satin:hover {
+  background-color: rgb(var(--satin-bg) / 0.88);
+}
+.btn-satin:active {
+  transform: scale(0.98);
+}
+.btn-satin:focus-visible {
+  outline: none;
+  /* Focus separato dal bordo: anello inchiostro con stacco dal velo. */
+  box-shadow:
+    0 0 0 2px hsl(var(--card)),
+    0 0 0 4px hsl(var(--ring));
+}
+.btn-satin:disabled {
+  pointer-events: none;
+  opacity: 0.55;
+}
+.dark .btn-satin {
+  --satin-bg: 45 44 41; /* #2D2C29 carta (notte) */
+  background-color: rgb(var(--satin-bg) / 0.85);
+  border-color: rgb(var(--satin-bg) / 0.6);
+}
+.dark .btn-satin:hover {
+  background-color: rgb(var(--satin-bg) / 0.92);
+}
+/* Fallback opaco: niente blur → carta piena (sempre leggibile). */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .btn-satin { background-color: rgb(var(--satin-bg)); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .btn-satin { background-color: rgb(var(--satin-bg)); }
+}
+html.high-contrast .btn-satin {
+  background-color: rgb(var(--satin-bg));
+  border-color: hsl(var(--foreground));
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-satin { transition: none; }
+  .btn-satin:active { transform: none; }
+}
+html.reduce-motion .btn-satin { transition: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   V2-01 — GRANA CONDIVISA DELLE COPERTINE (DESIGN.md 2.1 §4)
+   3–5% di rumore sulla composizione, mai sopra testo, campi,
+   formule o grafici (il layer sta sotto il contenuto, z-10).
+   SVG feTurbulence inline: nessun asset esterno, nessuna animazione.
+   ═══════════════════════════════════════════════════════════════ */
+.cover-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.dark .cover-grain {
+  opacity: 0.07;
+  mix-blend-mode: screen;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   V2-01 — LETTURA: formule e tabelle larghe (DESIGN.md 2.1 §13)
+   Scroll locale, mai riduzione di caratteri per far entrare il
+   contenuto. KaTeX conserva i propri font e l'output MathML.
+   ═══════════════════════════════════════════════════════════════ */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+}
+.prose table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

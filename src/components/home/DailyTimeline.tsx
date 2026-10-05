@@ -2,9 +2,13 @@ import { BookOpen, CalendarDays, Check, ClipboardCheck, Clock, type LucideIcon }
 import { cn } from "@/lib/utils";
 
 /**
- * DailyTimeline — piano del giorno sulla Home.
- * Card neutra con elenco attività: le attività completate usano il primario
- * solo per il segno di spunta, tutto il resto resta sobrio e leggibile.
+ * DailyTimeline — piano del giorno sulla Home (V2-01, DESIGN.md 2.1 §9).
+ *
+ * Il prossimo impegno vive su CARTA QUIETA: card opaca raggio 24, filetto
+ * delicato, righe serene. Le attività completate si spengono (testo
+ * attenuato, barrato, spunta in chip quieto); quelle da fare portano
+ * l'icona in un chip tondo del contenuto. Un solo controllo «Vedi tutto»,
+ * sobrio (raggio control 16), mai un pulsante pieno.
  */
 
 export interface TimelineTask {
@@ -44,8 +48,9 @@ export function DailyTimeline({
   onSeeAll,
 }: DailyTimelineProps) {
   if (tasks.length === 0) {
+    // Stato senza impegni: breve e utile (2.1 §9), non un pannello vuoto.
     return (
-      <section className="border border-border bg-card p-5 shadow-tactile">
+      <section className="rounded-card border border-border bg-card p-5 shadow-tactile">
         <h2 className="text-lg font-semibold text-foreground">{emptyTitle}</h2>
         {emptyDescription && (
           <p className="mt-1 text-sm leading-snug text-muted-foreground">{emptyDescription}</p>
@@ -54,7 +59,7 @@ export function DailyTimeline({
           <button
             type="button"
             onClick={onSeeAll}
-            className="mt-4 flex h-11 w-full items-center justify-center border border-border bg-surface-container-high text-[15px] font-medium text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="mt-4 flex h-11 w-full items-center justify-center rounded-control border border-border bg-transparent text-[15px] font-medium text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {emptyCtaLabel}
           </button>
@@ -64,21 +69,21 @@ export function DailyTimeline({
   }
 
   return (
-    <section className="overflow-hidden border border-border bg-card shadow-tactile">
-      <div className="flex items-center justify-between gap-3 p-4 pb-2">
+    <section className="overflow-hidden rounded-card border border-border bg-card shadow-tactile">
+      <div className="flex items-center justify-between gap-3 p-4 pb-2 sm:p-5 sm:pb-2.5">
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
         {onSeeAll && (
           <button
             type="button"
             onClick={onSeeAll}
-            className="flex h-11 items-center bg-surface-container px-4 text-sm font-medium text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-9 items-center rounded-control px-3.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {seeAllLabel}
           </button>
         )}
       </div>
 
-      <ul className="px-2 pb-2">
+      <ul className="px-2 pb-2 sm:px-2.5">
         {tasks.map((task) => {
           const Icon = taskIcon(task.kind);
           return (
@@ -86,14 +91,14 @@ export function DailyTimeline({
               <button
                 type="button"
                 onClick={() => onTaskClick?.(task.id)}
-                className="flex min-h-[60px] w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="flex min-h-[60px] w-full items-center gap-3 rounded-[16px] px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <span
                   className={cn(
-                    "grid h-11 w-11 shrink-0 place-items-center",
+                    "grid h-11 w-11 shrink-0 place-items-center rounded-[14px]",
                     task.isCompleted
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border bg-surface-container-high text-foreground",
+                      ? "bg-surface-container-high text-muted-foreground"
+                      : "bg-surface-container-high text-foreground",
                   )}
                 >
                   {task.isCompleted ? (

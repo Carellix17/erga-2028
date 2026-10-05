@@ -7,39 +7,46 @@ import tailwindConfig from "../../tailwind.config";
 
 const fontFamilies = tailwindConfig.theme.extend.fontFamily;
 
+/**
+ * Saluto della Home — pilota V2-01 (DESIGN.md 2.1 §5, §9).
+ * Serif compatto (Lora 400/500): 32px telefono, 40 sm, 48 lg.
+ * «Compact, mai gigantesco»: la scala D1 da 43–86px è archiviata.
+ */
+
 describe("Font del messaggio di benvenuto", () => {
-  it("carica Ubuntu Sans da Google Fonts senza rimuovere gli altri font", () => {
+  it("carica Lora e Inter da Google Fonts come family variable (2.1 §5)", () => {
     const html = readFileSync(resolve(__dirname, "../../index.html"), "utf8");
     const doc = new DOMParser().parseFromString(html, "text/html");
     const link = doc.querySelector<HTMLLinkElement>('link[rel="stylesheet"][href^="https://fonts.googleapis.com/css2"]');
     expect(link).not.toBeNull();
 
     const url = new URL(link!.href);
-    expect(url.searchParams.getAll("family")).toEqual([
-      "Montserrat:ital,wght@0,100..900;1,100..900",
-      "Plus Jakarta Sans:wght@400;500;600;700;800",
-      "Ubuntu Sans:ital,wght@0,100..800;1,100..800",
-      "Zalando Sans Expanded:ital,wght@0,200..900;1,200..900",
+    expect(url.searchParams.getAll("family").sort()).toEqual([
+      "Inter:ital,wght@0,400..700;1,400..700",
+      "Lora:ital,wght@0,400..700;1,400..700",
     ]);
     expect(url.searchParams.get("display")).toBe("swap");
   });
 
-  it("configura Ubuntu Sans per il titolo di benvenuto e per le etichette, lasciando invariata la famiglia del contenitore", () => {
-    expect(fontFamilies["welcome-title"]).toEqual(["Ubuntu Sans", "Montserrat", "system-ui", "sans-serif"]);
-    expect(fontFamilies.mono).toEqual(["Ubuntu Sans", "ui-monospace", "SFMono-Regular", "monospace"]);
-    expect(fontFamilies.welcome).toEqual(["Zalando Sans Expanded", "Montserrat", "system-ui", "sans-serif"]);
+  it("configura Lora per il display serif e Inter per interfaccia e lettura", () => {
+    expect(fontFamilies.display).toEqual(["Lora", "Georgia", "serif"]);
+    expect(fontFamilies.serif).toEqual(["Lora", "Georgia", "serif"]);
+    expect(fontFamilies.sans).toEqual(["Inter", "system-ui", "-apple-system", "sans-serif"]);
+    expect(fontFamilies.reading).toEqual(["Inter", "system-ui", "-apple-system", "sans-serif"]);
+    expect(fontFamilies).not.toHaveProperty("welcome-title");
+    expect(fontFamilies).not.toHaveProperty("welcome");
   });
 
-  it("applica Ubuntu Sans solo all'h1 preservando peso, scala e le due righe accessibili", () => {
+  it("applica il serif al titolo preservando peso, scala compatta e le due righe accessibili", () => {
     const { container } = render(<HomeHeader greeting="Buongiorno" userName="Vale" />);
     const heading = screen.getByRole("heading", { level: 1, name: "Buongiorno Vale" });
 
     expect(heading).toHaveClass(
-      "font-welcome-title", "font-medium",
-      "text-[2.7rem]", "sm:text-[4.4rem]", "md:text-[4.8rem]", "lg:text-[5.4rem]",
-      "leading-[1.05]", "tracking-tight", "text-balance",
+      "font-display", "font-medium",
+      "text-[2rem]", "sm:text-[2.5rem]", "lg:text-[3rem]",
+      "leading-[1.15]", "tracking-[-0.01em]", "text-balance",
     );
-    expect(container.querySelectorAll(".font-welcome-title")).toHaveLength(1);
+    expect(container.querySelectorAll(".font-display")).toHaveLength(1);
     const lines = heading.querySelectorAll("span");
     expect(lines).toHaveLength(2);
     expect(lines[0]).toHaveTextContent("Buongiorno");
@@ -47,39 +54,34 @@ describe("Font del messaggio di benvenuto", () => {
     lines.forEach((line) => expect(line).toHaveClass("block"));
   });
 
-  it("non trasferisce Ubuntu Sans al sottotitolo né al contenitore", () => {
+  it("il sottotitolo è Inter attenuato e non tronca mai (va a capo)", () => {
     render(<HomeHeader greeting="Buonasera" userName="Vale" subtitle="Hai una lezione da riprendere" />);
     const subtitle = screen.getByText("Hai una lezione da riprendere");
-    const wrapper = subtitle.parentElement!;
 
-    expect(wrapper).toHaveClass("font-welcome");
-    expect(wrapper).not.toHaveClass("font-welcome-title");
-    expect(subtitle.closest(".font-welcome-title")).toBeNull();
-    expect(subtitle).toHaveClass("text-base", "leading-snug", "text-muted-foreground");
-    expect(subtitle).not.toHaveClass("font-medium");
+    expect(subtitle).toHaveClass("text-[15px]", "leading-snug", "text-muted-foreground");
+    expect(subtitle).not.toHaveClass("truncate");
+    expect(subtitle).not.toHaveClass("font-display");
   });
 
-  it("mantiene il nuovo font anche quando il messaggio contiene solo il nome", () => {
+  it("mantiene il serif anche quando il messaggio contiene solo il nome", () => {
     render(<HomeHeader userName="Alessandro" />);
-    expect(screen.getByRole("heading", { level: 1, name: "Alessandro" })).toHaveClass("font-welcome-title");
+    expect(screen.getByRole("heading", { level: 1, name: "Alessandro" })).toHaveClass("font-display");
   });
 
-  it("riduce del 20% la scala del messaggio di benvenuto", () => {
+  it("la scala del saluto è compatta: 32 / 40 / 48 px (2.1 §5, mai gigantesco)", () => {
     render(<HomeHeader greeting="Buongiorno" userName="Vale" />);
     const heading = screen.getByRole("heading", { level: 1 });
     const rem = (prefix: string) => {
       const match = heading.className.match(new RegExp(`${prefix}text-\\[([\\d.]+)rem\\]`));
       return match ? Number(match[1]) : null;
     };
-    // gradini precedenti: 3.375rem base, 5.5rem sm, 6rem md, 6.75rem lg → -20% (×0.8)
-    expect(rem("(?<![a-z]:)")).toBeCloseTo(3.375 * 0.8, 5);
-    expect(rem("sm:")).toBeCloseTo(5.5 * 0.8, 5);
-    expect(rem("md:")).toBeCloseTo(6 * 0.8, 5);
-    expect(rem("lg:")).toBeCloseTo(6.75 * 0.8, 5);
-    // la rampa resta monotona crescente
+    expect(rem("(?<![a-z]:)")).toBe(2);       // 32px
+    expect(rem("sm:")).toBe(2.5);             // 40px
+    expect(rem("lg:")).toBe(3);               // 48px
+    // la rampa resta monotona crescente e non torna ai giganti D1 (43–86px)
     expect(rem("sm:")).toBeGreaterThan(rem("(?<![a-z]:)")!);
-    expect(rem("md:")).toBeGreaterThan(rem("sm:")!);
-    expect(rem("lg:")).toBeGreaterThan(rem("md:")!);
+    expect(rem("lg:")).toBeGreaterThan(rem("sm:")!);
+    expect(rem("lg:")!).toBeLessThan(3.5);
   });
 
   it("tiene il saluto su un solo rigo: break-words resta solo sul nome", () => {

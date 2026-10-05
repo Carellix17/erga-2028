@@ -1,4 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HomeView } from "@/components/home/HomeView";
 import { useHomeDashboard, type HomeDashboardData } from "@/hooks/useHomeDashboard";
@@ -205,9 +207,12 @@ describe("HomeView modulare (V3)", () => {
     expect(screen.getByText("20%")).toBeInTheDocument();
   });
 
-  it("la Home spegne l'alone ambientale (no-ambient) per un fondo pulito", () => {
+  it("la Home ha il tavolo piatto: niente aloni ambientali (sistema rimosso in V2-01)", () => {
     const { container } = render(<HomeView {...callbacks} />);
-    expect(container.firstElementChild?.className).toContain("no-ambient");
+    // il sistema aura è stato rimosso dal CSS: la Home non porta marcatori
+    expect(container.firstElementChild?.className).not.toContain("no-ambient");
+    const css = readFileSync(join(__dirname, "../index.css"), "utf8");
+    expect(css).not.toContain("P27 — AURA ANIMATA");
   });
 
   it("rispetta i target touch minimi (44px) sui controlli principali", () => {
@@ -217,7 +222,9 @@ describe("HomeView modulare (V3)", () => {
       const btn = screen.getByText(label).closest("button");
       expect(btn).toBeTruthy();
       const cls = btn?.className ?? "";
-      expect(cls).toMatch(/min-h-\[5[0-9]px\]|h-11|h-12/);
+      // V2-01: h-11/h-12 via classi, oppure il satinato .btn-satin
+      // (altezza 44px dichiarata nel CSS condiviso, DESIGN.md 2.1 §4)
+      expect(cls).toMatch(/min-h-\[5[0-9]px\]|h-11|h-12|btn-satin/);
     });
   });
 
@@ -239,11 +246,11 @@ describe("HomeView modulare (V3)", () => {
     // Il saluto non si tronca: va a capo in modo bilanciato senza sfondare.
     expect(heading.className).toMatch(/text-balance|break-words/);
     expect(heading.className).not.toMatch(/truncate/);
-    // Il titolo del corso segue lo stile Studio: va a capo (break-words)
+    // Il titolo del corso va a capo (break-words): mai ridurre i caratteri
+    // per far entrare il contenuto (V2-01: scala fissa, niente gradino lungo)
     const courseTitle = screen.getByText(/Materia con nome lunghissimo/);
     expect(courseTitle.className).toMatch(/truncate|line-clamp|break-words/);
-    // Titolo lungo → un gradino più piccolo (text-2xl, mai text-4xl)
-    expect(courseTitle.className).toContain("text-2xl");
+    expect(courseTitle.className).toContain("break-words");
     expect(courseTitle.className).not.toContain("text-4xl");
     const lessonTitle = screen.getByText(/Titolo lunghissimo/);
     expect(lessonTitle.className).toMatch(/truncate|line-clamp/);
