@@ -1,7 +1,7 @@
 # La Minilezione 2.0 — il lettore a blocchi
 
 **Data:** 3 ottobre 2026
-**Stato:** ✅ design approvato (4 decisioni di interazione prese con Chiara; veste grafica aggiornata al `DESIGN.md` 1.1 — Ottanio — il 3 ottobre: le scelte estetiche del precedente Bisturi Editoriale sono state sostituite)
+**Stato:** ✅ design approvato (4 decisioni di interazione prese con Chiara; veste grafica aggiornata al `DESIGN.md` 2.1 «Carta contemporanea» il 5 ottobre — le estetiche precedenti, Bisturi Editoriale e Ottanio 1.1, sono superate)
 **Fonte collegata:** `docs/matrice-materie-2026-10-03.md` (le famiglie, i cervelli, la roadmap)
 **Per chi:** Chiara (parole semplici). Nessun codice qui: è il disegno del lettore delle lezioni v2.
 
@@ -9,17 +9,19 @@
 
 ## 1. In una frase
 
-La lezione diventa un lettore dove si avanza **un blocco alla volta**, con le **formule in primo piano** quando serve, le note **a margine**, e **verifiche in linea** che misurano subito senza aspettare la fine. La veste grafica è quella di `DESIGN.md` (versione 1.1): geometria squadrata, carta e inchiostro, atmosfera per materia.
+La lezione si legge **un blocco alla volta**, con le **formule in primo piano** quando serve, le note **a margine**, e **verifiche in linea** che misurano subito senza aspettare la fine. La veste grafica è quella di `DESIGN.md` (versione 2.1, «Carta contemporanea»): carta nitida, titoli serif, atmosfera per materia.
 
 ---
 
 ## 2. Lo scheletro comune (tutte le materie)
 
-- **Temi giorno/notte di DESIGN.md:** carta `#F2F0EF` e inchiostro di giorno, tema notte dedicato; testo di lettura 18px (17px sui contesti stretti), interlinea 1.6; **Ubuntu Sans** per titoli e interfaccia (il saluto resta Ubuntu Sans).
-- **Avanzamento discreto:** linea sottile in alto; la lezione attiva si riconosce da piccoli segmenti o parentesi geometriche e dall'accento di marca. Niente mirino laser.
-- **Accento di marca (ottanio, base proposta):** un solo pulsante primario per contesto, con label concreta (`Continua`); il rosso resta per errori e distruzione.
+- **Temi giorno/notte di DESIGN.md 2.1:** fondo avorio e carta opaca di giorno, superfici calde di notte; il lettore è **carta nitida** (mai glass): una superficie di lettura continua, senza incapsulare ogni paragrafo.
+- **Tipografia:** titolo del concetto in **serif (Lora)**, spiegazione in **sans (Inter)** 18px interlinea 1.6–1.7, larghezza 58–72 caratteri; formule KaTeX e tabelle con regole proprie (scroll locale se larghe).
+- **Avanzamento discreto:** leggibile, con stato e progressione chiari; niente mirino laser né animazione continua.
+- **Azioni:** primarie **inchiostro a pillola** (il satinato è riservato alle copertine del corso, non al lettore); il rosso resta per errori e distruzione.
 - **Zero emoji** come icone dell'interfaccia (regola di AGENTS.md): i blocchi si riconoscono da tipografia, filetti e struttura.
-- **Immagini** (ritratti, figure OCR dal PDF): a colori, ingrandibili quando serve, con descrizione; il piano dietro al testo resta controllato e leggibile.
+- **Immagini** (ritratti, figure OCR dal PDF): nitide, ingrandibili quando serve, con descrizione; il piano dietro al testo resta leggibile.
+- **Il colore materia** compare in una fascia o figura pertinente, senza coprire il testo con una campitura piena.
 - **Telemetria onesta**: la durata mostrata è quella **calcolata** dal piano v2 (niente "5 minuti" di fantasia).
 - **Fine lezione**: "fogli di sala" — riepilogo secco di cosa è stato inciso e cosa resta; il quiz-evento di completamento resta quello della fondamenta (voto salvato).
 
@@ -52,4 +54,4 @@ La lezione diventa un lettore dove si avanza **un blocco alla volta**, con le **
 
 Prima lo **scheletro comune + la declinazione scientifica** (è la più ricca: formule, widget, chat socratica — e allinea reader e motore), poi letteratura e storia, poi le altre. Ogni passo: costruito, testato, spinto separatamente.
 
-*Documento di design. Nessuna riga di codice modificata alla data odierna. Veste grafica aggiornata il 3 ottobre 2026 a `DESIGN.md` 1.1 (Ottanio): le quattro decisioni di interazione restano approvate.*
+*Documento di design. Veste grafica aggiornata il 5 ottobre 2026 a `DESIGN.md` 2.1 «Carta contemporanea»: le quattro decisioni di interazione restano approvate; i blocchi tipizzati e i checkpoint restano evoluzioni funzionali con contratto dati reale.*

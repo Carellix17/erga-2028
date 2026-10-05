@@ -43,7 +43,7 @@ Prima di scrivere codice definire:
 - i limiti tecnici;
 - l'elemento distintivo che la rende riconoscibile.
 
-Per Erga la direzione visiva è definita da `DESIGN.md` (versione 1.1, redesign): strumento di studio contemporaneo, geometria squadrata, carta e inchiostro, atmosfera astratta per materia, accento **ottanio** come base proposta della prima implementazione. La vetrina marketing conserva i suoi gettoni isolati (`--lp-*`). Le scelte della veste precedente ("Bisturi Editoriale": ossidiana obbligatoria, Rosso Lacca, Playfair/Inter/Roboto Mono, immagini in bianco e nero, mirino laser) non si applicano più. Lo stato della migrazione è in `docs/registro-redesign-2026-10-03.md`. Evitare interfacce generiche da prodotto AI, decorazioni casual e pattern copiati senza relazione con lo studio.
+Per Erga la direzione visiva è definita da `DESIGN.md` (versione 2.1, «Carta contemporanea», 5 ottobre 2026): fondo avorio, fogli arrotondati, titoli serif (Lora) e testo sans (Inter), copertine colorate per materia con azioni satinato a pillola; azioni primarie inchiostro nel resto del prodotto. Le direzioni precedenti — il «Bisturi Editoriale» e la versione 1.1 (ottanio, raggio zero, Ubuntu Sans obbligatorio) — sono superate e non si sommano con la nuova. Lo stato della migrazione (il runtime mostra ancora la veste 1 finché il pilota V2-01 non la sostituisce) vive in `docs/registro-redesign-2026-10-03.md`. Evitare interfacce generiche da prodotto AI, decorazioni casual e pattern copiati senza relazione con lo studio.
 
 ### UI/UX Pro Max — ricerca strutturata prima delle modifiche ampie
 

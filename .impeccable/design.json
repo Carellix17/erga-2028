@@ -1,232 +1,322 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-03T16:30:00Z",
-  "title": "Design System: Erga — redesign 1.1",
+  "generatedAt": "2026-10-05T00:00:00Z",
+  "title": "Design System: Erga — Carta contemporanea 2.1",
   "extensions": {
     "colorMeta": {
-      "brand": {
-        "role": "primary",
-        "displayName": "Ottanio di marca",
-        "canonical": "#087F83",
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Tavolo (giorno)",
+        "canonical": "#F6F3EB",
         "tonalRamp": [
-          "hsl(182 88% 15%)",
-          "hsl(182 88% 26%)",
-          "hsl(182 88% 37%)",
-          "hsl(182 88% 48%)",
-          "hsl(182 88% 60%)",
-          "hsl(182 88% 71%)",
-          "hsl(182 88% 82%)",
-          "hsl(182 88% 93%)"
-        ]
-      },
-      "brand-deep": {
-        "role": "primary",
-        "displayName": "Ottanio profondo",
-        "canonical": "#07585C",
-        "tonalRamp": [
-          "hsl(183 86% 15%)",
-          "hsl(183 86% 26%)",
-          "hsl(183 86% 37%)",
-          "hsl(183 86% 48%)",
-          "hsl(183 86% 60%)",
-          "hsl(183 86% 71%)",
-          "hsl(183 86% 82%)",
-          "hsl(183 86% 93%)"
-        ]
-      },
-      "brand-tint": {
-        "role": "secondary",
-        "displayName": "Tinta di marca",
-        "canonical": "#E8F2F0",
-        "tonalRamp": [
-          "hsl(168 28% 15%)",
-          "hsl(168 28% 26%)",
-          "hsl(168 28% 37%)",
-          "hsl(168 28% 48%)",
-          "hsl(168 28% 60%)",
-          "hsl(168 28% 71%)",
-          "hsl(168 28% 82%)",
-          "hsl(168 28% 93%)"
+          "hsl(44 38% 15%)",
+          "hsl(44 38% 26%)",
+          "hsl(44 38% 37%)",
+          "hsl(44 38% 48%)",
+          "hsl(44 38% 60%)",
+          "hsl(44 38% 71%)",
+          "hsl(44 38% 82%)",
+          "hsl(44 38% 93%)"
         ]
       },
       "paper": {
         "role": "neutral",
-        "displayName": "Carta",
-        "canonical": "#F2F0EF",
+        "displayName": "Carta leggibile",
+        "canonical": "#FFFEF9",
         "tonalRamp": [
-          "hsl(20 10% 15%)",
-          "hsl(20 10% 26%)",
-          "hsl(20 10% 37%)",
-          "hsl(20 10% 48%)",
-          "hsl(20 10% 60%)",
-          "hsl(20 10% 71%)",
-          "hsl(20 10% 82%)",
-          "hsl(20 10% 93%)"
+          "hsl(50 100% 15%)",
+          "hsl(50 100% 26%)",
+          "hsl(50 100% 37%)",
+          "hsl(50 100% 48%)",
+          "hsl(50 100% 60%)",
+          "hsl(50 100% 71%)",
+          "hsl(50 100% 82%)",
+          "hsl(50 100% 93%)"
         ]
       },
-      "surface": {
+      "paper-muted": {
         "role": "neutral",
-        "displayName": "Superficie elevata",
-        "canonical": "#FFFFFF",
+        "displayName": "Carta quieta",
+        "canonical": "#ECE9DF",
         "tonalRamp": [
-          "hsl(0 0% 15%)",
-          "hsl(0 0% 26%)",
-          "hsl(0 0% 37%)",
-          "hsl(0 0% 48%)",
-          "hsl(0 0% 60%)",
-          "hsl(0 0% 71%)",
-          "hsl(0 0% 82%)",
-          "hsl(0 0% 93%)"
+          "hsl(46 25% 15%)",
+          "hsl(46 25% 26%)",
+          "hsl(46 25% 37%)",
+          "hsl(46 25% 48%)",
+          "hsl(46 25% 60%)",
+          "hsl(46 25% 71%)",
+          "hsl(46 25% 82%)",
+          "hsl(46 25% 93%)"
         ]
       },
       "ink": {
         "role": "primary",
-        "displayName": "Inchiostro",
-        "canonical": "#181516",
+        "displayName": "Inchiostro e azione primaria",
+        "canonical": "#252623",
         "tonalRamp": [
-          "hsl(340 7% 15%)",
-          "hsl(340 7% 26%)",
-          "hsl(340 7% 37%)",
-          "hsl(340 7% 48%)",
-          "hsl(340 7% 60%)",
-          "hsl(340 7% 71%)",
-          "hsl(340 7% 82%)",
-          "hsl(340 7% 93%)"
+          "hsl(80 4% 15%)",
+          "hsl(80 4% 26%)",
+          "hsl(80 4% 37%)",
+          "hsl(80 4% 48%)",
+          "hsl(80 4% 60%)",
+          "hsl(80 4% 71%)",
+          "hsl(80 4% 82%)",
+          "hsl(80 4% 93%)"
         ]
       },
       "ink-muted": {
         "role": "neutral",
         "displayName": "Testo secondario",
-        "canonical": "#625D59",
+        "canonical": "#65665E",
         "tonalRamp": [
-          "hsl(27 5% 15%)",
-          "hsl(27 5% 26%)",
-          "hsl(27 5% 37%)",
-          "hsl(27 5% 48%)",
-          "hsl(27 5% 60%)",
-          "hsl(27 5% 71%)",
-          "hsl(27 5% 82%)",
-          "hsl(27 5% 93%)"
+          "hsl(68 4% 15%)",
+          "hsl(68 4% 26%)",
+          "hsl(68 4% 37%)",
+          "hsl(68 4% 48%)",
+          "hsl(68 4% 60%)",
+          "hsl(68 4% 71%)",
+          "hsl(68 4% 82%)",
+          "hsl(68 4% 93%)"
         ]
       },
-      "border": {
+      "line": {
         "role": "neutral",
-        "displayName": "Bordo",
-        "canonical": "#D6D5D0",
+        "displayName": "Separatore decorativo",
+        "canonical": "#DEDCD2",
         "tonalRamp": [
-          "hsl(50 7% 15%)",
-          "hsl(50 7% 26%)",
-          "hsl(50 7% 37%)",
-          "hsl(50 7% 48%)",
-          "hsl(50 7% 60%)",
-          "hsl(50 7% 71%)",
-          "hsl(50 7% 82%)",
-          "hsl(50 7% 93%)"
+          "hsl(50 15% 15%)",
+          "hsl(50 15% 26%)",
+          "hsl(50 15% 37%)",
+          "hsl(50 15% 48%)",
+          "hsl(50 15% 60%)",
+          "hsl(50 15% 71%)",
+          "hsl(50 15% 82%)",
+          "hsl(50 15% 93%)"
         ]
       },
-      "night-bg": {
+      "control-line": {
         "role": "neutral",
-        "displayName": "Fondo notte (proposta)",
-        "canonical": "#101717",
+        "displayName": "Contorno di controllo",
+        "canonical": "#888B7A",
         "tonalRamp": [
-          "hsl(180 18% 15%)",
-          "hsl(180 18% 26%)",
-          "hsl(180 18% 37%)",
-          "hsl(180 18% 48%)",
-          "hsl(180 18% 60%)",
-          "hsl(180 18% 71%)",
-          "hsl(180 18% 82%)",
-          "hsl(180 18% 93%)"
+          "hsl(71 7% 15%)",
+          "hsl(71 7% 26%)",
+          "hsl(71 7% 37%)",
+          "hsl(71 7% 48%)",
+          "hsl(71 7% 60%)",
+          "hsl(71 7% 71%)",
+          "hsl(71 7% 82%)",
+          "hsl(71 7% 93%)"
         ]
       },
-      "night-surface": {
+      "on-ink": {
+        "role": "primary",
+        "displayName": "Testo sull'azione primaria",
+        "canonical": "#FFFEF9",
+        "tonalRamp": [
+          "hsl(50 100% 15%)",
+          "hsl(50 100% 26%)",
+          "hsl(50 100% 37%)",
+          "hsl(50 100% 48%)",
+          "hsl(50 100% 60%)",
+          "hsl(50 100% 71%)",
+          "hsl(50 100% 82%)",
+          "hsl(50 100% 93%)"
+        ]
+      },
+      "focus": {
+        "role": "primary",
+        "displayName": "Indicatore di focus",
+        "canonical": "#252623",
+        "tonalRamp": [
+          "hsl(80 4% 15%)",
+          "hsl(80 4% 26%)",
+          "hsl(80 4% 37%)",
+          "hsl(80 4% 48%)",
+          "hsl(80 4% 60%)",
+          "hsl(80 4% 71%)",
+          "hsl(80 4% 82%)",
+          "hsl(80 4% 93%)"
+        ]
+      },
+      "night-canvas": {
         "role": "neutral",
-        "displayName": "Superficie notte (proposta)",
-        "canonical": "#141D1D",
+        "displayName": "Tavolo (notte)",
+        "canonical": "#22221F",
         "tonalRamp": [
-          "hsl(180 18% 15%)",
-          "hsl(180 18% 26%)",
-          "hsl(180 18% 37%)",
-          "hsl(180 18% 48%)",
-          "hsl(180 18% 60%)",
-          "hsl(180 18% 71%)",
-          "hsl(180 18% 82%)",
-          "hsl(180 18% 93%)"
+          "hsl(60 5% 15%)",
+          "hsl(60 5% 26%)",
+          "hsl(60 5% 37%)",
+          "hsl(60 5% 48%)",
+          "hsl(60 5% 60%)",
+          "hsl(60 5% 71%)",
+          "hsl(60 5% 82%)",
+          "hsl(60 5% 93%)"
         ]
       },
-      "night-elevated": {
+      "night-paper": {
         "role": "neutral",
-        "displayName": "Superficie elevata notte",
-        "canonical": "#1B2828",
+        "displayName": "Carta (notte)",
+        "canonical": "#2D2C29",
         "tonalRamp": [
-          "hsl(180 19% 15%)",
-          "hsl(180 19% 26%)",
-          "hsl(180 19% 37%)",
-          "hsl(180 19% 48%)",
-          "hsl(180 19% 60%)",
-          "hsl(180 19% 71%)",
-          "hsl(180 19% 82%)",
-          "hsl(180 19% 93%)"
+          "hsl(45 5% 15%)",
+          "hsl(45 5% 26%)",
+          "hsl(45 5% 37%)",
+          "hsl(45 5% 48%)",
+          "hsl(45 5% 60%)",
+          "hsl(45 5% 71%)",
+          "hsl(45 5% 82%)",
+          "hsl(45 5% 93%)"
         ]
       },
-      "night-text": {
+      "night-paper-muted": {
         "role": "neutral",
-        "displayName": "Testo notte",
-        "canonical": "#F2F0EF",
+        "displayName": "Carta quieta (notte)",
+        "canonical": "#383632",
         "tonalRamp": [
-          "hsl(20 10% 15%)",
-          "hsl(20 10% 26%)",
-          "hsl(20 10% 37%)",
-          "hsl(20 10% 48%)",
-          "hsl(20 10% 60%)",
-          "hsl(20 10% 71%)",
-          "hsl(20 10% 82%)",
-          "hsl(20 10% 93%)"
+          "hsl(40 6% 15%)",
+          "hsl(40 6% 26%)",
+          "hsl(40 6% 37%)",
+          "hsl(40 6% 48%)",
+          "hsl(40 6% 60%)",
+          "hsl(40 6% 71%)",
+          "hsl(40 6% 82%)",
+          "hsl(40 6% 93%)"
         ]
       },
-      "night-muted": {
+      "night-ink": {
         "role": "neutral",
-        "displayName": "Testo secondario notte",
-        "canonical": "#B8C6C3",
+        "displayName": "Inchiostro (notte)",
+        "canonical": "#F4F1E7",
         "tonalRamp": [
-          "hsl(167 11% 15%)",
-          "hsl(167 11% 26%)",
-          "hsl(167 11% 37%)",
-          "hsl(167 11% 48%)",
-          "hsl(167 11% 60%)",
-          "hsl(167 11% 71%)",
-          "hsl(167 11% 82%)",
-          "hsl(167 11% 93%)"
+          "hsl(46 37% 15%)",
+          "hsl(46 37% 26%)",
+          "hsl(46 37% 37%)",
+          "hsl(46 37% 48%)",
+          "hsl(46 37% 60%)",
+          "hsl(46 37% 71%)",
+          "hsl(46 37% 82%)",
+          "hsl(46 37% 93%)"
         ]
       },
-      "night-accent": {
+      "night-ink-muted": {
+        "role": "neutral",
+        "displayName": "Testo secondario (notte)",
+        "canonical": "#C9C5BA",
+        "tonalRamp": [
+          "hsl(44 12% 15%)",
+          "hsl(44 12% 26%)",
+          "hsl(44 12% 37%)",
+          "hsl(44 12% 48%)",
+          "hsl(44 12% 60%)",
+          "hsl(44 12% 71%)",
+          "hsl(44 12% 82%)",
+          "hsl(44 12% 93%)"
+        ]
+      },
+      "night-line": {
+        "role": "neutral",
+        "displayName": "Separatore (notte)",
+        "canonical": "#4B4842",
+        "tonalRamp": [
+          "hsl(40 6% 15%)",
+          "hsl(40 6% 26%)",
+          "hsl(40 6% 37%)",
+          "hsl(40 6% 48%)",
+          "hsl(40 6% 60%)",
+          "hsl(40 6% 71%)",
+          "hsl(40 6% 82%)",
+          "hsl(40 6% 93%)"
+        ]
+      },
+      "night-control-line": {
+        "role": "neutral",
+        "displayName": "Contorno di controllo (notte)",
+        "canonical": "#918B80",
+        "tonalRamp": [
+          "hsl(39 7% 15%)",
+          "hsl(39 7% 26%)",
+          "hsl(39 7% 37%)",
+          "hsl(39 7% 48%)",
+          "hsl(39 7% 60%)",
+          "hsl(39 7% 71%)",
+          "hsl(39 7% 82%)",
+          "hsl(39 7% 93%)"
+        ]
+      },
+      "cedro": {
         "role": "secondary",
-        "displayName": "Accento chiaro notte",
-        "canonical": "#8ECFD0",
+        "displayName": "Cedro (composizione)",
+        "canonical": "#DCE879",
         "tonalRamp": [
-          "hsl(181 41% 15%)",
-          "hsl(181 41% 26%)",
-          "hsl(181 41% 37%)",
-          "hsl(181 41% 48%)",
-          "hsl(181 41% 60%)",
-          "hsl(181 41% 71%)",
-          "hsl(181 41% 82%)",
-          "hsl(181 41% 93%)"
+          "hsl(66 71% 15%)",
+          "hsl(66 71% 26%)",
+          "hsl(66 71% 37%)",
+          "hsl(66 71% 48%)",
+          "hsl(66 71% 60%)",
+          "hsl(66 71% 71%)",
+          "hsl(66 71% 82%)",
+          "hsl(66 71% 93%)"
         ]
       },
-      "night-border": {
-        "role": "neutral",
-        "displayName": "Bordo notte",
-        "canonical": "#3D5351",
+      "rosa-carta": {
+        "role": "secondary",
+        "displayName": "Rosa carta (composizione)",
+        "canonical": "#DFADC6",
         "tonalRamp": [
-          "hsl(175 15% 15%)",
-          "hsl(175 15% 26%)",
-          "hsl(175 15% 37%)",
-          "hsl(175 15% 48%)",
-          "hsl(175 15% 60%)",
-          "hsl(175 15% 71%)",
-          "hsl(175 15% 82%)",
-          "hsl(175 15% 93%)"
+          "hsl(330 44% 15%)",
+          "hsl(330 44% 26%)",
+          "hsl(330 44% 37%)",
+          "hsl(330 44% 48%)",
+          "hsl(330 44% 60%)",
+          "hsl(330 44% 71%)",
+          "hsl(330 44% 82%)",
+          "hsl(330 44% 93%)"
+        ]
+      },
+      "pervinca": {
+        "role": "secondary",
+        "displayName": "Pervinca (composizione)",
+        "canonical": "#C5CEF0",
+        "tonalRamp": [
+          "hsl(227 59% 15%)",
+          "hsl(227 59% 26%)",
+          "hsl(227 59% 37%)",
+          "hsl(227 59% 48%)",
+          "hsl(227 59% 60%)",
+          "hsl(227 59% 71%)",
+          "hsl(227 59% 82%)",
+          "hsl(227 59% 93%)"
+        ]
+      },
+      "albicocca": {
+        "role": "secondary",
+        "displayName": "Albicocca (composizione)",
+        "canonical": "#F1C6A5",
+        "tonalRamp": [
+          "hsl(26 73% 15%)",
+          "hsl(26 73% 26%)",
+          "hsl(26 73% 37%)",
+          "hsl(26 73% 48%)",
+          "hsl(26 73% 60%)",
+          "hsl(26 73% 71%)",
+          "hsl(26 73% 82%)",
+          "hsl(26 73% 93%)"
+        ]
+      },
+      "azzurro-polvere": {
+        "role": "secondary",
+        "displayName": "Azzurro polvere (composizione)",
+        "canonical": "#BDD9E1",
+        "tonalRamp": [
+          "hsl(193 37% 15%)",
+          "hsl(193 37% 26%)",
+          "hsl(193 37% 37%)",
+          "hsl(193 37% 48%)",
+          "hsl(193 37% 60%)",
+          "hsl(193 37% 71%)",
+          "hsl(193 37% 82%)",
+          "hsl(193 37% 93%)"
         ]
       },
       "marketing-red": {
@@ -547,90 +637,95 @@
     },
     "typographyMeta": {
       "display": {
-        "displayName": "Display (Ubuntu Sans)",
-        "purpose": "Saluto e titolo protagonista: 32–44 px adattivi, una voce per schermata."
+        "displayName": "Saluto / titolo principale (Lora)",
+        "purpose": "Serif 400/500: 32–36 telefono, 40–48 desktop. Compact, mai gigantesco."
       },
-      "section": {
-        "displayName": "Titolo di sezione",
-        "purpose": "Titoli di sezione e pannello: 24–32 px."
+      "course-title": {
+        "displayName": "Titolo corso protagonista (Lora)",
+        "purpose": "Serif 500 sulla copertina e nelle viste del corso; identità stabile."
       },
-      "card-title": {
-        "displayName": "Titolo di card / lezione",
-        "purpose": "Titoli di card, lezione e modulo: 20–24 px."
+      "scene-title": {
+        "displayName": "Titolo scena didattica (Lora)",
+        "purpose": "Serif 500 per il concetto della lezione e i titoli di dialoghi che aprono attività."
       },
-      "didactic": {
-        "displayName": "Testo didattico",
-        "purpose": "Lettura delle lezioni: 18 px (17 su contesti stretti), interlinea 1.6. Font da validare su contenuti reali."
+      "module-title": {
+        "displayName": "Titolo modulo / attività (Lora)",
+        "purpose": "Serif 500 per moduli e intestazioni di attività."
+      },
+      "subsection": {
+        "displayName": "Sottosezione operativa (Inter)",
+        "purpose": "Sans 500/600: scelte degli strumenti, titoli operativi."
+      },
+      "reading": {
+        "displayName": "Lettura didattica (Inter)",
+        "purpose": "Sans 18px, interlinea 1.6–1.7. Superficie nitida, larghezza 58–72 caratteri."
       },
       "interface": {
-        "displayName": "Testo di interfaccia",
-        "purpose": "Etichette dei comandi e testo corrente dell'app: 16 px."
+        "displayName": "Interfaccia (Inter)",
+        "purpose": "Sans 15–16px: navigazione, pulsanti, input, metadati, tabelle, grafici."
       },
       "label": {
-        "displayName": "Label / metadato",
-        "purpose": "Metadati e micro-titoli: 13–14 px. Mai spiegazioni a questa misura."
-      },
-      "metric": {
-        "displayName": "Macro-metrica",
-        "purpose": "Numeri di grafici e riepiloghi: cifre stabili e confrontabili."
-      },
-      "welcome": {
-        "displayName": "Saluto (Ubuntu Sans)",
-        "purpose": "Il saluto della Home: decisione consolidata, da conservare."
+        "displayName": "Metadati (Inter)",
+        "purpose": "Sans 13–14px. Maiuscolo raro e secondario."
       }
     },
     "shadows": [
       {
-        "name": "ordinaria",
-        "value": "0 2px 6px rgba(24,21,22,0.06)",
-        "purpose": "Elementi ordinari: ombra minima quando utile."
+        "name": "foglio",
+        "value": "0 1px 2px rgba(37,38,35,0.04), 0 4px 12px rgba(37,38,35,0.03)",
+        "purpose": "Carta ordinaria: ombra solo se serve."
       },
       {
         "name": "protagonista",
-        "value": "0 10px 28px rgba(24,21,22,0.12), 0 2px 6px rgba(24,21,22,0.05)",
-        "purpose": "Protagonisti e card del percorso."
+        "value": "0 2px 4px rgba(37,38,35,0.04), 0 10px 24px rgba(37,38,35,0.08)",
+        "purpose": "Card corso e fogli protagonisti."
       },
       {
         "name": "overlay",
-        "value": "0 18px 48px rgba(24,21,22,0.18)",
-        "purpose": "Overlay e dialoghi."
-      },
-      {
-        "name": "press-inset",
-        "value": "inset 0 2px 10px hsl(0 0% 0% / 0.16)",
-        "purpose": "Affondo dei comandi alla pressione (classe .press): comportamento esistente conservato."
+        "value": "0 6px 24px rgba(37,38,35,0.10)",
+        "purpose": "Dialoghi, sheet e dock."
       },
       {
         "name": "nota-notte",
         "value": "—",
-        "purpose": "In notte ridurre la dipendenza dall'ombra nera: distinguere i livelli con superficie e bordo."
+        "purpose": "Di notte distinguere le superfici con luminosità e bordo oltre all'ombra."
       }
     ],
     "motion": [
       {
-        "name": "feedback",
-        "value": "100–160 ms (base 120 ms)",
-        "purpose": "Feedback locale alla pressione."
+        "name": "pressione",
+        "value": "120–180 ms",
+        "purpose": "Minima compressione (~0.98) e cambio superficie; ridotto: solo cambio di stato."
       },
       {
-        "name": "panel",
-        "value": "180–260 ms (base 220 ms)",
-        "purpose": "Apertura di menu e pannelli."
+        "name": "cambio-sezione",
+        "value": "150–220 ms",
+        "purpose": "Opacità del contenuto; shell e navigazione ferme."
       },
       {
-        "name": "passaggio",
-        "value": "180–300 ms (base 240 ms)",
-        "purpose": "Transizione tra passaggi."
+        "name": "corso→percorso→modulo",
+        "value": "320–420 ms",
+        "purpose": "Copertina condivisa, emerge il foglio; identità corso conservata. Ridotto: stato finale senza morph."
       },
       {
-        "name": "trasformazione",
-        "value": "300–500 ms o molla equivalente, senza rimbalzo vistoso",
-        "purpose": "Card → percorso, modulo → lezione."
+        "name": "cambio-corso",
+        "value": "280–380 ms",
+        "purpose": "Entrano le alternative con poco scarto; corso attivo e scroll conservati."
       },
       {
-        "name": "movimento-ridotto",
-        "value": "prefers-reduced-motion",
-        "purpose": "Sostituire traslazioni e morph estesi con aggiornamenti immediati o dissolvenze brevi. La comprensione non deve dipendere dall'animazione."
+        "name": "sheet",
+        "value": "260–340 ms",
+        "purpose": "Pannello dal basso su telefono, scrim comune."
+      },
+      {
+        "name": "espansione",
+        "value": "180–260 ms",
+        "purpose": "Solo il gruppo interessato."
+      },
+      {
+        "name": "easing-casa",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Base per l'apertura; spring solo a parametri condivisi, rimbalzo quasi assente."
       }
     ],
     "breakpoints": [
@@ -652,57 +747,45 @@
       },
       {
         "name": "nav-dock",
-        "value": "< 768px: dock inferiore flottante unico (proposta da verificare, §9)"
+        "value": "< 768px: dock flottante arrotondato, carta opaca, ~64px, margini 16–20px, safe area"
       },
       {
         "name": "nav-rail",
-        "value": "768–1199px: rail laterale compatta con etichette (proposta)"
+        "value": "768–1023px: rail etichettata, stesso ordine"
       },
       {
         "name": "nav-sidebar",
-        "value": "≥ 1200px: sidebar con etichette e spazio (proposta)"
+        "value": "≥ 1024px: sidebar calda, senza duplicare la navigazione mobile"
       }
     ],
     "radii": [
       {
+        "name": "sm",
+        "value": "8px — badge di data, dettagli piccoli"
+      },
+      {
+        "name": "control",
+        "value": "16px — input, select, menu, segmenti esterni"
+      },
+      {
         "name": "card",
-        "value": "0px"
+        "value": "24px — card di strumenti, moduli, righe autonome"
       },
       {
-        "name": "panel",
-        "value": "0px"
+        "name": "hero",
+        "value": "32px — card corso e fogli protagonisti"
       },
       {
-        "name": "button",
-        "value": "0px"
+        "name": "sheet",
+        "value": "32px — alias di hero per dialoghi e sheet"
       },
       {
-        "name": "input",
-        "value": "0px"
+        "name": "nav",
+        "value": "24px — dock mobile, stessa famiglia delle card"
       },
       {
-        "name": "dialog",
-        "value": "0px"
-      },
-      {
-        "name": "menu",
-        "value": "0px"
-      },
-      {
-        "name": "dock",
-        "value": "0px"
-      },
-      {
-        "name": "callout",
-        "value": "0px"
-      },
-      {
-        "name": "badge",
-        "value": "0px"
-      },
-      {
-        "name": "content-circle",
-        "value": "9999px (solo contenuto: avatar, radio nativi, esagono cognitivo, grafici — §3)"
+        "name": "pill",
+        "value": "999px — azioni principali, satinato delle copertine, chip pertinenti"
       }
     ]
   },
@@ -711,98 +794,83 @@
       "name": "Pulsante primario",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Ottanio pieno, testo bianco, 44 px. Un'azione dominante per contesto, label concreta (Continua, Salva evento).",
-      "html": "<button class=\"ds-btn-primary\">Continua</button>",
-      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:10px 20px;background:#087F83;color:#FFFFFF;font:500 1rem/1.4 'Ubuntu Sans',system-ui,sans-serif;border:0;border-radius:0;cursor:pointer}"
+      "description": "Inchiostro con testo carta, sans, pillola. Nel resto del prodotto (non sulle copertine).",
+      "html": "<button class=\"ds-btn-primary\">Salva evento</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:10px 24px;background:#252623;color:#FFFEF9;font:500 1rem/1.4 Inter,system-ui,sans-serif;border:0;border-radius:999px;cursor:pointer}"
     },
     {
-      "name": "Pulsante secondario",
+      "name": "Pulsante satinato (copertine)",
       "kind": "button",
-      "refersTo": "button-secondary",
-      "description": "Superficie o fondo tinto, bordo quando necessario, angoli zero.",
-      "html": "<button class=\"ds-btn-secondary\">Apri elenco</button>",
-      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;height:44px;padding:10px 20px;background:#FFFFFF;color:#181516;border:1px solid #D6D5D0;border-radius:0;cursor:pointer}"
-    },
-    {
-      "name": "Pulsante discreto",
-      "kind": "button",
-      "refersTo": "button-quiet",
-      "description": "Testo e icona per azioni subordinate; tono profondo di marca, non ottanio chiaro su carta.",
-      "html": "<button class=\"ds-btn-quiet\">Annulla</button>",
-      "css": ".ds-btn-quiet{background:transparent;color:#07585C;border:0;border-radius:0;height:44px;cursor:pointer}"
-    },
-    {
-      "name": "Pulsante traslucido",
-      "kind": "button",
-      "refersTo": "button-translucent",
-      "description": "Variante limitata alla card atmosferica del corso (Continua semiopaco): fondo sufficiente a mantenere contrasto sulle zone chiare. Non quarto stile generico.",
-      "html": "<button class=\"ds-btn-translucent\">Continua</button>",
-      "css": ".ds-btn-translucent{background:rgba(255,255,255,.72);color:#181516;border:1px solid rgba(24,21,22,.25);border-radius:0;height:44px;cursor:pointer}"
+      "refersTo": "button-satin",
+      "description": "Continua/Riprendi/Scegli sulle copertine: carta calda 75–85%, blur locale 8–12px, testo inchiostro opaco, pillola, pressione ~0.98, fallback carta piena. Mai su composer, campi, dati o lettura.",
+      "html": "<button class=\"ds-btn-satin\">Riprendi</button>",
+      "css": ".ds-btn-satin{display:inline-flex;align-items:center;height:44px;padding:10px 24px;background:rgba(255,254,249,0.80);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#252623;font:500 1rem/1.4 Inter,system-ui,sans-serif;border:1px solid rgba(255,254,249,0.6);border-radius:999px;cursor:pointer}"
     },
     {
       "name": "Card",
       "kind": "card",
       "refersTo": "card",
-      "description": "Superficie opaca, bordo 1 px, ombra ordinaria; angoli zero; padding 16–24 px.",
+      "description": "Carta opaca più chiara del fondo, bordo delicato 1px, ombra solo se serve. radius-card 24px.",
       "html": "<div class=\"ds-card\">…</div>",
-      "css": ".ds-card{background:#FFFFFF;color:#181516;border:1px solid #D6D5D0;border-radius:0;padding:16px 24px;box-shadow:0 2px 6px rgba(24,21,22,.06)}"
+      "css": ".ds-card{background:#FFFEF9;color:#252623;border:1px solid #DEDCD2;border-radius:24px;padding:16px 20px;box-shadow:0 1px 2px rgba(37,38,35,.04),0 4px 12px rgba(37,38,35,.03)}"
     },
     {
-      "name": "Card corso",
+      "name": "Copertina corso",
       "kind": "card",
-      "refersTo": "card-course",
-      "description": "Composizione astratta con grammatica comune; la materia modifica la famiglia cromatica; zone stabili per titolo, avanzamento e azione; conserva identità come intestazione del percorso.",
-      "html": "<div class=\"ds-card-course\">…</div>",
-      "css": ".ds-card-course{position:relative;border-radius:0;padding:24px 32px;color:#F2F0EF;background:linear-gradient(135deg,#0B3A3D,#087F83)}"
+      "refersTo": "card-hero",
+      "description": "Materiale di marca: colore materia + composizione astratta + grana 3–5%; testo protetto (zona carta o campo chiaro); stessa composizione in Home, Studio e selettore; radius-hero 32px.",
+      "html": "<div class=\"ds-card-hero\">…</div>",
+      "css": ".ds-card-hero{position:relative;border-radius:32px;padding:20px 24px;color:#252623;background:#DCE879;overflow:hidden}"
     },
     {
       "name": "Campo di testo",
       "kind": "input",
       "refersTo": "input",
-      "description": "Squadrato, label persistente (mai solo placeholder), stato focus visibile, errore vicino al campo.",
+      "description": "Opaco, radius-control 16px, label persistente sans, focus chiaro con messaggi vicino al campo.",
       "html": "<input class=\"ds-input\" />",
-      "css": ".ds-input{height:44px;background:#FFFFFF;color:#181516;border:1px solid #D6D5D0;border-radius:0;padding:0 16px}"
+      "css": ".ds-input{height:44px;background:#FFFEF9;color:#252623;border:1px solid #888B7A;border-radius:16px;padding:0 16px;font:400 1rem Inter,system-ui,sans-serif}"
     },
     {
       "name": "Dock di navigazione",
       "kind": "navigation",
       "refersTo": "nav-dock",
-      "description": "Sotto 768 px: dock inferiore flottante unico, rettangolare, opaco o quasi; quattro destinazioni con etichette persistenti (Home, Piano, Studio, Core); Core non è un cerchio staccato.",
+      "description": "Sotto 768px: dock flottante arrotondato (radius-nav 24px), carta opaca, ombra controllata, quattro destinazioni etichettate (Home, Piano, Studio, Core), selezione inchiostro senza barrette ottanio.",
       "html": "<nav class=\"ds-dock\">…</nav>",
-      "css": ".ds-dock{display:flex;border-radius:0;border:1px solid #D6D5D0;box-shadow:0 10px 28px rgba(24,21,22,.12)}"
+      "css": ".ds-dock{display:flex;border-radius:24px;background:#FFFEF9;border:1px solid #DEDCD2;box-shadow:0 6px 24px rgba(37,38,35,.10)}"
     }
   ],
   "narrative": {
-    "northStar": "Strumento di studio contemporaneo",
-    "overview": "Erga è uno strumento di studio contemporaneo, personale e curato: sagome rettangolari e proporzioni precise, carta e inchiostro con profondità controllata, atmosfera astratta legata alle materie, tipografia riconoscibile e transizioni che conservano l'identità dell'oggetto. Energia nel marchio, concentrazione nell'uso: il coinvolgimento serve lo studio. Non un'interfaccia militare, non una console tecnica, non un gioco di premi e bagliori.",
+    "northStar": "Carta contemporanea",
+    "overview": "Erga è uno spazio personale per imparare: curato, accogliente e vivo. Fondo caldo e fogli arrotondati; titoli serif espressivi (Lora) e testo sans leggibile (Inter); campiture colorate e composizioni astratte legate alle materie; grana delicata e ombre controllate. Quattro materiali con ruoli stabili: fondo, carta, copertina colorata e velo satinato locale alle copertine. Riferimento: l'atmosfera delle immagini Granola del proprietario — non una copia di asset o UI.",
     "keyCharacteristics": [
-      "Geometria squadrata come caratteristica dell'intero prodotto (raggio 0; cerchi solo nel contenuto).",
-      "Matericità: superfici, ombre e risposta alle interazioni.",
-      "Composizioni astratte per le card dei corsi; la materia modifica la famiglia cromatica.",
-      "Ubuntu Sans del saluto conservato; direzione iniziale Ubuntu Sans per titoli e interfaccia.",
-      "Palette ottanio (#087F83) come base proposta della prima implementazione.",
-      "Navigazione principale flottante e unificata: Home, Piano, Studio, Core.",
-      "Lezioni coinvolgenti con diagrammi animati e piccole interazioni; varietà funzionale, non carosello.",
-      "Percorso visuale con prerequisiti e alternativa Elenco sempre disponibile."
+      "Quattro materiali: fondo avorio, carta opaca, copertina colorata per materia, velo satinato solo sulle copertine.",
+      "Continua/Riprendi/Scegli satinati a pillola sulle copertine; azioni primarie inchiostro nel resto del prodotto.",
+      "Lettura, campi, composer e grafici sempre opachi e nitidi; niente glassmorphism diffuso.",
+      "Lora 400/500 per i titoli, Inter 400/500/600 per lettura e controlli (proposta iniziale da validare).",
+      "Raggi come gerarchia: 8 dettagli, 16 controlli, 24 card, 32 fogli protagonisti, pill per le azioni.",
+      "Identità del corso stabile tra Home, Studio, selettore, modulo e lezione, colori personali compresi.",
+      "Movimento con matrice di continuità/interruzione/movimento ridotto; transizioni corso→percorso→modulo→lezione conservate."
     ],
     "rules": [
-      "Marca, materia e stato sono ruoli distinti: il colore materia vive in zone delimitate, non colora tutti i pulsanti; gli stati hanno anche testo, simbolo o struttura oltre al colore.",
-      "Il rosso è per errore o distruzione, non secondo accento permanente.",
-      "Niente foto sfocata riconoscibile al posto dell'astrazione; niente blur necessario per leggere.",
-      "Movimento che comunica continuità, relazione e risultato; mai respiro continuo mentre si legge.",
-      "Accessibilità: obiettivo WCAG 2.2 AA con verifiche effettive."
+      "Non sommare l'identità 2.1 con la 1.1: ottanio, raggio zero e Ubuntu Sans obbligatorio sono superati.",
+      "Gli accenti (cedro, rosa carta, pervinca, albicocca, azzurro polvere) servono le composizioni, non diventano pulsanti o testo.",
+      "I colori materia esistenti restano dati: inventariare, conservare gli identificatori, adattare la resa di superficie nel registro condiviso.",
+      "Il satinato non è un secondo design system glass: locale, con fallback opaco.",
+      "Niente testo bianco sui pastelli; contrasto verificato sul composito effettivo (min 4,5:1 testo ordinario).",
+      "Grana locale e leggera (3–5% composizioni, 1–2% accoglienza), mai sopra testo, input, formule o grafici."
     ],
     "dos": [
-      "Usare i token semantici condivisi, mai colori hardcoded per ricreare un tema dentro una singola schermata.",
-      "Verificare 320/390/768/1280 CSS px, giorno/notte, testo ingrandito, tastiera e movimento ridotto.",
-      "Partire dalla biblioteca di otto widget esistente e uniformarla, prima di aggiungerne altri.",
-      "Conservare bozze, risposte, progresso e contesto attraverso il redesign."
+      "Verificare font e pesi già presenti nel progetto prima di aggiungere caricamenti (Lora 400/500, Inter 400/500/600).",
+      "Usare un'unica risoluzione corso → materia → palette per tutte le viste.",
+      "Verificare 320/390/768/1280 CSS px, giorno/notte, zoom 200%, tastiera e movimento ridotto sui flussi reali.",
+      "Conservare useHaptics e le utility esistenti; aptica breve e discreta."
     ],
     "donts": [
-      "Niente pillole e capsule come stile generico; niente smussi arbitrari al posto della squadratura.",
-      "Niente mirino laser, bagliori o attese decorative prima di un comando.",
-      "Niente dati fittizi presentati come reali; niente funzionalità simulate.",
-      "Non adottare rosso lacca, Playfair/Inter/Roboto Mono, ossidiana obbligatoria o immagini in bianco e nero: non guidano questo redesign."
+      "Non copiare logo, spirale, illustrazioni, asset o impaginazioni di Granola; niente finta foto di quaderno dietro le lezioni.",
+      "Non trasformare tutto in una UI beige con pillole nere, né in glassmorphism diffuso.",
+      "Niente card dentro card senza necessità, né una bacheca di riquadri bianchi per ogni paragrafo.",
+      "Niente animazione permanente di grana, ombre larghe o blur; nessun timer arbitrario per ritardare azioni.",
+      "Non desaturare le materie fino al beige indistinguibile, non assegnare il cedro a tutti i corsi."
     ]
   }
 }

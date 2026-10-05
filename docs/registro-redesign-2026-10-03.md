@@ -1,39 +1,63 @@
 # Registro del redesign — Erga
 
-**Aperto:** 3 ottobre 2026 · **Fonte di verità grafica:** `DESIGN.md` versione 1.1 (integrato nel pacchetto D0)
-**Base di partenza:** commit `f54e237` (stato del repository verificato dalla specifica: Pratica assorbita da Studio, palestra scientifica, otto widget, motori per materia).
+**Aperto:** 3 ottobre 2026 · **Aggiornato:** 5 ottobre 2026 (V2-00)
+**Fonte di verità grafica:** `DESIGN.md` versione 2.1 «Carta contemporanea» (integrata il 5 ottobre 2026, commit di V2-00).
+**Runtime:** l'app mostra ancora la **veste 1** (pacchetti D1–D3 della sequenza storica). Nessuna schermata è stata ancora migrata alla 2.1.
+**Base di partenza sequenza 1:** commit `f54e237` (stato del repository verificato dalla specifica v1: Pratica assorbita da Studio, palestra scientifica, otto widget, motori per materia).
 
 Questo è l'**unico registro** dei lavori del redesign: stato dei pacchetti, cosa esiste già, punti aperti.
-Chi lavora a un pacchetto aggiorna qui lo stato. La migrazione dell'interfaccia **non è iniziata**: l'app oggi mostra ancora la veste precedente.
+Chi lavora a un pacchetto aggiorna qui lo stato.
+
+**Cronologia delle direzioni (per non confondere le fonti):**
+
+1. **Bisturi Editoriale** — prima veste, sostituita il 3 ottobre 2026 (le sue scelte restano vietate: rosso lacca, Playfair/Inter/Roboto Mono, ossidiana obbligatoria, immagini sempre in bianco e nero, «mirino laser»).
+2. **Versione 1.1 «Ottanio»** — specifica del 3 ottobre 2026, eseguita nei pacchetti D0–D3. **Chiusa come storica** il 5 ottobre: è ancora la veste visibile nel runtime, ma le sue prescrizioni (angoli squadrati, raggio 0, ottanio, Ubuntu Sans obbligatorio, «non introdurre altro accento») **non guidano più i lavori**.
+3. **Bozza 2.0** — discussa solo in conversazione col proprietario il 5 ottobre, **mai presente nel repository**: non c'è nulla da archiviare nei file; è assorbita e sostituita dalla 2.1.
+4. **Versione 2.1 «Carta contemporanea»** — specifica del proprietario del 5 ottobre 2026, allegata e integrata **verbatim** in `DESIGN.md`. È la direzione **corrente**.
+
+I vecchi pacchetti D4–D13 della sequenza 1 (righe qui sotto) **non si eseguono**: la loro sequenza è stata sostituita dal piano V2. Le evoluzioni funzionali che contenevano restano lavoro futuro separato.
 
 ---
 
-## 1. Le decisioni vincolanti (dal proprietario)
+## 1. Le decisioni vincolanti (dal proprietario, 5 ottobre 2026 — DESIGN.md 2.1)
 
-- **Angoli squadrati** (raggio 0) per l'intero prodotto; cerchi solo nel contenuto (avatar, radio nativi, esagono cognitivo, grafici).
-- **Atmosfera astratta e matericità**: composizioni di luce e colore per le card dei corsi, superfici e ombre con profondità controllata.
-- **Ubuntu Sans del saluto**: da conservare.
-- **Palette ottanio** (`#087F83` e famiglia): base proposta della prima implementazione, non identità definitivamente approvata.
-- **Navigazione unificata**: quattro destinazioni con etichette persistenti (Home, Piano, Studio, Core); dock flottante su telefono, rail/sidebar su schermi ampi.
-- **Lezioni coinvolgenti**: diagrammi animati e piccole interazioni; varietà funzionale, non carosello di paragrafi identici.
+- **Direzione «carta contemporanea»**, riferimento all'atmosfera delle due immagini Granola: **non** una copia di logo, spirale, illustrazioni, testi, asset, sfondi o impaginazioni. Né una traduzione in «UI beige con pillole nere», né glassmorphism diffuso.
+- **Quattro materiali con ruoli stabili:** fondo avorio · carta opaca (lettura, campi, composer, calendario, grafici) · copertina colorata (colore materia + composizione astratta + grana) · velo satinato **locale alle copertine**. Continua/Riprendi/Scegli sono satinati a pillola sulle copertine anche quando primari; nel resto del prodotto le azioni primarie sono **inchiostro**.
+- **Tipografia:** Lora 400/500 (titoli) + Inter 400/500/600 (lettura, interfaccia) come **proposta iniziale da validare**; KaTeX preservato.
+- **Geometria come gerarchia:** raggi 8 (dettagli) · 16 (controlli) · 24 (card) · 32 (fogli protagonisti, sheet) · 24 (dock) · pill (azioni).
+- **Identità del corso stabile tra le viste** (Home, Studio, selettore, modulo, lezione; colori personali e fallback inclusi; un'unica risoluzione corso→materia→palette).
+- **Movimento con matrice:** durate per trigger, continuità nelle transizioni corso→percorso→modulo→lezione, **movimento ridotto definito per ciascun pattern**.
+- **I colori materia esistenti sono dati:** identificatori conservati, resa di superficie adattata nel registro condiviso; gli accenti 2.1 (cedro, rosa carta, pervinca, albicocca, azzurro polvere) servono le composizioni, non diventano pulsanti.
+- **Validazione su vere schermate e veri flussi:** un mockup è dichiarato tale, non prova del prodotto.
+- **V2-00 non è il rollout globale**; V2-01 (pilota) parte solo dopo decisione del proprietario; niente copia in blocco dei vecchi pacchetti come nuovi incarichi.
+- **Nessun cambiamento** a backend, autenticazione, dati, pagamenti; nessuna migrazione o deploy Lovable. Le skill del progetto si usano senza lasciare che sostituiscano la direzione approvata.
 
-**Non guidano questo redesign** (scelte della veste precedente, da non reintrodurre): rosso lacca, Playfair/Inter/Roboto Mono, ossidiana obbligatoria, immagini sempre in bianco e nero, "mirino laser".
+**Superate (archivio v1, 3 ottobre):** angoli squadrati/raggio 0; saluto Ubuntu Sans da conservare; palette ottanio `#087F83` come base proposta; navigazione a barretta `bg-brand`; «non introdurre altro accento».
 
-## 2. Stato dei pacchetti
+## 2. Stato dei lavori
+
+### Sequenza 1 — versione 1 (STORICA, 3 ottobre 2026: chiusa)
 
 | Pacchetto | Contenuto | Stato |
 |---|---|---|
-| **D0 — Identità e documentazione** | DESIGN.md 1.1 integrato (frontmatter token del sistema di destinazione), `.impeccable/design.json` allineato (schema 2), AGENTS.md / Matrice / Minilezione riconciliate, questo registro | ✅ **fatto, 3 ottobre 2026** |
-| **D1 — Fondamenta** | Token nel runtime (palette ottanio giorno/notte, raggio 0, ombre §6, ruoli tipografici interfaccia/lettura, token di marca), grammatica dei componenti condivisi, revisione di `noGreen.test.ts` | ✅ **runtime consegnato 3 ottobre 2026** (verifica visiva in app da confermare; geometria locale residua inventariata qui sotto) |
-| **D2 — Navigazione e Home** | Dock flottante rettangolare unico (Core incluso) + rail 768–1199 + sidebar ≥1200; Home con gerarchia §10 (riprendi → prossimo impegno → strumenti) | ✅ **consegnato 3 ottobre 2026** (verifica visiva in app da confermare; anteprima verificabile: `docs/anteprima-navigazione-home-d2.html`) |
-| **D3 — Studio e continuità delle card** | Grammatica condivisa su card corso, selettore, intestazioni modulo, lezioni e Banco; transizioni audited (movimento ridotto sull'ingresso card, cleanup timer cambio corso) | ✅ **consegnato 3 ottobre 2026** (mappa con prerequisiti e scene didattiche restano evoluzioni funzionali separate, vedi §2 D6+) |
-| **D4 — Esercizi, interrogazione e Piano** | Ingressi degli strumenti del Banco; calendario squadrato coerente nei due temi | ⬜ |
-| **D5 — Core e landing** | Coerenza della schermata Core esistente; landing nella stessa identità, confini degli stili marketing preservati | ⬜ |
-| **D6+ — Evoluzioni funzionali separate** | Mappa con dipendenze reali e loro generazione/validazione; nuovi componenti didattici interattivi; aggiunta di impegni in linguaggio naturale (contratto dati + AI/backend); metriche future di Core | ⬜ incarichi separati, mai nel redesign visivo |
+| **D0 — Identità e documentazione** | DESIGN.md 1.1 integrato, `design.json` schema 2, AGENTS/Matrice/Minilezione riconciliate | ✅ fatto, 3 ottobre (`e139f67` + fix `bfd6b62`) — **archiviato da V2-00** |
+| **D1 — Fondamenta** | Token runtime v1 (ottanio, raggio 0), grammatica componenti, revisione `noGreen.test.ts` | ✅ runtime consegnato (`5e9e689` + fix `c4df732`) — **visibile ancora oggi** |
+| **D2 — Navigazione e Home** | Dock rettangolare + rail 768–1199 + sidebar ≥1200; Home ordine §10 v1 | ✅ runtime consegnato (`c9b5860`) — **visibile ancora oggi**; anteprima `docs/anteprima-navigazione-home-d2.html` |
+| **D3 — Studio e card** | Migrazione literal→token su selettore/percorso/moduli/lezioni; transizioni audited | ✅ runtime consegnato (`eb23855`) — **visibile ancora oggi** |
+| **D4–D13 — resta della sequenza 1** | Esercizi/Piano, Core/landing, evoluzioni funzionali… | ❌ **mai avviati, superati** dal piano V2 (5 ottobre) |
 
-**Regola di advancement:** niente riscrittura totale in un colpo solo; migrazione progressiva per pacchetti, componenti condivisi, rimozione degli stili soppiantati senza stratificare override.
+### Sequenza 2 — versione 2 (ATTUALE, 5 ottobre 2026)
 
-## 3. Cosa esiste già nel prodotto (verificato nel repository al commit `f54e237`)
+| Tappa | Contenuto | Stato |
+|---|---|---|
+| **V2-00 — Allineare le fonti** | DESIGN.md 2.1 integrato verbatim (frontmatter token di destinazione + nota d'integrazione), `design.json` rigenerato, AGENTS.md/Matrice/Minilezione riconciliate solo nella parte grafica, registro aggiornato, inventario test di stile col piano di migrazione. **Nessun file in `src/` toccato; nessun Update Lovable necessario** (documentazione). | ✅ **fatto, 5 ottobre 2026** |
+| **V2-01 — Pilota** | Home completa + **una lezione rappresentativa esistente** col minimo sistema condiviso (token 2.1, Lora/Inter, materiali, dock/rail/sidebar, identità corso), **incluso un caso matematico/interattivo**. Dati reali nella UI; fixture sintetiche solo in prove isolate dichiarate. **Viste reali telefono/desktop, giorno/notte** — non mockup HTML. | ⬜ **prossimo passo, da valutare dal proprietario prima del rollout** |
+| **Rollout — 6 tappe** | 1 sistema+shell · 2 Studio/card/selettore/transizioni · 3 lettore+widget+strumenti · 4 Piano/Core/impostazioni · 5 landing/accesso · 6… | ⬜ dopo la valutazione del pilota (piano completo in DESIGN.md 2.1 §18) |
+| **Evoluzioni funzionali** | Prerequisiti consigliati, scene didattiche v2, impegni in linguaggio naturale, metriche Core | ⬜ incarichi separati, mai nel redesign visivo |
+
+**Regola di advancement (invariata):** niente riscrittura totale in un colpo solo; migrazione progressiva, componenti condivisi, rimozione degli stili soppiantati senza stratificare override.
+
+## 3. Cosa esiste già nel prodotto (verificato nel repository al commit `f54e237`; invariato)
 
 Presenza nel codice **non** significa pubblicato online: i deploy passano da Lovable.
 
@@ -44,66 +68,77 @@ Presenza nel codice **non** significa pubblicato online: i deploy passano da Lov
 - **Motori per materia** (fiume del backend): scientifico (DeepSeek V4 Flash via OpenRouter + formule + widget), letteratura, storia/geografia, filosofia, lingue vive, latino, storia dell'arte; sociali e informatica rinviati a più tardi.
 - **KaTeX** con output MathML accessibile; **i18n** it/en; colori materie e routine (informano, non decorano); vetrina marketing isolata (`--lp-*`); fondamenta dati v1/v2 (compatibilità dei percorsi v1 da mantenere).
 
-## 4. Controlli di stile
+## 4. Il runtime oggi (dichiarazione onesta, post V2-00)
 
-**`src/test/noGreen.test.ts` — revisionato in D1 (era "precedente monocromo").** La nuova policy difende i ruoli colore: marca ottanio solo via token di tema; materia confinata ai suoi token (`--pastel-*`, palette del Piano — per questo `#0d9488` non è in lista); feedback semantico solo nei componenti che validano risposte (allowlist invariata, 6 file). Restano vietati: classi Tailwind verdi/teal, hex bosco e teal liberi, hue HSL 60–189 con saturazione fuori dal tema, theme-color verdi. Il commento che presentava verde/rosso come coppia obbligatoria WCAG è corretto: il criterio 1.4.1 chiede che il colore non sia l'unico veicolo, e il feedback ha anche testo e struttura. Il test è rimasto attivo e verde durante tutta la migrazione.
+L'app mostra ancora la **veste 1** (D1–D3), cioè: palette ottanio `#087F83` giorno/notte `#101717`, raggio 0 (tranne cerchi semantici), Ubuntu Sans (interfaccia) + Montserrat (lettura), dock rettangolare D2, card tokenizzate D3. **Cambiare la documentazione non ha ridisegnato l'app.**
 
-- Token CSS della veste precedente non ancora migrati (avorio hero, pillola di navigazione, pastelli materia in versione mono): vedi inventario D1 qui sotto; oggetto dei pacchetti D2–D5.
+- D1/D2/D3 sono nel repository spinto; la pubblicazione su Lovable (Update, solo frontend) **non è mai stata confermata dal proprietario**.
+- **V2-00 non richiede alcun Update Lovable**: ha toccato solo documentazione e strumenti (`DESIGN.md`, `.impeccable/design.json`, `AGENTS.md`, `docs/`).
+- **Font 2.1 non caricati:** Lora e Inter non sono nel bundle; il pilota V2-01 li aggiunge (o verifica equivalenti già presenti) prima di usarli.
+- `theme-color`, saluto e token di marca restano v1 finché il pilota non li sostituisce.
 
-## 4bis. D1 — cosa è entrato nel runtime (3 ottobre 2026)
+**Verifiche eseguite in V2-00 (5 ottobre 2026):** YAML del frontmatter di `DESIGN.md` valido (39 colori, 8 ruoli tipografici, 7 raggi, 10 spacing, 7 componenti); `context.mjs` legge la 2.1 senza errori; `design.json` valido e letto dal detector (14 segnalazioni, **tutte in `src/index.css`**: 7 Montserrat, 5 colori, 2 raggi — è il gap v1→v2.1 atteso, concentrato nel file dei token, si chiude in V2-01); suite **625 pass / 13 fail pre-esistenti** identica alla baseline D3; `noGreen` verde; `tsc --noEmit` OK; `vite build` OK. Controlli **non** eseguiti: verifica visiva in app e screenshot (nessuna schermata è cambiata; il runtime resta veste 1).
 
-**Token (nessuna seconda collezione: stessi nomi, nuovi valori):** `--primary` e `--ring` a ottanio `#087F83` con testo/focus bianco (notte compresa, come da §4); famiglia di marca nuova `--brand` / `--brand-deep` (testo di marca: `#07585C` di giorno, accento chiaro `#8ECFD0` di notte) / `--brand-tint` (`#E8F2F0`), esposti a Tailwind come `brand.DEFAULT/deep/tint`; `--secondary`/`--accent` a tinta di marca con testo profondo; notte spostata su `#101717` / `#141D1D` / `#1B2828` con testo `#F2F0EF`, secondario `#B8C6C3`, bordo `#3D5351`; `--border` giorno `#D6D5D0`; semantici tornati colore (`--destructive` rosso, `--success` verde, `--warning` ambra — solo esito, mai tinta); ombre ai tre livelli del §6 (ordinaria/protagonista/overlay, notte ridotta); radius tutti a 0 tranne `--radius-full`; `--motion-*` e `--ease-out` invariati (già nei range del §7); `.force-light` della vetrina allineato; `theme-color` a `#101717`.
+## 5. Inventario dei test di stile v1 e piano di migrazione
 
-**Componenti condivisi:** Button (size "pill" ora squadrata; variant link/fab/elevated usano `text-brand-deep`), Input/Select/Tabs/Dialog/Sheet/Menu/Toast/Skeleton/Alert/Card già sulla grammatica a variabili → raggio 0 automatico mantenendo Radix, focus ring, target 44px e label; PillToggle (selettore segmentato) e Progress squadrati. Avatar, Switch, Radio e Checkbox mantengono il cerchio (eccezione semantica documentata §3).
+Questi test **difendono la veste 1 e oggi sono corretti**: si migrano alle rispettive tappe, **nessuna cancellazione per nascondere errori**. Baseline post-D3: **625 pass / 13 fail pre-esistenti** (AppHeader 13 + haptics 1), tsc OK, build OK.
 
-**Tipografia:** ruolo INTERFACCIA = Ubuntu Sans (body, sans/display/body del config); ruolo LETTURA = `font-reading` (Montserrat, da validare su contenuti reali) applicato a concept/spiegazioni/esempio in `FullscreenLesson`; saluto della Home invariato (Ubuntu Sans); KaTeX intatto; nessun nuovo font caricato.
+| Test / suite | Che cosa impone (v1) | Quando migra |
+|---|---|---|
+| `src/test/noGreen.test.ts` | Ruoli colore v1: marca ottanio solo via token di tema; materia confinata ai suoi token; feedback semantico solo nei validatori (allowlist 6 file); vietati hex/hue verdi liberi. **La policy dei ruoli sopravvive alla 2.1** (i valori cambiano, i ruoli no): si aggiornano i token di marca nel pilota. | V2-01 (token marca) |
+| `src/test/appShellDesignSystem.test.ts` | Dock D2 squadrato: `bg-brand`, safe-area, Core incluso, rail/sidebar. | V2-01 + tappa 1 |
+| `src/test/homeCleanSurfaces.test.ts` | 4 test P36 riscritti in D2: `border-border`, niente `rounded-full`, CTA `color-mix` 12/24%, `font-display` 3xl. | V2-01 |
+| `src/test/HomeView.test.tsx` | Ordine §10 v1 (saluto → corso → Piano → Strumenti) + grammatica squadrata. L'ordine si riversa nella 2.1 (§9); la grammatica cambia. | V2-01 |
+| `src/test/creamNotWhite.test.ts` | Superfici carta v1. | V2-01 / tappa 1 |
+| `src/test/darkModeChatMobile.test.ts` | Drawer notturno v1. | Tappa 3 (lettore+strumenti) |
+| Registro §7 (archivio: 4bis/4ter/4quater) | Valori citati D1/D2/D3 (ottanio, raggio 0, Ubuntu Sans). Restano come documento del runtime attuale. | consultazione; si chiudono a pilota concluso |
 
-**Migrazione consumer:** 64 `text-primary` → `text-brand-deep` in 33 file (il tono pieno `#087F83` non si usa per testo ordinario su carta: 4,23:1); `bg-primary` e `border-primary` restano sul token d'azione.
+**`noGreen` — policy conservata (revisione D1):** il colore di marca solo via token di tema; materia confinata ai suoi token (`--pastel-*`, palette del Piano); feedback semantico solo nei componenti che validano risposte (allowlist invariata, 6 file). Vietati: classi Tailwind verdi/teal, hex bosco/teal liberi, hue HSL 60–189 fuori tema, theme-color verdi. Il commento WCAG 1.4.1 corretto in D1 resta valido: il colore non è mai l'unico veicolo (testo e struttura ci sono sempre).
 
-**Detector Impeccable:** legge il DESIGN.md 1.1 e segnala i residui come inventario vivo (es. `text-[11px]` in PillToggle, `text-[0.9375rem]`/15px nel lettore lezioni — il ramp D1 non ha il 15px; si risolve in D3 col pacchetto lezioni). Suite dopo D1: **619 pass / 18 fail**, tutti pre-esistenti (AppHeader, superfici Home vecchia veste, haptics) e attesi fino a D2; il test HomeView delle capsule, già rotto, è stato riallineato alla grammatica squadrata.
+## 6. Punti ancora aperti (proposte da validare nel pilota, non decisioni)
 
-### Inventario della geometria locale residua (da migrare in D2+, NON eliminata)
-
-- `rounded-full` fuori dai componenti condivisi: **57 file** (molti legittimi — avatar, pallini di stato, esagono; altri da vagare: es. `PathHero` 20, `EserciziView` 21, `Login` 9, `ModulePath` 14). Tailwind lo lascia a 9999px di proposito.
-- Radius espliciti hardcoded: **48 usi** (`rounded-[18px]` ×12, `rounded-3xl` ×9, `rounded-[24px]` ×7, `rounded-[20px]` ×6…).
-- Font locali: Radja (`Login`, `HomeHeader` — voce focale, decisione in D2/D5), sottotitolo Home in Zalando Sans Expanded.
-- Voci M3 ereditate: varianti Button `fab*`/`tonal`/`elevated` e contenitori `surface-container-*` (funzionanti, da ritirare quando le sezioni migrano).
-- Pillola di navigazione (`BottomNav`/`--nav-surface`) e card avorio `--surface-cream`: si ridisegnano in D2.
-- Pastelli materia ancora in versione mono (`--pastel-*`): la loro vivificazione è affare della sezione corsi (D3), con i colori materia vivi già documentati in `DESIGN.md`/`design.json`.
-
-## 4ter. D2 — cosa è cambiato (3 ottobre 2026)
-
-- **Navigazione unificata** (`BottomNav.tsx` riscritto): quattro destinazioni etichettate Home · Piano · Studio · Core nello stesso ordine su ogni formato. Telefono: UN dock flottante rettangolare (opaco, `shadow-level-3`, safe area, Core incluso — niente più cerchio separato); 768–1199: rail sospesa compatta (icone + etichette); ≥1200: sidebar (brand esteso, menu che scorre da solo). Selezione = testo `brand-deep` + barretta geometrica `bg-brand` (animata con layoutId, poi ferma) + `aria-current`. La nav non sparisce con lo scroll; le sessioni immersive continuano a usare `hideChrome`.
-- **Shell** (`AppLayout.tsx`): content-card squadrata (`rounded-card`), spazio del dock riservato dal contenuto con `calc(5.5rem + safe-area)`.
-- **Home** (`HomeView.tsx`): ordine §10 — saluto → card corso (ripresa) → Piano del giorno → Strumenti rapidi. Strumenti e ripresa invariati nelle destinazioni (Studio/lezioni, nessuna Pratica autonoma).
-- **Card corso** (`CourseHeroCard.tsx`): bordi tokenizzati (`border-border`), CTA semiopaca al 12% (più solida, §6), stato vuoto su superficie opaca (niente glass), composizione astratta per materia invariata (già conforme), titolo in Ubuntu Sans (`font-display` D1). `QuickToolsGrid`/`DailyTimeline`: bordi `#FFFBF4` → token.
-- **Test**: dock D2 in `appShellDesignSystem`; i 4 test P36 di `homeCleanSurfaces` riscritti alle attese D2 (erano pre-esistenti falliti su una veste mai completata); nuovo test ordine §10 in `HomeView.test`. Suite: **625 pass / 13 fail** (solo AppHeader 13 + haptics 1, pre-esistenti, header non toccato da D2).
-- **Anteprima verificabile**: `docs/anteprima-navigazione-home-d2.html` — dock/rail/sidebar, card per materia scura/chiara, stato vuoto, giorno/notte. Non è uno screenshot del prodotto.
-
-## 4quater. D3 — cosa è cambiato (3 ottobre 2026)
-
-**Struttura invariata, veste migrata** (nessun override sopra le vecchie card: le classi locali sono state sostituite). Cantieri Aperti e Banco degli Strumenti restano distinti; chat/esercizi/interrogazione nel Banco, palestra solo per famiglia scientifica; la lezione si continua senza passare dagli strumenti (percorso diretto invariato).
-
-- **Migrazione stili** (literal → token della grammatica D1/D2): selettore corsi (`rounded-[20px]`→`rounded-card`, menu `rounded-md`, dialog rinomina `rounded-dialog`, drawer `rounded-t-dialog`); PathHero (bottoni rinomina `rounded-button`, progresso `rounded-sm`); ModulesOverview (pillola flottante → solida squadrata senza blur, progressi `rounded-sm`); ModulePath (banner `rounded-card`, progressi allineati a `progress.tsx`); lezioni FullscreenLesson (card concetto/esempio/esercizio `rounded-card` e **solide senza backdrop-blur** — §6: il blur non serve a leggere; badge, segmenti e punti di progresso squadrati); FinalTest, ModuleGenerationScreen, GenerationProgress, CourseCardSkeleton; StudioView (CTA di generazione **tokenizzata**: era `bg-[#121214]` hardcodato, ora ottanio `bg-primary`).
-- **Bagliori ritirati** (§4): la card del Banco e l'icona del tool non hanno più le ombre-lume `var(--subject-accent)`; hover = `shadow-card-active`.
-- **Transizioni audited senza riscritture**: il morph corso→percorso (layoutId per-corso) già preservava scroll e identità dell'oggetto, con guardia ai doppi clic — invariato. Due migliorie mirate: l'ingresso delle card nel portale (delay 0,25s) ora è **saltato con movimento ridotto** (prima solo il layout morph lo rispettava); i timer del cambio corso (60/650ms) sono **tracciati in ref e puliti allo smontaggio** (uscita rapida a metà volo non lascia più timer pendenti né il body bloccato).
-- **Verifiche**: suite 625 pass / 13 fail pre-esistenti (AppHeader 13 + haptics 1), tsc OK, build OK, detector OK (residui = type ramp 15px ecc., in inventario). Flussi coperti dai test esistenti (studioViews 11, darkModeChatMobile 5) più la suite P50.
-
-### Inventario residuo D3+ (type ramp e geometrie residue)
-- Dimensioni tipografiche letterali nelle superfici Studio/lezioni (`text-[15px]`, `text-[10.5px]`, `text-[0.9375rem]`): il ramp D1 non ha il passo 15px; si decide col pacchetto lezioni.
-- `rounded-full` superstite in studio: cerchi legittimi (orbs della composizione, avatar, icone circolari, cerchi di stato) — verificato a campione.
-
-## 5. Punti ancora aperti (proposte da validare, non decisioni)
-
-- Valori completi della palette ottanio (giorno e notte) e contrasti su trasparenze, hover, disabled, focus.
-- Ubuntu Sans anche per il testo didattico, dopo confronto su contenuti reali.
-- Breakpoint di presentazione della navigazione (<768 dock · 768–1199 rail · ≥1200 sidebar).
+- **Contraddizione operativa reale:** DESIGN.md 2.1 §10 vuole rail 768–1023 e sidebar da **1024**; D2 ha implementato sidebar a **≥1200** (xl). La 2.1 stessa demanda («soglie da verificare sul contenuto»): si decide in V2-01 sulle schermate reali.
+- Lora e Inter: caricamento o equivalenti già presenti; pesi esatti (400/500 + 400/500/600) e resa su contenuti reali.
+- Saturazione delle superfici materia, grana, resa notturna delle copertine: validazione visiva nel pilota.
+- Saluto della Home: font serif (Lora) e misura «compact» — da verificare accanto alle copertine.
 - Prerequisiti **consigliati** con possibilità di proseguire: nessun blocco rigido senza decisione di prodotto.
-- Intensità delle ombre e durate delle transizioni: da verificare nel prodotto.
-- Etichette del toggle del corso: **Percorso/Elenco** (non "Topologia", non il simbolo ☍).
+- Etichette del toggle del corso: **Percorso/Elenco** (non «Topologia», non il simbolo ☍).
 
-## 6. Note operative
+## 7. Archivio della versione 1 — cosa è entrato nel runtime (3 ottobre 2026)
 
-- `PRODUCT.md` non è stato modificato per adattarlo alla grafica (regola del pacchetto D0).
-- Nessuna modifica a backend, dati, autenticazione o pagamenti; nessuna migrazione né deploy richiesto da D0.
-- I prompt Arena dettagliati per i pacchetti D1+ saranno deliverable successive basati su `DESIGN.md` e su questo registro.
+*Questi dettagli descrivono la veste che l'app mostra ancora oggi. Restano come documento del runtime finché il rollout 2.1 non la sostituisce, tappa per tappa.*
+
+### D1 — Fondamenta (`5e9e689` + fix `c4df732`)
+
+**Token (nessuna seconda collezione: stessi nomi, nuovi valori):** `--primary`/`--ring` a ottanio `#087F83` con testo/focus bianco (notte compresa); famiglia di marca `--brand`/`--brand-deep` (testo `#07585C` giorno, `#8ECFD0` notte)/`--brand-tint` (`#E8F2F0`); notte `#101717`/`#141D1D`/`#1B2828` con testo `#F2F0EF`, secondario `#B8C6C3`, bordo `#3D5351`; `--border` giorno `#D6D5D0`; semantici tornati colore (`--destructive` rosso, `--success` verde, `--warning` ambra — solo esito); ombre a tre livelli; radius tutti a 0 tranne `--radius-full`; `theme-color` a `#101717`.
+
+**Componenti condivisi:** Button (size «pill» squadrata; variant link/fab/elevated su `text-brand-deep`), Input/Select/Tabs/Dialog/Sheet/Menu/Toast/Skeleton/Alert/Card sulla grammatica a variabili, focus ring, target 44px, label. PillToggle e Progress squadrati. Avatar, Switch, Radio, Checkbox mantengono il cerchio.
+
+**Tipografia:** INTERFACCIA = Ubuntu Sans; LETTURA = `font-reading` (Montserrat, da validare) su concept/spiegazioni/esempio in `FullscreenLesson`; saluto Ubuntu Sans; KaTeX intatto; nessun nuovo font caricato.
+
+**Migrazione consumer:** 64 `text-primary` → `text-brand-deep` in 33 file (contrasto 4,23:1 del tono pieno); `bg-primary`/`border-primary` sul token d'azione. Suite dopo D1: 619/18 pre-esistenti.
+
+### D2 — Navigazione e Home (`c9b5860`)
+
+- **BottomNav riscritto:** quattro destinazioni (Home · Piano · Studio · Core), dock flottante rettangolare unico <768 (opaco, `shadow-level-3`, safe area, Core incluso); rail 768–1199; sidebar ≥1200. Selezione = `brand-deep` + barretta `bg-brand` + `aria-current`; i18n `nav.ariaPrimary`.
+- **AppLayout:** content-card `rounded-card`, riserva dock `calc(5.5rem + safe-area)`.
+- **HomeView ordine §10 v1:** saluto → card corso → Piano del giorno → Strumenti rapidi.
+- **CourseHeroCard:** `border-border`, CTA `color-mix` 12%/24%, stato vuoto opaco, titolo `font-display`.
+- **Test:** dock D2 in `appShellDesignSystem`; 4 test P36 di `homeCleanSurfaces` riscritti; test ordine in `HomeView.test`. Suite 625/13.
+
+### D3 — Studio e continuità (`eb23855`)
+
+- **Migrazione literal→token:** selettore corsi, PathHero, ModulesOverview, ModulePath, FullscreenLesson (card solide senza backdrop-blur), FinalTest, ModuleGenerationScreen, GenerationProgress, CourseCardSkeleton, StudioView (CTA tokenizzata, era `bg-[#121214]`), StudioPractice senza glow.
+- **Transizioni audited:** morph corso→percorso invariato (layoutId per-corso, guardia doppi clic); ingresso card saltato con movimento ridotto; timer cambio corso tracciati in ref e puliti allo smontaggio.
+- **Suite:** 625/13 invariata; tsc/build/detector OK (residui: type ramp 15px ecc., inventariati).
+
+### Inventario geometria v1 residua (superato dalla 2.1: il raggio torna, con la scala 8/16/24/32)
+
+I `rounded-full` fuori dai componenti condivisi (57 file, molti legittimi), i radius espliciti hardcoded (48 usi), Radja (Login/HomeHeader), il sottotitolo Zalando Sans Extended e le voci M3 ereditate: inventario vivo **assorbito dalla migrazione 2.1** (il pilota decide sopravvivenza o ritiro di ciascuno).
+
+## 8. Note operative
+
+- `PRODUCT.md` non è stato modificato per adattarlo alla grafica (regola D0, confermata in V2-00).
+- Nessuna modifica a backend, dati, autenticazione o pagamenti; nessuna migrazione né deploy richiesti da V2-00.
+- **V2-00 = solo allineamento fonti.** Il prodotto ridisegnato esiste solo dopo V2-01 e il rollout, verificati su schermate reali.
+- I prompt Arena dettagliati per V2-01+ saranno deliverable successive basate su `DESIGN.md` 2.1 e su questo registro.
