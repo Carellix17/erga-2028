@@ -29,6 +29,13 @@
       "when": 1791031309439,
       "tag": "0003_percorsi_v2_fondamenta",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791319206663,
+      "tag": "0004_migration",
+      "breakpoints": true
     }
   ]
 }
