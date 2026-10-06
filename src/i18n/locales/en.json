@@ -208,7 +208,18 @@
   },
   "settings": {
     "languageSubtitle": "Choose the app language",
-    "languageDescription": "Select the language you want to see Erga in."
+    "languageDescription": "Select the language you want to see Erga in.",
+    "plan": {
+      "ariaLabel": "Your plan",
+      "eyebrow": "Your plan",
+      "freeNote": "You're using the free version of Erga.",
+      "betaNote": "Recognized Pro access: thank you for beta testing.",
+      "proNote": "All Pro features are active.",
+      "upgrade": "Upgrade to Pro",
+      "betaTitle": "We're still in beta rollout",
+      "betaBody": "Upgrading to Pro isn't open yet: Erga is in beta rollout and no purchase is possible right now. Check back soon.",
+      "close": "Got it"
+    }
   },
   "landing": {
     "signIn": "Sign in",

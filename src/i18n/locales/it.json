@@ -208,7 +208,18 @@
   },
   "settings": {
     "languageSubtitle": "Scegli la lingua dell'app",
-    "languageDescription": "Seleziona la lingua in cui vuoi vedere Erga."
+    "languageDescription": "Seleziona la lingua in cui vuoi vedere Erga.",
+    "plan": {
+      "ariaLabel": "Il tuo piano",
+      "eyebrow": "Il tuo piano",
+      "freeNote": "Stai usando Erga nella versione gratuita.",
+      "betaNote": "Accesso Pro riconosciuto: grazie per il beta test.",
+      "proNote": "Tutte le funzioni Pro sono attive.",
+      "upgrade": "Passa a Pro",
+      "betaTitle": "Siamo ancora in rollout beta",
+      "betaBody": "Il passaggio a Pro non è ancora aperto: Erga è in fase di rollout beta e nessun acquisto è possibile in questo momento. Torna qui presto.",
+      "close": "Ho capito"
+    }
   },
   "landing": {
     "signIn": "Accedi",

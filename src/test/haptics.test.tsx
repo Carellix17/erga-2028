@@ -25,6 +25,18 @@ vi.mock("@/components/studio/CourseCardBackground", () => ({
   CourseCardBackground: () => <div data-testid="course-background" />,
 }));
 
+// SettingsIndex ospita la carta del piano (SettingsPlanCard), che legge il
+// tier: senza AuthProvider nel collaudo si simula un utente "free".
+vi.mock("@/hooks/useSubscription", () => ({
+  useSubscription: () => ({
+    tier: "free",
+    isPro: false,
+    isBetaTester: false,
+    hasActiveSubscription: false,
+    loading: false,
+  }),
+}));
+
 vi.mock("@/hooks/useCognitiveProfile", () => ({
   useCognitiveProfile: () => ({
     profile: { log_score: 70, mem_score: 60, foc_score: 80, voc_score: 65, ans_score: 75, app_score: 70 },

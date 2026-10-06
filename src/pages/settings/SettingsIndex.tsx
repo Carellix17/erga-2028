@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { User, Palette, Accessibility, FileText, ChevronRight, Languages } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
+import { SettingsPlanCard } from "@/components/settings/SettingsPlanCard";
 import { useHaptics } from "@/hooks/useHaptics";
 import { SeoHead } from "@/components/SeoHead";
 
@@ -25,6 +26,9 @@ export default function SettingsIndex() {
       />
       <SettingsHeader title="Impostazioni" subtitle="Gestisci il tuo account e l'app" />
       <main className="px-4 sm:px-6 py-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-3 animate-fade-up">
+        {/* Il piano in grande, come le card dei corsi (decisione del
+            proprietario: niente piano nella barra di stato). */}
+        <SettingsPlanCard />
         {ITEMS.map(({ to, icon: Icon, title, desc }) => (
           <Link
             key={to}

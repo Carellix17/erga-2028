@@ -1,8 +1,7 @@
-import { ArrowLeft, Flame, Settings } from "lucide-react";
+import { ArrowLeft, Settings } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { useHomeDashboard } from "@/hooks/useHomeDashboard";
 import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +15,17 @@ interface AppHeaderProps {
 
 const SETTINGS_ROOTS = ["/app/impostazioni", "/app/settings", "/impostazioni", "/settings"];
 
+/**
+ * AppHeader — barra di stato dell'app (decisione del proprietario, 6 ottobre 2026).
+ *
+ * La barra non mostra più la serie né il piano: restano il contenuto della
+ * sezione (o il wordmark sulla Home) e le Impostazioni a destra.
+ *
+ * Sulla Home del TELEFONO il piano vive accanto al wordmark: «Erga» è una
+ * scritta, il piano un tasto — sullo stesso livello, nella stessa riga.
+ * Il tasto porta alle Impostazioni, dove la carta del piano lo racconta
+ * per esteso. Su desktop e nelle altre sezioni il tasto non esiste.
+ */
 export function AppHeader({
   title,
   subtitle,
@@ -26,54 +36,32 @@ export function AppHeader({
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const dashboard = useHomeDashboard();
-  const streakDays = dashboard.data?.streakDays ?? 0;
-  const streakLabel = streakDays > 0
-    ? t("header.streak", { count: streakDays })
-    : t("header.startStreak");
+
   const normalizedPath = location.pathname.replace(/\/+$/, "") || "/";
   const isSettingsRoute = SETTINGS_ROOTS.some(
     (root) => normalizedPath === root || normalizedPath.startsWith(`${root}/`),
   );
 
-  // Dati abbonamento
+  // Piano: Free / Pro / Beta (useSubscription gestisce il caricamento).
   const { tier } = useSubscription();
   const tierLabel = tier === "beta" ? "Beta" : tier === "pro" ? "Pro" : "Free";
 
-  // La serie vive SEMPRE a destra, accanto alle Impostazioni. Sulla Home la
-  // barra non ha titolo: a sinistra campeggia il wordmark "erga" (solo lì).
-  const streakButton = (
-    <button
-      type="button"
-      onClick={() => navigate("/app/ritmo")}
-      aria-label={t("header.openFocusStats", { count: streakDays })}
-      title={t("header.openFocusStats", { count: streakDays })}
-      className={cn(
-        "flex min-h-11 min-w-11 max-w-[8.5rem] shrink-0 items-center gap-1.5 rounded-pill bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        // Sulla Home la barra è un overlay senza eventi: solo i controlli
-        // reali tornano cliccabili, non l'intera fascia trasparente.
-        integratedHome && "pointer-events-auto",
-      )}
-    >
-      <Flame className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
-      <span className="truncate min-[360px]:hidden">{streakDays}</span>
-      <span className="hidden truncate min-[360px]:inline">{streakLabel}</span>
-    </button>
-  );
-
-  // Pulsante abbonamento a sinistra
-  const subscriptionButton = (
+  // Il tasto del piano: SOLO telefono, SOLO Home, accanto alla scritta Erga.
+  const planButton = (
     <button
       type="button"
       onClick={() => navigate("/app/impostazioni")}
       aria-label={t("header.subscriptionPlan", { plan: tierLabel })}
       title={t("header.subscriptionPlan", { plan: tierLabel })}
       className={cn(
-        "flex min-h-11 min-w-11 max-w-[8.5rem] shrink-0 items-center gap-1.5 rounded-pill bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "flex h-8 shrink-0 items-center rounded-pill border border-border bg-card px-3 text-xs font-semibold text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "md:hidden",
+        // Sulla Home la barra è un overlay senza eventi: solo i controlli
+        // reali tornano cliccabili, non l'intera fascia trasparente.
         integratedHome && "pointer-events-auto",
       )}
     >
-      <span className="truncate">{tierLabel}</span>
+      {tierLabel}
     </button>
   );
 
@@ -87,42 +75,50 @@ export function AppHeader({
         className,
       )}
     >
-      <div className="mx-auto flex h-16 w-full max-w-lg min-w-0 items-center gap-2 px-4 sm:px-6 md:max-w-2xl lg:max-w-4xl border-b border-[#FFFBF4]">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          {/* Pulsante abbonamento a sinistra, separato con linea */}
-          {subscriptionButton}
-          <div className="h-6 w-px bg-[#FFFBF4]" />
+      <div className="mx-auto flex h-16 w-full max-w-lg min-w-0 items-center gap-2 px-4 sm:px-6 md:max-w-2xl lg:max-w-4xl">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          {integratedHome ? (
+            <>
+              {/* Wordmark: SOLO sulla Home, dove la barra non ha titolo.
+                  È un <p>, non un titolo: l'unico h1 della Home è il saluto.
+                  Il tasto del piano gli sta accanto, sullo stesso livello
+                  (solo telefono: su desktop la barra resta solo scritta). */}
+              <p className="font-display text-[1.65rem] font-medium leading-none tracking-tight text-foreground">
+                Erga
+              </p>
+              {planButton}
+            </>
+          ) : (
+            <>
+              {showBack && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={t("common.back")}
+                  onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/app"))}
+                  className="h-11 w-11 shrink-0"
+                >
+                  <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+                </Button>
+              )}
 
-          {/* Wordmark: SOLO sulla Home, dove la barra non ha titolo.
-              È un <p>, non un titolo: l'unico h1 della Home è il saluto. */}
-
-          {showBack && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t("common.back")}
-              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/app"))}
-              className="h-11 w-11 shrink-0"
-            >
-              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-            </Button>
-          )}
-
-          {title && (
-            <div className="min-w-0 flex-1 text-left">
-              <h1 className="truncate text-left font-display text-lg font-bold leading-tight text-foreground">{title}</h1>
-              {subtitle && <p className="hidden truncate text-xs text-muted-foreground sm:block">{subtitle}</p>}
-            </div>
+              {title && (
+                <div className="min-w-0 flex-1 text-left">
+                  <h1 className="truncate text-left font-display text-lg font-bold leading-tight text-foreground">{title}</h1>
+                  {subtitle && <p className="hidden truncate text-xs text-muted-foreground sm:block">{subtitle}</p>}
+                </div>
+              )}
+            </>
           )}
         </div>
 
         <div className={cn("ml-auto flex shrink-0 items-center gap-2", integratedHome && "pointer-events-auto")}>
-          {streakButton}
-          <div className="h-6 w-px bg-[#FFFBF4]" />
-          {/* Le Impostazioni tornano in cima a destra (il profilo resta
-              raggiungibile dalla sua rotta). Nascoste solo dentro le pagine
-              impostazioni, che hanno già la loro navigazione con indietro. */}
+          {/* Le Impostazioni restano in cima a destra. Nascoste solo dentro
+              le pagine impostazioni, che hanno già la loro navigazione con
+              indietro. Niente più serie né piano qui: il piano vive nella
+              sua carta (Impostazioni) e accanto al wordmark sulla Home
+              del telefono. */}
           {!isSettingsRoute && (
             <Button
               type="button"

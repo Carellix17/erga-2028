@@ -1,4 +1,5 @@
 import { BookOpen, Brain, CalendarDays, Hexagon, Home as HomeIcon } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
@@ -10,18 +11,19 @@ interface BottomNavProps {
 }
 
 /**
- * BottomNav — navigazione del pilota (V2-01, DESIGN.md 2.1 §10).
+ * BottomNav — navigazione principale (DESIGN.md 2.1 §10).
  *
  * Quattro destinazioni con etichette persistenti, stesso ordine su ogni
  * formato: Home, Piano, Studio, Core. Le voci sono SOLO destinazioni —
  * gli strumenti vivono nel Banco di Studio.
  *
- * · TELEFONO (<768px): dock flottante ARROTONDATO (raggio nav 24), carta
- *   opaca, filetto e ombra overlay, margini 16px e safe area. Selezione =
- *   INCHIOSTRO (testo e icona pieni), senza barrette di accento.
+ * · TELEFONO (<768px): la PILOLA ALLUNGATA di una volta, su richiesta del
+ *   proprietario (6 ottobre 2026): dock flottante a pillola, carta opaca,
+ *   con lo SLIDER SUPERFLUIDO — la sotto-pillola `layoutId` che scivola
+ *   tra le voci con la molla di framer-motion. Colori di adesso: la
+ *   selezione è INCHIOSTRO (pillola bg-primary) con contenuto su carta.
  * · FINESTRE MEDIE (768–1023px): rail compatta, icone con etichette.
- * · DESKTOP (≥1024px): sidebar calda con brand esteso (soglia 2.1 §10;
- *   la vecchia D2 aveva la sidebar a ≥1200: decisione registrata).
+ * · DESKTOP (≥1024px): sidebar calda con brand esteso (soglia 2.1 §10).
  *
  * La navigazione non sparisce con lo scroll; nelle sessioni immersive è
  * la shell a ritirarla (hideChrome in AppLayout).
@@ -42,7 +44,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
 
   return (
     <>
-      {/* ════════ TELEFONO (<768px): dock flottante arrotondato ════════ */}
+      {/* ════════ TELEFONO (<768px): pillola allungata con slider fluido ════════ */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-50 px-4 pointer-events-none md:hidden"
         aria-label={t("nav.ariaPrimary") || "Navigazione principale"}
@@ -50,11 +52,13 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
         <div
           className={cn(
             material,
-            "mx-auto max-w-lg pointer-events-auto rounded-nav shadow-level-5",
+            "mx-auto max-w-lg pointer-events-auto rounded-pill shadow-level-5",
             "mb-[max(env(safe-area-inset-bottom,0px),0.75rem)]",
           )}
         >
-          <div className="grid grid-cols-4">
+          {/* Il padding interno (px-2 py-1.5) tiene la sotto-pillola lontana
+              dalle estremità curve della pillola. */}
+          <div className="relative grid grid-cols-4 items-center justify-items-center rounded-pill px-2 py-1.5">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -64,25 +68,41 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   type="button"
                   onClick={() => onTabChange(tab.id)}
                   aria-current={isActive ? "page" : undefined}
-                  className="relative flex min-h-[64px] flex-col items-center justify-center gap-1 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                  className="relative flex min-h-[56px] w-full flex-col items-center justify-center gap-1 rounded-pill py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 >
-                  <span className="relative">
+                  {/* SLIDER SUPERFLUIDO: la sotto-pillola inchiostro scivola
+                      sulla voce attiva (stessa molla di sempre: 400/30). */}
+                  {isActive && (
+                    <motion.span
+                      layoutId="activeTabBackground"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      className="absolute inset-0 rounded-pill bg-primary"
+                      aria-hidden
+                    />
+                  )}
+                  <span className="relative z-10">
                     <Icon
-                      className={cn("h-[22px] w-[22px]", isActive ? activeTxt : idleTxt)}
+                      className={cn(
+                        "h-[22px] w-[22px]",
+                        isActive ? "text-primary-foreground" : idleTxt,
+                      )}
                       strokeWidth={isActive ? 2.2 : 1.8}
                       aria-hidden="true"
                     />
                     {tab.id === "core" && (
                       <span
-                        className="absolute -top-0.5 -right-1 h-2 w-2 rounded-full bg-muted-foreground ring-2 ring-card"
+                        className={cn(
+                          "absolute -top-0.5 -right-1 h-2 w-2 rounded-full bg-muted-foreground",
+                          isActive ? "ring-2 ring-primary" : "ring-2 ring-card",
+                        )}
                         aria-hidden="true"
                       />
                     )}
                   </span>
                   <span
                     className={cn(
-                      "text-[13px] leading-none",
-                      isActive ? "font-semibold text-foreground" : "font-medium text-muted-foreground",
+                      "relative z-10 text-[13px] leading-none",
+                      isActive ? "font-semibold text-primary-foreground" : "font-medium text-muted-foreground",
                     )}
                   >
                     {t(tab.i18nKey)}

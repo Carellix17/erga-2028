@@ -3,12 +3,9 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { AppHeader } from "@/components/layout/AppHeader";
 
-vi.mock("@/hooks/useHomeDashboard", () => ({
-  useHomeDashboard: () => ({ data: { streakDays: 4 } }),
-}));
-
-// La barra mostra il piano (Free/Pro/Beta): senza provider di autenticazione
-// nel collaudo, il gancio dell'abbonamento va simulato come utente "free".
+// La barra mostra il piano (Free/Pro/Beta) accanto al wordmark sulla Home
+// del telefono: senza provider di autenticazione nel collaudo, il gancio
+// dell'abbonamento va simulato come utente "free".
 vi.mock("@/hooks/useSubscription", () => ({
   useSubscription: () => ({
     tier: "free",
@@ -33,19 +30,25 @@ function renderHeader(title: string | null = "Studio", route = "/app", integrate
   );
 }
 
-const STREAK_NAME = "Apri le statistiche della serie: 4 giorni";
+const PLAN_NAME = "Piano Free";
 const SETTINGS_NAME = "Apri Impostazioni";
 
+/**
+ * Barra di stato ridisegnata su decisione del proprietario (6 ottobre 2026):
+ * niente più serie né piano nei controlli a destra. Il wordmark «Erga» sta
+ * sulla Home; accanto, SOLO sul telefono, il tasto del piano (stesso livello,
+ * la scritta non è cliccabile). Il resto della barra è titolo + Impostazioni.
+ */
 describe("AppHeader", () => {
-  it("mostra il titolo a sinistra e i controlli a destra", () => {
+  it("mostra il titolo a sinistra e le impostazioni a destra, senza serie né piano", () => {
     renderHeader("Titolo di sezione molto lungo che deve restringersi");
     const heading = screen.getByRole("heading");
-    const streak = screen.getByRole("button", { name: STREAK_NAME });
     const settings = screen.getByRole("button", { name: SETTINGS_NAME });
 
     expect(heading).toHaveClass("truncate", "text-left");
-    expect(heading.compareDocumentPosition(streak) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(streak.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByRole("button", { name: PLAN_NAME })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /serie/i })).not.toBeInTheDocument();
+    expect(heading.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("non mostra linee o ombre di separazione sotto l'header", () => {
@@ -55,6 +58,9 @@ describe("AppHeader", () => {
     expect(header.className).not.toContain("border-b");
     expect(header.className).not.toContain("border-border");
     expect(header.className).not.toContain("shadow-");
+    // nemmeno nella riga interna (niente filetti orizzontali introdotti di nascosto)
+    const row = header.firstElementChild;
+    expect(row?.className).not.toContain("border-b");
   });
 
   it("integra i controlli nella prima riga della Home senza una fascia vuota", () => {
@@ -64,45 +70,51 @@ describe("AppHeader", () => {
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
     expect(header).toHaveClass("absolute", "bg-transparent");
     expect(header).not.toHaveClass("sticky");
-    expect(screen.getByRole("button", { name: STREAK_NAME })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: PLAN_NAME })).toBeInTheDocument();
   });
 
-  it("nella Home il wordmark Erga sta a sinistra, serie e impostazioni a destra", () => {
+  it("nella Home il wordmark Erga e il tasto piano stanno a sinistra sullo stesso livello, impostazioni a destra", () => {
     renderHeader(null, "/app", true);
     const wordmark = screen.getByText("Erga");
-    const streak = screen.getByRole("button", { name: STREAK_NAME });
+    const plan = screen.getByRole("button", { name: PLAN_NAME });
     const settings = screen.getByRole("button", { name: SETTINGS_NAME });
     const row = wordmark.parentElement?.parentElement;
 
-    // Il wordmark apre la riga (gruppo di sinistra) e non è un heading:
-    // l'unico h1 della Home resta il saluto.
+    // Il wordmark apre la riga (gruppo di sinistra) e non è un heading nè
+    // un controllo: l'unico h1 della Home resta il saluto.
     expect(wordmark.tagName).toBe("P");
     expect(row?.firstElementChild).toBe(wordmark.parentElement);
 
-    // Serie e impostazioni chiudono la riga, nello stesso gruppo di destra.
-    expect(streak.parentElement).toBe(settings.parentElement);
+    // Il tasto piano è nel MEDESIMO gruppo del wordmark, sullo stesso
+    // livello: scritta e tasto dividono la stessa riga di partenza.
+    expect(plan.parentElement).toBe(wordmark.parentElement);
+    // ...ma solo sul telefono: su desktop la barra è solo la scritta.
+    expect(plan.className).toContain("md:hidden");
+
+    // Le impostazioni chiudono la riga nell'altro gruppo.
     expect(row?.lastElementChild).toBe(settings.parentElement);
 
-    // Stesso padding orizzontale sui due lati: lo stacco del wordmark dal
-    // bordo sinistro è identico a quello dei controlli dal bordo destro.
+    // Stesso padding orizzontale sui due lati.
     expect(row?.className).toContain("px-4");
     expect(row?.className).toContain("sm:px-6");
 
     // L'overlay della Home non deve intercettare i tocchi fuori dai controlli.
-    expect(streak.className).toContain("pointer-events-auto");
+    expect(plan.className).toContain("pointer-events-auto");
   });
 
   it("il wordmark Erga compare solo sulla Home, mai sulle altre sezioni", () => {
     renderHeader("Studio");
     expect(screen.queryByText("Erga")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: PLAN_NAME })).not.toBeInTheDocument();
   });
 
-  it("fuori dalla Home tiene la serie accanto alle impostazioni, a destra del titolo", () => {
+  it("fuori dalla Home la barra resta titolo + impostazioni: niente piano, niente serie", () => {
     renderHeader("Studio");
-    const streak = screen.getByRole("button", { name: STREAK_NAME });
     const settings = screen.getByRole("button", { name: SETTINGS_NAME });
 
-    expect(streak.parentElement).toBe(settings.parentElement);
+    expect(screen.queryByRole("button", { name: PLAN_NAME })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /serie/i })).not.toBeInTheDocument();
+    expect(settings).toBeInTheDocument();
   });
 
   it.each([
@@ -113,13 +125,13 @@ describe("AppHeader", () => {
   ])("nasconde il pulsante impostazioni nella rotta %s", (route) => {
     renderHeader("Impostazioni", route);
     expect(screen.queryByRole("button", { name: SETTINGS_NAME })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: STREAK_NAME })).toBeInTheDocument();
   });
 
-  it("apre le statistiche Focus dalla serie", () => {
-    renderHeader();
-    fireEvent.click(screen.getByRole("button", { name: STREAK_NAME }));
-    expect(screen.getByTestId("location")).toHaveTextContent("/app/ritmo");
+  it("il tasto piano della Home apre le Impostazioni, dove vive la carta del piano", () => {
+    renderHeader(null, "/app", true);
+    fireEvent.click(screen.getByRole("button", { name: PLAN_NAME }));
+    expect(screen.getByTestId("location")).toHaveTextContent("/app/impostazioni");
+    expect(screen.getByTestId("location")).not.toHaveTextContent("?");
   });
 
   it("apre le Impostazioni dal tasto ingranaggio, senza parametri di sessione", () => {

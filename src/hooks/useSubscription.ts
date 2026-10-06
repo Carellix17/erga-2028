@@ -73,9 +73,13 @@ export function useSubscription(): SubscriptionState {
 
     load();
 
-    // Realtime: aggiorna quando cambia l'abbonamento
+    // Realtime: aggiorna quando cambia l'abbonamento. Il nome del canale è
+    // UNIVOCO per istanza: più consumatori sulla stessa pagina (header e
+    // carta del piano, o le impostazioni account) non devono lottare per lo
+    // stesso topic — supabase-js riusa il canale già sottoscritto e rifiuta
+    // nuove callback dopo subscribe() (crash in ErrorBoundary).
     const channel = supabase
-      .channel(`sub-${userId}`)
+      .channel(`sub-${userId}-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${userId}` },

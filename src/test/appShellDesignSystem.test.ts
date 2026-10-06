@@ -70,20 +70,26 @@ describe("app shell design system", () => {
     expect(css).toMatch(/\.dark \{[\s\S]*?--primary: 46 37% 93%/);
   });
 
-  it("V2-01: navigazione mobile = dock flottante ARROTONDATO, opaco, selezione inchiostro", () => {
+  it("navigazione mobile = pillola allungata opaca con slider fluido e selezione inchiostro (decisione proprietario 6 ottobre 2026)", () => {
     const nav = read("src/components/layout/BottomNav.tsx");
     // dock opaco: niente aloni a gradiente sopra la barra
     expect(nav).not.toContain("from-black");
     expect(nav).not.toContain("bg-gradient-to-t");
-    // safe area riservata e dock arrotondato (radius-nav 24, 2.1 §10)
+    // safe area riservata e dock a PILLOLA (ritorno della pillola allungata
+    // richiesta dal proprietario; i colori restano quelli della 2.1)
     expect(nav).toContain("env(safe-area-inset-bottom");
-    expect(nav).toContain("rounded-nav");
+    expect(nav).toContain("rounded-pill");
+    // lo slider superfluido: la sotto-pillola layoutId scorre con la molla
+    expect(nav).toContain("layoutId=");
+    expect(nav).toContain('"activeTabBackground"');
+    expect(nav).toContain('className="absolute inset-0 rounded-pill bg-primary"');
     // Core è una voce del dock come le altre
     expect(nav).toContain('{ id: "core" as Tab, i18nKey: "nav.core"');
-    // selezione = inchiostro, senza barrette d'accento (2.1 §10)
+    // selezione = inchiostro (pillola bg-primary) con contenuto su carta,
+    // niente barrette d'accento residue della veste D2
     expect(nav).not.toContain("bg-brand");
     expect(nav).toContain("aria-current");
-    expect(nav).toContain('isActive ? "font-semibold text-foreground"');
+    expect(nav).toContain('isActive ? "font-semibold text-primary-foreground"');
     // etichette persistenti su ogni voce
     expect(nav).not.toContain('aria-label={t("nav.core")}');
   });

@@ -146,6 +146,21 @@ Zoom 200% = zoom 100% (Δ identici: scala stabile, texture mai stirata). Rapport
 
 **Flusso di pubblicazione:** commit su `main` via Git (nessun reset/force). Nessun Publish/Update eseguito da Arena: l'Update dell'editor Lovable è di Codex, autorizzato dal proprietario.
 
+### Questioni minori (6 ottobre 2026, post V2-02b — decisioni del proprietario)
+
+**Navbar mobile:** torna **la pillola allungata con lo slider superfluido** (la forma di `e4077d5`, pre-D2), con i colori attuali: dock a pillola `rounded-pill` in carta opaca, sotto-pillola `layoutId="activeTabBackground"` (molla 400/30) in **inchiostro** con contenuto su carta; rail/sidebar desktop invariate. Il test di appShell difende ora questa decisione (che aggiorna la prescrizione V2-01 «dock raggio 24»).
+
+**Barra di stato:** niente più **serie** né **piano** nei controlli (via `useHomeDashboard` e il bottone abbonamento dall'header). Nota: la pagina del ritmo (`/app/ritmo`) resta raggiungibile solo via URL — nessuna voce la apre ora; da decidere se riportarla altrove (es. Piano o Core).
+
+**Wordmark + piano sulla Home del telefono:** «Erga» (Lora, `<p>` non cliccabile) torna sulla Home — era sparito nella riscrittura V2-01, ed è il motivo del test AppHeader rosso da allora (ora verde) — con accanto, sullo stesso livello e solo da telefono (`md:hidden`), il **tasto del piano** (Free/Pro/Beta) che porta alle Impostazioni. Su desktop e nelle altre sezioni il tasto non esiste.
+
+**Carta del piano nelle Impostazioni** (`SettingsPlanCard`, in cima a SettingsIndex): parla la lingua delle copertine dei corsi — campo **cedro** (nuovo token `--cedro: 67 71% 69%` = #DCE879, accento documentato in DESIGN.md 2.1 §4), forme nette, grana condivisa `cover-grain`, raggio protagonista 32, nome del piano in serif Lora. Per gli utenti **Free**: «Passa a Pro» apre per ora un **empty state onesto** («siamo ancora in rollout beta, nessun acquisto possibile»); Beta/Pro mostrano il riconoscimento/il piano attivo senza azione. i18n it+en (`settings.plan.*`).
+
+**Fix `useSubscription` (bug reale scoperto dalla verifica):** il canale realtime aveva nome fisso `sub-${userId}`: con due consumatori sulla stessa pagina (header + carta, o header + impostazioni account) supabase-js riusa il canale già sottoscritto e rifiuta nuove callback → ErrorBoundary. Nominato univoco per istanza. Bug latente già dall'introduzione del bottone piano nell'header (commit altrui).
+
+**Verifiche:** suite **657/657 — tutta verde, anche i 2 fail preesistenti risolti** (wordmark assente → test ora difende la nuova riga Erga+piano; haptics SettingsIndex → mock `useSubscription`); test nuovi `settingsPlanCard.test.tsx` (5) e AppHeader riscritto sulla nuova barra; `tsc -b` 0 errori; build OK; detector 0 segnalazioni sui file toccati. Verifica in browser headless (fixture dichiarate, intercettazione locale, nessun dato toccato): pillola 85×56px che scivola tra le voci (misurata 25→195px Home→Studio), tasto piano nascosto su desktop (`offsetParent` null), carta con campo rgb(219,232,120) e titolo Lora, empty state apribile, notte compilata. Screenshot in `screenshots/minori/`. Nessuna modifica backend; Paddle/non toccati.
+
+
 
 ## 5. Inventario dei test di stile v1 e piano di migrazione
 

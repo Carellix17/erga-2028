@@ -34,6 +34,11 @@
     /* Inchiostro caldo di testo e azioni primarie: #252623. */
     --ink: 80 4% 14%;
 
+    /* ─── V2-02c — Accento cedro (DESIGN.md 2.1 §4, famiglia composizioni:
+       #DCE879 «luminoso e presente»). Usato dalla carta del piano nelle
+       Impostazioni, che parla la lingua delle copertine dei corsi. ─── */
+    --cedro: 67 71% 69%;
+
     /* ─── Azione primaria = inchiostro (2.1 §4: niente ottanio) ─── */
     --primary: 80 4% 14%;              /* #252623 inchiostro */
     --primary-foreground: 50 100% 99%; /* #FFFEF9 carta */
