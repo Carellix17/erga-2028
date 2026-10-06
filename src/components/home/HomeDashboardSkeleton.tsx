@@ -28,7 +28,7 @@ export function HomeDashboardSkeleton() {
       </header>
 
       {/* Card corso: titolo + anello, lezione, metadati, CTA */}
-      <div className="rounded-hero border border-border bg-card p-5 shadow-level-3 sm:p-6">
+      <div className="paper-grain rounded-hero border border-border bg-card p-5 shadow-level-3 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <Skeleton className="h-6 w-1/2" />
           <Skeleton className="h-16 w-16 shrink-0" />

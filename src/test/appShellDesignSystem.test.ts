@@ -35,12 +35,15 @@ describe("app shell design system", () => {
     expect(css).not.toContain(": 0px;");
   });
 
-  it("usa AppLayout e non applica aloni globali né texture sul tavolo", () => {
+  it("usa AppLayout e non riporta le vecchie texture globali (aura, matrice di puntini)", () => {
     const index = read("src/pages/Index.tsx");
     expect(index).toContain("<AppLayout");
     expect(index).not.toContain("dot-halo-scope");
     expect(index).not.toContain("<BottomNav");
-    // il tavolo è piatto: la vecchia matrice di puntini non esiste più
+    // Il tavolo non torna alla vecchia matrice di puntini né agli aloni.
+    // Dal V2-02 il fondo della Home porta la grana della carta, ma come
+    // background-image tokenizzato e gate isHome (vedi paperGrain.test.ts):
+    // qui si difende la morte delle texture GLOBALI di vecchia generazione.
     const layout = read("src/components/layout/AppLayout.tsx");
     expect(layout).not.toContain("bg-dot-grid");
   });

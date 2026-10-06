@@ -96,7 +96,7 @@ export function CourseHeroCard({
   if (!isActive) {
     // ── Stato vuoto: breve, utile, su carta (2.1 §9) ──────────────────
     return (
-      <article className="flex flex-col items-center rounded-card border border-border bg-card p-5 text-center shadow-tactile sm:p-6">
+      <article className="paper-grain flex flex-col items-center rounded-card border border-border bg-card p-5 text-center shadow-tactile sm:p-6">
         <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-surface-container-high">
           <BookOpen className="h-6 w-6 text-foreground" aria-hidden="true" />
         </span>

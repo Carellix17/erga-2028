@@ -297,6 +297,21 @@
     --state-focus: 0.08;
     --state-pressed: 0.08;
     --state-dragged: 0.14;
+
+    /* ─── V2-02 — Grana della carta (DESIGN.md 2.1 §3 «Grana») ───
+       UNA sola texture condivisa per copertine, fondo avorio e fogli:
+       rumore feTurbulence fractalNoise senza giunte (stitchTiles),
+       asset inline locale e statico — zero richieste esterne, zero
+       rigenerazioni a ogni render. La variante «paper» cuoce
+       l'intensità nel canale alpha del tile (slope 0.02 ≈ velo del
+       2% come da specifica): così il velo resta un background-image
+       e nessun contenitore con testo prende opacity. Scala fissa:
+       telefono e desktop vedono la stessa grana, mai stirata. */
+    --grain-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+    --grain-paper-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='gp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.02'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23gp)'/%3E%3C/svg%3E");
+    --grain-scale: 160px;
+    --grain-blend: multiply;
+    --grain-alpha-cover: 0.05;
   }
 
   /*  Notte: l'ombra conta meno — superficie e bordo distinguono (2.1 §6). */
@@ -306,6 +321,13 @@
     --shadow-level-3: 0 6px 16px rgba(0, 0, 0, 0.32);
     --shadow-level-4: 0 10px 24px rgba(0, 0, 0, 0.36);
     --shadow-level-5: 0 14px 32px rgba(0, 0, 0, 0.40);
+
+    /*  V2-02 — Grana della carta, notte: stesso rumore, velo più
+        quieto (slope 0.012 ≈ 1,2%) e blend screen come le copertine.
+        Scelta esplicita per tema, non un'inversione automatica. */
+    --grain-paper-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='gn'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.012'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23gn)'/%3E%3C/svg%3E");
+    --grain-blend: screen;
+    --grain-alpha-cover: 0.07;
   }
 }
 @layer base {
@@ -1287,21 +1309,47 @@ html.high-contrast .btn-satin {
 html.reduce-motion .btn-satin { transition: none; }
 
 /* ═══════════════════════════════════════════════════════════════
-   V2-01 — GRANA CONDIVISA DELLE COPERTINE (DESIGN.md 2.1 §4)
-   3–5% di rumore sulla composizione, mai sopra testo, campi,
-   formule o grafici (il layer sta sotto il contenuto, z-10).
-   SVG feTurbulence inline: nessun asset esterno, nessuna animazione.
+   V2-01/V2-02 — GRANA CONDIVISA DELLA CARTA (DESIGN.md 2.1 §3, §4)
+   UNA sola texture (feTurbulence fractalNoise, stitchTiles: nessuna
+   giunta; asset inline locale, statico, zero richieste esterne) con
+   due calibrazioni dichiarate nei token: copertine 5% giorno / 7%
+   notte (opacity sul velo, come in V2-01 — resa invariata), fondo
+   avorio e fogli della Home 2% / 1,2% (intensità cotta nell'alpha
+   del tile). Il velo è SEMPRE un background-image: dipinto sotto
+   testo e controlli, non intercetta click, resta fuori dall'albero
+   accessibile. Scala fissa (--grain-scale): telefono e desktop
+   vedono la stessa grana, mai stirata sul contenitore. Blend per
+   tema (multiply/screen, come le copertine): nessuna inversione
+   automatica.
    ═══════════════════════════════════════════════════════════════ */
 .cover-grain {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
-  opacity: 0.05;
-  mix-blend-mode: multiply;
+  background-image: var(--grain-tile);
+  background-size: var(--grain-scale);
+  opacity: var(--grain-alpha-cover);
+  mix-blend-mode: var(--grain-blend);
   pointer-events: none;
 }
-.dark .cover-grain {
-  opacity: 0.07;
-  mix-blend-mode: screen;
+
+/* Fondo avorio e fogli di carta della Home (V2-02). Attivata SOLO
+   sulla Home: gate `isHome` in AppLayout per il fondo (la content-card
+   su desktop, il tavolo visibile su mobile) + componenti di
+   src/components/home per le superfici carta. Mai su Studio, lezioni,
+   formule, campi, composer, calendario o grafici; mai sul dock. */
+.paper-grain {
+  background-image: var(--grain-paper-tile);
+  background-size: var(--grain-scale);
+  background-repeat: repeat;
+  background-blend-mode: var(--grain-blend);
+}
+/* Chi chiede superfici piatte ottiene superfici piatte: la grana è
+   decorativa e si spegne senza lasciare nulla al suo posto. */
+@media (prefers-reduced-transparency: reduce) {
+  .paper-grain {
+    background-image: none;
+  }
+}
+html.high-contrast .paper-grain {
+  background-image: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════

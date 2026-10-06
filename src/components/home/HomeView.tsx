@@ -57,7 +57,7 @@ export function HomeView({
   if (dashboard.isError || !data) {
     return (
       <div className="pb-10 pt-20">
-        <Card className="mx-auto max-w-xl rounded-card border border-border bg-card p-6 text-center">
+        <Card className="paper-grain mx-auto max-w-xl rounded-card border border-border bg-card p-6 text-center">
           <RefreshCw className="mx-auto h-8 w-8 text-destructive" aria-hidden="true" />
           <h1 className="mt-4 text-xl font-semibold">{t("home.error.title")}</h1>
           <p className="mt-2 text-base text-muted-foreground">{t("home.error.description")}</p>

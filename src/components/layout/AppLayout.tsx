@@ -61,6 +61,13 @@ export function AppLayout({
         id="app-scroll-view"
         className={cn(
           "relative flex min-w-0 max-w-full flex-1 flex-col",
+          // 📄 V2-02 — grana della carta sul fondo della Home: qui è la
+          // superficie dell'avorio (la content-card su desktop, il tavolo
+          // visibile su mobile, dove questo contenitore è trasparente).
+          // Il velo è un background-image: sta sotto ogni contenuto.
+          // Gate isHome: le altre schede restano lisce finché il
+          // proprietario non estende la prova.
+          isHome && "paper-grain",
           // 🖥️ Content-card: superficie dedicata, angoli arrotondati, ombra.
           // In modalità normale è lei a scorrere (header incluso); in modalità
           // fillViewport lo scroll è gestito dalle viste interne.

@@ -50,7 +50,7 @@ export function DailyTimeline({
   if (tasks.length === 0) {
     // Stato senza impegni: breve e utile (2.1 §9), non un pannello vuoto.
     return (
-      <section className="rounded-card border border-border bg-card p-5 shadow-tactile">
+      <section className="paper-grain rounded-card border border-border bg-card p-5 shadow-tactile">
         <h2 className="text-lg font-semibold text-foreground">{emptyTitle}</h2>
         {emptyDescription && (
           <p className="mt-1 text-sm leading-snug text-muted-foreground">{emptyDescription}</p>
@@ -69,7 +69,7 @@ export function DailyTimeline({
   }
 
   return (
-    <section className="overflow-hidden rounded-card border border-border bg-card shadow-tactile">
+    <section className="paper-grain overflow-hidden rounded-card border border-border bg-card shadow-tactile">
       <div className="flex items-center justify-between gap-3 p-4 pb-2 sm:p-5 sm:pb-2.5">
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
         {onSeeAll && (
