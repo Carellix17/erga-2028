@@ -119,7 +119,33 @@ Presenza nel codice **non** significa pubblicato online: i deploy passano da Lov
 
 **Limiti dichiarati:** l'agente non ha visione — le misure numeriche confermano presenza, sottigliezza, direzione e assenza di giunte, ma **il giudizio estetico (grana invisibile? patina grigia? troppo visibile?) resta al proprietario** sui ritagli affiancati e sulla preview; le schermate usano fixture dichiarate, non i dati reali del proprietario (nessun account disponibile, nessuna registrazione voluta: sarebbe una scrittura sul backend); i valori 2%/1,2% sono la partenza calibrata numerica della specifica, non un sostituto dell'occhio.
 
-**Nota Evoluzionismo (incoerenza registrata, NON corretta — vedi §6):** verificato eseguendo i due sistemi: in Home `resolveCourseCover("Evoluzionismo")` non trova keyword (`"evoluzione"` non è contenuta in `"evoluzionismo"`) e cade nel fallback hash-stabile → materia **geografia → oliva** (famiglia deep, campo #2E3028). In Studio il modulo (`StudioView` → `ModuleHeaderCard`) passa `subjectColor` al `CourseCardBackground` con le **props pre-V2-01** che il componente riscritto ignora: la copertina del modulo usa il default (`storia`, campo #392E28), non l'identità del corso — l'azzurro osservato dal proprietario arriva quindi da una terza via di risoluzione (es. chip/pastel per materia salvata), conferma che **tre sistemi convivono** (hash del nome, keyword legacy, materia salvata). Da allineare nella tappa dedicata, come da incarico.
+**Nota Evoluzionismo (incoerenza registrata, NON corretta — vedi §6):** verificato eseguendo i due sistemi: in Home `resolveCourseCover("Evoluzionismo")` non trova keyword (`"evoluzione"` non è contenuta in `"evoluzionismo"`) e cade nel fallback hash-stabile → materia **geografia → oliva** (famiglia deep, campo #2E3028). In Studio il modulo (`StudioView` → `ModuleHeaderCard`) passa `subjectColor` al `CourseCardBackground` con le **props pre-V2-01** che il componente riscritto ignora: la copertina del modulo usa il default (`storia`, campo #392E28), non l'identità del corso — l'azzurro osservato dal proprietario arriva quindi da una terza via di risoluzione (es. chip/pastel per materia salvata), conferma che **tre sistemi convivono** (hash del nome, keyword legacy, materia salvata). Da allineare nella tappa dedicata, come da incarico. *Aggiornamento V2-02b: il commit altrui `51c3e77` ha corretto la chiamata in StudioPractice (`courseName={courseTitle || moduleTitle}`): il tipo ora torna a essere `storia`-default→identità del corso, non più rosso-default. L'incoerenza cromatica Home/Studio resta aperta (hash vs keyword/salvata) e resta rinviata alla tappa allineamento.*
+
+### V2-02b — calibrazione della grana (6 ottobre 2026)
+
+**Incarico:** alzare la matericità della Home agendo SOLO sull'intensità della grana V2-02 (asset, scala e architettura invariati; niente secondo rumore, niente puntini, niente modifiche a layout/typography/copertine). Base richiesta: tavolo ~4–5% giorno / 2,5–3% notte; fogli ~2,5–3,5% giorno / 1,5–2% notte, da calibrare sul composito reale. Basi: HEAD `51c3e77` (integra i commit altrui successivi a `b2161c8`: pulsanti Home `rounded-pill`, fix `StudioPractice:152`, mock `useSubscription` nei test AppHeader — preservati).
+
+**Cosa misura davvero slope (verifica richiesta):** il parametro `feFuncA slope` moltiplica l'alfa del rumore, ma la visibilità dipende dal composito: `multiply` scurisce ≈ linearmente (Δmedio ≈ −30×slope/255), mentre `screen` di notte schiarisce ~×1,8 il multiply a parità di slope (misurato: +1,2÷3/255 a slope 0,028–0,04 = patina chiara incombente). Le percentuali nominali non provano nulla: calibrazione fatta misurando il Δ pixel su screenshot del composito reale (browser headless, fixture dichiarate) con tile candidato iniettato a runtime.
+
+**Implementazione:** due ruoli condivisi sullo STESSO tile sorgente e sulla stessa scala (160px): `--grain-table-tile` (tavolo: **4,8% giorno / 2,5% notte**) e `--grain-paper-tile` (foglio: **3% giorno / 1,6% notte**), classe `.table-grain` per il fondo (gate `isHome` in AppLayout) e `.paper-grain` per i fogli (componenti Home, invariati). Fallback `prefers-reduced-transparency` e `html.high-contrast` estesi a entrambe le classi. Copertine, satinato, dock, layout: intatti.
+
+**Misure prima/dopo** (visibilità assoluta no-grana→versione, finestre dentro i bounding box DOM di tavolo/fogli, screenshot 390/1440 giorno/notte, zoom 100 e 200 — fixture isolate in `verify-tools/{calib,zoff,shots,rects,interactions}.mjs`, nessun dato del proprietario toccato):
+
+| | V2-02 (prima) | V2-02b (dopo) |
+|---|---|---|
+| Tavolo giorno Δstd / Δmedio | 0,49 / −0,58 | **0,58 / −1,50** (−0,6%: nessuno scurimento) |
+| Foglio giorno | 0,49 / −0,58 | **0,34–0,36 / −0,95** |
+| Tavolo notte | 0,21–0,35 / +0,97 | **0,65–0,66 / +0,9÷1,9** (schiarimento ≤2/255) |
+| Foglio notte | 0,34–0,36 / +0,97 | **0,44–0,45 / +1,2** |
+
+Zoom 200% = zoom 100% (Δ identici: scala stabile, texture mai stirata). Rapporto di fase x/y mod 160: 1,14–1,22 (nessuna giunta/ripetizione percepibile). Glifi: |Δ| 0,32–0,36/255 (grana dietro il testo). Interazioni verificate: gate per-tab (Studio senza grana, ritorno Home con grana), dock senza grana, «Vedi tutto» 3→4 righe, nessun layer grana sotto il puntatore. Contrasto testo: invariato per costruzione (il velo sta sotto il background-color degli elementi con testo).
+
+**Verifiche:** suite **650 pass / 2 fail pre-esistenti** (baseline 51c3e77: 649/2, stessi AppHeader 1 + haptics 1; +1 controllo nel test grana riscritto per relazioni ruolo/tema, non per valori copiati); **`tsc -b` 0 errori** (il fix altrui ha chiuso l'errore preesistente segnalato in V2-02); `vite build` OK (104 precache); detector 16 segnalazioni invariati (tutte preesistenti in `index.css`).
+
+**Limiti dichiarati:** l'agente non ha visione — le misure confermano percezione misurabile (Δstd raddoppiato sul tavolo), direzione coerente, niente patina numerica, ma **la validazione estetica è di Codex sul sito dopo l'Update** (come da incarico). Ritagli affiancati in `screenshots/confronto-v2-02b/` (tavolo/foglio, giorno/notte, anche a 3 colonne no-grana/V2-02/V2-02b). La notte è la condazione più sensibile (lo screen schiarisce): se Codex vede patina chiara sul tavolo notturno, il primo giro di calibrazione è `--grain-table-tile` notte da 0.025 → 0.02.
+
+**Flusso di pubblicazione:** commit su `main` via Git (nessun reset/force). Nessun Publish/Update eseguito da Arena: l'Update dell'editor Lovable è di Codex, autorizzato dal proprietario.
+
 
 ## 5. Inventario dei test di stile v1 e piano di migrazione
 
