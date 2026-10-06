@@ -15,6 +15,11 @@ vi.mock("@/hooks/useSubscription", () => ({
     loading: false,
   }),
 }));
+const openCheckout = vi.fn(() => Promise.resolve());
+vi.mock("@/hooks/usePaddleCheckout", () => ({
+  usePaddleCheckout: () => ({ openCheckout, loading: false }),
+}));
+vi.mock("@/lib/paddle", () => ({ openCustomerPortal: vi.fn() }));
 vi.mock("@/hooks/useHaptics", () => ({
   useHaptics: () => ({ triggerLight: vi.fn() }),
 }));
@@ -44,18 +49,14 @@ describe("SettingsPlanCard", () => {
     ).toBeInTheDocument();
   });
 
-  it("Passa a Pro apre l'empty state del rollout beta (nessun flusso di pagamento)", () => {
+  it("Passa a Pro apre il pagamento di Erga Pro", () => {
     render(
       <MemoryRouter>
         <SettingsPlanCard />
       </MemoryRouter>,
     );
-
     fireEvent.click(screen.getByRole("button", { name: /passa a pro/i }));
-
-    expect(screen.getByText("Siamo ancora in rollout beta")).toBeInTheDocument();
-    expect(screen.getByText(/nessun acquisto è possibile/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Ho capito" })).toBeInTheDocument();
+    expect(openCheckout).toHaveBeenCalledWith("pro_monthly");
   });
 
   it("utente pro: mostra il piano attivo senza azione di upgrade", () => {
