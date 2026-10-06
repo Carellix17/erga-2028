@@ -7,6 +7,18 @@ vi.mock("@/hooks/useHomeDashboard", () => ({
   useHomeDashboard: () => ({ data: { streakDays: 4 } }),
 }));
 
+// La barra mostra il piano (Free/Pro/Beta): senza provider di autenticazione
+// nel collaudo, il gancio dell'abbonamento va simulato come utente "free".
+vi.mock("@/hooks/useSubscription", () => ({
+  useSubscription: () => ({
+    tier: "free",
+    isPro: false,
+    isBetaTester: false,
+    hasActiveSubscription: false,
+    loading: false,
+  }),
+}));
+
 function LocationProbe() {
   const location = useLocation();
   return <span data-testid="location">{location.pathname}</span>;
