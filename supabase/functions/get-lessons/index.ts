@@ -94,6 +94,13 @@ serve(withCors(async (req) => {
     }
 
     if (action === "getLesson" && lessonIndex !== undefined) {
+      // Piano Free: solo le prime 5 lezioni di ogni corso.
+      if (Number(lessonIndex) >= 5) {
+        const { data: isPro } = await supabase.rpc("user_is_pro", { _user_id: userId });
+        if (!isPro) {
+          return errorResponse("FREE_LESSON_LIMIT: Con il piano Free puoi aprire le prime 5 lezioni di ogni corso. Passa a Pro per sbloccarle tutte.", 402);
+        }
+      }
       // Get specific lesson, optionally filtered by context
       let lessonQuery = supabase
         .from("mini_lessons")

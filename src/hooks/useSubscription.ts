@@ -52,6 +52,8 @@ export function useSubscription(): SubscriptionState {
           .select("status, current_period_end")
           .eq("user_id", userId)
           .eq("environment", ENV)
+          .order("created_at", { ascending: false })
+          .limit(1)
           .maybeSingle(),
       ]);
 
@@ -62,8 +64,9 @@ export function useSubscription(): SubscriptionState {
       const sub = subRes.data;
       const hasActiveSubscription =
         !!sub &&
-        ["active", "trialing"].includes(sub.status) &&
-        (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+        ((["active", "trialing", "past_due"].includes(sub.status) &&
+          (!sub.current_period_end || new Date(sub.current_period_end) > new Date())) ||
+          (sub.status === "canceled" && !!sub.current_period_end && new Date(sub.current_period_end) > new Date()));
 
       const isPro = isBetaTester || hasActiveSubscription;
       const tier: PlanTier = isBetaTester ? "beta" : hasActiveSubscription ? "pro" : "free";
