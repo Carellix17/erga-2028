@@ -1,16 +1,11 @@
 import { useState } from "react";
 import { Crown } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useSubscription } from "@/hooks/useSubscription";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { openCustomerPortal } from "@/lib/paddle";
+import { toast } from "sonner";
 
 /**
  * SettingsPlanCard — la carta del piano nelle Impostazioni (decisione del
@@ -19,8 +14,7 @@ import { useSubscription } from "@/hooks/useSubscription";
  * Parla la lingua delle card dei corsi: campo colorato (cedro, DESIGN.md
  * 2.1 §4) con una forma netta e la grana condivisa, raggio protagonista,
  * nome del piano in serif Lora. Sotto, una riga di stato; per gli utenti
- * Free l'azione «Passa a Pro» — che per ora apre un empty state onesto:
- * siamo ancora in rollout beta, nessun acquisto è possibile.
+ * Free l'azione «Passa a Pro» — che apre il pagamento di Erga Pro.
  *
  * La carta non dipende dal tema, come le copertine: il campo è cedro con
  * inchiostro #252623 anche di notte (contrasto ≈ 12:1, verificato dalla
@@ -30,7 +24,8 @@ export function SettingsPlanCard() {
   const { t } = useTranslation();
   const { tier } = useSubscription();
   const { triggerLight } = useHaptics();
-  const [showBeta, setShowBeta] = useState(false);
+  const { openCheckout, loading } = usePaddleCheckout();
+  const [portalLoading, setPortalLoading] = useState(false);
 
   const planName = tier === "beta" ? "Beta" : tier === "pro" ? "Pro" : "Free";
   const isFree = tier === "free";
@@ -85,31 +80,41 @@ export function SettingsPlanCard() {
               type="button"
               onClick={() => {
                 triggerLight();
-                setShowBeta(true);
+                openCheckout("pro_monthly").catch(() =>
+                  toast.error("Impossibile aprire il pagamento. Riprova."),
+                );
               }}
+              disabled={loading}
               className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-primary text-[15px] font-semibold text-primary-foreground transition-transform duration-150 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Crown className="h-4 w-4 shrink-0" strokeWidth={1.9} aria-hidden="true" />
-              {t("settings.plan.upgrade")}
+              {t("settings.plan.upgrade")} · 4,99 €/mese
+            </button>
+          )}
+
+          {tier === "pro" && (
+            <button
+              type="button"
+              disabled={portalLoading}
+              onClick={async () => {
+                setPortalLoading(true);
+                try {
+                  await openCustomerPortal();
+                } catch {
+                  toast.error("Impossibile aprire la gestione abbonamento. Riprova.");
+                } finally {
+                  setPortalLoading(false);
+                }
+              }}
+              className="mt-5 flex h-12 w-full items-center justify-center rounded-pill border border-foreground/30 text-[15px] font-semibold transition-transform duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              style={{ color: "hsl(var(--ink))" }}
+            >
+              Gestisci abbonamento
             </button>
           )}
         </div>
       </article>
 
-      {/* Empty state honesto: il passaggio a Pro non è ancora aperto. */}
-      <Dialog open={showBeta} onOpenChange={setShowBeta}>
-        <DialogContent className="rounded-dialog">
-          <DialogHeader>
-            <DialogTitle>{t("settings.plan.betaTitle")}</DialogTitle>
-            <DialogDescription>{t("settings.plan.betaBody")}</DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end">
-            <Button type="button" onClick={() => setShowBeta(false)}>
-              {t("settings.plan.close")}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }
