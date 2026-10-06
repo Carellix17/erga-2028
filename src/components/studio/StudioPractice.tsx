@@ -149,7 +149,7 @@ export function ModuleHeaderCard({ courseTitle, moduleIndex, moduleTitle, subjec
       {/* Stessi orbs di scena della hero: luci libere sul colore materia */}
       <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
       <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
-      <CourseCardBackground coverUrl={null} subjectColor={subjectColor} variant="studio" />
+      <CourseCardBackground courseName={courseTitle || moduleTitle} />
       <div className="relative p-4">
         <div className="pr-14">
           <p className="label-small uppercase tracking-[0.16em] text-contrast-secondary">
