@@ -3,7 +3,8 @@ import { initializePaddle, getPaddlePriceId } from "@/lib/paddle";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function usePaddleCheckout() {
-  const { user } = useAuth();
+  const { session } = useAuth();
+  const user = session?.user;
   const [loading, setLoading] = useState(false);
 
   const openCheckout = async (priceId = "pro_monthly") => {

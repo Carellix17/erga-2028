@@ -3,6 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Crown, Check, BookOpen, Calendar, MessageCircle, FileUp, Camera, Globe, Mic, BarChart3, Zap, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { toast } from "sonner";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { openCustomerPortal } from "@/lib/paddle";
 import type { PlanTier } from "./SubscriptionBadge";
 
 interface SubscriptionSheetProps {
@@ -47,11 +51,11 @@ const plans = [
   {
     tier: "pro" as PlanTier,
     name: "Piano Pro",
-    price: "Prossimamente",
-    priceNote: "",
+    price: "4,99 € al mese",
+    priceNote: "Disdici quando vuoi",
     icon: Crown,
     gradient: "from-warning via-warning to-secondary",
-    badgeText: "Coming soon",
+    badgeText: "Attivo",
     badgeClass: "bg-warning/10 text-warning border-warning/20",
     features: [
       ...betaFeatures,
@@ -133,23 +137,62 @@ export function SubscriptionSheet({ open, onOpenChange, currentTier }: Subscript
           </div>
 
           {/* Upgrade section */}
-          <div className="bg-surface-container rounded-2xl p-4 border border-outline-variant/30">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-surface-container-highest border border-outline-variant/50 flex items-center justify-center">
-                <Crown className="w-5 h-5 text-foreground/70" />
-              </div>
-              <div>
-                <h3 className="font-display font-semibold text-sm">Piano Pro</h3>
-                <p className="text-muted-foreground body-small">Prossimamente disponibile</p>
-              </div>
-            </div>
-            <Button disabled className="w-full h-11 rounded-lg opacity-60" size="lg">
-              <Crown className="w-4 h-4 mr-2" />
-              Disponibile a breve
-            </Button>
-          </div>
+          <UpgradeSection currentTier={currentTier} />
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function UpgradeSection({ currentTier }: { currentTier: PlanTier }) {
+  const { openCheckout, loading } = usePaddleCheckout();
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  if (currentTier === "beta") return null;
+
+  if (currentTier === "pro") {
+    return (
+      <div className="bg-surface-container rounded-2xl p-4 border border-outline-variant/30">
+        <p className="text-muted-foreground body-small mb-3">
+          Puoi cambiare metodo di pagamento, vedere le fatture o disdire. Se disdici resti Pro fino alla fine del periodo già pagato.
+        </p>
+        <Button
+          variant="outline"
+          className="w-full h-11 rounded-full"
+          disabled={portalLoading}
+          onClick={async () => {
+            setPortalLoading(true);
+            try { await openCustomerPortal(); }
+            catch { toast.error("Impossibile aprire la gestione abbonamento. Riprova."); }
+            finally { setPortalLoading(false); }
+          }}
+        >
+          Gestisci abbonamento
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-surface-container rounded-2xl p-4 border border-outline-variant/30">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 rounded-lg bg-surface-container-highest border border-outline-variant/50 flex items-center justify-center">
+          <Crown className="w-5 h-5 text-foreground/70" aria-hidden="true" />
+        </div>
+        <div>
+          <h3 className="font-display font-semibold text-sm">Piano Pro · 4,99 € al mese</h3>
+          <p className="text-muted-foreground body-small">Corsi e lezioni illimitati. Con Free: 10 corsi a settimana e 5 lezioni per corso.</p>
+        </div>
+      </div>
+      <Button
+        className="w-full h-11 rounded-full"
+        size="lg"
+        disabled={loading}
+        onClick={() => openCheckout("pro_monthly").catch(() => toast.error("Impossibile aprire il pagamento. Riprova."))}
+      >
+        <Crown className="w-4 h-4 mr-2" aria-hidden="true" />
+        Passa a Pro
+      </Button>
+    </div>
   );
 }
