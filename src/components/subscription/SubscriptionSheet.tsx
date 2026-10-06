@@ -94,7 +94,7 @@ export function SubscriptionSheet({ open, onOpenChange, currentTier }: Subscript
                 </div>
               </div>
               <p className="text-muted-foreground body-small leading-relaxed">
-                Hai accesso a tutte le funzionalità di Erga come beta tester. Grazie per il tuo supporto.
+                {currentTier === "free" ? "Sei sul piano Free: fino a 10 corsi a settimana e 5 lezioni per corso." : currentTier === "pro" ? "Sei Pro: corsi e lezioni illimitati." : "Hai accesso a tutte le funzionalità di Erga come beta tester. Grazie per il tuo supporto."}
               </p>
             </div>
           </div>
