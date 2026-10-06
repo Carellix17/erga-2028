@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from "react";
 import { BookOpen, Brain, CalendarDays, Hexagon, Home as HomeIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -17,11 +18,15 @@ interface BottomNavProps {
  * formato: Home, Piano, Studio, Core. Le voci sono SOLO destinazioni —
  * gli strumenti vivono nel Banco di Studio.
  *
- * · TELEFONO (<768px): la PILOLA ALLUNGATA di una volta, su richiesta del
- *   proprietario (6 ottobre 2026): dock flottante a pillola, carta opaca,
- *   con lo SLIDER SUPERFLUIDO — la sotto-pillola `layoutId` che scivola
- *   tra le voci con la molla di framer-motion. Colori di adesso: la
- *   selezione è INCHIOSTRO (pillola bg-primary) con contenuto su carta.
+ * · TELEFONO (<768px): la PILLOLA ALLUNGATA, con lo SPESSORE di prima
+ *   della veste squadrata (binario 4,5rem, com'era in ad9289d) e la
+ *   sotto-pillola PIÙ SCURA DELLA BARRA MA NON NERA (bg-secondary, la
+ *   «carta quieta»), con contenuto inchiostro — decisione del proprietario,
+ *   6 ottobre 2026 sera. Lo slider resta superfluido (molla 400/30) ma è
+ *   DETERMINISTICO: UNA sola sotto-pillola animata su x/larghezza misurate
+ *   della voce attiva. Niente più `layoutId`: la proiezione di framer-motion
+ *   lavora in coordinate documento e il cambio scheda ripristina lo scroll
+ *   della finestra, quindi la pillola «saltava» con movimenti strani.
  * · FINESTRE MEDIE (768–1023px): rail compatta, icone con etichette.
  * · DESKTOP (≥1024px): sidebar calda con brand esteso (soglia 2.1 §10).
  *
@@ -42,6 +47,35 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const idleTxt = "text-muted-foreground";
   const activeTxt = "text-foreground";
 
+  // ── SLIDER DETERMINISTICO ─────────────────────────────────────────────
+  // Una sola sotto-pillola, in assoluto dentro il binario, animata con la
+  // molla di sempre (400/30) sulle coordinate MISURATE della voce attiva.
+  // Lo scroll della finestra non può più falsare la proiezione.
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [pill, setPill] = useState({ x: 0, width: 0 });
+
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const measure = () => {
+      const btn = track.querySelector<HTMLButtonElement>('button[aria-current="page"]');
+      if (!btn) return;
+      setPill((p) =>
+        Math.abs(p.x - btn.offsetLeft) < 0.5 && Math.abs(p.width - btn.offsetWidth) < 0.5
+          ? p
+          : { x: btn.offsetLeft, width: btn.offsetWidth },
+      );
+    };
+    measure();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    ro?.observe(track);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [activeTab]);
+
   return (
     <>
       {/* ════════ TELEFONO (<768px): pillola allungata con slider fluido ════════ */}
@@ -56,9 +90,22 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             "mb-[max(env(safe-area-inset-bottom,0px),0.75rem)]",
           )}
         >
-          {/* Il padding interno (px-2 py-1.5) tiene la sotto-pillola lontana
-              dalle estremità curve della pillola. */}
-          <div className="relative grid grid-cols-4 items-center justify-items-center rounded-pill px-2 py-1.5">
+          {/* SPESSORE restaurato: binario di 4,5rem come prima della veste
+              squadrata. La sotto-pillola respira 6px sopra e sotto e copre
+              la voce attiva per intero (60px, target tattile generoso). */}
+          <div
+            ref={trackRef}
+            className="relative grid h-[4.5rem] grid-cols-4 items-center justify-items-center rounded-pill px-2"
+          >
+            {/* SOTTO-PILLOLA: bg-secondary — più scura della barra, non nera,
+                com'era prima (ad9289d). Il contenuto attivo sta in inchiostro. */}
+            <motion.span
+              aria-hidden="true"
+              initial={false}
+              animate={{ x: pill.x, width: pill.width }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="absolute inset-y-[6px] left-0 rounded-pill bg-secondary"
+            />
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -68,23 +115,13 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   type="button"
                   onClick={() => onTabChange(tab.id)}
                   aria-current={isActive ? "page" : undefined}
-                  className="relative flex min-h-[56px] w-full flex-col items-center justify-center gap-1 rounded-pill py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                  className="relative flex min-h-[60px] w-full flex-col items-center justify-center gap-1 rounded-pill py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 >
-                  {/* SLIDER SUPERFLUIDO: la sotto-pillola inchiostro scivola
-                      sulla voce attiva (stessa molla di sempre: 400/30). */}
-                  {isActive && (
-                    <motion.span
-                      layoutId="activeTabBackground"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      className="absolute inset-0 rounded-pill bg-primary"
-                      aria-hidden
-                    />
-                  )}
                   <span className="relative z-10">
                     <Icon
                       className={cn(
                         "h-[22px] w-[22px]",
-                        isActive ? "text-primary-foreground" : idleTxt,
+                        isActive ? activeTxt : idleTxt,
                       )}
                       strokeWidth={isActive ? 2.2 : 1.8}
                       aria-hidden="true"
@@ -93,7 +130,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                       <span
                         className={cn(
                           "absolute -top-0.5 -right-1 h-2 w-2 rounded-full bg-muted-foreground",
-                          isActive ? "ring-2 ring-primary" : "ring-2 ring-card",
+                          isActive ? "ring-2 ring-secondary" : "ring-2 ring-card",
                         )}
                         aria-hidden="true"
                       />
@@ -102,7 +139,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   <span
                     className={cn(
                       "relative z-10 text-[13px] leading-none",
-                      isActive ? "font-semibold text-primary-foreground" : "font-medium text-muted-foreground",
+                      isActive ? "font-semibold text-foreground" : "font-medium text-muted-foreground",
                     )}
                   >
                     {t(tab.i18nKey)}

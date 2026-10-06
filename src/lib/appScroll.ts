@@ -33,7 +33,10 @@ export function setAppScrollTop(top: number): void {
   if (el) {
     el.scrollTop = top;
   } else if (typeof window !== "undefined") {
-    window.scrollTo(0, top);
+    // «instant» esplicito: html è scroll-behavior smooth e una scrollTo
+    // implicita animerebbe la finestra (stesso trucco già usato da
+    // ModulesOverview). Il cambio scheda deve spostarsi in un colpo solo.
+    window.scrollTo({ top, behavior: "instant" as ScrollBehavior });
   }
 }
 

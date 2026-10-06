@@ -47,7 +47,10 @@ export function CourseCard({
 }: CourseCardProps & CourseCardMotionProps) {
   // V2-01: identità del corso dal resolver condiviso (stessa pelle in
   // Home, Studio, selettore e modulo); niente foto Wikipedia sfocate.
-  const { style: coverStyle } = courseCoverVars(course.file_name);
+  // Il nome passa PULITO (cleanCourseName): la variante di composizione
+  // nasce dall'hash del nome, così la copertina è identica a quella della
+  // Home, che riceve già il nome senza estensione.
+  const { style: coverStyle } = courseCoverVars(cleanCourseName(course.file_name));
 
   return (
     <motion.button

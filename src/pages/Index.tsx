@@ -55,6 +55,11 @@ const Index = () => {
   const changeTab = useCallback(
     (tab: Tab) => {
       scrollPositions.current[activeTab] = getAppScrollTop();
+      // Ripristino SINCRONO, prima del re-render: prima viveva in un
+      // useEffect successivo al paint e, con html{scroll-behavior:smooth},
+      // la finestra scorreva in animazione mentre la sotto-pillola scivolava
+      // — da qui i «salti» della pillola segnalati dal proprietario (6/10).
+      setAppScrollTop(scrollPositions.current[tab]);
       setActiveTab(tab);
     },
     [activeTab]

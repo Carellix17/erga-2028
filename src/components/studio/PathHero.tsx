@@ -347,24 +347,29 @@ export function PathHero({
         {...(!isTransitioning && !prefersReducedMotion ? cardMotion : {})}
         style={isTransitioning ? { zIndex: 20 } : undefined}
       >
-        <p className="label-small tracking-[0.14em] opacity-70 flex items-center gap-2 text-contrast-secondary">
+        <p className="label-small tracking-[0.14em] flex items-center gap-2 text-contrast-secondary">
           <Icon className="w-3.5 h-3.5" strokeWidth={2} />
           Percorso
         </p>
         <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words text-contrast">
           {courseDisplayName(course.file_name)}
         </h3>
-        {meta && <p className="text-xs opacity-75 mt-1 text-contrast-secondary">{meta}</p>}
+        {meta && <p className="text-xs mt-1 text-contrast-secondary">{meta}</p>}
       </CourseCard>
     );
   };
 
   // ── Contenuto interno della HERO (condiviso tra inline e portale) ──
+  // text-contrast alla RADICE: tutto ciò che dentro usa currentColor (il
+  // binario e il fill della barra, i veli dei pulsanti Continua/Cambia
+  // corso, i tasti ⋯ e ✕) eredita l'INCHIOSTRO DELLA COPERTINA, non quello
+  // della pagina — prima, sulle copertine profonde in chiaro, barra e
+  // pulsanti risultavano inchiostro su inchiostro, invisibili.
   const heroInner = (inPicker: boolean) => (
-    <div className="relative">
+    <div className="relative text-contrast">
       {/* Riga alta: etichetta + menù ⋯ */}
       <div className="flex items-center justify-between gap-3">
-        <p className="label-small tracking-[0.16em] opacity-70 text-contrast-secondary">
+        <p className="label-small tracking-[0.16em] text-contrast-secondary">
           {inPicker ? "Seleziona un percorso" : "Percorso attuale"}
         </p>
         {!inPicker && onCloseModules ? (
@@ -466,10 +471,10 @@ export function PathHero({
       {/* Avanzamento */}
       {isGenerating ? (
         <>
-          <p className="mt-4 text-xs opacity-80 text-contrast-secondary">Erga sta trasformando il tuo materiale…</p>
+          <p className="mt-4 text-xs text-contrast-secondary">Erga sta trasformando il tuo materiale…</p>
           <div
             className="mt-2 h-2 rounded-sm overflow-hidden"
-            style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
+            style={{ backgroundColor: "color-mix(in srgb, currentColor 38%, transparent)" }}
           >
             <div
               className="h-full rounded-full bg-current transition-all duration-300"
@@ -480,14 +485,14 @@ export function PathHero({
       ) : (
         <>
           <div className="mt-4 flex items-baseline justify-between gap-3">
-            <p className="text-sm opacity-80 text-contrast-secondary">
+            <p className="text-sm text-contrast-secondary">
               {completedCount} di {totalLessons} lezioni
             </p>
             <p className="text-sm font-bold tabular-nums text-contrast">{pct}%</p>
           </div>
           <div
             className="mt-2 h-2 rounded-full overflow-hidden"
-            style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
+            style={{ backgroundColor: "color-mix(in srgb, currentColor 38%, transparent)" }}
           >
             <div
               className="h-full rounded-full bg-current transition-all duration-700 ease-m3-emphasized"
@@ -610,7 +615,10 @@ export function PathHero({
   // campo materia + composizione astratta + grana; l'inchiostro del testo
   // è quello della famiglia (light→inchiostro, deep→carta), garantito
   // ≥ 4,5:1 dal resolver e dai test. Niente più orb sfocati né auto-contrast.
-  const { style: heroStyle } = courseCoverVars(active?.file_name ?? "");
+  // Il nome passa PULITO (cleanCourseName): la Home risolve già il nome
+  // senza estensione e la variante di composizione (hash del nome) deve
+  // essere la STESSA nelle due viste — stesso corso, stessa copertina.
+  const { style: heroStyle } = courseCoverVars(cleanCourseName(active?.file_name ?? ""));
 
   return (
     <section className="px-4 pt-4">
@@ -623,7 +631,7 @@ export function PathHero({
        
         style={heroStyle}
       >
-          <CourseCardBackground courseName={active?.file_name ?? ""} />
+          <CourseCardBackground courseName={cleanCourseName(active?.file_name ?? "")} />
           {heroInner(false)}
         </motion.div>
 
@@ -644,7 +652,7 @@ export function PathHero({
               }}
             >
               <div className="flex-1 min-h-0 w-full max-w-lg mx-auto flex flex-col px-4 py-6">
-                <motion.div ref={listRef as any} layoutScroll className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+                <motion.div ref={listRef as React.Ref<HTMLDivElement>} layoutScroll className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
                   <div className="flex flex-col">
                     {/* Card sopra */}
                     {before.length > 0 && (
@@ -670,7 +678,7 @@ export function PathHero({
                       style={heroStyle}
                       layoutScroll
                     >
-                      <CourseCardBackground courseName={active?.file_name ?? ""} />
+                      <CourseCardBackground courseName={cleanCourseName(active?.file_name ?? "")} />
                       {heroInner(true)}
                     </motion.div>
 

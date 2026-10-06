@@ -162,6 +162,23 @@ Zoom 200% = zoom 100% (Δ identici: scala stabile, texture mai stirata). Rapport
 
 
 
+### Correzioni del proprietario (6 ottobre 2026, sera — colore percorso, contrasti, navbar)
+
+**Copertina del percorso: Home = Studio.** PathHero (hero inline e hero nel portale) e CourseCard del selettore risolvevano la copertina dal `file_name` GREZZO, mentre la Home passa il nome pulito (`cleanCourseName`): il rilevamento materia non cambia, ma la **variante di composizione nasce dall'hash del nome** → le due card mostravano composizioni (e quindi percezione di colore) diverse. Ora tutte le risoluzioni passano il nome pulito: campo, famiglia e variante identiche nelle due viste (verificato in browser: rgb(42,48,43), deep, layout 2 su Home e Studio).
+
+**Contrasti sulla copertina di Studio (segnalati con screenshot dal proprietario).** Tre difetti reali in PathHero, tutti corretti:
+1. **currentColor ereditato dalla pagina**: binario e fill della barra, veli dei pulsanti Continua/Cambia corso, tasti ⋯ e ✕ usavano l'inchiostro del TEMA invece di quello della copertina — sulle copertine profonde in chiaro erano inchiostro su campo scuro, invisibili (fill misurato #242522 su #2A302B = 1,05:1 nell'allegato). La radice di `heroInner` ora porta `text-contrast`: tutto ciò che usa currentColor eredita l'inchiostro della famiglia (panna, 13:1 sul deep).
+2. **Opacità composta**: `opacity-70/75/80` impilate su `text-contrast-secondary` (già alpha 0,8) portavano «PERCORSO ATTUALE» e «3 di 22 lezioni» a ~2,8:1 sulle forme della composizione. Rimosse le opacità in eccesso: il token da solo regge ≥ 4,66:1 anche sopra le forme.
+3. **Binario della barra al 15%** di currentColor, quasi invisibile (1,79:1) → portato al 38% (≈3:1, componente non testuale).
+
+Misure dopo: «Continua» 10,5:1, titolo 13,4:1, etichetta attiva della nav 12,7:1. Audit WCAG computato su Home/Studio/Piano/Core/Impostazioni in chiaro e notte: 0 fail reali (i 2 segnalati dall'audit erano falsi positivi da fondo proprio del bottone, verificati: `btn-satin` 8,4:1, «Passa a Pro» 15:1).
+
+**Navbar: spessore e pillola.** SPESSORE restaurato com'era prima della veste squadrata (`ad9289d`): binario `h-[4.5rem]` (74px misurati, erano 70), voci min-h 60px. La sotto-pillola passa da `bg-primary` (inchiostro quasi nero) a **`bg-secondary`** — la «carta quieta» #ECE9DF di giorno, #393732 di notte: più scura della barra ma non nera, com'era prima — con contenuto attivo in inchiostro (12,7:1 giorno, ~10:1 notte) e ring del badge Core allineato.
+
+**Il salto della pillola: capito e risolto (due cause).** (1) Il ripristino dello scroll per scheda viveva in un `useEffect` DOPO il paint e, con `html{scroll-behavior:smooth}`, la `scrollTo` diventava un'animazione: la finestra scorreva mentre la molla scorreva. Ora `changeTab` ripristina SINCRONO (prima del re-render) e `setAppScrollTop` chiede `behavior:"instant"` (lo stesso trucco già usato da ModulesOverview). (2) La sotto-pillola `layoutId` di framer-motion proietta in coordinate documento: un cambio di scroll durante il volo la faceva partire da posizioni stantie. Riscritta come UNA sola sotto-pillola animata su **x/larghezza misurate** della voce attiva (molla invariata 400/30, ResizeObserver per i cambi di larghezza): deterministicamente immune allo scroll. Trace per-frame su entrambi gli scenari (scroll fermo → cambio scheda; ritorno alla scheda con scroll da ripristinare): la Y della pillola resta 765 in ogni fotogramma, zero salti verticali.
+
+**Verifiche:** suite **657/657** (l'errore non gestito `list.scrollTo` in `pathHeroPicker.repro` preesiste su fc5893b, verificato su HEAD); `tsc -b` 0; eslint 0 errori sui file toccati (fixato un `as any` preesistente in PathHero); build OK, 105 precache. Screenshot in `screenshots/correzioni/`. File toccati: BottomNav, PathHero, CourseCard, Index, appScroll, appShellDesignSystem.test, registro. Nessuna modifica backend.
+
 ## 5. Inventario dei test di stile v1 e piano di migrazione
 
 Questi test **difendono la veste 1 e oggi sono corretti**: si migrano alle rispettive tappe, **nessuna cancellazione per nascondere errori**. Baseline post-D3: **625 pass / 13 fail pre-esistenti** (AppHeader 13 + haptics 1), tsc OK, build OK.

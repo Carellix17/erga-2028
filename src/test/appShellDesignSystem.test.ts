@@ -70,7 +70,7 @@ describe("app shell design system", () => {
     expect(css).toMatch(/\.dark \{[\s\S]*?--primary: 46 37% 93%/);
   });
 
-  it("navigazione mobile = pillola allungata opaca con slider fluido e selezione inchiostro (decisione proprietario 6 ottobre 2026)", () => {
+  it("navigazione mobile = pillola allungata opaca, spessore 4,5rem e slider misurato (decisioni proprietario 6 ottobre 2026)", () => {
     const nav = read("src/components/layout/BottomNav.tsx");
     // dock opaco: niente aloni a gradiente sopra la barra
     expect(nav).not.toContain("from-black");
@@ -79,17 +79,25 @@ describe("app shell design system", () => {
     // richiesta dal proprietario; i colori restano quelli della 2.1)
     expect(nav).toContain("env(safe-area-inset-bottom");
     expect(nav).toContain("rounded-pill");
-    // lo slider superfluido: la sotto-pillola layoutId scorre con la molla
-    expect(nav).toContain("layoutId=");
-    expect(nav).toContain('"activeTabBackground"');
-    expect(nav).toContain('className="absolute inset-0 rounded-pill bg-primary"');
+    // SPESSORE restaurato: binario di 4,5rem com'era prima della veste
+    // squadrata (ad9289d) — la barra torna spessa come piace al proprietario
+    expect(nav).toContain("h-[4.5rem]");
+    // SLIDER DETERMINISTICO: la sotto-pillola è UNA sola, animata su
+    // x/larghezza MISURATE della voce attiva (molla 400/30 di sempre).
+    // Niente layoutId: proiettava in coordinate documento e lo scroll
+    // ripristinato al cambio scheda la faceva saltare (6 ottobre, sera).
+    expect(nav).not.toContain("layoutId=");
+    expect(nav).toContain("stiffness: 400, damping: 30");
+    // selezione PIÙ SCURA della barra ma NON nera (bg-secondary, la carta
+    // quieta, com'era prima): contenuto attivo in inchiostro, non su carta
+    expect(nav).not.toContain("bg-primary");
+    expect(nav).toContain("rounded-pill bg-secondary");
+    expect(nav).toContain('isActive ? "font-semibold text-foreground"');
     // Core è una voce del dock come le altre
     expect(nav).toContain('{ id: "core" as Tab, i18nKey: "nav.core"');
-    // selezione = inchiostro (pillola bg-primary) con contenuto su carta,
     // niente barrette d'accento residue della veste D2
     expect(nav).not.toContain("bg-brand");
     expect(nav).toContain("aria-current");
-    expect(nav).toContain('isActive ? "font-semibold text-primary-foreground"');
     // etichette persistenti su ogni voce
     expect(nav).not.toContain('aria-label={t("nav.core")}');
   });
