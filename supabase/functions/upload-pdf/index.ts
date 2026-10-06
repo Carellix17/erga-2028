@@ -202,7 +202,7 @@ serve(withCors(async (req) => {
       if (dbError) {
         console.error("Database error:", dbError);
         await supabase.storage.from("study-pdfs").remove(uploadedPaths);
-        return errorResponse("Errore nel salvataggio");
+        return dbError.message?.includes("FREE_COURSE_LIMIT") ? errorResponse("FREE_COURSE_LIMIT: Con il piano Free puoi creare al massimo 10 corsi a settimana. Passa a Pro per corsi illimitati.", 402) : errorResponse("Errore nel salvataggio");
       }
 
       // Start async processing for images
@@ -306,7 +306,7 @@ serve(withCors(async (req) => {
         .eq("id", attachId);
       if (updErr) {
         await supabase.storage.from("study-pdfs").remove([filePath]);
-        return errorResponse("Errore nel salvataggio");
+        return dbError.message?.includes("FREE_COURSE_LIMIT") ? errorResponse("FREE_COURSE_LIMIT: Con il piano Free puoi creare al massimo 10 corsi a settimana. Passa a Pro per corsi illimitati.", 402) : errorResponse("Errore nel salvataggio");
       }
       console.log(`File ${file.name} allegato al percorso ${attachId} (+${newText.length} caratteri)`);
       return successResponse({ success: true, contextId: attachId, attached: true, fileName: file.name });
@@ -345,7 +345,7 @@ serve(withCors(async (req) => {
         .single();
       if (dbError) {
         await supabase.storage.from("study-pdfs").remove([filePath]);
-        return errorResponse("Errore nel salvataggio");
+        return dbError.message?.includes("FREE_COURSE_LIMIT") ? errorResponse("FREE_COURSE_LIMIT: Con il piano Free puoi creare al massimo 10 corsi a settimana. Passa a Pro per corsi illimitati.", 402) : errorResponse("Errore nel salvataggio");
       }
       console.log(`Percorso testuale creato: ${context.id} (${text.length} caratteri, tipo ${kind})`);
       return successResponse({
@@ -387,7 +387,7 @@ serve(withCors(async (req) => {
     if (dbError) {
       console.error("Database error:", dbError);
       await supabase.storage.from("study-pdfs").remove([filePath]);
-      return errorResponse("Errore nel salvataggio");
+      return dbError.message?.includes("FREE_COURSE_LIMIT") ? errorResponse("FREE_COURSE_LIMIT: Con il piano Free puoi creare al massimo 10 corsi a settimana. Passa a Pro per corsi illimitati.", 402) : errorResponse("Errore nel salvataggio");
     }
 
     const processUrl = `${supabaseUrl}/functions/v1/extract-pdf`;

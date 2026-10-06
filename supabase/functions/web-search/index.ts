@@ -387,6 +387,9 @@ serve(withCors(async (req) => {
 
     if (insertError) {
       console.error("Insert error:", insertError);
+      if (insertError.message?.includes("FREE_COURSE_LIMIT")) {
+        return errorResponse("FREE_COURSE_LIMIT: Con il piano Free puoi creare al massimo 10 corsi a settimana. Passa a Pro per corsi illimitati.", 402);
+      }
       throw new Error("Errore nel salvataggio del contenuto.");
     }
 
