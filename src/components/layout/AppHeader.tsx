@@ -49,7 +49,7 @@ export function AppHeader({
       aria-label={t("header.openFocusStats", { count: streakDays })}
       title={t("header.openFocusStats", { count: streakDays })}
       className={cn(
-        "flex min-h-11 min-w-11 max-w-[8.5rem] shrink-0 items-center gap-1.5 bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "flex min-h-11 min-w-11 max-w-[8.5rem] shrink-0 items-center gap-1.5 rounded-pill bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         // Sulla Home la barra è un overlay senza eventi: solo i controlli
         // reali tornano cliccabili, non l'intera fascia trasparente.
         integratedHome && "pointer-events-auto",
@@ -69,7 +69,7 @@ export function AppHeader({
       aria-label={t("header.subscriptionPlan", { plan: tierLabel })}
       title={t("header.subscriptionPlan", { plan: tierLabel })}
       className={cn(
-        "flex min-h-11 min-w-11 max-w-[8.5rem] shrink-0 items-center gap-1.5 bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "flex min-h-11 min-w-11 max-w-[8.5rem] shrink-0 items-center gap-1.5 rounded-pill bg-surface-container-high px-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         integratedHome && "pointer-events-auto",
       )}
     >
