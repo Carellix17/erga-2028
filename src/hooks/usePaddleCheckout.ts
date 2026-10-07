@@ -19,7 +19,7 @@ export function usePaddleCheckout() {
         customData: { userId: user.id },
         settings: {
           displayMode: "overlay",
-          successUrl: `${window.location.origin}/home?checkout=success`,
+          successUrl: `${window.location.origin}/app?checkout=success`,
           allowLogout: false,
           variant: "one-page",
           locale: "it",

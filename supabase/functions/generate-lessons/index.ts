@@ -641,7 +641,9 @@ ${studyContent}`;
       }
       const gp = ((ctx as { generation_progress?: unknown }).generation_progress ?? {}) as Record<string, unknown>;
       if (gp.moduleGeneration) {
-        return errorResponse("Un modulo è già in generazione. Ti avvisiamo noi con una notifica! ⏳", 409);
+        // Doppio tocco o seconda scheda: il cantiere è già attivo. Non è un
+        // errore — rispondiamo OK così l'app apre la sala d'attesa senza allarmi.
+        return successResponse({ success: true, alreadyRunning: true, moduleGeneration: gp.moduleGeneration });
       }
 
       // Le lezioni mancanti del modulo (quelle già pronte non si ritoccano).
