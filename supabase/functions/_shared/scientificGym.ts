@@ -102,7 +102,7 @@ export function parseExerciseSet(raw: string, max = 8): ScientificExercise[] {
   // che non sono escape JSON validi: li raddoppiamo se il JSON non si legge.
   let cleaned = stripped;
   try { JSON.parse(stripped); } catch {
-    cleaned = stripped.replace(/\\(?!["\\/u])/g, "\\\\");
+    cleaned = stripped.replace(/\\(["\\/]|u[0-9a-fA-F]{4})?/g, (m, ok) => (ok ? m : "\\\\"));
   }
   let parsed: unknown = null;
   try {
