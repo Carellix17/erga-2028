@@ -226,13 +226,28 @@ export async function callAIText(
   maxTokens = 2048,
   tag?: string,
 ): Promise<string> {
-  const resp = await callAIWithFallback({
-    messages,
-    temperature,
-    max_tokens: maxTokens,
-  }, tag);
-  const data = await resp.json();
-  return data.choices?.[0]?.message?.content || "";
+  interface ChatChoice { finish_reason?: string; message?: { content?: string } }
+  const callOnce = async (maxTokensOnce: number): Promise<{ text: string; finishReason?: string }> => {
+    const resp = await callAIWithFallback({ messages, temperature, max_tokens: maxTokensOnce }, tag);
+    const data = await resp.json() as { choices?: ChatChoice[] };
+    const choice = data.choices?.[0];
+    return { text: choice?.message?.content || "", finishReason: choice?.finish_reason };
+  };
+  let { text, finishReason } = await callOnce(maxTokens);
+  // ✂️ P3b (7 ottobre 2026): risposta TAGLIATA dal limite di token. Prima il
+  // troncamento finiva dritto nel riparatore JSON (formule spezzate a metà,
+  // «Impossibile estrarre JSON»): ora si fa UN secondo giro con più token, e
+  // solo se è troncato di nuovo si consegna al riparatore (che tenterà il
+  // recupero; la validazione della lezione decide poi se è salvabile).
+  if (finishReason === "length") {
+    const bumped = Math.min(maxTokens * 2, 16000);
+    console.warn(`[AI] risposta troncata (finish_reason=length su ${maxTokens} token): secondo giro con ${bumped}`);
+    ({ text, finishReason } = await callOnce(bumped));
+    if (finishReason === "length") {
+      console.warn("[AI] risposta troncata di nuovo: la consegno al riparatore JSON");
+    }
+  }
+  return text;
 }
 
 /**

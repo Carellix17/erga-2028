@@ -15,6 +15,7 @@ import {
   buildPlanFamilyGuidance,
   finalTestFamilyLine,
 } from "../_shared/humanities.ts";
+import { extractJsonRobust, normalizeLessonPayload } from "../_shared/lessonPayload.ts";
 
 const MAX_CONTEXT_CHARS = 80000;
 const FREE_GENERATION_LIMIT = 5;
@@ -29,59 +30,24 @@ const LIMIT_REACHED_MESSAGE =
 // Il contatore generation_count continua a salire: serve per la statistica.
 const BETA_LIMIT_ENABLED = false;
 
-function extractJson(raw: string): unknown {
-  let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
-  try { return JSON.parse(cleaned); } catch { /* continue */ }
-  const objMatch = cleaned.match(/\{[\s\S]*\}/);
-  if (objMatch) { try { return JSON.parse(objMatch[0]); } catch { /* continue */ } }
-  const arrMatch = cleaned.match(/\[[\s\S]*\]/);
-  if (arrMatch) { try { return JSON.parse(arrMatch[0]); } catch { /* continue */ } }
+// 🕳️ P1 — LA CERNIERA: una lezione senza contenuto NON viene mai salvata come
+// "generata". Questo messaggio passa al client (è nella lista safeMessages).
+const EMPTY_AI_LESSON_MESSAGE =
+  "La lezione è risultata vuota (risposta AI incompleta). Riprova tra poco.";
 
-  // Recover truncated array: find array start, walk through complete top-level objects, close array
-  const arrStart = cleaned.indexOf("[");
-  if (arrStart !== -1) {
-    const items: string[] = [];
-    let i = arrStart + 1;
-    while (i < cleaned.length) {
-      while (i < cleaned.length && /[\s,]/.test(cleaned[i])) i++;
-      if (i >= cleaned.length || cleaned[i] === "]") break;
-      if (cleaned[i] !== "{") { i++; continue; }
-      const objStart = i;
-      let depth = 0, inStr = false, esc = false;
-      for (; i < cleaned.length; i++) {
-        const ch = cleaned[i];
-        if (esc) { esc = false; continue; }
-        if (ch === "\\") { esc = true; continue; }
-        if (ch === '"') { inStr = !inStr; continue; }
-        if (inStr) continue;
-        if (ch === "{") depth++;
-        else if (ch === "}") { depth--; if (depth === 0) { i++; break; } }
-      }
-      if (depth === 0) {
-        items.push(cleaned.slice(objStart, i));
-      } else {
-        // truncated mid-object → discard
-        break;
-      }
-    }
-    if (items.length > 0) {
-      try { return JSON.parse("[" + items.join(",") + "]"); } catch { /* continue */ }
-    }
-  }
-
-  // Last resort: bracket balancing
-  const candidate = (objMatch?.[0] || arrMatch?.[0] || cleaned)
-    .replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, "");
-  let braces = 0, brackets = 0;
-  let repaired = candidate;
-  for (const ch of repaired) { if (ch === "{") braces++; if (ch === "}") braces--; if (ch === "[") brackets++; if (ch === "]") brackets--; }
-  while (brackets > 0) { repaired += "]"; brackets--; }
-  while (braces > 0) { repaired += "}"; braces--; }
-  try { return JSON.parse(repaired); } catch { /* continue */ }
-  console.error("extractJson failed. Raw (first 500):", raw.substring(0, 500));
-  console.error("Raw (last 500):", raw.substring(Math.max(0, raw.length - 500)));
-  throw new Error("Impossibile estrarre JSON dalla risposta AI. Riprova.");
+// ⏱️ P4 — LO SPAZZINO: un lavoro in background morto (tetto di tempo del
+// runtime superato, deploy, blip di rete) non deve bloccare il percorso PER
+// SEMPRE. Se lo stato "generating" o il lucchetto del modulo sono più vecchi
+// di GENERATION_STALE_MS, lo stato è considerato morto e si riparte.
+const GENERATION_STALE_MS = 10 * 60 * 1000;
+function isStaleGeneration(ts: unknown): boolean {
+  if (typeof ts !== "string" || !ts.trim()) return true;
+  const t = Date.parse(ts);
+  return !Number.isFinite(t) || Date.now() - t > GENERATION_STALE_MS;
 }
+
+// (extractJson è migrato in _shared/lessonPayload.ts come extractJsonRobust:
+// riparatore LaTeX-aware, estrazione bilanciata e unit-testato — P1/P3)
 
 import { callAIText } from "../_shared/ai.ts";
 import {
@@ -217,9 +183,6 @@ serve(withCors(async (req) => {
       let docHasPages = false;
       let pageRangeInfo = "";
       
-      const existingExplanation = typeof lessons.explanation === "string" ? lessons.explanation : "";
-      const existingHasImageUrl = existingExplanation.includes('"image_url"');
-
       let studyContent = "";
       let contextFilePath = "";
       if (lessons.context_id) {
@@ -464,12 +427,17 @@ ${studyContent}`;
       );
 
       console.log("AI lesson response (first 300 chars):", content.substring(0, 300));
-      const lessonData = extractJson(content) as Record<string, unknown>;
+      const lessonData = extractJsonRobust(content);
 
-      let explanation = lessonData.explanation || "";
-      let explanationParts = Array.isArray(lessonData.explanation_parts)
-        ? lessonData.explanation_parts.map((part) => ({ ...(part as Record<string, unknown>) }))
-        : [];
+      // 🕳️ P1 — LA CERNIERA: la risposta deve contenere una lezione VERA.
+      // Se l'AI ha risposto con un JSON senza parti (o con parti vuote), NON
+      // si salva niente: si lancia un errore esplicito, così il chiamante
+      // ritenta (modulo caldo / fabbrica) o l'utente vede il messaggio giusto.
+      const normalized = normalizeLessonPayload(lessonData);
+      if (!normalized) throw new Error(EMPTY_AI_LESSON_MESSAGE);
+
+      let explanation = normalized.explanation;
+      let explanationParts = (normalized.explanationParts ?? []) as Record<string, unknown>[];
 
       // 🧽 P6 — la spugna che cancella le "descrizioni a parole" delle figure
       // (vietate dal prompt: ci sono i token [FIG:n] per quello) ora pulisce
@@ -524,13 +492,16 @@ ${studyContent}`;
         explanation = JSON.stringify(explanationParts);
       }
 
-      await supabase.from("mini_lessons").update({
-        concept: lessonData.concept || "",
+      // 🕳️ P1: anche il salvataggio viene CONTROLLATO: se l'update fallisce,
+      // la lezione non risulta "generata" per sbaglio.
+      const { error: lessonSaveError } = await supabase.from("mini_lessons").update({
+        concept: normalized.concept,
         explanation,
-        example: lessonData.example || "",
-        exercises: lessonData.exercises || [],
+        example: normalized.example,
+        exercises: normalized.exercises,
         is_generated: true,
       }).eq("id", lessons.id);
+      if (lessonSaveError) throw new Error("Errore durante il salvataggio delle lezioni");
 
       // ── INCREMENTA il contatore (solo per lezioni "vere", non demo) ──
       if (!lessonIsDemo) {
@@ -552,6 +523,10 @@ ${studyContent}`;
       }
 
       const { data: updated } = await supabase.from("mini_lessons").select("*").eq("id", lessons.id).single();
+      // 🕳️ P1: verifica finale — sul database deve esserci DAVVERO contenuto.
+      if (!updated || typeof updated.explanation !== "string" || !updated.explanation.trim()) {
+        throw new Error(EMPTY_AI_LESSON_MESSAGE);
+      }
       return updated;
     };
 
@@ -607,9 +582,17 @@ ${studyContent}`;
           .select("generation_progress")
           .eq("id", lessons.context_id)
           .maybeSingle();
-        const mg = ((ctxJob as any)?.generation_progress as any)?.moduleGeneration as { moduleIndex?: number } | undefined;
+        const mg = ((ctxJob as any)?.generation_progress as any)?.moduleGeneration as { moduleIndex?: number; startedAt?: unknown } | undefined;
         if (mg && typeof mg.moduleIndex === "number" && Math.floor(lessonIndex / MODULE_SIZE) === mg.moduleIndex) {
-          return errorResponse("Questo modulo è già in generazione. Ti avvisiamo noi con una notifica! ⏳", 409);
+          if (isStaleGeneration(mg.startedAt)) {
+            // ⏱️ P4: fabbrica morta che teneva il modulo chiuso per sempre: si toglie il lucchetto.
+            console.warn(`[P4] lucchetto modulo stantio su ${lessons.context_id}: lo rimuovo e genero la lezione`);
+            const gpStale = { ...(((ctxJob as any)?.generation_progress ?? {}) as Record<string, unknown>) };
+            delete gpStale.moduleGeneration;
+            await supabase.from("study_contexts").update({ generation_progress: gpStale }).eq("id", lessons.context_id);
+          } else {
+            return errorResponse("Questo modulo è già in generazione. Ti avvisiamo noi con una notifica! ⏳", 409);
+          }
         }
       }
 
@@ -629,21 +612,32 @@ ${studyContent}`;
 
       const { data: ctx } = await supabase
         .from("study_contexts")
-        .select("file_name, is_demo, generation_status, generation_progress")
+        .select("file_name, is_demo, generation_status, generation_started_at, generation_progress")
         .eq("id", contextId)
         .eq("user_id", userId)
         .maybeSingle();
       if (!ctx) throw new Error("Contesto non trovato");
 
       // 🛡️ Cancelli della fabbrica: un cantiere alla volta per percorso.
-      if (ctx.generation_status === "generating") {
+      // ⏱️ P4: un cantiere STANTIO (lavoro morto) si riapre: il lucchetto non
+      // può chiudere il percorso per sempre.
+      if (ctx.generation_status === "generating" && !isStaleGeneration((ctx as { generation_started_at?: unknown }).generation_started_at)) {
         return errorResponse("Il percorso è ancora in costruzione. Ti avvisiamo noi quando è pronto! ⏳", 409);
       }
+      if (ctx.generation_status === "generating") {
+        console.warn(`[P4] percorso ${contextId} "generating" stantio: considero il lavoro morto e riparto`);
+      }
       const gp = ((ctx as { generation_progress?: unknown }).generation_progress ?? {}) as Record<string, unknown>;
-      if (gp.moduleGeneration) {
+      const gpJob = gp.moduleGeneration as { startedAt?: unknown } | undefined;
+      if (gpJob && !isStaleGeneration(gpJob.startedAt)) {
         // Doppio tocco o seconda scheda: il cantiere è già attivo. Non è un
         // errore — rispondiamo OK così l'app apre la sala d'attesa senza allarmi.
+        // (comportamento voluto dal proprietario, 1025a7f; P4 lascia intatto
+        // il caso fresco e sgombra solo i lucchetti stantii)
         return successResponse({ success: true, alreadyRunning: true, moduleGeneration: gp.moduleGeneration });
+      }
+      if (gpJob) {
+        console.warn(`[P4] lucchetto modulo stantio su ${contextId}: lo sovrascrivo con il nuovo lavoro`);
       }
 
       // Le lezioni mancanti del modulo (quelle già pronte non si ritoccano).
@@ -709,12 +703,21 @@ ${studyContent}`;
                 break;
               }
             }
-            try {
-              await generateOneLessonInternal(row);
-            } catch (lessonErr) {
-              // Resilienza: ciò che è tornito resta buono; il resto si rifà on demand.
-              console.error(`[P10b] lezione ${row.lesson_order} del modulo ${moduleIndex} fallita:`, lessonErr);
-              break;
+            // 🔁 P2: due tentativi per lezione, e una lezione fallita NON spegne
+            // più la fabbrica: si passa alla successiva (ciò che è tornito resta
+            // buono; il resto si rifà on demand).
+            let lessonOk = false;
+            for (let attempt = 1; attempt <= 2 && !lessonOk; attempt++) {
+              try {
+                await generateOneLessonInternal(row);
+                lessonOk = true;
+              } catch (lessonErr) {
+                console.error(`[P2] lezione ${row.lesson_order} del modulo ${moduleIndex}, tentativo ${attempt} fallito:`, lessonErr);
+              }
+            }
+            if (!lessonOk) {
+              console.warn(`[P2] lezione ${row.lesson_order} del modulo ${moduleIndex} abbandonata dopo i tentativi: continuo con le altre`);
+              continue;
             }
             done++;
             const { data: ctxTick } = await supabase.from("study_contexts").select("generation_progress, generation_status").eq("id", contextId).maybeSingle();
@@ -851,7 +854,7 @@ ${studyContent}`;
       ], 0.2);
 
       console.log("AI final test response (first 300 chars):", raw.substring(0, 300));
-      const exercises = extractJson(raw);
+      const exercises = extractJsonRobust(raw);
       if (!Array.isArray(exercises)) throw new Error("Formato test finale non valido");
       return successResponse({ success: true, exercises });
     }
@@ -866,7 +869,7 @@ ${studyContent}`;
 
     const { data: ctxPre } = await supabase
       .from("study_contexts")
-      .select("content, file_name, processing_status, error_message, generation_status, generation_progress, is_demo")
+      .select("content, file_name, processing_status, error_message, generation_status, generation_started_at, generation_progress, is_demo")
       .eq("id", contextId)
       .eq("user_id", userId)
       .single();
@@ -879,18 +882,29 @@ ${studyContent}`;
     }
     if (!ctxPre.content) throw new Error("Nessun contenuto disponibile per questo PDF.");
 
-    // Idempotenza: se già in generazione, non avviare un nuovo job
-    if (ctxPre.generation_status === "generating") {
+    // Idempotenza: se già in generazione, non avviare un nuovo job.
+    // ⏱️ P4: a meno che lo stato non sia STANTIO (lavoro morto che prima
+    // bloccava il percorso per sempre): si cade nel flusso normale, che
+    // risegnerà "generating" con un timestamp fresco.
+    if (ctxPre.generation_status === "generating" && !isStaleGeneration((ctxPre as { generation_started_at?: unknown }).generation_started_at)) {
       return new Response(
         JSON.stringify({ success: true, status: "generating", contextId, alreadyRunning: true }),
         { status: 202, headers: { "Content-Type": "application/json" } }
       );
     }
+    if (ctxPre.generation_status === "generating") {
+      console.warn(`[P4] percorso ${contextId} "generating" da troppo tempo: considero il lavoro morto e riparto da zero`);
+    }
 
     // 🛡️ P10b: se la fabbrica sta tornendo un modulo, non resettare il sentiero
-    // sotto i suoi piedi (le righe che sta scrivendo sparirebbero a metà lavoro).
-    if (((ctxPre.generation_progress ?? {}) as Record<string, unknown>).moduleGeneration) {
+    // sotto i loro piedi (le righe che sta scrivendo sparirebbero a metà lavoro).
+    // ⏱️ P4: anche qui, un lucchetto stantio non blocca più la rigenerazione.
+    const preModuleJob = ((ctxPre.generation_progress ?? {}) as Record<string, unknown>).moduleGeneration as { startedAt?: unknown } | undefined;
+    if (preModuleJob && !isStaleGeneration(preModuleJob.startedAt)) {
       return errorResponse("Un modulo è in preparazione. Attendi la notifica, poi potrai rigenerare il percorso. ⏳", 409);
+    }
+    if (preModuleJob) {
+      console.warn(`[P4] percorso ${contextId}: lucchetto modulo stantio, la rigenerazione procede`);
     }
 
     // Segna subito lo stato come "generating" prima di rispondere
@@ -1029,7 +1043,7 @@ ${documentSection}`;
         ], 0.1, 16000);
 
         console.log("AI titles response (first 300 chars):", content.substring(0, 300));
-        const parsedTitles = extractJson(content);
+        const parsedTitles = extractJsonRobust(content);
         if (!Array.isArray(parsedTitles)) throw new Error("Formato titoli non valido");
 
         const titles = parsedTitles
@@ -1133,13 +1147,23 @@ ${documentSection}`;
                 break;
               }
             }
-            try {
-              await generateOneLessonInternal(warmRow);
-              warmDone++;
-            } catch (warmErr) {
-              console.error(`[P10b] primo modulo caldo: lezione ${warmRow.lesson_order} fallita:`, warmErr);
-              break;
+            // 🔁 P2: due tentativi per lezione; una lezione fallita NON spegne
+            // più il modulo caldo — si continua con le altre (prima: break al
+            // primo errore, e il percorso nasceva con 1 lezione su 4).
+            let warmOk = false;
+            for (let attempt = 1; attempt <= 2 && !warmOk; attempt++) {
+              try {
+                await generateOneLessonInternal(warmRow);
+                warmOk = true;
+              } catch (warmErr) {
+                console.error(`[P2] primo modulo caldo: lezione ${warmRow.lesson_order}, tentativo ${attempt} fallito:`, warmErr);
+              }
             }
+            if (!warmOk) {
+              console.warn(`[P2] primo modulo caldo: lezione ${warmRow.lesson_order} abbandonata, continuo con le altre`);
+              continue;
+            }
+            warmDone++;
             await supabase.from("study_contexts").update({
               generation_progress: { step: "generating-lessons", generatedCount: warmDone, totalLessons: warmCount },
             }).eq("id", contextId);
@@ -1206,6 +1230,7 @@ ${documentSection}`;
       "Impossibile estrarre JSON dalla risposta AI. Riprova.",
       "Errore durante la pulizia delle vecchie lezioni",
       "Errore durante il salvataggio delle lezioni",
+      EMPTY_AI_LESSON_MESSAGE,
     ];
     const msg = error instanceof Error && safeMessages.includes(error.message)
       ? error.message

@@ -1,10 +1,16 @@
 /**
  * 🧠 PERCORSI 2.0 — IL CERVELLO SCIENTIFICO (DeepSeek V4 Flash via OpenRouter).
  *
- * Catena a scivolo su OpenRouter:
- *   1. deepseek/deepseek-v4-flash:free  (gratuito, con tetti giornalieri)
- *   2. deepseek/deepseek-v4-flash       (a pagamento: centesimi a lezione)
- *   3. …se proprio non va, il CHIAMANTE ricade sulla catena Gemini esistente.
+ * Catena su OpenRouter:
+ *   1. deepseek/deepseek-v4-flash (a pagamento: centesimi a lezione)
+ *   2. …se proprio non va, il CHIAMANTE ricade sulla catena Gemini esistente.
+ *
+ * NOTA P3c (7 ottobre 2026): il vecchio primo gradino
+ * "deepseek/deepseek-v4-flash:free" è STATO RIMOSSO: verificati live i 465
+ * modelli pubblici di OpenRouter, NON esiste alcuna variante :free di
+ * DeepSeek. Quel gradino rispondeva 404 e OGNI lezione scientifica partiva
+ * con un tentativo sprecato (e ritardo) prima di cadere qui. Se un domani
+ * OpenRouter aggiunge un gradino gratuito, va RI-verificato sui fatti.
  *
  * Regole:
  *  - NON lancia mai: restituisce null se la chiave manca o tutti i tentativi
@@ -79,7 +85,8 @@ export async function tryOpenRouterText(
 
       if (resp.ok) {
         const data = await resp.json();
-        const text = data?.choices?.[0]?.message?.content;
+        const choice = data?.choices?.[0];
+        const text = choice?.message?.content;
         const tokens = extractUsageTokens(data);
         logAiUsage({
           fn: opts.tag ?? null,
@@ -92,6 +99,13 @@ export async function tryOpenRouterText(
           ...tokens,
         });
         if (typeof text === "string" && text.trim()) {
+          // ✂️ P3b: risposta tagliata dal limite di token → non è una lezione
+          // buona: si lascia perdere e si scivola sul paracadute Gemini
+          // (che riprova con più token). Meglio rigenerare che salvare metà JSON.
+          if (choice?.finish_reason === "length") {
+            console.warn(`[2.0] ${model}: risposta troncata (finish_reason=length) → paracadute Gemini`);
+            continue;
+          }
           console.log(`[2.0] Lezione scientifica via ${model}`);
           return text;
         }
