@@ -195,6 +195,17 @@ Misure dopo: «Continua» 10,5:1, titolo 13,4:1, etichetta attiva della nav 12,7
 
 **Verifiche:** suite **663/663** (657 + 6 nuovi in `uploadSheetAndSettings.test.tsx`: catena flex, dvh, aggancio tastiera con unit test dell'hook, route annidate, Outlet + ripristino scroll); `tsc -b` 0; eslint 0 sui file toccati; build OK 105 precache. Screenshot in `screenshots/correzioni2/`. File toccati: App, Index, StudioPractice (SheetDrawer), UploadSheet, useKeyboardInset (nuovo), test studioViews/uploadSheetAndSettings/haptics, registro. Nessuna modifica al codice del piano Pro del proprietario. Nessuna modifica backend.
 
+## 4-bis. Caricamento unico: UN solo loading dall'upload al percorso (7 ottobre 2026)
+
+**Richiesta del proprietario:** «Tremila caricamenti» → uno. L'utente carica il materiale, preme il tasto e vede **UN solo stato di caricamento** che copre internamente tutti i processi (compressione foto, caricamento, analisi, generazione). Quanti passaggi fa davvero l'app non interessa: non si mostrano diciotto caricamenti uno dietro l'altro.
+
+**Cosa è entrato nel runtime:**
+- **`UnifiedPipelineLoader.tsx` (nuovo):** portale `fixed inset-0 z-[95]` sopra tutto (anche sopra il doc di caricamento, che resta aperto dietro e si chiude da solo alla fine). UNA barra a pillola `bg-primary` che avanza **senza mai tornare indietro**, una caption per fase («Carico il materiale…» → «Analizzo il contenuto…» → «Creo le lezioni…»), e dopo 15 secondi compare «Continua in background» per chi non vuole aspettare.
+- **`UploadSheet.tsx`:** i tre gesti (foto / ricerca web / PDF) ora lanciano `runUnifiedPipeline` — compressione foto silenziosa, poi le fasi material→analysis→generation in un'unica barriera visiva. Il tasto di caricamento È il tasto che prepara il percorso: nessun bottone intermedio «Genera percorso» chiesto all'utente. La generazione usa la stessa guardia Free (limite 10 corsi/settimana, stesso messaggio di Studio); appena il materiale esiste l'app scivola già su Studio dietro il velo, così alla fine l'utente si ritrova sul percorso senza passaggi ulteriori.
+- **Bug vero trovato dai test browser e corretto:** il doc di Radix mette `pointer-events: none` sul `body` e il velo del loader lo ereditava → il velo DIPINGEVA sopra tutto ma il tasto «Continua in background» non era cliccabile. Fix: `pointer-events-auto` sul velo (con test che lo difende).
+
+**Verifiche (browser, 2 run con fixture mock):** con 2 foto selezionate → 0 spinner prima del click; dopo il click **una sola schermata** (15 campioni), barra monotona 38→100%, 3 caption di fase; finale: velo e doc chiusi, tab Studio attiva, toast «Percorso pronto! 🎉», zero vecchi toast. Skip: nascosto prima dei 15s, compare dopo; post-skip velo e doc chiusi, app in Studio, generazione che prosegue dietro le quinte. Suite **668/668** (5 test nuovi); `tsc -b` 0; eslint 0; build 105 precache. Screenshot in `screenshots/pipeline-unica/`. Backend non toccato.
+
 ## 5. Inventario dei test di stile v1 e piano di migrazione
 
 Questi test **difendono la veste 1 e oggi sono corretti**: si migrano alle rispettive tappe, **nessuna cancellazione per nascondere errori**. Baseline post-D3: **625 pass / 13 fail pre-esistenti** (AppHeader 13 + haptics 1), tsc OK, build OK.

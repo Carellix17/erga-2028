@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { FileUp, X, FileText, Loader2, Brain, Globe, Search, Camera, ImageIcon, ChevronLeft } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import { currentLanguage } from "@/i18n";
 import { WikiCandidatePicker, type WikiCandidate } from "./WikiCandidatePicker";
 import { compressImages, formatBytes } from "@/lib/imageCompression";
 import { useKeyboardInset } from "@/hooks/useKeyboardInset";
+import { UnifiedPipelineLoader, type PipelinePhase } from "./UnifiedPipelineLoader";
+import { useGenerationUsage, FREE_LIMIT_MESSAGE } from "@/hooks/useGenerationUsage";
 
 
 interface UploadSheetProps {
@@ -41,7 +43,6 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imageBytes, setImageBytes] = useState<{ original: number; compressed: number }>({ original: 0, compressed: 0 });
-  const [isCompressing, setIsCompressing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [activeTab, setActiveTab] = useState<string>("loading");
@@ -57,6 +58,20 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
   const qc = useQueryClient();
   const [isAttaching, setIsAttaching] = useState(false);
   const [courseName, setCourseName] = useState("");
+  // ── PIPELINE UNICA (decisione del proprietario, 7 ottobre 2026) ────────
+  // Dal tocco su «Carica» alle prime lezioni pronte l'utente vede UN solo
+  // caricamento (UnifiedPipelineLoader). Dentro ci stanno compressione
+  // delle foto, caricamento, analisi del materiale e generazione del
+  // percorso: nessuno spinner a catena, nessun bottone intermedio.
+  const [pipeline, setPipeline] = useState<{ phase: PipelinePhase; progress: number; courseName: string | null; skipped: boolean } | null>(null);
+  const usageQuery = useGenerationUsage();
+  const usageLimitReached = !!usageQuery.data && !usageQuery.data.unlimited && usageQuery.data.remaining <= 0;
+  // Le foto scelte, lette fresche al tocco su «Carica» (l'ottimizzazione
+  // silenziosa potrebbe averne appena aggiunte alla selezione).
+  const selectedImagesRef = useRef<File[]>([]);
+  useEffect(() => { selectedImagesRef.current = selectedImages; }, [selectedImages]);
+  // La coda dell'ottimizzazione silenziosa delle foto: una alla volta.
+  const compressQueueRef = useRef<Promise<unknown>>(Promise.resolve());
 
   // 🎯 P17: il menù ⋯ di Studio manda dritti nello scaffale di QUEL percorso
   useEffect(() => {
@@ -111,8 +126,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       return;
     }
 
-    setIsCompressing(true);
-    try {
+    // OTTIMIZZAZIONE SILENTE (decisione del proprietario, 7 ottobre 2026):
+    // l'ottimizzazione non è più un caricamento a sé stante — le
+    // foto si preparano in coda, in sordina; se l'utente tocca «Carica»
+    // prima che la coda sia svuotata, ci pensa il caricamento unico.
+    const run = (async () => {
+      await compressQueueRef.current;
       const all = await compressImages(files);
       // Scarta solo le foto troppo pesanti: le altre restano selezionate.
       const tooBig = all.filter(r => r.compressedBytes > MAX_IMAGE_BYTES);
@@ -140,9 +159,8 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
         });
         setImagePreviews(prev => [...prev, preview]);
       }
-    } finally {
-      setIsCompressing(false);
-    }
+    })();
+    compressQueueRef.current = run;
   };
 
   const removeImage = (index: number) => {
@@ -154,111 +172,215 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const handleUploadImages = async () => {
-    if (selectedImages.length === 0 || !currentUser) return;
-    setIsUploading(true);
-    setUploadStatus("Caricamento immagini...");
+  // Il contesto come lo vede la pipeline: stato di elaborazione e generazione.
+  const fetchPipelineContext = async (contextId: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+      body: JSON.stringify({ userId: currentUser, action: "listContexts" }),
+    });
+    const data = await response.json();
+    return (data.contexts ?? []).find((c: { id: string }) => c.id === contextId) ?? null;
+  };
+
+  // A fine corsa: pulisce la selezione e chiude il doc. L'app è già sul
+  // nuovo percorso in Studio (onUpload porta lì appena il contesto esiste).
+  const finishPipeline = () => {
+    setSelectedFiles([]);
+    setSelectedImages([]);
+    setImagePreviews([]);
+    setImageBytes({ original: 0, compressed: 0 });
+    setCourseName("");
+    setWebTopic("");
+    setCandidates(null);
+    onOpenChange(false);
+  };
+
+  /**
+   * LA PIPELINE UNICA — un solo caricamento alla vista dell'utente, che
+   * dentro comprende TUTTI i processi (richiesta del proprietario, 7
+   * ottobre 2026): compressione delle foto, caricamento del materiale,
+   * analisi e generazione del percorso (schema + prime lezioni). La
+   * sequenza è quella del bottone «Genera percorso» di Studio, solo
+   * orchestrata: l'utente non vede mai un passaggio.
+   */
+  const runUnifiedPipeline = async (opts: {
+    courseName: string;
+    /** Nota mostrata nel toast finale (es. «contenuto da Wikipedia»). */
+    finalNote?: () => string;
+    /** Fase MATERIALE: prepara e carica, chiama onUpload appena il contesto
+     *  esiste. Risponde con l'id del contesto, oppure null se il caricamento
+     *  non è partito (errore già notificato: il doc resta aperto). */
+    material: () => Promise<string | null>;
+  }) => {
+    if (!currentUser) return;
+    setPipeline({ phase: "material", progress: 4, courseName: opts.courseName, skipped: false });
+    let contextId: string | null = null;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      contextId = await opts.material();
+      if (!contextId) { setPipeline(null); return; }
 
-      const formData = new FormData();
-      formData.append("uploadType", "images");
-      formData.append("contextName", `📷 ${selectedImages.length} foto`);
-      selectedImages.forEach((img, i) => formData.append(`image_${i}`, img));
+      // Fase ANALISI: foto e PDF lavorano nel server; documenti di testo e
+      // contenuti web sono già pronti e questo giro dura un istante.
+      setPipeline((p) => (p ? { ...p, phase: "analysis", progress: Math.max(p.progress, 38) } : p));
+      let analyzed = false;
+      for (let attempt = 0; attempt < 90; attempt++) {
+        const ctx = await fetchPipelineContext(contextId);
+        if (ctx?.processing_status === "completed") { analyzed = true; break; }
+        if (ctx?.processing_status === "failed") throw new Error(ctx.error_message || "Non sono riuscito a leggere il materiale.");
+        setPipeline((p) => (p ? { ...p, progress: Math.min(58, p.progress + 0.7) } : p));
+        await sleep(2000);
+      }
+      if (!analyzed) throw new Error("L'analisi del materiale sta impiegando troppo: riprova tra poco dal bottone «Genera percorso».");
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${authToken}` },
-        body: formData,
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Errore nel caricamento");
-
-      const contextId = data.contextId;
-      setUploadStatus("Elaborazione immagini...");
-
-      // Wait for image processing
-      const authTokenForPolling = (await supabase.auth.getSession()).data.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const maxAttempts = 60;
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const statusResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-lessons`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authTokenForPolling}` },
-          body: JSON.stringify({ userId: currentUser, action: "listContexts" }),
-        });
-        const statusData = await statusResponse.json();
-        const context = statusData.contexts?.find((c: { id: string }) => c.id === contextId);
-        if (context?.processing_status === "completed") break;
-        if (context?.processing_status === "failed") throw new Error(context.error_message || "Errore nell'elaborazione delle immagini");
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      // Limite del piano Free: lo stesso identico messaggio di Studio.
+      if (usageLimitReached) {
+        toast({ title: "Limite raggiunto", description: FREE_LIMIT_MESSAGE, variant: "destructive" });
+        return; // il finally chiude il doc e atterra sul corso
       }
 
-      onUpload([{ name: `📷 ${selectedImages.length} foto`, size: selectedImages.reduce((s, f) => s + f.size, 0) }], contextId);
-      setSelectedImages([]);
-      setImagePreviews([]);
-      setImageBytes({ original: 0, compressed: 0 });
-      onOpenChange(false);
-      toast({ title: "Foto caricate! 📷", description: "Ora puoi generare le lezioni dal tab Studio." });
+      // Fase GENERAZIONE: la stessa chiamata del bottone «Genera percorso».
+      setPipeline((p) => (p ? { ...p, phase: "generation", progress: Math.max(p.progress, 62) } : p));
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ userId: currentUser, contextId, language: currentLanguage() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Errore nella generazione");
+
+      // Il server genera in background: si aspetta la fine (schema + prime lezioni).
+      let generated = false;
+      for (let attempt = 0; attempt < 240; attempt++) {
+        const ctx = await fetchPipelineContext(contextId);
+        const status = ctx?.generation_status;
+        if (status === "completed") { generated = true; break; }
+        if (status === "failed") throw new Error("La generazione non è riuscita: rilanciala dal bottone «Genera percorso».");
+        const prog = ctx?.generation_progress;
+        if (prog?.totalLessons && typeof prog.generatedCount === "number" && prog.totalLessons > 0) {
+          const ratio = Math.min(1, prog.generatedCount / prog.totalLessons);
+          setPipeline((p) => (p ? { ...p, progress: Math.max(p.progress, Math.min(97, 62 + ratio * 35)) } : p));
+        } else {
+          setPipeline((p) => (p ? { ...p, progress: Math.min(72, p.progress + 0.4) } : p));
+        }
+        await sleep(2500);
+      }
+      if (!generated) throw new Error("La generazione sta impiegando troppo: trovi il percorso in Studio tra poco.");
+
+      setPipeline((p) => (p ? { ...p, progress: 100 } : p));
+      await sleep(450);
+      const note = opts.finalNote?.() ?? "";
+      toast({ title: "Percorso pronto! 🎉", description: note ? `${opts.courseName} — ${note}` : opts.courseName });
     } catch (error) {
-      console.error("Image upload error:", error);
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel caricamento", variant: "destructive" });
+      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella preparazione del percorso", variant: "destructive" });
     } finally {
-      setIsUploading(false);
-      setUploadStatus("");
+      // Il materiale è caricato: in ogni caso l'utente atterra sul corso in
+      // Studio, dove la generazione si può rilanciare dal bottone che c'è già.
+      if (contextId) finishPipeline();
+      setPipeline(null);
     }
   };
 
-  // 🎯 P13: crea il contesto dalla voce SCELTA (title) o dal manuale AI (forceAI).
-  const createWebContext = async (payload: { title?: string; forceAI?: boolean }) => {
-    if (!webTopic.trim() || !currentUser) return;
-    setIsSearching(true);
-    if (payload.title) setPickingTitle(payload.title);
-    setUploadStatus(payload.forceAI ? "Preparazione del manuale AI..." : "Preparazione del contenuto dalla voce scelta...");
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-      const searchResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/web-search`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser, topic: webTopic.trim(), title: payload.title, forceAI: payload.forceAI, language: currentLanguage() }),
+  // 📷 FOTO — un tocco e via: la pipeline unica comprime (se la coda
+  // silenziosa non ha ancora finito), carica, aspetta l'analisi e genera.
+  const handleUploadImages = () => {
+    if (selectedImages.length === 0 || !currentUser) return;
+    void runUnifiedPipeline({
+      courseName: `📷 ${selectedImages.length} foto`,
+      material: async () => {
+        await compressQueueRef.current;
+        const images = selectedImagesRef.current;
+        if (images.length === 0) return null;
+        setIsUploading(true);
+        setUploadStatus("Caricamento immagini...");
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+          const formData = new FormData();
+          formData.append("uploadType", "images");
+          formData.append("contextName", `📷 ${images.length} foto`);
+          images.forEach((img, i) => formData.append(`image_${i}`, img));
+
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${authToken}` },
+            body: formData,
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Errore nel caricamento");
+
+          const contextId = data.contextId as string;
+          setPipeline((p) => (p ? { ...p, progress: 35 } : p));
+          // Il percorso esiste: l'app ci scivola sopra mentre il velo copre.
+          onUpload([{ name: `📷 ${images.length} foto`, size: images.reduce((sum, f) => sum + f.size, 0) }], contextId);
+          return contextId;
+        } catch (error) {
+          console.error("Image upload error:", error);
+          toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel caricamento", variant: "destructive" });
+          return null;
+        } finally {
+          setIsUploading(false);
+          setUploadStatus("");
         }
-      );
-      const searchData = await searchResponse.json();
-      if (!searchResponse.ok) throw new Error(searchData.error || "Errore nella ricerca");
+      },
+    });
+  };
 
-      onUpload([{ name: `🌐 ${webTopic}`, size: searchData.contentLength || 0 }], searchData.contextId);
-      setWebTopic("");
-      setCandidates(null);
-      onOpenChange(false);
-      const fromWiki = searchData.source === "wikipedia";
-      // 🪧 P19 — se le immagini sono state saltate, la macchina racconta IL PERCHE'.
-      const wikiSkipReasons: string[] = Array.isArray(searchData.imagesSkippedReasons) ? searchData.imagesSkippedReasons : [];
-      const imgNote = searchData.imagesCount
-        ? `con ${searchData.imagesCount} immagini vere 📷. `
-        : (fromWiki
-          ? `nessuna immagine salvata${wikiSkipReasons.length ? ` (${wikiSkipReasons[0].slice(0, 90)})` : " (niente immagini utili nella voce)"}. `
-          : "");
-      toast({
-        title: fromWiki ? "Contenuto da Wikipedia! 🌐" : "Manuale AI pronto 🌐",
-        description: fromWiki
-          ? `${searchData.pageTitle ? `Voce: «${searchData.pageTitle}», ` : ""}${imgNote}Ora genera le lezioni dal tab Studio.`
-          : (payload.forceAI
-            ? "Come hai chiesto tu: manuale scritto dall'AI dalla sua conoscenza. Ora genera le lezioni dal tab Studio."
-            : "Wikipedia non copre questo tema: l'AI ha scritto dalla sua conoscenza. Ora genera le lezioni dal tab Studio."),
-      });
-    } catch (error) {
-      console.error("Web search error:", error);
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella ricerca", variant: "destructive" });
-    } finally {
-      setIsSearching(false);
-      setPickingTitle(null);
-      setUploadStatus("");
-    }
+  // 🎯 P13: la voce SCELTA (title) o il manuale AI (forceAI) entrano anche
+  // loro nella pipeline unica: preparazione del contenuto + percorso.
+  const createWebContext = (payload: { title?: string; forceAI?: boolean }) => {
+    if (!webTopic.trim() || !currentUser) return;
+    const topic = webTopic.trim();
+    let webNote = "";
+    void runUnifiedPipeline({
+      courseName: `🌐 ${topic}`,
+      finalNote: () => webNote,
+      material: async () => {
+        setIsSearching(true);
+        if (payload.title) setPickingTitle(payload.title);
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+          const searchResponse = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/web-search`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+              body: JSON.stringify({ userId: currentUser, topic, title: payload.title, forceAI: payload.forceAI, language: currentLanguage() }),
+            }
+          );
+          const searchData = await searchResponse.json();
+          if (!searchResponse.ok) throw new Error(searchData.error || "Errore nella ricerca");
+
+          const fromWiki = searchData.source === "wikipedia";
+          webNote = fromWiki
+            ? `contenuto vero da Wikipedia${searchData.imagesCount ? ` (${searchData.imagesCount} immagini)` : ""}`
+            : "manuale scritto dall'AI dalla sua conoscenza";
+          setPipeline((p) => (p ? { ...p, progress: 35 } : p));
+          onUpload([{ name: `🌐 ${topic}`, size: searchData.contentLength || 0 }], searchData.contextId);
+          setWebTopic("");
+          setCandidates(null);
+          return searchData.contextId as string;
+        } catch (error) {
+          console.error("Web search error:", error);
+          toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella ricerca", variant: "destructive" });
+          return null;
+        } finally {
+          setIsSearching(false);
+          setPickingTitle(null);
+          setUploadStatus("");
+        }
+      },
+    });
   };
 
   // 🎯 P13: prima si CERCANO le voci candidate; la creazione parte al tocco sulla carta.
@@ -290,64 +412,64 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
     }
   };
 
-  const handleUpload = async () => {
+  // 📄 DOCUMENTI — stesso patto: un tocco e la pipeline unica fa tutto.
+  // 📚 P17: più file insieme = UN percorso unico che li mescola tutti
+  // (il primo APRE il percorso col nome scelto, gli altri si ALLEGANO).
+  const handleUpload = () => {
     if (selectedFiles.length === 0 || !currentUser) return;
-    setIsUploading(true);
-    setUploadStatus("Caricamento file...");
-    const uploadedFileInfos: { name: string; size: number }[] = [];
-    let latestContextId: string | undefined;
+    const singleCourse = selectedFiles.length >= 2;
+    const finalCourseName = courseName.trim() || stripExt(selectedFiles[0]?.name ?? "Il mio percorso");
+    void runUnifiedPipeline({
+      courseName: finalCourseName,
+      material: async () => {
+        setIsUploading(true);
+        const uploadedFileInfos: { name: string; size: number }[] = [];
+        let latestContextId: string | undefined;
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+          for (let i = 0; i < selectedFiles.length; i++) {
+            const file = selectedFiles[i];
+            if (file.size > MAX_FILE_SIZE) {
+              toast({ title: "File troppo grande", description: `${file.name} supera il limite di 100MB`, variant: "destructive" });
+              continue;
+            }
 
-      // 📚 P17: più file insieme = UN percorso unico che li mescola tutti.
-      // Il primo APRE il percorso col nome scelto, gli altri si ALLEGANO.
-      const singleCourse = selectedFiles.length >= 2;
-      const finalCourseName = courseName.trim() || stripExt(selectedFiles[0]?.name ?? "Il mio percorso");
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
-        setUploadStatus(singleCourse && i > 0 ? `Aggiungo ${file.name} al percorso...` : `Caricamento ${file.name}...`);
-        if (file.size > MAX_FILE_SIZE) {
-          toast({ title: "File troppo grande", description: `${file.name} supera il limite di 100MB`, variant: "destructive" });
-          continue;
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("userId", currentUser);
+            if (singleCourse) {
+              if (i > 0 && latestContextId) formData.append("contextId", latestContextId);
+              else formData.append("contextName", finalCourseName);
+            }
+
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${authToken}` },
+              body: formData,
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Errore nel caricamento");
+
+            uploadedFileInfos.push({ name: file.name, size: file.size });
+            if (data.contextId) latestContextId = data.contextId as string;
+            setPipeline((p) => (p ? { ...p, progress: Math.min(35, 15 + (20 * (i + 1)) / selectedFiles.length) } : p));
+          }
+
+          if (uploadedFileInfos.length === 0 || !latestContextId) return null;
+          onUpload(uploadedFileInfos, latestContextId);
+          return latestContextId;
+        } catch (error) {
+          console.error("Upload error:", error);
+          toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel caricamento", variant: "destructive" });
+          return null;
+        } finally {
+          setIsUploading(false);
+          setUploadStatus("");
         }
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("userId", currentUser);
-        if (singleCourse) {
-          if (i > 0 && latestContextId) formData.append("contextId", latestContextId);
-          else formData.append("contextName", finalCourseName);
-        }
-
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-pdf`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${authToken}` },
-          body: formData,
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Errore nel caricamento");
-
-        uploadedFileInfos.push({ name: file.name, size: file.size });
-        if (data.contextId) latestContextId = data.contextId as string;
-      }
-
-      if (uploadedFileInfos.length > 0 && latestContextId) {
-        // Skip processing polling — go straight to Studio. Lesson generation
-        // will handle the processing state with its own immersive loader.
-        onUpload(uploadedFileInfos, latestContextId);
-        setSelectedFiles([]);
-        onOpenChange(false);
-        toast({ title: singleCourse ? "Percorso creato! 📚" : "File caricato! 📄", description: "Vai su Studio per generare le lezioni." });
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nel caricamento", variant: "destructive" });
-    } finally {
-      setIsUploading(false);
-      setUploadStatus("");
-    }
+      },
+    });
   };
 
 
@@ -404,6 +526,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
   };
 
   return (
+    <>
     <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
       <SheetContent
         side="bottom"
@@ -543,7 +666,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                       <><FileUp className="w-5 h-5 mr-2" />Carica {selectedFiles.length > 1 ? `${selectedFiles.length} file` : "file"}</>
                     ) : ("Seleziona file da caricare")}
                   </Button>
-                  <p className="body-small text-muted-foreground text-center mt-2">📄 Vai su Studio per generare le lezioni</p>
+                  <p className="body-small text-muted-foreground text-center mt-2">📄 Un tocco e il percorso si prepara da solo</p>
                 </div>
               </TabsContent>
 
@@ -559,18 +682,13 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                     multiple
                     onChange={handleImageInput}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    disabled={isUploading || isCompressing || selectedImages.length >= MAX_IMAGES}
+                    disabled={isUploading || selectedImages.length >= MAX_IMAGES}
                   />
                   <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2">
                     <Camera className="w-8 h-8 text-primary-foreground" />
                   </div>
                   <p className="font-display font-semibold text-lg mb-1">Carica le tue foto</p>
                   <p className="body-small text-muted-foreground">Appunti, lavagna, libro — max {MAX_IMAGES} foto (JPG, PNG)</p>
-                  {isCompressing && (
-                    <p className="body-small text-muted-foreground mt-2 inline-flex items-center gap-1.5">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Ottimizzo le foto…
-                    </p>
-                  )}
                 </div>
 
                 {selectedImages.length > 0 && (
@@ -618,14 +736,14 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                 )}
 
                 <div className="sticky bottom-0 bg-surface-container-high pt-3 pb-2 -mx-1 px-1 mt-auto">
-                  <Button onClick={handleUploadImages} disabled={selectedImages.length === 0 || isUploading || isCompressing} className="w-full h-14 text-base" size="lg">
+                  <Button onClick={handleUploadImages} disabled={selectedImages.length === 0 || isUploading} className="w-full h-14 text-base" size="lg">
                     {isUploading ? (
                       <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{uploadStatus || "Elaborazione..."}</>
                     ) : selectedImages.length > 0 ? (
                       <><FileUp className="w-5 h-5 mr-2" />Carica {selectedImages.length} foto</>
                     ) : ("Seleziona le foto da analizzare")}
                   </Button>
-                  <p className="body-small text-muted-foreground text-center mt-2">📸 Dopo il caricamento potrai generare le lezioni</p>
+                  <p className="body-small text-muted-foreground text-center mt-2">📸 Un tocco e il percorso si prepara da solo</p>
                 </div>
               </TabsContent>
 
@@ -682,7 +800,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                   )}
 
                   <p className="body-small text-muted-foreground text-center">
-                    🔍 Dopo la preparazione potrai generare le lezioni
+                    🔍 Scegli la voce: il percorso si prepara da solo
                   </p>
                 </div>
               </TabsContent>
@@ -695,5 +813,21 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
         </Tabs>
       </SheetContent>
     </Sheet>
+
+    {/* IL CARICAMENTO UNICO — un velo pieno che copre tutto (doc compreso)
+        dal tocco su «Carica» fino al percorso pronto. È l'unico stato di
+        caricamento che l'utente vede, come chiesto dal proprietario. */}
+    {pipeline && !pipeline.skipped && (
+      <UnifiedPipelineLoader
+        phase={pipeline.phase}
+        progress={pipeline.progress}
+        courseName={pipeline.courseName}
+        onSkip={() => {
+          onOpenChange(false);
+          setPipeline((p) => (p ? { ...p, skipped: true } : p));
+        }}
+      />
+    )}
+    </>
   );
 }
