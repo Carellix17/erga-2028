@@ -97,7 +97,13 @@ function sanitizeOne(raw: unknown, index: number): ScientificExercise | null {
 export function parseExerciseSet(raw: string, max = 8): ScientificExercise[] {
   if (typeof raw !== "string" || !raw.trim()) return [];
 
-  const cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  const stripped = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  // Il LaTeX dell'AI ($v = a \cdot t$) arriva spesso con backslash singoli,
+  // che non sono escape JSON validi: li raddoppiamo se il JSON non si legge.
+  let cleaned = stripped;
+  try { JSON.parse(stripped); } catch {
+    cleaned = stripped.replace(/\\(["\\/]|u[0-9a-fA-F]{4})?/g, (m, ok) => (ok ? m : "\\\\"));
+  }
   let parsed: unknown = null;
   try {
     parsed = JSON.parse(cleaned);
