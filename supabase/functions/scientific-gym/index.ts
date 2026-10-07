@@ -139,7 +139,12 @@ serve(withCors(async (req) => {
         raw = await callAIText(messages, 0.4, 6000, "scientific-gym");
       }
 
-      const exercises = parseExerciseSet(raw, count);
+      let exercises = parseExerciseSet(raw, count);
+      if (exercises.length === 0) {
+        console.warn("[gym] serie illeggibile, riprovo una volta. Inizio risposta:", String(raw).slice(0, 300));
+        const retry = await callAIText(messages, 0.3, 6000, "scientific-gym");
+        exercises = parseExerciseSet(retry, count);
+      }
       if (exercises.length === 0) {
         return errorResponse("Il tutor non è riuscito a preparare gli esercizi. Riprova tra un attimo.", 502);
       }
