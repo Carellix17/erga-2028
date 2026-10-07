@@ -27,6 +27,19 @@ describe("extractJsonRobust — il riparatore", () => {
     expect(extractJsonRobust(raw)).toEqual({ a: 1 });
   });
 
+  it("sopravvive a GRAFFE NELLA PROSA PRIMA del JSON (la prima { non è il root)", () => {
+    const raw = 'Come per {a + b} nel testo, ecco la lezione:\n{"concept": "X", "explanation_parts": []}\nFine.';
+    expect(extractJsonRobust(raw)).toEqual({ concept: "X", explanation_parts: [] });
+  });
+
+  it("accetta a-capo VERI (non escaped) dentro le stringhe", () => {
+    // I modelli spezzano spesso le stringhe con newline letterali: JSON invalido
+    // per spec, ma il riparatore li riconverte in \n.
+    const raw = '{\n  "a": "prima riga\nseconda riga"\n}';
+    const out = extractJsonRobust(raw) as { a: string };
+    expect(out.a).toBe("prima riga\nseconda riga");
+  });
+
   it("usa la fetta BILANCIATA, non la greedy (graffe nella prosa dopo il JSON)", () => {
     // La regex greedy prenderebbe dalla prima { all'ULTIMA } (prosa inclusa) e fallirebbe.
     const raw = 'Ecco: {"a": {"b": 1}} e poi testo con } graffa strana {';

@@ -26,9 +26,8 @@ import { extractUsageTokens } from "./usage.ts";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-/** Il gradino gratuito primo, poi quello a pagamento. */
+/** Il gradino a pagamento (l'unico verificato esistente: vedi nota P3c sopra). */
 export const OPENROUTER_MODEL_CHAIN = [
-  "deepseek/deepseek-v4-flash:free",
   "deepseek/deepseek-v4-flash",
 ] as const;
 

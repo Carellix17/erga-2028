@@ -241,10 +241,16 @@ export async function callAIText(
   // recupero; la validazione della lezione decide poi se è salvabile).
   if (finishReason === "length") {
     const bumped = Math.min(maxTokens * 2, 16000);
-    console.warn(`[AI] risposta troncata (finish_reason=length su ${maxTokens} token): secondo giro con ${bumped}`);
-    ({ text, finishReason } = await callOnce(bumped));
-    if (finishReason === "length") {
-      console.warn("[AI] risposta troncata di nuovo: la consegno al riparatore JSON");
+    if (bumped > maxTokens) {
+      console.warn(`[AI] risposta troncata (finish_reason=length su ${maxTokens} token): secondo giro con ${bumped}`);
+      ({ text, finishReason } = await callOnce(bumped));
+      if (finishReason === "length") {
+        console.warn("[AI] risposta troncata di nuovo: la consegno al riparatore JSON");
+      }
+    } else {
+      // Già al tetto: ripetere la stessa chiamata con lo stesso budget è solo
+      // un costo in più — si consegna subito al riparatore JSON.
+      console.warn(`[AI] risposta troncata già al tetto di ${maxTokens} token: la consegno al riparatore JSON`);
     }
   }
   return text;

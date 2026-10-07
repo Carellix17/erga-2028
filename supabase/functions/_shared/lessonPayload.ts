@@ -205,28 +205,53 @@ function closeDanglingBrackets(s: string): string {
 export function extractJsonRobust(raw: string): unknown {
   const cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
 
-  // Il ROOT è la PRIMA parentesi del documento. Se è "[", il payload è un
-  // array e gli oggetti dentro sono ITEM: estrarre il primo oggetto bilanciato
-  // restituirebbe solo il primo elemento (bug del primo giro: l'array troncato
-  // dei titoli diventava un titolo solo). Se è "{", il payload è un oggetto e
-  // gli array dentro sono valori.
+  // Il ROOT è la PRIMA parentesi del documento: se è "[" il payload è un
+  // array (e le "{" dentro sono ITEM, non root), se è "{" è un oggetto.
   const objStart = cleaned.indexOf("{");
   const arrStart = cleaned.indexOf("[");
   const rootIsArray = arrStart !== -1 && (objStart === -1 || arrStart < objStart);
 
   const candidates: string[] = [cleaned, fixInvalidEscapes(cleaned)];
+
+  const positionsOf = (ch: string): number[] => {
+    const out: number[] = [];
+    for (let i = 0; i < cleaned.length && out.length < 64; i++) if (cleaned[i] === ch) out.push(i);
+    return out;
+  };
+  const pushBalancedSlices = (positions: number[]) => {
+    for (const p of positions) {
+      const slice = sliceBalanced(cleaned, p);
+      if (slice) candidates.push(slice, fixInvalidEscapes(slice));
+    }
+  };
+  const lastResortOf = (base: string) => closeDanglingBrackets(
+    fixInvalidEscapes(
+      // eslint-disable-next-line no-control-regex -- pulizia voluta dei caratteri di controllo nel recupero dell'ultima spiaggia
+      base.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, ""),
+    ),
+  );
+
   if (rootIsArray) {
-    const balanced = sliceBalanced(cleaned, arrStart);
-    if (balanced) candidates.push(balanced, fixInvalidEscapes(balanced));
-  } else if (objStart !== -1) {
-    // Estrazione BILANCIATA: la prima { completa, anche con prosa intorno
-    // (la vecchia regex greedy dalla prima { all'ultima } si faceva ingannare
-    // da qualunque graffa nel testo prima o dopo il JSON).
-    const balanced = sliceBalanced(cleaned, objStart);
-    if (balanced) candidates.push(balanced, fixInvalidEscapes(balanced));
-    // La vecchia strategia greedy resta come tentativo ulteriore.
+    // Protocollo ARRAY: si provano solo le fette "[". Le "{" interne sono
+    // ITEM: estrarre il primo restituirebbe UN elemento invece dell'array
+    // (bug del primo giro: l'array troncato dei titoli diventava un titolo).
+    pushBalancedSlices(positionsOf("["));
+  } else {
+    // Protocollo OGGETTO: fette "{" prima della prima "[" (una "{" che sta
+    // dopo una "[" vive dentro un array: è un item). Così la prosa con
+    // graffe («la formula {a+b}… ecco la lezione: {…}») non condanna
+    // l'estrazione: si prova la graffa della prosa, poi quella del JSON.
+    const limit = arrStart === -1 ? cleaned.length : arrStart;
+    pushBalancedSlices(positionsOf("{").filter((p) => p < limit));
+    // La vecchia strategia greedy resta: cattura il caso "prosa dopo il JSON".
     const greedyObj = cleaned.match(/\{[\s\S]*\}/);
     if (greedyObj) candidates.push(greedyObj[0], fixInvalidEscapes(greedyObj[0]));
+    // Ultima spiaggia per oggetti troncati: chiusura a stack delle parentesi.
+    candidates.push(lastResortOf(greedyObj?.[0] ?? cleaned));
+    // Il payload potrebbe però essere un ARRAY dopo prosa con graffe: lo
+    // provano le fette "[" — DOPO il recupero dell'oggetto, così un array
+    // nella prosa non rapina un oggetto troncato a fine testo.
+    pushBalancedSlices(positionsOf("["));
     const greedyArr = cleaned.match(/\[[\s\S]*\]/);
     if (greedyArr) candidates.push(greedyArr[0], fixInvalidEscapes(greedyArr[0]));
   }
@@ -236,23 +261,16 @@ export function extractJsonRobust(raw: string): unknown {
     try { return JSON.parse(candidate); } catch { /* si prova il prossimo */ }
   }
 
-  // Array troncato: si salvano gli item completi, si scarta l'ultimo a metà.
-  if (rootIsArray) {
-    const salvaged = salvageTruncatedArray(cleaned);
-    if (salvaged !== null) return salvaged;
-  }
+  // Array troncati (root "[" oppure prosa con graffe prima dell'array): si
+  // salvano gli item completi, si scarta l'ultimo a metà.
+  const salvaged = salvageTruncatedArray(cleaned);
+  if (salvaged !== null) return salvaged;
 
-  // Ultima spiaggia: pulizia + chiusura a stack delle parentesi aperte.
-  const base = rootIsArray
-    ? (cleaned.match(/\[[\s\S]*\]/)?.[0] ?? cleaned)
-    : (cleaned.match(/\{[\s\S]*\}/)?.[0] ?? cleaned);
-  const lastResort = closeDanglingBrackets(
-    fixInvalidEscapes(
-      // eslint-disable-next-line no-control-regex -- pulizia voluta dei caratteri di controllo nel recupero dell'ultima spiaggia
-      base.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, ""),
-    ),
-  );
-  try { return JSON.parse(lastResort); } catch { /* ultimo tentativo fatto */ }
+  // Ultima spiaggia del protocollo array: greedy + chiusura a stack.
+  if (rootIsArray) {
+    const greedyArr = cleaned.match(/\[[\s\S]*\]/);
+    try { return JSON.parse(lastResortOf(greedyArr?.[0] ?? cleaned)); } catch { /* fatto */ }
+  }
 
   throw new Error(JSON_FAIL_MESSAGE);
 }
