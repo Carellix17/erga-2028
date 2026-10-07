@@ -186,8 +186,10 @@ export interface SheetDrawerProps {
 
 /**
  * P43 — Bottom sheet per Esercizi e Interrogazione: SCIVOLA davvero dal bordo
- * inferiore (300ms ease-out) sopra un backdrop semitrasparente e SFOCATO che
- * lascia intravedere lo Studio sottostante (mai nero pieno). Due scatti: il
+ * inferiore (300ms ease-out) sopra il velo SEMITRASPARENTE e leggermente
+ * sfocato — lo STESSO del doc di caricamento materiali (bg-scrim/40 +
+ * blur-sm, decisione del proprietario 7 ottobre 2026): lo Studio sottostante
+ * resta intravedibile, mai nero pieno né vetro pesante. Due scatti: il
  * foglio è alto 100dvh e in "select" resta traslato del 12% (vede ~88%), in
  * "active" scivola a schermo intero. La X in alto a destra (44px) resta fissa
  * al suo posto e chiude TUTTO il flusso. Solo transform/opacity → 60fps.
@@ -207,7 +209,7 @@ export function SheetDrawer({ title, step, onClose, children }: SheetDrawerProps
   return (
     <div role="dialog" aria-modal="true" aria-label={title} className="fixed inset-0 z-50">
       <motion.div
-        className="absolute inset-0 bg-black/50 backdrop-blur-md"
+        className="absolute inset-0 bg-scrim/40 backdrop-blur-sm"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}

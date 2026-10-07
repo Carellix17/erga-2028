@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { currentLanguage } from "@/i18n";
 import { WikiCandidatePicker, type WikiCandidate } from "./WikiCandidatePicker";
 import { compressImages, formatBytes } from "@/lib/imageCompression";
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 
 
 interface UploadSheetProps {
@@ -31,6 +32,10 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFileDeleted, initialManageContextId }: UploadSheetProps) {
+  // La tastiera non può più seppellire il tasto principale: il foglio si
+  // alza di `inset` px e si restringe all'altezza davvero visibile
+  // (richiesta del proprietario: il tasto SI DEVE sempre vedere).
+  const keyboard = useKeyboardInset();
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
@@ -400,7 +405,14 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
 
   return (
     <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-xl pb-safe max-h-[85vh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden">
+      <SheetContent
+        side="bottom"
+        className="rounded-t-xl pb-safe max-h-[85dvh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden"
+        style={{
+          bottom: keyboard.inset,
+          ...(keyboard.inset > 0 && keyboard.viewportHeight ? { maxHeight: keyboard.viewportHeight } : {}),
+        }}
+      >
         <SheetHeader className="mb-4 shrink-0">
           <SheetTitle className="font-display text-xl">I tuoi materiali</SheetTitle>
           <SheetDescription className="sr-only">Carica PDF, immagini o contenuti web per generare mini-lezioni</SheetDescription>
@@ -416,8 +428,13 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="loading" className="flex-1 min-h-0 mt-0 overflow-hidden tab-enter">
-            <Tabs value={loadingTab} onValueChange={setLoadingTab} className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
+          {/* FIX «tasto invisibile»: questo pannello è un contenitore FLEX
+              (prima era block e il Tabs interno, con h-full, si dimensionava
+              sul CONTENUTO invece che sullo spazio disponibile: con 2+ file
+              la lista sforava il max-h del foglio e la CTA finiva sotto lo
+              schermo, clippata da overflow-hidden). */}
+          <TabsContent value="loading" className="flex flex-1 flex-col min-h-0 mt-0 overflow-hidden tab-enter">
+            <Tabs value={loadingTab} onValueChange={setLoadingTab} className="flex flex-1 min-h-0 flex-col overflow-hidden">
               <TabsContent value="menu" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y mt-0 pb-4 tab-enter">
                 <div className="space-y-4">
                   <p className="body-medium text-muted-foreground text-center">

@@ -37,6 +37,12 @@ vi.mock("@/hooks/useSubscription", () => ({
   }),
 }));
 
+// La carta del piano ora apre il checkout Pro (usePaddleCheckout → useAuth):
+// nel collaudo si simula il gancio senza provider, come per la subscription.
+vi.mock("@/hooks/usePaddleCheckout", () => ({
+  usePaddleCheckout: () => ({ openCheckout: vi.fn(async () => {}), loading: false }),
+}));
+
 vi.mock("@/hooks/useCognitiveProfile", () => ({
   useCognitiveProfile: () => ({
     profile: { log_score: 70, mem_score: 60, foc_score: 80, voc_score: 65, ans_score: 75, app_score: 70 },

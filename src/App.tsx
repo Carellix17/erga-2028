@@ -102,14 +102,20 @@ const App = () => (
                   <Index />
                 </ProtectedRoute>
               }
-            />
-            <Route path="/app/impostazioni" element={<ProtectedRoute><SettingsIndex /></ProtectedRoute>} />
-            <Route path="/app/impostazioni/account" element={<ProtectedRoute><SettingsAccount /></ProtectedRoute>} />
-            <Route path="/app/impostazioni/generale" element={<ProtectedRoute><SettingsAccount /></ProtectedRoute>} />
-            <Route path="/app/impostazioni/aspetto" element={<ProtectedRoute><SettingsAppearance /></ProtectedRoute>} />
-            <Route path="/app/impostazioni/accessibilita" element={<ProtectedRoute><SettingsAccessibility /></ProtectedRoute>} />
-            <Route path="/app/impostazioni/lingua" element={<ProtectedRoute><SettingsLanguage /></ProtectedRoute>} />
-            <Route path="/app/impostazioni/termini" element={<ProtectedRoute><SettingsTerms /></ProtectedRoute>} />
+            >
+              {/* Impostazioni: route FIGLIE di /app — Index (con scheda attiva,
+                  scroll e cache dati) resta montato mentre l'utente è nelle
+                  impostazioni. Prima erano route separate: uscendo, l'intera
+                  app si smontava e si rimontava da zero (skeleton, stato e
+                  scroll persi) = la «ricaricata» segnalata dal proprietario. */}
+              <Route path="impostazioni" element={<SettingsIndex />} />
+              <Route path="impostazioni/account" element={<SettingsAccount />} />
+              <Route path="impostazioni/generale" element={<SettingsAccount />} />
+              <Route path="impostazioni/aspetto" element={<SettingsAppearance />} />
+              <Route path="impostazioni/accessibilita" element={<SettingsAccessibility />} />
+              <Route path="impostazioni/lingua" element={<SettingsLanguage />} />
+              <Route path="impostazioni/termini" element={<SettingsTerms />} />
+            </Route>
             <Route path="/app/profilo" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/app/ritmo" element={<ProtectedRoute><FocusStats /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

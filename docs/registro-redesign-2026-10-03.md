@@ -179,6 +179,22 @@ Misure dopo: «Continua» 10,5:1, titolo 13,4:1, etichetta attiva della nav 12,7
 
 **Verifiche:** suite **657/657** (l'errore non gestito `list.scrollTo` in `pathHeroPicker.repro` preesiste su fc5893b, verificato su HEAD); `tsc -b` 0; eslint 0 errori sui file toccati (fixato un `as any` preesistente in PathHero); build OK, 105 precache. Screenshot in `screenshots/correzioni/`. File toccati: BottomNav, PathHero, CourseCard, Index, appScroll, appShellDesignSystem.test, registro. Nessuna modifica backend.
 
+### Correzioni del proprietario (7 ottobre 2026 — impostazioni senza «ricaricata», velo dei doc, tasto di caricamento sempre visibile)
+
+**Sincronizzato il repository con la base del piano Pro del proprietario** (`0c04d05..533f423`, 8 commit altrui): checkout Paddle completo (SubscriptionSheet, `usePaddleCheckout`, `lib/paddle`, edge functions `get-paddle-price`/`customer-portal`/`payments-webhook`, migrazione drizzle 0004, PaymentTestModeBanner, «Passa a Pro · 4,99 €/mese» sulla carta del piano). Nessun conflitto: le modifiche qui sotto partono da 533f423.
+
+**Impostazioni: la pagina non «si ricarica» più.** `/app/impostazioni/*` erano route TOP-LEVEL: entrare smontava l'intera app (`Index`) e uscire la rimontava da zero — scheda attiva e scroll persi, skeleton al ritorno: percepita come un reload (verificato: nessun reload vero del browser, era tutto remount). Ora le pagine impostazioni sono **route figlie di `/app`** e `Index` le renderizza via `<Outlet />` restando MONTATA: l'uscita ripristina la stanza dov'era (memoria dello scroll continuata via listener con capture). Verificato in browser: stessa scheda (Studio), **scroll restaurato al px (57→57)**, nessuno skeleton, marker JS sopravvissuto.
+
+**Velo dei doc di Chat/Esercizi/Interrogazione = velo del doc di caricamento.** Il bottom sheet degli strumenti (`SheetDrawer`) usava `bg-black/50 backdrop-blur-md` (nero pieno al 50%, vetro pesante); ora usa **`bg-scrim/40 backdrop-blur-sm`**, identico al doc «I tuoi materiali» — misurato identico in chiaro e notte: rgba(0,0,0,0.4) + blur(4px).
+
+**Doc di caricamento: il tasto principale si vede SEMPRE (due bug veri).**
+1. **Catena flex rotta** (il colpevole principale): il pannello «Caricamento» era `display:block` e il `Tabs` interno, con `h-full`, si dimensionava sul CONTENUTO invece che sullo spazio disponibile: con 2+ file la lista sforava il `max-h` del foglio e la CTA finiva sotto lo schermo, clippata da `overflow-hidden` (misurato: CTA a bottom=1169 su viewport 844 = invisibile). Il pannello ora è `flex flex-col` con `min-h-0` e il Tabs interno usa solo `flex-1 min-h-0`: la lista scorre DENTRO e la CTA resta agganciata al fondo (bottom=806 con 4 file).
+2. **Tastiera virtuale**: su telefono, con l'input del nome percorso a fuoco (2+ file) o la ricerca web, la finestra di layout non cambia e il foglio restava sepolto sotto i tasti. Nuovo hook **`useKeyboardInset`** (legge `window.visualViewport`): il foglio si alza di `inset` px e si restringe all'altezza visibile. Verificato simulando la tastiera (viewport 500px): `bottom: 344px`, `maxHeight: 500px`, **CTA a 462px = sopra la tastiera**. In più `max-h-[85vh]` → **`85dvh`** (barra URL del browser).
+
+**Fix di un test rotto dal nuovo codice:** `haptics.test` falliva su 533f423 perché `SettingsPlanCard` ora usa `usePaddleCheckout` → `useAuth` senza provider: aggiunto il mock accanto a quello di `useSubscription` (stesso pattern, assert intatti).
+
+**Verifiche:** suite **663/663** (657 + 6 nuovi in `uploadSheetAndSettings.test.tsx`: catena flex, dvh, aggancio tastiera con unit test dell'hook, route annidate, Outlet + ripristino scroll); `tsc -b` 0; eslint 0 sui file toccati; build OK 105 precache. Screenshot in `screenshots/correzioni2/`. File toccati: App, Index, StudioPractice (SheetDrawer), UploadSheet, useKeyboardInset (nuovo), test studioViews/uploadSheetAndSettings/haptics, registro. Nessuna modifica al codice del piano Pro del proprietario. Nessuna modifica backend.
+
 ## 5. Inventario dei test di stile v1 e piano di migrazione
 
 Questi test **difendono la veste 1 e oggi sono corretti**: si migrano alle rispettive tappe, **nessuna cancellazione per nascondere errori**. Baseline post-D3: **625 pass / 13 fail pre-esistenti** (AppHeader 13 + haptics 1), tsc OK, build OK.

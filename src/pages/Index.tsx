@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StudioView } from "@/components/studio/StudioView";
 import { PianoView } from "@/components/piano/PianoView";
@@ -153,6 +154,42 @@ const Index = () => {
     name: f.name,
     size: f.size,
   }));
+
+  // ── Impostazioni DENTRO l'albero di /app (fix «la pagina si ricarica»):
+  // le pagine di /app/impostazioni sono route figlie di questa, quindi
+  // Index resta MONTATA mentre l'utente è nelle impostazioni — scheda
+  // attiva, scroll e cache dati sopravvivono all'andata e al ritorno.
+  // Prima erano route separate: uscendo, l'intera app si smontava e si
+  // rimontava da zero (skeleton + stato perso), sembrava un reload.
+  const isSettingsRoute = useLocation().pathname.startsWith("/app/impostazioni");
+
+  // Memoria continua dello scroll: catturata a ogni scorrimento (finestra o
+  // content-card desktop — capture prende entrambi) per poter salvare la
+  // posizione anche un istante prima che la shell venga sostituita.
+  const liveScrollRef = useRef(0);
+  useEffect(() => {
+    const onScroll = () => {
+      liveScrollRef.current = getAppScrollTop();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    return () => window.removeEventListener("scroll", onScroll, { capture: true });
+  }, []);
+
+  const wasSettingsRef = useRef(false);
+  useEffect(() => {
+    if (isSettingsRoute) {
+      // all'ingresso: congela la posizione della stanza che si sta lasciando
+      if (!wasSettingsRef.current) scrollPositions.current[activeTab] = liveScrollRef.current;
+    } else if (wasSettingsRef.current) {
+      // di ritorno: la stanza riapre DOV'ERA
+      setAppScrollTop(scrollPositions.current[activeTab]);
+    }
+    wasSettingsRef.current = isSettingsRoute;
+  }, [isSettingsRoute, activeTab]);
+
+  // Le impostazioni sostituiscono la shell, non l'app: si saltano anche i
+  // cancelli di sotto (splash/onboarding), che parlano solo della stanza.
+  if (isSettingsRoute) return <Outlet />;
 
   if (splash.showSplash) {
     return <SplashScreen leaving={splash.leaving} />;

@@ -151,7 +151,7 @@ describe("P38 — navigazione progressiva del corso", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("P42 SheetDrawer: backdrop sfocato, X fissa in alto a destra, chiude tutto", () => {
+  it("P42 SheetDrawer: stesso velo del doc di caricamento, X fissa in alto a destra, chiude tutto", () => {
     const onClose = vi.fn();
     const { container } = render(
       <SheetDrawer title="Interrogazione" step="select" onClose={onClose}>
@@ -160,8 +160,12 @@ describe("P38 — navigazione progressiva del corso", () => {
     );
     const dialog = screen.getByRole("dialog", { name: "Interrogazione" });
     const backdrop = dialog.firstElementChild as HTMLElement;
-    expect(backdrop.className).toMatch(/bg-black\/50/); // overlay semitrasparente (mai nero pieno)
-    expect(backdrop.className).toMatch(/backdrop-blur-md/); // sfocato: lo Studio resta visibile sotto
+    // decisione proprietario (7 ottobre 2026): il velo è lo STESSO del doc di
+    // caricamento materiali — scrim al 40% + sfocatura leggera (blur-sm),
+    // mai nero pieno né vetro pesante
+    expect(backdrop.className).toMatch(/bg-scrim\/40/);
+    expect(backdrop.className).toMatch(/backdrop-blur-sm/);
+    expect(backdrop.className).not.toMatch(/bg-black\/50/);
     const sheet = dialog.children[1] as HTMLElement;
     expect(sheet.className).toMatch(/h-\[100dvh\]/); // foglio alto quanto il viewport
     expect(sheet.className).toMatch(/rounded-t-/); // bordi superiori stondati
