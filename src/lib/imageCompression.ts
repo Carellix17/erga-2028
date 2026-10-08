@@ -6,6 +6,11 @@
 
 export const MAX_IMAGE_SIDE = 2000;
 export const IMAGE_QUALITY = 0.82;
+// 📱 P19: HEIC/HEIF non comprimibili dal browser (canvas non li decodifica):
+// passano originali con un tetto dedicato più alto (l'analisi AI li regge).
+export const MAX_HEIC_IMAGE_BYTES = 14 * 1024 * 1024;
+export const isHeicFile = (f: File) =>
+  f.type === "image/heic" || f.type === "image/heif" || /\.hei[cf]$/i.test(f.name);
 
 export interface CompressionResult {
   file: File;

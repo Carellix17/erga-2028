@@ -6,8 +6,39 @@ import { mammothHtmlToMarkdown } from "../_shared/docxMarkdown.ts";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024; // limite morbido per singola foto (dopo compressione client)
+// 📱 P19: HEIC/HEIF di iPhone spesso non sono comprimibili dal browser (canvas
+// non li decodifica): passano originali, e 8 MB sono troppo pochi per una foto
+// 48MP non ricodificata. Tetto dedicato più alto (l'analisi AI li regge).
+const MAX_HEIC_IMAGE_SIZE = 14 * 1024 * 1024;
+const isHeicFile = (f: File) =>
+  f.type === "image/heic" || f.type === "image/heif" || /\.hei[cf]$/i.test(f.name);
 const MAX_IMAGES = 20;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+
+// 🩺 P7: il vecchio trigger era un solo colpo fire-and-forget — un blip di
+// rete e il materiale restava "in elaborazione" PER SEMPRE. Ora si ritenta
+// una volta prima di arrendersi (il resto lo cura l'azione "reprocess"
+// di extract-pdf, che il client può richiedere all'utente).
+async function triggerBackgroundProcessing(
+  processUrl: string,
+  serviceKey: string,
+  body: Record<string, unknown>,
+): Promise<void> {
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const resp = await fetch(processUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${serviceKey}` },
+        body: JSON.stringify(body),
+      });
+      if (resp.ok) return;
+      console.error(`[P7] trigger elaborazione: HTTP ${resp.status} (tentativo ${attempt}/2)`);
+    } catch (err) {
+      console.error(`[P7] trigger elaborazione: rete giù (tentativo ${attempt}/2)`, err);
+    }
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 800));
+  }
+}
 
 // 📄 P17 — il lettore universale: oltre al PDF, anche DOCX, TXT e MD.
 type FileKind = "pdf" | "docx" | "text";
@@ -72,8 +103,10 @@ async function extractPdfText(bytes: Uint8Array): Promise<string> {
     try {
       const page = await doc.getPage(i);
       const textContent = await page.getTextContent();
+      // 🗺️ P8: stessi marcatori dell'estrattore principale — senza, gli allegati
+      // PDF nascevano senza mappa pagine (niente page_start/page_end, zero figure).
       // deno-lint-ignore no-explicit-any
-      pages.push(textContent.items.map((it: any) => (it && typeof it.str === "string" ? it.str : "")).join(" "));
+      pages.push(`=== PAGINA ${i} ===\n${textContent.items.map((it: any) => (it && typeof it.str === "string" ? it.str : "")).join(" ")}`);
     } catch (e) {
       console.error(`pdfjs: pagina ${i} saltata a piè pari:`, e);
     }
@@ -122,10 +155,11 @@ serve(withCors(async (req) => {
 
     if (uploadType === "images") {
       // Multi-image upload flow
+      // 🧹 P17: si leggono tutti i campi image_* (il vecchio loop si fermava a
+      // 20 e rendeva il controllo qui sotto irraggiungibile).
       const imageFiles: File[] = [];
-      for (let i = 0; i < MAX_IMAGES; i++) {
-        const img = formData.get(`image_${i}`) as File | null;
-        if (img) imageFiles.push(img);
+      for (const [key, value] of formData.entries()) {
+        if (key.startsWith("image_") && value instanceof File) imageFiles.push(value);
       }
 
       if (imageFiles.length === 0) {
@@ -145,9 +179,12 @@ serve(withCors(async (req) => {
           return errorResponse(`Immagine troppo grande: ${img.name}. Max 100MB.`, 400);
         }
         // Limite morbido: dopo la compressione lato client una foto non dovrebbe mai superare gli 8 MB.
-        if (img.size > MAX_IMAGE_SIZE) {
+        // 📱 P19: per HEIC/HEIF (spesso non comprimibili dal browser) il tetto è 14 MB.
+        const sizeLimit = isHeicFile(img) ? MAX_HEIC_IMAGE_SIZE : MAX_IMAGE_SIZE;
+        if (img.size > sizeLimit) {
+          const limitMb = Math.round(sizeLimit / 1024 / 1024);
           return errorResponse(
-            `La foto «${img.name}» pesa ${(img.size / 1024 / 1024).toFixed(1)} MB: troppo per l'elaborazione. Riprova a selezionarla dall'app (le foto vengono ottimizzate automaticamente) oppure scattala con una risoluzione più bassa. Limite: 8 MB per foto.`,
+            `La foto «${img.name}» pesa ${(img.size / 1024 / 1024).toFixed(1)} MB: troppo per l'elaborazione. Riprova a selezionarla dall'app (le foto vengono ottimizzate automaticamente) oppure scattala con una risoluzione più bassa. Limite: ${limitMb} MB per foto.`,
             400,
           );
         }
@@ -205,16 +242,9 @@ serve(withCors(async (req) => {
         return dbError.message?.includes("FREE_COURSE_LIMIT") ? errorResponse("FREE_COURSE_LIMIT: Con il piano Free puoi creare al massimo 10 corsi a settimana. Passa a Pro per corsi illimitati.", 402) : errorResponse("Errore nel salvataggio");
       }
 
-      // Start async processing for images
+      // Start async processing for images (🩺 P7: con ritento interno)
       const processUrl = `${supabaseUrl}/functions/v1/extract-pdf`;
-      fetch(processUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${supabaseServiceKey}`,
-        },
-        body: JSON.stringify({ action: "process-images", contextId: context.id }),
-      }).catch(err => console.error("Background image processing trigger failed:", err));
+      void triggerBackgroundProcessing(processUrl, supabaseServiceKey, { action: "process-images", contextId: context.id });
 
       console.log(`Context created: ${context.id}, image processing started`);
 
@@ -306,7 +336,9 @@ serve(withCors(async (req) => {
         .eq("id", attachId);
       if (updErr) {
         await supabase.storage.from("study-pdfs").remove([filePath]);
-        return dbError.message?.includes("FREE_COURSE_LIMIT") ? errorResponse("FREE_COURSE_LIMIT: Con il piano Free puoi creare al massimo 10 corsi a settimana. Passa a Pro per corsi illimitati.", 402) : errorResponse("Errore nel salvataggio");
+        // 🧹 P15: qui si leggeva "dbError" (variabile dichiarata più sotto:
+        // ReferenceError mascherato dal generico "Errore durante il caricamento").
+        return updErr.message?.includes("FREE_COURSE_LIMIT") ? errorResponse("FREE_COURSE_LIMIT: Con il piano Free puoi creare al massimo 10 corsi a settimana. Passa a Pro per corsi illimitati.", 402) : errorResponse("Errore nel salvataggio");
       }
       console.log(`File ${file.name} allegato al percorso ${attachId} (+${newText.length} caratteri)`);
       return successResponse({ success: true, contextId: attachId, attached: true, fileName: file.name });
@@ -391,14 +423,8 @@ serve(withCors(async (req) => {
     }
 
     const processUrl = `${supabaseUrl}/functions/v1/extract-pdf`;
-    fetch(processUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${supabaseServiceKey}`,
-      },
-      body: JSON.stringify({ action: "process", contextId: context.id }),
-    }).catch(err => console.error("Background processing trigger failed:", err));
+    // 🩺 P7: con ritento interno — un blip di rete non lascia più il materiale appeso.
+    void triggerBackgroundProcessing(processUrl, supabaseServiceKey, { action: "process", contextId: context.id });
 
     console.log(`Context created: ${context.id}, processing started`);
 

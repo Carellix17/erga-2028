@@ -17,6 +17,7 @@ import { FocusPill } from "@/components/focus/FocusPill";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { prepareLessonExercises } from "@/lib/lessonExercises";
 import { readLessonResume, saveLessonResume, clearLessonResume } from "@/lib/lessonResume";
+import { parseExplanationParts, type ExplanationPart } from "@/lib/lessonParts";
 
 /**
  * FullscreenLesson — lettore della lezione (pilota V2-01, DESIGN.md 2.1 §13).
@@ -42,12 +43,7 @@ function CalloutBlockquote({ children }: { children?: React.ReactNode }) {
   );
 }
 
-interface ExplanationPart {
-  part_title: string;
-  content: string;
-  image_description?: string;
-  image_url?: string;
-}
+// 🧺 P18: ExplanationPart e il parser delle parti vivono in @/lib/lessonParts.
 
 interface FullscreenLessonProps {
   lesson: {
@@ -76,49 +72,8 @@ interface Step {
   explanationPartIndex?: number;
 }
 
-/** Titoli di riserva quando l'AI non ha fornito titoli di parte:
- * tradotti dalla chiamante (i18n), con valore neutro per usi diretti. */
-const FALLBACK_LABELS = { explanation: "Spiegazione", part: (n: number) => `Parte ${n}` };
-
-function parseExplanationParts(
-  explanation: string,
-  labels: { explanation: string; part: (n: number) => string } = FALLBACK_LABELS,
-): ExplanationPart[] {
-  try {
-    const parsed = JSON.parse(explanation);
-    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].part_title) {
-      return parsed;
-    }
-  } catch { /* not JSON */ }
-
-  const lines = explanation.split(/\n/).filter(l => l.trim());
-  if (lines.length <= 1) {
-    return [{ part_title: labels.explanation, content: explanation }];
-  }
-
-  const parts: ExplanationPart[] = [];
-  let currentContent = "";
-  let partIndex = 0;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith("•") || trimmed.startsWith("-") || trimmed.startsWith("*")) {
-      if (currentContent) {
-        parts.push({ part_title: labels.part(partIndex + 1), content: currentContent.trim() });
-        partIndex++;
-      }
-      currentContent = trimmed.replace(/^[•\-*]\s*/, "");
-    } else {
-      currentContent += (currentContent ? "\n" : "") + trimmed;
-    }
-  }
-  if (currentContent) {
-    parts.push({ part_title: labels.part(partIndex + 1), content: currentContent.trim() });
-  }
-
-  return parts.length > 0 ? parts : [{ part_title: labels.explanation, content: explanation }];
-}
-
+// 🧺 P18 (7 ottobre 2026): il parsing delle parti vive in @/lib/lessonParts
+// (funzione pura, testata da src/test/lessonParts.test.ts).
 function buildSteps(explanationParts: ExplanationPart[], exercises: Exercise[], hasExample: boolean): Step[] {
   const steps: Step[] = [{ type: "concept" }];
   explanationParts.forEach((_, i) => {

@@ -115,7 +115,10 @@ serve(withCors(async (req) => {
             const arrayBuffer = await fileData.arrayBuffer();
             const base64 = uint8ToBase64(new Uint8Array(arrayBuffer));
             const ext = imgPath.split(".").pop()?.toLowerCase() || "jpg";
-            const mimeType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+            const mimeType = ext === "png" ? "image/png"
+              : ext === "webp" ? "image/webp"
+              : ext === "heic" || ext === "heif" ? "image/heic"
+              : "image/jpeg";
             imageContents.push({ base64, mimeType });
           }
 
@@ -199,26 +202,17 @@ serve(withCors(async (req) => {
       }
     }
 
-    // Action: process
-    if (action === "process" && contextId) {
-      console.log(`Processing PDF for context: ${contextId}`);
-      
-      const { data: context, error: fetchError } = await supabase
-        .from("study_contexts")
-        .select("*")
-        .eq("id", contextId)
-        .single();
-
-      if (fetchError || !context) {
-        console.error("Context not found:", fetchError);
-        return errorResponse("Contesto non trovato", 404);
-      }
-
-      if (context.user_id !== userId) {
-        console.error(`Unauthorized access attempt for context ${contextId}`);
-        return errorResponse("Non autorizzato", 403);
-      }
-
+    // 🩺 P7 (7 ottobre 2026) — IL MOTORE DI ELABORAZIONE, condiviso dall'azione
+    // interna "process" (chiamata da upload-pdf con la chiave di servizio) e
+    // dalla nuova azione "reprocess" (utente autenticato): chi si ritrova il
+    // materiale "in elaborazione" per sempre — perché il lavoro in background
+    // è morto per un blip di rete — ora può ripartire da solo. Il client
+    // supabase è quello giusto per entrambi i casi (chiusura lessicale).
+    const processContext = async (
+      context: { id: string; user_id: string; file_path: string; processing_status?: string },
+    ): Promise<Response> => {
+      const contextId = String(context.id);
+      const userId = String(context.user_id);
       await supabase
         .from("study_contexts")
         .update({ processing_status: "processing" })
@@ -298,6 +292,7 @@ serve(withCors(async (req) => {
           ? processError.message === "FILE_DOWNLOAD_ERROR" ? "Impossibile scaricare il file"
           : processError.message === "INSUFFICIENT_TEXT" ? "Impossibile estrarre testo sufficiente dal PDF. Il file potrebbe essere un'immagine o protetto."
           : processError.message === "AI_CONFIG_ERROR" ? "Configurazione AI mancante"
+          : processError.message === "PDF_TOO_LARGE_FOR_VISION" ? "Il PDF scansionato è troppo grande per l'analisi AI (massimo ~18 MB). Esporta una versione più leggera o usa la versione con testo selezionabile."
           : processError.message === "AI_PROCESSING_ERROR" ? "Servizio AI temporaneamente occupato. Riprova tra qualche minuto."
           : processError.message === "DATABASE_ERROR" ? "Errore nel salvataggio"
           : "Errore durante l'elaborazione del PDF"
@@ -314,6 +309,55 @@ serve(withCors(async (req) => {
 
         return errorResponse(userMessage);
       }
+    };
+
+    // Action: process (chiamata interna da upload-pdf, chiave di servizio)
+    if (action === "process" && contextId) {
+      console.log(`Processing PDF for context: ${contextId}`);
+
+      const { data: context, error: fetchError } = await supabase
+        .from("study_contexts")
+        .select("*")
+        .eq("id", contextId)
+        .single();
+
+      if (fetchError || !context) {
+        console.error("Context not found:", fetchError);
+        return errorResponse("Contesto non trovato", 404);
+      }
+
+      if (context.user_id !== userId) {
+        console.error(`Unauthorized access attempt for context ${contextId}`);
+        return errorResponse("Non autorizzato", 403);
+      }
+
+      return processContext(context);
+    }
+
+    // 🩺 P7 — RIPROVA ANALISI (utente autenticato): per il materiale rimasto
+    // appeso in "pending"/"processing" per un lavoro morto. Se era già pronto,
+    // non si rifà nulla (no-op). NOTA: se l'elaborazione originale è VIVA e
+    // soltanto lenta, questo può farla partire due volte: l'esito finale è
+    // comunque un contenuto completo (l'ultima scrittura vince), e il client
+    // lo chiede solo quando l'attesa dura davvero troppo.
+    if (action === "reprocess" && contextId) {
+      const { data: context, error: fetchError } = await supabase
+        .from("study_contexts")
+        .select("*")
+        .eq("id", contextId)
+        .maybeSingle();
+
+      if (fetchError || !context) {
+        return errorResponse("Contesto non trovato", 404);
+      }
+      if (context.user_id !== userId) {
+        return errorResponse("Non autorizzato", 403);
+      }
+      if (context.processing_status === "completed") {
+        return successResponse({ success: true, alreadyCompleted: true, contextId });
+      }
+      console.log(`[P7] reprocess richiesto dall'utente per ${contextId} (status precedente: ${String(context.processing_status)})`);
+      return processContext(context);
     }
 
     // Action: register
@@ -469,6 +513,13 @@ async function extractTextWithGeminiPdfVision(pdfBytes: Uint8Array): Promise<str
   const apiKey = Deno.env.get("ERGA_GEMINI_KEY_APRIL") || Deno.env.get("ERGA_DEMO_ROUTER");
   if (!apiKey) throw new Error("AI_CONFIG_ERROR");
 
+  // 📏 P13: l'API rifiuta i PDF inline oltre ~20 MB: prima si finiva in un
+  // errore AI generico ("servizio occupato"). Soglia onesta a 18 MB.
+  if (pdfBytes.length > 18 * 1024 * 1024) {
+    console.warn(`[P13] PDF scansionato di ${(pdfBytes.length / 1048576).toFixed(1)} MB: oltre il tetto dell'analisi AI`);
+    throw new Error("PDF_TOO_LARGE_FOR_VISION");
+  }
+
   let binary = "";
   const chunkSize = 0x8000;
   for (let i = 0; i < pdfBytes.length; i += chunkSize) {
@@ -499,7 +550,8 @@ REGOLE OBBLIGATORIE:
       }],
       generationConfig: {
         temperature: 0,
-        maxOutputTokens: 20000,
+        // 📏 P13: 20000 token tronavano i libri scansionati lunghi a metà.
+        maxOutputTokens: 30000,
       },
     };
 
@@ -525,6 +577,14 @@ REGOLE OBBLIGATORIE:
   }
 
   if (!data) throw new Error("AI_PROCESSING_ERROR");
+
+  // 📏 P13: se l'AI si è fermata per il tetto di token, la trascrizione è
+  // PARZIALE: si accetta comunque (meglio un pezzo di libro che niente) ma
+  // si lascia la traccia nei log per saperlo.
+  const finishReason = data.candidates?.[0]?.finishReason;
+  if (finishReason === "MAX_TOKENS") {
+    console.warn("[P13] trascrizione AI del PDF troncata dal tetto di token: il materiale sarà parziale");
+  }
 
   const text = data.candidates?.[0]?.content?.parts
     ?.map((part: { text?: string }) => part.text || "")

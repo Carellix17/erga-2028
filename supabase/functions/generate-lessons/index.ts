@@ -578,6 +578,14 @@ ${studyContent}`;
 
       if (!lessons) throw new Error("Lezione non trovata");
 
+      // ♻️ P12 (7 ottobre 2026) — IDEMPOTENZA: se la lezione è già generata
+      // (con contenuto vero), si restituisce com'è. Un retry di rete del
+      // client non deve rifare il lavoro AI (doppio costo, doppio conteggio
+      // d'uso). La rigenerazione esplicita resta possibile: il client azzera
+      // is_generated PRIMA di richiamare questa azione. Bonus: le vecchie
+      // lezioni vuote (is_generated=true ma explanation vuota, il bug P1)
+      // cadono nel flusso normale e si rigenerano da sole al primo tocco.
+
       // ── RATE LIMIT (BETA) ──
       // Verifica se la lezione appartiene a un contesto demo: in tal caso la
       // generazione è gratuita e NON conta nel limite (le demo sono di sola lettura
@@ -607,12 +615,20 @@ ${studyContent}`;
       
 
       // 🛡️ P10b: se il modulo di questa lezione è in fabbrica, non accavallare lavori.
+      // 🚦 P11 (7 ottobre 2026): anche il PRIMO MODULO CALDO della generazione
+      // del percorso è protetto: prima, una richiesta singola poteva partire
+      // in parallelo alla nascita del percorso (doppio lavoro, doppio conteggio).
       if (lessons.context_id) {
         const { data: ctxJob } = await supabase
           .from("study_contexts")
-          .select("generation_progress")
+          .select("generation_status, generation_started_at, generation_progress")
           .eq("id", lessons.context_id)
           .maybeSingle();
+        const genStatus = (ctxJob as { generation_status?: string } | null)?.generation_status;
+        const genStarted = (ctxJob as { generation_started_at?: unknown } | null)?.generation_started_at;
+        if (genStatus === "generating" && !isStaleGeneration(genStarted)) {
+          return errorResponse("Il percorso è ancora in costruzione. Ti avvisiamo noi quando è pronto! ⏳", 409);
+        }
         const mg = ((ctxJob as any)?.generation_progress as any)?.moduleGeneration as { moduleIndex?: number; startedAt?: unknown } | undefined;
         if (mg && typeof mg.moduleIndex === "number" && Math.floor(lessonIndex / MODULE_SIZE) === mg.moduleIndex) {
           if (isStaleGeneration(mg.startedAt)) {

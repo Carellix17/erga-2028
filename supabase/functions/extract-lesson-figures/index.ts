@@ -417,7 +417,7 @@ serve(withCors(async (req) => {
       // divide quasi per 4-6. Gli indici arrivano dal client, quindi l'ordine
       // non rischia disallineamenti; i fallimenti restano tollerati come prima.
       type CropResult = { id: string; page: number; bbox: FigureBox; url: string; description: string };
-      const attempts = await Promise.all(crops.map(async (crop): Promise<CropResult | null> => {
+      const attempts = await Promise.all(crops.slice(0, 3).map(async (crop): Promise<CropResult | null> => {
         if (!crop || typeof crop.b64Crop !== "string" || !crop.bbox) return null;
         const storagePath = `lesson-figures/${lessonId}/p${crop.pageNum}_f${crop.figureIndex}.jpg`;
         const bytes = base64ToBytes(crop.b64Crop);
@@ -546,10 +546,24 @@ serve(withCors(async (req) => {
     }
 
     console.log(`Detected ${detectedBoxes.length} bounding boxes for lesson ${lessonId}`);
+
+    // 🎯 P14 (7 ottobre 2026) — ALLINEAMENTO AI TOKEN PROMESSI: il generatore
+    // della lezione ha promesso all'AI un numero preciso di figure
+    // ([FIG:0]…[FIG:k-1], con k = min(3, pagine della lezione)). Restituire
+    // TUTTI i riquadli trovati (fino a 6 pagine × 3) costava upload e storage
+    // per figure orfane mai referenziate. Si spediscono solo quelle promesse.
+    const pagesCovered = lesson.page_start != null && lesson.page_end != null
+      ? (lesson.page_end - lesson.page_start + 1)
+      : 0;
+    const maxFigs = Math.max(1, Math.min(3, pagesCovered > 0 ? pagesCovered : 3));
+    const cappedBoxes = detectedBoxes.slice(0, maxFigs);
+    if (cappedBoxes.length < detectedBoxes.length) {
+      console.log(`[P14] ${detectedBoxes.length} riquadli trovati, ${cappedBoxes.length} promessi alla lezione: ne invio ${cappedBoxes.length}`);
+    }
     return successResponse({
       figures: [],
       cached: false,
-      detectedBoxes,
+      detectedBoxes: cappedBoxes,
       phase: "detection",
     });
   } catch (error) {

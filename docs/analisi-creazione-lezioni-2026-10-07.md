@@ -27,7 +27,21 @@
 - ✅ **Bug trovato nella revisione di oggi e corretto**: lo spazzino P4, nel percorso `generateModule`, non azzerava lo stato "generating" stantio → la fabbrica dei moduli, dentro il ciclo, lo scambiava per una rigenerazione in corso e **si fermava dopo la prima lezione** (l'utente col percorso bloccato si ritrovava 1 lezione: il sintomo a di nuovo). Ora lo stato viene azzerato prima di alzare la saracinesca.
 - 🧹 Pulizia preesistente: 14 escape inutili (backslash-virgoletta in template literal) in `subjects.ts`, mai lintati prima perché il file non era mai stato toccato.
 
-**Da fare (prossimi batch, su approvazione):** P7-P14 (elaborazione morta, allegati senza pagine, click ignorato in silenzio, sovrapposizione modulo caldo, retry su POST non idempotenti, PDF scansionati troncati, caccia figure troppo carica), P15, P17-P19.
+**Batch 3 — FATTO (7 ottobre 2026, tutta la coda rimasta: P7-P19):**
+- ✅ **P7** — elaborazione morta: il trigger in background ora ha un ritento interno (upload-pdf); nuova azione `reprocess` in extract-pdf (motore di elaborazione condiviso, autenticata dall'utente); la pipeline unica, se dopo ~2 minuti il materiale è ancora appeso, chiede UNA ripartenza da sola e continua ad aspettare.
+- ✅ **P8** — gli allegati PDF nascono con i marcatori `=== PAGINA N ===` (l'estrattore duplicato in upload-pdf non li metteva: niente mappa pagine, niente figure per quei materiali).
+- ✅ **P9** — il lettore non avanza/apre più su una lezione la cui generazione è fallita (3 guardie: Continua, tap sulla lezione, apertura dal modulo).
+- ✅ **P10** — il click ignorato in silenzio ora lo dice (toast «Sto già preparando un'altra lezione»).
+- ✅ **P11** — il primo modulo caldo è protetto: generateLesson risponde 409 se il percorso è in costruzione (prima si poteva generare in parallelo alla nascita del percorso).
+- ✅ **P12** — generateLesson è idempotente: una lezione già generata (con contenuto) viene restituita com'è, un retry di rete non rifà il lavoro AI. Bonus: le vecchie lezioni vuote del bug P1 si rigenerano da sole al primo tocco.
+- ✅ **P13** — PDF scansionati: tetto onesto a 18 MB con messaggio chiaro (prima: errore AI generico), trascrizione AI da 20k a 30k token, troncamento silenzioso ora loggato.
+- ✅ **P14** — la caccia figure restituisce SOLO le figure promesse alla lezione (min(3, pagine)): niente più ritagli orfani a pagamento di storage.
+- ✅ **P15** — il ramo d'errore degli allegati leggeva una variabile non ancora dichiarata (ReferenceError mascherato): corretto.
+- ✅ **P17** — il controllo «massimo 20 foto» era irraggiungibile: ora legge davvero tutti i campi del form.
+- ✅ **P18** — il parser delle parti della lezione è diventato una lib pura (`src/lib/lessonParts.ts`, 8 test) con cerniera più larga: JSON con forma imperfetta (senza titoli, o pure stringhe) diventa parti con titolo di riserva, niente più JSON grezzo allo studente.
+- ✅ **P19** — HEIC/HEIF di iPhone: tetto dedicato a 14 MB (client + upload-pdf), mime corretto per l'analisi AI (extract-pdf). Prima: rifiutate a 8 MB con consiglio inutile.
+
+**Coda: VUOTA — tutti i 19 problemi dell'analisi sono sistemati.** Eventuali nuovi problemi andranno segnalati e ri-analizzati.
 
 ---
 

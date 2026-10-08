@@ -417,6 +417,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     // 🛑 LIMITE DI CONCORRENZA: una sola richiesta di generazione in volo nell'intera app.
     if (inflightLessonsRef.current.size > 0) {
       console.warn("[generateLessonContent] richiesta ignorata: un'altra è già in corso", { lessonIndex });
+      // 🔔 P10: prima questo rifiuto era MUTO — l'utente premeva e non
+      // succedeva niente. Ora lo si dice.
+      toast({ title: "Un attimo", description: "Sto già preparando un'altra lezione: riprova appena è pronta." });
       return null;
     }
     inflightLessonsRef.current.add(key);
@@ -532,7 +535,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       const newIndex = currentLessonIndex + 1;
       const nextLesson = lessons[newIndex];
       if (!nextLesson) return;
-      if (!nextLesson.is_generated) await generateLessonContent(newIndex);
+      if (!nextLesson.is_generated) {
+        // 🚦 P9: generazione fallita → si resta dov'è (il toast dell'errore
+        // l'ha già detto generateLessonContent), niente lezione vuota.
+        if (!(await generateLessonContent(newIndex))) return;
+      }
       setCurrentLessonIndex(newIndex);
       // Avanzamento reale: persiste il nuovo massimo raggiunto.
       if (newIndex > cachedCurrentIndex) updateProgress.mutate(newIndex);
@@ -561,7 +568,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   const handleSelectLesson = async (index: number) => {
     const selectedLesson = lessons[index];
     if (!selectedLesson) return;
-    if (!selectedLesson.is_generated) await generateLessonContent(index);
+    if (!selectedLesson.is_generated) {
+      // 🚦 P9: se la generazione fallisce, la lezione non si apre vuota.
+      if (!(await generateLessonContent(index))) return;
+    }
     // ⚡ P16: scaldi il pacco di QUELLA lezione mentre la vista cambia —
     // quando il tornello le chiede il contenuto, è (quasi) già sul bancone.
     if (effectiveContextId) {
@@ -751,7 +761,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       await startModuleGeneration(mIdx, { silent: true });
     } else {
       // Vagone parzialmente pronto: ripara solo il buco, come abbiamo sempre fatto.
-      await generateLessonContent(index);
+      // 🚦 P9: riparazione fallita → il vagone non si apre vuoto.
+      const moduleLesson = lessons[index];
+      if (!moduleLesson?.is_generated && !(await generateLessonContent(index))) return;
       setActiveLessonIndex(index);
       if (index > cachedCurrentIndex) updateProgress.mutate(index);
     }

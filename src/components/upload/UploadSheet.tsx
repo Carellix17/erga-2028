@@ -13,7 +13,8 @@ import { fileContextsKey } from "@/hooks/useFileContexts";
 import { supabase } from "@/integrations/supabase/client";
 import { currentLanguage } from "@/i18n";
 import { WikiCandidatePicker, type WikiCandidate } from "./WikiCandidatePicker";
-import { compressImages, formatBytes } from "@/lib/imageCompression";
+import { compressImages, formatBytes, MAX_HEIC_IMAGE_BYTES, isHeicFile } from "@/lib/imageCompression";
+import { edgeFetch } from "@/lib/edgeFetch";
 import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 import { UnifiedPipelineLoader, type PipelinePhase } from "./UnifiedPipelineLoader";
 import { useGenerationUsage, FREE_LIMIT_MESSAGE } from "@/hooks/useGenerationUsage";
@@ -134,13 +135,17 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       await compressQueueRef.current;
       const all = await compressImages(files);
       // Scarta solo le foto troppo pesanti: le altre restano selezionate.
-      const tooBig = all.filter(r => r.compressedBytes > MAX_IMAGE_BYTES);
-      const results = all.filter(r => r.compressedBytes <= MAX_IMAGE_BYTES);
+      // 📱 P19: le HEIC/HEIF non comprimibili dal browser hanno un tetto
+      // dedicato (14 MB); tutto il resto resta a 8 MB.
+      const limitFor = (f: File) => (isHeicFile(f) ? MAX_HEIC_IMAGE_BYTES : MAX_IMAGE_BYTES);
+      const tooBig = all.filter(r => r.compressedBytes > limitFor(r.file));
+      const results = all.filter(r => r.compressedBytes <= limitFor(r.file));
       if (tooBig.length > 0) {
         const names = tooBig.map(r => `«${r.file.name}»`).join(", ");
+        const heicTraLeGrandi = tooBig.some(r => isHeicFile(r.file));
         toast({
           title: tooBig.length === 1 ? "Foto troppo grande" : "Alcune foto sono troppo grandi",
-          description: `${names} ${tooBig.length === 1 ? "supera" : "superano"} gli 8 MB anche dopo la compressione: ${tooBig.length === 1 ? "non è stata aggiunta" : "non sono state aggiunte"}. Scattala di nuovo con una risoluzione più bassa.`,
+          description: `${names} ${tooBig.length === 1 ? "supera" : "superano"} il limite di peso ${heicTraLeGrandi ? "(14 MB per le HEIC non comprimibili)" : "(8 MB)"}: ${tooBig.length === 1 ? "non è stata aggiunta" : "non sono state aggiunte"}. Scattala di nuovo con una risoluzione più bassa o convertila in JPG.`,
           variant: "destructive",
         });
       }
@@ -228,10 +233,20 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       // contenuti web sono già pronti e questo giro dura un istante.
       setPipeline((p) => (p ? { ...p, phase: "analysis", progress: Math.max(p.progress, 38) } : p));
       let analyzed = false;
+      let rekicked = false;
       for (let attempt = 0; attempt < 90; attempt++) {
         const ctx = await fetchPipelineContext(contextId);
         if (ctx?.processing_status === "completed") { analyzed = true; break; }
         if (ctx?.processing_status === "failed") throw new Error(ctx.error_message || "Non sono riuscito a leggere il materiale.");
+        // 🩺 P7 (7 ottobre 2026): dopo ~2 minuti di attesa il lavoro in
+        // background è probabilmente morto (blip di rete sul trigger): si
+        // chiede UNA ripartenza e si continua ad aspettare. L'azione è
+        // no-op se il materiale è già pronto, e non fa nulla di male se
+        // l'elaborazione è solo lenta (l'esito finale è lo stesso).
+        if (!rekicked && attempt === 60) {
+          rekicked = true;
+          try { await edgeFetch("extract-pdf", { action: "reprocess", contextId }); } catch { /* si prosegue comunque */ }
+        }
         setPipeline((p) => (p ? { ...p, progress: Math.min(58, p.progress + 0.7) } : p));
         await sleep(2000);
       }
