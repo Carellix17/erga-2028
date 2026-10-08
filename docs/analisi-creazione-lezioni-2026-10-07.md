@@ -14,14 +14,20 @@
 - ✅ **P4** — spazzino: stati "generating" e lucchetti modulo più vecchi di 10 minuti = lavori morti → si riparte invece di bloccare il percorso per sempre.
 - ✅ **P16** — variabile morta rimossa (già nel codice riscritto).
 
-**Revisione completa del batch 1 (richiesta dal proprietario, stesso giorno):**
-- 🐛 **Trovato e corretto un difetto nel fix stesso**: la rimozione del gradino `:free` (P3c) era andata persa (due modifiche parallele allo stesso file si erano sovrascritte) — il commento diceva "rimosso" ma la catena lo conteneva ancora. Corretto e verificato con grep + test.
+**Revisione completa del batch 1 (richiesta dal proprietario, stesso giorno):**- 🐛 **Trovato e corretto un difetto nel fix stesso**: la rimozione del gradino `:free` (P3c) era andata persa (due modifiche parallele allo stesso file si erano sovrascritte) — il commento diceva "rimosso" ma la catena lo conteneva ancora. Corretto e verificato con grep + test.
 - 🔧 **Riparatore rafforzato**: due protocolli separati (root array ≠ root oggetto) — la prosa con graffe prima del JSON non condanna più l'estrazione (`{a+b}… ecco: {…}`), e l'array troncato non restituisce più il primo item come root. +2 test (suite 690).
 - 🔧 **ai.ts**: il secondo giro con più token non parte se il budget è già al tetto (risparmio di una chiamata inutile).
 - ✅ **Smoke test avversariale** (6 casi con payload da modello vero): lezione LaTeX pesante → formule intatte (\sqrt, \frac, \Delta); titoli con prosa; lezione troncata a metà esercizio → recuperata; lezione vuota → respinta; widget nel contenuto → parsato; graffe in prosa → ignorate.
 - 📋 **Limiti noti e accettati**: lo spazzino P4 usa 10 minuti (allineato all'attesa massima del client); un lavoro LEGITTIMO più lungo di 10 minuti verrebbe considerato morto (il tetto del runtime ~150s lo rende praticamente impossibile); la pulizia dei recinti ``` è globale (comportamento preesistente, non peggiorato).
 
-**Da fare (prossimi batch, su approvazione):** P5+P6 (qualità: tetto massimo ai ritagli-figure, tetto alle formule e verifica a posteriori — sintomo c), P7-P14, P15, P17-P19.
+**Batch 2 — FATTO (7 ottobre 2026, sintomo c: lezioni-mostre e pagine intere come immagini):**
+- ✅ **P5** — tetto massimo ai ritagli in `extract-lesson-figures`: un riquadro che copre più del **60% dell'area della pagina** viene rifiutato (prima c'era solo il tetto minimo del 5%: una pagina intera passava e diventava un'immagine). Le mezze pagina e i diagrammi grandi passano; le foto caricate dallo studente non passano da quel controllo e restano intere per definizione.
+- ✅ **P5-bis** — la promessa delle figure al generatore allineata a ciò che la caccia estrae DAVVERO (tolte «formule» e «riquadri grafici» dall'elenco promesso: la caccia non li estrae).
+- ✅ **P6** — tetti scritti nel prompt scientifico («MASSIMO 4 formule in mostra», nel messaggio di sistema e nella sezione formule) **+ verifica a posteriori**: nuovo `scienceShapeIssues` (puro, in `subjects.ts`) conta formule in mostra e parole; se la lezione sfora (>6 formule $$ o >800 parole) viene **rifatta una volta** col promemoria severo; se sfora ancora si accetta e resta nei log. 6 test nuovi.
+- ✅ **Bug trovato nella revisione di oggi e corretto**: lo spazzino P4, nel percorso `generateModule`, non azzerava lo stato "generating" stantio → la fabbrica dei moduli, dentro il ciclo, lo scambiava per una rigenerazione in corso e **si fermava dopo la prima lezione** (l'utente col percorso bloccato si ritrovava 1 lezione: il sintomo a di nuovo). Ora lo stato viene azzerato prima di alzare la saracinesca.
+- 🧹 Pulizia preesistente: 14 escape inutili (backslash-virgoletta in template literal) in `subjects.ts`, mai lintati prima perché il file non era mai stato toccato.
+
+**Da fare (prossimi batch, su approvazione):** P7-P14 (elaborazione morta, allegati senza pagine, click ignorato in silenzio, sovrapposizione modulo caldo, retry su POST non idempotenti, PDF scansionati troncati, caccia figure troppo carica), P15, P17-P19.
 
 ---
 

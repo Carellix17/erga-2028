@@ -231,7 +231,7 @@ export async function detectSubject(
 // ── 3. LE REGOLE DI SCRITTA SCIENTIFICHE (il vestito di mat/fis/chim) ────────
 
 export const SCIENTIFIC_SYSTEM_MESSAGE =
-  "Sei un docente di materie scientifiche per le superiori. Generi lezioni a SLIDE (6-8 di teoria + 3-4 esercizi) con le FORMULE IN PRIMO PIANO: ogni formula in mostra va scritta in LaTeX con i delimitatori $$ su righe proprie (apertura $$, formula, chiusura $$); i simboli nella prosa con $…$ inline. Mai formule «in parole». Subito dopo ogni formula viene la sua ANATOMIA: cosa significa ogni simbolo e in che unità si misura. Almeno una slide contiene un ESEMPIO SVOLTO passo-passo con numeri concreti e unità di misura. Se un concetto lo richiede, puoi inserire UNA simulazione interattiva (blocco ```widget col solo JSON richiesto). Tono preciso e asciutto: niente aneddoti, niente aggettivi decorativi, niente prosa fumosa. Rispondi ESCLUSIVAMENTE con JSON valido nel formato richiesto.";
+  "Sei un docente di materie scientifiche per le superiori. Generi lezioni a SLIDE (6-8 di teoria + 3-4 esercizi) con le FORMULE IN PRIMO PIANO ma CON TETTO: massimo 4 formule in mostra ($$ su righe proprie) in tutta la lezione, ogni altro simbolo inline con $…$. Ogni formula in mostra va scritta in LaTeX con i delimitatori $$ su righe proprie (apertura $$, formula, chiusura $$); i simboli nella prosa con $…$ inline. Mai formule «in parole». Subito dopo ogni formula viene la sua ANATOMIA: cosa significa ogni simbolo e in che unità si misura. Almeno una slide contiene un ESEMPIO SVOLTO passo-passo con numeri concreti e unità di misura. Se un concetto lo richiede, puoi inserire UNA simulazione interattiva (blocco ```widget col solo JSON richiesto). Tono preciso e asciutto: niente aneddoti, niente aggettivi decorativi, niente prosa fumosa. Rispondi ESCLUSIVAMENTE con JSON valido nel formato richiesto.";
 
 export interface ScientificPromptInput {
   title: string;
@@ -271,6 +271,7 @@ REGOLA DI FOCUS: la lezione tratta SOLO l'argomento del titolo, in profondità.
   - $x$ — l'incognita che vogliamo risolvere
 - Nella prosa usa il matematica inline $...$ per simboli ed espressioni brevi ($v$, $\\Delta t$, $E_k$, $m/s^2$).
 - MAI scrivere una formula "in parole" quando la formula esiste.
+- TETTO TASSATIVO: MASSIMO 4 formule in mostra ($$) in tutta la lezione. Le formule NON sono riempitivi: solo quelle davvero centrali per il concetto vanno in mostra; tutto il resto resta inline con $…$. Una lezione con 10+ formule in mostra è un output ERRATO.
 - Se il concetto non ha formule (es. classificazioni), usa tabelle o elenchi strutturati.
 
 ════════════════════════════════════════
@@ -330,7 +331,7 @@ JSON richiesto (rispetta esattamente questa forma):
     { "part_title": "📚 …", "content": "… formula in mostra con $$ su righe proprie, poi l'anatomia dei simboli …" },
     { "part_title": "🔬 Esempio svolto", "content": "1. …\\n2. …\\n3. **Risultato:** …" },
     { "part_title": "💡 …", "content": "…\\n\\n> ⚠️ …" },
-    { "part_title": "🖐 Prova tu", "content": "Sposta i cursori e osserva cosa cambia:\\n\\n\`\`\`widget\\n{\"type\": \"parabola\", \"a\": 1, \"b\": 0, \"c\": -3, \"caption\": \"Osserva il vertice\"}\\n\`\`\`" },
+    { "part_title": "🖐 Prova tu", "content": "Sposta i cursori e osserva cosa cambia:\\n\\n\`\`\`widget\\n{"type": "parabola", "a": 1, "b": 0, "c": -3, "caption": "Osserva il vertice"}\\n\`\`\`" },
     { "part_title": "🧭 In sintesi", "content": "1. **…**\\n2. **…**\\n3. **…**" }
   ],
   "example": "un caso concreto finale (3-5 frasi), nuovo rispetto alla lezione",
@@ -342,4 +343,30 @@ JSON richiesto (rispetta esattamente questa forma):
 
 MATERIALE DI STUDIO (fonte da rielaborare, MAI da copiare):
 ${input.studyContent}`;
+}
+
+// ── 4) IL VERIFICATORE DELLA FORMA (P6, 7 ottobre 2026) ────────────────
+//
+// 📏 Conta quello che il prompt imponeva ma nessuno controllava: se la
+// lezione scientifica sfora i tetti (formule in mostra, lunghezza
+// complessiva) è una «lezione-mostra». Il chiamante la rifà UNA volta
+// col promemoria severo. Puro (zero Deno): collaudabile da vitest.
+//
+// Tetti: il prompt chiede max 4 formule in mostra e 6-8 slide da 30-60
+// parole (circa 180-480 parole). Il verificatore tollera la 6a formula in
+// mostra e le 800 parole prima di dire "fuori misura": becca i mostri
+// (decine di formule, migliaia di parole) senza rimandare indietro le
+// lezioni normali.
+export function scienceShapeIssues(parts: { content: string }[]): string[] {
+  const issues: string[] = [];
+  let displayFormulas = 0;
+  let words = 0;
+  for (const part of parts) {
+    const c = typeof part?.content === "string" ? part.content : "";
+    displayFormulas += Math.floor((c.match(/\$\$/g) || []).length / 2);
+    words += c.split(/\s+/).filter(Boolean).length;
+  }
+  if (displayFormulas > 6) issues.push(`formule in mostra: ${displayFormulas} (max 6)`);
+  if (words > 800) issues.push(`lunghezza: ${words} parole (max 800)`);
+  return issues;
 }

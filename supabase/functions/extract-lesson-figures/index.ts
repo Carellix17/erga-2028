@@ -110,6 +110,20 @@ function normalizeBox(box: FigureBox, page?: IncomingPage): FigureBox | null {
   // scala, quindi a seconda del formato scelto dall'AI veniva scartato tutto).
   if (width < 5 || height < 5) return null;
 
+  // 🖼️ P5 — TETTO MASSIMO (7 ottobre 2026): un riquadro che copre quasi
+  // tutta la pagina non è una figura, È LA PAGINA (il sintomo «pagine intere
+  // come immagini» segnalato dal proprietario). Oltre il 60% dell'area della
+  // pagina si rifiuta: mezze pagina, poster e diagrammi grandi passano; le
+  // pagine-fotocopia no. (Le foto caricate dallo studente NON passano di qui:
+  // sono intere PER DEFINIZIONE e restano intere.)
+  const areaPct = (width * height) / 100;
+  if (areaPct > 60) {
+    console.warn(
+      `[P5] riquadro rifiutato: copre il ${Math.round(areaPct)}% della pagina (pagina intera, non una figura)`,
+    );
+    return null;
+  }
+
   // Apply small padding so we never crop too tight.
   const padX = width * 0.04;
   const padY = height * 0.04;

@@ -6,6 +6,7 @@ import { buildModulePush, buildPathPush } from "../_shared/modulePush.ts";
 import {
   detectSubject,
   isScientificFamily,
+  scienceShapeIssues,
 } from "../_shared/subjects.ts";
 import { tryOpenRouterText } from "../_shared/openrouter.ts";
 import {
@@ -262,7 +263,7 @@ REGOLE OBBLIGATORIE PER LE FIGURE:
       let figureInstructions = "";
       if (pagesCovered > 0 && expectedFigures > 0) {
         figureInstructions = `\n\nFIGURE DAL PDF (token speciali):
-Il sistema estrarrà automaticamente fino a ${expectedFigures} figure reali (foto, diagrammi, tabelle, schemi, formule, riquadri grafici) dalle pagine ${pageStart}-${pageEnd} del PDF.` + figureRules;
+Il sistema estrarrà automaticamente fino a ${expectedFigures} figure reali (foto, diagrammi, tabelle, schemi, grafici, mappe) dalle pagine ${pageStart}-${pageEnd} del PDF.` + figureRules;
       } else if (expectedFigures > 0) {
         const list = sourceImages.map((img, i) => `[FIG:${i}] → ${img.description}`).join("\n");
         figureInstructions = `\n\nIMMAGINI REALI DISPONIBILI (token speciali):
@@ -433,8 +434,38 @@ ${studyContent}`;
       // Se l'AI ha risposto con un JSON senza parti (o con parti vuote), NON
       // si salva niente: si lancia un errore esplicito, così il chiamante
       // ritenta (modulo caldo / fabbrica) o l'utente vede il messaggio giusto.
-      const normalized = normalizeLessonPayload(lessonData);
+      let normalized = normalizeLessonPayload(lessonData);
       if (!normalized) throw new Error(EMPTY_AI_LESSON_MESSAGE);
+
+      // 📏 P6 — LA VERIFICA A POSTERIORI (7 ottobre 2026): il prompt
+      // scientifico impone un tetto a formule in mostra e lunghezza, ma
+      // nessuno controllava che la risposta lo rispettasse — nascevano le
+      // «lezioni-mostre». Se sfora, si rifà UNA volta col promemoria severo;
+      // se sfora ancora, si accetta (best effort) e lo si lascia nei log.
+      if (scientific && normalized.explanationParts) {
+        const issues = scienceShapeIssues(normalized.explanationParts);
+        if (issues.length > 0) {
+          console.warn(`[P6] lezione scientifica fuori misura (${issues.join("; ")}): la rifaccio più asciutta`);
+          try {
+            const retryContent = await callLessonAI(
+              [
+                { role: "system", content: familySystemMessage(subjectFamily) ?? FINANZ_SYSTEM_MESSAGE },
+                {
+                  role: "user",
+                  content: prompt + `\n\n⚠️ LIMITE TASSATIVO (la risposta precedente lo superava: ${issues.join("; ")}): MASSIMO 4 formule in mostra $$ in tutta la lezione, ogni altro simbolo inline $…$; 6-8 slide da 30-60 parole ciascuna. Riscrivi la lezione rispettando i limiti.`,
+                },
+              ],
+              lessonTemperature(subjectFamily),
+              7000,
+              scientific,
+            );
+            const retryNorm = normalizeLessonPayload(extractJsonRobust(retryContent));
+            if (retryNorm) normalized = retryNorm;
+          } catch (retryErr) {
+            console.warn("[P6] retry fuori misura fallito: tengo la prima versione:", retryErr);
+          }
+        }
+      }
 
       let explanation = normalized.explanation;
       let explanationParts = (normalized.explanationParts ?? []) as Record<string, unknown>[];
@@ -626,6 +657,14 @@ ${studyContent}`;
       }
       if (ctx.generation_status === "generating") {
         console.warn(`[P4] percorso ${contextId} "generating" stantio: considero il lavoro morto e riparto`);
+        // ⚠️ Il lavoro morto lasciava lo stato "generating" appeso: la
+        // fabbrica, dentro il ciclo, lo leggerebbe come "è partita una
+        // rigenera" e si FERMEREBBE dopo la prima lezione. Si azzera QUI,
+        // prima di alzare la saracinesca del modulo.
+        await supabase
+          .from("study_contexts")
+          .update({ generation_status: "idle" })
+          .eq("id", contextId);
       }
       const gp = ((ctx as { generation_progress?: unknown }).generation_progress ?? {}) as Record<string, unknown>;
       const gpJob = gp.moduleGeneration as { startedAt?: unknown } | undefined;
