@@ -35,6 +35,7 @@ export async function edgeFetch<T = unknown>(
   const maxAttempts = 6;
   const maxNetworkAttempts = 3;
   let lastErr: unknown = null;
+  let refreshedAfter401 = false;
 
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -47,6 +48,18 @@ export async function edgeFetch<T = unknown>(
         if (TRANSIENT_STATUSES.has(res.status) && attempt < maxAttempts) {
           await sleep(300 * Math.pow(2, attempt - 1));
           continue;
+        }
+        if (res.status === 401 && !refreshedAfter401 && session) {
+          // Token rifiutato (scaduto/ruotato in un'altra scheda): un solo
+          // rinnovo + ritento prima di dichiarare la sessione morta.
+          refreshedAfter401 = true;
+          const { data: r, error: rErr } = await supabase.auth.refreshSession();
+          if (!rErr && r.session) {
+            session = r.session;
+            (init.headers as Record<string, string>).Authorization = `Bearer ${r.session.access_token}`;
+            attempt--;
+            continue;
+          }
         }
         if (res.status === 401) {
           // Session is truly dead — clear it so the app redirects to /login

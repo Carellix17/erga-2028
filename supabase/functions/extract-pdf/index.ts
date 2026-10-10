@@ -357,6 +357,24 @@ serve(withCors(async (req) => {
         return successResponse({ success: true, alreadyCompleted: true, contextId });
       }
       console.log(`[P7] reprocess richiesto dall'utente per ${contextId} (status precedente: ${String(context.processing_status)})`);
+      // 📷 Le foto NON passano dal motore PDF: file_path è una lista di
+      // immagini. Se il lavoro foto è in corso (anche solo lento) non lo si
+      // tocca; se non è mai partito, si rilancia il ramo "process-images".
+      const srcPaths = String(context.file_path || "").split(",").map((p) => p.trim()).filter(Boolean);
+      const isPdfContext = srcPaths.length === 1 && srcPaths[0].toLowerCase().endsWith(".pdf");
+      if (!isPdfContext) {
+        if (context.processing_status === "processing") {
+          return successResponse({ success: true, stillRunning: true, contextId });
+        }
+        const kick = fetch(`${supabaseUrl}/functions/v1/extract-pdf`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseServiceKey}` },
+          body: JSON.stringify({ action: "process-images", contextId }),
+        }).catch((e) => console.error("[P7] rilancio process-images fallito:", e));
+        // @ts-ignore — EdgeRuntime è iniettato dal runtime
+        if (typeof EdgeRuntime !== "undefined" && typeof EdgeRuntime.waitUntil === "function") EdgeRuntime.waitUntil(kick);
+        return successResponse({ success: true, restarted: "images", contextId });
+      }
       return processContext(context);
     }
 
