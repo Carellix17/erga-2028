@@ -195,7 +195,10 @@ function closeDanglingBrackets(s: string): string {
     if (ch === "{" || ch === "[") stack.push(ch);
     else if (ch === "}" || ch === "]") stack.pop();
   }
+  // Risposta tagliata DENTRO una stringa: prima si chiude la stringa
+  // (togliendo un eventuale backslash orfano), poi le parentesi.
   let out = s;
+  if (inStr) out = (esc ? out.slice(0, -1) : out) + '"';
   for (let i = stack.length - 1; i >= 0; i--) out += stack[i] === "{" ? "}" : "]";
   return out;
 }

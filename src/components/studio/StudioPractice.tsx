@@ -3,6 +3,7 @@ import { useEffect, useRef, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { CourseCardBackground } from "./CourseCardBackground";
+import { courseCoverVars } from "@/lib/courseIdentity";
 
 /**
  * StudioPractice — accessi rapidi alla pratica dalla Home Studio.
@@ -142,8 +143,7 @@ export function ModuleHeaderCard({ courseTitle, moduleIndex, moduleTitle, subjec
       layout
       layoutId={layoutId}
       transition={{ layout: { type: "spring", stiffness: 300, damping: 25 } }}
-      data-auto-contrast
-      style={{ "--ambient-block-ink": subjectColor } as CSSProperties}
+      style={{ "--ambient-block-ink": subjectColor, ...courseCoverVars(courseTitle || moduleTitle).style } as CSSProperties}
       className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2"
     >
       {/* Stessi orbs di scena della hero: luci libere sul colore materia */}
