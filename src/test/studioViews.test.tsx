@@ -127,7 +127,9 @@ describe("P38 — navigazione progressiva del corso", () => {
     );
     const card = container.firstElementChild as HTMLElement;
     // stessa superficie della hero: layoutId per il morph, stesso bordo
-    expect(card.hasAttribute("data-auto-contrast")).toBe(true); // inchiostro a contrasto automatico
+    // inchiostro dichiarato dalla copertina (come CourseCard/PathHero), non misurato
+    expect(card.hasAttribute("data-auto-contrast")).toBe(false);
+    expect(card.getAttribute("style")).toContain("--contrast-ink");
     expect(card.className).toMatch(/rounded-card/);
     expect(card.className).toMatch(/border-inverse-on-surface\/15/);
     // il colore materia arriva come variabile (stessa usata dalla hero)
