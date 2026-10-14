@@ -351,7 +351,7 @@ export function PathHero({
           <Icon className="w-3.5 h-3.5" strokeWidth={2} />
           Percorso
         </p>
-        <h3 className="mt-1.5 font-display font-extrabold text-base sm:text-lg leading-snug break-words text-contrast">
+        <h3 className="mt-1.5 font-display font-semibold text-base sm:text-lg leading-snug break-words text-contrast">
           {courseDisplayName(course.file_name)}
         </h3>
         {meta && <p className="text-xs mt-1 text-contrast-secondary">{meta}</p>}
@@ -464,7 +464,7 @@ export function PathHero({
       </div>
 
       {/* Titolo: nome intero — usa text-contrast per garantire visibilità su card scura in light mode */}
-      <h2 className="mt-2 font-display font-extrabold text-xl sm:text-2xl leading-snug break-words pr-1 text-contrast">
+      <h2 className="mt-2 font-display font-semibold text-xl sm:text-2xl leading-snug break-words pr-1 text-contrast">
         {title ?? "Il tuo percorso"}
       </h2>
 
@@ -488,7 +488,7 @@ export function PathHero({
             <p className="text-sm text-contrast-secondary">
               {completedCount} di {totalLessons} lezioni
             </p>
-            <p className="text-sm font-bold tabular-nums text-contrast">{pct}%</p>
+            <p className="text-sm font-semibold tabular-nums text-contrast">{pct}%</p>
           </div>
           <div
             className="mt-2 h-2 rounded-full overflow-hidden"
@@ -521,7 +521,7 @@ export function PathHero({
                   onClick={onResume}
                   disabled={!canResume}
                   aria-label="Riprendi lezione"
-                  className="inline-flex h-12 w-full items-center justify-center gap-1.5 rounded-full border px-5 text-sm font-bold transition-opacity duration-200 hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
+                  className="inline-flex h-12 w-full items-center justify-center gap-1.5 rounded-full border px-5 text-sm font-semibold transition-opacity duration-200 hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
                   style={{
                     backgroundColor: "color-mix(in srgb, currentColor 14%, transparent)",
                     borderColor: "color-mix(in srgb, currentColor 28%, transparent)",

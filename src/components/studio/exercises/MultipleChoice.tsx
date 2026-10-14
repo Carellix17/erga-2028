@@ -70,7 +70,7 @@ export function MultipleChoice({
             >
               <div className="flex items-center gap-3">
                 <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all",
+                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 transition-all",
                   !showResult && !isSelected && "bg-surface-container-highest text-muted-foreground",
                   !showResult && isSelected && "bg-primary text-primary-foreground",
                   showResult && isCorrectOption && "bg-emerald-600 text-white",

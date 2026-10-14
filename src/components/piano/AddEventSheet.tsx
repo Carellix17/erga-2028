@@ -446,7 +446,7 @@ export function AddEventSheet({
                       <div className="flex items-center justify-between">
                         <Label className="label-large">{t("piano.sheet.goalLabel")}</Label>
                         {/* Indicatore visivo del voto scelto (null finché non toccato) */}
-                        <span className="label-large font-bold text-brand-deep">
+                        <span className="label-large font-semibold text-brand-deep">
                           {goal != null ? goal.toFixed(goal % 1 ? 1 : 0) : "—"}
                         </span>
                       </div>

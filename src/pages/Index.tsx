@@ -203,7 +203,7 @@ const Index = () => {
       <main className="flex min-h-screen items-center justify-center bg-background p-6">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-level-1">
           <Brain className="mx-auto h-10 w-10 text-brand-deep" />
-          <h1 className="mt-3 font-display text-xl font-bold tracking-tight">
+          <h1 className="mt-3 font-display text-xl font-semibold tracking-tight">
             Non riusciamo a caricare i tuoi dati
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">

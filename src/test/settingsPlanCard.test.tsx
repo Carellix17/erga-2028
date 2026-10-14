@@ -1,4 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsPlanCard } from "@/components/settings/SettingsPlanCard";
@@ -84,18 +86,14 @@ describe("SettingsPlanCard", () => {
     expect(screen.queryByRole("button", { name: /passa a pro/i })).not.toBeInTheDocument();
   });
 
-  it("usa il token cedro del design system, non una tinta libera", () => {
-    const fs = require("node:fs");
-    const path = require("node:path");
-    const css = fs.readFileSync(path.join(process.cwd(), "src/index.css"), "utf8");
-    const card = fs.readFileSync(
-      path.join(process.cwd(), "src/components/settings/SettingsPlanCard.tsx"),
-      "utf8",
-    );
-    // il campo è il token documentato in DESIGN.md 2.1 §4 (#DCE879)
-    expect(css).toContain("--cedro: 67 71% 69%");
-    expect(card).toContain("hsl(var(--cedro))");
-    // e la carta usa la grana condivisa, come le copertine
-    expect(card).toContain("cover-grain");
+  it("usa la superficie standard v3 e non applica satinato fuori dalle copertine", () => {
+    const css = readFileSync(join(process.cwd(), "src/index.css"), "utf8");
+    const card = readFileSync(join(process.cwd(), "src/components/settings/SettingsPlanCard.tsx"), "utf8");
+
+    expect(css).toContain("--surface-primary: 50.77 8.18% 31.18%");
+    expect(card).toContain("rounded-card border border-border bg-card");
+    expect(card).toContain("rounded-button bg-primary");
+    expect(card).not.toContain("cover-grain");
+    expect(card).not.toContain("--cedro");
   });
 });

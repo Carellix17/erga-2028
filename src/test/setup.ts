@@ -26,3 +26,16 @@ class ResizeObserverStub {
   disconnect() {}
 }
 globalThis.ResizeObserver = globalThis.ResizeObserver || ResizeObserverStub;
+
+// jsdom non implementa HTMLElement.scrollTo; il fallback conserva le coordinate usate dai test.
+if (typeof HTMLElement !== "undefined" && typeof HTMLElement.prototype.scrollTo !== "function") {
+  HTMLElement.prototype.scrollTo = function (options?: ScrollToOptions | number, y?: number) {
+    if (typeof options === "number") {
+      this.scrollLeft = options;
+      this.scrollTop = y ?? 0;
+    } else if (options) {
+      if (options.left != null) this.scrollLeft = options.left;
+      if (options.top != null) this.scrollTop = options.top;
+    }
+  };
+}

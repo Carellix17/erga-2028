@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-require-imports -- QUARANTENA P21i: eredita'.
-   I plugin Tailwind si registrano con require() (forma ufficiale dei config). */
+/* Tailwind tokens for DESIGN.md v3.0 — Squared & Earthy. */
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -14,19 +14,14 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
+      padding: "1rem",
+      screens: { "2xl": "1400px" },
     },
     extend: {
-      // P45 — il ring-offset di default di Tailwind è #fff: in dark mode ogni
-      // focus/press con ring-offset-2 mostrava un alone BIANCO PIENO attorno
-      // al bottone. Ora l'offset segue lo sfondo della pagina in ogni tema.
-      ringOffsetColor: {
-        DEFAULT: "hsl(var(--background))",
-      },
+      ringOffsetColor: { DEFAULT: "hsl(var(--background))" },
       colors: {
+        black: "hsl(var(--ink) / <alpha-value>)",
+        white: "hsl(var(--accent-light) / <alpha-value>)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -38,6 +33,8 @@ export default {
           foreground: "hsl(var(--primary-foreground))",
           container: "hsl(var(--primary-container))",
         },
+        "primary-deep": "hsl(var(--primary-deep) / <alpha-value>)",
+        "control-line": "hsl(var(--control-line) / <alpha-value>)",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -68,6 +65,12 @@ export default {
         warning: {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
+          container: "hsl(var(--warning-container))",
+        },
+        error: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+          container: "hsl(var(--error-container))",
         },
         outline: {
           DEFAULT: "hsl(var(--outline))",
@@ -75,7 +78,8 @@ export default {
         },
         surface: {
           DEFAULT: "hsl(var(--background))",
-          //  P36 — dark luxury: hero avorio e card secondaria notte (token fissi)
+          primary: "hsl(var(--surface-primary))",
+          secondary: "hsl(var(--surface-secondary))",
           cream: "hsl(var(--surface-cream))",
           "cream-foreground": "hsl(var(--surface-cream-foreground))",
           "cream-muted": "hsl(var(--surface-cream-muted))",
@@ -101,8 +105,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        "off-white": "rgb(var(--off-white) / <alpha-value>)",
         ink: "hsl(var(--ink) / <alpha-value>)",
+        "ink-muted": "hsl(var(--ink-muted) / <alpha-value>)",
+        steel: "hsl(var(--steel) / <alpha-value>)",
+        bone: "hsl(var(--surface-secondary) / <alpha-value>)",
+        floral: "hsl(var(--accent-light) / <alpha-value>)",
+        olive: "hsl(var(--surface-primary) / <alpha-value>)",
+        canvas: "hsl(var(--canvas) / <alpha-value>)",
+        "off-white": "rgb(var(--off-white) / <alpha-value>)",
         cream: "hsl(var(--cream) / <alpha-value>)",
         "cream-hover": "rgb(var(--cream-hover) / <alpha-value>)",
         sidebar: {
@@ -115,7 +125,6 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        //  P21e — pastelli materia domati (i valori vivono in index.css, dual-theme)
         "pastel-terracotta": "hsl(var(--pastel-terracotta))",
         "pastel-polvere": "hsl(var(--pastel-polvere))",
         "pastel-ocra": "hsl(var(--pastel-ocra))",
@@ -127,24 +136,43 @@ export default {
         "pastel-grafite": "hsl(var(--pastel-grafite))",
         "pastel-miele": "hsl(var(--pastel-miele))",
         "pastel-neutro": "hsl(var(--pastel-neutro))",
-        //  V2-01 — fix: scienze e geografia usano queste chiavi da sempre
-        //  ma non erano mappate (chips senza pelle nel D1 monocromo).
         "pastel-bosco": "hsl(var(--pastel-bosco))",
         "pastel-oliva": "hsl(var(--pastel-oliva))",
-        //  P24 — firme del guscio: nav a pillola (neutro) e puntino neutro
         nav: {
           DEFAULT: "hsl(var(--nav-surface))",
           foreground: "hsl(var(--nav-foreground))",
         },
-        //  V2-01 — famiglia di marca (DESIGN.md 2.1 §4): inchiostro.
-        //  I ruoli restano (riempimento, testo, tinta di selezione) ma la
-        //  tinta è l'inchiostro del sistema: niente più ottanio.
         brand: {
           DEFAULT: "hsl(var(--brand))",
           deep: "hsl(var(--brand-deep))",
           tint: "hsl(var(--brand-tint))",
         },
-        //  P24 × MONOCROMO — accento dinamico della materia (var CSS)
+        subject: {
+          blue: "hsl(var(--subject-blue))",
+          red: "hsl(var(--subject-red))",
+          yellow: "hsl(var(--subject-yellow))",
+          emerald: "hsl(var(--subject-emerald))",
+          amber: "hsl(var(--subject-amber))",
+          lime: "hsl(var(--subject-lime))",
+          cyan: "hsl(var(--subject-cyan))",
+          violet: "hsl(var(--subject-violet))",
+          orange: "hsl(var(--subject-orange))",
+          magenta: "hsl(var(--subject-magenta))",
+          neutral: "hsl(var(--subject-neutral))",
+          sleep: "hsl(var(--subject-sleep))",
+          school: "hsl(var(--subject-school))",
+        },
+        routine: {
+          sleep: "hsl(var(--routine-sleep))",
+          school: "hsl(var(--routine-school))",
+          meal: "hsl(var(--routine-meal))",
+          other: "hsl(var(--routine-other))",
+        },
+        marketing: {
+          red: "hsl(var(--marketing-red))",
+          rose: "hsl(var(--marketing-rose))",
+          gold: "hsl(var(--marketing-gold))",
+        },
         "subject-accent": "var(--subject-accent)",
         "subject-accent-foreground": "var(--subject-accent-foreground)",
         "subject-accent-light": "var(--subject-accent-light)",
@@ -158,51 +186,70 @@ export default {
         lg: "var(--radius-lg)",
         xl: "var(--radius-xl)",
         "2xl": "var(--radius-2xl)",
+        "3xl": "var(--radius-3xl)",
         card: "var(--radius-card)",
+        control: "var(--radius-control)",
         button: "var(--radius-button)",
         pill: "var(--radius-pill)",
         dialog: "var(--radius-dialog)",
+        sheet: "var(--radius-sheet)",
         media: "var(--radius-media)",
         full: "var(--radius-full)",
       },
       boxShadow: {
+        DEFAULT: "var(--shadow-level-1)",
+        sm: "var(--shadow-level-1)",
+        md: "var(--shadow-level-2)",
+        lg: "var(--shadow-level-3)",
+        xl: "var(--shadow-level-4)",
+        "2xl": "var(--shadow-level-5)",
+        inner: "inset 0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        none: "none",
         "level-0": "var(--shadow-level-0)",
         "level-1": "var(--shadow-level-1)",
         "level-2": "var(--shadow-level-2)",
         "level-3": "var(--shadow-level-3)",
         "level-4": "var(--shadow-level-4)",
         "level-5": "var(--shadow-level-5)",
-        //  P34 — ombre tattili (Home V3): profilo leggero per card/pillole
-        // glass e profondità riservata alla card corso attiva.
-        // P35 — ombra dell'eroe: goccia decisa per la card percorso su fondo scuro.
         tactile: "var(--shadow-tattile)",
         "card-active": "var(--shadow-card-active)",
         hero: "var(--shadow-hero-card)",
       },
       fontFamily: {
-        // V2-01 (DESIGN.md 2.1 §5) — due voci, caricate da Google Fonts nel
-        // <link> di index.html come family variable (400–700):
-        //  · INTERFACCIA e LETTURA (sans/display/body/reading): Inter;
-        //  · TITOLI SERIF (display/serif): Lora 400/500, proposta iniziale.
-        // Radja resta self-hosted per la sola voce focale del Login (tappa 5).
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Lora', 'Georgia', 'serif'],
-        serif: ['Lora', 'Georgia', 'serif'],
-        body: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        reading: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
-        //  P36 — Radja: voce focale del Login.
-        radja: ['Radja', 'Lora', 'Georgia', 'serif'],
+        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        interface: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        body: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        reading: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        display: ["Playfair Display", "Lora", "Georgia", "serif"],
+        serif: ["Playfair Display", "Lora", "Georgia", "serif"],
+        mono: ["ui-monospace", "SFMono-Regular", "monospace"],
+        radja: ["Radja", "Playfair Display", "Georgia", "serif"],
+      },
+      fontSize: {
+        "display-large": ["2.25rem", { lineHeight: "1.16", letterSpacing: "-0.02em", fontWeight: "400" }],
+        "course-title": ["1.875rem", { lineHeight: "1.2", fontWeight: "500" }],
+        "scene-title": ["2rem", { lineHeight: "1.2", fontWeight: "500" }],
+        "module-title": ["1.625rem", { lineHeight: "1.25", fontWeight: "500" }],
+        subsection: ["1.375rem", { lineHeight: "1.3", fontWeight: "600" }],
+        reading: ["1.125rem", { lineHeight: "1.65", fontWeight: "400" }],
+        interface: ["1rem", { lineHeight: "1.45", fontWeight: "400" }],
+        label: ["0.875rem", { lineHeight: "1.45", fontWeight: "400" }],
+      },
+      spacing: {
+        1: "4px",
+        2: "8px",
+        3: "12px",
+        4: "16px",
+        5: "20px",
+        6: "24px",
+        8: "32px",
+        10: "40px",
+        12: "48px",
+        16: "64px",
       },
       keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
+        "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
+        "accordion-up": { from: { height: "var(--radix-accordion-content-height)" }, to: { height: "0" } },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -217,7 +264,5 @@ export default {
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-  ],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

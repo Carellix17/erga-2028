@@ -5,40 +5,32 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "relative inline-flex min-w-0 touch-manipulation select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-button text-sm font-semibold transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-200 ease-in-out active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-38 motion-reduce:transform-none motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "relative inline-flex min-w-0 touch-manipulation select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-button text-interface font-semibold transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-200 ease-in-out active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transform-none motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        // V2-01 (DESIGN.md 2.1 §6): l'azione primaria è inchiostro a
-        // PILLOLA; gli altri variant restano controlli (raggio 16).
-        default:
-          "rounded-pill bg-primary text-primary-foreground shadow-level-0 hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90 state-layer",
-        outline:
-          "border border-border bg-card text-foreground hover:bg-surface-container-high",
-        secondary:
-          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 state-layer",
+        default: "bg-primary text-primary-foreground shadow-level-0 hover:bg-primary-deep",
+        destructive: "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90",
+        outline: "border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        secondary: "border border-line bg-secondary text-secondary-foreground shadow-level-0 hover:bg-secondary/80",
         ghost: "text-foreground hover:bg-foreground/[0.08]",
-        link: "text-brand-deep underline-offset-4 hover:underline",
-        tonal: "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 state-layer",
-        fab: "bg-primary-container text-brand-deep shadow-level-0 hover:opacity-90 state-layer",
-        "fab-secondary":
-          "bg-secondary-container text-secondary-foreground shadow-level-0 hover:opacity-90 state-layer",
-        "fab-tertiary":
-          "bg-tertiary-container text-tertiary shadow-level-0 hover:opacity-90 state-layer",
-        elevated: "bg-surface-container-low text-brand-deep shadow-level-1 hover:opacity-90 state-layer",
+        link: "h-auto rounded-sm p-0 text-accent-light underline-offset-4 hover:underline",
+        tonal: "bg-secondary text-secondary-foreground shadow-level-0 hover:bg-secondary/80",
+        fab: "bg-primary text-primary-foreground shadow-level-1 hover:bg-primary-deep",
+        "fab-secondary": "border border-line bg-secondary text-secondary-foreground shadow-level-1 hover:bg-secondary/80",
+        "fab-tertiary": "bg-tertiary text-tertiary-foreground shadow-level-1 hover:opacity-90",
+        elevated: "border border-line bg-surface-primary text-card-foreground shadow-level-1 hover:brightness-110",
       },
       size: {
         default: "h-11 px-5 py-2.5",
-        sm: "h-9 px-4 text-xs",
-        lg: "h-12 px-7 text-base",
+        sm: "h-10 px-4 text-sm",
+        lg: "h-12 px-6 text-base",
         icon: "h-11 w-11 p-0",
-        "icon-sm": "h-9 w-9 p-0",
+        "icon-sm": "h-10 w-10 p-0",
         "icon-lg": "h-12 w-12 p-0",
         fab: "h-14 w-14 p-0",
-        "fab-extended": "h-14 px-7",
-        //  V2-01 — la taglia generosa torna pillola (angolo del sistema).
-        pill: "h-12 rounded-pill px-6 py-3",
+        "fab-extended": "h-14 px-6",
+        pill: "h-11 rounded-pill px-5 py-2.5",
       },
     },
     defaultVariants: {

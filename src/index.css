@@ -14,312 +14,205 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ═══════════════════════════════════════════════════════
-   ERGA — FONDAMENTA 2.1 «Carta contemporanea» (V2-01, DESIGN.md v2.1)
-   Tavolo avorio, carta opaca, copertine di materia, velo satinato
-   locale. Inchiostro #252623 per testo e azioni; notte #22211F.
-   Raggi 8/16/24/32, ombre corte, marca e selezione in inchiostro.
-   Marca, materia e stato restano ruoli distinti (policy noGreen).
-   ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   ERGA — DESIGN SYSTEM v3.0 «Squared & Earthy»
+   Token CSS: palette ufficiale, superfici, tipografia, geometria e stati.
+   I nomi semantici legacy sotto restano alias per migrare le viste senza
+   cambiare flussi o logica applicativa.
+   ═══════════════════════════════════════════════════════════════ */
 
 @layer base {
   :root {
-    /* ─── Materiali (DESIGN.md 2.1 §3) ───
-       --cream è la panna #F4F1E7 (l'inchiostro di notte); resta alias
-       compatibile per i componenti che la usano come testo chiaro. */
-    --cream: 46 37% 93%;               /* #F4F1E7 panna */
-    --cream-hover: 236 233 223;        /* #ECE9DF: hover della carta */
-    /* Carta #FFFEF9 in canali RGB grezzi per gli usi con opacità. */
-    --off-white: 255 254 249;
-    /* Inchiostro caldo di testo e azioni primarie: #252623. */
-    --ink: 80 4% 14%;
+    color-scheme: dark;
 
-    /* ─── V2-02c — Accento cedro (DESIGN.md 2.1 §4, famiglia composizioni:
-       #DCE879 «luminoso e presente»). Usato dalla carta del piano nelle
-       Impostazioni, che parla la lingua delle copertine dei corsi. ─── */
-    --cedro: 67 71% 69%;
+    /* Palette v3.0 — giorno */
+    --canvas: 72 16.13% 6.08%;             /* #11120D Smoky Black */
+    --surface-primary: 50.77 8.18% 31.18%; /* #565449 Olive Drab */
+    --surface-secondary: 40.71 26.42% 79.22%; /* #D8CFBC Bone */
+    --paper: var(--surface-secondary);
+    --ink: 72 16.13% 6.08%;                /* #11120D */
+    --ink-muted: 50.77 8.18% 31.18%;      /* #565449 */
+    --steel: 50 4.92% 52.16%;             /* #8B897F */
+    --line: 40.71 26.42% 79.22%;          /* #D8CFBC */
+    --control-line: 48 11.81% 75.10%;      /* #C7C4B8 */
+    --on-ink: 38.18 100% 97.84%;           /* #FFFBF4 */
+    --focus: 50.77 8.18% 31.18%;           /* #565449 */
 
-    /* ─── Azione primaria = inchiostro (2.1 §4: niente ottanio) ─── */
-    --primary: 80 4% 14%;              /* #252623 inchiostro */
-    --primary-foreground: 50 100% 99%; /* #FFFEF9 carta */
-    --primary-container: 46 25% 90%;   /* #ECE9DF carta quieta */
-    --on-primary-container: 80 4% 14%;
+    /* Brand */
+    --primary: var(--surface-primary);
+    --primary-deep: 50 11.54% 20.39%;      /* #3A382E */
+    --brand: var(--primary);
+    --brand-deep: var(--accent-light);
+    --brand-tint: var(--surface-secondary);
+    --accent-warm: var(--surface-secondary);
+    --accent-light: 38.18 100% 97.84%;     /* #FFFBF4 */
 
-    /* ─── Marca e selezione = inchiostro (ruoli mantenuti, tinta nuova) ─── */
-    --brand: 80 4% 14%;                /* riempimenti di marca */
-    --brand-deep: 80 4% 14%;           /* testo di marca: inchiostro */
-    --brand-tint: 46 25% 90%;          /* selezioni e tinte leggere */
+    /* Palette materia: identità mantenute, ruoli semantici stabili. */
+    --subject-blue: 221.21 83.19% 53.33%;  /* #2563EB matematica */
+    --subject-red: 0 72.22% 50.59%;        /* #DC2626 storia */
+    --subject-yellow: 45.40 93.39% 47.45%; /* #EAB308 economia */
+    --subject-emerald: 161.38 93.55% 30.39%; /* #059669 letteratura */
+    --subject-amber: 32.13 94.62% 43.73%;  /* #D97706 filosofia */
+    --subject-lime: 84.80 85.23% 34.51%;  /* #65A30D fisica */
+    --subject-cyan: 191.65 91.40% 36.47%; /* #0891B2 informatica */
+    --subject-violet: 262.12 83.26% 57.84%; /* #7C3AED arte */
+    --subject-orange: 20.54 90.24% 48.24%; /* #EA580C diritto */
+    --subject-magenta: 293.41 69.48% 48.82%; /* #C026D3 lingue */
+    --subject-neutral: 215 20.22% 65.10%;  /* #94A3B8 generale */
+    --subject-sleep: 243.40 75.36% 58.63%; /* #4F46E5 scienze/routine */
+    --subject-school: 215.38 16.32% 46.86%; /* #64748B geografia/routine */
 
-    /* ─── Superfici legacy riallineate ai materiali ─── */
-    --surface-cream: 44 38% 94%;          /* #F6F3EB avorio del tavolo */
-    --surface-cream-foreground: 80 4% 14%;
-    --surface-cream-muted: 68 4% 38%;
-    --surface-dark-card: 45 5% 17%;       /* #2D2C29 carta della notte */
+    --routine-sleep: var(--subject-sleep);
+    --routine-school: var(--subject-school);
+    --routine-meal: 0 84.24% 60.20%;       /* #EF4444 */
+    --routine-other: 174.67 83.85% 31.57%; /* #0D9488 */
+    --marketing-red: 356.47 94.85% 45.69%; /* #E30613 */
+    --marketing-rose: 356.07 34.08% 64.90%; /* #C4878B */
+    --marketing-gold: 36.75 40.40% 61.18%; /* #C4A574 */
 
-    --secondary: 46 25% 90%;           /* #ECE9DF carta quieta */
-    --secondary-foreground: 80 4% 14%;
-    --secondary-container: 46 20% 88%;
-    --on-secondary-container: 80 4% 14%;
-    --tertiary: 68 4% 38%;             /* inchiostro attenuato */
-    --tertiary-foreground: var(--cream);
-    --tertiary-container: 46 15% 90%;
-    --on-tertiary-container: var(--ink);
-    --gold-antique: 45 8% 45%;
-    --gold-antique-soft: 46 20% 90%;
+    /* Pastel compatibili: token storici delle materie mappati alla palette v3. */
+    --pastel-terracotta: var(--subject-red);
+    --pastel-polvere: var(--subject-blue);
+    --pastel-ocra: var(--subject-yellow);
+    --pastel-prugna: var(--subject-emerald);
+    --pastel-crepuscolo: var(--subject-amber);
+    --pastel-mare: var(--subject-lime);
+    --pastel-violetto: var(--subject-cyan);
+    --pastel-cipria: var(--subject-violet);
+    --pastel-grafite: var(--subject-orange);
+    --pastel-miele: var(--subject-magenta);
+    --pastel-neutro: var(--subject-neutral);
+    --pastel-bosco: var(--subject-sleep);
+    --pastel-oliva: var(--subject-school);
 
-    /* ─── Stato: semantici intatti, solo esito (2.1 §8) ─── */
-    --destructive: 4 68% 40%;
-    --destructive-foreground: 0 0% 100%;
-    --error-container: 4 70% 93%;
-    --on-error-container: 4 70% 20%;
-    --success: 152 55% 32%;
-    --success-foreground: 0 0% 100%;
-    --success-container: 152 45% 92%;
-    --on-success-container: 152 60% 16%;
-    --warning: 28 80% 34%;
-    --warning-foreground: 0 0% 100%;
-    --warning-container: 28 70% 92%;
-    --on-warning-container: 28 80% 14%;
-
-    /*  P21e → V2-01 — PASTELLI MATERIA VIVI: ogni materia torna al suo
-        colore (erano in monocromo dal P24). Chiavi invariato; di notte la
-        versione schiarita. Ruolo: chips, badge, bordi — la copertina usa
-        courseIdentity (campo + contrasto garantito). */
-    --pastel-terracotta: 18 45% 45%;    /* storia */
-    --pastel-polvere: 210 36% 42%;      /* matematica */
-    --pastel-ocra: 38 55% 36%;          /* economia */
-    --pastel-prugna: 320 28% 44%;       /* letteratura */
-    --pastel-crepuscolo: 230 22% 44%;   /* filosofia */
-    --pastel-mare: 185 38% 35%;         /* fisica */
-    --pastel-violetto: 250 28% 47%;     /* informatica */
-    --pastel-cipria: 350 30% 50%;       /* arte */
-    --pastel-grafite: 220 16% 38%;      /* diritto */
-    --pastel-miele: 28 50% 42%;         /* lingue */
-    --pastel-neutro: 45 12% 45%;        /* generale */
-    --pastel-bosco: 145 28% 34%;        /* scienze */
-    --pastel-oliva: 85 26% 34%;         /* geografia */
-
-    /* ─── Il tavolo e la carta (2.1 §3) ─── */
-    --background: 44 38% 94%;        /* #F6F3EB tavolo avorio */
-    --foreground: var(--ink);
-    --surface-dim: 46 20% 88%;
-    --surface-bright: 50 100% 99%;
-    --surface-container-lowest: 50 100% 99%;
-    --surface-container-low: 46 30% 96%;
-    --surface-container: 46 25% 93%;
-    --surface-container-high: 46 22% 90%;
-    --surface-container-highest: 46 20% 86%;
-    --card: 50 100% 99%;             /* #FFFEF9 carta opaca */
-    --card-foreground: var(--ink);
-
-    /*  Alias opachi dei vecchi token glass (superfici = carta/quieta). */
-    --glass-surface-1: hsl(46 30% 96%);
-    --glass-surface-2: hsl(46 25% 93%);
-    --glass-surface-3: hsl(46 22% 90%);
-    --glass-surface-hover: hsl(46 20% 86%);
-    --glass-border: hsl(var(--border));
-    --glass-inset: hsl(0 0% 0% / 0);
-
-    --popover: 50 100% 99%;
+    /* Alias semantici shadcn/ui — superfici con contrasto coerente. */
+    --background: var(--canvas);
+    --foreground: var(--on-ink);
+    --card: var(--surface-primary);
+    --card-foreground: var(--accent-light);
+    --popover: var(--surface-secondary);
     --popover-foreground: var(--ink);
-    --muted: 46 25% 92%;
-    --muted-foreground: 68 4% 38%;    /* #65665E inchiostro attenuato */
-    --accent: 46 25% 90%;             /* selezioni leggere: carta quieta */
-    --accent-foreground: 80 4% 14%;
+    --muted: var(--surface-primary);
+    --muted-foreground: var(--accent-warm);
+    --secondary: var(--surface-secondary);
+    --secondary-foreground: var(--ink);
+    --accent: var(--accent-warm);
+    --accent-foreground: var(--ink);
+    --border: var(--line);
+    --input: var(--control-line);
+    --ring: var(--focus);
+    --primary-foreground: var(--accent-light);
+    --primary-container: var(--surface-primary);
+    --on-primary-container: var(--accent-light);
+    --secondary-container: var(--surface-secondary);
+    --on-secondary-container: var(--ink);
+    --tertiary: var(--marketing-gold);
+    --tertiary-foreground: var(--ink);
+    --tertiary-container: var(--surface-secondary);
+    --on-tertiary-container: var(--ink);
+    --destructive: var(--subject-red);
+    --destructive-foreground: var(--accent-light);
+    --error-container: 0 55% 24%;
+    --on-error-container: var(--accent-light);
+    --success: var(--subject-emerald);
+    --success-foreground: var(--accent-light);
+    --success-container: 161 45% 20%;
+    --on-success-container: var(--accent-light);
+    --warning: var(--marketing-gold);
+    --warning-foreground: var(--ink);
+    --warning-container: 36 35% 28%;
+    --on-warning-container: var(--accent-light);
     --outline: var(--ink) / 0.25;
-    --outline-variant: var(--ink) / 0.12;
-    --border: 50 15% 85%;             /* #DEDCD2 filetto */
-    --input: 71 7% 51%;               /* #888B7A contorno di controllo */
-    --ring: 80 4% 14%;                /* focus = inchiostro (2.1 §3) */
-    --scrim: 0 0% 0%;
+    --outline-variant: var(--line) / 0.45;
+    --scrim: 72 16.13% 6.08%;
 
-    /*  V2-01 — accento DINAMICO della materia (fallback inchiostro).
-        La pagina di Studio lo sovrascrive col corso attivo. */
-    --subject-accent: #252623;
-    --subject-accent-foreground: #FFFEF9;
-    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, white);
-
-    --inverse-surface: var(--ink);
-    --inverse-on-surface: var(--cream);
-    --inverse-primary: 46 37% 93%;
-    --sidebar-background: 50 100% 99%;
-    --sidebar-foreground: var(--ink);
-    --sidebar-primary: var(--ink);
-    --sidebar-primary-foreground: var(--cream);
-    --sidebar-accent: 46 25% 93%;
-    --sidebar-accent-foreground: var(--ink);
-    --sidebar-border: var(--ink) / 0.12;
-    --sidebar-ring: var(--ink);
-
-    /*  Guscio: dock/rail/sidebar in carta (2.1 §10). */
-    --nav-surface: 50 100% 99%;
-    --nav-foreground: var(--ink);
-
-    /* Scala del testo (Accessibilità) */
-    --text-scale: 1;
-  }
-
-  .dark {
-    /* ─── Notte (2.1 §3): tavolo #22211F, carta #2D2C29, inchiostro #F4F1E7.
-       L'azione primaria diventa carta chiara con testo inchiostro:
-       inversione dichiarata dalla specifica, non automatica altrove. ─── */
-    --primary: 46 37% 93%;             /* #F4F1E7 */
-    --primary-foreground: 80 4% 14%;   /* #252623 */
-    --primary-container: 40 6% 21%;
-    --on-primary-container: 46 37% 93%;
-    --brand: 46 37% 93%;
-    --brand-deep: 46 37% 93%;          /* testo di marca di notte: panna */
-    --brand-tint: 40 6% 21%;
-    --secondary: 40 6% 21%;
-    --secondary-foreground: 46 37% 93%;
-    --secondary-container: 40 6% 23%;
-    --on-secondary-container: 46 37% 93%;
-    --tertiary: 44 12% 76%;
-    --tertiary-foreground: 40 5% 13%;
-    --tertiary-container: 40 6% 24%;
-    --on-tertiary-container: var(--cream);
-    --gold-antique: 45 12% 65%;
-    --gold-antique-soft: 40 6% 18%;
-    --destructive: 4 70% 62%;
-    --destructive-foreground: 0 0% 8%;
-    --error-container: 4 30% 18%;
-    --on-error-container: 4 70% 80%;
-    --success: 152 45% 70%;
-    --success-foreground: 0 0% 8%;
-    --success-container: 152 25% 16%;
-    --warning: 28 80% 70%;
-    --warning-foreground: 139 0% 8%;
-    --warning-container: 28 30% 16%;
-
-    /* Pastelli materia, versione notte (chiariti per restare leggibili). */
-    --pastel-terracotta: 18 40% 68%;
-    --pastel-polvere: 210 32% 68%;
-    --pastel-ocra: 38 48% 68%;
-    --pastel-prugna: 320 26% 68%;
-    --pastel-crepuscolo: 230 20% 68%;
-    --pastel-mare: 185 34% 64%;
-    --pastel-violetto: 250 24% 70%;
-    --pastel-cipria: 350 28% 72%;
-    --pastel-grafite: 220 14% 65%;
-    --pastel-miele: 28 44% 68%;
-    --pastel-neutro: 45 10% 68%;
-    --pastel-bosco: 145 26% 64%;
-    --pastel-oliva: 85 24% 64%;
-
-    --background: 40 5% 13%;          /* #22211F tavolo notte */
-    --foreground: var(--cream);        /* #F4F1E7 inchiostro di notte */
-    --surface-dim: 40 5% 10%;
-    --surface-bright: 40 5% 26%;
-    --surface-container-lowest: 40 5% 11%;
-    --surface-container-low: 40 5% 15%;
-    --surface-container: 40 5% 17%;
-    --surface-container-high: 40 6% 21%;
-    --surface-container-highest: 40 6% 25%;
-    --card: 40 5% 17%;                /* #2D2C29 carta notte */
-    --card-foreground: var(--cream);
-
-    --glass-surface-1: hsl(40 5% 15%);
-    --glass-surface-2: hsl(40 5% 17%);
-    --glass-surface-3: hsl(40 6% 21%);
-    --glass-surface-hover: hsl(40 6% 25%);
-    --glass-border: hsl(var(--border));
+    /* Superfici legacy: prediligono la carta o l'Olive Drab del contesto. */
+    --surface-dim: var(--canvas);
+    --surface-bright: var(--surface-primary);
+    --surface-container-lowest: var(--surface-primary);
+    --surface-container-low: var(--surface-primary);
+    --surface-container: var(--surface-primary);
+    --surface-container-high: var(--surface-primary);
+    --surface-container-highest: var(--surface-secondary);
+    --surface-cream: var(--surface-secondary);
+    --surface-cream-foreground: var(--ink);
+    --surface-cream-muted: var(--ink-muted);
+    --surface-dark-card: 60 3.85% 14.31%;     /* #262623: supporto superfici notte */
+    --glass-surface-1: hsl(var(--surface-primary));
+    --glass-surface-2: hsl(var(--surface-primary));
+    --glass-surface-3: hsl(var(--surface-primary));
+    --glass-surface-hover: hsl(var(--surface-secondary));
+    --glass-border: hsl(var(--line));
     --glass-inset: hsl(0 0% 0% / 0);
+    --inverse-surface: var(--ink);
+    --inverse-on-surface: var(--accent-light);
+    --inverse-primary: var(--surface-secondary);
+    --sidebar-background: var(--surface-primary);
+    --sidebar-foreground: var(--accent-light);
+    --sidebar-primary: var(--accent-light);
+    --sidebar-primary-foreground: var(--ink);
+    --sidebar-accent: var(--surface-secondary);
+    --sidebar-accent-foreground: var(--ink);
+    --sidebar-border: var(--line) / 0.45;
+    --sidebar-ring: var(--focus);
+    --nav-surface: var(--surface-primary);
+    --nav-foreground: var(--accent-light);
 
-    --popover: 40 5% 17%;
-    --popover-foreground: var(--cream);
-    --muted: 40 6% 18%;
-    --muted-foreground: 44 12% 76%;   /* #C9C5BA */
-    --accent: 40 6% 21%;
-    --accent-foreground: 46 37% 93%;
-    --outline: 44 12% 76%;
-    --outline-variant: 40 6% 34%;
-    --border: 40 6% 28%;              /* #4B4842 */
-    --input: 39 7% 54%;               /* #918B80 contorno di controllo */
-    --ring: 46 37% 93%;               /* focus = inchiostro di notte */
-    --subject-accent: #F4F1E7;
-    --subject-accent-foreground: #252623;
-    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, black);
-    --inverse-surface: var(--cream);
-    --inverse-on-surface: 40 5% 13%;
-    --inverse-primary: 80 4% 14%;
-    --sidebar-background: 40 5% 15%;
-    --sidebar-foreground: var(--cream);
-    --sidebar-primary: var(--cream);
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 40 6% 22%;
-    --sidebar-accent-foreground: var(--cream);
-    --sidebar-border: var(--cream) / 0.10;
-    --sidebar-ring: 0 0% 80%;
-    --nav-surface: 40 5% 15%;
-    --nav-foreground: var(--cream);
-  }
+    /* Compatibilità RGB e colore materia dinamico. */
+    --cream: var(--accent-light);
+    --cream-hover: 199 196 184;
+    --off-white: 255 251 244;
+    --subject-accent: #94A3B8;
+    --subject-accent-foreground: #11120D;
+    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, hsl(var(--accent-light)));
+    --text-scale: 1;
 
-  :root {
-    /* ─── V2-01 — GEOMETRIA COME GERARCHIA (DESIGN.md 2.1 §6):
-       8 dettagli · 16 controlli · 24 card e dock · 32 fogli protagonisti
-       e sheet · pillola per le azioni. --radius-full resta per i cerchi
-       del contenuto (avatar, radio, esagono, grafici). ─── */
-    --radius-xs: 8px;
-    --radius-sm: 8px;
-    --radius-md: 16px;
-    --radius-lg: 16px;
-    --radius-xl: 24px;
-    --radius-2xl: 32px;
-    --radius-card: 24px;
-    --radius-hero: 32px;
-    --radius-nav: 24px;
-    --radius-button: 16px;
-    --radius-pill: 999px;
-    --radius-dialog: 32px;
-    --radius-media: 16px;
+    /* Geometria — v3: badge 4px, controlli 8px, card e sheet 12px. */
+    --radius-xs: 4px;
+    --radius-sm: 4px;
+    --radius-control: 8px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 12px;
+    --radius-2xl: 12px;
+    --radius-3xl: 12px;
+    --radius-card: 12px;
+    --radius-hero: 12px;
+    --radius-nav: 12px;
+    --radius-button: 8px;
+    --radius-pill: 8px;
+    --radius-dialog: 12px;
+    --radius-sheet: 12px;
+    --radius-media: 12px;
     --radius-full: 9999px;
+    --radius: var(--radius-md);
 
-    /*  Motion di casa (2.1 §7): pressione breve, pochi tempi condivisi. */
-    --motion-micro: 120ms;      /* pressione */
-    --motion-standard: 180ms;   /* cambio di stato, cambio sezione */
-    --motion-emphasized: 240ms; /* espansione */
-    --motion-entrance: 300ms;   /* ingresso, sheet */
-    --motion-path: 360ms;       /* corso → percorso → modulo (320–420) */
-
-    /*  V2-01 — curva di casa: rallenta arrivando, senza rimbalzo. */
-    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-    --radius: 8px;
-
-    /* ─── Ombre corte, senza aloni grigi (2.1 §6) ─── */
+    /* Elevazione flat — valori canonici del DESIGN.md v3.0. */
     --shadow-level-0: none;
-    --shadow-level-1: 0 1px 2px rgba(37, 38, 35, 0.04), 0 4px 12px rgba(37, 38, 35, 0.03);   /* foglio */
-    --shadow-level-2: 0 1px 2px rgba(37, 38, 35, 0.05), 0 6px 16px rgba(37, 38, 35, 0.05);
-    --shadow-level-3: 0 2px 4px rgba(37, 38, 35, 0.04), 0 10px 24px rgba(37, 38, 35, 0.08);  /* protagonista */
-    --shadow-level-4: 0 2px 4px rgba(37, 38, 35, 0.05), 0 12px 28px rgba(37, 38, 35, 0.10);
-    --shadow-level-5: 0 6px 24px rgba(37, 38, 35, 0.10);                                    /* overlay */
+    --shadow-level-1: 0 1px 2px rgba(17, 18, 13, 0.04), 0 4px 12px rgba(17, 18, 13, 0.03);
+    --shadow-level-2: 0 1px 2px rgba(17, 18, 13, 0.05), 0 6px 16px rgba(17, 18, 13, 0.05);
+    --shadow-level-3: 0 2px 4px rgba(17, 18, 13, 0.04), 0 10px 24px rgba(17, 18, 13, 0.08);
+    --shadow-level-4: 0 2px 4px rgba(17, 18, 13, 0.05), 0 12px 28px rgba(17, 18, 13, 0.10);
+    --shadow-level-5: 0 6px 24px rgba(17, 18, 13, 0.10);
+    --shadow-tattile: var(--shadow-level-1);
+    --shadow-card-active: var(--shadow-level-3);
+    --shadow-hero-card: var(--shadow-level-3);
 
-    /*  Alias storici → stesse ombre del sistema (foglio/protagonista). */
-    --shadow-tattile: 0 1px 2px rgba(37, 38, 35, 0.04), 0 4px 12px rgba(37, 38, 35, 0.03);
-    --shadow-card-active: 0 2px 4px rgba(37, 38, 35, 0.04), 0 10px 24px rgba(37, 38, 35, 0.08);
-    --shadow-hero-card: 0 2px 4px rgba(37, 38, 35, 0.04), 0 10px 24px rgba(37, 38, 35, 0.08);
-
+    /* Movimento condiviso. */
+    --motion-micro: 120ms;
+    --motion-standard: 180ms;
+    --motion-emphasized: 240ms;
+    --motion-entrance: 300ms;
+    --motion-path: 360ms;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
     --state-hover: 0.06;
     --state-focus: 0.08;
     --state-pressed: 0.08;
     --state-dragged: 0.14;
 
-    /* ─── V2-02b — Grana della carta (DESIGN.md 2.1 §3 «Grana») ───
-       UNA sola sorgente di rumore (feTurbulence fractalNoise, stitchTiles:
-       nessuna giunta; asset inline locale e statico — zero richieste
-       esterne, zero rigenerazioni) con DUE ruoli calibrati sul composito
-       reale (misurato in browser, non percentuali nominali):
-       · TAVOLO (fondo avorio della Home): slope 4,8% giorno / 2,5% notte
-         — percepibile osservando la superficie, Δmedio ≈ −1,4/255 (giorno,
-         −0,6%: variazione fine, nessuno scurimento globale) e ≈ +1/255
-         (notte: sotto la soglia patina, lo screen schiarirebbe ~×3 il
-         multiply a parità di slope);
-       · FOGLIO (card carta della Home): slope 3% giorno / 1,6% notte,
-         più delicato del tavolo come da specifica.
-       L'intensità vive nel canale alpha del tile (feFuncA): il velo resta
-       un background-image e nessun contenitore con testo prende opacity.
-       Scala fissa --grain-scale: telefono e desktop vedono la stessa
-       grana, mai stirata. Notte dichiarata per tema (slope proprio),
-       nessuna inversione automatica. */
+    /* Grana unica locale e leggera, decorativa, fuori dal testo. */
     --grain-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
     --grain-table-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='gt'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.048'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23gt)'/%3E%3C/svg%3E");
     --grain-paper-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='gp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.03'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23gp)'/%3E%3C/svg%3E");
@@ -328,124 +221,302 @@
     --grain-alpha-cover: 0.05;
   }
 
-  /*  Notte: l'ombra conta meno — superficie e bordo distinguono (2.1 §6). */
   .dark {
-    --shadow-level-1: 0 1px 2px rgba(0, 0, 0, 0.25);
-    --shadow-level-2: 0 2px 8px rgba(0, 0, 0, 0.28);
-    --shadow-level-3: 0 6px 16px rgba(0, 0, 0, 0.32);
-    --shadow-level-4: 0 10px 24px rgba(0, 0, 0, 0.36);
-    --shadow-level-5: 0 14px 32px rgba(0, 0, 0, 0.40);
+    color-scheme: dark;
+    /* Inversione gerarchica v3: canvas #0A0A08, superfici #1A1A15. */
+    --canvas: 60 11.11% 3.53%;              /* #0A0A08 */
+    --surface-primary: 60 10.64% 9.22%;    /* #1A1A15 */
+    --surface-secondary: 60 3.85% 14.31%;  /* #262623, supporto input */
+    --paper: var(--surface-secondary);
+    --ink: 38.18 100% 97.84%;              /* #FFFBF4 */
+    --ink-muted: 40.71 26.42% 79.22%;      /* #D8CFBC */
+    --steel: 48 11.81% 75.10%;             /* #C7C4B8 */
+    --line: 50 11.54% 20.39%;              /* #3A382E */
+    --control-line: 50.77 8.18% 31.18%;    /* #565449 */
+    --on-ink: 38.18 100% 97.84%;
+    --focus: 38.18 100% 97.84%;
+    --accent-light: 38.18 100% 97.84%;
+    --accent-warm: 40.71 26.42% 79.22%;
+    --primary: 50.77 8.18% 31.18%;
+    --primary-deep: 50 11.54% 20.39%;
+    --brand: var(--primary);
+    --brand-deep: var(--accent-light);
+    --brand-tint: var(--surface-secondary);
 
-    /*  V2-02b — Grana della carta, notte: stesso rumore, velo più
-        quieto e blend screen come le copertine. Tavolo 2,5% / foglio
-        1,6%: a parità di slope lo screen schiarisce la media molto più
-        del multiply (misurato: +2÷3/255 a 0.028-0.04 = patina chiara),
-        quindi la notte resta sotto. Scelta esplicita per tema. */
+    --subject-blue: 221.21 83.19% 67%;
+    --subject-red: 0 72.22% 68%;
+    --subject-yellow: 45.40 70% 66%;
+    --subject-emerald: 161.38 55% 59%;
+    --subject-amber: 32.13 65% 65%;
+    --subject-lime: 84.80 60% 61%;
+    --subject-cyan: 191.65 62% 64%;
+    --subject-violet: 262.12 75% 72%;
+    --subject-orange: 20.54 78% 66%;
+    --subject-magenta: 293.41 62% 70%;
+    --subject-neutral: 215 24% 75%;
+    --subject-sleep: 243.40 70% 73%;
+    --subject-school: 215.38 20% 74%;
+    --routine-sleep: var(--subject-sleep);
+    --routine-school: var(--subject-school);
+    --routine-meal: 0 78% 67%;
+    --routine-other: 174.67 58% 59%;
+    --marketing-red: 356.47 85% 66%;
+    --marketing-rose: 356.07 34.08% 74%;
+    --marketing-gold: 36.75 42% 70%;
+
+    --pastel-terracotta: var(--subject-red);
+    --pastel-polvere: var(--subject-blue);
+    --pastel-ocra: var(--subject-yellow);
+    --pastel-prugna: var(--subject-emerald);
+    --pastel-crepuscolo: var(--subject-amber);
+    --pastel-mare: var(--subject-lime);
+    --pastel-violetto: var(--subject-cyan);
+    --pastel-cipria: var(--subject-violet);
+    --pastel-grafite: var(--subject-orange);
+    --pastel-miele: var(--subject-magenta);
+    --pastel-neutro: var(--subject-neutral);
+    --pastel-bosco: var(--subject-sleep);
+    --pastel-oliva: var(--subject-school);
+
+    --primary-foreground: var(--accent-light);
+    --primary-container: var(--surface-primary);
+    --on-primary-container: var(--accent-light);
+    --secondary: var(--surface-secondary);
+    --secondary-foreground: var(--ink);
+    --secondary-container: var(--surface-secondary);
+    --on-secondary-container: var(--ink);
+    --tertiary: var(--marketing-gold);
+    --tertiary-foreground: var(--canvas);
+    --tertiary-container: var(--surface-primary);
+    --on-tertiary-container: var(--accent-light);
+    --destructive: 0 72.22% 68%;
+    --destructive-foreground: var(--canvas);
+    --error-container: 0 45% 22%;
+    --on-error-container: var(--accent-light);
+    --success: 161.38 55% 59%;
+    --success-foreground: var(--canvas);
+    --success-container: 161 42% 18%;
+    --on-success-container: var(--accent-light);
+    --warning: 36.75 42% 70%;
+    --warning-foreground: var(--canvas);
+    --warning-container: 36 35% 20%;
+    --on-warning-container: var(--accent-light);
+    --outline: var(--ink) / 0.3;
+    --outline-variant: var(--line) / 0.8;
+    --scrim: 0 0% 0%;
+
+    --background: var(--canvas);
+    --foreground: var(--ink);
+    --card: var(--surface-primary);
+    --card-foreground: var(--accent-light);
+    --popover: var(--surface-secondary);
+    --popover-foreground: var(--ink);
+    --muted: var(--surface-primary);
+    --muted-foreground: var(--ink-muted);
+    --accent: var(--surface-secondary);
+    --accent-foreground: var(--ink);
+    --border: var(--line);
+    --input: var(--control-line);
+    --ring: var(--focus);
+    --surface-dim: var(--canvas);
+    --surface-bright: var(--surface-primary);
+    --surface-container-lowest: var(--surface-primary);
+    --surface-container-low: var(--surface-primary);
+    --surface-container: var(--surface-primary);
+    --surface-container-high: var(--surface-primary);
+    --surface-container-highest: var(--surface-secondary);
+    --surface-cream: var(--surface-secondary);
+    --surface-cream-foreground: var(--ink);
+    --surface-cream-muted: var(--ink-muted);
+    --surface-dark-card: var(--surface-primary);
+    --glass-surface-1: hsl(var(--surface-primary));
+    --glass-surface-2: hsl(var(--surface-primary));
+    --glass-surface-3: hsl(var(--surface-primary));
+    --glass-surface-hover: hsl(var(--surface-secondary));
+    --glass-border: hsl(var(--line));
+    --glass-inset: hsl(0 0% 0% / 0);
+    --inverse-surface: var(--ink);
+    --inverse-on-surface: var(--canvas);
+    --inverse-primary: var(--surface-primary);
+    --sidebar-background: var(--surface-primary);
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: var(--ink);
+    --sidebar-primary-foreground: var(--canvas);
+    --sidebar-accent: var(--surface-secondary);
+    --sidebar-accent-foreground: var(--ink);
+    --sidebar-border: var(--line) / 0.8;
+    --sidebar-ring: var(--focus);
+    --nav-surface: var(--surface-primary);
+    --nav-foreground: var(--ink);
+    --cream: var(--accent-light);
+    --cream-hover: 199 196 184;
+    --off-white: 255 251 244;
+    --subject-accent: #94A3B8;
+    --subject-accent-foreground: #11120D;
+    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, hsl(var(--canvas)));
+
+    --shadow-level-1: 0 1px 2px rgba(10, 10, 8, 0.25);
+    --shadow-level-2: 0 2px 8px rgba(10, 10, 8, 0.28);
+    --shadow-level-3: 0 6px 16px rgba(10, 10, 8, 0.32);
+    --shadow-level-4: 0 8px 22px rgba(10, 10, 8, 0.34);
+    --shadow-level-5: 0 10px 28px rgba(10, 10, 8, 0.38);
+    --shadow-tattile: var(--shadow-level-1);
+    --shadow-card-active: var(--shadow-level-3);
+    --shadow-hero-card: var(--shadow-level-3);
+
     --grain-table-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='nt'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.025'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23nt)'/%3E%3C/svg%3E");
     --grain-paper-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='np'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.016'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23np)'/%3E%3C/svg%3E");
     --grain-blend: screen;
-    --grain-alpha-cover: 0.07;
+    --grain-alpha-cover: 0.05;
   }
 }
+
 @layer base {
-  /* Tipografia (DESIGN.md 2.1 §5): Inter 400–700 per interfaccia e lettura,
-     Lora 400–700 per i titoli serif — entrambe variable, dal <link> di
-     index.html. Radja resta self-hosted per la sola voce focale del Login.
-     KaTeX conserva i propri font. Nessun grassetto sintetico. */
   * {
     @apply border-border;
   }
 
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    font-size: calc(16px * var(--text-scale, 1));
+    overflow-x: clip;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
-    /*  V2-01 — RUOLO TIPOGRAFICO "INTERFACCIA" (DESIGN.md 2.1 §5): Inter per
-       interfaccia e lettura; i titoli serif (saluto, corso, concetto) usano
-       il ruolo DISPLAY (font-display → Lora, vedi tailwind.config). */
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-feature-settings: 'ss01', 'cv11';
+    min-width: 320px;
+    min-height: 100vh;
+    overflow-x: clip;
+    background-color: hsl(var(--background));
+    background-image: repeating-linear-gradient(
+      180deg,
+      hsl(var(--primary) / 0.11) 0,
+      hsl(var(--primary) / 0.11) 6px,
+      transparent 6px,
+      transparent 28px
+    );
+    background-attachment: fixed;
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Titoli compatti: tracking coerente sui tre livelli del Design System. */
-  h1, h2, h3,
-  .display-large, .headline-large, .headline-medium {
-    @apply tracking-tight;
+  body::after {
+    content: "";
+    position: fixed;
+    z-index: 60;
+    inset-inline: 0;
+    bottom: 0;
+    height: 4px;
+    pointer-events: none;
+    background: linear-gradient(90deg, #3A382E 0%, #565449 34%, #D8CFBC 72%, #FFFBF4 100%);
   }
 
-  h1, .display-large {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-weight: 700;
-    font-size: 2.25rem;
-    line-height: 1.05;
+  h1, h2, h3,
+  .display-large, .headline-large, .headline-medium {
+    font-family: "Playfair Display", Lora, Georgia, serif;
     letter-spacing: -0.02em;
     color: hsl(var(--foreground));
   }
-
-  h2, .headline-large {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 700;
-    font-size: 1.5rem;
-    line-height: 1.1;
-    letter-spacing: -0.015em;
-    color: hsl(var(--foreground));
-  }
-
-  h3, .headline-medium {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 600;
-    font-size: 1.25rem;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
-    color: hsl(var(--foreground));
-  }
+  h1, .display-large { font-size: 2.25rem; font-weight: 400; line-height: 1.16; }
+  h2, .headline-large { font-size: 1.875rem; font-weight: 500; line-height: 1.2; }
+  h3, .headline-medium { font-size: 1.625rem; font-weight: 500; line-height: 1.25; }
 
   .title-large {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 600;
-    font-size: 1.125rem;
-    line-height: 1.4;
+    font-family: "Playfair Display", Lora, Georgia, serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    line-height: 1.2;
     letter-spacing: -0.015em;
   }
-
-  .title-medium { font-family: 'Inter', system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.4; letter-spacing: -0.01em; }
-  .title-small { font-family: 'Inter', system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.4; letter-spacing: 0.01em; }
-
+  .title-medium { font-family: "Inter", system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.45; }
+  .title-small { font-family: "Inter", system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.45; }
   .body-large, .body-medium {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 1rem;
     font-weight: 400;
-    line-height: 1.6;
-    letter-spacing: -0.01em;
+    line-height: 1.5;
     color: hsl(var(--foreground));
   }
+  .body-large { font-size: 1.125rem; line-height: 1.65; }
   .body-small {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: "Inter", system-ui, sans-serif;
     font-weight: 400;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     line-height: 1.5;
     color: hsl(var(--muted-foreground));
   }
 
-  /* Etichette — uppercase tracking moderno */
   .label-large, .label-medium, .label-small {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: "Inter", system-ui, sans-serif;
     text-transform: uppercase;
     font-weight: 600;
   }
-  .label-large { font-size: 0.75rem; letter-spacing: 0.1em; }
-  .label-medium { font-size: 0.6875rem; letter-spacing: 0.12em; }
-  .label-small { font-size: 0.625rem; letter-spacing: 0.14em; }
+  .label-large { font-size: 0.875rem; letter-spacing: 0.08em; }
+  .label-medium { font-size: 0.75rem; letter-spacing: 0.08em; }
+  .label-small { font-size: 0.75rem; letter-spacing: 0.06em; }
 
-  html {
-    scroll-behavior: smooth;
+  :where(button, a, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
-  /* 🧷 P23a — cintura anti-straripo: la pagina non si trascina piu' di lato.
-     overflow-x: clip NON crea un contenitore di scroll (le testate sticky
-     continuano a funzionare); dove il browser non lo conosce viene ignorato
-     e tutto resta come prima (nessun rischio, solo assicurazione). */
-  html, body {
-    overflow-x: clip;
+  .force-light {
+    color-scheme: dark;
+    --canvas: 72 16.13% 6.08%;
+    --surface-primary: 50.77 8.18% 31.18%;
+    --surface-secondary: 40.71 26.42% 79.22%;
+    --paper: var(--surface-secondary);
+    --ink: 72 16.13% 6.08%;
+    --ink-muted: 50.77 8.18% 31.18%;
+    --steel: 50 4.92% 52.16%;
+    --line: 40.71 26.42% 79.22%;
+    --control-line: 48 11.81% 75.10%;
+    --on-ink: 38.18 100% 97.84%;
+    --focus: 50.77 8.18% 31.18%;
+    --accent-light: 38.18 100% 97.84%;
+    --primary: var(--surface-primary);
+    --primary-deep: 50 11.54% 20.39%;
+    --background: var(--canvas);
+    --foreground: var(--on-ink);
+    --card: var(--surface-primary);
+    --card-foreground: var(--accent-light);
+    --popover: var(--surface-secondary);
+    --popover-foreground: var(--ink);
+    --muted: var(--surface-primary);
+    --muted-foreground: var(--surface-secondary);
+    --secondary: var(--surface-secondary);
+    --secondary-foreground: var(--ink);
+    --accent: var(--surface-secondary);
+    --accent-foreground: var(--ink);
+    --border: var(--line);
+    --input: var(--control-line);
+    --ring: var(--focus);
+    --surface-dim: var(--canvas);
+    --surface-bright: var(--surface-primary);
+    --surface-container-lowest: var(--surface-primary);
+    --surface-container-low: var(--surface-primary);
+    --surface-container: var(--surface-primary);
+    --surface-container-high: var(--surface-primary);
+    --surface-container-highest: var(--surface-secondary);
+    --surface-cream: var(--surface-secondary);
+    --surface-cream-foreground: var(--ink);
+    --surface-cream-muted: var(--ink-muted);
+    --surface-dark-card: 60 3.85% 14.31%;
+    --brand: var(--primary);
+    --brand-deep: var(--accent-light);
+    --brand-tint: var(--surface-secondary);
+    --shadow-level-1: 0 1px 2px rgba(17, 18, 13, 0.04), 0 4px 12px rgba(17, 18, 13, 0.03);
+    --shadow-level-2: 0 1px 2px rgba(17, 18, 13, 0.05), 0 6px 16px rgba(17, 18, 13, 0.05);
+    --shadow-level-3: 0 2px 4px rgba(17, 18, 13, 0.04), 0 10px 24px rgba(17, 18, 13, 0.08);
+    --shadow-level-4: 0 2px 4px rgba(17, 18, 13, 0.05), 0 12px 28px rgba(17, 18, 13, 0.10);
+    --shadow-level-5: 0 6px 24px rgba(17, 18, 13, 0.10);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
   }
 }
 
@@ -480,54 +551,7 @@
     background: hsl(var(--primary));
   }
 
-/*  P21d — LA VETRINA AL CHIARO: la Landing resta in abito chiaro (carta
-   avorio) anche quando l'app gira in smoking nero. Uso: la pagina avvolge
-   tutto in <div className="force-light ..."> e i token lì dentro si
-   comportano come in :root. I portali (toast, sheet) restano fuori: giusto. */
-.force-light {
-  color-scheme: light;
-  --off-white: 242 240 239;
---primary: 182 88% 27%;   /* D1: ottanio anche nella vetrina forzata */
---primary-foreground: 0 0% 100%;
---primary-container: 168 28% 93%;
---secondary: 168 28% 93%;
---secondary-foreground: 183 86% 19%;
---secondary-container: 168 24% 91%;
---tertiary: 0 0% 32%;
---tertiary-foreground: 0 0% 100%;
---tertiary-container: 0 0% 93%;
---destructive: 4 68% 40%;
-  --destructive-foreground: 0 0% 100%;
---error-container: 12 0% 93%;
---success: 152 55% 32%;
---warning: 28 80% 34%;
---background: 20 10% 94%;   /* #F2F0EF carta */
---foreground: 0 0% 8%;
---surface-dim: 0 0% 88%;
---surface-bright: 0 0% 100%;
---surface-container-lowest: 0 0% 100%;
---surface-container-low: 0 0% 97%;
---surface-container: 0 0% 95%;
---surface-container-high: 0 0% 92%;
---surface-container-highest: 0 0% 89%;
---card: 0 0% 100%;
---card-foreground: 0 0% 8%;
---popover: 0 0% 100%;
---popover-foreground: 0 0% 8%;
---muted: 0 0% 94%;
---muted-foreground: 27 5% 37%;
---accent: 168 28% 93%;
---accent-foreground: 183 86% 19%;
---outline: 0 0% 24% / 0.25;
---outline-variant: 0 0% 24% / 0.12;
---border: 50 7% 83%;
---input: 0 0% 100%;
-  --shadow-level-1: 0 2px 6px rgba(24, 21, 22, 0.06);
-  --shadow-level-2: 0 4px 10px rgba(24, 21, 22, 0.08), 0 1px 3px rgba(24, 21, 22, 0.05);
-  --shadow-level-3: 0 10px 28px rgba(24, 21, 22, 0.12), 0 2px 6px rgba(24, 21, 22, 0.05);
-  --shadow-level-4: 0 14px 36px rgba(24, 21, 22, 0.15), 0 2px 6px rgba(24, 21, 22, 0.06);
-  --shadow-level-5: 0 18px 48px rgba(24, 21, 22, 0.18);
-}
+/* Le superfici delle pagine marketing usano i token v3 nello scope `.erga-lp`. */
   /* ═══════ CINEMATIC ENTER ═══════
      Soft fade + micro scale-up. No bounce. */
   @keyframes cinematic-enter {
@@ -541,13 +565,8 @@
     background: hsl(var(--surface-container));
   }
   .gradient-cool {
-    /* Superficie a contrasto del tema chiaro: #181516, non nero puro. */
+    /* Superficie a contrasto: Smoky Black #11120D. */
     background: hsl(var(--ink));
-    color: hsl(var(--cream));
-  }
-  .dark .gradient-cool {
-    /* Il tema scuro non cambia: conserva il nero della superficie cool. */
-    background: #000;
     color: hsl(var(--cream));
   }
   .gradient-surface {
@@ -574,26 +593,18 @@
     margin-bottom: 0.5rem;
   }
 
-  /* ═══════ ERGA SECONDARY SURFACES ═══════
-     P31 — superfici secondarie per liste, righe impostazioni e bottoni-menu:
-     addio cartoncino 2D con contorno duro, benvenuto materiale morbido,
-     leggermente rialzato di giorno e vetroso/scuro di notte, senza aloni
-     pesanti quando più elementi stanno in colonna. */
+  /* Superfici riusabili delle Impostazioni: opache, tokenizzate e flat. */
   .erga-settings-panel {
-    border: 1px solid hsl(var(--ink) / 0.05);
-    background-color: hsl(var(--card) / 0.94);
-    box-shadow:
-      0 12px 26px -22px hsl(0 0% 0% / 0.18),
-      0 1px 2px hsl(0 0% 0% / 0.04);
-    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    box-shadow: var(--shadow-level-1);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
   }
 
   .erga-list-item {
-    border: 1px solid hsl(var(--ink) / 0.05);
-    background-color: hsl(var(--card) / 0.92);
-    box-shadow:
-      0 10px 24px -20px hsl(0 0% 0% / 0.16),
-      0 1px 2px hsl(0 0% 0% / 0.04);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    box-shadow: var(--shadow-level-0);
     transition:
       background-color 180ms ease,
       border-color 180ms ease,
@@ -601,77 +612,23 @@
       transform 180ms ease;
   }
 
-  .erga-list-item:hover {
-    background-color: hsl(var(--surface-container-low));
-    border-color: hsl(var(--ink) / 0.08);
-    box-shadow:
-      0 12px 28px -22px hsl(0 0% 0% / 0.18),
-      0 1px 2px hsl(0 0% 0% / 0.05);
+  .erga-list-item:hover,
+  .erga-list-item[aria-checked="true"],
+  .erga-list-item[aria-pressed="true"],
+  .erga-list-item[data-state="active"],
+  .erga-list-item[data-active="true"] {
+    border-color: hsl(var(--line));
+    box-shadow: var(--shadow-level-1);
   }
 
   .erga-list-item:active {
     transform: scale(0.995);
   }
 
-  .erga-list-item[aria-checked="true"],
-  .erga-list-item[aria-pressed="true"],
-  .erga-list-item[data-state="active"],
-  .erga-list-item[data-active="true"] {
-    background-color: hsl(var(--surface-container-high));
-    border-color: hsl(var(--foreground) / 0.10);
-    box-shadow:
-      0 12px 28px -22px hsl(0 0% 0% / 0.20),
-      0 1px 2px hsl(0 0% 0% / 0.06);
-  }
-
   .erga-list-item-icon {
-    border: 1px solid hsl(var(--ink) / 0.05);
-    background-color: hsl(var(--surface-container-high));
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.55);
-    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-  }
-
-  .dark .erga-settings-panel,
-  .dark .erga-list-item {
-    border-color: hsl(0 0% 100% / 0.10);
-    background-color: rgb(26 26 26 / 0.80);
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.05),
-      0 10px 20px -20px hsl(0 0% 0% / 0.70);
-  }
-
-  @supports (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px)) {
-    .dark .erga-settings-panel,
-    .dark .erga-list-item {
-      background-color: rgb(26 26 26 / 0.72);
-      -webkit-backdrop-filter: blur(12px);
-      backdrop-filter: blur(12px);
-    }
-  }
-
-  .dark .erga-list-item:hover {
-    background-color: rgb(34 34 34 / 0.84);
-    border-color: hsl(0 0% 100% / 0.16);
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.06),
-      0 12px 20px -22px hsl(0 0% 0% / 0.74);
-  }
-
-  .dark .erga-list-item[aria-checked="true"],
-  .dark .erga-list-item[aria-pressed="true"],
-  .dark .erga-list-item[data-state="active"],
-  .dark .erga-list-item[data-active="true"] {
-    background-color: rgb(255 255 255 / 0.06);
-    border-color: hsl(0 0% 100% / 0.18);
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.07),
-      0 12px 20px -22px hsl(0 0% 0% / 0.78);
-  }
-
-  .dark .erga-list-item-icon {
-    border-color: hsl(0 0% 100% / 0.10);
-    background-color: hsl(0 0% 100% / 0.05);
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.08);
+    border: 1px solid hsl(var(--line));
+    background-color: hsl(var(--surface-secondary));
+    transition: background-color 180ms ease, border-color 180ms ease;
   }
 
   /* ═══════ M3 SURFACE CONTAINERS ═══════ */
@@ -773,8 +730,8 @@
 
   /* ═══════ M3 CHIPS — Expressive ═══════ */
   .m3-chip {
-    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium;
-    border-radius: var(--radius-full);
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium;
+    border-radius: var(--radius-xs);
     transition: background-color 200ms ease, box-shadow 200ms ease;
   }
   .m3-chip:hover { box-shadow: var(--shadow-level-1); }
@@ -812,8 +769,8 @@
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   }
   .m3-nav-indicator {
-    background-color: hsl(var(--tertiary-container));   /*  goccia di neutro */
-    border-radius: var(--radius-full);
+    background-color: hsl(var(--secondary-container));
+    border-radius: var(--radius-button);
     width: 4rem;
     height: 2rem;
     transition: all 250ms ease;
@@ -922,7 +879,7 @@
     animation: lesson-sheet-in 280ms cubic-bezier(0.2, 0, 0, 1) both;
   }
   @keyframes lesson-sheet-in {
-    from { transform: translateY(100%); border-radius: 28px 28px 0 0; opacity: 0.98; }
+    from { transform: translateY(100%); border-radius: 12px 12px 0 0; opacity: 0.98; }
     to   { transform: translateY(0); border-radius: 0; opacity: 1; }
   }
   /*  P24 — foglio dal basso per i pannelli (sala d'attesa, fogli): sale
@@ -1010,14 +967,18 @@
 
   /* 🎨 P9a — pastelli semantici della routine (scuola/sonno/pasti):
      la tinta ha un senso (distingue i blocchi), ma addolcita sul tono di casa. */
-  .routine-school { background: hsl(214 0% 94% / 0.75); border: 1px solid hsl(214 0% 87% / 0.85); color: hsl(222 0% 22%); }
-  .routine-school-dot { background: hsl(214 0% 64%); }
-  .routine-sleep { background: hsl(243 0% 95% / 0.85); border: 1px solid hsl(243 0% 89% / 0.85); color: hsl(222 0% 22%); }
-  .routine-sleep-dot { background: hsl(243 0% 70%); }
-  .routine-meal { background: hsl(38 0% 94% / 0.8); border: 1px solid hsl(38 0% 86% / 0.9); color: hsl(222 0% 22%); }
-  .routine-meal-dot { background: hsl(38 0% 60%); }
-  .routine-other { background: hsl(var(--surface-container) / 0.85); border: 1px solid hsl(var(--outline-variant)); color: hsl(var(--muted-foreground)); }
-  .routine-other-dot { background: hsl(var(--muted-foreground)); }  /*  P21j — anche il puntino del mattone Altro parla in gettoni */  /*  P21e — il quarto mattone routine parla in gettoni: va anche di notte */
+  .routine-school, .routine-sleep, .routine-meal, .routine-other {
+    border: 1px solid hsl(var(--outline-variant));
+    border-radius: var(--radius-card);
+  }
+  .routine-school { background: color-mix(in srgb, hsl(var(--routine-school)) 18%, hsl(var(--surface-primary))); color: hsl(var(--foreground)); }
+  .routine-school-dot { background: hsl(var(--routine-school)); }
+  .routine-sleep { background: color-mix(in srgb, hsl(var(--routine-sleep)) 18%, hsl(var(--surface-primary))); color: hsl(var(--foreground)); }
+  .routine-sleep-dot { background: hsl(var(--routine-sleep)); }
+  .routine-meal { background: color-mix(in srgb, hsl(var(--routine-meal)) 18%, hsl(var(--surface-primary))); color: hsl(var(--foreground)); }
+  .routine-meal-dot { background: hsl(var(--routine-meal)); }
+  .routine-other { background: color-mix(in srgb, hsl(var(--routine-other)) 18%, hsl(var(--surface-primary))); color: hsl(var(--foreground)); }
+  .routine-other-dot { background: hsl(var(--routine-other)); }  /*  P21j — anche il puntino del mattone Altro parla in gettoni */  /*  P21e — il quarto mattone routine parla in gettoni: va anche di notte */
   .animate-stagger-1 { animation-delay: 60ms; animation-fill-mode: both; }
   .animate-stagger-2 { animation-delay: 120ms; animation-fill-mode: both; }
   .animate-stagger-3 { animation-delay: 180ms; animation-fill-mode: both; }
@@ -1166,19 +1127,16 @@ html.text-scale-lg     { --text-scale: 1.125; }
 html.text-scale-xl     { --text-scale: 1.28; }
 
 html.high-contrast {
-  /* Contrasto alto: stesso inchiostro #181516, senza grigi freddi. */
-  --outline: var(--ink) / 0.55;
-  --outline-variant: var(--ink) / 0.38;
-  --border: var(--ink) / 0.38;
-  --muted-foreground: 340 7% 22%;
+  --outline: var(--ink) / 0.72;
+  --outline-variant: var(--line) / 0.8;
+  --border: var(--line);
+  --muted-foreground: var(--ink-muted);
 }
 html.high-contrast.dark {
-  /* P30: anche in alto contrasto la notte usa l'off-white, non il bianco puro
-     (#F2F0EF sul fondo #11120D resta ben oltre l'AAA). */
-  --outline: var(--cream) / 0.6;
-  --outline-variant: var(--cream) / 0.42;
-  --border: var(--cream) / 0.42;
-  --muted-foreground: var(--cream);
+  --outline: var(--accent-light) / 0.8;
+  --outline-variant: var(--line);
+  --border: var(--line);
+  --muted-foreground: var(--ink-muted);
 }
 html.high-contrast *:focus-visible {
   outline: 3px solid hsl(var(--ring));
@@ -1228,55 +1186,50 @@ html.reduce-motion *::after {
    scelto misurando il fondo reale del blocco con il rapporto WCAG.
    Il testo del blocco eredita l'inchiostro; i figli usano le utility
    qui sotto. Il ripiego (prima dello script, o senza script) è
-   l'off-white #F2F0EF: i blocchi ambientati nascono scuri.
+   Floral White #FFFBF4: i blocchi ambientati nascono scuri.
    NOTA: queste regole non vivono in un @layer, così battono le utility
    Tailwind quando devono sostituire un colore hardcoded scorretto.
    ═══════════════════════════════════════════════════════════════ */
 [data-auto-contrast] {
-  /* P30: l'inchiostro chiaro è l'off-white #F2F0EF = canali "242 240 239". */
-  --contrast-ink: 242 240 239;
-  --contrast-surface: 24 21 22; /* #181516 */
+  --contrast-ink: 255 251 244;
+  --contrast-surface: 17 18 13; /* #11120D */
   color: rgb(var(--contrast-ink));
 }
 
 /* Testo: pieno, secondario e terziario (sulle superfici ambientate). */
-.text-contrast { color: rgb(var(--contrast-ink, 242 240 239)); }
-.text-contrast-secondary { color: rgb(var(--contrast-ink, 242 240 239) / 0.8); }
-.text-contrast-tertiary { color: rgb(var(--contrast-ink, 242 240 239) / 0.64); }
+.text-contrast { color: rgb(var(--contrast-ink, 255 251 244)); }
+.text-contrast-secondary { color: rgb(var(--contrast-ink, 255 251 244) / 0.8); }
+.text-contrast-tertiary { color: rgb(var(--contrast-ink, 255 251 244) / 0.64); }
 
 /* Superfici "inchiostro": chip e pill che staccano sul fondo rilevato. */
-.bg-contrast { background-color: rgb(var(--contrast-ink, 242 240 239)); }
-.bg-contrast-soft { background-color: rgb(var(--contrast-ink, 242 240 239) / 0.14); }
-.border-contrast { border-color: rgb(var(--contrast-ink, 242 240 239) / 0.28); }
+.bg-contrast { background-color: rgb(var(--contrast-ink, 255 251 244)); }
+.bg-contrast-soft { background-color: rgb(var(--contrast-ink, 255 251 244) / 0.14); }
+.border-contrast { border-color: rgb(var(--contrast-ink, 255 251 244) / 0.28); }
 
 /* Testo che ha per sfondo l'inchiostro stesso (es. chip chiare). */
-.text-contrast-surface { color: rgb(var(--contrast-surface, 24 21 22)); }
+.text-contrast-surface { color: rgb(var(--contrast-surface, 17 18 13)); }
 
 /* ═══════════════════════════════════════════════════════════════
-   V2-01 — VELO SATINATO LOCALE (DESIGN.md 2.1 §4)
-   Solo per Continua/Riprendi/Scegli sulle copertine. Il fondo è
-   carta all'80% (giorno) / 85% (notte) con blur LOCALE 8–12px;
-   testo inchiostro OPACO; bordo discreto; focus separato.
-   La trasparenza riguarda il fondo, mai il testo. Fallback: carta
-   piena senza blur (browser senza supporto, trasparenza ridotta,
-   contrasto elevato).
+   DESIGN SYSTEM v3 — VELO SATINATO LOCALE
+   Solo per l'azione Continua/Riprendi sulle copertine: fondo Bone al 90%,
+   blur locale da 8px e testo opaco. Il fallback diventa superficie piena.
    ═══════════════════════════════════════════════════════════════ */
 .btn-satin {
-  --satin-bg: 255 254 249; /* #FFFEF9 carta (giorno) */
+  --satin-bg: 216 207 188; /* #D8CFBC Bone */
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   height: 44px;
-  padding: 10px 24px;
-  border-radius: 999px;
-  background-color: rgb(var(--satin-bg) / 0.8);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgb(var(--satin-bg) / 0.55);
-  color: hsl(var(--foreground));
-  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  background-color: rgb(var(--satin-bg) / 0.9);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgb(17 18 13 / 0.1);
+  color: hsl(var(--ink));
+  font-weight: 600;
   text-align: center;
   cursor: pointer;
   transition:
@@ -1284,7 +1237,7 @@ html.reduce-motion *::after {
     background-color var(--motion-micro) var(--ease-out);
 }
 .btn-satin:hover {
-  background-color: rgb(var(--satin-bg) / 0.88);
+  background-color: rgb(var(--satin-bg) / 0.96);
 }
 .btn-satin:active {
   transform: scale(0.98);
@@ -1301,12 +1254,12 @@ html.reduce-motion *::after {
   opacity: 0.55;
 }
 .dark .btn-satin {
-  --satin-bg: 45 44 41; /* #2D2C29 carta (notte) */
-  background-color: rgb(var(--satin-bg) / 0.85);
-  border-color: rgb(var(--satin-bg) / 0.6);
+  --satin-bg: 38 38 35; /* #262623, superficie Bone-notte */
+  background-color: rgb(var(--satin-bg) / 0.9);
+  border-color: hsl(var(--line));
 }
 .dark .btn-satin:hover {
-  background-color: rgb(var(--satin-bg) / 0.92);
+  background-color: rgb(var(--satin-bg) / 0.96);
 }
 /* Fallback opaco: niente blur → carta piena (sempre leggibile). */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -1326,17 +1279,10 @@ html.high-contrast .btn-satin {
 html.reduce-motion .btn-satin { transition: none; }
 
 /* ═══════════════════════════════════════════════════════════════
-   V2-02/V2-02b — GRANA CONDIVISA DELLA CARTA (DESIGN.md 2.1 §3, §4)
-   UNA sola sorgente di rumore (feTurbulence fractalNoise, stitchTiles:
-   nessuna giunta; asset inline locale, statico, zero richieste esterne)
-   con DUE ruoli condivisi calibrati sul composito reale: TAVOLO (fondo
-   avorio, 4,8% giorno / 2,5% notte) e FOGLIO (card carta, 3% / 1,6%),
-   più le COPERTINE a intensità piena nel velo (5% / 7% via opacity,
-   come in V2-01 — resa invariata). Il velo è SEMPRE un background-image:
-   dipinto sotto testo e controlli, non intercetta click, resta fuori
-   dall'albero accessibile. Scala fissa (--grain-scale): telefono e
-   desktop vedono la stessa grana, mai stirata sul contenitore. Blend
-   per tema (multiply/screen): nessuna inversione automatica.
+   DESIGN SYSTEM v3 — GRANA DELLA CARTA
+   Rumore SVG inline e locale, senza richieste esterne. La grana è un
+   background (mai opacity sul contenuto) e resta disattivabile per
+   trasparenza ridotta o contrasto elevato.
    ═══════════════════════════════════════════════════════════════ */
 .cover-grain {
   background-image: var(--grain-tile);
@@ -1346,9 +1292,7 @@ html.reduce-motion .btn-satin { transition: none; }
   pointer-events: none;
 }
 
-/* TAVOLO — fondo avorio della Home (V2-02b). Attivata SOLO sulla Home:
-   gate `isHome` in AppLayout sul contenitore dello scroll (la content-card
-   su desktop, il tavolo visibile su mobile). Mai altrove. */
+/* Il tavolo testurizzato è attivo solo sulla Home (gate in AppLayout). */
 .table-grain {
   background-image: var(--grain-table-tile);
   background-size: var(--grain-scale);
@@ -1356,18 +1300,14 @@ html.reduce-motion .btn-satin { transition: none; }
   background-blend-mode: var(--grain-blend);
 }
 
-/* FOGLIO — superfici carta della Home (V2-02): componenti di
-   src/components/home. Mai su Studio, lezioni, formule, campi,
-   composer, calendario o grafici; mai sul dock; mai sulla copertina
-   attiva (ha la propria grana: niente doppio velo). */
+/* La grana dei fogli è confinata alle superfici Home dichiarate. */
 .paper-grain {
   background-image: var(--grain-paper-tile);
   background-size: var(--grain-scale);
   background-repeat: repeat;
   background-blend-mode: var(--grain-blend);
 }
-/* Chi chiede superfici piatte ottiene superfici piatte: la grana è
-   decorativa e si spegne senza lasciare nulla al suo posto. */
+/* Chi chiede superfici piatte ottiene superfici piatte: la grana è decorativa. */
 @media (prefers-reduced-transparency: reduce) {
   .paper-grain,
   .table-grain {
@@ -1393,4 +1333,49 @@ html.high-contrast .table-grain {
   display: block;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+
+/* DESIGN.md v3 guardrail: full-round corners belong to avatars and circles,
+   never to controls or horizontal badges. The width/height geometry of dots,
+   avatars, meters and charts remains circular. */
+:where(button, a, input, select, textarea, [role="button"]).rounded-full {
+  border-radius: var(--radius-button);
+}
+[class~="rounded-full"][class*="px-"]:not([class*="w-"]) {
+  border-radius: var(--radius-xs);
+}
+
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .cover-grain { display: none; }
+}
+html.high-contrast .cover-grain { display: none; }
+
+/* Fondo a righe Earthy del guscio applicativo: decorazione a basso contrasto
+   sul canvas, distinta dalla grana satinata che resta confinata alle copertine. */
+.erga-app-shell {
+  background-color: hsl(var(--background));
+  background-image: repeating-linear-gradient(
+    180deg,
+    hsl(var(--primary) / 0.11) 0,
+    hsl(var(--primary) / 0.11) 6px,
+    transparent 6px,
+    transparent 28px
+  );
+  background-attachment: fixed;
+}
+
+/* Firma visiva orizzontale del Design System v3, posta prima del footer. */
+.erga-earthy-stripe {
+  display: block;
+  flex: 0 0 4px;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    hsl(var(--primary-deep)),
+    hsl(var(--primary)),
+    hsl(var(--surface-secondary)),
+    hsl(var(--accent-light))
+  );
 }

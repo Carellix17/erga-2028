@@ -19,11 +19,10 @@
 
    Da dove legge il fondo (in ordine):
      1. i layer marcati `data-contrast-layer` dentro il blocco
-        (CourseCardBackground li dichiara: base cromatica + veli/scrim),
         compositati dal basso verso l'alto con la loro opacità — i
         gradienti CSS vengono mediati stop per stop;
      2. il background-color/gradient del blocco e dei suoi antenati;
-     3. ripiego: bianco (la pagina di giorno).
+     3. ripiego: canvas Smoky Black (#11120D) del sistema v3.
 
    Gli aloni decorativi parziali (le "orb" luminose, sfocate e in parte
    fuori card) NON sono marcati come layer: coprono una frazione minima
@@ -44,15 +43,12 @@ export interface Rgba {
 }
 
 const WHITE: Rgba = { r: 255, g: 255, b: 255, a: 1 };
-/** Inchiostro caldo del tema chiaro: #181516. */
-const INK_DARK: Rgba = { r: 24, g: 21, b: 22, a: 1 };
-/**
- * P30 — Inchiostro CHIARO: off-white #F2F0EF, non bianco puro.
- * Attenzione: `WHITE` qui sopra resta bianco vero perché serve a due cose
- * diverse (la parola chiave CSS "white" e il fondo di ripiego della pagina):
- * cambia solo il colore con cui SCRIVIAMO sui blocchi scuri.
- */
-const INK_LIGHT: Rgba = { r: 242, g: 240, b: 239, a: 1 };
+/** Canvas dell'app secondo DESIGN.md v3.0: Smoky Black #11120D. */
+const PAGE_CANVAS: Rgba = { r: 17, g: 18, b: 13, a: 1 };
+/** Inchiostro del sistema v3: Smoky Black #11120D. */
+const INK_DARK: Rgba = { r: 17, g: 18, b: 13, a: 1 };
+/** Inchiostro chiaro del sistema v3: Floral White #FFFBF4. */
+const INK_LIGHT: Rgba = { r: 255, g: 251, b: 244, a: 1 };
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -195,9 +191,8 @@ export interface ContrastPick {
 }
 
 /**
- * Sceglie tra off-white (#F2F0EF) e inchiostro caldo (#181516) quello che
- * contrasta di più col fondo. A parità vince l'off-white: i blocchi ambientati
- * di Erga nascono scuri.
+ * Sceglie tra Floral White (#FFFBF4) e Smoky Black (#11120D) quello che
+ * contrasta di più col fondo secondo la palette v3. A parità vince l'off-white.
  */
 export function pickContrastInk(background: Rgba): ContrastPick {
   const bg = { ...background, a: 1 };
@@ -205,7 +200,7 @@ export function pickContrastInk(background: Rgba): ContrastPick {
   const darkRatio = contrastRatio(INK_DARK, bg);
   const useLight = lightRatio >= darkRatio;
   return {
-    channels: useLight ? "242 240 239" : "24 21 22",
+    channels: useLight ? "255 251 244" : "17 18 13",
     tone: useLight ? "light-text" : "dark-text",
     ratio: Math.round((useLight ? lightRatio : darkRatio) * 100) / 100,
   };
@@ -325,7 +320,7 @@ function readElementColor(el: Element, win: Window): Rgba | null {
  */
 export function resolveBlockBackdrop(block: Element): Rgba {
   const win = block.ownerDocument.defaultView;
-  let base: Rgba = { ...WHITE }; // ripiego: la pagina di giorno
+  let base: Rgba = { ...PAGE_CANVAS }; // ripiego: canvas Smoky Black
 
   if (win) {
     // 1) blocco + antenati (dal più esterno verso il blocco stesso)
@@ -347,8 +342,8 @@ export function resolveBlockBackdrop(block: Element): Rgba {
     });
   }
 
-  // Fondo trasparente residuo: si appoggia sulla pagina (bianca per sicurezza).
-  if (base.a < 0.999) base = compositeOver(base, WHITE);
+  // Fondo trasparente residuo: si appoggia al canvas del sistema.
+  if (base.a < 0.999) base = compositeOver(base, PAGE_CANVAS);
   return { ...base, a: 1 };
 }
 

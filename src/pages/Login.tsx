@@ -203,7 +203,7 @@ export default function Login() {
                 <div className="w-11 h-11 rounded-full bg-primary flex items-center justify-center">
                   <Brain className="w-5 h-5 text-primary-foreground" strokeWidth={1.75} />
                 </div>
-                <span className="font-display text-lg font-bold tracking-tight">Erga</span>
+                <span className="font-display text-lg font-semibold tracking-tight">Erga</span>
               </div>
               <LanguageSwitcher />
             </div>
@@ -219,7 +219,7 @@ export default function Login() {
                   <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                   {t("login.forgotBack")}
                 </button>
-                <h1 className="font-display text-2xl font-bold tracking-tight">
+                <h1 className="font-display text-2xl font-semibold tracking-tight">
                   {t("login.forgotTitle")}
                 </h1>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -276,7 +276,7 @@ export default function Login() {
             ) : (
               /* ── Form di accesso ── */
               <>
-                <h1 className="font-display text-3xl font-bold tracking-tight">
+                <h1 className="font-display text-3xl font-semibold tracking-tight">
                   {t("login.title")}
                 </h1>
                 <p className="mt-2 text-sm text-muted-foreground">{t("login.welcome")}</p>
@@ -435,7 +435,7 @@ export default function Login() {
             <div className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-white/5">
               <Brain className="h-4 w-4 text-white/80" strokeWidth={1.75} aria-hidden="true" />
             </div>
-            <span className="font-display text-sm font-bold tracking-[0.14em] text-white/70">ERGA</span>
+            <span className="font-display text-sm font-semibold tracking-[0.14em] text-white/70">ERGA</span>
           </div>
 
           <div className="relative max-w-md">

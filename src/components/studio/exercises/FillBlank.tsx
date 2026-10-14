@@ -39,7 +39,7 @@ export function FillBlank({
               <span className="inline-block mx-1 align-middle">
                 {showResult ? (
                   <span className={cn(
-                    "inline-flex items-center gap-1 px-3 py-1 rounded-xl font-bold transition-all border",
+                    "inline-flex items-center gap-1 px-3 py-1 rounded-xl font-semibold transition-all border",
                     isCorrect
                       ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100 animate-feedback-correct"
                       : "border-rose-500/40 bg-rose-500/15 text-rose-900 dark:bg-rose-950/40 dark:text-rose-100 animate-feedback-wrong"
@@ -83,7 +83,7 @@ export function FillBlank({
           ) : (
             <div className="p-4 rounded-2xl bg-surface-container-low text-center border border-emerald-500/30">
               <p className="body-small text-muted-foreground mb-1">{t("exercise.correctAnswer")}</p>
-              <p className="title-medium text-emerald-700 dark:text-emerald-300 font-bold">{correctAnswer}</p>
+              <p className="title-medium text-emerald-700 dark:text-emerald-300 font-semibold">{correctAnswer}</p>
             </div>
           )}
         </div>

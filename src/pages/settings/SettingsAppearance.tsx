@@ -5,9 +5,9 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { SeoHead } from "@/components/SeoHead";
 
 const OPTIONS: { value: Theme; label: string; desc: string; icon: typeof Sun; swatch: string }[] = [
-  { value: "light", label: "Chiaro", desc: "Sfondo chiaro, testo scuro", icon: Sun, swatch: "bg-[#F2F0EF]" },
-  { value: "dark", label: "Scuro", desc: "Sfondo scuro, testo chiaro", icon: Moon, swatch: "bg-[#11120D]" },
-  { value: "system", label: "Automatico", desc: "Segue il tuo dispositivo", icon: Monitor, swatch: "bg-gradient-to-r from-[#F2F0EF] to-[#11120D]" },
+  { value: "light", label: "Chiaro", desc: "Palette giorno: Smoky Black, Olive e Bone", icon: Sun, swatch: "bg-[#565449]" },
+  { value: "dark", label: "Scuro", desc: "Palette notte: Night Canvas e Floral White", icon: Moon, swatch: "bg-[#1A1A15]" },
+  { value: "system", label: "Automatico", desc: "Segue il tema del tuo dispositivo", icon: Monitor, swatch: "bg-gradient-to-r from-[#565449] to-[#1A1A15]" },
 ];
 
 export default function SettingsAppearance() {
@@ -42,7 +42,7 @@ export default function SettingsAppearance() {
                   }}
                   className="erga-list-item flex w-full items-center gap-4 rounded-button p-3 text-left transition-all duration-300 ease-m3-emphasized"
                 >
-                  <div className={`erga-list-item-icon h-11 w-11 shrink-0 rounded-button ${opt.swatch}`} />
+                  <div className={`h-11 w-11 shrink-0 rounded-button border border-line ${opt.swatch}`} aria-hidden="true" />
                   <div className="min-w-0 flex-1">
                     <p className="title-medium text-foreground flex items-center gap-2">
                       <opt.icon className="w-4 h-4" /> {opt.label}

@@ -80,7 +80,7 @@ export function FocusFullscreen() {
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className={cn(
-              "font-display font-bold tabular-nums tracking-tight text-foreground",
+              "font-display font-semibold tabular-nums tracking-tight text-foreground",
               "text-6xl",
             )}>
               {formatMMSS(remaining)}

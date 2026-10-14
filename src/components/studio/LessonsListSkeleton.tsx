@@ -45,7 +45,7 @@ export function LessonsListSkeleton({ count }: { count?: number }) {
               {/* Righe-lezione */}
               <div className="flex flex-col gap-2">
                 {Array.from({ length: rows }, (_, i) => (
-                  <div key={i} className="flex items-center gap-3.5 rounded-[18px] bg-card px-3.5 py-3">
+                  <div key={i} className="flex items-center gap-3.5 rounded-card bg-card px-3.5 py-3">
                     <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <Skeleton className="h-4 w-3/4 rounded-md" />

@@ -72,14 +72,14 @@ describe("luminanza e contrasto WCAG", () => {
 describe("pickContrastInk", () => {
   it("sceglie l'off-white su fondo scuro (marrone materia sfumato nel nero)", () => {
     const pick = pickContrastInk({ r: 60, g: 45, b: 40, a: 1 });
-    expect(pick.channels).toBe("242 240 239"); // P30: #F2F0EF, non bianco puro
+    expect(pick.channels).toBe("255 251 244"); // Floral White #FFFBF4
     expect(pick.tone).toBe("light-text");
     expect(pick.ratio).toBeGreaterThan(4.5); // almeno AA per testo normale
   });
 
   it("sceglie l'inchiostro caldo su fondo chiaro", () => {
     const pick = pickContrastInk({ r: 240, g: 235, b: 230, a: 1 });
-    expect(pick.channels).toBe("24 21 22");
+    expect(pick.channels).toBe("17 18 13");
     expect(pick.tone).toBe("dark-text");
     expect(pick.ratio).toBeGreaterThan(4.5);
   });
@@ -116,7 +116,7 @@ describe("blocchi data-auto-contrast (DOM)", () => {
     const block = document.getElementById("block") as HTMLElement;
     const pick = applyAutoContrast(block);
     expect(pick.tone).toBe("light-text");
-    expect(block.style.getPropertyValue("--contrast-ink")).toBe("242 240 239");
+    expect(block.style.getPropertyValue("--contrast-ink")).toBe("255 251 244");
     expect(block.getAttribute("data-contrast-tone")).toBe("light-text");
   });
 
@@ -126,7 +126,7 @@ describe("blocchi data-auto-contrast (DOM)", () => {
     const block = document.getElementById("block") as HTMLElement;
     const pick = applyAutoContrast(block);
     expect(pick.tone).toBe("dark-text");
-    expect(block.style.getPropertyValue("--contrast-ink")).toBe("24 21 22");
+    expect(block.style.getPropertyValue("--contrast-ink")).toBe("17 18 13");
   });
 
   it("legge il fondo dai layer marcati data-contrast-layer anche se il blocco è trasparente", () => {
@@ -156,7 +156,7 @@ describe("blocchi data-auto-contrast (DOM)", () => {
     base.style.backgroundColor = "rgb(245, 242, 238)";
     applyAutoContrast(block);
     expect(block.getAttribute("data-contrast-tone")).toBe("dark-text");
-    expect(block.style.getPropertyValue("--contrast-ink")).toBe("24 21 22");
+    expect(block.style.getPropertyValue("--contrast-ink")).toBe("17 18 13");
   });
 
   it("refreshAutoContrast processa tutti i blocchi connessi", () => {

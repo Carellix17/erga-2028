@@ -314,7 +314,7 @@ export function ModulePath({
             </Button>
             <div className="min-w-0">
               <p className="label-small text-muted-foreground">Modulo {moduleIndex + 1}</p>
-              <h2 className="font-display font-extrabold text-lg leading-snug text-foreground break-words">
+              <h2 className="font-display font-semibold text-lg leading-snug text-foreground break-words">
                 {moduleTitle}
               </h2>
             </div>
@@ -327,7 +327,7 @@ export function ModulePath({
               <p className="text-xs text-muted-foreground font-medium">
                 {doneCount} di {modLessons.length} lezioni completate
               </p>
-              <p className="text-sm font-bold text-subject-accent tabular-nums">{pct}%</p>
+              <p className="text-sm font-semibold text-subject-accent tabular-nums">{pct}%</p>
             </div>
             <div className="h-1.5 bg-secondary rounded-sm overflow-hidden mt-1.5">
               <div
@@ -346,12 +346,12 @@ export function ModulePath({
             <Loader2 className="w-5 h-5 text-tertiary animate-spin" />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-foreground">Sto generando le lezioni…</p>
+            <p className="text-sm font-semibold text-foreground">Sto generando le lezioni…</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               Le nuove lezioni entreranno qui appena pronte
             </p>
           </div>
-          <span className="text-lg font-extrabold tabular-nums text-tertiary flex-shrink-0">
+          <span className="text-lg font-semibold tabular-nums text-tertiary flex-shrink-0">
             {genTotal > 0 ? Math.min(100, Math.round((genCount / genTotal) * 100)) : 8}%
           </span>
         </div>
@@ -418,7 +418,7 @@ export function ModulePath({
                 data-node-state={state}
                 className={cn(
                   "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full",
-                  "font-display font-extrabold text-lg tabular-nums select-none transition-all duration-200",
+                  "font-display font-semibold text-lg tabular-nums select-none transition-all duration-200",
                   state === "done" && "bg-subject-accent text-subject-accent-foreground shadow-level-2",
                   state === "cur" && "bg-subject-accent text-subject-accent-foreground shadow-level-3 ring-2 ring-background",
                   state === "cur" && !prefersReduced && "animate-breathe-ring",
@@ -467,7 +467,7 @@ export function ModulePath({
                 {/* Etichetta del nodo corrente: "Riprendi" */}
                 {state === "cur" && !isGeneratingLesson && (
                   <span className="absolute -top-9 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 rounded-pill bg-subject-accent px-2.5 py-1 text-[10.5px] font-extrabold text-subject-accent-foreground shadow-level-2">
+                    <span className="inline-flex items-center gap-1 rounded-pill bg-subject-accent px-2.5 py-1 text-[10.5px] font-semibold text-subject-accent-foreground shadow-level-2">
                       <Play className="h-2.5 w-2.5" fill="currentColor" strokeWidth={0} />
                       Riprendi
                     </span>
@@ -533,7 +533,7 @@ export function ModulePath({
             <div className="absolute left-1/2 top-[calc(100%+14px)] z-10 -translate-x-1/2 whitespace-nowrap">
               <div className="rounded-xl border border-border bg-card px-3.5 py-2 text-center shadow-level-1">
                 <span className="label-small block text-muted-foreground">Ultimo passo</span>
-                <span className="block text-[13px] font-bold text-foreground">Test finale</span>
+                <span className="block text-[13px] font-semibold text-foreground">Test finale</span>
                 {/* 🅐 FONDAMENTA — l'esito dell'ultimo test fatto resta visibile */}
                 {typeof finalTestScore === "number" && (
                   <span className="block text-[11px] font-semibold text-muted-foreground">
@@ -566,11 +566,11 @@ export function ModulePath({
             <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-2 animate-fade-in">
               <div className="flex flex-col items-center text-center mb-5">
                 <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-3">
-                  <span className="text-foreground font-display font-bold">{menuLesson.index + 1}</span>
+                  <span className="text-foreground font-display font-semibold">{menuLesson.index + 1}</span>
                 </div>
                 {!isRenaming ? (
                   <>
-                    <h3 className="font-display font-bold text-base text-foreground line-clamp-2 max-w-xs">
+                    <h3 className="font-display font-semibold text-base text-foreground line-clamp-2 max-w-xs">
                       {menuLesson.lesson.title}
                     </h3>
                     <p className="text-xs text-muted-foreground mt-1">Cosa vuoi fare con questa lezione?</p>
@@ -604,7 +604,7 @@ export function ModulePath({
                   <button
                     onClick={handleRegenerate}
                     disabled={actionLoading !== null || !onRegenerateLesson}
-                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-[18px] bg-card hover:bg-surface-container-high transition-colors duration-200 disabled:opacity-50"
+                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-card bg-card hover:bg-surface-container-high transition-colors duration-200 disabled:opacity-50"
                   >
                     <span className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
                       {actionLoading === "regen" ? (
@@ -618,7 +618,7 @@ export function ModulePath({
                   <button
                     onClick={() => { setRenameValue(menuLesson.lesson.title); setIsRenaming(true); }}
                     disabled={actionLoading !== null || !onRenameLesson}
-                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-[18px] bg-card hover:bg-surface-container-high transition-colors duration-200 disabled:opacity-50"
+                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-card bg-card hover:bg-surface-container-high transition-colors duration-200 disabled:opacity-50"
                   >
                     <span className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
                       <Pencil className="w-5 h-5 text-foreground" strokeWidth={1.75} />
@@ -628,7 +628,7 @@ export function ModulePath({
                   <button
                     onClick={handleDelete}
                     disabled={actionLoading !== null || !onDeleteLesson}
-                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-[18px] bg-card hover:bg-error-container/40 transition-colors duration-200 disabled:opacity-50"
+                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-card bg-card hover:bg-error-container/40 transition-colors duration-200 disabled:opacity-50"
                   >
                     <span className="w-10 h-10 rounded-full bg-error-container flex items-center justify-center">
                       {actionLoading === "delete" ? (

@@ -49,7 +49,7 @@ describe("pianoPalette — colori materia (spec)", () => {
     // P48 — il bordo del blocco è un filo di 1px (era una barra piena da 4px)
     expect(t.border).toMatch(/^1px solid rgba\(217 119 6 \/ 0\.55\)$/);
     expect(t.border).not.toContain("4px");
-    expect(t.color).toBe("#F8FAFC"); // testo chiaro WCAG AA su fondo scuro
+    expect(t.color).toBe("#FFFBF4"); // Floral White su fondo scuro
   });
 
   it("di giorno il contorno è più discreto e resta comunque un filo", () => {
@@ -58,9 +58,9 @@ describe("pianoPalette — colori materia (spec)", () => {
   });
 
   it("in modalità chiara il testo diventa scuro (leggibile su fondo tinta)", () => {
-    expect(subjectTint("Storia").color).toBe("#0F172A");
-    expect(subjectTint("Storia", false).color).toBe("#0F172A");
-    expect(routineTint("school").color).toBe("#0F172A");
+    expect(subjectTint("Storia").color).toBe("#11120D");
+    expect(subjectTint("Storia", false).color).toBe("#11120D");
+    expect(routineTint("school").color).toBe("#11120D");
   });
 
   it("colori routine fissi (sonno/scuola/pasti/altro)", () => {

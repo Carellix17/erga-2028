@@ -55,9 +55,9 @@ export interface CourseCover {
 }
 
 /* ── Colori di sistema (DESIGN.md 2.1 §3, valori hex fissi) ── */
-const PAPER = "#FFFEF9"; // carta
-const INK = "#252623"; // inchiostro
-const DARK = "#22211F"; // tavolo notte: base dei campi profondi
+const PAPER = "#FFFBF4"; // Floral White
+const INK = "#11120D"; // Smoky Black
+const DARK = "#0A0A08"; // Night Canvas: base dei campi profondi
 
 /* ── Famiglia assegnata alle materie (stabile, bilanciata) ─────────────
    Metà materie in campo chiaro e metà in campo profondo, scelte per il
@@ -113,8 +113,8 @@ function hslToHex(color: string): string | null {
 }
 
 function mix(a: string, b: string, weightOfB: number): string {
-  const ca = hexToRgb(a) ?? [255, 254, 249];
-  const cb = hexToRgb(b) ?? [255, 254, 249];
+  const ca = hexToRgb(a) ?? [255, 251, 244];
+  const cb = hexToRgb(b) ?? [255, 251, 244];
   const out = ca.map((v, i) => Math.round(v * (1 - weightOfB) + cb[i] * weightOfB));
   return `#${out.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 }
@@ -177,7 +177,7 @@ function stableHash(name: string): number {
 }
 
 function channels(hex: string): string {
-  const c = hexToRgb(hex) ?? [255, 254, 249];
+  const c = hexToRgb(hex) ?? [255, 251, 244];
   return `${c[0]} ${c[1]} ${c[2]}`;
 }
 
@@ -188,7 +188,7 @@ function channels(hex: string): string {
  */
 export function resolveCourseCover(courseName: string, customKey?: string | null): CourseCover {
   const subject = resolveSubjectColor(courseName || "", customKey ?? undefined);
-  const accentHex = hslToHex(subject.accent) ?? "#8A8C7E";
+  const accentHex = hslToHex(subject.accent) ?? "#94A3B8";
   const family = SUBJECT_FAMILY[subject.key] ?? "light";
 
   const field = family === "deep" ? deepField(accentHex) : lightField(accentHex);

@@ -51,14 +51,14 @@ describe("AppHeader", () => {
     expect(heading.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it("non mostra linee o ombre di separazione sotto l'header", () => {
+  it("usa il filetto Bone da 1px previsto dal sistema, senza ombra pesante", () => {
     renderHeader();
     const header = screen.getByRole("banner");
 
-    expect(header.className).not.toContain("border-b");
-    expect(header.className).not.toContain("border-border");
+    expect(header.className).toContain("border-b");
+    expect(header.className).toContain("border-border");
     expect(header.className).not.toContain("shadow-");
-    // nemmeno nella riga interna (niente filetti orizzontali introdotti di nascosto)
+    // il separatore è sul guscio dell'header, non duplicato nella riga interna
     const row = header.firstElementChild;
     expect(row?.className).not.toContain("border-b");
   });

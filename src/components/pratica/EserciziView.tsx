@@ -530,7 +530,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
             >
               <ChevronLeft className="w-5 h-5 text-foreground" />
             </button>
-            <h2 className="font-display text-lg font-bold text-foreground">Scegli le lezioni</h2>
+            <h2 className="font-display text-lg font-semibold text-foreground">Scegli le lezioni</h2>
           </div>
 
           {loadingLessons ? (
@@ -594,7 +594,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                 <div className="mb-4 p-3 rounded-2xl bg-surface-container-low border border-outline-variant/30">
                   <div className="flex items-center justify-between mb-2">
                     <span className="label-medium text-foreground">Numero di esercizi</span>
-                    <span className="label-large font-display font-bold text-brand-deep">{exerciseCount}</span>
+                    <span className="label-large font-display font-semibold text-brand-deep">{exerciseCount}</span>
                   </div>
                   <Slider
                     value={[exerciseCount]}
@@ -634,7 +634,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
             <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center animate-settle-in shadow-level-2">
               <Dumbbell className="w-8 h-8" />
             </div>
-            <h2 className="font-display text-xl font-bold text-foreground">Esercizi Mirati</h2>
+            <h2 className="font-display text-xl font-semibold text-foreground">Esercizi Mirati</h2>
             <p className="body-medium text-muted-foreground">Allenati con esercizi creati dai tuoi materiali</p>
           </div>
 
@@ -655,7 +655,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                   <Cpu className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="title-medium font-display font-bold">Genera esercizi</p>
+                  <p className="title-medium font-display font-semibold">Genera esercizi</p>
                   <p className="body-small opacity-90 mt-1">Crea un nuovo set di esercizi mirati dai tuoi corsi</p>
                 </div>
                 <div className="flex items-center gap-1 label-medium pt-1">
@@ -674,7 +674,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                   <History className="w-6 h-6 text-tertiary" />
                 </div>
                 <div>
-                  <p className="title-medium font-display font-bold">I tuoi esercizi</p>
+                  <p className="title-medium font-display font-semibold">I tuoi esercizi</p>
                   <p className="body-small text-muted-foreground mt-1">
                     {loadingHistory
                       ? "Carico la cronologia..."
@@ -706,7 +706,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
               <ChevronLeft className="w-5 h-5 text-foreground" />
             </button>
             <div>
-              <h2 className="font-display text-lg font-bold text-foreground">Genera esercizi</h2>
+              <h2 className="font-display text-lg font-semibold text-foreground">Genera esercizi</h2>
               <p className="body-small text-muted-foreground">Scegli un corso per iniziare</p>
             </div>
           </div>
@@ -747,7 +747,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
               <ChevronLeft className="w-5 h-5 text-foreground" />
             </button>
             <div>
-              <h2 className="font-display text-lg font-bold text-foreground">I tuoi esercizi</h2>
+              <h2 className="font-display text-lg font-semibold text-foreground">I tuoi esercizi</h2>
               <p className="body-small text-muted-foreground">Riprendi un set già generato</p>
             </div>
           </div>
@@ -770,7 +770,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                         className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-foreground/[0.03] transition-colors"
                       >
                         <div className={cn(
-                          "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-display font-bold text-sm",
+                          "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-display font-semibold text-sm",
                           pct >= 70 ? "bg-emerald-500/15 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" : pct >= 50 ? "bg-warning/10 text-warning" : "bg-rose-500/15 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300"
                         )}>
                           {pct}%
@@ -880,7 +880,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
           grade >= 7 ? "bg-emerald-500/15 dark:bg-emerald-950/40" : grade >= 5 ? "bg-warning/10" : "bg-rose-500/15 dark:bg-rose-950/40"
         )}>
           <span className={cn(
-            "font-display text-4xl font-bold",
+            "font-display text-4xl font-semibold",
             grade >= 7 ? "text-emerald-700 dark:text-emerald-300" : grade >= 5 ? "text-warning" : "text-rose-700 dark:text-rose-300"
           )}>
             {grade}
@@ -888,7 +888,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
           <span className="label-small text-muted-foreground">/10</span>
         </div>
         <div className="text-center space-y-1">
-          <h3 className="font-display text-xl font-bold text-foreground">
+          <h3 className="font-display text-xl font-semibold text-foreground">
             {grade >= 8 ? "Ottimo lavoro" : grade >= 6 ? "Buon inizio" : "Continua a studiare"}
           </h3>
           <p className="body-medium text-muted-foreground">
@@ -1170,7 +1170,7 @@ function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: Ge
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 animate-fade-up">
       <div className="relative mb-8">
-        <div className="w-28 h-28 rounded-[2rem] bg-primary text-primary-foreground flex items-center justify-center shadow-level-3">
+        <div className="w-28 h-28 rounded-card bg-primary text-primary-foreground flex items-center justify-center shadow-level-3">
           <Dumbbell className="w-12 h-12 text-primary-foreground" />
         </div>
         <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
@@ -1187,7 +1187,7 @@ function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: Ge
       </div>
 
       <div className="text-center mb-6">
-        <span className="text-4xl font-display font-bold text-foreground">{Math.round(progress)}%</span>
+        <span className="text-4xl font-display font-semibold text-foreground">{Math.round(progress)}%</span>
         {courseName && (
           <p className="body-small text-brand-deep font-medium mt-1 bg-primary-container px-3 py-1 rounded-full inline-block">
             {courseName}

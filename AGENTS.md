@@ -43,7 +43,7 @@ Prima di scrivere codice definire:
 - i limiti tecnici;
 - l'elemento distintivo che la rende riconoscibile.
 
-Per Erga la direzione visiva è definita da `DESIGN.md` (versione 2.1, «Carta contemporanea», 5 ottobre 2026): fondo avorio, fogli arrotondati, titoli serif (Lora) e testo sans (Inter), copertine colorate per materia con azioni satinato a pillola; azioni primarie inchiostro nel resto del prodotto. Le direzioni precedenti — il «Bisturi Editoriale» e la versione 1.1 (ottanio, raggio zero, Ubuntu Sans obbligatorio) — sono superate e non si sommano con la nuova. Lo stato della migrazione (il runtime mostra ancora la veste 1 finché il pilota V2-01 non la sostituisce) vive in `docs/registro-redesign-2026-10-03.md`. Evitare interfacce generiche da prodotto AI, decorazioni casual e pattern copiati senza relazione con lo studio.
+Per Erga la fonte visiva autorevole è `DESIGN.md` v3.0, «Squared & Earthy»: palette Smoky Black, Olive Drab, Bone e Floral White; Playfair Display per i titoli e Inter per l'interfaccia; raggi da 4, 8 e 12px; ombre flat; tema giorno/notte; finitura satinata solo sulle azioni delle copertine ed Earthy Stripe come firma visiva. I riferimenti a versioni precedenti del design system, compresa la v2.1 «Carta contemporanea» e lo stato pilota V2-01 in documenti storici, non prevalgono su `DESIGN.md`. Conservare struttura, funzioni e contenuti reali; evitare interfacce generiche da prodotto AI, decorazioni casual e pattern copiati senza relazione con lo studio.
 
 ### UI/UX Pro Max — ricerca strutturata prima delle modifiche ampie
 

@@ -103,14 +103,14 @@ export function GenerationProgress({
             <Sparkles className="w-5 h-5" strokeWidth={1.75} />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-foreground leading-snug">
+            <p className="text-sm font-semibold text-foreground leading-snug">
               Erga sta trasformando il tuo materiale
             </p>
             <p className="text-xs text-muted-foreground mt-0.5 truncate">
               {fileName ? `${fileName} · ` : ""}le nuove lezioni entrano qui sotto
             </p>
           </div>
-          <span className="text-lg font-extrabold tabular-nums text-brand-deep flex-shrink-0">
+          <span className="text-lg font-semibold tabular-nums text-brand-deep flex-shrink-0">
             {Math.round(animatedProgress)}%
           </span>
         </div>
@@ -185,7 +185,7 @@ export function GenerationProgress({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-4xl font-display font-extrabold tracking-tight text-foreground tabular-nums">
+          <span className="text-4xl font-display font-semibold tracking-tight text-foreground tabular-nums">
             {Math.round(animatedProgress)}%
           </span>
         </div>
@@ -209,7 +209,7 @@ export function GenerationProgress({
             <div
               key={step.id}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-[18px] transition-colors duration-300",
+                "flex items-center gap-3 px-4 py-3 rounded-card transition-colors duration-300",
                 isActive && "bg-surface-container-high",
                 isComplete && "opacity-60",
                 isPending && "opacity-40"
@@ -256,7 +256,7 @@ export function GenerationProgress({
           >
             {tips[tipIndex]}
           </p>
-          <p className="mt-6 text-center text-xs text-muted-foreground leading-relaxed max-w-[300px] px-4 py-3 rounded-[18px] bg-card">
+          <p className="mt-6 text-center text-xs text-muted-foreground leading-relaxed max-w-[300px] px-4 py-3 rounded-card bg-card">
             L'AI sta elaborando il tuo percorso personalizzato.
             <br />
             Puoi anche uscire dall'app: ti avvisiamo con una notifica appena è pronto.

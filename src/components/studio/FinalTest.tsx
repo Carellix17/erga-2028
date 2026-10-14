@@ -181,10 +181,10 @@ function ResultsView({ score, correctCount, total, great }: { score: number; cor
       </div>
 
       <div>
-        <p className={cn("text-5xl font-display font-bold mb-2", great ? "text-success" : "text-warning")}>
+        <p className={cn("text-5xl font-display font-semibold mb-2", great ? "text-success" : "text-warning")}>
           {score}%
         </p>
-        <p className={cn("font-display font-bold text-2xl mb-2", great ? "text-success" : "text-warning")}>
+        <p className={cn("font-display font-semibold text-2xl mb-2", great ? "text-success" : "text-warning")}>
           {great ? t("finalTest.great") : t("finalTest.improve")}
         </p>
         <p className="body-medium text-muted-foreground">

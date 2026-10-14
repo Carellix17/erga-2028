@@ -222,7 +222,7 @@ export function CourseSelector({
               <ActiveIcon className="w-5 h-5 text-foreground" strokeWidth={1.75} />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block truncate font-display font-bold text-[17px] text-foreground">
+              <span className="block truncate font-display font-semibold text-[17px] text-foreground">
                 {cleanName(active.file_name)}
               </span>
               <span className="block text-xs text-muted-foreground mt-0.5">
@@ -332,7 +332,7 @@ export function CourseSelector({
             )}
           >
             <div className="mb-4 px-1">
-              <h3 className="font-display text-xl font-bold text-foreground">I tuoi percorsi</h3>
+              <h3 className="font-display text-xl font-semibold text-foreground">I tuoi percorsi</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 Scegli su quale vuoi lavorare
               </p>

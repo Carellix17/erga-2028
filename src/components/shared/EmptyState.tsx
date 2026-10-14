@@ -22,7 +22,7 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
         <Brain className="w-9 h-9 text-foreground" strokeWidth={1.5} />
       </div>
 
-      <h2 className="font-display text-2xl font-bold tracking-tight text-foreground mb-3">
+      <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground mb-3">
         Inizia il tuo percorso
       </h2>
 
@@ -37,7 +37,7 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
 
       <div className="mt-12 flex flex-col gap-2.5 w-full max-w-xs text-left">
         {FEATURES.map((f) => (
-          <div key={f.title} className="flex items-center gap-3.5 bg-card rounded-[16px] px-4 py-3">
+          <div key={f.title} className="flex items-center gap-3.5 bg-card rounded-card px-4 py-3">
             <span className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
               <f.icon className="w-4 h-4 text-foreground" strokeWidth={1.75} />
             </span>
