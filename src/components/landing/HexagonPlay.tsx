@@ -286,25 +286,25 @@ export function HexagonPlay() {
           >
             <title id="hexagon-title">Esagono cognitivo interattivo</title>
             <desc id="hexagon-description">Trascina i sei punti o usa le frecce della tastiera per modificare Logica, Memoria, Focus, Lessico, Calma e Pratica.</desc>
-            <g fill="none" stroke="rgba(255,255,255,.10)" strokeWidth="1">
+            <g fill="none" stroke="hsl(var(--accent-warm) / .32)" strokeWidth="1">
               <polygon points="200,50 330,125 330,275 200,350 70,275 70,125" />
               <polygon points="200,90 300,148 300,252 200,310 100,252 100,148" />
               <polygon points="200,130 270,170 270,230 200,270 130,230 130,170" />
             </g>
-            <g stroke="rgba(255,255,255,.08)" strokeWidth="1">
+            <g stroke="hsl(var(--accent-warm) / .22)" strokeWidth="1">
               {VERTS.map((v) => {
                 const end = polar(v.angle, MAX_R);
                 return <line key={v.key} x1={CX} y1={CY} x2={end.x} y2={end.y} />;
               })}
             </g>
-            <polygon points={points} fill="rgba(255,255,255,.06)" stroke="#F2F2F7" strokeWidth="1.6" />
+            <polygon points={points} fill="hsl(var(--accent-warm) / .12)" stroke="hsl(var(--accent-warm) / .72)" strokeWidth="1.6" />
             {VERTS.map((v) => {
               const p = polar(v.angle, scoreToR(scores[v.key]));
               const lab = labelPos(v.angle);
               const on = active === v.key;
               return (
                 <g key={v.key}>
-                  <text x={lab.x} y={lab.y} fontSize="12" fill="#A1A1A6" textAnchor="middle" dominantBaseline="middle">
+                  <text x={lab.x} y={lab.y} fontSize="12" fill="hsl(var(--steel))" textAnchor="middle" dominantBaseline="middle">
                     {v.label}
                   </text>
                   <circle
@@ -337,7 +337,7 @@ export function HexagonPlay() {
                     cx={p.x}
                     cy={p.y}
                     r={on ? 10 : 8}
-                    fill={on ? "#C4A574" : "#F2F2F7"}
+                    fill={on ? "hsl(var(--marketing-gold))" : "hsl(var(--accent-light))"}
                     className="lp-hex-dot"
                     aria-hidden="true"
                   />

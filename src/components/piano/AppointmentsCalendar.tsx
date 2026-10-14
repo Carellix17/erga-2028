@@ -16,11 +16,8 @@ import { dayKey } from "@/lib/weekPlanner";
 import { cn } from "@/lib/utils";
 
 /**
- * 🗓️ Calendario degli appuntamenti del Piano.
- * Visual world: superficie scura in zinc (day cell #1e1e1e, bordi #323232),
- * badge con il numero di eventi del giorno che si espande all'hover
- * (animazione condivisa via layoutId) e pannello "Prossimi eventi"
- * che scivola accanto alla griglia. Il mese è sempre quello reale,
+ * Calendario appuntamenti Piano — canvas Olive/Bone, con gli accenti materia
+ * del design system, mantenendo grouping, animazioni e azioni esistenti. Il mese è sempre quello reale,
  * letto dall'orologio di sistema, e le voci sono verifiche,
  * interrogazioni, compiti e sessioni dello studente.
  */
@@ -62,7 +59,7 @@ const Day = ({ day, onHover }: DayProps) => {
   return (
     <motion.div
       className={cn("relative flex items-center justify-center py-1", day.classNames)}
-      style={{ height: "4rem", borderRadius: 16 }}
+      style={{ height: "4rem", borderRadius: 12 }}
       onMouseEnter={() => {
         setIsHovered(true);
         onHover(day.key ?? day.day);
@@ -74,14 +71,14 @@ const Day = ({ day, onHover }: DayProps) => {
     >
       <motion.div className="flex flex-col items-center justify-center">
         {!(day.day[0] === "+" || day.day[0] === "-") && (
-          <span className="text-sm text-white">{day.day}</span>
+          <span className="text-sm font-medium text-secondary-foreground">{day.day}</span>
         )}
       </motion.div>
       {day.meetingInfo && (
         <motion.div
-          className="absolute bottom-1 right-1 flex size-5 items-center justify-center rounded-full bg-zinc-700 p-1 text-[10px] font-bold text-white"
+          className="absolute bottom-1 right-1 flex size-5 items-center justify-center rounded-full bg-primary p-1 text-[10px] font-semibold text-primary-foreground"
           layoutId={`day-${day.key}-meeting-count`}
-          style={{ borderRadius: 999 }}
+          style={{ borderRadius: "50%" }}
         >
           {day.meetingInfo.length}
         </motion.div>
@@ -91,9 +88,9 @@ const Day = ({ day, onHover }: DayProps) => {
         {day.meetingInfo && isHovered && (
           <div className="absolute inset-0 flex size-full items-center justify-center">
             <motion.div
-              className="flex size-10 items-center justify-center bg-zinc-700 p-1 text-xs font-bold text-white"
+              className="flex size-10 items-center justify-center rounded-full bg-primary p-1 text-xs font-semibold text-primary-foreground"
               layoutId={`day-${day.key}-meeting-count`}
-              style={{ borderRadius: 999 }}
+              style={{ borderRadius: "50%" }}
             >
               {day.meetingInfo.length}
             </motion.div>
@@ -208,7 +205,7 @@ export function AppointmentsCalendar({
     return grid.map((date) => {
       if (!isSameMonth(date, monthStart)) {
         const label = date < monthStart ? `-${++outsideBefore}` : `+${++outsideAfter}`;
-        return { day: label, isToday: false, classNames: "bg-zinc-700/20" };
+        return { day: label, isToday: false, classNames: "bg-card/60" };
       }
       const key = dayKey(date);
       const meetingInfo = entriesByKey.get(key);
@@ -217,9 +214,9 @@ export function AppointmentsCalendar({
         key,
         isToday: isToday(date),
         classNames: cn(
-          "bg-[#1e1e1e]",
+          "bg-secondary text-secondary-foreground",
           meetingInfo && "cursor-pointer",
-          isToday(date) && "ring-1 ring-zinc-500",
+          isToday(date) && "ring-2 ring-primary",
         ),
         meetingInfo,
       };
@@ -268,7 +265,7 @@ export function AppointmentsCalendar({
         <motion.div layout className="w-full max-w-lg">
           <motion.div key="calendar-view" className="flex w-full flex-col gap-4">
             <div className="flex w-full items-center justify-between">
-              <motion.h2 className="text-4xl font-bold tracking-wider text-zinc-300">
+              <motion.h2 className="font-display text-[1.875rem] font-medium tracking-tight text-card-foreground">
                 {format(monthStart, "MMM", { locale: dateLocale }).toUpperCase()}{" "}
                 <span className="opacity-50">{format(monthStart, "yyyy")}</span>
               </motion.h2>
@@ -276,13 +273,13 @@ export function AppointmentsCalendar({
                 type="button"
                 aria-pressed={moreView}
                 aria-label={t("piano.toggleUpcoming")}
-                className="relative flex items-center gap-3 rounded-lg border border-[#323232] px-1.5 py-1 text-[#323232]"
+                className="relative flex h-11 w-[88px] items-center gap-3 rounded-control border border-input bg-primary/25 px-1.5 py-1 text-card-foreground"
                 onClick={() => setMoreView(!moreView)}
               >
                 <Columns3 className="z-[2]" />
                 <Grid className="z-[2]" />
                 <div
-                  className="absolute left-0 top-0 h-[85%] w-7 rounded-md bg-zinc-100 transition-transform duration-300"
+                  className="absolute left-0 top-0 h-8 w-8 rounded-button bg-secondary transition-transform duration-300"
                   style={{
                     top: "50%",
                     transform: moreView
@@ -294,7 +291,7 @@ export function AppointmentsCalendar({
             </div>
             <div className="grid grid-cols-7 gap-2">
               {daysOfWeek.map((day) => (
-                <div key={day} className="rounded-xl bg-[#323232] py-1 text-center text-xs text-white">
+                <div key={day} className="rounded-control bg-secondary py-2 text-center text-xs font-semibold text-secondary-foreground">
                   {day}
                 </div>
               ))}
@@ -309,7 +306,7 @@ export function AppointmentsCalendar({
             <button
               type="button"
               onClick={onAddEvent}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#323232] bg-[#1e1e1e] text-sm font-medium text-zinc-300 transition-all duration-200 hover:bg-zinc-800 active:scale-[0.98]"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-button border border-line bg-secondary px-5 text-interface font-semibold text-secondary-foreground transition-colors duration-200 hover:bg-secondary/80 active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               {t("piano.addEventFull")}
@@ -324,7 +321,7 @@ export function AppointmentsCalendar({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
                   transition={{ duration: 0.3 }}
-                  className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-zinc-100 text-sm font-semibold text-zinc-950 transition-all duration-200 hover:bg-zinc-200 active:scale-[0.98] disabled:opacity-70"
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-button bg-primary px-5 text-interface font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary-deep active:scale-[0.98] disabled:opacity-70"
                 >
                   {isGeneratingPlan ? (
                     <>
@@ -349,29 +346,29 @@ export function AppointmentsCalendar({
           >
             <motion.div key="more-view" className="flex w-full flex-col gap-4">
               <div className="flex w-full flex-col items-start justify-between">
-                <motion.h2 className="text-4xl font-bold tracking-wider text-zinc-300">
+                <motion.h2 className="font-display text-[1.875rem] font-medium tracking-tight text-card-foreground">
                   {t("piano.upcoming")}
                 </motion.h2>
-                <p className="font-medium text-zinc-300/50">{t("piano.upcomingSubtitle")}</p>
+                <p className="font-medium text-ink-muted/80">{t("piano.upcomingSubtitle")}</p>
               </div>
               <motion.div
-                className="flex h-[620px] flex-col items-start justify-start overflow-hidden overflow-y-scroll rounded-xl border-2 border-[#323232] shadow-md"
+                className="flex h-[620px] flex-col items-start justify-start overflow-hidden overflow-y-scroll rounded-card border border-line bg-secondary text-secondary-foreground shadow-level-2"
                 layout
               >
                 {sortedUpcomingDays.length === 0 ? (
                   <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-6 text-center">
-                    <p className="font-medium text-zinc-300">{t("piano.noEvents")}</p>
-                    <p className="text-sm text-zinc-300/50">{t("piano.noEventsHint")}</p>
+                    <p className="font-medium text-secondary-foreground">{t("piano.noEvents")}</p>
+                    <p className="text-sm text-ink-muted/80">{t("piano.noEventsHint")}</p>
                   </div>
                 ) : (
                   <AnimatePresence>
                     {sortedUpcomingDays.map(({ key, entries: dayEntries }) => (
-                      <motion.div key={key} className="w-full border-b-2 border-[#323232] py-0 last:border-b-0" layout>
+                      <motion.div key={key} className="w-full border-b border-control-line py-0 last:border-b-0" layout>
                         {dayEntries.map((entry, mIndex) => (
                           <motion.div
                             key={entry.id}
                             className={cn(
-                              "group relative border-b border-[#323232] p-3 last:border-b-0",
+                              "group relative border-b border-control-line p-3 last:border-b-0",
                               exitingIds.includes(entry.id) &&
                                 "opacity-0 scale-95 transition-all duration-300",
                             )}
@@ -381,7 +378,7 @@ export function AppointmentsCalendar({
                             transition={{ duration: 0.2, delay: mIndex * 0.05 }}
                           >
                             <div className="mb-2 flex items-center justify-between gap-2">
-                              <span className="text-sm text-white">
+                              <span className="text-sm text-secondary-foreground">
                                 {format(entry.date, "EEE, d MMM", { locale: dateLocale })}
                               </span>
                               <div className="flex items-center gap-1">
@@ -389,7 +386,7 @@ export function AppointmentsCalendar({
                                   type="button"
                                   aria-label="Modifica evento"
                                   onClick={() => editEntry(entry)}
-                                  className="rounded-full p-1.5 text-zinc-500 opacity-0 transition-all hover:bg-zinc-800 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+                                  className="rounded-button p-2 text-ink-muted opacity-0 transition-all hover:bg-primary/10 hover:text-secondary-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
                                 >
                                   <Pencil className="w-3.5 h-3.5" />
                                 </button>
@@ -397,18 +394,18 @@ export function AppointmentsCalendar({
                                   type="button"
                                   aria-label="Elimina evento"
                                   onClick={() => deleteEntry(entry)}
-                                  className="rounded-full p-1.5 text-zinc-500 opacity-0 transition-all hover:bg-zinc-800 hover:text-red-400 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+                                  className="rounded-button p-2 text-ink-muted opacity-0 transition-all hover:bg-primary/10 hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               </div>
-                              {entry.time && <span className="text-sm text-white">{entry.time}</span>}
+                              {entry.time && <span className="text-sm text-secondary-foreground">{entry.time}</span>}
                             </div>
-                            <h3 className="mb-1 text-lg font-semibold text-white">{entry.title}</h3>
+                            <h3 className="mb-1 text-lg font-semibold text-secondary-foreground">{entry.title}</h3>
                             {entry.subject && (
-                              <p className="mb-1 text-sm text-zinc-600">{entry.subject}</p>
+                              <p className="mb-1 text-sm text-ink-muted">{entry.subject}</p>
                             )}
-                            <div className="flex items-center text-blue-500">
+                            <div className="flex items-center text-primary">
                               <entry.TypeIcon className="mr-1 h-4 w-4" />
                               <span className="text-sm">{entry.typeLabel}</span>
                             </div>

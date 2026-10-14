@@ -18,15 +18,10 @@ interface BottomNavProps {
  * formato: Home, Piano, Studio, Core. Le voci sono SOLO destinazioni —
  * gli strumenti vivono nel Banco di Studio.
  *
- * · TELEFONO (<768px): la PILLOLA ALLUNGATA, con lo SPESSORE di prima
- *   della veste squadrata (binario 4,5rem, com'era in ad9289d) e la
- *   sotto-pillola PIÙ SCURA DELLA BARRA MA NON NERA (bg-secondary, la
- *   «carta quieta»), con contenuto inchiostro — decisione del proprietario,
- *   6 ottobre 2026 sera. Lo slider resta superfluido (molla 400/30) ma è
- *   DETERMINISTICO: UNA sola sotto-pillola animata su x/larghezza misurate
- *   della voce attiva. Niente più `layoutId`: la proiezione di framer-motion
- *   lavora in coordinate documento e il cambio scheda ripristina lo scroll
- *   della finestra, quindi la pillola «saltava» con movimenti strani.
+ * · TELEFONO (<768px): dock flottante Olive Drab, 64px, angoli da 12px;
+ *   l'indicatore Bone ha angoli da 8px e testo Smoky Black. Lo slider resta
+ *   fluido e deterministico, senza cambiare l'ordine o il comportamento delle
+ *   quattro destinazioni.
  * · FINESTRE MEDIE (768–1023px): rail compatta, icone con etichette.
  * · DESKTOP (≥1024px): sidebar calda con brand esteso (soglia 2.1 §10).
  *
@@ -45,7 +40,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
 
   const material = "bg-card border border-border text-card-foreground";
   const idleTxt = "text-muted-foreground";
-  const activeTxt = "text-foreground";
+  const activeTxt = "text-secondary-foreground";
 
   // ── SLIDER DETERMINISTICO ─────────────────────────────────────────────
   // Una sola sotto-pillola, in assoluto dentro il binario, animata con la
@@ -86,25 +81,22 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
         <div
           className={cn(
             material,
-            "mx-auto max-w-lg pointer-events-auto rounded-pill shadow-level-5",
+            "mx-auto max-w-lg pointer-events-auto rounded-nav shadow-level-2",
             "mb-[max(env(safe-area-inset-bottom,0px),0.75rem)]",
           )}
         >
-          {/* SPESSORE restaurato: binario di 4,5rem come prima della veste
-              squadrata. La sotto-pillola respira 6px sopra e sotto e copre
-              la voce attiva per intero (60px, target tattile generoso). */}
+          {/* Dock di 64px, con hit-area generose e safe area invariata. */}
           <div
             ref={trackRef}
-            className="relative grid h-[4.5rem] grid-cols-4 items-center justify-items-center rounded-pill px-2"
+            className="relative grid h-16 grid-cols-4 items-center justify-items-center rounded-nav px-1.5"
           >
-            {/* SOTTO-PILLOLA: bg-secondary — più scura della barra, non nera,
-                com'era prima (ad9289d). Il contenuto attivo sta in inchiostro. */}
+            {/* Indicatore Bone con testo scuro, in forma controllata. */}
             <motion.span
               aria-hidden="true"
               initial={false}
               animate={{ x: pill.x, width: pill.width }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="absolute inset-y-[6px] left-0 rounded-pill bg-secondary"
+              className="absolute inset-y-1.5 left-0 rounded-button bg-secondary"
             />
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -115,7 +107,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   type="button"
                   onClick={() => onTabChange(tab.id)}
                   aria-current={isActive ? "page" : undefined}
-                  className="relative flex min-h-[60px] w-full flex-col items-center justify-center gap-1 rounded-pill py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                  className="relative flex min-h-14 w-full flex-col items-center justify-center gap-1 rounded-button py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 >
                   <span className="relative z-10">
                     <Icon
@@ -139,7 +131,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   <span
                     className={cn(
                       "relative z-10 text-[13px] leading-none",
-                      isActive ? "font-semibold text-foreground" : "font-medium text-muted-foreground",
+                      isActive ? "font-semibold text-secondary-foreground" : "font-medium text-muted-foreground",
                     )}
                   >
                     {t(tab.i18nKey)}
@@ -162,7 +154,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
         <div className={cn(material, "flex h-full w-full flex-col overflow-hidden rounded-card shadow-level-2")}>
           {/* ── Brand: icona sulla rail, nome completo sulla sidebar ── */}
           <div className="flex shrink-0 items-center justify-center px-2 pb-4 pt-5 lg:justify-start lg:gap-2 lg:px-5 lg:pb-6 lg:pt-6">
-            <span className="grid h-7 w-7 place-items-center rounded-[10px] bg-surface-container-high">
+            <span className="grid h-7 w-7 place-items-center rounded-control bg-surface-container-high">
               <Brain className="h-4 w-4 text-foreground" strokeWidth={2} aria-hidden="true" />
             </span>
             <span className="hidden font-display text-xl font-medium tracking-tight lg:block">Erga</span>
@@ -183,7 +175,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                     "relative flex w-full flex-col items-center justify-center gap-1 rounded-button py-2.5 transition-colors duration-200",
                     "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     "lg:flex-row lg:justify-start lg:gap-3 lg:px-3",
-                    isActive ? "bg-surface-container-high" : "hover:bg-surface-container-high/60",
+                    isActive ? "bg-secondary text-secondary-foreground" : "hover:bg-surface-container-high/60",
                   )}
                 >
                   <span className="relative">
@@ -205,7 +197,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   <span
                     className={cn(
                       "text-[13px] leading-none lg:flex-1 lg:text-left lg:text-[15px]",
-                      isActive ? "font-semibold text-foreground" : "font-medium text-muted-foreground",
+                      isActive ? "font-semibold text-secondary-foreground" : "font-medium text-muted-foreground",
                     )}
                   >
                     {t(tab.i18nKey)}

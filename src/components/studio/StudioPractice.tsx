@@ -62,7 +62,7 @@ function LauncherCard({
         <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} aria-hidden="true" />
       </span>
       <span className="min-w-0">
-        <span className="block text-sm font-bold leading-tight text-foreground">{label}</span>
+        <span className="block text-sm font-semibold leading-tight text-foreground">{label}</span>
         <span className="mt-0.5 block truncate text-xs font-medium text-muted-foreground">{subtitle}</span>
       </span>
     </button>
@@ -107,7 +107,7 @@ export function SubViewHeader({ title, onBack, courseTitle, backLabel = "Torna a
         {backLabel}
       </button>
       <div className="min-w-0 text-right">
-        <p className="truncate text-sm font-bold text-foreground">{title}</p>
+        <p className="truncate text-sm font-semibold text-foreground">{title}</p>
         {courseTitle && (
           <p className="truncate text-xs text-muted-foreground">{courseTitle}</p>
         )}
@@ -155,7 +155,7 @@ export function ModuleHeaderCard({ courseTitle, moduleIndex, moduleTitle, subjec
           <p className="label-small uppercase tracking-[0.16em] text-contrast-secondary">
             Modulo {moduleIndex + 1}
           </p>
-          <h2 className="mt-0.5 break-words font-display text-lg font-extrabold leading-snug text-contrast">
+          <h2 className="mt-0.5 break-words font-display text-lg font-semibold leading-snug text-contrast">
             {moduleTitle}
           </h2>
           {courseTitle && (

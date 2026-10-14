@@ -232,7 +232,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute left-1/2 top-full z-30 mt-2 inline-flex h-9 -translate-x-1/2 items-center gap-1.5 rounded-button border border-border bg-card px-3.5 text-xs font-bold text-foreground shadow-level-2"
+            className="absolute left-1/2 top-full z-30 mt-2 inline-flex h-9 -translate-x-1/2 items-center gap-1.5 rounded-button border border-border bg-card px-3.5 text-xs font-semibold text-foreground shadow-level-2"
           >
             <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.6} />
             {completedBefore === 1 ? "1 modulo completato" : `${completedBefore} moduli completati`}
@@ -307,7 +307,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
               {/* Targa numero */}
               <span
                 className={cn(
-                  "flex-shrink-0 w-12 h-12 rounded-button flex items-center justify-center font-display font-extrabold text-base transition-colors duration-200",
+                  "flex-shrink-0 w-12 h-12 rounded-button flex items-center justify-center font-display font-semibold text-base transition-colors duration-200",
                   isDone && "bg-subject-accent text-subject-accent-foreground",
                   isCur && "bg-subject-accent text-subject-accent-foreground",
                   isGen && "bg-surface-container-high text-muted-foreground",
@@ -326,7 +326,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
 
               {/* Testo */}
               <span className="flex-1 min-w-0">
-                <span className="block text-[15px] font-bold leading-snug text-foreground">
+                <span className="block text-[15px] font-semibold leading-snug text-foreground">
                   {m.title}
                 </span>
                 <span className="block text-xs text-muted-foreground mt-1 font-medium">

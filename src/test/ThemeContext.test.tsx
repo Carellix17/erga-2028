@@ -30,10 +30,10 @@ describe("ThemeProvider", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Dark" }));
     await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
-    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#22211F");
+    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#0A0A08");
 
     fireEvent.click(screen.getByRole("button", { name: "Light" }));
     await waitFor(() => expect(document.documentElement).not.toHaveClass("dark"));
-    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#F6F3EB");
+    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#11120D");
   });
 });

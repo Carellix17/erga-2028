@@ -71,7 +71,7 @@ export function AppHeader({
         "z-40 w-full",
         integratedHome
           ? "pointer-events-none absolute inset-x-0 top-0 bg-transparent"
-          : "sticky top-0 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/75",
+          : "sticky top-0 border-b border-border bg-background",
         className,
       )}
     >
@@ -105,7 +105,7 @@ export function AppHeader({
 
               {title && (
                 <div className="min-w-0 flex-1 text-left">
-                  <h1 className="truncate text-left font-display text-lg font-bold leading-tight text-foreground">{title}</h1>
+                  <h1 className="truncate text-left font-display text-lg font-semibold leading-tight text-foreground">{title}</h1>
                   {subtitle && <p className="hidden truncate text-xs text-muted-foreground sm:block">{subtitle}</p>}
                 </div>
               )}

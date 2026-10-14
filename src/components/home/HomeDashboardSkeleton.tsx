@@ -24,14 +24,14 @@ export function HomeDashboardSkeleton() {
           <Skeleton className="h-[2.35rem] w-2/5 rounded-xl sm:h-[2.9rem] lg:h-[3.5rem]" />
           <Skeleton className="h-4 w-2/3" />
         </div>
-        <Skeleton className="h-11 w-11 shrink-0 rounded-[14px]" />
+        <Skeleton className="h-11 w-11 shrink-0 rounded-control" />
       </header>
 
       {/* Card corso: titolo + anello, lezione, metadati, CTA */}
       <div className="paper-grain rounded-hero border border-border bg-card p-5 shadow-level-3 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <Skeleton className="h-6 w-1/2" />
-          <Skeleton className="h-16 w-16 shrink-0" />
+          <Skeleton className="h-16 w-16 shrink-0 rounded-full" />
         </div>
         <div className="mt-4 space-y-2">
           <Skeleton className="h-5 w-3/4" />
@@ -52,7 +52,7 @@ export function HomeDashboardSkeleton() {
       </section>
 
       {/* Profilo cognitivo: badge + due colonne con esagono */}
-      <div className="border border-[#FFFBF4] bg-card p-5">
+      <div className="rounded-card border border-border bg-card p-5">
         <Skeleton className="h-6 w-36" />
         <div className="mt-3 flex items-center gap-4">
           <div className="min-w-0 flex-1 space-y-2">
@@ -64,7 +64,7 @@ export function HomeDashboardSkeleton() {
       </div>
 
       {/* Piano del giorno: intestazione + due righe */}
-      <div className="border border-[#FFFBF4] bg-card p-4">
+      <div className="rounded-card border border-border bg-card p-4">
         <div className="flex items-center justify-between pb-2">
           <Skeleton className="h-6 w-20" />
           <Skeleton className="h-11 w-24" />

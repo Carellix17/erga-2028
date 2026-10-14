@@ -81,8 +81,8 @@ describe("CourseCardBackground — composizione astratta della copertina", () =>
     const fb = resolveCourseCover("zzz corso sconosciuto qqq");
     expect(fb).toEqual(resolveCourseCover("zzz corso sconosciuto qqq"));
     // famiglia e inchiostro coerenti (il contrasto lo garantisce il resolver)
-    if (fb.family === "light") expect(fb.ink).toBe("#252623");
-    else expect(fb.ink).toBe("#FFFEF9");
+    if (fb.family === "light") expect(fb.ink).toBe("#11120D");
+    else expect(fb.ink).toBe("#FFFBF4");
     // il titolo vuoto (nessun corso) è comunque stabile
     expect(resolveCourseCover("")).toEqual(resolveCourseCover(""));
   });

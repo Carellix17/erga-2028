@@ -3,13 +3,11 @@ import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
 
 /**
- * 🛡️ GUARDIA DELLE SUPERFICI PULITE — Home del pilota V2-01
- * (DESIGN.md 2.1 «Carta contemporanea»).
+ * 🛡️ GUARDIA DELLE SUPERFICI — Home, design system v3.
  *
- * La Home resta senza ombre nere pesanti, bagliori o gradienti parassiti:
- * l'elevazione arriva solo dai token del sistema (ombre corte, §6) e il
- * tavolo è piatto. L'UNICA superficie con velo è l'azione satinata sulla
- * copertina del corso (btn-satin, §4): blur locale e dichiarato.
+ * La Home usa superfici solide e ombre flat tokenizzate. La grana resta
+ * decorativa e non altera l'opacità del contenuto; il solo blur è il velo
+ * satinato dell'azione sulla copertina del corso.
  */
 
 const HOME_DIR = join(__dirname, "..", "components", "home");
@@ -42,7 +40,7 @@ describe("Superfici pulite della Home", () => {
 
   it("gli strumenti rapidi sono card arrotondate con chip quieto, etichette mai troncate", () => {
     const grid = readFileSync(join(HOME_DIR, "QuickToolsGrid.tsx"), "utf8");
-    // card di strumenti: raggio card 24 (2.1 §6)
+    // card di strumenti: raggio card 12px secondo DESIGN.md v3.
     expect(grid).toContain("rounded-card");
     // le etichette non vengono MAI troncate: vanno a capo con interlinea compatta
     expect(grid).not.toContain("truncate");
@@ -50,17 +48,14 @@ describe("Superfici pulite della Home", () => {
     expect(grid).toContain("leading-tight");
   });
 
-  it("i token del velo satinato sono definiti con fallback opaco (2.1 §4)", () => {
+  it("il satinato è locale alle copertine, tokenizzato e con fallback opaco", () => {
     const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
-    // satinato: carta all'80% (giorno) / 85% (notte), blur locale 10px
     expect(css).toContain(".btn-satin {");
-    expect(css).toMatch(/background-color: rgb\(var\(--satin-bg\) \/ 0\.8\)/);
-    expect(css).toMatch(/backdrop-filter: blur\(10px\)/);
-    expect(css).toMatch(/\.dark \.btn-satin \{[\s\S]*?0\.85/);
-    // fallback: carta piena senza blur
+    expect(css).toMatch(/background-color: rgb\(var\(--satin-bg\) \/ 0\.9\)/);
+    expect(css).toMatch(/backdrop-filter: blur\(8px\)/);
+    expect(css).toMatch(/\.dark \.btn-satin \{[\s\S]*?0\.9/);
     expect(css).toMatch(/@supports not \(\(backdrop-filter: blur\(1px\)\)/);
     expect(css).toMatch(/prefers-reduced-transparency: reduce[\s\S]*?\.btn-satin/);
-    // testo opaco: la trasparenza riguarda il fondo, mai il pulsante intero
     expect(css).toMatch(/\.btn-satin:focus-visible[\s\S]*?box-shadow/);
   });
 
@@ -78,7 +73,7 @@ describe("Superfici pulite della Home", () => {
     }
   });
 
-  it("V2-01: la card corso è la copertina del corso — raggio 32, composizione, ombra protagonista", () => {
+  it("la card corso usa la copertina astratta e il raggio 12px della specifica", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     const bg = readFileSync(join(__dirname, "..", "components", "studio", "CourseCardBackground.tsx"), "utf8");
     // foglio protagonista: raggio hero e ombra del sistema
@@ -94,7 +89,7 @@ describe("Superfici pulite della Home", () => {
     expect(bg).not.toContain("orb-secondary");
   });
 
-  it("V2-01: la CTA 'Riprendi/Continua' è satinata a pillola sulla copertina (2.1 §4)", () => {
+  it("la CTA 'Riprendi/Continua' usa il satinato solo sulla copertina", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     expect(hero).toContain("btn-satin");
     expect(hero).toContain("w-full");
@@ -102,7 +97,7 @@ describe("Superfici pulite della Home", () => {
     expect(hero).not.toContain("color-mix(in srgb, currentColor 12%");
   });
 
-  it("V2-01: il titolo del corso è serif (Lora) e spezza le parole senza uscire", () => {
+  it("il titolo del corso è display serif e spezza le parole senza uscire", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     expect(hero).toContain("font-display");
     expect(hero).toContain("font-medium");
@@ -112,14 +107,13 @@ describe("Superfici pulite della Home", () => {
     expect(hero).not.toContain("font-radja");
   });
 
-  it("V2-01: i token della veste — tavolo avorio, notte calda, ombre corte", () => {
+  it("usa i token earthy e le ombre flat documentate", () => {
     const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
-    // tavolo e carta (2.1 §3)
-    expect(css).toContain("--background: 44 38% 94%");
-    expect(css).toContain("--card: 50 100% 99%");
-    // ombre corte senza aloni grigi (§6): protagonista = livello 3
+    expect(css).toContain("--canvas: 72 16.13% 6.08%");
+    expect(css).toContain("--surface-primary: 50.77 8.18% 31.18%");
+    expect(css).toContain("--surface-secondary: 40.71 26.42% 79.22%");
     expect(css).toContain(
-      "--shadow-level-3: 0 2px 4px rgba(37, 38, 35, 0.04), 0 10px 24px rgba(37, 38, 35, 0.08)",
+      "--shadow-level-3: 0 2px 4px rgba(17, 18, 13, 0.04), 0 10px 24px rgba(17, 18, 13, 0.08)",
     );
     // la copertina non usa gradienti: campo pieno + forme nette
     const bg = readFileSync(join(__dirname, "..", "components", "studio", "CourseCardBackground.tsx"), "utf8");

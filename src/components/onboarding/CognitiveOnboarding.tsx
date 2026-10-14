@@ -131,7 +131,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                   <Brain className="w-8 h-8" />
                 </div>
                 <div className="space-y-2">
-                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Costruiamo il tuo Esagono Cognitivo</h1>
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Costruiamo il tuo Esagono Cognitivo</h1>
                   <p className="text-muted-foreground text-sm sm:text-base">
                     18 domande veloci per capire come studi, ricordi e ti esponi.
                     Erga userà i risultati per personalizzare ogni lezione, esercizio e interrogazione su di te.
@@ -280,7 +280,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                   <Check className="w-8 h-8 text-success" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">Esagono creato ✨</h2>
+                  <h2 className="text-2xl font-semibold">Esagono creato ✨</h2>
                   <p className="text-muted-foreground text-sm mt-1">
                     Da ora Erga adatterà ogni contenuto su di te.
                   </p>
@@ -322,7 +322,7 @@ function SlideShell({ title, subtitle, children }: { title: string; subtitle?: s
     <div className="space-y-5 animate-fade-up">
       <div>
         {subtitle && <p className="text-[11px] font-semibold tracking-wider text-brand-deep uppercase mb-2">{subtitle}</p>}
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight">{title}</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold tracking-tight leading-tight">{title}</h2>
       </div>
       <div>{children}</div>
     </div>

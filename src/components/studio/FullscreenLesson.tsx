@@ -960,7 +960,7 @@ export function FullscreenLessonGate({
         <div className="w-16 h-16 rounded-full bg-card shadow-level-1 flex items-center justify-center">
           <Loader2 className="w-7 h-7 text-foreground animate-spin" />
         </div>
-        <p className="font-display font-bold text-lg text-foreground text-center px-8 max-w-sm">
+        <p className="font-display font-semibold text-lg text-foreground text-center px-8 max-w-sm">
           {meta.title}
         </p>
         <p className="text-sm text-muted-foreground">{t("lesson.openingLesson")}</p>

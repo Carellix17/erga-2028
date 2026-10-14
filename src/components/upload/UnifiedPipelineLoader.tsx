@@ -48,7 +48,7 @@ export function UnifiedPipelineLoader({ phase, progress, courseName, onSkip }: U
       aria-label="Preparazione del percorso in corso"
       className="pointer-events-auto fixed inset-0 z-[95] flex flex-col items-center justify-center gap-6 bg-background px-8 text-center"
     >
-      <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-surface-container-high shadow-level-1">
+      <span className="grid h-16 w-16 place-items-center rounded-card bg-surface-container-high shadow-level-1">
         <Brain className="h-8 w-8 text-foreground" strokeWidth={1.75} aria-hidden="true" />
       </span>
       <div className="w-full max-w-sm">

@@ -161,7 +161,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
           </button>
         </div>
         <div className="text-center">
-          <h1 className="title-large font-display font-bold text-foreground">
+          <h1 className="title-large font-display font-semibold text-foreground">
             {nickname || firstName || "Il tuo profilo"}
           </h1>
           <p className="body-medium text-muted-foreground">Personalizza la tua esperienza di studio</p>
@@ -196,7 +196,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
               ].map(([label, val]) => (
                 <div key={label as string} className="rounded-button bg-surface-container-high py-2 text-center">
                   <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</div>
-                  <div className="text-base font-bold text-foreground tabular-nums">{val}</div>
+                  <div className="text-base font-semibold text-foreground tabular-nums">{val}</div>
                 </div>
               ))}
             </div>

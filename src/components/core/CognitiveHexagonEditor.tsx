@@ -54,7 +54,7 @@ export function CognitiveHexagonEditor({ onOpenDiagnostic }: Props) {
                   <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                     {d.label}
                   </div>
-                  <div className="text-base font-bold text-foreground tabular-nums">
+                  <div className="text-base font-semibold text-foreground tabular-nums">
                     {profile[d.key]}
                   </div>
                 </div>

@@ -11,11 +11,11 @@ import { getAccentForeground } from "@/lib/subjectColors";
  *   nodi del percorso e callout) si ricolora all'istante.
  * - Al cambio materia l'accento segue; allo smontaggio (o con color null)
  *   ripristina i valori precedenti → le schermate generali (Home/Profilo)
- *   tornano al fallback ambra ad alto contrasto.
+ *   tornano al fallback neutro della palette v3.
  * - Nessuna classe dinamica concatenata: solo CSS custom properties.
  */
 
-const FALLBACK = "#f59e0b";
+const FALLBACK = "#94A3B8";
 
 /** Normalizza un colore in una stringa CSS valida (HEX o hsl()). */
 export function normalizeAccentColor(color?: string | null): string | null {
@@ -57,7 +57,7 @@ export function useSubjectAccent(color?: string | null) {
       // variabile derivata per le tinte morbide (bg/10, border/30…)
       root.style.setProperty(
         "--subject-accent-light",
-        `color-mix(in srgb, ${normalized} 28%, white)`
+        `color-mix(in srgb, ${normalized} 8%, #FFFBF4)`
       );
     } else {
       // nessuna materia: ripristina i valori precedenti (o fallback CSS)

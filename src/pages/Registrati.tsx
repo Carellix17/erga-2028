@@ -110,7 +110,7 @@ export default function Registrati() {
           <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center mx-auto">
             <Mail className="w-6 h-6 text-foreground" strokeWidth={1.75} />
           </div>
-          <h2 className="font-display text-xl font-bold tracking-tight text-foreground">{t("signup.checkEmail")}</h2>
+          <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">{t("signup.checkEmail")}</h2>
           <p className="text-muted-foreground text-sm">
             <Trans i18nKey="signup.confirmSent" values={{ email }} components={{ 1: <strong /> }} />
           </p>
@@ -135,13 +135,13 @@ export default function Registrati() {
           <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center mb-4">
             <Brain className="w-6 h-6 text-primary-foreground" strokeWidth={1.75} />
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground text-center">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground text-center">
             {t("signup.title")}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">{t("signup.subtitle")}</p>
         </div>
 
-        <div className="rounded-[24px] bg-card shadow-level-1 p-6">
+        <div className="rounded-card bg-card shadow-level-1 p-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">{t("signup.email")}</Label>

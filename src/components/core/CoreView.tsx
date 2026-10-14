@@ -77,7 +77,7 @@ export function CoreView({ onOpenCognitive }: CoreViewProps = {}) {
     <div className="mx-auto max-w-lg animate-fade-up space-y-5 px-4 pb-32 pt-4 md:max-w-2xl lg:max-w-4xl">
       {/* ── Intestazione della pagina ── */}
       <header className="space-y-1">
-        <h1 className="title-large font-display font-bold text-foreground">Core</h1>
+        <h1 className="title-large font-display font-semibold text-foreground">Core</h1>
         <p className="body-medium text-muted-foreground">
           Chi sei, come studi, quando sei libero.
         </p>

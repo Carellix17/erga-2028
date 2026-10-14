@@ -1,6 +1,20 @@
 # HANDOFF
 
-Questo file serve come guida di riferimento per il coding agent che lavora allo sviluppo di Erga. Contiene tutte le informazioni tecniche fondamentali per orientarsi nel progetto, comprendere la struttura esistente e prendere decisioni coerenti con l'architettura attuale.
+Questo file serve come guida di riferimento per il coding agent che lavora allo sviluppo di Erga. Contiene le informazioni tecniche fondamentali per orientarsi nel progetto, comprendere la struttura esistente e prendere decisioni coerenti con l'architettura attuale.
+
+## Stato UI — migrazione al design system v3.0
+
+La fonte visiva autorevole è `DESIGN.md` v3.0 «Squared & Earthy». Le indicazioni v2.1 «Carta contemporanea» e «Squared & Sunset» rimaste nei documenti storici sono superate e non devono guidare nuove modifiche.
+
+La migrazione aggiorna palette e token condivisi, componenti UI, navigazione, schermate Home/Studio/Piano/Core/Impostazioni e landing, mantenendo struttura, flussi, logica di business, dati e backend esistenti. I punti di riferimento sono:
+
+- palette Smoky Black `#11120D`, Olive Drab `#565449`, Bone `#D8CFBC`, Floral White `#FFFBF4` e accenti per materia;
+- temi giorno/notte, Playfair Display per i titoli e Inter per UI e lettura;
+- raggi 4/8/12px e ombre flat basate sui token;
+- satinato limitato alle azioni sulle copertine, grana decorativa contenuta ed Earthy Stripe come firma visiva;
+- controlli responsive e accessibili, senza cambiare le funzioni reali dell'app.
+
+Verifiche della migrazione (14 ottobre 2026): 76 file di test e 700 test superati, `tsc --noEmit` e build di produzione superati. ESLint sui file TS/TSX modificati: 0 errori e 8 avvisi non bloccanti su Fast Refresh e dipendenze React Hook.
 
 ---
 
@@ -376,21 +390,22 @@ L'app si propone come **"la piattaforma educativa che si adatta a come pensi"**,
 ### 🎨 **Design System e UI**
 
 #### 39. **Design Tokens**
-- **Colori per Materia**: 13 palette tematiche (mantenute dal sistema precedente)
-- **Tema Chiaro/Scuro**: Palette complete con Smoky Black (#11120D), Olive Drab (#565449), Bone (#D8CFBC), Floral White (#FFFBF4)
-- **Superfici**: Olive Drab (#565449) per card, Bone (#D8CFBC) per superfici secondarie
-- **Testo**: Smoky Black (#11120D) principale, Floral White (#FFFBF4) su sfondo scuro
-- **Stati**: Successo, avviso, errore
-- **Contrasto Automatico**: Adattamento testo/sfondo
-- **Geometria**: Border radius massimi 12px (card), 8px (bottoni) - **VIETATO rounded-full per bottoni e card**
+- **Fonte visiva**: `DESIGN.md` v3.0 «Squared & Earthy»; è la fonte autorevole per palette, caratteri, superfici, geometria e movimento.
+- **Palette**: Smoky Black (`#11120D`), Olive Drab (`#565449`), Bone (`#D8CFBC`), Floral White (`#FFFBF4`) e accenti per materia.
+- **Temi**: palette giorno/notte, con canvas notturno `#0A0A08` e superfici scure `#1A1A15`.
+- **Tipografia**: Playfair Display per i titoli, Inter per UI e lettura.
+- **Superfici ed elevazione**: superfici opache, ombre flat basate sui token; satinato solo sulle azioni delle copertine.
+- **Geometria**: raggi 4/8/12px; le forme circolari complete sono riservate agli elementi previsti dal design system.
+- **Firma visiva**: Earthy Stripe; grana leggera e contestuale.
+- **Colori per materia**: accenti riconoscibili mantenuti e adattati per tema.
 
 #### 40. **Componenti UI**
-- **shadcn/ui**: Componenti accessibili e personalizzati
-- **Radix UI**: Primitive non stilizzate
-- **Animazioni**: Framer Motion per transizioni fluide
-- **Responsive**: Adattamento perfetto a tutti i dispositivi
-- **Accessibilità**: WCAG 2.1 AA compliant
-- **Tipografia**: Playfair Display (titoli Serif), Inter (UI Sans-Serif)
+- **shadcn/ui**: Componenti accessibili e personalizzati.
+- **Radix UI**: Primitive non stilizzate con supporto ai pattern accessibili.
+- **Animazioni**: Framer Motion per transizioni funzionali, nel rispetto di `prefers-reduced-motion`.
+- **Responsive**: layout per telefono, tablet e desktop; verificare overflow e target touch nelle modifiche.
+- **Accessibilità**: mantenere contrasto, focus visibile, semantica e nomi accessibili; non dichiarare conformità globale senza un audit completo.
+- **Tipografia**: Playfair Display (titoli serif), Inter (UI sans-serif).
 
 ---
 
@@ -461,11 +476,12 @@ Erga è una piattaforma educativa moderna costruita su uno stack tecnologico com
 - **Tailwind CSS 3.4.17**: Framework utility-first per lo styling, con configurazione personalizzata che estende il design system di Erga
 - **shadcn/ui**: Raccolta di componenti accessibili e personalizzabili, basati su Radix UI e costruiti con Tailwind
 - **Radix UI**: Libreria di primitive UI non stilizzate (accordion, dialog, select, tabs, toast, tooltip, ecc.) che fornisce accessibilità e comportamenti standard out-of-the-box
-- **Custom Design Tokens**: Sistema di design token completo in `src/index.css` con:
-  - Colori tematici per materia (terracotta, polvere, ocra, prugna, crepuscolo, mare, violetto, cipria, grafite, miele, neutro, bosco, oliva)
-  - Palette per tema chiaro/scuro con sfumature di avorio (#F6F3EB), carta (#FFFEF9), inchiostro (#252623)
-  - Variabili CSS per contrasto automatico, superfici, bordi, stati (success, warning, error)
-  - Supporto per contrasto automatico tramite `autoContrast.ts` che adatta dinamicamente il testo in base allo sfondo
+- **Custom Design Tokens**: Sistema di token in `src/index.css`, allineato a `DESIGN.md` v3.0 «Squared & Earthy», con:
+  - Palette Smoky Black, Olive Drab, Bone e Floral White, accenti per materia e colori semantici di stato
+  - Token giorno/notte per canvas, superfici, testo, bordi e controlli
+  - Tipografia Playfair Display/Inter, raggi 4/8/12px, ombre flat, grana contestuale ed Earthy Stripe
+  - Finitura satinata limitata alle azioni sulle copertine; superfici Impostazioni opache
+  - `autoContrast.ts` sceglie il testo con contrasto maggiore per lo sfondo effettivo
 
 #### Componenti e Struttura UI
 - **Componenti Organizzati**: La cartella `src/components/` contiene componenti raggruppati per dominio:
@@ -975,7 +991,7 @@ erga-2028/
 2. **Type Safety**: Tutto il codice è tipizzato con TypeScript
 3. **Accessibilità**: Componenti Radix UI garantiscono accessibilità out-of-the-box
 4. **Performance**: TanStack Query con caching intelligente e refetch ottimizzato
-5. **Design System**: Utilizzo coerente dei design tokens definiti in `index.css` e `DESIGN.md` v3.0 "Squared & Sunset"
+5. **Design System**: Utilizzo coerente dei token definiti in `src/index.css` e `DESIGN.md` v3.0 «Squared & Earthy».
 6. **Error Handling**: ErrorBoundary per gestione errori a livello applicazione
 7. **Loading States**: SplashScreen e stati di loading gestiti tramite Suspense
 8. **PWA**: Service worker configurato per non registrarsi in iframe/preview
@@ -997,5 +1013,5 @@ Esegui migrazioni database e deploy edge functions per il progetto Erga su Lovab
 
 ---
 
-*Ultimo aggiornamento: Ottobre 2025*
+*Ultimo aggiornamento: 14 ottobre 2026*
 *Design System: v3.0 "Squared & Earthy" (ispirato a Mistral AI con palette personalizzata)*

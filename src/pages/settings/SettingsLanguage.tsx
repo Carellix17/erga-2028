@@ -46,7 +46,7 @@ export default function SettingsLanguage() {
                   }}
                   className="erga-list-item flex w-full items-center gap-4 rounded-button p-3 text-left transition-all duration-300 ease-m3-emphasized"
                 >
-                  <span className="erga-list-item-icon label-large flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold uppercase tracking-wider text-foreground">
+                  <span className="erga-list-item-icon label-large flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-semibold uppercase tracking-wider text-foreground">
                     {opt.value}
                   </span>
                   <span className="min-w-0 flex-1 title-medium text-foreground">{t(opt.labelKey)}</span>

@@ -56,7 +56,7 @@ function FocusChartTooltip({
   return (
     <div className="min-w-[10rem] rounded-button border border-border bg-card px-3 py-2.5 text-left shadow-level-2">
       <p className="text-xs font-semibold text-muted-foreground">{point.fullLabel}</p>
-      <p className="mt-1 text-sm font-bold text-foreground">{formatMinutes(point.minutes)}</p>
+      <p className="mt-1 text-sm font-semibold text-foreground">{formatMinutes(point.minutes)}</p>
       <p className="mt-0.5 text-xs text-muted-foreground">
         {point.sessions} {sessionsLabel}
       </p>
@@ -138,7 +138,7 @@ function StreakEmblem({ days }: { days: number }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -12, scale: 0.9 }}
           transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
-          className="relative z-10 mt-8 font-display text-5xl font-extrabold leading-none tracking-[-0.06em] text-foreground tabular-nums"
+          className="relative z-10 mt-8 font-display text-5xl font-semibold leading-none tracking-[-0.06em] text-foreground tabular-nums"
         >
           {days}
         </motion.span>
@@ -214,7 +214,7 @@ export function FocusStatsDashboard() {
       <main className="mx-auto flex min-h-[55vh] w-full max-w-lg items-center px-4 py-10 sm:max-w-2xl sm:px-6 lg:max-w-4xl">
         <section className="w-full rounded-card border border-destructive/25 bg-card p-6 text-center shadow-level-1" aria-labelledby="focus-stats-error-title">
           <Clock3 className="mx-auto h-8 w-8 text-destructive" aria-hidden="true" />
-          <h2 id="focus-stats-error-title" className="mt-4 font-display text-xl font-bold text-foreground">
+          <h2 id="focus-stats-error-title" className="mt-4 font-display text-xl font-semibold text-foreground">
             {t("focusStats.error.title")}
           </h2>
           <p className="mx-auto mt-2 max-w-sm text-base leading-relaxed text-muted-foreground">
@@ -246,7 +246,7 @@ export function FocusStatsDashboard() {
       <div className="space-y-10 sm:space-y-12">
         <section className="px-3 py-1 text-center sm:px-6" aria-labelledby="streak-title">
           <StreakEmblem days={data.streakDays} />
-          <h2 id="streak-title" className="mt-5 font-display text-2xl font-extrabold tracking-tight text-foreground">
+          <h2 id="streak-title" className="mt-5 font-display text-2xl font-semibold tracking-tight text-foreground">
             {t("focusStats.streak.days", { count: data.streakDays })}
           </h2>
           <p className="mx-auto mt-2 max-w-sm text-base leading-relaxed text-muted-foreground">
@@ -262,14 +262,14 @@ export function FocusStatsDashboard() {
                 <p className="text-sm font-semibold text-muted-foreground">
                   {t("focusStats.today.minutes")}
                 </p>
-                <p className="mt-1.5 font-display text-[1.8rem] font-extrabold leading-none tracking-[-0.04em] text-foreground tabular-nums sm:text-[2.1rem]">
+                <p className="mt-1.5 font-display text-[1.8rem] font-semibold leading-none tracking-[-0.04em] text-foreground tabular-nums sm:text-[2.1rem]">
                   {formatMinutesForDisplay(todayMinutes)}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">{t("focusStats.today.caption")}</p>
               </div>
               <div className="min-w-0 px-3 py-4 sm:px-5 sm:py-5">
                 <p className="text-sm font-semibold text-muted-foreground">{t("focusStats.today.sessions")}</p>
-                <p className="mt-1.5 font-display text-[1.8rem] font-extrabold leading-none tracking-[-0.04em] text-foreground tabular-nums sm:text-[2.1rem]">
+                <p className="mt-1.5 font-display text-[1.8rem] font-semibold leading-none tracking-[-0.04em] text-foreground tabular-nums sm:text-[2.1rem]">
                   {todaySessions}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">{t("focusStats.today.sessionsCaption", { count: todaySessions })}</p>
@@ -282,7 +282,7 @@ export function FocusStatsDashboard() {
           <div className="flex flex-col gap-5 p-5 sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <h2 id="focus-timeline-title" className="font-display text-xl font-bold text-foreground sm:text-2xl">
+                <h2 id="focus-timeline-title" className="font-display text-xl font-semibold text-foreground sm:text-2xl">
                   {t("focusStats.timeline.title")}
                 </h2>
                 <p className="mt-1 max-w-2xl text-base leading-relaxed text-muted-foreground">
@@ -396,7 +396,7 @@ export function FocusStatsDashboard() {
                 <span className="grid h-12 w-12 place-items-center rounded-full bg-surface-container-high text-foreground" aria-hidden="true">
                   <Clock3 className="h-5 w-5 stroke-[1.6]" />
                 </span>
-                <p className="mt-4 font-display text-lg font-bold text-foreground">{t("focusStats.timeline.emptyTitle")}</p>
+                <p className="mt-4 font-display text-lg font-semibold text-foreground">{t("focusStats.timeline.emptyTitle")}</p>
                 <p className="mt-2 max-w-sm text-base leading-relaxed text-muted-foreground">{t("focusStats.timeline.emptyDescription")}</p>
                 <Button className="mt-5 min-h-12 gap-2" onClick={focus.openSetup}>
                   <Play className="h-4 w-4 fill-current" aria-hidden="true" />
@@ -423,7 +423,7 @@ export function FocusStatsDashboard() {
                 )}
               >
                 <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{item.label}</dt>
-                <dd className="mt-2 font-display text-xl font-extrabold tracking-[-0.03em] text-foreground tabular-nums">
+                <dd className="mt-2 font-display text-xl font-semibold tracking-[-0.03em] text-foreground tabular-nums">
                   {item.value}
                 </dd>
               </div>
@@ -434,7 +434,7 @@ export function FocusStatsDashboard() {
         {recentSessions.length > 0 && (
           <section aria-labelledby="recent-focus-title" className="overflow-hidden rounded-card border border-border bg-card shadow-level-1">
             <div className="flex items-baseline justify-between gap-4 px-5 py-5 sm:px-6">
-              <h2 id="recent-focus-title" className="font-display text-xl font-bold text-foreground">
+              <h2 id="recent-focus-title" className="font-display text-xl font-semibold text-foreground">
                 {t("focusStats.recent.title")}
               </h2>
               <p className="shrink-0 text-sm text-muted-foreground">{t("focusStats.recent.realData")}</p>
@@ -461,7 +461,7 @@ export function FocusStatsDashboard() {
                         {session.subjectName && session.taskLabel ? `${session.subjectName} · ${when}` : when}
                       </span>
                     </span>
-                    <span className="shrink-0 text-sm font-bold text-foreground tabular-nums">
+                    <span className="shrink-0 text-sm font-semibold text-foreground tabular-nums">
                       {formatMinutesForDisplay(session.actualDuration)}
                     </span>
                   </li>

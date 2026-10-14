@@ -173,10 +173,10 @@ export function ErgaMarketing() {
             <div className="lp-stage">
               <div className="lp-hex-orbit" aria-hidden>
                 <svg viewBox="0 0 400 400">
-                  <g fill="none" stroke="rgba(10,10,10,.12)" strokeWidth="1">
+                  <g fill="none" stroke="hsl(var(--accent-warm) / .2)" strokeWidth="1">
                     <polygon points="200,40 330,115 330,285 200,360 70,285 70,115" />
                   </g>
-                  <polygon fill="none" stroke="rgba(196,135,139,.45)" strokeWidth="1.2" points="200,56 318,124 318,276 200,344 82,276 82,124" />
+                  <polygon fill="none" stroke="hsl(var(--marketing-rose) / .45)" strokeWidth="1.2" points="200,56 318,124 318,276 200,344 82,276 82,124" />
                 </svg>
               </div>
               <div className="lp-hero-materials" aria-hidden>
@@ -306,6 +306,7 @@ export function ErgaMarketing() {
         </section>
       </main>
 
+      <div className="erga-earthy-stripe" aria-hidden="true" />
       <footer>
         <div className="lp-wrap">
           <div className="lp-foot">

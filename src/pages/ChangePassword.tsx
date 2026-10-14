@@ -70,7 +70,7 @@ export default function ChangePassword() {
           <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mb-4">
             <Shield className="w-8 h-8 text-accent-foreground" />
           </div>
-          <h1 className="text-xl font-bold">Cambia password</h1>
+          <h1 className="text-xl font-semibold">Cambia password</h1>
           <p className="text-muted-foreground text-sm mt-1 text-center">
             Ciao <span className="font-medium text-foreground">{currentEmail}</span>!
           </p>

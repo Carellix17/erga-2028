@@ -951,7 +951,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           )}
         </div>
         <div>
-          <h3 className="font-display text-xl font-bold mb-2">
+          <h3 className="font-display text-xl font-semibold mb-2">
             {isPdfProcessing ? "Elaborazione PDF in corso..." : 
              isPdfFailed ? "Errore nell'elaborazione" :
              "Nessuna lezione disponibile"}

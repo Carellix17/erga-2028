@@ -93,12 +93,12 @@ export function ModuleGenerationScreen({
             <div className="w-14 h-14 rounded-2xl bg-card shadow-level-1 flex items-center justify-center">
               <Factory className="w-7 h-7 text-foreground" strokeWidth={1.5} />
             </div>
-            <div className="absolute -bottom-1.5 -right-1.5 bg-primary text-primary-foreground rounded-sm px-2 py-0.5 text-[10px] font-bold">
+            <div className="absolute -bottom-1.5 -right-1.5 bg-primary text-primary-foreground rounded-sm px-2 py-0.5 text-[10px] font-semibold">
               Modulo {moduleIndex + 1}
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="font-display text-lg font-bold tracking-tight text-foreground leading-snug">
+            <h2 className="font-display text-lg font-semibold tracking-tight text-foreground leading-snug">
               Sto preparando il modulo {moduleIndex + 1}
             </h2>
             {moduleTitle && (
@@ -131,7 +131,7 @@ export function ModuleGenerationScreen({
         </div>
 
         {/* Cartello notifica: puoi anche uscire */}
-        <div className="rounded-[18px] bg-card p-4 mb-5 flex items-start gap-3">
+        <div className="rounded-card bg-card p-4 mb-5 flex items-start gap-3">
           <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
             <Bell className="w-4 h-4 text-foreground" strokeWidth={1.75} />
           </div>

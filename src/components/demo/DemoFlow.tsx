@@ -192,7 +192,7 @@ function InputStep({
         onDragLeave={() => setIsDragging(false)}
         onDrop={onDrop}
         className={cn(
-          "rounded-[24px] border-[1.5px] border-dashed transition-colors duration-300 p-6 sm:p-8 bg-card shadow-level-1",
+          "rounded-card border-[1.5px] border-dashed transition-colors duration-300 p-6 sm:p-8 bg-card shadow-level-1",
           isDragging ? "border-primary/60 bg-primary/5" : "border-border",
         )}
       >
@@ -251,7 +251,7 @@ function GeneratingStep() {
       <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center">
         <Loader2 className="w-7 h-7 text-primary-foreground animate-spin" />
       </div>
-      <p className="font-display font-bold text-2xl tracking-tight text-foreground">{t("demo.generating")}</p>
+      <p className="font-display font-semibold text-2xl tracking-tight text-foreground">{t("demo.generating")}</p>
       <p className="text-sm text-muted-foreground">{t("demo.generatingSub")}</p>
     </div>
   );
@@ -280,7 +280,7 @@ function CourseStep({
 
       <div className="mb-6">
         <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">{t("demo.yourPath")}</p>
-        <h2 className="font-display font-bold text-2xl sm:text-3xl text-foreground tracking-tight">{course.courseTitle}</h2>
+        <h2 className="font-display font-semibold text-2xl sm:text-3xl text-foreground tracking-tight">{course.courseTitle}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("demo.lessonsProgress", { done: completedCount, total: GUEST_LIMIT })}
         </p>
@@ -295,7 +295,7 @@ function CourseStep({
               <button
                 onClick={() => (locked ? onOpenAuth() : onOpen(idx))}
                 className={cn(
-                  "w-full text-left rounded-[20px] p-4 sm:p-5 transition-colors duration-300 flex items-start gap-4 group",
+                  "w-full text-left rounded-card p-4 sm:p-5 transition-colors duration-300 flex items-start gap-4 group",
                   locked
                     ? "bg-secondary/50"
                     : done
@@ -341,7 +341,7 @@ function CourseStep({
       </ol>
 
       {showHex && (
-        <div className="mt-8 rounded-[20px] bg-card shadow-level-1 p-5">
+        <div className="mt-8 rounded-card bg-card shadow-level-1 p-5">
           <div className="text-center mb-2">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">{t("demo.hexTitle")}</p>
           </div>
@@ -443,10 +443,10 @@ function FullscreenLesson({
             <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
               Slide {slideIdx + 1} / {lesson.slides.length}
             </div>
-            <h2 className="font-display font-bold text-2xl sm:text-4xl text-foreground tracking-tight mb-5">
+            <h2 className="font-display font-semibold text-2xl sm:text-4xl text-foreground tracking-tight mb-5">
               {lesson.slides[slideIdx].part_title}
             </h2>
-            <div className="rounded-[24px] bg-card shadow-level-1 p-6 sm:p-8">
+            <div className="rounded-card bg-card shadow-level-1 p-6 sm:p-8">
               <p
                 className="text-foreground/80 leading-relaxed whitespace-pre-line text-[15px] sm:text-base"
                 dangerouslySetInnerHTML={{
@@ -478,8 +478,8 @@ function FullscreenLesson({
             <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3 text-center">
               Domanda {quizIdx + 1} / {lesson.quiz.length}
             </div>
-            <div className="rounded-[24px] bg-card shadow-level-1 p-6 sm:p-8">
-              <h3 className="font-display font-bold text-xl sm:text-2xl text-foreground mb-5">
+            <div className="rounded-card bg-card shadow-level-1 p-6 sm:p-8">
+              <h3 className="font-display font-semibold text-xl sm:text-2xl text-foreground mb-5">
                 {lesson.quiz[quizIdx].question}
               </h3>
               <div className="space-y-2">
@@ -516,7 +516,7 @@ function FullscreenLesson({
               <CheckCircle2 className="w-7 h-7 text-tertiary" strokeWidth={1.75} />
             </div>
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Lezione completata</p>
-            <h2 className="font-display font-bold text-3xl text-foreground mt-1 tracking-tight">
+            <h2 className="font-display font-semibold text-3xl text-foreground mt-1 tracking-tight">
               {correctCount} / {lesson.quiz.length} corrette
             </h2>
             <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
@@ -613,9 +613,9 @@ function AuthWallModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-scrim/60 backdrop-blur-sm animate-fade-in p-4">
-      <div className="w-full max-w-md rounded-[24px] bg-card shadow-level-3 p-6 sm:p-8">
+      <div className="w-full max-w-md rounded-card bg-card shadow-level-3 p-6 sm:p-8">
         <div className="flex items-center justify-between mb-1">
-          <h3 className="font-display font-bold text-xl text-foreground">
+          <h3 className="font-display font-semibold text-xl text-foreground">
             {mode === "signup" ? "Consolida la tua conoscenza" : "Bentornato"}
           </h3>
           <button onClick={onClose} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Chiudi</button>

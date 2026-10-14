@@ -1,122 +1,101 @@
 /**
- * P46 — Palette vivida per il Piano (calendario) e la Routine.
- *
- * Il prodotto chiede colori distintivi per materia e routine nella vista
- * "Piano"/"Core" (riconoscimento a colpo d'occhio), con pattern dark
- * "tinted-surface": fondo al ~18% del colore e testo chiaro ad alto
- * contrasto (WCAG AA su sfondo scuro).
- * Solo per il Piano: il resto dell'app resta monocroma.
+ * Palette v3 per materie scolastiche e routine nel Piano.
+ * Mantiene il matching per nome e i colori scelti dall'utente; cambiano solo
+ * gli accenti visivi e i neutri del testo secondo DESIGN.md.
  */
 
 export interface TintStyle {
   backgroundColor: string;
-  /**
-   * P48 — contorno sottile (1px) nel colore della materia. Prima era una
-   * barra piena da 3-4 px sul bordo sinistro dei blocchi: il "trucco" più
-   * riconoscibile delle interfacce fatte dall'AI generica, e per giunta
-   * mangiava spazio utile nelle colonne strette del calendario.
-   * Il colore resta leggibile grazie al fondo tinto; per il puntino pieno
-   * accanto ai titoli (card del Piano) si usa `dot`.
-   */
+  /** Bordo 1px nella tinta materia, o nel neutro quando è borderless. */
   border: string;
   color: string;
-  /** Colore pieno per pallini/legenda. */
+  /** Colore pieno per pallini e legenda. */
   dot: string;
 }
 
-const TEXT_LIGHT = "#F8FAFC";
-/** Testo scuro ad alto contrasto sui fondi tinti al 18% in modalità chiara. */
-const TEXT_DARK = "#0F172A";
+const TEXT_LIGHT = "#FFFBF4";
+const TEXT_DARK = "#11120D";
 
-/** Materie scolastiche italiane → colore (spec P46). */
+/** Materie scolastiche → accenti già usati dal Piano; l'ordine è funzionale. */
 const SUBJECT_HEX: { hex: string; keys: string[] }[] = [
-  { hex: "#2563EB", keys: ["matematic", "math", "geometria", "algebra", "analisi"] }, // Blu
-  { hex: "#DC2626", keys: ["italian", "letteratura", "latino", "greco"] }, // Rosso
-  // NB: "Scienze Motorie" vaMatcher PRIMA di "scienze" (più specifica vince)
-  { hex: "#EAB308", keys: ["motorie", "sport", "educazione fisica", "ginnastica"] }, // Giallo
-  { hex: "#059669", keys: ["scienz", "biologi", "chimic", "natur"] }, // Smeraldo
-  { hex: "#D97706", keys: ["storia", "storico"] }, // Ambra
-  { hex: "#65A30D", keys: ["geografia", "territorio"] }, // Lime
-  { hex: "#0891B2", keys: ["fisic", "astronomia"] }, // Ciano
-  { hex: "#7C3AED", keys: ["filosof", "pedagogia"] }, // Viola
-  { hex: "#EA580C", keys: ["inglese", "lingu", "francese", "spagnolo", "tedesco"] }, // Arancione
-  { hex: "#C026D3", keys: ["arte", "disegno"] }, // Magenta
+  { hex: "#2563EB", keys: ["matematic", "math", "geometria", "algebra", "analisi"] },
+  { hex: "#DC2626", keys: ["italian", "letteratura", "latino", "greco"] },
+  // La corrispondenza più specifica precede "scienze".
+  { hex: "#EAB308", keys: ["motorie", "sport", "educazione fisica", "ginnastica"] },
+  { hex: "#059669", keys: ["scienz", "biologi", "chimic", "natur"] },
+  { hex: "#D97706", keys: ["storia", "storico"] },
+  { hex: "#65A30D", keys: ["geografia", "territorio"] },
+  { hex: "#0891B2", keys: ["fisic", "astronomia"] },
+  { hex: "#7C3AED", keys: ["filosof", "pedagogia"] },
+  { hex: "#EA580C", keys: ["inglese", "lingu", "francese", "spagnolo", "tedesco"] },
+  { hex: "#C026D3", keys: ["arte", "disegno"] },
 ];
 
-export const DEFAULT_SUBJECT_HEX = "#94A3B8"; // Slate
+export const DEFAULT_SUBJECT_HEX = "#94A3B8";
 
 /** Converte un colore CSS (#hex o `hsl(h s% l%)`) in #RRGGBB, o null. */
 export function cssColorToHex(color?: string | null): string | null {
   if (!color) return null;
-  const v = color.trim();
-  if (/^#[0-9a-f]{6}$/i.test(v)) return v.toUpperCase();
-  if (/^#[0-9a-f]{3}$/i.test(v)) {
-    return `#${v.slice(1).split("").map((c) => c + c).join("").toUpperCase()}`;
+  const value = color.trim();
+  if (/^#[0-9a-f]{6}$/i.test(value)) return value.toUpperCase();
+  if (/^#[0-9a-f]{3}$/i.test(value)) {
+    return `#${value.slice(1).split("").map((char) => char + char).join("").toUpperCase()}`;
   }
-  const m = v.match(/^hsl\(\s*(-?\d+(?:\.\d+)?)\s*[ ,]\s*(\d+(?:\.\d+)?)%\s*[ ,]\s*(\d+(?:\.\d+)?)%\s*\)$/i);
-  if (!m) return null;
-  const h = ((Number(m[1]) % 360) + 360) % 360;
-  const s = Math.min(100, Number(m[2])) / 100;
-  const l = Math.min(100, Number(m[3])) / 100;
-  const c = s * Math.min(l, 1 - l);
-  const chan = (offset: number) => {
-    const k = (offset + h / 30) % 12;
-    const val = l - c * Math.max(-1, Math.min(k - 3, 9 - k, 1));
-    return Math.round(val * 255).toString(16).padStart(2, "0");
+  const match = value.match(/^hsl\(\s*(-?\d+(?:\.\d+)?)\s*[ ,]\s*(\d+(?:\.\d+)?)%\s*[ ,]\s*(\d+(?:\.\d+)?)%\s*\)$/i);
+  if (!match) return null;
+
+  const hue = ((Number(match[1]) % 360) + 360) % 360;
+  const saturation = Math.min(100, Number(match[2])) / 100;
+  const lightness = Math.min(100, Number(match[3])) / 100;
+  const chroma = saturation * Math.min(lightness, 1 - lightness);
+  const channel = (offset: number) => {
+    const segment = (offset + hue / 30) % 12;
+    const value = lightness - chroma * Math.max(-1, Math.min(segment - 3, 9 - segment, 1));
+    return Math.round(value * 255).toString(16).padStart(2, "0");
   };
-  return `#${chan(0)}${chan(8)}${chan(4)}`.toUpperCase();
+  return `#${channel(0)}${channel(8)}${channel(4)}`.toUpperCase();
 }
 
-/**
- * Colore vivido di una materia (per nome, case-insensitive, senza accenti).
- * `customColor` = colore scelto a mano dall'utente (vince sull'automatico).
- */
+/** Accento di materia (o personalizzato), confrontando nomi senza accenti. */
 export function subjectHex(subjectName?: string | null, customColor?: string | null): string {
   const custom = cssColorToHex(customColor);
   if (custom) return custom;
   if (!subjectName) return DEFAULT_SUBJECT_HEX;
-  const n = subjectName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const normalized = subjectName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   for (const { hex, keys } of SUBJECT_HEX) {
-    if (keys.some((k) => n.includes(k))) return hex;
+    if (keys.some((key) => normalized.includes(key))) return hex;
   }
   return DEFAULT_SUBJECT_HEX;
 }
 
-
-/** Colori FISSI dei blocchi routine (spec P46). */
+/** Colori routine ufficiali v3. */
 export const ROUTINE_HEX: Record<string, string> = {
-  sleep: "#4F46E5", // Indaco / blu notte
-  school: "#64748B", // Slate / grigio piombo
-  meal: "#EF4444", // Corallo
-  other: "#0D9488", // Verde acqua
+  sleep: "#4F46E5",
+  school: "#64748B",
+  meal: "#EF4444",
+  other: "#0D9488",
 };
 
-/** Stile "tinted-surface" per i blocchi del planner (inline, 60fps). */
+/** Stile "tinted surface" per gli eventi del calendario, senza alterare i dati. */
 export function tintStyle(hex: string, opts?: { alpha?: number; borderless?: boolean; dark?: boolean }): TintStyle {
   const alpha = opts?.alpha ?? 0.18;
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  const bg = `rgba(${r} ${g} ${b} / ${alpha})`;
-  // P48 — il contorno tiene la tinta della materia ma resta un filo:
-  // più visibile al buio (dove serve staccare dalla griglia), discreto di giorno.
+  const red = parseInt(hex.slice(1, 3), 16);
+  const green = parseInt(hex.slice(3, 5), 16);
+  const blue = parseInt(hex.slice(5, 7), 16);
+  const rgb = `${red} ${green} ${blue}`;
   const edge = opts?.dark ? 0.55 : 0.42;
   return {
-    backgroundColor: bg,
-    border: opts?.borderless ? "1px solid rgba(148 163 184 / 0.28)" : `1px solid rgba(${r} ${g} ${b} / ${edge})`,
-    // Su fondo chiaro il testo chiaro sparisce: usiamo testo scuro AA.
+    backgroundColor: `rgba(${rgb} / ${alpha})`,
+    border: opts?.borderless ? "1px solid rgba(148 163 184 / 0.28)" : `1px solid rgba(${rgb} / ${edge})`,
     color: opts?.dark ? TEXT_LIGHT : TEXT_DARK,
     dot: hex,
   };
 }
 
-/** Tinta di una materia per nome (o colore scelto dall'utente, o slate). */
 export function subjectTint(subjectName?: string | null, dark?: boolean, customColor?: string | null): TintStyle {
   return tintStyle(subjectHex(subjectName, customColor), { dark });
 }
 
-
-/** Tinta di un blocco routine (kind: school | sleep | meal | other). */
 export function routineTint(kind: string, dark?: boolean): TintStyle {
   return tintStyle(ROUTINE_HEX[kind] ?? ROUTINE_HEX.other, { dark });
 }

@@ -97,8 +97,8 @@ export function CourseHeroCard({
     // ── Stato vuoto: breve, utile, su carta (2.1 §9) ──────────────────
     return (
       <article className="paper-grain flex flex-col items-center rounded-card border border-border bg-card p-5 text-center shadow-tactile sm:p-6">
-        <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-surface-container-high">
-          <BookOpen className="h-6 w-6 text-foreground" aria-hidden="true" />
+        <span className="grid h-12 w-12 place-items-center rounded-control bg-secondary">
+          <BookOpen className="h-6 w-6 text-secondary-foreground" aria-hidden="true" />
         </span>
         <h2 className="mt-3 text-lg font-semibold text-foreground">
           {emptyTitle ?? "Scegli o carica il tuo primo percorso"}
@@ -110,7 +110,7 @@ export function CourseHeroCard({
           <button
             type="button"
             onClick={onEmptyCta}
-            className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-primary text-[15px] font-semibold text-primary-foreground transition-transform duration-150 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-primary text-interface font-semibold text-primary-foreground transition-transform duration-150 ease-m3-emphasized active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {emptyCtaLabel}
           </button>

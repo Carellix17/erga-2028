@@ -23,14 +23,14 @@ describe("Font del messaggio di benvenuto", () => {
     const url = new URL(link!.href);
     expect(url.searchParams.getAll("family").sort()).toEqual([
       "Inter:ital,wght@0,400..700;1,400..700",
-      "Lora:ital,wght@0,400..700;1,400..700",
+      "Playfair Display:ital,wght@0,400..700;1,400..700",
     ]);
     expect(url.searchParams.get("display")).toBe("swap");
   });
 
   it("configura Lora per il display serif e Inter per interfaccia e lettura", () => {
-    expect(fontFamilies.display).toEqual(["Lora", "Georgia", "serif"]);
-    expect(fontFamilies.serif).toEqual(["Lora", "Georgia", "serif"]);
+    expect(fontFamilies.display).toEqual(["Playfair Display", "Lora", "Georgia", "serif"]);
+    expect(fontFamilies.serif).toEqual(["Playfair Display", "Lora", "Georgia", "serif"]);
     expect(fontFamilies.sans).toEqual(["Inter", "system-ui", "-apple-system", "sans-serif"]);
     expect(fontFamilies.reading).toEqual(["Inter", "system-ui", "-apple-system", "sans-serif"]);
     expect(fontFamilies).not.toHaveProperty("welcome-title");

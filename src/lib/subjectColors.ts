@@ -20,77 +20,77 @@ export interface SubjectColor {
 }
 
 const SUBJECT_COLORS: SubjectColor[] = [ {
- key:"storia", accent:"hsl(18 45% 45%)",
+ key:"storia", accent:"hsl(0 72.22% 50.59%)",
  label:"Storia",
- bg:"bg-pastel-terracotta/10", bgActive:"bg-pastel-terracotta", text:"text-pastel-terracotta", textActive:"text-primary-foreground",
+ bg:"bg-pastel-terracotta/10", bgActive:"bg-pastel-terracotta", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-terracotta/40", icon:"bg-pastel-terracotta/20", gradient:"from-pastel-terracotta/40 to-pastel-terracotta/10", solid:"bg-pastel-terracotta",
- badge:"bg-pastel-terracotta/15", badgeText:"text-pastel-terracotta",
+ badge:"bg-pastel-terracotta/15", badgeText:"text-foreground",
  }, {
- key:"matematica", accent:"hsl(210 36% 42%)",
+ key:"matematica", accent:"hsl(221.21 83.19% 53.33%)",
  label:"Matematica",
- bg:"bg-pastel-polvere/10", bgActive:"bg-pastel-polvere", text:"text-pastel-polvere", textActive:"text-primary-foreground",
+ bg:"bg-pastel-polvere/10", bgActive:"bg-pastel-polvere", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-polvere/40", icon:"bg-pastel-polvere/20", gradient:"from-pastel-polvere/40 to-pastel-polvere/10", solid:"bg-pastel-polvere",
- badge:"bg-pastel-polvere/15", badgeText:"text-pastel-polvere",
+ badge:"bg-pastel-polvere/15", badgeText:"text-foreground",
  }, {
- key:"economia", accent:"hsl(38 55% 36%)",
+ key:"economia", accent:"hsl(45.40 93.39% 47.45%)",
  label:"Economia",
- bg:"bg-pastel-ocra/10", bgActive:"bg-pastel-ocra", text:"text-pastel-ocra", textActive:"text-primary-foreground",
+ bg:"bg-pastel-ocra/10", bgActive:"bg-pastel-ocra", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-ocra/40", icon:"bg-pastel-ocra/20", gradient:"from-pastel-ocra/40 to-pastel-ocra/10", solid:"bg-pastel-ocra",
- badge:"bg-pastel-ocra/15", badgeText:"text-pastel-ocra",
+ badge:"bg-pastel-ocra/15", badgeText:"text-foreground",
  }, {
- key:"scienze", accent:"hsl(145 28% 34%)",
+ key:"scienze", accent:"hsl(243.40 75.36% 58.63%)",
  label:"Scienze",
- bg:"bg-pastel-bosco/10", bgActive:"bg-pastel-bosco", text:"text-pastel-bosco", textActive:"text-primary-foreground",
+ bg:"bg-pastel-bosco/10", bgActive:"bg-pastel-bosco", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-bosco/40", icon:"bg-pastel-bosco/20", gradient:"from-pastel-bosco/40 to-pastel-bosco/10", solid:"bg-pastel-bosco",
- badge:"bg-pastel-bosco/15", badgeText:"text-pastel-bosco",
+ badge:"bg-pastel-bosco/15", badgeText:"text-foreground",
  }, {
- key:"letteratura", accent:"hsl(320 28% 44%)",
+ key:"letteratura", accent:"hsl(161.38 93.55% 30.39%)",
  label:"Letteratura",
- bg:"bg-pastel-prugna/10", bgActive:"bg-pastel-prugna", text:"text-pastel-prugna", textActive:"text-primary-foreground",
+ bg:"bg-pastel-prugna/10", bgActive:"bg-pastel-prugna", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-prugna/40", icon:"bg-pastel-prugna/20", gradient:"from-pastel-prugna/40 to-pastel-prugna/10", solid:"bg-pastel-prugna",
- badge:"bg-pastel-prugna/15", badgeText:"text-pastel-prugna",
+ badge:"bg-pastel-prugna/15", badgeText:"text-foreground",
  }, {
- key:"filosofia", accent:"hsl(230 22% 44%)",
+ key:"filosofia", accent:"hsl(32.13 94.62% 43.73%)",
  label:"Filosofia",
- bg:"bg-pastel-crepuscolo/10", bgActive:"bg-pastel-crepuscolo", text:"text-pastel-crepuscolo", textActive:"text-primary-foreground",
+ bg:"bg-pastel-crepuscolo/10", bgActive:"bg-pastel-crepuscolo", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-crepuscolo/40", icon:"bg-pastel-crepuscolo/20", gradient:"from-pastel-crepuscolo/40 to-pastel-crepuscolo/10", solid:"bg-pastel-crepuscolo",
- badge:"bg-pastel-crepuscolo/15", badgeText:"text-pastel-crepuscolo",
+ badge:"bg-pastel-crepuscolo/15", badgeText:"text-foreground",
  }, {
- key:"fisica", accent:"hsl(185 38% 35%)",
+ key:"fisica", accent:"hsl(84.80 85.23% 34.51%)",
  label:"Fisica",
- bg:"bg-pastel-mare/10", bgActive:"bg-pastel-mare", text:"text-pastel-mare", textActive:"text-primary-foreground",
+ bg:"bg-pastel-mare/10", bgActive:"bg-pastel-mare", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-mare/40", icon:"bg-pastel-mare/20", gradient:"from-pastel-mare/40 to-pastel-mare/10", solid:"bg-pastel-mare",
- badge:"bg-pastel-mare/15", badgeText:"text-pastel-mare",
+ badge:"bg-pastel-mare/15", badgeText:"text-foreground",
  }, {
- key:"informatica", accent:"hsl(250 28% 47%)",
+ key:"informatica", accent:"hsl(191.65 91.40% 36.47%)",
  label:"Informatica",
- bg:"bg-pastel-violetto/10", bgActive:"bg-pastel-violetto", text:"text-pastel-violetto", textActive:"text-primary-foreground",
+ bg:"bg-pastel-violetto/10", bgActive:"bg-pastel-violetto", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-violetto/40", icon:"bg-pastel-violetto/20", gradient:"from-pastel-violetto/40 to-pastel-violetto/10", solid:"bg-pastel-violetto",
- badge:"bg-pastel-violetto/15", badgeText:"text-pastel-violetto",
+ badge:"bg-pastel-violetto/15", badgeText:"text-foreground",
  }, {
- key:"arte", accent:"hsl(350 30% 50%)",
+ key:"arte", accent:"hsl(262.12 83.26% 57.84%)",
  label:"Arte",
- bg:"bg-pastel-cipria/10", bgActive:"bg-pastel-cipria", text:"text-pastel-cipria", textActive:"text-primary-foreground",
+ bg:"bg-pastel-cipria/10", bgActive:"bg-pastel-cipria", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-cipria/40", icon:"bg-pastel-cipria/20", gradient:"from-pastel-cipria/40 to-pastel-cipria/10", solid:"bg-pastel-cipria",
- badge:"bg-pastel-cipria/15", badgeText:"text-pastel-cipria",
+ badge:"bg-pastel-cipria/15", badgeText:"text-foreground",
  }, {
- key:"geografia", accent:"hsl(85 26% 34%)",
+ key:"geografia", accent:"hsl(215.38 16.32% 46.86%)",
  label:"Geografia",
- bg:"bg-pastel-oliva/10", bgActive:"bg-pastel-oliva", text:"text-pastel-oliva", textActive:"text-primary-foreground",
+ bg:"bg-pastel-oliva/10", bgActive:"bg-pastel-oliva", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-oliva/40", icon:"bg-pastel-oliva/20", gradient:"from-pastel-oliva/40 to-pastel-oliva/10", solid:"bg-pastel-oliva",
- badge:"bg-pastel-oliva/15", badgeText:"text-pastel-oliva",
+ badge:"bg-pastel-oliva/15", badgeText:"text-foreground",
  }, {
- key:"diritto", accent:"hsl(220 16% 38%)",
+ key:"diritto", accent:"hsl(20.54 90.24% 48.24%)",
  label:"Diritto",
- bg:"bg-pastel-grafite/10", bgActive:"bg-pastel-grafite", text:"text-pastel-grafite", textActive:"text-primary-foreground",
+ bg:"bg-pastel-grafite/10", bgActive:"bg-pastel-grafite", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-grafite/40", icon:"bg-pastel-grafite/20", gradient:"from-pastel-grafite/40 to-pastel-grafite/10", solid:"bg-pastel-grafite",
- badge:"bg-pastel-grafite/15", badgeText:"text-pastel-grafite",
+ badge:"bg-pastel-grafite/15", badgeText:"text-foreground",
  }, {
- key:"lingue", accent:"hsl(28 50% 42%)",
+ key:"lingue", accent:"hsl(293.41 69.48% 48.82%)",
  label:"Lingue",
- bg:"bg-pastel-miele/10", bgActive:"bg-pastel-miele", text:"text-pastel-miele", textActive:"text-primary-foreground",
+ bg:"bg-pastel-miele/10", bgActive:"bg-pastel-miele", text:"text-foreground", textActive:"text-primary-foreground",
  border:"border-pastel-miele/40", icon:"bg-pastel-miele/20", gradient:"from-pastel-miele/40 to-pastel-miele/10", solid:"bg-pastel-miele",
- badge:"bg-pastel-miele/15", badgeText:"text-pastel-miele",
+ badge:"bg-pastel-miele/15", badgeText:"text-foreground",
  },
 ];
 
@@ -110,13 +110,13 @@ const SUBJECT_KEYWORDS: Record<string, string[]> = {
  lingue: ["inglese","francese","tedesco","spagnolo","latino","greco","lingua","grammatica","traduzione"],
 };
 
-// Fallback generale: accento ambra ad alto contrasto, classi legacy neutre.
+// Fallback generale: accento Slate neutro, coerente con il token v3.
 const DEFAULT_COLOR: SubjectColor = {
- key:"default", accent:"hsl(38 60% 42%)", // ambra calda: mai grigio per i corsi non riconosciuti,
+ key:"default", accent:"hsl(215 20.22% 65.10%)", // neutro Slate per corsi non riconosciuti,
  label:"Generale",
- bg:"bg-pastel-neutro/10", bgActive:"bg-pastel-neutro", text:"text-pastel-neutro", textActive:"text-primary-foreground",
- border:"border-pastel-neutro/40", icon:"bg-pastel-neutro/20", gradient:"from-pastel-neutro/40 to-pastel-neutro/10", solid:"bg-foreground",
- badge:"bg-pastel-neutro/15", badgeText:"text-pastel-neutro",
+ bg:"bg-pastel-neutro/10", bgActive:"bg-pastel-neutro", text:"text-foreground", textActive:"text-primary-foreground",
+ border:"border-pastel-neutro/40", icon:"bg-pastel-neutro/20", gradient:"from-pastel-neutro/40 to-pastel-neutro/10", solid:"bg-pastel-neutro",
+ badge:"bg-pastel-neutro/15", badgeText:"text-foreground",
 };
 
 /**
@@ -182,10 +182,9 @@ export function resolveSubjectColor(subjectName: string, customKey?: string | nu
  * Chooses the more readable neutral foreground for a HEX or HSL accent using
  * WCAG relative luminance.
  *
- * P30/P32 — l'inchiostro chiaro è l'off-white #F2F0EF (non il bianco puro),
- * mentre il tema chiaro usa l'inchiostro caldo #181516.
+ * I fondi materia ricevono Floral White o Smoky Black, selezionati via WCAG.
  */
-export function getAccentForeground(accent: string): "#F2F0EF" | "#181516" {
+export function getAccentForeground(accent: string): "#FFFBF4" | "#11120D" {
  const value = accent.trim();
  const normalizedHex = value.replace(/^#/, "");
  const hex = normalizedHex.length === 3
@@ -213,16 +212,16 @@ export function getAccentForeground(accent: string): "#F2F0EF" | "#181516" {
   }
  }
 
- if (!channels) return "#181516";
+ if (!channels) return "#11120D";
  const linear = channels.map((channel) =>
   channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
  );
  const luminance = 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
- const offWhiteLuminance = 0.8742941693240719; // #F2F0EF
+ const offWhiteLuminance = 0.9678601412851624; // #FFFBF4
  const offWhiteContrast = (offWhiteLuminance + 0.05) / (luminance + 0.05);
- const darkLuminance = 0.007884483130952297; // #181516
+ const darkLuminance = 0.005808416205988297; // #11120D
  const darkContrast = (luminance + 0.05) / (darkLuminance + 0.05);
- return offWhiteContrast >= darkContrast ? "#F2F0EF" : "#181516";
+ return offWhiteContrast >= darkContrast ? "#FFFBF4" : "#11120D";
 }
 
 /** Returns the contextual accent for the detected or user-selected subject. */

@@ -192,9 +192,8 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         <PlanSuggestion explanation={suggestion.explanation} onAccept={handleAcceptPlan} onDecline={() => setSuggestion(null)} />
       )}
 
-      {/* Superficie scura del calendario: il mondo zinc della griglia
-          resta intero anche sulla pagina chiara del Piano. */}
-      <section className="rounded-card bg-zinc-950 p-4 sm:p-6" aria-label={t("piano.upcoming")}>
+      {/* Superficie principale Olive Drab della vista Piano. */}
+      <section className="rounded-card border border-border bg-card p-4 shadow-level-1 sm:p-6" aria-label={t("piano.upcoming")}>
         <AppointmentsCalendar
           evaluations={evaluations}
           events={events}

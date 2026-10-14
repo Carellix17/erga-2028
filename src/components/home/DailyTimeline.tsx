@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * delicato, righe serene. Le attività completate si spengono (testo
  * attenuato, barrato, spunta in chip quieto); quelle da fare portano
  * l'icona in un chip tondo del contenuto. Un solo controllo «Vedi tutto»,
- * sobrio (raggio control 16), mai un pulsante pieno.
+ * sobrio (raggio control 8), senza modifiche al flusso del Piano.
  */
 
 export interface TimelineTask {
@@ -59,7 +59,7 @@ export function DailyTimeline({
           <button
             type="button"
             onClick={onSeeAll}
-            className="mt-4 flex h-11 w-full items-center justify-center rounded-control border border-border bg-transparent text-[15px] font-medium text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="mt-4 flex h-11 w-full items-center justify-center rounded-control border border-border bg-secondary text-base font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {emptyCtaLabel}
           </button>
@@ -76,7 +76,7 @@ export function DailyTimeline({
           <button
             type="button"
             onClick={onSeeAll}
-            className="flex h-9 items-center rounded-control px-3.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-9 items-center rounded-control px-3.5 text-sm font-medium text-card-foreground transition-colors hover:bg-primary-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {seeAllLabel}
           </button>
@@ -91,14 +91,14 @@ export function DailyTimeline({
               <button
                 type="button"
                 onClick={() => onTaskClick?.(task.id)}
-                className="flex min-h-[60px] w-full items-center gap-3 rounded-[16px] px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="flex min-h-[60px] w-full items-center gap-3 rounded-card px-3 py-2.5 text-left transition-colors hover:bg-secondary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <span
                   className={cn(
-                    "grid h-11 w-11 shrink-0 place-items-center rounded-[14px]",
+                    "grid h-11 w-11 shrink-0 place-items-center rounded-control",
                     task.isCompleted
-                      ? "bg-surface-container-high text-muted-foreground"
-                      : "bg-surface-container-high text-foreground",
+                      ? "bg-secondary text-ink-muted"
+                      : "bg-secondary text-secondary-foreground",
                   )}
                 >
                   {task.isCompleted ? (

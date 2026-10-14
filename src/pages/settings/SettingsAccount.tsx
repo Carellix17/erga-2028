@@ -71,7 +71,7 @@ export default function SettingsAccount() {
       <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6 animate-fade-up">
         {isLoading ? (
           <div className="space-y-6">
-            <Skeleton className="h-24 w-24 rounded-[2rem] mx-auto" />
+            <Skeleton className="h-24 w-24 rounded-card mx-auto" />
             <Skeleton className="h-56 rounded-card" />
             <Skeleton className="h-44 rounded-card" />
           </div>
@@ -84,7 +84,7 @@ export default function SettingsAccount() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingAvatar}
                 aria-label="Cambia foto profilo"
-                className="w-24 h-24 rounded-[2rem] overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-200 ease-m3-emphasized active:scale-95 relative group"
+                className="w-24 h-24 rounded-card overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-200 ease-m3-emphasized active:scale-95 relative group"
               >
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Foto profilo utente" className="w-full h-full object-cover" />

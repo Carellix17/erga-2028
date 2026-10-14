@@ -431,7 +431,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
          <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-settle-in">
            <Mic className="w-8 h-8" />
          </div>
-         <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Interrogazione</h2>
+         <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">Interrogazione</h2>
          <p className="body-medium text-muted-foreground">
            {contextName ? `Simulazione su: ${contextName.replace(/^🌐\s*/, "").replace(/\.pdf$/i, "")}` : "Scegli la modalità per iniziare"}
          </p>
@@ -466,7 +466,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-settle-in">
  <Mic className="w-8 h-8" />
  </div>
- <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Interrogazione</h2>
+ <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">Interrogazione</h2>
  <p className="body-medium text-muted-foreground">Scegli un corso e la modalità</p>
  </div>
 
@@ -508,7 +508,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  }}
  >
  <DialogHeader>
- <DialogTitle className="text-center font-bold tracking-tight">Scegli la modalità</DialogTitle>
+ <DialogTitle className="text-center font-semibold tracking-tight">Scegli la modalità</DialogTitle>
  {selectedCourseObj && (
  <DialogDescription className="text-center truncate">
  {selectedCourseObj.file_name.replace(/^🌐\s*/,"").replace(/\.pdf$/i,"")}
@@ -557,7 +557,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-settle-in">
  <MessageSquare className="w-8 h-8" />
  </div>
- <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Configura sessione</h2>
+ <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">Configura sessione</h2>
  {selectedCourseObj && (
  <p className="body-medium text-muted-foreground truncate">
  {selectedCourseObj.file_name.replace(/^🌐\s*/,"").replace(/\.pdf$/i,"")}
@@ -568,7 +568,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  <div className="p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-5">
  <div className="flex items-baseline justify-between">
  <span className="label-large font-semibold tracking-tight text-foreground">Numero di domande</span>
- <span className="font-display text-4xl font-bold text-brand-deep tabular-nums">{maxQuestions}</span>
+ <span className="font-display text-4xl font-semibold text-brand-deep tabular-nums">{maxQuestions}</span>
  </div>
  <Slider
  min={3}
@@ -609,7 +609,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-settle-in">
  <CheckCircle2 className="w-8 h-8" />
  </div>
- <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Report finale</h2>
+ <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">Report finale</h2>
  <p className="body-medium text-muted-foreground">La tua interrogazione è terminata</p>
  </div>
 
@@ -618,7 +618,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  avgBg
  )}>
  <p className="label-medium text-muted-foreground uppercase tracking-wider">Voto complessivo</p>
- <p className={cn("font-display text-7xl font-bold tabular-nums", avgColor)}>
+ <p className={cn("font-display text-7xl font-semibold tabular-nums", avgColor)}>
  {avg.toFixed(1).replace(".",",")}
  </p>
  <p className="label-small text-muted-foreground">media su {finalReport.scores.length} domande</p>
@@ -635,7 +635,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  className="flex items-center justify-between p-3 rounded-xl bg-surface-container-high border border-outline-variant/60"
  >
  <span className="label-medium text-foreground">Domanda {s.question}</span>
- <span className={cn("font-display font-bold tabular-nums", c)}>
+ <span className={cn("font-display font-semibold tabular-nums", c)}>
  {s.score.toString().replace(".",",")}/10
  </span>
  </li>

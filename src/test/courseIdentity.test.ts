@@ -13,10 +13,10 @@ import { SUBJECT_PALETTE } from "@/lib/subjectColors";
  * e di notte, con fallback opaco.
  */
 
-const INK = "#252623";
-const PAPER = "#FFFEF9";
-const NIGHT_PAPER = "#2D2C29";
-const NIGHT_INK = "#F4F1E7";
+const INK = "#11120D";
+const PAPER = "#FFFBF4";
+const NIGHT_PAPER = "#262623";
+const NIGHT_INK = "#FFFBF4";
 
 /** Composito approssimato del satinato: carta α% sopra il campo. */
 function composite(satinHex: string, alpha: number, fieldHex: string): string {
@@ -74,12 +74,12 @@ describe("courseIdentity — contrasto garantito delle copertine", () => {
   it("il satinato resta leggibile sui compositi, giorno e notte (≥ 4,5:1)", () => {
     for (const course of COURSE_NAMES) {
       const cover = resolveCourseCover(course);
-      // giorno: carta 80% sul campo, testo inchiostro
-      const dayComposite = composite(PAPER, 0.8, cover.field);
+      // giorno: Bone 90% sul campo, testo Smoky Black
+      const dayComposite = composite(PAPER, 0.9, cover.field);
       const dayRatio = contrastRatio(dayComposite, INK);
       expect(dayRatio, `satinato giorno su ${cover.subjectKey}: ${dayRatio.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
-      // notte: carta notte 85% sul campo, testo inchiostro di notte
-      const nightComposite = composite(NIGHT_PAPER, 0.85, cover.field);
+      // notte: superficie notturna 90% sul campo, testo Floral White
+      const nightComposite = composite(NIGHT_PAPER, 0.9, cover.field);
       const nightRatio = contrastRatio(nightComposite, NIGHT_INK);
       expect(nightRatio, `satinato notte su ${cover.subjectKey}: ${nightRatio.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
     }
@@ -92,7 +92,7 @@ describe("courseIdentity — contrasto garantito delle copertine", () => {
       expect(contrastRatio(PAPER, INK)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(NIGHT_PAPER, NIGHT_INK)).toBeGreaterThanOrEqual(4.5);
       // sanity: il composito satjnato non può essere peggiore del campo
-      const dayComposite = composite(PAPER, 0.8, cover.field);
+      const dayComposite = composite(PAPER, 0.9, cover.field);
       expect(contrastRatio(dayComposite, INK)).toBeGreaterThan(0);
     }
   });
