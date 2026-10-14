@@ -6,7 +6,7 @@ Questo file serve come guida di riferimento per il coding agent che lavora allo 
 
 ## GOAL
 
-**Erga** è una piattaforma educativa innovativa che combina intelligenza artificiale, gamification e analisi cognitiva per offrire un'esperienza di apprendimento **completamente personalizzata**. L'obiettivo principale è trasformare il modo in cui gli studenti studiano, adattandosi al loro stile cognitivo, ritmo di apprendimento e preferenze personali.
+**Erga** è una piattaforma educativa innovativa che combina intelligenza artificiale, analisi cognitiva e pianificazione del proprio tempo di studio per offrire un'esperienza di apprendimento **completamente personalizzata**. L'obiettivo principale è trasformare il modo in cui gli studenti studiano, adattandosi al loro stile cognitivo, ritmo di apprendimento e preferenze personali.
 
 L'app si propone come **"la piattaforma educativa che si adatta a come pensi"**, offrendo:
 - Un'esperienza **multi-piattaforma** (Web, iOS, Android tramite PWA)
