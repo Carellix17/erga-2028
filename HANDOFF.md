@@ -376,11 +376,12 @@ L'app si propone come **"la piattaforma educativa che si adatta a come pensi"**,
 ### 🎨 **Design System e UI**
 
 #### 39. **Design Tokens**
-- **Colori per Materia**: 13 palette tematiche
-- **Tema Chiaro/Scuro**: Palette complete
-- **Superfici**: Avorio, carta, inchiostro
+- **Colori per Materia**: 13 palette tematiche (mantenute dal sistema precedente)
+- **Tema Chiaro/Scuro**: Palette complete con superfici crema (#FFF8E0) e arancione sunset (#FA520F)
+- **Superfici**: Crema caldo (#FFF8E0), carta, inchiostro (#1F1F1F)
 - **Stati**: Successo, avviso, errore
 - **Contrasto Automatico**: Adattamento testo/sfondo
+- **Geometria**: Border radius massimi 12px (card), 8px (bottoni) - **VIETATO rounded-full per bottoni e card**
 
 #### 40. **Componenti UI**
 - **shadcn/ui**: Componenti accessibili e personalizzati
@@ -388,6 +389,7 @@ L'app si propone come **"la piattaforma educativa che si adatta a come pensi"**,
 - **Animazioni**: Framer Motion per transizioni fluide
 - **Responsive**: Adattamento perfetto a tutti i dispositivi
 - **Accessibilità**: WCAG 2.1 AA compliant
+- **Tipografia**: Playfair Display (titoli Serif), Inter (UI Sans-Serif)
 
 ---
 
@@ -972,7 +974,7 @@ erga-2028/
 2. **Type Safety**: Tutto il codice è tipizzato con TypeScript
 3. **Accessibilità**: Componenti Radix UI garantiscono accessibilità out-of-the-box
 4. **Performance**: TanStack Query con caching intelligente e refetch ottimizzato
-5. **Design System**: Utilizzo coerente dei design tokens definiti in `index.css`
+5. **Design System**: Utilizzo coerente dei design tokens definiti in `index.css` e `DESIGN.md` v3.0 "Squared & Sunset"
 6. **Error Handling**: ErrorBoundary per gestione errori a livello applicazione
 7. **Loading States**: SplashScreen e stati di loading gestiti tramite Suspense
 8. **PWA**: Service worker configurato per non registrarsi in iframe/preview
@@ -994,4 +996,5 @@ Esegui migrazioni database e deploy edge functions per il progetto Erga su Lovab
 
 ---
 
-*Ultimo aggiornamento: 9 Ottobre 2025*
+*Ultimo aggiornamento: Ottobre 2025*
+*Design System: v3.0 "Squared & Sunset" (ispirato a Mistral AI)*
