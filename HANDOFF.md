@@ -377,8 +377,9 @@ L'app si propone come **"la piattaforma educativa che si adatta a come pensi"**,
 
 #### 39. **Design Tokens**
 - **Colori per Materia**: 13 palette tematiche (mantenute dal sistema precedente)
-- **Tema Chiaro/Scuro**: Palette complete con superfici crema (#FFF8E0) e arancione sunset (#FA520F)
-- **Superfici**: Crema caldo (#FFF8E0), carta, inchiostro (#1F1F1F)
+- **Tema Chiaro/Scuro**: Palette complete con Smoky Black (#11120D), Olive Drab (#565449), Bone (#D8CFBC), Floral White (#FFFBF4)
+- **Superfici**: Olive Drab (#565449) per card, Bone (#D8CFBC) per superfici secondarie
+- **Testo**: Smoky Black (#11120D) principale, Floral White (#FFFBF4) su sfondo scuro
 - **Stati**: Successo, avviso, errore
 - **Contrasto Automatico**: Adattamento testo/sfondo
 - **Geometria**: Border radius massimi 12px (card), 8px (bottoni) - **VIETATO rounded-full per bottoni e card**
@@ -997,4 +998,4 @@ Esegui migrazioni database e deploy edge functions per il progetto Erga su Lovab
 ---
 
 *Ultimo aggiornamento: Ottobre 2025*
-*Design System: v3.0 "Squared & Sunset" (ispirato a Mistral AI)*
+*Design System: v3.0 "Squared & Earthy" (ispirato a Mistral AI con palette personalizzata)*

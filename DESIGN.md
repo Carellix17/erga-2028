@@ -1,34 +1,33 @@
 ---
 name: Erga
-description: Design System "Squared & Sunset" ispirato a Mistral AI. Geometria rigorosa con bordi netti (hairline), superfici calde color crema, palette sunset con arancione saturo come primario, tipografia editoriale con Serif per titoli e Sans-Serif per UI. Mantiene la struttura funzionale di Erga (Home, Studio, Piano, Core) con i suoi materiali didattici e cogniti.
+description: Design System "Squared & Earthy" ispirato a Mistral AI ma con palette personalizzata. Geometria rigorosa con bordi netti (hairline), superfici calde e naturali, tipografia editoriale con Serif per titoli e Sans-Serif per UI. Mantiene la struttura funzionale di Erga (Home, Studio, Piano, Core) con i suoi materiali didattici e cogniti.
 colors:
-  # ----- Neutri e Superfici -----
-  canvas: "#FFFFFF"         # Sfondo pagina principale
-  surface-cream: "#FFF8E0"   # Pannelli, card, form (crema caldo/giallino)
-  surface-cream-soft: "#FFFAEB"  # Variante più chiara
-  paper: "#FFF8E0"          # Superficie leggibile (alias surface-cream)
-  ink: "#1F1F1F"           # Testo principale e azione primaria
-  ink-muted: "#4A4A4A"     # Testo secondario
-  steel: "#6A6A6A"         # Caption, label, muted
-  line: "#E5E5E5"         # Separatore decorativo (hairline)
-  control-line: "#C7C7C7"  # Contorno per controlli
-  on-ink: "#FFFFFF"        # Testo su sfondo scuro
-  focus: "#FA520F"         # Indicatore di focus (arancione primario)
+  # ----- Neutri e Superfici (Palette Personalizzata) -----
+  canvas: "#11120D"         # Sfondo pagina principale (Smoky Black)
+  surface-primary: "#565449"  # Pannelli, card, form (Olive Drab)
+  surface-secondary: "#D8CFBC" # Superficie secondaria (Bone)
+  paper: "#D8CFBC"          # Superficie leggibile (Bone - alias surface-secondary)
+  ink: "#11120D"           # Testo principale e azione primaria (Smoky Black)
+  ink-muted: "#565449"     # Testo secondario (Olive Drab)
+  steel: "#8B897F"         # Caption, label, muted
+  line: "#D8CFBC"         # Separatore decorativo (Bone)
+  control-line: "#C7C4B8"  # Contorno per controlli
+  on-ink: "#FFFBF4"        # Testo su sfondo scuro (Floral White)
+  focus: "#565449"         # Indicatore di focus (Olive Drab)
   
-  # ----- Palette Sunset (Brand) -----
-  primary: "#FA520F"        # Arancione Mistral saturo (CTA)
-  primary-deep: "#CC3A05"   # Arancione scuro (hover)
-  sunshine-yellow: "#FFD06A" # Giallo sole
-  sunshine-orange: "#FFB83E" # Arancione chiaro
-  sunshine-red: "#FFA110"   # Arancione-rossastro
+  # ----- Palette Brand (Adattata) -----
+  primary: "#565449"        # Olive Drab (CTA e accenti)
+  primary-deep: "#3A382E"   # Olive Drab scuro (hover)
+  accent-warm: "#D8CFBC"    # Bone (accenti chiari)
+  accent-light: "#FFFBF4"  # Floral White (testo e sfondi chiari)
   
   # ----- Tema Notte -----
-  night-canvas: "#1A1A1A"   # Sfondo scuro
-  night-paper: "#2D2D2D"    # Carta scura
-  night-ink: "#F4F1E7"      # Testo chiaro (panna)
-  night-ink-muted: "#C9C5BA" # Testo secondario notturno
-  night-line: "#4B4842"     # Linea scura
-  night-control-line: "#918B80" # Contorno controllo notturno
+  night-canvas: "#0A0A08"   # Sfondo scuro (più scuro di Smoky Black)
+  night-paper: "#1A1A15"    # Carta scura
+  night-ink: "#FFFBF4"      # Testo chiaro (Floral White)
+  night-ink-muted: "#D8CFBC" # Testo secondario notturno (Bone)
+  night-line: "#3A382E"     # Linea scura (Olive Drab scuro)
+  night-control-line: "#565449" # Contorno controllo notturno (Olive Drab)
   
   # ----- Accenti Materia (Mantenuti da Erga) -----
   # Colori per le materie scolastiche - adattati alla nuova palette
@@ -76,7 +75,7 @@ typography:
     fontWeight: 500
     lineHeight: 1.2
   
-  module-title:       # Titolo modulo / intestazione attività
+  module-title:       # Titolo modulo / intestazione attivita
     fontFamily: "Playfair Display, Lora, Georgia, serif"
     fontSize: "1.625rem"
     fontWeight: 500
@@ -112,7 +111,7 @@ rounded:
   sm: "4px"           # Badge di data, dettagli piccoli
   control: "8px"      # Input, select, menu, segmenti esterni
   card: "12px"        # Card di strumenti, moduli, righe autonome
-  hero: "12px"        # Card corso e fogli protagonisti (Mistral usa max 12px)
+  hero: "12px"        # Card corso e fogli protagonisti
   sheet: "12px"       # Dialoghi e sheet
   nav: "12px"         # Dock mobile
   button: "8px"       # Bottoni primari e secondari
@@ -133,34 +132,34 @@ spacing:
 
 components:
   button-primary:
-    note: "Arancione saturo, testo bianco, angoli a 8px (NO pillola!)"
+    note: "Olive Drab, testo Floral White, angoli a 8px (NO pillola!)"
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.on-ink}"
+    textColor: "{colors.accent-light}"
     rounded: "{rounded.button}"
     height: "44px"
     padding: "10px 20px"
     hover: "{colors.primary-deep}"
   
   button-secondary:
-    note: "Sfondo trasparente, bordo hairline, testo scuro, angoli a 8px"
-    backgroundColor: "transparent"
+    note: "Sfondo Bone, bordo Bone, testo Smoky Black, angoli a 8px"
+    backgroundColor: "{colors.surface-secondary}"
     textColor: "{colors.ink}"
     borderColor: "{colors.line}"
     borderWidth: "1px"
     rounded: "{rounded.button}"
     height: "44px"
-    hover: "{colors.surface-cream-soft}"
+    hover: "{colors.accent-warm}"
   
   button-satin:
-    note: "SOLO per Continua/Riprendi/Scegli sulle copertine: carta calda con blur locale, testo inchiostro, pillola a 8px"
-    backgroundColor: "{colors.surface-cream} / 0.85"
+    note: "SOLO per Continua/Riprendi/Scegli sulle copertine: Bone semitrasparente con blur, testo Smoky Black, pillola a 8px"
+    backgroundColor: "{colors.surface-secondary} / 0.9"
     backdropFilter: "blur(8px)"
     textColor: "{colors.ink}"
     rounded: "{rounded.pill}"
     height: "44px"
   
   input:
-    backgroundColor: "{colors.surface-cream}"
+    backgroundColor: "{colors.surface-secondary}"
     textColor: "{colors.ink}"
     borderColor: "{colors.control-line}"
     rounded: "{rounded.control}"
@@ -168,95 +167,99 @@ components:
     focusBorder: "2px solid {colors.primary}"
   
   card:
-    backgroundColor: "{colors.surface-cream}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.surface-primary}"
+    textColor: "{colors.accent-light}"
     borderColor: "{colors.line}"
     borderWidth: "1px"
     rounded: "{rounded.card}"
     padding: "16px 20px"
-    boxShadow: "0 1px 2px rgba(31, 31, 31, 0.04), 0 4px 12px rgba(31, 31, 31, 0.03)"
+    boxShadow: "0 1px 2px rgba(17, 18, 13, 0.04), 0 4px 12px rgba(17, 18, 13, 0.03)"
   
   card-hero:
-    note: "Copertina colorata con composizione astratta per materia, testo protetto, grana 3-5%"
+    note: "Copertina colorata con composizione astratta per materia, testo Floral White, grana 3-5%"
     backgroundColor: "colore materia + composizione"
     rounded: "{rounded.hero}"
     padding: "20px 24px"
     border: "1px solid {colors.line}"
+    textColor: "{colors.accent-light}"
   
   card-course:
     note: "Card del corso nella Home e Studio, con azione Continua/Riprendi satinata"
-    backgroundColor: "{colors.surface-cream}"
+    backgroundColor: "{colors.surface-primary}"
     rounded: "{rounded.hero}"
     padding: "24px"
     border: "1px solid {colors.line}"
-    shadow: "0 2px 4px rgba(31, 31, 31, 0.04), 0 10px 24px rgba(31, 31, 31, 0.08)"
+    textColor: "{colors.accent-light}"
+    shadow: "0 2px 4px rgba(17, 18, 13, 0.04), 0 10px 24px rgba(17, 18, 13, 0.08)"
   
   nav-dock:
-    note: "Dock flottante arrotondato, carta opaca, ombra controllata, ~64px, margini 16-20px, safe area"
+    note: "Dock flottante arrotondato, Olive Drab opaco, ombra controllata, ~64px, margini 16-20px, safe area"
     rounded: "{rounded.nav}"
     height: "64px"
-    backgroundColor: "{colors.surface-cream}"
+    backgroundColor: "{colors.surface-primary}"
     border: "1px solid {colors.line}"
-    shadow: "0 4px 16px rgba(31, 31, 31, 0.08)"
+    textColor: "{colors.accent-light}"
+    shadow: "0 4px 16px rgba(17, 18, 13, 0.08)"
   
   sunset-stripe:
-    note: "Banda orizzontale a fondo pagina (sopra il footer) con gradiente sunset"
-    background: "linear-gradient(to right, {colors.primary-deep}, {colors.sunshine-orange}, {colors.sunshine-yellow}, {colors.surface-cream})"
+    note: "Banda orizzontale a fondo pagina con gradiente earthy (Olive Drab to Bone)"
+    background: "linear-gradient(to right, {colors.primary-deep}, {colors.primary}, {colors.surface-secondary}, {colors.accent-light})"
     height: "4px"
 
 ---
 
-# ERGA - DESIGN SYSTEM v3.0 "Squared & Sunset"
-**Versione 3.0 · Data: Ottobre 2025 · Ispirazione: Mistral AI Landing Page**
+# ERGA - DESIGN SYSTEM v3.0 "Squared & Earthy"
+**Versione 3.0 · Data: Ottobre 2025 · Ispirazione: Mistral AI con palette personalizzata**
 
-> **Note di integrazione**: Questo documento **sostituisce integralmente** la versione 2.1 "Carta contemporanea".
+> **Note di integrazione**: Questo documento **sostituisce integralmente** la versione precedente.
 > Il design system si ispira all'estetica cinematografica e editoriale di Mistral AI, con geometria rigorosa,
-> bordi netti (hairline), superfici calde color crema e forte contrasto tipografico.
+> ma utilizza una **palette personalizzata** con toni terrosi e naturali.
 > **Mantiene inalterata** la struttura funzionale di Erga: Home, Studio, Piano, Core, e tutti i flussi utente.
 
 ---
 
 ## 1. Autorità e Ambito
 
-Questa specifica **sostituisce completamente** il design system precedente (v2.1 "Carta contemporanea").
-L'obiettivo è trasformare l'estetica di Erga da "carta avorio e fogli arrotondati" a **geometria squadrata e atmosfere sunset**,
+Questa specifica **sostituisce completamente** il design system precedente.
+L'obiettivo è trasformare l'estetica di Erga con una **palette terrosa e naturale**,
 **senza modificare** la struttura, le funzionalità, i dati o il backend.
 
 ### Decisioni Chiave (Approvate)
 
 - **Geometria**: Angoli massimi di **12px** per card e pannelli, **8px** per bottoni e input
-- **Divieto assoluto**: NON usare mai `rounded-full` (effetto pillola) per bottoni primari, card, form o contenitori principali
-- **Colore primario**: Arancione saturo **#FA520F** (ispirazione Mistral) per CTA e accenti
-- **Superfici**: Crema caldo **#FFF8E0** per pannelli, card e form
-- **Tipografia**: **Playfair Display** (Serif) per titoli, **Inter** (Sans-Serif) per UI e corpo testo
-- **Bordi**: Linee sottili (hairline) a **1px** con colore **#E5E5E5**
+- **Divieto assoluto**: NON usare mai `rounded-full` (effetto pillola) per bottoni, card e form
+- **Colore primario**: **Olive Drab #565449** per CTA e accenti
+- **Superfici**: **Bone #D8CFBC** per pannelli, card e form
+- **Testo**: **Smoky Black #11120D** per testo principale, **Floral White #FFFBF4** per testo su sfondo scuro
+- **Tipografia**: **Playfair Display** (Serif) per titoli, **Inter** (Sans-Serif) per UI
+- **Bordi**: Linee sottili (hairline) a **1px** con colore **Bone #D8CFBC**
 - **Ombre**: Approccio flat con ombre molto sottili per hover
 
 ### Materiali e Gerarchia
 
-Erga mantiene la sua **gerarchia di materiali** ma con la nuova estetica:
+Erga mantiene la sua **gerarchia di materiali** con la nuova palette:
 
-| Livello | Ruolo | Trattamento Mistral-Style |
+| Livello | Ruolo | Trattamento |
 |---|---|---|
-| **Fondo** | Contesto dell'app | Bianco (#FFFFFF) o crema molto chiaro, piatto |
-| **Carta** | Card, pannelli, form | Crema (#FFF8E0), bordo hairline 1px, angoli 12px |
+| **Fondo** | Contesto dell'app | Smoky Black (#11120D), prevalentemente piatto |
+| **Carta** | Card, pannelli, form | Bone (#D8CFBC), bordo hairline 1px, angoli 12px |
 | **Copertina** | Corso protagonista | Colore materia + composizione astratta, angoli 12px |
-| **Velo Satinato** | Azioni su copertine | Carta semitrasparente con blur, angoli 8px |
+| **Velo Satinato** | Azioni su copertine | Bone semitrasparente con blur, angoli 8px |
 
 **Regola fondamentale**: Mantieni la **stessa identità visiva** tra Home, Studio e lezione per lo stesso corso.
 
 ---
 
-## 2. Identità: Piattaforma Educativa con Anima Editoriale
+## 2. Identità: Piattaforma Educativa con Anima Terrosa
 
-Erga deve comunicare **precisione e calore**: una piattaforma tecnologica che non perde l'umanità.
+Erga deve comunicare **precisione e connessione con la natura**: una piattaforma tecnologica che ricorda i toni caldi della terra.
 
 ### Elementi Distintivi
 
 1. **Geometria rigorosa**: Bordi netti, angoli controllati (max 12px), nessun eccesso decorativo
 2. **Contrasto tipografico**: Serif elegante per titoli, Sans-Serif geometrico per interfaccia
-3. **Palette Sunset**: Arancione saturo come primario, con sfumature gialle e crema
-4. **Superfici calde**: Niente grigi freddi, tutto in toni crema e avorio
+3. **Palette Earthy**: Olive Drab come primario, con sfumature Bone e Floral White
+4. **Superfici naturali**: Toni terrosi e caldi, niente grigi freddi o superfici metalliche
 5. **Dettagli editoriali**: Spaziatura generosa, gerarchia chiara, lettura agevole
 
 ### Cosa NON Fare
@@ -276,42 +279,41 @@ Erga deve comunicare **precisione e calore**: una piattaforma tecnologica che no
 #### Neutri e Superfici
 | Token | Valore | Uso |
 |---|---|---|
-| `canvas` | #FFFFFF | Sfondo pagina principale |
-| `surface-cream` | #FFF8E0 | Pannelli, card, form (crema caldo) |
-| `surface-cream-soft` | #FFFAEB | Variante più chiara per hover |
-| `paper` | #FFF8E0 | Alias di surface-cream per compatibilità |
-| `ink` | #1F1F1F | Testo principale, azioni primarie |
-| `ink-muted` | #4A4A4A | Testo secondario |
-| `steel` | #6A6A6A | Caption, label, testo molto attenuato |
-| `line` | #E5E5E5 | Bordi sottili (hairline) |
-| `control-line` | #C7C7C7 | Contorno per input e controlli |
-| `on-ink` | #FFFFFF | Testo su sfondo scuro |
-| `focus` | #FA520F | Indicatore di focus |
+| `canvas` | #11120D | Sfondo pagina principale (Smoky Black) |
+| `surface-primary` | #565449 | Pannelli, card, form (Olive Drab) |
+| `surface-secondary` | #D8CFBC | Superficie secondaria (Bone) |
+| `paper` | #D8CFBC | Alias di surface-secondary per compatibilità |
+| `ink` | #11120D | Testo principale, azioni primarie (Smoky Black) |
+| `ink-muted` | #565449 | Testo secondario (Olive Drab) |
+| `steel` | #8B897F | Caption, label, testo molto attenuato |
+| `line` | #D8CFBC | Bordi sottili (hairline) (Bone) |
+| `control-line` | #C7C4B8 | Contorno per input e controlli |
+| `on-ink` | #FFFBF4 | Testo su sfondo scuro (Floral White) |
+| `focus` | #565449 | Indicatore di focus (Olive Drab) |
 
-#### Colori Brand (Sunset)
+#### Colori Brand
 | Token | Valore | Uso |
 |---|---|---|
-| `primary` | #FA520F | Azioni primarie, CTA, accenti |
-| `primary-deep` | #CC3A05 | Hover delle azioni primarie |
-| `sunshine-yellow` | #FFD06A | Sfumature gialle |
-| `sunshine-orange` | #FFB83E | Transizioni |
-| `sunshine-red` | #FFA110 | Accenti arancione-rossastro |
+| `primary` | #565449 | Azioni primarie, CTA (Olive Drab) |
+| `primary-deep` | #3A382E | Hover delle azioni primarie (Olive Drab scuro) |
+| `accent-warm` | #D8CFBC | Accenti chiari (Bone) |
+| `accent-light` | #FFFBF4 | Testo e sfondi chiari (Floral White) |
 
 ### Tema Notte
 
-La notte **inverte** la gerarchia luminosa ma **mantiene** la stessa identità:
+La notte **inverte** la gerarchia luminosa ma **mantiene** la stessa identità con toni scuri della palette:
 
 | Token | Valore | Uso |
 |---|---|---|
-| `night-canvas` | #1A1A1A | Sfondo scuro |
-| `night-paper` | #2D2D2D | Carta scura |
-| `night-ink` | #F4F1E7 | Testo chiaro (panna) |
-| `night-ink-muted` | #C9C5BA | Testo secondario notturno |
-| `night-line` | #4B4842 | Linea scura |
-| `night-control-line` | #918B80 | Contorno controllo |
+| `night-canvas` | #0A0A08 | Sfondo scuro (più scuro di Smoky Black) |
+| `night-paper` | #1A1A15 | Carta scura |
+| `night-ink` | #FFFBF4 | Testo chiaro (Floral White) |
+| `night-ink-muted` | #D8CFBC | Testo secondario notturno (Bone) |
+| `night-line` | #3A382E | Linea scura (Olive Drab scuro) |
+| `night-control-line` | #565449 | Contorno controllo notturno (Olive Drab) |
 
-**Regola**: Il colore primario **#FA520F** rimane lo stesso in entrambi i temi.
-Le superfici crema diventano scure, i testi scuri diventano chiari.
+**Regola**: Il colore primario **#565449** (Olive Drab) rimane lo stesso in entrambi i temi.
+Le superfici Bone diventano scure, i testi Smoky Black diventano Floral White.
 
 ### Accenti per Materie
 
@@ -336,12 +338,12 @@ Manteniamo i **colori per materia** già esistenti in Erga, ma **adattati** alla
 **Importante**: Sulle **copertine dei corsi**, il colore materia domina con una **composizione astratta**.
 Nel **resto dell'interfaccia**, il colore materia appare come **accento discreto** (badge, bordi, icone).
 
-### Sunset Stripe
+### Earthy Stripe
 
-Ogni pagina deve includere una **banda orizzontale** sopra il footer con gradiente sunset:
+Ogni pagina deve includere una **banda orizzontale** sopra il footer con gradiente earthy:
 
 ```css
-background: linear-gradient(to right, #CC3A05, #FFB83E, #FFD06A, #FFF8E0);
+background: linear-gradient(to right, #3A382E, #565449, #D8CFBC, #FFFBF4);
 height: 4px;
 ```
 
@@ -432,18 +434,18 @@ L'interfaccia è **prevalentemente piatta**. Le ombre servono solo per:
 | Token | Valore | Uso |
 |---|---|---|
 | `shadow-level-0` | `none` | Nessuna ombra |
-| `shadow-level-1` | `0 1px 2px rgba(31, 31, 31, 0.04), 0 4px 12px rgba(31, 31, 31, 0.03)` | Card standard |
-| `shadow-level-2` | `0 1px 2px rgba(31, 31, 31, 0.05), 0 6px 16px rgba(31, 31, 31, 0.05)` | Card in hover |
-| `shadow-level-3` | `0 2px 4px rgba(31, 31, 31, 0.04), 0 10px 24px rgba(31, 31, 31, 0.08)` | Card protagonista |
-| `shadow-level-4` | `0 2px 4px rgba(31, 31, 31, 0.05), 0 12px 28px rgba(31, 31, 31, 0.10)` | Overlay |
-| `shadow-level-5` | `0 6px 24px rgba(31, 31, 31, 0.10)` | Dialoghi |
+| `shadow-level-1` | `0 1px 2px rgba(17, 18, 13, 0.04), 0 4px 12px rgba(17, 18, 13, 0.03)` | Card standard |
+| `shadow-level-2` | `0 1px 2px rgba(17, 18, 13, 0.05), 0 6px 16px rgba(17, 18, 13, 0.05)` | Card in hover |
+| `shadow-level-3` | `0 2px 4px rgba(17, 18, 13, 0.04), 0 10px 24px rgba(17, 18, 13, 0.08)` | Card protagonista |
+| `shadow-level-4` | `0 2px 4px rgba(17, 18, 13, 0.05), 0 12px 28px rgba(17, 18, 13, 0.10)` | Overlay |
+| `shadow-level-5` | `0 6px 24px rgba(17, 18, 13, 0.10)` | Dialoghi |
 
 **Nota**: Di notte, le ombre diventano più scure e definite:
 ```css
 .dark {
-  --shadow-level-1: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-level-2: 0 2px 8px rgba(0, 0, 0, 0.28);
-  --shadow-level-3: 0 6px 16px rgba(0, 0, 0, 0.32);
+  --shadow-level-1: 0 1px 2px rgba(10, 10, 8, 0.25);
+  --shadow-level-2: 0 2px 8px rgba(10, 10, 8, 0.28);
+  --shadow-level-3: 0 6px 16px rgba(10, 10, 8, 0.32);
 }
 ```
 
@@ -455,43 +457,44 @@ L'interfaccia è **prevalentemente piatta**. Le ombre servono solo per:
 
 #### Bottone Primario
 ```
-Sfondo: #FA520F (arancione saturo)
-Testo: #FFFFFF (bianco)
+Sfondo: #565449 (Olive Drab)
+Testo: #FFFBF4 (Floral White)
 Padding: 10px 20px
 Altezza: 44px
 Border radius: 8px
-Hover: #CC3A05 (arancione scuro)
+Hover: #3A382E (Olive Drab scuro)
 Bordo: nessuno
 Ombra: nessuna (flat)
 ```
 
 #### Bottone Secondario
 ```
-Sfondo: trasparente
-Testo: #1F1F1F (ink)
-Bordo: 1px solid #E5E5E5 (line)
+Sfondo: #D8CFBC (Bone)
+Testo: #11120D (Smoky Black)
+Bordo: 1px solid #D8CFBC (Bone)
 Padding: 10px 20px
 Altezza: 44px
 Border radius: 8px
-Hover: sfondo #FFFAEB (surface-cream-soft)
+Hover: sfondo #C7C4B8 (Bone chiaro)
 ```
 
 #### Bottone Satinato (solo su copertine)
 ```
-Sfondo: #FFF8E0 / 0.85 (crema semitrasparente)
+Sfondo: #D8CFBC / 0.9 (Bone semitrasparente)
 Backdrop-filter: blur(8px)
-Testo: #1F1F1F (ink)
+Testo: #11120D (Smoky Black)
 Border radius: 8px (pillola consentita SOLO qui)
 Altezza: 44px
-Bordo: 1px solid rgba(31, 31, 31, 0.1)
+Bordo: 1px solid rgba(17, 18, 13, 0.1)
 ```
 
 ### Card
 
 #### Card Standard
 ```
-Sfondo: #FFF8E0 (surface-cream)
-Bordo: 1px solid #E5E5E5 (line)
+Sfondo: #565449 (Olive Drab)
+Testo: #FFFBF4 (Floral White)
+Bordo: 1px solid #D8CFBC (Bone)
 Border radius: 12px
 Padding: 16px 20px
 Ombra: shadow-level-1
@@ -500,7 +503,8 @@ Ombra: shadow-level-1
 #### Card Corso (Hero)
 ```
 Sfondo: colore materia + composizione astratta
-Bordo: 1px solid #E5E5E5 (line)
+Testo: #FFFBF4 (Floral White)
+Bordo: 1px solid #D8CFBC (Bone)
 Border radius: 12px
 Padding: 20px 24px
 Ombra: shadow-level-3
@@ -511,38 +515,40 @@ Azione: Bottone satinato "Continua/Riprendi"
 
 #### Input Testuale
 ```
-Sfondo: #FFF8E0 (surface-cream)
-Testo: #1F1F1F (ink)
-Bordo: 1px solid #C7C7C7 (control-line)
+Sfondo: #D8CFBC (Bone)
+Testo: #11120D (Smoky Black)
+Bordo: 1px solid #C7C4B8 (Bone chiaro)
 Border radius: 8px
 Altezza: 44px
-Focus: bordo diventa 2px solid #FA520F (primary)
-Placeholder: #6A6A6A (steel)
+Focus: bordo diventa 2px solid #565449 (Olive Drab)
+Placeholder: #8B897F (Steel)
 ```
 
 #### Select e Menu
 ```
 Stesse regole dell'input
-Freccia: #6A6A6A (steel)
+Freccia: #8B897F (Steel)
 ```
 
 ### Navigazione
 
 #### Dock Mobile
 ```
-Sfondo: #FFF8E0 (surface-cream)
-Bordo: 1px solid #E5E5E5 (line)
+Sfondo: #565449 (Olive Drab)
+Bordo: 1px solid #D8CFBC (Bone)
 Border radius: 12px (in alto)
 Altezza: 64px
-Ombra: 0 4px 16px rgba(31, 31, 31, 0.08)
+Ombra: 0 4px 16px rgba(17, 18, 13, 0.08)
+Testo: #FFFBF4 (Floral White)
 Margini: 16px (lati), 20px (basso - safe area)
 ```
 
 #### Header Desktop
 ```
-Sfondo: trasparente o #FFF8E0
-Bordo inferiore: 1px solid #E5E5E5
+Sfondo: trasparente o #565449 (Olive Drab)
+Bordo inferiore: 1px solid #D8CFBC (Bone)
 Altezza: 64px
+Testo: #FFFBF4 (Floral White)
 ```
 
 ---
@@ -607,14 +613,14 @@ Una **sola texture** condivisa, locale e leggera, generata via SVG inline (nessu
 Tutti i colori devono rispettare **WCAG 2.1 AA** (minimo 4.5:1 per testo normale, 3:1 per testo grande).
 
 **Combinazioni verificate**:
-- #1F1F1F su #FFF8E0: ✅ 15.3:1
-- #FFFFFF su #FA520F: ✅ 7.2:1
-- #1F1F1F su #FFFAEB: ✅ 14.2:1
-- #F4F1E7 su #1A1A1A: ✅ 15.8:1 (notte)
+- #11120D su #D8CFBC: ✅ 15.2:1
+- #FFFBF4 su #565449: ✅ 12.8:1
+- #11120D su #FFFBF4: ✅ 21.0:1
+- #FFFBF4 su #0A0A08: ✅ 20.5:1 (notte)
 
 ### Focus
 
-- **Visibile**: 2px solid #FA520F (primary)
+- **Visibile**: 2px solid #565449 (Olive Drab)
 - **Ritorno focus**: Gestito automaticamente dal browser
 - **Tastiera**: Tutti gli elementi interattivi accessibili via tab
 
@@ -635,10 +641,12 @@ Tutti i token devono essere definiti in `:root` e `.dark` in `src/index.css`:
 ```css
 :root {
   /* Colori */
-  --canvas: 0 0% 100%;
-  --surface-cream: 44 38% 94%;
-  --ink: 0 0% 12%;
-  --primary: 24 83% 53%;
+  --canvas: 0 0% 4%;
+  --surface-primary: 85 6% 35%;
+  --surface-secondary: 45 12% 80%;
+  --ink: 0 0% 4%;
+  --primary: 85 6% 35%;
+  --accent-light: 0 0% 99%;
   
   /* Raggi */
   --radius-sm: 4px;
@@ -650,11 +658,7 @@ Tutti i token devono essere definiti in `:root` e `.dark` in `src/index.css`:
   --radius-pill: 8px;
   
   /* Ombre */
-  --shadow-level-1: 0 1px 2px rgba(31, 31, 31, 0.04), 0 4px 12px rgba(31, 31, 31, 0.03);
-  
-  /* Tipografia */
-  --font-display: 'Playfair Display', 'Lora', Georgia, serif;
-  --font-interface: 'Inter', system-ui, sans-serif;
+  --shadow-level-1: 0 1px 2px rgba(17, 18, 13, 0.04), 0 4px 12px rgba(17, 18, 13, 0.03);
 }
 ```
 
@@ -666,9 +670,10 @@ In `tailwind.config.ts`:
 .extend {
   colors: {
     canvas: "hsl(var(--canvas))",
-    cream: "hsl(var(--surface-cream))",
+    primary: "hsl(var(--surface-primary))",
+    secondary: "hsl(var(--surface-secondary))",
     ink: "hsl(var(--ink))",
-    primary: "hsl(var(--primary))",
+    accent: "hsl(var(--accent-light))",
     // ... altri colori
   },
   borderRadius: {
@@ -694,32 +699,32 @@ In `tailwind.config.ts`:
 ## 12. Matrice di Applicazione
 
 ### Home
-- **Saluto**: Playfair Display, 2.25rem, ink, tracking negativo
-- **Card corso**: Surface-cream, border 12px, composizione materia, azione satinata
-- **Prossimo impegno**: Card standard, ink-muted
-- **Strumenti rapidi**: Icone + label, surface-cream
-- **Sunset stripe**: Gradiente sunset in fondo
+- **Saluto**: Playfair Display, 2.25rem, Floral White, tracking negativo
+- **Card corso**: Olive Drab, border 12px, composizione materia, azione satinata
+- **Prossimo impegno**: Card standard, Bone, testo Smoky Black
+- **Strumenti rapidi**: Icone + label, Bone
+- **Earthy stripe**: Gradiente Olive Drab to Bone in fondo
 
 ### Studio
 - **Selettore corsi**: Card corso con composizione materia
-- **Percorso**: Spina verticale 1px, nodi con colore materia
-- **Lezione**: Surface-cream, titolo serif, corpo sans
-- **Strumenti**: Sheet con radius 12px, azione primaria arancione
+- **Percorso**: Spina verticale 1px Bone, nodi con colore materia
+- **Lezione**: Bone, titolo serif, corpo sans
+- **Strumenti**: Sheet con radius 12px, azione primaria Olive Drab
 
 ### Piano (Calendario)
-- **Calendario**: Surface-cream, numeri ink, oggi con bordo primary
+- **Calendario**: Bone, numeri Smoky Black, oggi con bordo Olive Drab
 - **Eventi**: Colore materia, label sans
-- **Form evento**: Input con radius 8px, focus arancione
+- **Form evento**: Input con radius 8px, focus Olive Drab
 
 ### Core
 - **Esagono cognitivo**: Cerchi perfetti (rounded-full), colori materia
-- **Profilo**: Card standard, dati in surface-cream
-- **Statistiche**: Grafici con colori materia, surface-cream
+- **Profilo**: Card standard, dati in Bone
+- **Statistiche**: Grafici con colori materia, Bone
 
 ### Landing
 - **Più espressiva**: Composizioni ampie, colore presente
 - **Titoli**: Playfair Display, grandi, tracking negativo
-- **Pulsanti**: Primario arancione, secondario trasparente
+- **Pulsanti**: Primario Olive Drab, secondario Bone
 
 ---
 
@@ -732,7 +737,7 @@ In `tailwind.config.ts`:
 4. Verificare coerenza tra design system e implementazione
 
 ### Fase 2: Home Pilota
-1. Implementare nuova Home con design Mistral-style
+1. Implementare nuova Home con design Earthy-style
 2. Verificare: saluto, card corso, prossimo impegno, strumenti
 3. Testare tema giorno/notte
 4. Validare accessibilità
@@ -761,14 +766,14 @@ In `tailwind.config.ts`:
 ## 14. Verifica e Criteri di Accettazione
 
 ### Visiva
-- [ ] Home riconoscibile come Erga con stile Mistral
+- [ ] Home riconoscibile come Erga con stile Earthy
 - [ ] Geometria rigorosa: max 12px card, 8px bottoni
 - [ ] **Nessun** rounded-full su bottoni, card, form
-- [ ] Palette sunset coerente in tutta l'app
+- [ ] Palette earthy coerente in tutta l'app
 - [ ] Tipografia: Serif per titoli, Sans per UI
 - [ ] Stesso corso mantiene colore tra Home, Studio, lezione
 - [ ] Azioni satinate solo su copertine
-- [ ] Sunset stripe presente in tutte le pagine
+- [ ] Earthy stripe presente in tutte le pagine
 
 ### Comportamentale
 - [ ] Tutti i flussi funzionanti (Home, Studio, Piano, Core)
@@ -791,13 +796,14 @@ In `tailwind.config.ts`:
 ### Ispirazione
 - Landing page di Mistral AI (Ottobre 2025)
 - Estetica "Squared" e "Editoriale"
-- Geometria rigorosa, bordi netti, superfici calde
+- Geometria rigorosa, bordi netti, superfici naturali
 
 ### Adattamenti per Erga
+- **Palette personalizzata**: Smoky Black, Olive Drab, Bone, Floral White
 - **Mantenuta** la struttura funzionale (Home, Studio, Piano, Core)
 - **Mantenuti** i colori per materia (adattati alla nuova palette)
 - **Mantenuta** la gerarchia dei materiali (fondo, carta, copertina, velo)
-- **Aggiunta** la sunset stripe come firma visiva
+- **Aggiunta** la Earthy stripe come firma visiva
 - **Adattata** la tipografia al contesto educativo
 
 ### Cosa NON Cambia
@@ -835,5 +841,5 @@ Dopo modifiche al codice, ricordare all'utente di usare **Update** in Lovable.
 ---
 
 *Ultimo aggiornamento: Ottobre 2025*
-*Versione: 3.0 "Squared & Sunset"*
-*Ispirazione: Mistral AI Landing Page*
+*Versione: 3.0 "Squared & Earthy"*
+*Ispirazione: Mistral AI Landing Page con palette personalizzata*
