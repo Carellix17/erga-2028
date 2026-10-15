@@ -336,7 +336,8 @@ export function ErgaMarketing() {
               <h2>Trasparenza</h2>
               <span className="lp-foot-note">Beta gratuita</span>
               <span className="lp-foot-note">Pro non ancora disponibile</span>
-              <span className="lp-foot-note">Privacy e termini in preparazione</span>
+              <Link to="/privacy">Privacy</Link>
+              <Link to="/termini">Termini di servizio</Link>
             </div>
           </div>
           <div className="lp-legal">
