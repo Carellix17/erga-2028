@@ -244,7 +244,7 @@ export default function Registrati() {
             <p className="mt-5 text-center text-sm text-muted-foreground">
               Registrandoti accetti i{" "}
               <Link to="/termini" className="text-brand-deep font-medium underline underline-offset-2">Termini di servizio</Link>{" "}
-              e confermi di aver letto l'{" "}
+              e confermi di aver letto l'
               <Link to="/privacy" className="text-brand-deep font-medium underline underline-offset-2">Informativa sulla privacy</Link>.
             </p>
           </form>
