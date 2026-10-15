@@ -36,6 +36,8 @@ const SettingsTerms = lazy(() => import("./pages/settings/SettingsTerms"));
 const SettingsLanguage = lazy(() => import("./pages/settings/SettingsLanguage"));
 const FocusStats = lazy(() => import("./pages/FocusStats"));
 const Profile = lazy(() => import("./pages/Profile"));
+const Privacy = lazy(() => import("./pages/legal/Privacy"));
+const Terms = lazy(() => import("./pages/legal/Terms"));
 // SOLO in sviluppo (import.meta.env.DEV): non esiste nella build di produzione.
 
 const queryClient = new QueryClient({
@@ -90,6 +92,8 @@ const App = () => (
           <Suspense fallback={<SplashScreen />}>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/termini" element={<Terms />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/registrati" element={<Registrati />} />
             <Route path="/cambia-password" element={<ChangePassword />} />
