@@ -51,7 +51,7 @@ export function AppLayout({
         "erga-app-shell flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background md:flex-row",
         // 🖥️ Shell desktop: viewport sigillata con distacco perimetrale (p-3)
         // e spazio tra le due card (gap-3). Su mobile niente cambia.
-        "md:h-dvh md:min-h-0 md:overflow-hidden md:gap-3 md:p-3",
+        "md:h-dvh md:min-h-0 md:overflow-hidden md:gap-0 md:p-0",
         // 📱 Modalità riempi-schermo (Pratica): sigillata anche su mobile
         fillViewport && "h-dvh min-h-0 overflow-hidden",
       )}
@@ -73,7 +73,7 @@ export function AppLayout({
           // 🖥️ Content-card: superficie dedicata, angoli arrotondati, ombra.
           // In modalità normale è lei a scorrere (header incluso); in modalità
           // fillViewport lo scroll è gestito dalle viste interne.
-          "md:h-full md:min-h-0 md:rounded-card md:border md:border-border md:bg-background md:shadow-level-2",
+          "md:h-full md:min-h-0 md:border-l md:border-border md:bg-background",
           fillViewport ? "min-h-0 md:overflow-hidden" : "md:overflow-x-hidden md:overflow-y-auto",
         )}
       >
@@ -82,7 +82,7 @@ export function AppLayout({
           className={cn(
             // D2: lo spazio del dock è riservato dal contenuto, safe area compresa
           // (il dock è fisso e non copre mai l'ultima riga).
-          "mx-auto w-full max-w-lg overflow-visible px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 md:max-w-2xl md:pb-6 lg:max-w-4xl",
+          "mx-auto w-full max-w-lg overflow-visible px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 md:max-w-2xl md:pb-6 lg:max-w-7xl",
             fillViewport && "flex min-h-0 flex-1 flex-col overflow-hidden",
           )}
         >
@@ -93,3 +93,4 @@ export function AppLayout({
     </div>
   );
 }
+

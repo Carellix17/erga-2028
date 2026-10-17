@@ -1,4 +1,4 @@
-/* Tailwind tokens for DESIGN.md v3.0 — Squared & Earthy. */
+/* Tailwind tokens for DESIGN.md v4.0 — Swiss Cognitive Grid. */
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
 
@@ -24,6 +24,8 @@ export default {
         white: "hsl(var(--accent-light) / <alpha-value>)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
+        sheet: "hsl(var(--sheet))",
+        cognitive: "hsl(var(--cognitive))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -178,6 +180,8 @@ export default {
         "subject-accent-light": "var(--subject-accent-light)",
       },
       borderRadius: {
+        none: "0px",
+        DEFAULT: "2px",
         hero: "var(--radius-hero)",
         nav: "var(--radius-nav)",
         xs: "var(--radius-xs)",
@@ -216,14 +220,15 @@ export default {
         hero: "var(--shadow-hero-card)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        interface: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        body: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        reading: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        display: ["Playfair Display", "Lora", "Georgia", "serif"],
-        serif: ["Playfair Display", "Lora", "Georgia", "serif"],
-        mono: ["ui-monospace", "SFMono-Regular", "monospace"],
-        radja: ["Radja", "Playfair Display", "Georgia", "serif"],
+        sans: ["Ubuntu Sans", "system-ui", "sans-serif"],
+        interface: ["Ubuntu Sans", "system-ui", "sans-serif"],
+        body: ["Ubuntu Sans", "system-ui", "sans-serif"],
+        reading: ["Ubuntu Sans", "system-ui", "sans-serif"],
+        display: ["Ubuntu Sans", "system-ui", "sans-serif"],
+        serif: ["Ubuntu Sans", "system-ui", "sans-serif"],
+        mono: ["Ubuntu Sans Mono", "ui-monospace", "monospace"],
+        radja: ["Ubuntu Sans", "system-ui", "sans-serif"],
+        editorial: ["Instrument Serif", "Georgia", "serif"],
       },
       fontSize: {
         "display-large": ["2.25rem", { lineHeight: "1.16", letterSpacing: "-0.02em", fontWeight: "400" }],
@@ -266,3 +271,4 @@ export default {
   },
   plugins: [tailwindcssAnimate],
 } satisfies Config;
+

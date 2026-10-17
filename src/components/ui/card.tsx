@@ -6,7 +6,7 @@ export type CardVariant = "default" | "dark" | "cream";
 
 const CARD_VARIANTS: Record<CardVariant, string> = {
   default: "bg-card text-card-foreground border-border",
-  dark: "bg-background text-foreground border-border",
+  dark: "bg-inverse-surface text-inverse-on-surface border-border",
   cream: "bg-surface-secondary text-ink border-control-line",
 };
 
@@ -19,7 +19,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-card border shadow-level-1 transition-[background-color,border-color,box-shadow] duration-200 ease-in-out",
+        "rounded-none border shadow-none transition-[background-color,border-color,box-shadow] duration-200 ease-in-out",
         CARD_VARIANTS[variant],
         className,
       )}
@@ -63,3 +63,4 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 CardFooter.displayName = "CardFooter";
 
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+

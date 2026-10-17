@@ -53,6 +53,8 @@ import { useDeleteFileContext } from "@/hooks/useFileContexts";
 
 interface StudioViewProps {
   hasFiles: boolean;
+  embeddedReader?: boolean;
+  readingMode?: "calma" | "logica";
   onUploadClick: () => void;
   selectedContextId?: string | null;
   lessonLaunch?: { contextId: string; lessonIndex: number; requestId: number } | null;
@@ -66,7 +68,7 @@ interface StudioViewProps {
   onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
-export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonLaunch, onLessonLaunchHandled, toolLaunch, onToolLaunchHandled, onClearContext, onOpenCourseMaterials, onFullscreenChange }: StudioViewProps) {
+export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonLaunch, onLessonLaunchHandled, toolLaunch, onToolLaunchHandled, onClearContext, onOpenCourseMaterials, onFullscreenChange, embeddedReader = false, readingMode = "calma" }: StudioViewProps) {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const handledLessonLaunchRef = useRef<number | null>(null);
   const handledToolLaunchRef = useRef<number | null>(null);
@@ -95,7 +97,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   // VISIBILE in panoramica.
   const immersiveSubView = studioSubView !== null;
   // 🧭 P38: anche il Livello 2 (percorso a ramo) è full-screen → navbar nascosta.
-  const hideNavbar = immersiveSubView || courseViewState === "branch";
+  const hideNavbar = immersiveSubView || (!embeddedReader && courseViewState === "branch");
   useEffect(() => {
     onFullscreenChange?.(hideNavbar);
   }, [hideNavbar, onFullscreenChange]);
@@ -210,6 +212,15 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       .then((info) => { if (alive) setIsScientific(info.subject_family === "scientifiche"); })
       .catch(() => { if (alive) setIsScientific(false); });
     return () => { alive = false; };
+  }, [effectiveContextId]);
+
+  // A different source opens its own course overview; never reuse a lesson index.
+  useEffect(() => {
+    setActiveLessonIndex(null);
+    setActiveModuleIndex(null);
+    setModuleScreen(null);
+    setShowFinalTest(false);
+    setCourseViewState("overview");
   }, [effectiveContextId]);
 
   const activeContext = allContexts.find((c) => c.id === effectiveContextId) || null;
@@ -327,7 +338,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   //   - quando l'utente apre una lezione (handleSelectLesson)
   //   - quando l'utente passa alla "prossima" (handleNext), max 1 in anticipo
   // Concorrenza: massimo UNA richiesta in volo (vedi inflightLessonsRef + isGeneratingLesson).
-  useEffect(() => { onFullscreenChange?.(hideNavbar || activeLessonIndex !== null || showFinalTest || moduleScreen !== null); }, [hideNavbar, activeLessonIndex, showFinalTest, moduleScreen, onFullscreenChange]);
+  useEffect(() => { onFullscreenChange?.(hideNavbar || (!embeddedReader && activeLessonIndex !== null) || showFinalTest || moduleScreen !== null); }, [hideNavbar, activeLessonIndex, showFinalTest, moduleScreen, onFullscreenChange, embeddedReader]);
 
   const refetchLessons = async () => {
     invalidateContexts();
@@ -998,6 +1009,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
 
   return (
     <>
+      {activeLessonIndex === null && (<>
       {studioSubView ? (
         /* 🏋️ / 🎤 P43 — foglio che SCIVOLA dal basso (300ms) sopra lo Studio
            ancora montato e visibile, sfocato dal backdrop (mai nero pieno).
@@ -1187,8 +1199,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         </>
       )}
 
+      </>)}
       {activeLessonIndex !== null && currentLesson && currentLesson.is_generated && !isGeneratingLesson && (
         <FullscreenLessonGate
+          embedded={embeddedReader}
+          readingMode={readingMode}
           meta={currentLesson}
           contextId={effectiveContextId ?? null}
           lessonNumber={activeLessonIndex + 1}
@@ -1263,3 +1278,4 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     </>
   );
 }
+

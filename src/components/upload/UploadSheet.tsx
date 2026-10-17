@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { FileManager } from "./FileManager";
+import { PdfPagePicker } from "./PdfPagePicker";
+import { selectPdfPages } from "@/lib/pdfSelection";
 import { useQueryClient } from "@tanstack/react-query";
 import { fileContextsKey } from "@/hooks/useFileContexts";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +24,7 @@ import { useGenerationUsage, FREE_LIMIT_MESSAGE } from "@/hooks/useGenerationUsa
 
 interface UploadSheetProps {
   open: boolean;
+  embedded?: boolean;
   onOpenChange: (open: boolean) => void;
   onUpload: (files: { name: string; size: number }[], contextId?: string) => void;
   uploadedFiles: { name: string; size: number }[];
@@ -34,13 +37,14 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024;
 /** Limite morbido per singola foto DOPO la compressione (stesso valore lato server). */
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
-export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFileDeleted, initialManageContextId }: UploadSheetProps) {
+export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFileDeleted, initialManageContextId, embedded = false }: UploadSheetProps) {
   // La tastiera non può più seppellire il tasto principale: il foglio si
   // alza di `inset` px e si restringe all'altezza davvero visibile
   // (richiesta del proprietario: il tasto SI DEVE sempre vedere).
   const keyboard = useKeyboardInset();
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [pageSelections, setPageSelections] = useState<Map<File, number[]>>(new Map());
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imageBytes, setImageBytes] = useState<{ original: number; compressed: number }>({ original: 0, compressed: 0 });
@@ -112,7 +116,11 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
     if (files.length > 0) setSelectedFiles(prev => [...prev, ...files]);
   };
 
-  const removeFile = (index: number) => setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  const removeFile = (index: number) => {
+    const removed = selectedFiles[index];
+    setPageSelections(previous => { const next = new Map(previous); next.delete(removed); return next; });
+    setSelectedFiles(previous => previous.filter((_, i) => i !== index));
+  };
 
   // 📷 P3: ogni foto viene ricodificata PRIMA dell'upload (lato lungo 2000 px,
   // JPEG 0.82, orientamento EXIF corretto). Mostriamo peso prima/dopo.
@@ -196,6 +204,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
   // nuovo percorso in Studio (onUpload porta lì appena il contesto esiste).
   const finishPipeline = () => {
     setSelectedFiles([]);
+    setPageSelections(new Map());
     setSelectedImages([]);
     setImagePreviews([]);
     setImageBytes({ original: 0, compressed: 0 });
@@ -432,6 +441,10 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
   // (il primo APRE il percorso col nome scelto, gli altri si ALLEGANO).
   const handleUpload = () => {
     if (selectedFiles.length === 0 || !currentUser) return;
+    if (selectedFiles.some(file => pageSelections.get(file)?.length === 0)) {
+      toast({ title: "Seleziona le pagine", description: "Scegli almeno una pagina per ogni PDF.", variant: "destructive" });
+      return;
+    }
     const singleCourse = selectedFiles.length >= 2;
     const finalCourseName = courseName.trim() || stripExt(selectedFiles[0]?.name ?? "Il mio percorso");
     void runUnifiedPipeline({
@@ -445,7 +458,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
           const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
           for (let i = 0; i < selectedFiles.length; i++) {
-            const file = selectedFiles[i];
+            const originalFile = selectedFiles[i];
+            if (originalFile.size > MAX_FILE_SIZE) {
+              toast({ title: "File troppo grande", description: `${originalFile.name} supera il limite di 100MB`, variant: "destructive" });
+              continue;
+            }
+            const file = await selectPdfPages(originalFile, pageSelections.get(originalFile));
             if (file.size > MAX_FILE_SIZE) {
               toast({ title: "File troppo grande", description: `${file.name} supera il limite di 100MB`, variant: "destructive" });
               continue;
@@ -540,21 +558,11 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  return (
-    <>
-    <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="rounded-t-xl pb-safe max-h-[85dvh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden"
-        style={{
-          bottom: keyboard.inset,
-          ...(keyboard.inset > 0 && keyboard.viewportHeight ? { maxHeight: keyboard.viewportHeight } : {}),
-        }}
-      >
-        <SheetHeader className="mb-4 shrink-0">
-          <SheetTitle className="font-display text-xl">I tuoi materiali</SheetTitle>
-          <SheetDescription className="sr-only">Carica PDF, immagini o contenuti web per generare mini-lezioni</SheetDescription>
-        </SheetHeader>
+  const panel = (<>
+        <div className="mb-4 shrink-0">
+          <h2 className="text-xl font-semibold">I tuoi materiali</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Carica PDF, immagini o contenuti web per generare minilezioni.</p>
+        </div>
 
         <Tabs value={activeTab} onValueChange={handleMainTabChange} className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <TabsList className="grid w-full grid-cols-2 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl shrink-0">
@@ -655,6 +663,17 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                     </div>
                   )}
 
+                  {selectedFiles.filter(file => /\.pdf$/i.test(file.name)).map((file, index) => (
+                    <div key={index} className="border border-border bg-card p-3">
+                      <p className="break-words text-sm font-medium">{file.name}</p>
+                      <PdfPagePicker key={file.name + file.size + file.lastModified} file={file} pages={pageSelections.get(file)} disabled={isUploading || file.size > MAX_FILE_SIZE} onChange={pages => setPageSelections(previous => {
+                        const next = new Map(previous);
+                        if (pages) next.set(file, pages); else next.delete(file);
+                        return next;
+                      })} />
+                    </div>
+                  ))}
+
                   {selectedFiles.length >= 2 && (
                     <div className="pt-1 animate-fade-up">
                       <label htmlFor="course-name" className="label-small text-muted-foreground">Nome del percorso unico</label>
@@ -674,7 +693,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                 </div>
 
                 <div className="shrink-0 bg-surface-container-high pt-3 pb-2 border-t border-outline-variant/40">
-                  <Button onClick={handleUpload} disabled={selectedFiles.length === 0 || isUploading} className="w-full h-14 text-base" size="lg">
+                  <Button onClick={handleUpload} disabled={selectedFiles.length === 0 || isUploading || selectedFiles.some(file => pageSelections.get(file)?.length === 0)} className="w-full h-14 text-base" size="lg">
                     {isUploading ? (
                       <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{uploadStatus || "Caricamento..."}</>
                     ) : selectedFiles.length > 0 ? (
@@ -826,8 +845,23 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
             <FileManager onFileDeleted={handleFileDeleted} onAttachFiles={handleAttachFiles} attaching={isAttaching} focusContextId={initialManageContextId} />
           </TabsContent>
         </Tabs>
+  </>);
+
+  return (
+    <>
+    {embedded ? <section aria-label="Materiali di studio" className="flex min-h-[600px] min-w-0 flex-col p-4">{panel}</section> : <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
+      <SheetContent
+        side="bottom"
+        className="rounded-t-xl pb-safe max-h-[85dvh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden"
+        style={{
+          bottom: keyboard.inset,
+          ...(keyboard.inset > 0 && keyboard.viewportHeight ? { maxHeight: keyboard.viewportHeight } : {}),
+        }}
+      >
+        <SheetHeader className="sr-only"><SheetTitle>I tuoi materiali</SheetTitle><SheetDescription>Carica o gestisci i materiali di studio</SheetDescription></SheetHeader>
+        {panel}
       </SheetContent>
-    </Sheet>
+    </Sheet>}
 
     {/* IL CARICAMENTO UNICO — un velo pieno che copre tutto (doc compreso)
         dal tocco su «Carica» fino al percorso pronto. È l'unico stato di
@@ -846,3 +880,4 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
     </>
   );
 }
+

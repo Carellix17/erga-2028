@@ -29,8 +29,8 @@ export function CognitiveRadar({ profile }: Props) {
       <svg width="0" height="0" className="absolute">
         <defs>
           <linearGradient id="cognitive-radar-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.06" />
+            <stop offset="0%" stopColor="hsl(var(--cognitive))" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="hsl(var(--cognitive))" stopOpacity="0.06" />
           </linearGradient>
         </defs>
       </svg>
@@ -45,12 +45,12 @@ export function CognitiveRadar({ profile }: Props) {
           <Radar
             name="Esagono"
             dataKey="value"
-            stroke="hsl(var(--primary))"
+            stroke="hsl(var(--cognitive))"
             fill="url(#cognitive-radar-fill)"
             fillOpacity={1}
             strokeWidth={1.2}
             strokeOpacity={0.85}
-            isAnimationActive
+            isAnimationActive={false}
           />
         </RadarChart>
       </ResponsiveContainer>

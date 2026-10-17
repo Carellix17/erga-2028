@@ -122,21 +122,21 @@ export default function SettingsAccount() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Nome</Label>
-                  <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-button h-12 bg-card border border-outline-variant/60" />
+                  <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-button h-12 border border-outline-variant/60" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Cognome</Label>
-                  <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-button h-12 bg-card border border-outline-variant/60" />
+                  <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-button h-12 border border-outline-variant/60" />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label className="label-medium text-muted-foreground">Nickname <span className="text-brand-deep">(usato dal chatbot)</span></Label>
-                <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-button h-12 bg-card border border-outline-variant/60" />
+                <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-button h-12 border border-outline-variant/60" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Età</Label>
-                  <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-button h-12 bg-card border border-outline-variant/60" />
+                  <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-button h-12 border border-outline-variant/60" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Scuola</Label>
@@ -219,3 +219,4 @@ export default function SettingsAccount() {
     </SettingsPage>
   );
 }
+

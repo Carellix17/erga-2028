@@ -15,7 +15,7 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════
-   ERGA — DESIGN SYSTEM v3.0 «Squared & Earthy»
+   ERGA — DESIGN SYSTEM v4.0 «Swiss Cognitive Grid + Tactile Studio»
    Token CSS: palette ufficiale, superfici, tipografia, geometria e stati.
    I nomi semantici legacy sotto restano alias per migrare le viste senza
    cambiare flussi o logica applicativa.
@@ -23,29 +23,29 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
 
-    /* Palette v3.0 — giorno */
-    --canvas: 72 16.13% 6.08%;             /* #11120D Smoky Black */
-    --surface-primary: 50.77 8.18% 31.18%; /* #565449 Olive Drab */
-    --surface-secondary: 40.71 26.42% 79.22%; /* #D8CFBC Bone */
-    --paper: var(--surface-secondary);
-    --ink: 72 16.13% 6.08%;                /* #11120D */
-    --ink-muted: 50.77 8.18% 31.18%;      /* #565449 */
-    --steel: 50 4.92% 52.16%;             /* #8B897F */
-    --line: 40.71 26.42% 79.22%;          /* #D8CFBC */
-    --control-line: 48 11.81% 75.10%;      /* #C7C4B8 */
-    --on-ink: 38.18 100% 97.84%;           /* #FFFBF4 */
-    --focus: 50.77 8.18% 31.18%;           /* #565449 */
+    /* Palette giorno — Swiss Cognitive Grid */
+    --canvas: 45.0000 26.6667% 94.1176%;             /* canvas / ink: see DESIGN.md */
+    --surface-primary: 42.8571 41.1765% 96.6667%; /* operating surface */
+    --surface-secondary: 42.8571 25.0000% 89.0196%; /* secondary surface */
+    --paper: 40.0000 100.0000% 98.8235%;
+    --ink: 72.0000 16.1290% 6.0784%;                /* #11120D */
+    --ink-muted: 52.5000 5.7143% 27.4510%;      /* #565449 */
+    --steel: 48.0000 5.0505% 38.8235%;             /* tertiary text */
+    --line: 43.3333 18.0000% 80.3922%;          /* #D8CFBC */
+    --control-line: 72.0000 16.1290% 6.0784%;      /* control boundary */
+    --on-ink: 45.0000 26.6667% 94.1176%;           /* paper */
+    --focus: 72.0000 16.1290% 6.0784%;           /* #565449 */
 
     /* Brand */
-    --primary: var(--surface-primary);
-    --primary-deep: 50 11.54% 20.39%;      /* #3A382E */
+    --primary: 11.6842 90.4762% 41.1765%;
+    --primary-deep: 11.2727 92.1788% 35.0980%;      /* #3A382E */
     --brand: var(--primary);
-    --brand-deep: var(--accent-light);
+    --brand-deep: var(--ink);
     --brand-tint: var(--surface-secondary);
     --accent-warm: var(--surface-secondary);
-    --accent-light: 38.18 100% 97.84%;     /* #FFFBF4 */
+    --accent-light: 40.0000 100.0000% 98.8235%;     /* paper */
 
     /* Palette materia: identità mantenute, ruoli semantici stabili. */
     --subject-blue: 221.21 83.19% 53.33%;  /* #2563EB matematica */
@@ -87,41 +87,41 @@
 
     /* Alias semantici shadcn/ui — superfici con contrasto coerente. */
     --background: var(--canvas);
-    --foreground: var(--on-ink);
+    --foreground: var(--ink);
     --card: var(--surface-primary);
-    --card-foreground: var(--accent-light);
+    --card-foreground: var(--ink);
     --popover: var(--surface-secondary);
     --popover-foreground: var(--ink);
-    --muted: var(--surface-primary);
-    --muted-foreground: var(--accent-warm);
+    --muted: var(--surface-secondary);
+    --muted-foreground: 52.5000 5.1282% 30.5882%;
     --secondary: var(--surface-secondary);
     --secondary-foreground: var(--ink);
-    --accent: var(--accent-warm);
-    --accent-foreground: var(--ink);
+    --accent: 195.4545 53.2258% 24.3137%;
+    --accent-foreground: 40.0000 100.0000% 98.8235%;
     --border: var(--line);
     --input: var(--control-line);
     --ring: var(--focus);
     --primary-foreground: var(--accent-light);
-    --primary-container: var(--surface-primary);
-    --on-primary-container: var(--accent-light);
+    --primary-container: var(--surface-secondary);
+    --on-primary-container: var(--ink);
     --secondary-container: var(--surface-secondary);
     --on-secondary-container: var(--ink);
     --tertiary: var(--marketing-gold);
     --tertiary-foreground: var(--ink);
     --tertiary-container: var(--surface-secondary);
     --on-tertiary-container: var(--ink);
-    --destructive: var(--subject-red);
-    --destructive-foreground: var(--accent-light);
-    --error-container: 0 55% 24%;
-    --on-error-container: var(--accent-light);
-    --success: var(--subject-emerald);
+    --destructive: 0.0000 73.7089% 41.7647%;
+    --destructive-foreground: 40.0000 100.0000% 98.8235%;
+    --error-container: 0.0000 93.3333% 94.1176%;
+    --on-error-container: 0.0000 70.0000% 35.2941%;
+    --success: 142.7848 64.2276% 24.1176%;
     --success-foreground: var(--accent-light);
-    --success-container: 161 45% 20%;
-    --on-success-container: var(--accent-light);
-    --warning: var(--marketing-gold);
+    --success-container: 140.6250 84.2105% 92.5490%;
+    --on-success-container: 143.8095 61.1650% 20.1961%;
+    --warning: 31.7647 80.9524% 28.8235%;
     --warning-foreground: var(--ink);
-    --warning-container: 36 35% 28%;
-    --on-warning-container: var(--accent-light);
+    --warning-container: 48.0000 96.4912% 88.8235%;
+    --on-warning-container: 28.4211 72.5191% 25.6863%;
     --outline: var(--ink) / 0.25;
     --outline-variant: var(--line) / 0.45;
     --scrim: 72 16.13% 6.08%;
@@ -148,15 +148,15 @@
     --inverse-on-surface: var(--accent-light);
     --inverse-primary: var(--surface-secondary);
     --sidebar-background: var(--surface-primary);
-    --sidebar-foreground: var(--accent-light);
-    --sidebar-primary: var(--accent-light);
-    --sidebar-primary-foreground: var(--ink);
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: var(--ink);
+    --sidebar-primary-foreground: var(--paper);
     --sidebar-accent: var(--surface-secondary);
     --sidebar-accent-foreground: var(--ink);
     --sidebar-border: var(--line) / 0.45;
     --sidebar-ring: var(--focus);
     --nav-surface: var(--surface-primary);
-    --nav-foreground: var(--accent-light);
+    --nav-foreground: var(--ink);
 
     /* Compatibilità RGB e colore materia dinamico. */
     --cream: var(--accent-light);
@@ -167,36 +167,36 @@
     --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, hsl(var(--accent-light)));
     --text-scale: 1;
 
-    /* Geometria — v3: badge 4px, controlli 8px, card e sheet 12px. */
-    --radius-xs: 4px;
-    --radius-sm: 4px;
-    --radius-control: 8px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 12px;
-    --radius-2xl: 12px;
-    --radius-3xl: 12px;
-    --radius-card: 12px;
-    --radius-hero: 12px;
-    --radius-nav: 12px;
-    --radius-button: 8px;
-    --radius-pill: 8px;
-    --radius-dialog: 12px;
-    --radius-sheet: 12px;
-    --radius-media: 12px;
+    /* Geometry: 2px controls, 0px grid cells, at most 4px panels. */
+    --radius-xs: 2px;
+    --radius-sm: 2px;
+    --radius-control: 2px;
+    --radius-md: 2px;
+    --radius-lg: 4px;
+    --radius-xl: 4px;
+    --radius-2xl: 4px;
+    --radius-3xl: 4px;
+    --radius-card: 0px;
+    --radius-hero: 0px;
+    --radius-nav: 0px;
+    --radius-button: 2px;
+    --radius-pill: 2px;
+    --radius-dialog: 4px;
+    --radius-sheet: 0px;
+    --radius-media: 2px;
     --radius-full: 9999px;
-    --radius: var(--radius-md);
+    --radius: 2px;
 
-    /* Elevazione flat — valori canonici del DESIGN.md v3.0. */
+    /* Flat surfaces, with a hard 2px offset only on primary controls. */
     --shadow-level-0: none;
-    --shadow-level-1: 0 1px 2px rgba(17, 18, 13, 0.04), 0 4px 12px rgba(17, 18, 13, 0.03);
-    --shadow-level-2: 0 1px 2px rgba(17, 18, 13, 0.05), 0 6px 16px rgba(17, 18, 13, 0.05);
-    --shadow-level-3: 0 2px 4px rgba(17, 18, 13, 0.04), 0 10px 24px rgba(17, 18, 13, 0.08);
-    --shadow-level-4: 0 2px 4px rgba(17, 18, 13, 0.05), 0 12px 28px rgba(17, 18, 13, 0.10);
-    --shadow-level-5: 0 6px 24px rgba(17, 18, 13, 0.10);
-    --shadow-tattile: var(--shadow-level-1);
-    --shadow-card-active: var(--shadow-level-3);
-    --shadow-hero-card: var(--shadow-level-3);
+    --shadow-level-1: none;
+    --shadow-level-2: none;
+    --shadow-level-3: none;
+    --shadow-level-4: none;
+    --shadow-level-5: none;
+    --shadow-tattile: none;
+    --shadow-card-active: none;
+    --shadow-hero-card: none;
 
     /* Movimento condiviso. */
     --motion-micro: 120ms;
@@ -219,6 +219,8 @@
     --grain-scale: 160px;
     --grain-blend: multiply;
     --grain-alpha-cover: 0.05;
+    --sheet: 40.0000 100.0000% 98.8235%;
+    --cognitive: 195.4545 53.2258% 24.3137%;
   }
 
   .dark {
@@ -227,20 +229,20 @@
     --canvas: 60 11.11% 3.53%;              /* #0A0A08 */
     --surface-primary: 60 10.64% 9.22%;    /* #1A1A15 */
     --surface-secondary: 60 3.85% 14.31%;  /* #262623, supporto input */
-    --paper: var(--surface-secondary);
-    --ink: 38.18 100% 97.84%;              /* #FFFBF4 */
+    --paper: 60.0000 10.6383% 9.2157%;
+    --ink: 38.18 100% 97.84%;              /* paper */
     --ink-muted: 40.71 26.42% 79.22%;      /* #D8CFBC */
-    --steel: 48 11.81% 75.10%;             /* #C7C4B8 */
+    --steel: 48 11.81% 75.10%;             /* control boundary */
     --line: 50 11.54% 20.39%;              /* #3A382E */
-    --control-line: 50.77 8.18% 31.18%;    /* #565449 */
+    --control-line: 40.7143 26.4151% 79.2157%;    /* #565449 */
     --on-ink: 38.18 100% 97.84%;
-    --focus: 38.18 100% 97.84%;
+    --focus: 40.0000 100.0000% 98.8235%;
     --accent-light: 38.18 100% 97.84%;
     --accent-warm: 40.71 26.42% 79.22%;
-    --primary: 50.77 8.18% 31.18%;
-    --primary-deep: 50 11.54% 20.39%;
+    --primary: 11.6842 90.4762% 41.1765%;
+    --primary-deep: 11.2727 92.1788% 35.0980%;
     --brand: var(--primary);
-    --brand-deep: var(--accent-light);
+    --brand-deep: var(--ink);
     --brand-tint: var(--surface-secondary);
 
     --subject-blue: 221.21 83.19% 67%;
@@ -278,7 +280,7 @@
     --pastel-bosco: var(--subject-sleep);
     --pastel-oliva: var(--subject-school);
 
-    --primary-foreground: var(--accent-light);
+    --primary-foreground: 40.0000 100.0000% 98.8235%;
     --primary-container: var(--surface-primary);
     --on-primary-container: var(--accent-light);
     --secondary: var(--surface-secondary);
@@ -313,8 +315,8 @@
     --popover-foreground: var(--ink);
     --muted: var(--surface-primary);
     --muted-foreground: var(--ink-muted);
-    --accent: var(--surface-secondary);
-    --accent-foreground: var(--ink);
+    --accent: 194.5455 39.2857% 67.0588%;
+    --accent-foreground: 72.0000 16.1290% 6.0784%;
     --border: var(--line);
     --input: var(--control-line);
     --ring: var(--focus);
@@ -355,19 +357,21 @@
     --subject-accent-foreground: #11120D;
     --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, hsl(var(--canvas)));
 
-    --shadow-level-1: 0 1px 2px rgba(10, 10, 8, 0.25);
-    --shadow-level-2: 0 2px 8px rgba(10, 10, 8, 0.28);
-    --shadow-level-3: 0 6px 16px rgba(10, 10, 8, 0.32);
-    --shadow-level-4: 0 8px 22px rgba(10, 10, 8, 0.34);
-    --shadow-level-5: 0 10px 28px rgba(10, 10, 8, 0.38);
-    --shadow-tattile: var(--shadow-level-1);
-    --shadow-card-active: var(--shadow-level-3);
-    --shadow-hero-card: var(--shadow-level-3);
+    --shadow-level-1: none;
+    --shadow-level-2: none;
+    --shadow-level-3: none;
+    --shadow-level-4: none;
+    --shadow-level-5: none;
+    --shadow-tattile: none;
+    --shadow-card-active: none;
+    --shadow-hero-card: none;
 
     --grain-table-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='nt'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.025'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23nt)'/%3E%3C/svg%3E");
     --grain-paper-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='np'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.016'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23np)'/%3E%3C/svg%3E");
     --grain-blend: screen;
     --grain-alpha-cover: 0.05;
+    --cognitive: 194.5455 39.2857% 67.0588%;
+    --sheet: 60.0000 10.6383% 9.2157%;
   }
 }
 
@@ -377,7 +381,7 @@
   }
 
   html {
-    color-scheme: dark;
+    color-scheme: light;
     scroll-behavior: smooth;
     font-size: calc(16px * var(--text-scale, 1));
     overflow-x: clip;
@@ -389,34 +393,19 @@
     min-height: 100vh;
     overflow-x: clip;
     background-color: hsl(var(--background));
-    background-image: repeating-linear-gradient(
-      180deg,
-      hsl(var(--primary) / 0.11) 0,
-      hsl(var(--primary) / 0.11) 6px,
-      transparent 6px,
-      transparent 28px
-    );
+    background-image: none;
     background-attachment: fixed;
-    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-family: "Ubuntu Sans", system-ui, sans-serif;
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  body::after {
-    content: "";
-    position: fixed;
-    z-index: 60;
-    inset-inline: 0;
-    bottom: 0;
-    height: 4px;
-    pointer-events: none;
-    background: linear-gradient(90deg, #3A382E 0%, #565449 34%, #D8CFBC 72%, #FFFBF4 100%);
-  }
+
 
   h1, h2, h3,
   .display-large, .headline-large, .headline-medium {
-    font-family: "Playfair Display", Lora, Georgia, serif;
+    font-family: "Ubuntu Sans", system-ui, sans-serif;
     letter-spacing: -0.02em;
     color: hsl(var(--foreground));
   }
@@ -425,16 +414,16 @@
   h3, .headline-medium { font-size: 1.625rem; font-weight: 500; line-height: 1.25; }
 
   .title-large {
-    font-family: "Playfair Display", Lora, Georgia, serif;
+    font-family: "Ubuntu Sans", system-ui, sans-serif;
     font-weight: 500;
     font-size: 1.5rem;
     line-height: 1.2;
     letter-spacing: -0.015em;
   }
-  .title-medium { font-family: "Inter", system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.45; }
-  .title-small { font-family: "Inter", system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.45; }
+  .title-medium { font-family: "Ubuntu Sans", system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.45; }
+  .title-small { font-family: "Ubuntu Sans", system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.45; }
   .body-large, .body-medium {
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: "Ubuntu Sans", system-ui, sans-serif;
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
@@ -442,7 +431,7 @@
   }
   .body-large { font-size: 1.125rem; line-height: 1.65; }
   .body-small {
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: "Ubuntu Sans", system-ui, sans-serif;
     font-weight: 400;
     font-size: 0.875rem;
     line-height: 1.5;
@@ -450,7 +439,7 @@
   }
 
   .label-large, .label-medium, .label-small {
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: "Ubuntu Sans", system-ui, sans-serif;
     text-transform: uppercase;
     font-weight: 600;
   }
@@ -463,57 +452,8 @@
     outline-offset: 2px;
   }
 
-  .force-light {
-    color-scheme: dark;
-    --canvas: 72 16.13% 6.08%;
-    --surface-primary: 50.77 8.18% 31.18%;
-    --surface-secondary: 40.71 26.42% 79.22%;
-    --paper: var(--surface-secondary);
-    --ink: 72 16.13% 6.08%;
-    --ink-muted: 50.77 8.18% 31.18%;
-    --steel: 50 4.92% 52.16%;
-    --line: 40.71 26.42% 79.22%;
-    --control-line: 48 11.81% 75.10%;
-    --on-ink: 38.18 100% 97.84%;
-    --focus: 50.77 8.18% 31.18%;
-    --accent-light: 38.18 100% 97.84%;
-    --primary: var(--surface-primary);
-    --primary-deep: 50 11.54% 20.39%;
-    --background: var(--canvas);
-    --foreground: var(--on-ink);
-    --card: var(--surface-primary);
-    --card-foreground: var(--accent-light);
-    --popover: var(--surface-secondary);
-    --popover-foreground: var(--ink);
-    --muted: var(--surface-primary);
-    --muted-foreground: var(--surface-secondary);
-    --secondary: var(--surface-secondary);
-    --secondary-foreground: var(--ink);
-    --accent: var(--surface-secondary);
-    --accent-foreground: var(--ink);
-    --border: var(--line);
-    --input: var(--control-line);
-    --ring: var(--focus);
-    --surface-dim: var(--canvas);
-    --surface-bright: var(--surface-primary);
-    --surface-container-lowest: var(--surface-primary);
-    --surface-container-low: var(--surface-primary);
-    --surface-container: var(--surface-primary);
-    --surface-container-high: var(--surface-primary);
-    --surface-container-highest: var(--surface-secondary);
-    --surface-cream: var(--surface-secondary);
-    --surface-cream-foreground: var(--ink);
-    --surface-cream-muted: var(--ink-muted);
-    --surface-dark-card: 60 3.85% 14.31%;
-    --brand: var(--primary);
-    --brand-deep: var(--accent-light);
-    --brand-tint: var(--surface-secondary);
-    --shadow-level-1: 0 1px 2px rgba(17, 18, 13, 0.04), 0 4px 12px rgba(17, 18, 13, 0.03);
-    --shadow-level-2: 0 1px 2px rgba(17, 18, 13, 0.05), 0 6px 16px rgba(17, 18, 13, 0.05);
-    --shadow-level-3: 0 2px 4px rgba(17, 18, 13, 0.04), 0 10px 24px rgba(17, 18, 13, 0.08);
-    --shadow-level-4: 0 2px 4px rgba(17, 18, 13, 0.05), 0 12px 28px rgba(17, 18, 13, 0.10);
-    --shadow-level-5: 0 6px 24px rgba(17, 18, 13, 0.10);
-  }
+  /* Legacy access screens now inherit the active application theme. */
+  .force-light { color-scheme: inherit; }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -584,7 +524,7 @@
   }
   .editorial-focus-title {
     /* V2-01: le etichette parlano Inter (ruolo interfaccia). */
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Ubuntu Sans', system-ui, sans-serif;
     font-size: 0.7rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -1064,7 +1004,7 @@
 }
 .scrollbar-thin::-webkit-scrollbar { width: 4px; }
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background-color: hsl(var(--outline-variant)); border-radius: 20px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background-color: hsl(var(--outline-variant)); border-radius: 2px; }
 
 /* ═══════ LESSON STEP ANIMATIONS ═══════ */
 @keyframes lesson-slide-in {
@@ -1215,7 +1155,7 @@ html.reduce-motion *::after {
    blur locale da 8px e testo opaco. Il fallback diventa superficie piena.
    ═══════════════════════════════════════════════════════════════ */
 .btn-satin {
-  --satin-bg: 216 207 188; /* #D8CFBC Bone */
+  --satin-bg: 216 207 188; /* secondary surface */
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -1355,13 +1295,7 @@ html.high-contrast .cover-grain { display: none; }
    sul canvas, distinta dalla grana satinata che resta confinata alle copertine. */
 .erga-app-shell {
   background-color: hsl(var(--background));
-  background-image: repeating-linear-gradient(
-    180deg,
-    hsl(var(--primary) / 0.11) 0,
-    hsl(var(--primary) / 0.11) 6px,
-    transparent 6px,
-    transparent 28px
-  );
+  background-image: none;
   background-attachment: fixed;
 }
 
@@ -1379,3 +1313,37 @@ html.high-contrast .cover-grain { display: none; }
     hsl(var(--accent-light))
   );
 }
+
+
+/* Swiss Cognitive Grid — shared materials and reading surface. */
+:root {
+  --bg-canvas: #F4F2EC; --bg-surface: #FAF8F3; --bg-sheet: #FFFDF9;
+  --bg-subtle: #EAE6DC; --bg-inverse: #11120D;
+  --text-primary: #11120D; --text-secondary: #4A4942; --text-tertiary: #68665E;
+  --text-on-inverse: #F4F2EC; --border-grid: #D6D1C4; --border-strong: #11120D;
+  --accent-primary: #E63B11; --accent-cognitive: #1D4E5F;
+}
+.dark { color-scheme: dark; }
+::selection { background: hsl(var(--cognitive)); color: hsl(var(--accent-foreground)); }
+input, textarea { caret-color: currentColor; }
+button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radius: 2px; }
+.paper-grain, .table-grain { background-image: none; }
+.erga-earthy-stripe { background: var(--accent-primary); height: 2px; flex-basis: 2px; }
+.cognitive-grid > section > article, .cognitive-grid > section > section { border: 0; box-shadow: none; }
+.cognitive-grid > section:last-child > section { border-bottom: 1px solid hsl(var(--border)); }
+.lesson-reader { background: hsl(var(--sheet)); }
+.lesson-paper { font-family: 'Ubuntu Sans', system-ui, sans-serif; font-size: 17px; line-height: 1.65; }
+.lesson-paper :where(h1,h2,h3,.text-scene-title,.lesson-scene-title) { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; letter-spacing: -0.02em; line-height: 1.08; }
+.lesson-paper :where(blockquote,pre,.katex-display) { border-left: 4px solid hsl(var(--ink)); background: hsl(var(--background)); padding: 16px; }
+.lesson-paper .prose { font-size: 17px; line-height: 1.65; }
+.lesson-paper .lesson-scene-title { font-size: clamp(1.75rem, 3vw, 2.5rem); }
+.lesson-paper .lesson-scene-title :where(p,strong) { font-family: inherit; font-weight: 400; line-height: 1.08; }
+.lesson-paper[data-reading-mode="calma"] .prose:not(.lesson-scene-title) :where(p,li) { line-height: 1.85; }
+.lesson-paper[data-reading-mode="logica"] :where(strong, .katex) { color: hsl(var(--cognitive)); }
+.study-workspace { min-height: calc(100dvh - 160px); }
+.study-workspace .lesson-reader { position: relative; inset: auto; z-index: auto; min-height: 75dvh; animation: none; }
+.study-workspace .lesson-reader > :first-child { border-bottom: 1px solid hsl(var(--border)); }
+.study-workspace .lesson-paper { overflow-y: visible; }
+.study-workspace .lesson-reader > :last-child { border-top: 1px solid hsl(var(--border)); }
+@media (min-width:1024px) { .study-workspace .lesson-reader { height: calc(100dvh - 100px); min-height: 640px; } .study-workspace .lesson-paper { overflow-y:auto; } }
+@media (prefers-reduced-motion: reduce) { .study-workspace *, .cognitive-grid * { scroll-behavior:auto; } }

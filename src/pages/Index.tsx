@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Outlet, useLocation } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StudioView } from "@/components/studio/StudioView";
@@ -41,6 +42,14 @@ const Index = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [showUpload, setShowUpload] = useState(false);
+  const [uploaderHost] = useState(() => document.createElement("div"));
+  const [materialPane, setMaterialPane] = useState<HTMLDivElement | null>(null);
+  const [materialsExpanded, setMaterialsExpanded] = useState(false);
+  const [readingMode, setReadingMode] = useState<"calma" | "logica">("calma");
+  useEffect(() => {
+    (activeTab === "studio" && materialPane ? materialPane : document.body).appendChild(uploaderHost);
+  }, [activeTab, materialPane, uploaderHost]);
+  useEffect(() => () => uploaderHost.remove(), [uploaderHost]);
   const [manageFocusContextId, setManageFocusContextId] = useState<string | null>(null);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
   // 🧭 Percorsi 2.0 — strumento di Studio da aprire al prossimo ingresso
@@ -283,6 +292,7 @@ const Index = () => {
         <div key={activeTab} className="room-fade">
         {activeTab === "home" && (
           <HomeView
+            cognitiveProfile={cognitive}
             onOpenStudio={() => changeTab("studio")}
             onResumeLesson={(contextId, lessonIndex) => {
               setSelectedContextId(contextId);
@@ -311,9 +321,26 @@ const Index = () => {
           </button>
         )}
         {activeTab === "studio" && (
+          <div className="study-workspace grid min-w-0 grid-cols-12 border border-border bg-sheet">
+          <aside className="col-span-12 min-w-0 border-b border-border bg-background lg:col-span-4 lg:border-b-0 lg:border-r">
+            <button type="button" className="min-h-12 w-full px-4 text-left font-medium lg:hidden" aria-expanded={materialsExpanded} aria-controls="study-material-controls" onClick={() => setMaterialsExpanded(value => !value)}>Materiali e lettura</button>
+            <div id="study-material-controls" className={materialsExpanded ? "block" : "hidden lg:block"}>
+            <div className="border-b border-border p-4">
+              <label htmlFor="reading-mode" className="block text-sm font-medium">Taglio di lettura</label>
+              <select id="reading-mode" value={readingMode} onChange={event => setReadingMode(event.target.value as "calma" | "logica")} className="mt-2 min-h-11 w-full border border-input bg-sheet px-3 text-base text-foreground">
+                <option value="calma">Calma</option><option value="logica">Logica</option>
+              </select>
+              <p className="mt-2 text-sm text-muted-foreground">{readingMode === "calma" ? "Testo più arioso per leggere con calma." : "Formule e passaggi chiave in evidenza."}</p>
+            </div>
+            <div ref={setMaterialPane} />
+            </div>
+          </aside>
+          <section aria-label="Percorso e minilezioni" className="col-span-12 min-w-0 bg-sheet lg:col-span-8">
           <StudioView
+            embeddedReader
+            readingMode={readingMode}
             hasFiles={hasFiles}
-            onUploadClick={() => setShowUpload(true)}
+            onUploadClick={() => { setMaterialsExpanded(true); requestAnimationFrame(() => materialPane?.scrollIntoView({ block: "start" })); }}
             selectedContextId={selectedContextId}
             lessonLaunch={lessonLaunch}
             onLessonLaunchHandled={() => setLessonLaunch(null)}
@@ -322,10 +349,13 @@ const Index = () => {
             onClearContext={() => setSelectedContextId(null)}
             onOpenCourseMaterials={(contextId) => {
               setManageFocusContextId(contextId);
-              setShowUpload(true);
+              setMaterialsExpanded(true);
+              requestAnimationFrame(() => materialPane?.scrollIntoView({ block: "start" }));
             }}
             onFullscreenChange={setIsFullscreen}
           />
+          </section>
+          </div>
         )}
         {activeTab === "piano" && (
           <PianoView
@@ -339,8 +369,12 @@ const Index = () => {
         </div>
       </AppLayout>
 
+
+
+      {createPortal(
       <UploadSheet
-        open={showUpload}
+        embedded={activeTab === "studio"}
+        open={activeTab === "studio" || showUpload}
         onOpenChange={(o) => {
           setShowUpload(o);
           if (!o) setManageFocusContextId(null);
@@ -351,6 +385,7 @@ const Index = () => {
         onFileDeleted={handleFileDeleted}
         initialManageContextId={manageFocusContextId}
       />
+      , uploaderHost)}
 
       {showOnboarding && (
         <CognitiveOnboarding
@@ -367,3 +402,4 @@ const Index = () => {
 };
 
 export default Index;
+

@@ -14,6 +14,8 @@ import { HomeHeader } from "./HomeHeader";
 import { CourseHeroCard } from "./CourseHeroCard";
 import { QuickToolsGrid, type QuickToolItem } from "./QuickToolsGrid";
 import { DailyTimeline } from "./DailyTimeline";
+import { CognitiveTelemetry } from "./CognitiveTelemetry";
+import type { CognitiveProfile } from "@/hooks/useCognitiveProfile";
 import type { StudioTool } from "@/components/studio/StudioPractice";
 
 interface HomeViewProps {
@@ -23,6 +25,7 @@ interface HomeViewProps {
   /** Apre la scheda Pratica, eventualmente sulla sotto-sezione richiesta. */
   onOpenStudioTool?: (tool: StudioTool) => void;
   onUpload: () => void;
+  cognitiveProfile?: CognitiveProfile | null;
 }
 
 const VISIBLE_TASKS = 3;
@@ -33,6 +36,7 @@ export function HomeView({
   onOpenPlan,
   onOpenStudioTool,
   onUpload,
+  cognitiveProfile,
 }: HomeViewProps) {
   const { t } = useTranslation();
   const dashboard = useHomeDashboard();
@@ -142,7 +146,7 @@ export function HomeView({
     // V2-01: il tavolo è piatto (niente aloni né texture), il saluto serif
     // è compatto e parte più vicino (pt-20 sm:pt-28); mb-4 sotto il saluto
     // sopra il gap-6 comune tiene il ritmo tra le card.
-    <div className="flex min-w-0 flex-col gap-6 overflow-x-clip pt-20 pb-2 sm:pt-28">
+    <div className="min-w-0 pt-8 pb-2 sm:pt-12">
       {/* 1. Saluto (l'avatar profilo sta nell'header in alto a destra) */}
       <HomeHeader
         className="mb-4"
@@ -151,7 +155,9 @@ export function HomeView({
         subtitle={welcome.subtitle}
       />
 
-      {/* 2. Card unificata del corso attivo */}
+      <div className="cognitive-grid mx-auto grid max-w-7xl grid-cols-12 border border-border bg-card">
+      <section className="col-span-12 min-w-0 border-b border-border lg:col-span-8 lg:border-b-0 lg:border-r">
+      {/* Sessione prioritaria: una sola azione primaria. */}
       <CourseHeroCard
         courseTitle={resume?.courseTitle ?? null}
         contextId={resume?.contextId ?? null}
@@ -211,6 +217,11 @@ export function HomeView({
         }
       />
 
+      </section>
+      <aside className="col-span-12 min-w-0 border-b border-border p-6 lg:col-span-4 lg:border-b-0">
+        <CognitiveTelemetry profile={cognitiveProfile ?? null} />
+      </aside>
+      <section className="col-span-12 min-w-0 border-t border-border">
       {/* 3. Prossimo impegno: il Piano del giorno (§10: ripresa → prossimo
           impegno → strumenti rapidi e informazioni secondarie) */}
       <DailyTimeline
@@ -236,6 +247,9 @@ export function HomeView({
 
       {/* 4. Strumenti rapidi (aprono gli strumenti del Banco in Studio) */}
       <QuickToolsGrid title={t("home.tools.title")} tools={tools} />
+      </section>
+      </div>
     </div>
   );
 }
+

@@ -43,7 +43,7 @@ Prima di scrivere codice definire:
 - i limiti tecnici;
 - l'elemento distintivo che la rende riconoscibile.
 
-Per Erga la fonte visiva autorevole è `DESIGN.md` v3.0, «Squared & Earthy»: palette Smoky Black, Olive Drab, Bone e Floral White; Playfair Display per i titoli e Inter per l'interfaccia; raggi da 4, 8 e 12px; ombre flat; tema giorno/notte; finitura satinata solo sulle azioni delle copertine ed Earthy Stripe come firma visiva. I riferimenti a versioni precedenti del design system, compresa la v2.1 «Carta contemporanea» e lo stato pilota V2-01 in documenti storici, non prevalgono su `DESIGN.md`. Conservare struttura, funzioni e contenuti reali; evitare interfacce generiche da prodotto AI, decorazioni casual e pattern copiati senza relazione con lo studio.
+Per Erga la fonte visiva autorevole è `DESIGN.md` v4.0, «Swiss Cognitive Grid + Tactile Studio»: canvas pietra #F4F2EC, celle #FAF8F3 e carta #FFFDF9; Ubuntu Sans per UI e corpo, Instrument Serif solo per titoli di lettura, Ubuntu Sans Mono per misure; griglia continua 1px, controlli 2px e pannelli fino a 4px; ombra rigida 2px solo per CTA; tema giorno/notte. Il vermiglio decorativo #E63B11 usa la variante #C82F0A nei pulsanti con testo bianco per rispettare WCAG AA. I riferimenti a versioni precedenti del design system, compresa la v2.1 «Carta contemporanea» e lo stato pilota V2-01 in documenti storici, non prevalgono su `DESIGN.md`. Conservare struttura, funzioni e contenuti reali; evitare interfacce generiche da prodotto AI, decorazioni casual e pattern copiati senza relazione con lo studio.
 
 ### UI/UX Pro Max — ricerca strutturata prima delle modifiche ampie
 
@@ -131,3 +131,4 @@ Per una modifica frontend, quando possibile:
 5. verificare assenza di overflow orizzontale e target troppo piccoli;
 6. controllare accessibilità automatica e navigazione da tastiera;
 7. spiegare in modo semplice modifiche, motivazioni, limiti e azioni richieste all'utente.
+
