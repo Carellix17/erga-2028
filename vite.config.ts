@@ -37,8 +37,8 @@ export default defineConfig(({ mode }) => ({
         name: "Erga - Ridefinisci lo studio",
         short_name: "Erga",
         description: "Erga rivoluziona l'apprendimento, organizzando il materiale su più livelli.",
-        theme_color: "#11120D",
-        background_color: "#11120D",
+        theme_color: "#F4F2EC",
+        background_color: "#F4F2EC",
         display: "standalone",
         orientation: "portrait",
         scope: "/",
@@ -59,3 +59,4 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime"],
   },
 }));
+

@@ -358,7 +358,7 @@ export function WeeklyRoutineEditor() {
                 value={rLabel}
                 onChange={(e) => setRLabel(e.target.value)}
                 placeholder="Es. Palestra, Nuoto, Scuola mattina"
-                className="rounded-button h-11 mt-1.5 bg-card border border-border"
+                className="rounded-button h-11 mt-1.5 border border-border"
               />
             </div>
 
@@ -370,7 +370,7 @@ export function WeeklyRoutineEditor() {
                   type="time"
                   value={rStart}
                   onChange={(e) => setRStart(e.target.value)}
-                  className="rounded-button h-11 mt-1.5 bg-card border border-border"
+                  className="rounded-button h-11 mt-1.5 border border-border"
                 />
               </div>
               <div>
@@ -380,7 +380,7 @@ export function WeeklyRoutineEditor() {
                   type="time"
                   value={rEnd}
                   onChange={(e) => setREnd(e.target.value)}
-                  className="rounded-button h-11 mt-1.5 bg-card border border-border"
+                  className="rounded-button h-11 mt-1.5 border border-border"
                 />
               </div>
             </div>
@@ -500,4 +500,5 @@ function RoutineBlockButton({ seg, onEdit, mobile }: BlockProps) {
     </button>
   );
 }
+
 

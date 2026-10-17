@@ -76,7 +76,7 @@ export function DailyTimeline({
           <button
             type="button"
             onClick={onSeeAll}
-            className="flex h-9 items-center rounded-control px-3.5 text-sm font-medium text-card-foreground transition-colors hover:bg-primary-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex min-h-11 items-center rounded-control px-3.5 text-sm font-medium text-card-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {seeAllLabel}
           </button>
@@ -139,3 +139,4 @@ export function DailyTimeline({
     </section>
   );
 }
+

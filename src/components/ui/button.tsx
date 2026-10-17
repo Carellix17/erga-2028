@@ -5,16 +5,16 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "relative inline-flex min-w-0 touch-manipulation select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-button text-interface font-semibold transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-200 ease-in-out active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transform-none motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "relative inline-flex min-w-0 touch-manipulation select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-button text-interface font-semibold transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-200 ease-in-out active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transform-none motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-level-0 hover:bg-primary-deep",
+        default: "border border-[#11120D] bg-primary text-primary-foreground font-mono text-sm uppercase tracking-wider shadow-[2px_2px_0px_#11120D] hover:bg-primary-deep",
         destructive: "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90",
-        outline: "border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        outline: "border border-input bg-sheet text-foreground hover:bg-secondary",
         secondary: "border border-line bg-secondary text-secondary-foreground shadow-level-0 hover:bg-secondary/80",
         ghost: "text-foreground hover:bg-foreground/[0.08]",
-        link: "h-auto rounded-sm p-0 text-accent-light underline-offset-4 hover:underline",
+        link: "h-auto rounded-sm p-0 text-foreground underline-offset-4 hover:underline",
         tonal: "bg-secondary text-secondary-foreground shadow-level-0 hover:bg-secondary/80",
         fab: "bg-primary text-primary-foreground shadow-level-1 hover:bg-primary-deep",
         "fab-secondary": "border border-line bg-secondary text-secondary-foreground shadow-level-1 hover:bg-secondary/80",
@@ -23,10 +23,10 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-11 px-5 py-2.5",
-        sm: "h-10 px-4 text-sm",
+        sm: "h-11 px-4 text-sm",
         lg: "h-12 px-6 text-base",
         icon: "h-11 w-11 p-0",
-        "icon-sm": "h-10 w-10 p-0",
+        "icon-sm": "h-11 w-11 p-0",
         "icon-lg": "h-12 w-12 p-0",
         fab: "h-14 w-14 p-0",
         "fab-extended": "h-14 px-6",
@@ -55,3 +55,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button";
 
 export { Button, buttonVariants };
+

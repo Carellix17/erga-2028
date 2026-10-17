@@ -54,6 +54,8 @@ interface FullscreenLessonProps {
     example?: string;
     exercises?: Exercise[];
   };
+  embedded?: boolean;
+  readingMode?: "calma" | "logica";
   lessonNumber: number;
   totalLessons: number;
   onClose: () => void;
@@ -98,7 +100,7 @@ function scrollToTop(el: HTMLElement | null) {
 }
 
 export function FullscreenLesson({
-  lesson, lessonNumber, totalLessons, onClose, onComplete, isLastLesson, nextLessonId,
+  lesson, lessonNumber, totalLessons, onClose, onComplete, isLastLesson, nextLessonId, embedded = false, readingMode = "calma",
 }: FullscreenLessonProps) {
   const { t } = useTranslation();
   const { isActive: focusActive } = useFocus();
@@ -265,6 +267,7 @@ export function FullscreenLesson({
     rootRef.current?.focus?.();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
+      if (embedded && !rootRef.current?.contains(event.target as Node)) return;
       const openDialog = document.querySelector('[role="dialog"][data-state="open"]');
       if (openDialog && openDialog !== rootRef.current) return;
       onClose();
@@ -274,7 +277,7 @@ export function FullscreenLesson({
       window.removeEventListener("keydown", onKeyDown);
       (previouslyFocusedRef.current as HTMLElement | null)?.focus?.();
     };
-  }, [onClose]);
+  }, [onClose, embedded]);
 
   const handleExerciseComplete = useCallback(
     (correct: boolean) => {
@@ -297,11 +300,11 @@ export function FullscreenLesson({
     // e si apre a schermo pieno (animate-lesson-sheet-in)
     <div
       ref={rootRef}
-      role="dialog"
-      aria-modal="true"
+      role={embedded ? "region" : "dialog"}
+      aria-modal={embedded ? undefined : true}
       aria-label={`${t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })}: ${lesson.title}`}
       tabIndex={-1}
-      className="no-halo fixed inset-0 z-50 bg-background flex flex-col animate-lesson-sheet-in focus:outline-none"
+      className="lesson-reader no-halo fixed inset-0 z-50 flex flex-col animate-lesson-sheet-in focus:outline-none"
     >
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
@@ -367,8 +370,8 @@ export function FullscreenLesson({
       </div>
 
       {/* Content area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col" ref={contentRef}>
-        <div className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full">
+      <div className="lesson-paper min-h-0 flex-1 overflow-y-auto px-6 py-8 sm:px-12 flex flex-col" data-reading-mode={readingMode} ref={contentRef}>
+        <div className="flex-1 flex flex-col justify-center max-w-[65ch] mx-auto w-full">
           {showResumeNotice && (
             <div
               role="status"
@@ -460,7 +463,7 @@ function ConceptStep({ concept }: { concept: string }) {
       <div className="inline-flex items-center gap-1.5 rounded-pill bg-secondary px-3 py-1.5 text-xs font-semibold text-muted-foreground">
         {t("lesson.keyConcept")}
       </div>
-      <div className="font-display text-[1.625rem] font-medium leading-[1.3] tracking-[-0.01em] text-foreground sm:text-3xl prose prose-sm max-w-none p-0 prose-p:font-medium prose-p:leading-[1.3] prose-p:my-0 prose-table:rounded-card prose-table:overflow-hidden prose-th:bg-secondary prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
+      <div className="lesson-scene-title font-editorial text-[1.625rem] font-medium leading-[1.3] tracking-[-0.01em] text-foreground sm:text-3xl prose prose-sm max-w-none p-0 prose-p:font-medium prose-p:leading-[1.3] prose-p:my-0 prose-table:rounded-card prose-table:overflow-hidden prose-th:bg-secondary prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
         <LessonMarkdown>{concept}</LessonMarkdown>
       </div>
     </div>
@@ -503,7 +506,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
             : <BookOpen className="w-4 h-4 text-foreground" strokeWidth={1.75} />}
         </div>
         <div className="flex-1">
-          <span className="label-large text-foreground">{part.part_title}</span>
+          <span className="lesson-scene-title block text-2xl text-foreground">{part.part_title}</span>
           <div className="flex items-center gap-1 mt-1.5">
             {Array.from({ length: totalParts }).map((_, i) => (
               <div key={i} className={cn("h-1 rounded-sm flex-1 transition-all duration-300",
@@ -515,10 +518,10 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
       {/* V2-01: la spiegazione vive su CARTA NITIDA (mai vetro): bordo
           filetto pieno, ombra foglio; l'esempio porta l'accento materia. */}
       <div className={cn(
-        "space-y-4 rounded-card border p-5 shadow-tactile sm:p-6",
+        "space-y-4 py-5",
         isExample
           ? "subject-callout"
-          : "border-border bg-card"
+          : "bg-transparent"
       )}>
         {segments.map((seg, i) => {
           if (seg.type === "text") {
@@ -956,7 +959,7 @@ export function FullscreenLessonGate({
 
   if (!full) {
     return (
-      <div className="no-halo fixed inset-0 z-50 bg-background flex flex-col items-center justify-center gap-4 animate-fade-up">
+      <div className={cn("no-halo bg-sheet flex flex-col items-center justify-center gap-4", props.embedded ? "min-h-[60dvh]" : "fixed inset-0 z-50")}>
         <div className="w-16 h-16 rounded-full bg-card shadow-level-1 flex items-center justify-center">
           <Loader2 className="w-7 h-7 text-foreground animate-spin" />
         </div>
@@ -988,3 +991,4 @@ export function FullscreenLessonGate({
     />
   );
 }
+
