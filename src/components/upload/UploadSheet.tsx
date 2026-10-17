@@ -20,6 +20,8 @@ import { edgeFetch } from "@/lib/edgeFetch";
 import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 import { UnifiedPipelineLoader, type PipelinePhase } from "./UnifiedPipelineLoader";
 import { useGenerationUsage, FREE_LIMIT_MESSAGE } from "@/hooks/useGenerationUsage";
+import { lessonsKeys } from "@/hooks/useLessons";
+import { isStudyMaterialRejected, isUnsuitableMaterialError, UNSUITABLE_MATERIAL_MESSAGE } from "@/lib/studyMaterial";
 
 
 interface UploadSheetProps {
@@ -197,6 +199,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       body: JSON.stringify({ userId: currentUser, action: "listContexts" }),
     });
     const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Impossibile verificare lo stato del percorso.");
     return (data.contexts ?? []).find((c: { id: string }) => c.id === contextId) ?? null;
   };
 
@@ -245,6 +248,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       let rekicked = false;
       for (let attempt = 0; attempt < 90; attempt++) {
         const ctx = await fetchPipelineContext(contextId);
+        if (isStudyMaterialRejected(ctx)) throw new Error(ctx.generation_error || ctx.error_message);
         if (ctx?.processing_status === "completed") { analyzed = true; break; }
         if (ctx?.processing_status === "failed") throw new Error(ctx.error_message || "Non sono riuscito a leggere il materiale.");
         // 🩺 P7 (7 ottobre 2026): dopo ~2 minuti di attesa il lavoro in
@@ -284,8 +288,9 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       for (let attempt = 0; attempt < 240; attempt++) {
         const ctx = await fetchPipelineContext(contextId);
         const status = ctx?.generation_status;
+        if (isStudyMaterialRejected(ctx)) throw new Error(ctx.generation_error || ctx.error_message);
         if (status === "completed") { generated = true; break; }
-        if (status === "failed") throw new Error("La generazione non è riuscita: rilanciala dal bottone «Genera percorso».");
+        if (status === "failed") throw new Error(ctx.generation_error || "La generazione non è riuscita. Riprova tra poco oppure apri un altro percorso.");
         const prog = ctx?.generation_progress;
         if (prog?.totalLessons && typeof prog.generatedCount === "number" && prog.totalLessons > 0) {
           const ratio = Math.min(1, prog.generatedCount / prog.totalLessons);
@@ -302,10 +307,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       const note = opts.finalNote?.() ?? "";
       toast({ title: "Percorso pronto! 🎉", description: note ? `${opts.courseName} — ${note}` : opts.courseName });
     } catch (error) {
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella preparazione del percorso", variant: "destructive" });
+      const message = error instanceof Error ? error.message : "Errore nella preparazione del percorso";
+      const rejected = isUnsuitableMaterialError(message);
+      toast({ title: rejected ? "Generazione impossibile" : "Errore", description: rejected ? UNSUITABLE_MATERIAL_MESSAGE : message, variant: "destructive" });
     } finally {
-      // Il materiale è caricato: in ogni caso l'utente atterra sul corso in
-      // Studio, dove la generazione si può rilanciare dal bottone che c'è già.
+      // Always release the overlay and refresh Studio, including terminal refusals.
+      void qc.invalidateQueries({ queryKey: lessonsKeys.all(currentUser) });
       if (contextId) finishPipeline();
       setPipeline(null);
     }
