@@ -25,6 +25,7 @@ import { useGenerationUsage, FREE_LIMIT_MESSAGE } from "@/hooks/useGenerationUsa
 interface UploadSheetProps {
   open: boolean;
   embedded?: boolean;
+  panelRequest?: { tab: "loading" | "manage" } | null;
   onOpenChange: (open: boolean) => void;
   onUpload: (files: { name: string; size: number }[], contextId?: string) => void;
   uploadedFiles: { name: string; size: number }[];
@@ -37,7 +38,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024;
 /** Limite morbido per singola foto DOPO la compressione (stesso valore lato server). */
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
-export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFileDeleted, initialManageContextId, embedded = false }: UploadSheetProps) {
+export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFileDeleted, initialManageContextId, embedded = false, panelRequest }: UploadSheetProps) {
   // La tastiera non può più seppellire il tasto principale: il foglio si
   // alza di `inset` px e si restringe all'altezza davvero visibile
   // (richiesta del proprietario: il tasto SI DEVE sempre vedere).
@@ -82,6 +83,14 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
   useEffect(() => {
     if (open && initialManageContextId) setActiveTab("manage");
   }, [open, initialManageContextId]);
+
+  // An explicit request also works when the embedded panel is already open.
+  // Keep file selections intact when moving between upload and management.
+  useEffect(() => {
+    if (!open || !panelRequest) return;
+    setActiveTab(panelRequest.tab);
+    if (panelRequest.tab === "loading") setLoadingTab("menu");
+  }, [open, panelRequest]);
 
   const handleMainTabChange = (value: string) => {
     setActiveTab(value);
@@ -849,7 +858,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
 
   return (
     <>
-    {embedded ? <section aria-label="Materiali di studio" className="flex min-h-[600px] min-w-0 flex-col p-4">{panel}</section> : <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
+    {embedded ? <section aria-label="Materiali di studio" className="material-panel flex min-h-[600px] min-w-0 flex-col p-4">{panel}</section> : <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
       <SheetContent
         side="bottom"
         className="rounded-t-xl pb-safe max-h-[85dvh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden"
@@ -880,4 +889,5 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
     </>
   );
 }
+
 

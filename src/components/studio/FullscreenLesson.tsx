@@ -262,6 +262,8 @@ export function FullscreenLesson({
   // dentro (i lettori di schermo non restano sulla pagina sotto). Se è aperto
   // il pannello del tutor, l'ESC chiude QUEL pannello e non la lezione.
   const previouslyFocusedRef = useRef<Element | null>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   useEffect(() => {
     previouslyFocusedRef.current = document.activeElement;
     rootRef.current?.focus?.();
@@ -270,14 +272,14 @@ export function FullscreenLesson({
       if (embedded && !rootRef.current?.contains(event.target as Node)) return;
       const openDialog = document.querySelector('[role="dialog"][data-state="open"]');
       if (openDialog && openDialog !== rootRef.current) return;
-      onClose();
+      onCloseRef.current();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       (previouslyFocusedRef.current as HTMLElement | null)?.focus?.();
     };
-  }, [onClose, embedded]);
+  }, [embedded]);
 
   const handleExerciseComplete = useCallback(
     (correct: boolean) => {
@@ -436,7 +438,7 @@ export function FullscreenLesson({
           <Button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="flex-1 h-12 text-base bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.97]"
+            className="min-w-0 flex-1 h-auto min-h-12 whitespace-normal px-3 py-3 text-sm tracking-normal bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.97]"
             size="lg"
           >
             {currentStep === steps.length - 1
@@ -956,29 +958,34 @@ export function FullscreenLessonGate({
   const { t } = useTranslation();
   const lessonQuery = useLessonQuery(contextId, meta.lesson_order);
   const full = lessonQuery.data;
+  const failed = lessonQuery.isError || (lessonQuery.isSuccess && !full);
 
   if (!full) {
     return (
-      <div className={cn("no-halo bg-sheet flex flex-col items-center justify-center gap-4", props.embedded ? "min-h-[60dvh]" : "fixed inset-0 z-50")}>
-        <div className="w-16 h-16 rounded-full bg-card shadow-level-1 flex items-center justify-center">
+      <div role={failed ? "alert" : "status"} aria-busy={!failed} className={cn("no-halo bg-sheet flex flex-col items-center justify-center gap-4 p-4", props.embedded ? "min-h-[60dvh]" : "fixed inset-0 z-50")}>
+        {!failed && <div className="w-16 h-16 rounded-full bg-card shadow-level-1 flex items-center justify-center">
           <Loader2 className="w-7 h-7 text-foreground animate-spin" />
-        </div>
-        <p className="font-display font-semibold text-lg text-foreground text-center px-8 max-w-sm">
+        </div>}
+        <p className="break-words font-display font-semibold text-lg text-foreground text-center px-8 max-w-sm">
           {meta.title}
         </p>
-        <p className="text-sm text-muted-foreground">{t("lesson.openingLesson")}</p>
-        <button
+        <p className="text-sm text-muted-foreground text-center">{failed ? "Non riusciamo ad aprire questa lezione. Riprova oppure torna al percorso." : t("lesson.openingLesson")}</p>
+        {failed && <Button type="button" disabled={lessonQuery.isFetching} onClick={() => void lessonQuery.refetch()}>Riprova</Button>}
+        <Button
+          type="button"
+          variant="ghost"
           onClick={props.onClose}
           className="text-sm text-muted-foreground underline underline-offset-2 mt-2"
         >
           {t("lesson.closeLink")}
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
     <FullscreenLesson
+      key={full.id}
       lesson={{
         id: full.id,
         title: full.title,
@@ -991,4 +998,5 @@ export function FullscreenLessonGate({
     />
   );
 }
+
 
