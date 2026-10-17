@@ -7,22 +7,25 @@ export function PdfPagePicker({ file, pages, onChange, disabled }: {
   const [expanded, setExpanded] = useState(false);
   const [count, setCount] = useState<number | null>(null);
   const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => { setCount(null); setError(""); }, [file]);
   useEffect(() => {
     if (!expanded || count !== null) return;
     let alive = true;
+    setError("");
     void (async () => {
       const { PDFDocument } = await import("pdf-lib");
       const pdf = await PDFDocument.load(await file.arrayBuffer());
       if (alive) setCount(pdf.getPageCount());
     })().catch(() => { if (alive) setError("Non riesco a leggere le pagine. Puoi caricare il PDF completo oppure riprovare con un PDF non protetto."); });
     return () => { alive = false; };
-  }, [file, expanded, count]);
+  }, [file, expanded, count, attempt]);
   return <div className="border-t border-border py-2">
     <Button type="button" variant="ghost" disabled={disabled} aria-expanded={expanded} onClick={() => setExpanded(value => !value)} className="w-full justify-start whitespace-normal text-left text-sm">
       {expanded ? "Chiudi selezione pagine" : "Scegli le pagine da studiare"}
     </Button>
     {expanded && <>
-      {error ? <p role="alert" className="mt-2 text-sm text-destructive">{error}</p> : count === null ? <p role="status" className="py-3 text-sm text-muted-foreground">Lettura delle pagine…</p> : <>
+      {error ? <div className="mt-2"><p role="alert" className="text-sm text-destructive">{error}</p><Button type="button" variant="outline" disabled={disabled} onClick={() => setAttempt(value => value + 1)} className="mt-2">Riprova</Button></div> : count === null ? <p role="status" className="py-3 text-sm text-muted-foreground">Lettura delle pagine…</p> : <>
         <p className="py-2 text-sm text-muted-foreground">Verranno caricate solo le pagine selezionate. Il PDF originale resta sul dispositivo.</p>
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => onChange(undefined)}>Tutte</Button>
@@ -43,3 +46,4 @@ export function PdfPagePicker({ file, pages, onChange, disabled }: {
     </>}
   </div>;
 }
+
