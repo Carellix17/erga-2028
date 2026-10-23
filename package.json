@@ -4,13 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "bunx tsx scripts/generate-sitemap.ts",
+    "predev": "bun scripts/generate-sitemap.ts",
     "dev": "vite",
-    "prebuild": "bunx tsx scripts/generate-sitemap.ts",
+    "prebuild": "bun scripts/generate-sitemap.ts",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",
     "test:watch": "vitest"
   },

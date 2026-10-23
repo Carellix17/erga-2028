@@ -5,8 +5,8 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
-describe("design system v3 — app shell", () => {
-  it("espone la geometria 4/8/12px prevista da DESIGN.md", () => {
+describe("design system v4 — app shell", () => {
+  it("espone celle piatte, controlli 2px e pannelli 4px previsti da DESIGN.md", () => {
     const tailwind = read("tailwind.config.ts");
     const css = read("src/index.css");
 
@@ -15,13 +15,14 @@ describe("design system v3 — app shell", () => {
     expect(tailwind).toContain('card: "var(--radius-card)"');
     expect(tailwind).toContain('button: "var(--radius-button)"');
     expect(tailwind).toContain('nav: "var(--radius-nav)"');
-    expect(css).toContain("--radius-xs: 4px");
-    expect(css).toContain("--radius-control: 8px");
-    expect(css).toContain("--radius-card: 12px");
-    expect(css).toContain("--radius-hero: 12px");
-    expect(css).toContain("--radius-button: 8px");
-    expect(css).toContain("--radius-pill: 8px");
-    expect(css).toContain("--radius-nav: 12px");
+    expect(css).toContain("--radius-xs: 2px");
+    expect(css).toContain("--radius-control: 2px");
+    expect(css).toContain("--radius-card: 0px");
+    expect(css).toContain("--radius-hero: 0px");
+    expect(css).toContain("--radius-button: 2px");
+    expect(css).toContain("--radius-pill: 2px");
+    expect(css).toContain("--radius-nav: 0px");
+    expect(css).toContain("--radius-dialog: 4px");
     expect(css).toContain("--radius-full: 9999px");
     expect(css).not.toContain("--radius-hero: 32px");
     expect(css).not.toContain("--radius-button: 16px");
@@ -48,24 +49,25 @@ describe("design system v3 — app shell", () => {
     const button = read("src/components/ui/button.tsx");
     const input = read("src/components/ui/input.tsx");
 
-    expect(card).toContain("rounded-card");
+    expect(card).toContain("rounded-none");
     expect(card).toContain("bg-card");
     expect(card).toContain("border-border");
     expect(button).toContain("rounded-button");
     expect(button).toContain("bg-primary text-primary-foreground");
     expect(input).toContain("rounded-control");
-    expect(input).toContain("bg-secondary");
+    expect(input).toContain("bg-sheet");
     expect(input).toContain("border-input");
   });
 
-  it("mantiene CTA primaria piatta, Olive Drab e con raggio 8px", () => {
+  it("mantiene CTA vermiglia con ombra rigida 2px e testo carta", () => {
     const button = read("src/components/ui/button.tsx");
     const css = read("src/index.css");
 
-    expect(button).toMatch(/default:\s*"bg-primary text-primary-foreground/);
+    expect(button).toMatch(/default:\s*"[^"\n]*bg-primary text-primary-foreground/);
+    expect(button).toContain("shadow-[2px_2px_0px_#11120D]");
     expect(button).not.toMatch(/default:\s*"[^"]*rounded-pill/);
-    expect(css).toContain("--primary: var(--surface-primary)");
-    expect(css).toContain("--primary-deep: 50 11.54% 20.39%");
+    expect(css).toContain("--primary: 11.6842 90.4762% 41.1765%");
+    expect(css).toContain("--primary-deep: 11.2727 92.1788% 35.0980%");
     expect(css).toContain("--primary-foreground: var(--accent-light)");
   });
 
@@ -93,26 +95,27 @@ describe("design system v3 — app shell", () => {
 
   it("definisce le superfici giorno e notte dai token ufficiali", () => {
     const css = read("src/index.css");
-    expect(css).toContain("--canvas: 72 16.13% 6.08%");
-    expect(css).toContain("--surface-primary: 50.77 8.18% 31.18%");
-    expect(css).toContain("--surface-secondary: 40.71 26.42% 79.22%");
-    expect(css).toContain("--ink: 72 16.13% 6.08%");
-    expect(css).toContain("--accent-light: 38.18 100% 97.84%");
+    expect(css).toContain("--canvas: 45.0000 26.6667% 94.1176%");
+    expect(css).toContain("--surface-primary: 42.8571 41.1765% 96.6667%");
+    expect(css).toContain("--surface-secondary: 42.8571 25.0000% 89.0196%");
+    expect(css).toContain("--ink: 72.0000 16.1290% 6.0784%");
+    expect(css).toContain("--accent-light: 40.0000 100.0000% 98.8235%");
     expect(css).toContain("--canvas: 60 11.11% 3.53%");
     expect(css).toContain("--surface-primary: 60 10.64% 9.22%");
     expect(css).toContain("--surface-secondary: 60 3.85% 14.31%");
     expect(css).toContain("--line: 50 11.54% 20.39%");
   });
 
-  it("usa Playfair Display per i titoli e Inter per UI e lettura", () => {
+  it("usa Ubuntu Sans per la UI e Instrument Serif solo per la lettura editoriale", () => {
     const tailwind = read("tailwind.config.ts");
     const html = read("index.html");
-    expect(tailwind).toContain('display: ["Playfair Display", "Lora", "Georgia", "serif"]');
-    expect(tailwind).toContain('sans: ["Inter", "system-ui", "-apple-system", "sans-serif"]');
-    expect(tailwind).toContain('reading: ["Inter", "system-ui", "-apple-system", "sans-serif"]');
-    expect(html).toContain("family=Playfair+Display");
-    expect(html).toContain("family=Inter");
-    expect(html).not.toContain("Ubuntu+Sans");
+    expect(tailwind).toContain('display: ["Ubuntu Sans", "system-ui", "sans-serif"]');
+    expect(tailwind).toContain('sans: ["Ubuntu Sans", "system-ui", "sans-serif"]');
+    expect(tailwind).toContain('reading: ["Ubuntu Sans", "system-ui", "sans-serif"]');
+    expect(tailwind).toContain('editorial: ["Instrument Serif", "Georgia", "serif"]');
+    expect(html).toContain("family=Instrument+Serif");
+    expect(html).toContain("family=Ubuntu+Sans");
+    expect(html).not.toContain("Playfair+Display");
     expect(html).not.toContain("Montserrat");
   });
 });

@@ -28,18 +28,36 @@ on:
     branches: [ "main" ]
 jobs:
   appknox:
+    permissions:
+      contents: read
+      security-events: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Check native application configuration
+        id: configuration
+        env:
+          APPKNOX_TOKEN: ${{ secrets.APPKNOX_ACCESS_TOKEN }}
+        run: |
+          if [[ -f gradlew && -n "$APPKNOX_TOKEN" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo 'Appknox non eseguito: servono gradlew e APPKNOX_ACCESS_TOKEN. Il frontend web viene verificato dal workflow Frontend; nessuna scansione mobile certificata.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Grant execute permission for gradlew
+        if: steps.configuration.outputs.configured == 'true'
         run: chmod +x gradlew
 
       - name: Build the app
+        if: steps.configuration.outputs.configured == 'true'
         run: ./gradlew build                                         # Update this to build your Android or iOS application
 
       - name: Appknox GitHub action
+        if: steps.configuration.outputs.configured == 'true'
         uses: appknox/appknox-github-action@b7d2bfb2321d5544e97bffcba48557234ab953a4
         with:
           appknox_access_token: ${{ secrets.APPKNOX_ACCESS_TOKEN }}
@@ -48,7 +66,7 @@ jobs:
           sarif: Enable
 
       - name: Upload SARIF to GHAS
-        if: always()
+        if: success() && steps.configuration.outputs.configured == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: report.sarif
