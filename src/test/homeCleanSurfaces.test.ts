@@ -3,11 +3,9 @@ import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
 
 /**
- * 🛡️ GUARDIA DELLE SUPERFICI — Home, design system v3.
+ * 🛡️ GUARDIA DELLE SUPERFICI — Home, design system v4.
  *
- * La Home usa superfici solide e ombre flat tokenizzate. La grana resta
- * decorativa e non altera l'opacità del contenuto; il solo blur è il velo
- * satinato dell'azione sulla copertina del corso.
+ * La Home usa celle piatte e solide, senza copertine decorative o vetro.
  */
 
 const HOME_DIR = join(__dirname, "..", "components", "home");
@@ -63,25 +61,17 @@ describe("Superfici pulite della Home", () => {
     const files = readdirSync(HOME_DIR).filter((name) => name.endsWith(".tsx"));
     for (const name of files) {
       const content = readFileSync(join(HOME_DIR, name), "utf8");
-      if (name === "CourseHeroCard.tsx") {
-        // unica eccezione dichiarata: il velo satinato dell'azione (2.1 §4)
-        expect(content).toContain("btn-satin");
-        expect(content).not.toMatch(/backdrop-filter|backdrop-blur|glass-tactile/);
-        continue;
-      }
       expect(content, name).not.toMatch(/backdrop-filter|backdrop-blur|glass-tactile|btn-satin/);
     }
   });
 
-  it("la card corso usa la copertina astratta e il raggio 12px della specifica", () => {
+  it("la card corso usa la cella piatta del design v4 senza copertina decorativa", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     const bg = readFileSync(join(__dirname, "..", "components", "studio", "CourseCardBackground.tsx"), "utf8");
-    // foglio protagonista: raggio hero e ombra del sistema
-    expect(hero).toContain("rounded-hero");
-    expect(hero).toContain("shadow-level-3");
-    // composizione astratta condivisa col sistema copertina (courseIdentity)
-    expect(hero).toContain("CourseCardBackground");
-    expect(hero).toContain("courseCoverVars");
+    expect(hero).toContain("bg-card p-6 sm:p-8");
+    expect(hero).not.toMatch(/rounded-hero|shadow-level-3/);
+    expect(hero).not.toContain("CourseCardBackground");
+    expect(hero).not.toContain("courseCoverVars");
     // grana condivisa, niente orb sfocati
     expect(bg).toContain("cover-grain");
     expect(bg).not.toContain("blur-");
@@ -89,40 +79,39 @@ describe("Superfici pulite della Home", () => {
     expect(bg).not.toContain("orb-secondary");
   });
 
-  it("la CTA 'Riprendi/Continua' usa il satinato solo sulla copertina", () => {
+  it("la CTA 'Riprendi/Continua' resta un Button pieno e facilmente toccabile", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
-    expect(hero).toContain("btn-satin");
-    expect(hero).toContain("w-full");
+    expect(hero).toContain("<Button onClick={onPrimaryCta}");
+    expect(hero).toContain("min-h-12 w-full");
+    expect(hero).not.toContain("btn-satin");
     // la vecchia CTA semiopaca color-mix non deve tornare
     expect(hero).not.toContain("color-mix(in srgb, currentColor 12%");
   });
 
-  it("il titolo del corso è display serif e spezza le parole senza uscire", () => {
+  it("il titolo del corso usa la gerarchia UI e spezza le parole senza uscire", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
-    expect(hero).toContain("font-display");
-    expect(hero).toContain("font-medium");
+    expect(hero).toContain("text-3xl font-semibold");
     expect(hero).toContain("break-words");
-    expect(hero).toContain("min-w-0");
+    expect(hero).toContain("max-w-[22ch]");
     // la voce focale Radja non guida il prodotto (resta al Login)
     expect(hero).not.toContain("font-radja");
   });
 
   it("usa i token earthy e le ombre flat documentate", () => {
     const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
-    expect(css).toContain("--canvas: 72 16.13% 6.08%");
-    expect(css).toContain("--surface-primary: 50.77 8.18% 31.18%");
-    expect(css).toContain("--surface-secondary: 40.71 26.42% 79.22%");
-    expect(css).toContain(
-      "--shadow-level-3: 0 2px 4px rgba(17, 18, 13, 0.04), 0 10px 24px rgba(17, 18, 13, 0.08)",
-    );
+    expect(css).toContain("--canvas: 45.0000 26.6667% 94.1176%");
+    expect(css).toContain("--surface-primary: 42.8571 41.1765% 96.6667%");
+    expect(css).toContain("--surface-secondary: 42.8571 25.0000% 89.0196%");
+    expect(css).toContain("--shadow-level-3: none");
     // la copertina non usa gradienti: campo pieno + forme nette
     const bg = readFileSync(join(__dirname, "..", "components", "studio", "CourseCardBackground.tsx"), "utf8");
     expect(bg).not.toContain("linear-gradient");
   });
 
-  it("la ciambella della card corso è responsiva per gli schermi piccoli", () => {
+  it("l'avanzamento della card corso è lineare e accessibile", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
-    expect(hero).toContain("h-14 w-14");
-    expect(hero).toContain("sm:h-16 sm:w-16");
+    expect(hero).toContain('role="progressbar"');
+    expect(hero).toContain("aria-valuenow={percent}");
+    expect(hero).toContain("aria-valuemin={0} aria-valuemax={100}");
   });
 });

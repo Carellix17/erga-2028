@@ -38,7 +38,7 @@ export function CourseHeroCard({ courseTitle, lessonTitle, lessonMetaText, progr
     {active ? <>
       <div>
         <h2 className="max-w-[22ch] break-words text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{courseTitle}</h2>
-        <p className="mt-5 text-xl leading-snug">{lessonTitle}</p>
+        <p className="mt-5 break-words text-xl leading-snug">{lessonTitle}</p>
         {lessonMetaText && <p className="mt-2 font-mono text-sm tabular-nums text-muted-foreground">{lessonMetaText}</p>}
       </div>
       <div className="mt-8">
@@ -60,3 +60,4 @@ export function CourseHeroCard({ courseTitle, lessonTitle, lessonMetaText, progr
     </>}
   </article>;
 }
+

@@ -8,14 +8,14 @@ const css = readFileSync(join(ROOT, "src", "index.css"), "utf-8");
 const autoContrast = readFileSync(join(ROOT, "src", "lib", "autoContrast.ts"), "utf-8");
 
 const INK = "#11120D";
-const PAPER = "#FFFBF4";
-const OLIVE = "#565449";
+const PAPER = "#FFFDF9";
+const PRIMARY = "#C82F0A";
 const NIGHT_CANVAS = "#0A0A08";
 
-describe("palette e contrasto — design system v3", () => {
-  it("usa Floral White come accento chiaro e Smoky Black come inchiostro", () => {
-    expect(css).toContain("--accent-light: 38.18 100% 97.84%");
-    expect(css).toContain("--ink: 72 16.13% 6.08%");
+describe("palette e contrasto — design system v4", () => {
+  it("usa carta calda come accento chiaro e l'inchiostro ufficiale", () => {
+    expect(css).toContain("--accent-light: 40.0000 100.0000% 98.8235%");
+    expect(css).toContain("--ink: 72.0000 16.1290% 6.0784%");
     expect(css).toContain("--cream: var(--accent-light)");
     expect(css).not.toContain("--cedro:");
   });
@@ -46,7 +46,7 @@ describe("palette e contrasto — design system v3", () => {
   });
 
   it("verifica le combinazioni primarie della specifica WCAG AA", () => {
-    expect(contrastRatio(PAPER, OLIVE)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(PAPER, PRIMARY)).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(INK, PAPER)).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(PAPER, NIGHT_CANVAS)).toBeGreaterThanOrEqual(4.5);
   });

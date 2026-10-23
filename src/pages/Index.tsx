@@ -42,6 +42,7 @@ const Index = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [showUpload, setShowUpload] = useState(false);
+  const [materialRequest, setMaterialRequest] = useState<{ tab: "loading" | "manage" } | null>(null);
   const [uploaderHost] = useState(() => document.createElement("div"));
   const [materialPane, setMaterialPane] = useState<HTMLDivElement | null>(null);
   const [materialsExpanded, setMaterialsExpanded] = useState(false);
@@ -52,6 +53,16 @@ const Index = () => {
   useEffect(() => () => uploaderHost.remove(), [uploaderHost]);
   const [manageFocusContextId, setManageFocusContextId] = useState<string | null>(null);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
+  const openUpload = () => {
+    setManageFocusContextId(null);
+    setMaterialRequest({ tab: "loading" });
+    if (activeTab === "studio") {
+      setMaterialsExpanded(true);
+      requestAnimationFrame(() => materialPane?.scrollIntoView({ block: "start" }));
+    } else {
+      setShowUpload(true);
+    }
+  };
   // 🧭 Percorsi 2.0 — strumento di Studio da aprire al prossimo ingresso
   // (es. "Chat", "Esercizi" o "Palestra" dalle pillole della Home o dalla chat).
   const [toolLaunch, setToolLaunch] = useState<{ tool: StudioTool; requestId: number } | null>(null);
@@ -304,7 +315,7 @@ const Index = () => {
               setToolLaunch({ tool, requestId: Date.now() });
               changeTab("studio");
             }}
-            onUpload={() => setShowUpload(true)}
+            onUpload={openUpload}
           />
         )}
         {/* Banner ricalcola Esagono se per qualche motivo i punteggi sono tutti default */}
@@ -321,8 +332,8 @@ const Index = () => {
           </button>
         )}
         {activeTab === "studio" && (
-          <div className="study-workspace grid min-w-0 grid-cols-12 border border-border bg-sheet">
-          <aside className="col-span-12 min-w-0 border-b border-border bg-background lg:col-span-4 lg:border-b-0 lg:border-r">
+          <div className="study-workspace grid min-w-0 grid-cols-12 border border-border bg-sheet text-foreground lg:grid-cols-[minmax(18rem,4fr)_minmax(0,8fr)]">
+          <aside className="col-span-12 min-w-0 border-b border-border bg-background lg:col-span-1 lg:border-b-0 lg:border-r">
             <button type="button" className="min-h-12 w-full px-4 text-left font-medium lg:hidden" aria-expanded={materialsExpanded} aria-controls="study-material-controls" onClick={() => setMaterialsExpanded(value => !value)}>Materiali e lettura</button>
             <div id="study-material-controls" className={materialsExpanded ? "block" : "hidden lg:block"}>
             <div className="border-b border-border p-4">
@@ -335,12 +346,12 @@ const Index = () => {
             <div ref={setMaterialPane} />
             </div>
           </aside>
-          <section aria-label="Percorso e minilezioni" className="col-span-12 min-w-0 bg-sheet lg:col-span-8">
+          <section aria-label="Percorso e minilezioni" className="col-span-12 min-w-0 bg-sheet lg:col-span-1">
           <StudioView
             embeddedReader
             readingMode={readingMode}
             hasFiles={hasFiles}
-            onUploadClick={() => { setMaterialsExpanded(true); requestAnimationFrame(() => materialPane?.scrollIntoView({ block: "start" })); }}
+            onUploadClick={openUpload}
             selectedContextId={selectedContextId}
             lessonLaunch={lessonLaunch}
             onLessonLaunchHandled={() => setLessonLaunch(null)}
@@ -349,6 +360,7 @@ const Index = () => {
             onClearContext={() => setSelectedContextId(null)}
             onOpenCourseMaterials={(contextId) => {
               setManageFocusContextId(contextId);
+              setMaterialRequest({ tab: "manage" });
               setMaterialsExpanded(true);
               requestAnimationFrame(() => materialPane?.scrollIntoView({ block: "start" }));
             }}
@@ -374,10 +386,14 @@ const Index = () => {
       {createPortal(
       <UploadSheet
         embedded={activeTab === "studio"}
+        panelRequest={materialRequest}
         open={activeTab === "studio" || showUpload}
         onOpenChange={(o) => {
           setShowUpload(o);
-          if (!o) setManageFocusContextId(null);
+          if (!o) {
+            setManageFocusContextId(null);
+            setMaterialsExpanded(false);
+          }
         }}
         onUpload={handleUpload}
         uploadedFiles={displayFiles}
@@ -402,4 +418,5 @@ const Index = () => {
 };
 
 export default Index;
+
 

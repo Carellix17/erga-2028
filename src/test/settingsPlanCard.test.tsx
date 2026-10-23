@@ -86,11 +86,11 @@ describe("SettingsPlanCard", () => {
     expect(screen.queryByRole("button", { name: /passa a pro/i })).not.toBeInTheDocument();
   });
 
-  it("usa la superficie standard v3 e non applica satinato fuori dalle copertine", () => {
+  it("usa la superficie standard v4 e non applica satinato fuori dalle copertine", () => {
     const css = readFileSync(join(process.cwd(), "src/index.css"), "utf8");
     const card = readFileSync(join(process.cwd(), "src/components/settings/SettingsPlanCard.tsx"), "utf8");
 
-    expect(css).toContain("--surface-primary: 50.77 8.18% 31.18%");
+    expect(css).toContain("--surface-primary: 42.8571 41.1765% 96.6667%");
     expect(card).toContain("rounded-card border border-border bg-card");
     expect(card).toContain("rounded-button bg-primary");
     expect(card).not.toContain("cover-grain");
