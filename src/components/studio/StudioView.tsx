@@ -1023,6 +1023,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   }
 
   const currentLesson = activeLessonIndex !== null ? lessons[activeLessonIndex] : null;
+  const showLessonReader = activeLessonIndex !== null && !!currentLesson?.is_generated && !isGeneratingLesson;
   const allGenerated = lessons.length > 0 && lessons.every(l => l.is_generated);
   // 🧭 P38: titolo del modulo aperto, condiviso da barra compatta e ramo.
   const activeModuleTitle = activeModuleIndex != null
@@ -1038,7 +1039,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           <Button onClick={onUploadClick} variant="outline" className="mt-3">Carica altri materiali</Button>
         </div>
       )}
-      {activeLessonIndex === null && (<>
+      {!showLessonReader && (<>
       {studioSubView ? (
         /* 🏋️ / 🎤 P43 — foglio che SCIVOLA dal basso (300ms) sopra lo Studio
            ancora montato e visibile, sfocato dal backdrop (mai nero pieno).
@@ -1229,7 +1230,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       )}
 
       </>)}
-      {activeLessonIndex !== null && currentLesson && currentLesson.is_generated && !isGeneratingLesson && (
+      {showLessonReader && activeLessonIndex !== null && currentLesson && (
         <FullscreenLessonGate
           embedded={embeddedReader}
           readingMode={readingMode}
@@ -1307,4 +1308,3 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     </>
   );
 }
-

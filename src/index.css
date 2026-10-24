@@ -1341,9 +1341,16 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .lesson-paper[data-reading-mode="calma"] .prose:not(.lesson-scene-title) :where(p,li) { line-height: 1.85; }
 .lesson-paper[data-reading-mode="logica"] :where(strong, .katex) { color: hsl(var(--cognitive)); }
 .study-workspace { min-height: calc(100dvh - 160px); }
+/* The uploader was designed as a wide sheet; its embedded column must wrap copy. */
+.material-panel button { white-space: normal; overflow-wrap: anywhere; height: auto; min-height: 44px; }
+.material-panel button > div { min-width: 0; }
+.material-panel [role="tablist"] { height: auto; }
+.material-panel [role="tab"] { min-width: 0; }
+.material-panel button.bg-primary { padding-inline: 12px; }
 .study-workspace .lesson-reader { position: relative; inset: auto; z-index: auto; min-height: 75dvh; animation: none; }
 .study-workspace .lesson-reader > :first-child { border-bottom: 1px solid hsl(var(--border)); }
 .study-workspace .lesson-paper { overflow-y: visible; }
 .study-workspace .lesson-reader > :last-child { border-top: 1px solid hsl(var(--border)); }
 @media (min-width:1024px) { .study-workspace .lesson-reader { height: calc(100dvh - 100px); min-height: 640px; } .study-workspace .lesson-paper { overflow-y:auto; } }
 @media (prefers-reduced-motion: reduce) { .study-workspace *, .cognitive-grid * { scroll-behavior:auto; } }
+

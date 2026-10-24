@@ -74,7 +74,6 @@ describe("grana della carta — design system v3", () => {
     expect(layout).toContain('isHome && "table-grain"');
 
     const homeFiles = [
-      "src/components/home/CourseHeroCard.tsx",
       "src/components/home/DailyTimeline.tsx",
       "src/components/home/HomeDashboardSkeleton.tsx",
       "src/components/home/HomeView.tsx",
@@ -92,11 +91,12 @@ describe("grana della carta — design system v3", () => {
     expect(read("src/components/layout/BottomNav.tsx")).not.toContain("cover-grain");
   });
 
-  it("non sovrappone grana foglio e copertina corso attiva", () => {
+  it("la card corso v4 non introduce grana o copertine decorative", () => {
     const hero = read("src/components/home/CourseHeroCard.tsx");
     const background = read("src/components/studio/CourseCardBackground.tsx");
-    expect(hero).toContain("paper-grain"); // stato vuoto
-    expect(hero).toContain("CourseCardBackground"); // stato attivo
+    expect(hero).not.toContain("paper-grain");
+    expect(hero).not.toContain("CourseCardBackground");
+    expect(css).toMatch(/\.paper-grain, \.table-grain \{ background-image: none; \}/);
     expect(background).toContain("cover-grain");
     expect(background).not.toContain("paper-grain");
     expect(background).not.toContain("table-grain");

@@ -54,7 +54,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+       - name: Check APIsec configuration
+         id: configuration
+         env:
+           APISEC_USERNAME: ${{ secrets.apisec_username }}
+           APISEC_PASSWORD: ${{ secrets.apisec_password }}
+           APISEC_PROJECT: ${{ vars.APISEC_PROJECT }}
+         run: |
+           if [[ -n "$APISEC_USERNAME" && -n "$APISEC_PASSWORD" && -n "$APISEC_PROJECT" && "$APISEC_PROJECT" != "VAmPI" ]]; then
+             echo "configured=true" >> "$GITHUB_OUTPUT"
+           else
+             echo "configured=false" >> "$GITHUB_OUTPUT"
+             echo 'APIsec non eseguito: configurare le credenziali e APISEC_PROJECT con il progetto Erga. Nessuna scansione certificata.' >> "$GITHUB_STEP_SUMMARY"
+           fi
        - name: APIsec scan
+         if: steps.configuration.outputs.configured == 'true'
          uses: apisec-inc/apisec-run-scan@025432089674a28ba8fb55f8ab06c10215e772ea
          with:
           # The APIsec username with which the scans will be executed
@@ -62,10 +76,11 @@ jobs:
           # The Password of the APIsec user with which the scans will be executed
           apisec-password: ${{ secrets.apisec_password}}
           # The name of the project for security scan
-          apisec-project: "VAmPI"
+          apisec-project: ${{ vars.APISEC_PROJECT }}
           # The name of the sarif format result file The file is written only if this property is provided.
           sarif-result-file: "apisec-results.sarif"
        - name: Import results
+         if: steps.configuration.outputs.configured == 'true'
          uses: github/codeql-action/upload-sarif@v3
          with:
           sarif_file: ./apisec-results.sarif

@@ -8,13 +8,13 @@ import tailwindConfig from "../../tailwind.config";
 const fontFamilies = tailwindConfig.theme.extend.fontFamily;
 
 /**
- * Saluto della Home — pilota V2-01 (DESIGN.md 2.1 §5, §9).
- * Serif compatto (Lora 400/500): 32px telefono, 40 sm, 48 lg.
+ * Saluto della Home — DESIGN.md v4: Ubuntu Sans per la UI.
+ * Scala compatta: 32px telefono, 40 sm, 48 lg.
  * «Compact, mai gigantesco»: la scala D1 da 43–86px è archiviata.
  */
 
 describe("Font del messaggio di benvenuto", () => {
-  it("carica Lora e Inter da Google Fonts come family variable (2.1 §5)", () => {
+  it("carica i tre caratteri di DESIGN.md v4 con display swap", () => {
     const html = readFileSync(resolve(__dirname, "../../index.html"), "utf8");
     const doc = new DOMParser().parseFromString(html, "text/html");
     const link = doc.querySelector<HTMLLinkElement>('link[rel="stylesheet"][href^="https://fonts.googleapis.com/css2"]');
@@ -22,22 +22,24 @@ describe("Font del messaggio di benvenuto", () => {
 
     const url = new URL(link!.href);
     expect(url.searchParams.getAll("family").sort()).toEqual([
-      "Inter:ital,wght@0,400..700;1,400..700",
-      "Playfair Display:ital,wght@0,400..700;1,400..700",
+      "Instrument Serif:ital@0;1",
+      "Ubuntu Sans Mono:wght@400;500;600;700",
+      "Ubuntu Sans:ital,wght@0,400..700;1,400..700",
     ]);
     expect(url.searchParams.get("display")).toBe("swap");
   });
 
-  it("configura Lora per il display serif e Inter per interfaccia e lettura", () => {
-    expect(fontFamilies.display).toEqual(["Playfair Display", "Lora", "Georgia", "serif"]);
-    expect(fontFamilies.serif).toEqual(["Playfair Display", "Lora", "Georgia", "serif"]);
-    expect(fontFamilies.sans).toEqual(["Inter", "system-ui", "-apple-system", "sans-serif"]);
-    expect(fontFamilies.reading).toEqual(["Inter", "system-ui", "-apple-system", "sans-serif"]);
+  it("riserva Instrument Serif alla lettura editoriale e usa Ubuntu Sans nella UI", () => {
+    expect(fontFamilies.display).toEqual(["Ubuntu Sans", "system-ui", "sans-serif"]);
+    expect(fontFamilies.serif).toEqual(fontFamilies.display);
+    expect(fontFamilies.sans).toEqual(fontFamilies.display);
+    expect(fontFamilies.reading).toEqual(fontFamilies.display);
+    expect(fontFamilies.editorial).toEqual(["Instrument Serif", "Georgia", "serif"]);
     expect(fontFamilies).not.toHaveProperty("welcome-title");
     expect(fontFamilies).not.toHaveProperty("welcome");
   });
 
-  it("applica il serif al titolo preservando peso, scala compatta e le due righe accessibili", () => {
+  it("applica il carattere UI al titolo preservando peso, scala compatta e le due righe accessibili", () => {
     const { container } = render(<HomeHeader greeting="Buongiorno" userName="Vale" />);
     const heading = screen.getByRole("heading", { level: 1, name: "Buongiorno Vale" });
 
@@ -54,7 +56,7 @@ describe("Font del messaggio di benvenuto", () => {
     lines.forEach((line) => expect(line).toHaveClass("block"));
   });
 
-  it("il sottotitolo è Inter attenuato e non tronca mai (va a capo)", () => {
+  it("il sottotitolo è attenuato e non tronca mai (va a capo)", () => {
     render(<HomeHeader greeting="Buonasera" userName="Vale" subtitle="Hai una lezione da riprendere" />);
     const subtitle = screen.getByText("Hai una lezione da riprendere");
 
@@ -63,7 +65,7 @@ describe("Font del messaggio di benvenuto", () => {
     expect(subtitle).not.toHaveClass("font-display");
   });
 
-  it("mantiene il serif anche quando il messaggio contiene solo il nome", () => {
+  it("mantiene il carattere UI anche quando il messaggio contiene solo il nome", () => {
     render(<HomeHeader userName="Alessandro" />);
     expect(screen.getByRole("heading", { level: 1, name: "Alessandro" })).toHaveClass("font-display");
   });
