@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧠 Erga
+# Erga
 ### La piattaforma educativa che si adatta a come pensi
 
 **Erga** combina intelligenza artificiale, gamification e analisi cognitiva per offrire un'esperienza di apprendimento personalizzata — sul tuo telefono, sul tuo tablet, ovunque tu sia.
@@ -15,7 +15,7 @@
 
 ---
 
-## ✨ Cos'è Erga
+## Cos'è Erga
 
 Erga non è un semplice aggregatore di contenuti didattici. È una piattaforma che **capisce come apprendi** e costruisce attorno a te un percorso su misura, grazie a un motore di intelligenza artificiale integrato e a un sistema di valutazione cognitiva proprietario.
 
@@ -23,7 +23,7 @@ Disponibile su **iOS**, **Android** e **Web**.
 
 ---
 
-## 🛠️ Stack Tecnologico
+## Stack Tecnologico
 
 | Layer | Tecnologia |
 |---|---|
