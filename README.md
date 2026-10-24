@@ -43,6 +43,5 @@ Questo progetto è proprietario. Tutti i diritti riservati © 2026 Erga. Non è 
 
 <div align="center">
 
-**Fatto con ❤️ per chi vuole imparare meglio.**
 
 </div>
