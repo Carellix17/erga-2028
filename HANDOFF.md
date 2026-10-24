@@ -2,6 +2,20 @@
 
 Questo file serve come guida di riferimento per il coding agent che lavora allo sviluppo di Erga. Contiene le informazioni tecniche fondamentali per orientarsi nel progetto, comprendere la struttura esistente e prendere decisioni coerenti con l'architettura attuale.
 
+## Studio — arresto per materiale non studiabile (17 ottobre 2026)
+
+- `supabase/functions/_shared/studyMaterial.ts` definisce il codice persistente `[UNSUITABLE_STUDY_MATERIAL]`, il messaggio comprensibile e lo stato terminale. Usa le colonne e lo stato `failed` esistenti: nessuna migrazione.
+- `extract-pdf` chiede alla vision di rifiutare immagini prive di concetti didattici. Al primo batch rifiutato interrompe l'intero tentativo; testo insufficiente da immagini/PDF chiude anche la generazione e ne azzera avanzamento, lock di modulo e timestamp. Opere d'arte, mappe, diagrammi e formule restano ammessi come materiale didattico anche senza testo.
+- `generate-lessons` può ricevere `[]` come rifiuto del materiale. Si ferma **prima** della cancellazione delle lezioni esistenti. Non riavvia l'AI su un rifiuto già salvato finché non viene aggiunto materiale nuovo (`new_material_pending`). I fallimenti in background cancellano sempre avanzamento e timestamp del job.
+- `StudioView` mostra «Generazione impossibile» e «Carica altri materiali» senza invito a rigenerare. Il selettore corsi resta accessibile anche senza lezioni o dopo errori di elaborazione. Riconosce anche i vecchi messaggi di estrazione insufficiente; le lezioni già presenti restano accessibili se una rigenerazione viene rifiutata. Lo stato locale di avvio è legato al singolo contesto per non bloccare altri corsi.
+- `UploadSheet` interrompe il polling al rifiuto, chiude il caricamento unico e aggiorna la cache di Studio. Gli errori temporanei del provider restano riprovabili; il codice interno non viene mostrato nel messaggio di rifiuto.
+- Test nuovi: `studyMaterial`, `extractUnsuitableMaterial`, `generateRejectedPlan`, `studioGenerationFailure`. Gli handler backend reali sono eseguiti con dipendenze simulate, senza chiamate AI o database live.
+- Verifica locale: 43 test pertinenti superati (17 nuovi); `tsc --noEmit -p tsconfig.app.json`, build Vite/PWA e ESLint dei file frontend modificati superati (0 errori, 2 avvisi Hook già presenti). Detector Impeccable: nessun rilievo. Verifica visiva responsive non completata: Chromium non era installato e il download del browser è fallito; i controlli UI locali usano React Testing Library/jsdom.
+- La suite completa presenta 20 test falliti più una suite che non parte (`pdfSelection`, setup `window` in ambiente Node). Gli stessi identici casi sono stati riprodotti sul `main` originale `5446b4e`: riguardano soprattutto test ancora riferiti al design v3 dopo la migrazione v4. Non sono stati modificati in questo intervento.
+- Pubblicazione ancora da eseguire tramite Lovable: deploy di **extract-pdf** e **generate-lessons** con il nuovo helper, poi **Update** frontend. Prompt completo e controlli di accettazione in `docs/LOVABLE_STUDIO_MATERIAL_REJECTION.md`. Nessuna migrazione o pubblicazione diretta è stata eseguita.
+
+Il rilevamento semantico usa l'AI e non è infallibile; i test locali coprono la gestione degli esiti simulati. Il design corrente resta quello di `DESIGN.md` v4.0: la sezione v3 qui sotto è documentazione storica.
+
 ## Stato UI — migrazione al design system v3.0
 
 La fonte visiva autorevole è `DESIGN.md` v3.0 «Squared & Earthy». Le indicazioni v2.1 «Carta contemporanea» e «Squared & Sunset» rimaste nei documenti storici sono superate e non devono guidare nuove modifiche.
@@ -1013,5 +1027,5 @@ Esegui migrazioni database e deploy edge functions per il progetto Erga su Lovab
 
 ---
 
-*Ultimo aggiornamento: 14 ottobre 2026*
+*Ultimo aggiornamento: 17 ottobre 2026 — gestione rifiuto materiali in Studio*
 *Design System: v3.0 "Squared & Earthy" (ispirato a Mistral AI con palette personalizzata)*
