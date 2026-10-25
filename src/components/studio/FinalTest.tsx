@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
 import { prepareLessonExercises } from "@/lib/lessonExercises";
 import { cn } from "@/lib/utils";
+import { useHaptics } from "@/hooks/useHaptics";
 
 interface FinalTestProps {
   exercises: Exercise[];
@@ -17,6 +18,7 @@ interface FinalTestProps {
 
 export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
   const { t } = useTranslation();
+  const { triggerLight, triggerSuccess, triggerWarning, triggerError } = useHaptics();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [results, setResults] = useState<Record<number, boolean>>({});
   const [answered, setAnswered] = useState(false);
@@ -54,22 +56,28 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
   const progress = showResults ? 100 : ((currentIndex + 1) / (total + 1)) * 100;
 
   const handleAnswer = useCallback((correct: boolean) => {
+    if (correct) triggerSuccess();
+    else triggerError();
     setResults((prev) => ({ ...prev, [currentIndex]: correct }));
     setAnswered(true);
-  }, [currentIndex]);
+  }, [currentIndex, triggerSuccess, triggerError]);
 
   const handleContinue = useCallback(() => {
     if (showResults) {
+      triggerLight();
       onComplete({ score, correct: correctCount, total });
       return;
     }
     if (currentIndex < total - 1) {
+      triggerLight();
       setCurrentIndex((i) => i + 1);
       setAnswered(false);
     } else {
+      if (great) triggerSuccess();
+      else triggerWarning();
       setShowResults(true);
     }
-  }, [currentIndex, total, showResults, onComplete, score, correctCount]);
+  }, [currentIndex, total, showResults, onComplete, score, correctCount, great, triggerLight, triggerSuccess, triggerWarning]);
 
   return (
     <div
@@ -86,7 +94,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={onClose}
+            onClick={() => { triggerLight(); onClose(); }}
             className="rounded-button"
             aria-label={t("finalTest.close")}
           >

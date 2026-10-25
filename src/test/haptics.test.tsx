@@ -97,8 +97,8 @@ describe("haptics", () => {
     expect(getHapticPattern("light")).toBe(10);
     expect(getHapticPattern("medium")).toBe(25);
     expect(getHapticPattern("success")).toEqual([10, 40, 10]);
-    expect(getHapticPattern("warning")).toEqual([30, 50, 30]);
-    expect(getHapticPattern("error")).toEqual([30, 50, 30]);
+    expect(getHapticPattern("warning")).toEqual([20, 60, 20]);
+    expect(getHapticPattern("error")).toEqual([50, 30, 50, 30, 50]);
     expect(supportsHaptics()).toBe(true);
   });
 

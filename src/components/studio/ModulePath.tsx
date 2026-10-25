@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useHaptics } from "@/hooks/useHaptics";
 import {
   Check,
   ChevronLeft,
@@ -107,6 +108,7 @@ export function ModulePath({
   onDeleteLesson,
   onRenameLesson,
 }: ModulePathProps) {
+  const { triggerLight, triggerSuccess } = useHaptics();
   // P46 — rispetta "riduci movimento": niente cascata, niente nodi che respirano.
   const prefersReduced = usePrefersReducedMotion();
 
@@ -127,7 +129,7 @@ export function ModulePath({
     if (last && last.id === lesson.id && now - last.time < DOUBLE_TAP_MS) {
       lastTapRef.current = null;
       longPressTriggeredRef.current = true;
-      try { navigator.vibrate?.(15); } catch { /* non supportato */ }
+      triggerLight();
       setMenuLesson({ lesson, index });
       setIsRenaming(false);
       setRenameValue(lesson.title);
@@ -150,7 +152,7 @@ export function ModulePath({
     clearPressTimer();
     pressTimerRef.current = window.setTimeout(() => {
       longPressTriggeredRef.current = true;
-      try { navigator.vibrate?.(15); } catch { /* non supportato */ }
+      triggerLight();
       setMenuLesson({ lesson, index });
       setIsRenaming(false);
       setRenameValue(lesson.title);
@@ -318,7 +320,7 @@ export function ModulePath({
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={onBack}
+              onClick={() => { triggerLight(); onBack(); }}
               aria-label="Torna ai moduli"
               className="rounded-full shrink-0"
             >
@@ -444,7 +446,10 @@ export function ModulePath({
                   longPressTriggeredRef.current = false;
                   return;
                 }
-                if (clickable) onSelectLesson(globalIndex);
+                if (clickable) {
+                  triggerLight();
+                  onSelectLesson(globalIndex);
+                }
               }}
               onPointerDown={() => startPress(lesson, globalIndex)}
               onPointerUp={() => { clearPressTimer(); detectDoubleTap(lesson, globalIndex); }}
@@ -551,6 +556,7 @@ export function ModulePath({
             }}
             onClick={() => {
               if (allDone && showFinalTest && onStartFinalTest && !isLoadingFinalTest) {
+                triggerLight();
                 onStartFinalTest();
               }
             }}
@@ -581,7 +587,7 @@ export function ModulePath({
         <div className="px-4 mt-6">
           <button
             type="button"
-            onClick={onModuleCompleted}
+            onClick={() => { triggerSuccess(); onModuleCompleted(); }}
             className="flex h-12 w-full items-center justify-center rounded-button border border-input bg-primary px-4 text-center font-mono text-sm font-semibold uppercase leading-tight tracking-wider text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             ✓ Modulo completato — Torna ai moduli

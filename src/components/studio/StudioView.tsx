@@ -7,6 +7,7 @@ import { isStudyMaterialRejected, isUnsuitableMaterialError, UNSUITABLE_MATERIAL
 import { ModulePath } from "./ModulePath";
 import { ModulesOverview, MODULES_LAYER_ID, type ModuleCardData } from "./ModulesOverview";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { useHaptics } from "@/hooks/useHaptics";
 import { LessonsListSkeleton } from "./LessonsListSkeleton";
 import { ModuleGenerationScreen } from "./ModuleGenerationScreen";
 import { PathHero } from "./PathHero";
@@ -71,6 +72,7 @@ interface StudioViewProps {
 }
 
 export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonLaunch, onLessonLaunchHandled, toolLaunch, onToolLaunchHandled, onClearContext, onOpenCourseMaterials, onFullscreenChange, embeddedReader = false, readingMode = "calma" }: StudioViewProps) {
+  const { triggerLight } = useHaptics();
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const handledLessonLaunchRef = useRef<number | null>(null);
   const handledToolLaunchRef = useRef<number | null>(null);
@@ -114,6 +116,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   const [drawerStep, setDrawerStep] = useState<"select" | "active">("select");
   const openPractice = (sub: StudioTool) => {
     if (studioSubView) return; // guardia anti doppio tocco
+    triggerLight();
     // Chat e Palestra sono sessioni a schermo intero da subito (niente passo
     // di scelta: il foglio apre direttamente "active").
     setDrawerStep(sub === "chat" || sub === "palestra" ? "active" : "select");
@@ -344,7 +347,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   //   - quando l'utente apre una lezione (handleSelectLesson)
   //   - quando l'utente passa alla "prossima" (handleNext), max 1 in anticipo
   // Concorrenza: massimo UNA richiesta in volo (vedi inflightLessonsRef + isGeneratingLesson).
-  useEffect(() => { onFullscreenChange?.(hideNavbar || (!embeddedReader && activeLessonIndex !== null) || showFinalTest || moduleScreen !== null); }, [hideNavbar, activeLessonIndex, showFinalTest, moduleScreen, onFullscreenChange, embeddedReader]);
+  useEffect(() => {
+    onFullscreenChange?.(hideNavbar || activeLessonIndex !== null || showFinalTest || moduleScreen !== null);
+  }, [hideNavbar, activeLessonIndex, showFinalTest, moduleScreen, onFullscreenChange]);
 
   const refetchLessons = async () => {
     invalidateContexts();
@@ -650,6 +655,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   };
 
   const openModule = async (moduleIndex: number) => {
+    triggerLight();
     setActiveModuleIndex(moduleIndex);
     setCourseViewState("branch");
     appScrollToTop(); // la barra compatta e il ramo partono dall'alto
@@ -1165,7 +1171,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           <Button
             type="button"
             variant="outline"
-            onClick={onUploadClick}
+            onClick={() => { triggerLight(); onUploadClick(); }}
             aria-label="Crea un nuovo percorso di studio"
             className="w-full justify-center"
           >
@@ -1232,7 +1238,6 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       </>)}
       {showLessonReader && activeLessonIndex !== null && currentLesson && (
         <FullscreenLessonGate
-          embedded={embeddedReader}
           readingMode={readingMode}
           meta={currentLesson}
           contextId={effectiveContextId ?? null}

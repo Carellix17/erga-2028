@@ -15,6 +15,7 @@ import { LessonFigureGallery } from "./LessonFigureGallery";
 import { useFocus } from "@/contexts/FocusContext";
 import { FocusPill } from "@/components/focus/FocusPill";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useHaptics } from "@/hooks/useHaptics";
 import { prepareLessonExercises } from "@/lib/lessonExercises";
 import { readLessonResume, saveLessonResume, clearLessonResume } from "@/lib/lessonResume";
 import { parseExplanationParts, type ExplanationPart } from "@/lib/lessonParts";
@@ -103,6 +104,7 @@ export function FullscreenLesson({
   lesson, lessonNumber, totalLessons, onClose, onComplete, isLastLesson, nextLessonId, embedded = false, readingMode = "calma",
 }: FullscreenLessonProps) {
   const { t } = useTranslation();
+  const { triggerLight, triggerSuccess, triggerError } = useHaptics();
   const { isActive: focusActive } = useFocus();
   const explanationParts = useMemo(
     () =>
@@ -215,9 +217,11 @@ export function FullscreenLesson({
   const handleContinue = useCallback(() => {
     if (isAnimating) return;
     if (currentStep < steps.length - 1) {
+      triggerLight();
       setShowResumeNotice(false);
       gotoStep(currentStep + 1);
     } else {
+      triggerSuccess();
       // Percorso finito: il segnalibro non serve più.
       clearLessonResume(lesson.id);
       // 🅐 FONDAMENTA — l'esito degli esercizi viaggia con il completamento.
@@ -226,22 +230,24 @@ export function FullscreenLesson({
         total: exercises.length,
       });
     }
-  }, [currentStep, steps.length, onComplete, isAnimating, gotoStep, lesson.id, exerciseResults, exercises.length]);
+  }, [currentStep, steps.length, onComplete, isAnimating, gotoStep, lesson.id, exerciseResults, exercises.length, triggerLight, triggerSuccess]);
 
   const handleBack = useCallback(() => {
     if (isAnimating || currentStep === 0) return;
+    triggerLight();
     setShowResumeNotice(false);
     gotoStep(currentStep - 1);
-  }, [currentStep, isAnimating, gotoStep]);
+  }, [currentStep, isAnimating, gotoStep, triggerLight]);
 
   const handleRestart = useCallback(() => {
+    triggerLight();
     clearLessonResume(lesson.id);
     setShowResumeNotice(false);
     setExerciseResults({});
     setCurrentExerciseAnswered(false);
     setCurrentStep(0);
     scrollToTop(contentRef.current);
-  }, [lesson.id]);
+  }, [lesson.id, triggerLight]);
 
   // 💾 Segna il punto a ogni cambio slide (solo oltre la prima).
   useEffect(() => {
@@ -284,11 +290,13 @@ export function FullscreenLesson({
   const handleExerciseComplete = useCallback(
     (correct: boolean) => {
       if (step.exerciseIndex !== undefined) {
+        if (correct) triggerSuccess();
+        else triggerError();
         setExerciseResults(prev => ({ ...prev, [step.exerciseIndex!]: correct }));
         setCurrentExerciseAnswered(true);
       }
     },
-    [step]
+    [step, triggerSuccess, triggerError]
   );
 
   const correctCount = Object.values(exerciseResults).filter(Boolean).length;
@@ -325,7 +333,7 @@ export function FullscreenLesson({
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={onClose}
+              onClick={() => { triggerLight(); onClose(); }}
               className="rounded-full -ml-1 text-muted-foreground hover:text-foreground transition-colors"
               aria-label={t("lesson.close")}
             >
@@ -336,7 +344,7 @@ export function FullscreenLesson({
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={onClose}
+              onClick={() => { triggerLight(); onClose(); }}
               className="rounded-full text-muted-foreground/70 hover:text-foreground transition-colors"
               aria-label={t("lesson.close")}
             >
@@ -962,7 +970,7 @@ export function FullscreenLessonGate({
 
   if (!full) {
     return (
-      <div role={failed ? "alert" : "status"} aria-busy={!failed} className={cn("no-halo bg-sheet flex flex-col items-center justify-center gap-4 p-4", props.embedded ? "min-h-[60dvh]" : "fixed inset-0 z-50")}>
+      <div role={failed ? "alert" : "status"} aria-busy={!failed} className="no-halo fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-sheet p-4">
         {!failed && <div className="w-16 h-16 rounded-full bg-card shadow-level-1 flex items-center justify-center">
           <Loader2 className="w-7 h-7 text-foreground animate-spin" />
         </div>}

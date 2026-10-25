@@ -6,8 +6,8 @@ const HAPTIC_PATTERNS: Record<HapticType, HapticPattern> = {
   light: 10,
   medium: 25,
   success: [10, 40, 10],
-  warning: [30, 50, 30],
-  error: [30, 50, 30],
+  warning: [20, 60, 20],
+  error: [50, 30, 50, 30, 50],
 };
 
 export function supportsHaptics(): boolean {
