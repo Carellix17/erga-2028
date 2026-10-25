@@ -11,14 +11,38 @@ Questo file serve come guida di riferimento per il coding agent che lavora allo 
 - `UploadSheet` interrompe il polling al rifiuto, chiude il caricamento unico e aggiorna la cache di Studio. Gli errori temporanei del provider restano riprovabili; il codice interno non viene mostrato nel messaggio di rifiuto.
 - Test nuovi: `studyMaterial`, `extractUnsuitableMaterial`, `generateRejectedPlan`, `studioGenerationFailure`. Gli handler backend reali sono eseguiti con dipendenze simulate, senza chiamate AI o database live.
 - Verifica locale: 43 test pertinenti superati (17 nuovi); `tsc --noEmit -p tsconfig.app.json`, build Vite/PWA e ESLint dei file frontend modificati superati (0 errori, 2 avvisi Hook già presenti). Detector Impeccable: nessun rilievo. Verifica visiva responsive non completata: Chromium non era installato e il download del browser è fallito; i controlli UI locali usano React Testing Library/jsdom.
-- La suite completa presenta 20 test falliti più una suite che non parte (`pdfSelection`, setup `window` in ambiente Node). Gli stessi identici casi sono stati riprodotti sul `main` originale `5446b4e`: riguardano soprattutto test ancora riferiti al design v3 dopo la migrazione v4. Non sono stati modificati in questo intervento.
+- **Aggiornamento 25 ottobre 2026 — la suite è verde.** I 20 test che fallivano su `5446b4e` (guardrail ancora riferiti al design v3 dopo la migrazione v4) sono stati riallineati dalle PR #88 e #89; la suite `pdfSelection`, che non si caricava perché `src/test/setup.ts` usava `window` in ambiente Node, torna a eseguire i suoi 3 test grazie alla guardia `typeof window !== "undefined"`. Il guardrail della CTA primaria, rimasto rosso dopo che l'ombra rigida è diventata il gettone `shadow-primary-action`, è stato riparato dalla PR #90. Misurato su `290f2f1`: **84 file di test, 728 test superati**, `tsc --noEmit` 0 errori, build di produzione riuscita.
 - Pubblicazione ancora da eseguire tramite Lovable: deploy di **extract-pdf** e **generate-lessons** con il nuovo helper, poi **Update** frontend. Prompt completo e controlli di accettazione in `docs/LOVABLE_STUDIO_MATERIAL_REJECTION.md`. Nessuna migrazione o pubblicazione diretta è stata eseguita.
 
 Il rilevamento semantico usa l'AI e non è infallibile; i test locali coprono la gestione degli esiti simulati. Il design corrente resta quello di `DESIGN.md` v4.0: la sezione v3 qui sotto è documentazione storica.
 
-## Stato UI — migrazione al design system v3.0
+## Stato UI — design system v4.0 (corrente)
 
-La fonte visiva autorevole è `DESIGN.md` v3.0 «Squared & Earthy». Le indicazioni v2.1 «Carta contemporanea» e «Squared & Sunset» rimaste nei documenti storici sono superate e non devono guidare nuove modifiche.
+La fonte visiva autorevole è `DESIGN.md` **v4.0 «Swiss Cognitive Grid + Tactile Studio»** (17 ottobre 2026; la composizione delle viste è stata raffinata il 25 ottobre con la PR #92). `PRODUCT.md` prevale sulle decisioni di prodotto, `AGENTS.md` sulle regole operative. I valori eseguibili sono in `src/index.css` e `tailwind.config.ts`; i nomi legacy restano alias di compatibilità. Il sidecar `.impeccable/design.json` è storico e non è stato riallineato.
+
+Riferimenti correnti:
+
+- **Palette giorno**: canvas pietra `#F4F2EC`, celle operative `#FAF8F3`, superficie secondaria `#EAE6DC`, foglio di lettura `#FFFDF9`, inchiostro `#11120D`, testo secondario `#4A4942`, metadati `#68665E`, linea di griglia `#D6D1C4`; vermiglio decorativo `#E63B11`, CTA `#C82F0A` con hover `#AC2607`, colore cognitivo `#1D4E5F`. Gli accenti per materia conservano i loro ruoli semantici e non sostituiscono il colore dell'azione principale.
+- **Palette notte**: canvas `#0A0A08`, superfici `#1A1A15` e `#262623`, testo `#FFFBF4`, secondario e contorno dei controlli `#D8CFBC`, linea `#3A382E`, cognitivo `#8ABCCC`; CTA e hover restano `#C82F0A` e `#AC2607`.
+- **Tipografia**: Ubuntu Sans per UI e corpo; Instrument Serif **solo** per i titoli di lettura dentro `.lesson-paper`; Ubuntu Sans Mono per misure, percentuali, numeri di pagina e CTA primaria. Gli alias legacy `font-display` e `font-serif` risolvono a Ubuntu Sans; il serif editoriale vive nel token dedicato `editorial`.
+- **Geometria**: celle, card corso, hero e griglia a raggio **0px**; pulsanti e input **2px**; pannelli e dialoghi al massimo **4px**; `rounded-full` riservato ad avatar, radio e indicatori realmente circolari.
+- **Superfici ed elevazione**: superfici piatte, senza ombre morbide né vetro; le ombre di sistema sono spente (`--shadow-level-*: none`). L'azione primaria usa il gettone `shadow-primary-action` → `--shadow-primary-action: 2px 2px 0 #11120D`, che si riduce in pressione (`active:translate-x-px active:translate-y-px active:shadow-none`). Lo stesso gettone è condiviso da `Button`, `PathHero` e `ModulePath`: non reintrodurre il valore inline `shadow-[2px_2px_0px_#11120D]`.
+- **Grana e firma visiva**: `.paper-grain` e `.table-grain` rendono superfici piatte; il velo satinato `.btn-satin` resta confinato alle azioni sulle copertine dei corsi; la vecchia firma a gradiente è una linea vermiglia di 2px (`.erga-earthy-stripe`).
+- **Movimento**: token condivisi 120/180/240/300/360 ms; nessuna animazione decorativa continua; `prefers-reduced-motion` rispettato e contenuto disponibile anche senza animazione.
+- **Contrasto**: `#FFFDF9` su `#C82F0A` ≈ 5,35:1 (AA per testo normale) e `src/lib/autoContrast.ts` sceglie l'inchiostro con contrasto maggiore sullo sfondo effettivo. Il calcolo della singola coppia non certifica l'accessibilità di tutte le schermate.
+- **Composizione Home** (raffinata dalla PR #92): card del percorso autonoma e compatta, con la stessa copertina astratta usata in Studio (`CourseCardBackground` + `courseCoverVars`) e testo in `text-contrast`; sotto, il radar cognitivo **senza card e senza misure numeriche**, affiancato dai soli accessi «Interrogazione» ed «Esercizi» senza intestazione visibile; poi il gruppo «Carica materiale» + «Chat»; il Piano del giorno chiude la pagina come lista verticale a colonna singola. Le sezioni **non** vanno racchiuse in un unico contenitore. `CognitiveTelemetry` legge il profilo autentico e, se manca, lo dichiara senza inventare punteggi.
+- **Composizione Studio**: `Index` affianca materiali e controlli a sinistra (**4/12**) e percorso/lettore a destra (**8/12**) su desktop; sotto `lg` «Materiali e lettura» è una sezione collassabile con stato accessibile; «Crea nuovo percorso» sta in cima alla panoramica e su smartphone apre dal basso il flusso di caricamento esistente.
+- **Taglio di lettura**: Calma porta l'interlinea di paragrafi ed elenchi a 1,85; Logica evidenzia grassetti e formule con il colore cognitivo. È uno stato locale di **presentazione**: non riscrive le lezioni e non cambia richieste o generazione AI.
+
+Verifiche sullo stato corrente (25 ottobre 2026, commit `290f2f1`): **84 file di test e 728 test superati**, `tsc --noEmit` 0 errori, build di produzione riuscita in ~15 s. Restano da fare nel browser le verifiche elencate in `DESIGN.md` §«Fonti e verifica»: giorno/notte, caricamento PDF completo e parziale, lettore, tastiera, contrasto effettivo, overflow e comportamento a 375/768/1024/1440 px.
+
+---
+
+## Stato UI storico — migrazione al design system v3.0 (superata)
+
+> **Documentazione storica.** Non deve guidare nuove modifiche: la fonte corrente è la sezione v4.0 qui sopra.
+
+La fonte visiva era `DESIGN.md` v3.0 «Squared & Earthy». Le indicazioni v2.1 «Carta contemporanea» e «Squared & Sunset» rimaste nei documenti storici erano già superate all'epoca e non devono guidare nuove modifiche.
 
 La migrazione aggiorna palette e token condivisi, componenti UI, navigazione, schermate Home/Studio/Piano/Core/Impostazioni e landing, mantenendo struttura, flussi, logica di business, dati e backend esistenti. I punti di riferimento sono:
 
@@ -404,14 +428,14 @@ L'app si propone come **"la piattaforma educativa che si adatta a come pensi"**,
 ### 🎨 **Design System e UI**
 
 #### 39. **Design Tokens**
-- **Fonte visiva**: `DESIGN.md` v3.0 «Squared & Earthy»; è la fonte autorevole per palette, caratteri, superfici, geometria e movimento.
-- **Palette**: Smoky Black (`#11120D`), Olive Drab (`#565449`), Bone (`#D8CFBC`), Floral White (`#FFFBF4`) e accenti per materia.
-- **Temi**: palette giorno/notte, con canvas notturno `#0A0A08` e superfici scure `#1A1A15`.
-- **Tipografia**: Playfair Display per i titoli, Inter per UI e lettura.
-- **Superfici ed elevazione**: superfici opache, ombre flat basate sui token; satinato solo sulle azioni delle copertine.
-- **Geometria**: raggi 4/8/12px; le forme circolari complete sono riservate agli elementi previsti dal design system.
-- **Firma visiva**: Earthy Stripe; grana leggera e contestuale.
-- **Colori per materia**: accenti riconoscibili mantenuti e adattati per tema.
+- **Fonte visiva**: `DESIGN.md` **v4.0 «Swiss Cognitive Grid + Tactile Studio»**; è la fonte autorevole per palette, caratteri, superfici, geometria e movimento. I valori eseguibili stanno in `src/index.css` e `tailwind.config.ts`.
+- **Palette giorno**: canvas pietra `#F4F2EC`, celle `#FAF8F3`, superficie secondaria `#EAE6DC`, foglio `#FFFDF9`, inchiostro `#11120D`, testo secondario `#4A4942`, metadati `#68665E`, linea `#D6D1C4`; vermiglio decorativo `#E63B11`, CTA `#C82F0A` (hover `#AC2607`), cognitivo `#1D4E5F` e accenti per materia.
+- **Temi**: palette giorno/notte, con canvas notturno `#0A0A08`, superfici `#1A1A15`/`#262623`, testo `#FFFBF4` e cognitivo `#8ABCCC`; la CTA resta invariata nei due temi.
+- **Tipografia**: Ubuntu Sans per UI e corpo, Instrument Serif **solo** per i titoli di lettura dentro `.lesson-paper`, Ubuntu Sans Mono per misure e CTA primaria. Gli alias legacy `font-display`/`font-serif` risolvono a Ubuntu Sans.
+- **Superfici ed elevazione**: superfici piatte, senza ombre morbide né vetro (`--shadow-level-*: none`); l'azione primaria usa il gettone `shadow-primary-action` (2px × 2px in `#11120D`), che si riduce in pressione. Velo satinato `.btn-satin` limitato alle azioni sulle copertine.
+- **Geometria**: raggi 0px per celle, card, hero e griglia; 2px per controlli; al massimo 4px per pannelli e dialoghi. Le forme circolari complete (`rounded-full`) sono riservate ad avatar, radio e indicatori realmente circolari.
+- **Firma visiva**: linea vermiglia di 2px (`.erga-earthy-stripe`); `.paper-grain` e `.table-grain` sono alias piatti di compatibilità, senza grana.
+- **Colori per materia**: accenti riconoscibili mantenuti e adattati per tema; non sostituiscono il colore dell'azione principale.
 
 #### 40. **Componenti UI**
 - **shadcn/ui**: Componenti accessibili e personalizzati.
@@ -419,7 +443,7 @@ L'app si propone come **"la piattaforma educativa che si adatta a come pensi"**,
 - **Animazioni**: Framer Motion per transizioni funzionali, nel rispetto di `prefers-reduced-motion`.
 - **Responsive**: layout per telefono, tablet e desktop; verificare overflow e target touch nelle modifiche.
 - **Accessibilità**: mantenere contrasto, focus visibile, semantica e nomi accessibili; non dichiarare conformità globale senza un audit completo.
-- **Tipografia**: Playfair Display (titoli serif), Inter (UI sans-serif).
+- **Tipografia**: Ubuntu Sans (UI e corpo), Instrument Serif (solo titoli di lettura in `.lesson-paper`), Ubuntu Sans Mono (misure e CTA primaria).
 
 ---
 
@@ -490,11 +514,11 @@ Erga è una piattaforma educativa moderna costruita su uno stack tecnologico com
 - **Tailwind CSS 3.4.17**: Framework utility-first per lo styling, con configurazione personalizzata che estende il design system di Erga
 - **shadcn/ui**: Raccolta di componenti accessibili e personalizzabili, basati su Radix UI e costruiti con Tailwind
 - **Radix UI**: Libreria di primitive UI non stilizzate (accordion, dialog, select, tabs, toast, tooltip, ecc.) che fornisce accessibilità e comportamenti standard out-of-the-box
-- **Custom Design Tokens**: Sistema di token in `src/index.css`, allineato a `DESIGN.md` v3.0 «Squared & Earthy», con:
-  - Palette Smoky Black, Olive Drab, Bone e Floral White, accenti per materia e colori semantici di stato
-  - Token giorno/notte per canvas, superfici, testo, bordi e controlli
-  - Tipografia Playfair Display/Inter, raggi 4/8/12px, ombre flat, grana contestuale ed Earthy Stripe
-  - Finitura satinata limitata alle azioni sulle copertine; superfici Impostazioni opache
+- **Custom Design Tokens**: Sistema di token in `src/index.css` e `tailwind.config.ts`, allineato a `DESIGN.md` **v4.0 «Swiss Cognitive Grid + Tactile Studio»**, con:
+  - Palette pietra/carta (canvas `#F4F2EC`, celle `#FAF8F3`, foglio `#FFFDF9`, inchiostro `#11120D`), vermiglio `#E63B11`, CTA `#C82F0A`, cognitivo `#1D4E5F`, accenti per materia e colori semantici di stato
+  - Token giorno/notte per canvas, superfici, testo, bordi e controlli (notte: `#0A0A08`, `#1A1A15`, `#262623`, `#FFFBF4`)
+  - Tipografia Ubuntu Sans / Instrument Serif / Ubuntu Sans Mono, raggi 0/2/4px, superfici piatte e ombra rigida `--shadow-primary-action` solo sull'azione primaria
+  - Velo satinato `.btn-satin` limitato alle azioni sulle copertine; `.paper-grain` e `.table-grain` sono alias piatti; superfici Impostazioni opache
   - `autoContrast.ts` sceglie il testo con contrasto maggiore per lo sfondo effettivo
 
 #### Componenti e Struttura UI
@@ -1005,7 +1029,7 @@ erga-2028/
 2. **Type Safety**: Tutto il codice è tipizzato con TypeScript
 3. **Accessibilità**: Componenti Radix UI garantiscono accessibilità out-of-the-box
 4. **Performance**: TanStack Query con caching intelligente e refetch ottimizzato
-5. **Design System**: Utilizzo coerente dei token definiti in `src/index.css` e `DESIGN.md` v3.0 «Squared & Earthy».
+5. **Design System**: Utilizzo coerente dei token definiti in `src/index.css` / `tailwind.config.ts` e `DESIGN.md` **v4.0 «Swiss Cognitive Grid + Tactile Studio»**.
 6. **Error Handling**: ErrorBoundary per gestione errori a livello applicazione
 7. **Loading States**: SplashScreen e stati di loading gestiti tramite Suspense
 8. **PWA**: Service worker configurato per non registrarsi in iframe/preview
@@ -1019,13 +1043,21 @@ erga-2028/
 - **Migrazioni**: Gestite tramite Drizzle ORM e Supabase
 - **Variabili d'Ambiente**: Configurate tramite Lovable e file `.env.*`
 
-Per eseguire migrazioni o deploy di edge functions, utilizzare il seguente prompt per Lovable:
+L'agente che lavora nel repository **non esegue** migrazioni né deploy: prepara per il proprietario un prompt da incollare in Lovable. Il prompt deve elencare **solo** i file e le funzioni realmente modificati o aggiunti, nella forma prevista da `AGENTS.md` e `docs/external-agent-prompt.md`:
+
 ```
-Esegui migrazioni database e deploy edge functions per il progetto Erga su Lovable Cloud.
+Sincronizza il repository (branch main) e:
+1. Applica queste migrazioni SQL (elenca i file in supabase/migrations/):
+   - <nome_file>.sql
+2. Deploya queste Edge Function:
+   - <nome_funzione>
+3. Rigenera i tipi TypeScript Supabase se ci sono nuove tabelle o colonne.
 ```
+
+Se una modifica riguarda solo il frontend (`src/`), non serve alcun deploy: è sufficiente la sincronizzazione del repo e **Update** in Lovable per vedere il risultato. Un esempio completo e già pronto, con i controlli di accettazione, è in `docs/LOVABLE_STUDIO_MATERIAL_REJECTION.md`.
 
 
 ---
 
-*Ultimo aggiornamento: 17 ottobre 2026 — gestione rifiuto materiali in Studio*
-*Design System: v3.0 "Squared & Earthy" (ispirato a Mistral AI con palette personalizzata)*
+*Ultimo aggiornamento: 25 ottobre 2026 — documenti riallineati al design system v4.0 e allo stato reale della suite (728 test verdi)*
+*Design System: v4.0 "Swiss Cognitive Grid + Tactile Studio" — fonte autorevole: `DESIGN.md`*
