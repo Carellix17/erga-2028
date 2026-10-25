@@ -5,7 +5,7 @@ import { join } from "path";
 /**
  * 🛡️ GUARDIA DELLE SUPERFICI — Home, design system v4.
  *
- * La Home usa celle piatte e solide, senza copertine decorative o vetro.
+ * La Home usa carta e copertine locali, senza vetro o ombre morbide.
  */
 
 const HOME_DIR = join(__dirname, "..", "components", "home");
@@ -36,14 +36,16 @@ describe("Superfici pulite della Home", () => {
     expect(css).not.toContain("P27 — AURA ANIMATA");
   });
 
-  it("gli strumenti rapidi sono card arrotondate con chip quieto, etichette mai troncate", () => {
-    const grid = readFileSync(join(HOME_DIR, "QuickToolsGrid.tsx"), "utf8");
-    // card di strumenti: raggio card 12px secondo DESIGN.md v3.
-    expect(grid).toContain("rounded-card");
-    // le etichette non vengono MAI troncate: vanno a capo con interlinea compatta
-    expect(grid).not.toContain("truncate");
-    expect(grid).not.toContain("line-clamp");
-    expect(grid).toContain("leading-tight");
+  it("separa la pratica dagli accessi a materiali e chat senza griglia di card", () => {
+    const view = readFileSync(join(HOME_DIR, "HomeView.tsx"), "utf8");
+    expect(view).toContain("practiceActions");
+    expect(view).toContain('home.tools.practiceGroupAria');
+    expect(view).toContain('home.tools.materialChatGroupAria');
+    expect(view).toContain('home.tools.upload');
+    expect(view).toContain('home.tools.chat');
+    expect(view).not.toContain("QuickToolsGrid");
+    expect(view).not.toContain("Azioni consigliate");
+    expect(view).not.toContain("cognitive-grid");
   });
 
   it("il satinato è locale alle copertine, tokenizzato e con fallback opaco", () => {
@@ -65,14 +67,15 @@ describe("Superfici pulite della Home", () => {
     }
   });
 
-  it("la card corso usa la cella piatta del design v4 senza copertina decorativa", () => {
+  it("la card corso riusa la copertina di Studio senza ombre o grana generalizzata", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     const bg = readFileSync(join(__dirname, "..", "components", "studio", "CourseCardBackground.tsx"), "utf8");
-    expect(hero).toContain("bg-card p-6 sm:p-8");
-    expect(hero).not.toMatch(/rounded-hero|shadow-level-3/);
-    expect(hero).not.toContain("CourseCardBackground");
-    expect(hero).not.toContain("courseCoverVars");
-    // grana condivisa, niente orb sfocati
+    expect(hero).toContain("CourseCardBackground");
+    expect(hero).toContain("courseCoverVars");
+    expect(hero).toContain("text-contrast");
+    expect(hero).not.toMatch(/shadow-(?:xl|2xl|level-[1-5]|tactile)/);
+    expect(hero).not.toContain("paper-grain");
+    // La composizione condivisa resta geometrica, senza blur.
     expect(bg).toContain("cover-grain");
     expect(bg).not.toContain("blur-");
     expect(bg).not.toContain("orb-main");
@@ -112,6 +115,7 @@ describe("Superfici pulite della Home", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     expect(hero).toContain('role="progressbar"');
     expect(hero).toContain("aria-valuenow={percent}");
-    expect(hero).toContain("aria-valuemin={0} aria-valuemax={100}");
+    expect(hero).toContain("aria-valuemin={0}");
+    expect(hero).toContain("aria-valuemax={100}");
   });
 });

@@ -59,6 +59,8 @@ interface StudioViewProps {
   embeddedReader?: boolean;
   readingMode?: "calma" | "logica";
   onUploadClick: () => void;
+  /** Creazione nuovo percorso: distinta dall'apertura del pannello materiali. */
+  onCreatePathClick?: () => void;
   selectedContextId?: string | null;
   lessonLaunch?: { contextId: string; lessonIndex: number; requestId: number } | null;
   onLessonLaunchHandled?: () => void;
@@ -71,8 +73,9 @@ interface StudioViewProps {
   onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
-export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonLaunch, onLessonLaunchHandled, toolLaunch, onToolLaunchHandled, onClearContext, onOpenCourseMaterials, onFullscreenChange, embeddedReader = false, readingMode = "calma" }: StudioViewProps) {
+export function StudioView({ hasFiles, onUploadClick, onCreatePathClick, selectedContextId, lessonLaunch, onLessonLaunchHandled, toolLaunch, onToolLaunchHandled, onClearContext, onOpenCourseMaterials, onFullscreenChange, embeddedReader = false, readingMode = "calma" }: StudioViewProps) {
   const { triggerLight } = useHaptics();
+  const createPath = onCreatePathClick ?? onUploadClick;
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const handledLessonLaunchRef = useRef<number | null>(null);
   const handledToolLaunchRef = useRef<number | null>(null);
@@ -899,7 +902,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     }
   };
 
-  if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
+  if (!hasFiles) return <EmptyState onUploadClick={createPath} />;
 
   // 🌲 P24 — la generazione NON sostituisce più la schermata: vive nello spazio.
   // Nome del percorso senza estensione né prefissi emoji (per l'eroe).
@@ -1087,6 +1090,22 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         </AnimatePresence>
       ) : (
         <>
+      {/* La creazione è il primo accesso della panoramica e apre il flusso
+          dedicato, senza riusare il pannello materiali incorporato. */}
+      {courseViewState === "overview" && !isCoursePickerOpen && (
+        <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pb-2 pt-3">
+          <Button
+            type="button"
+            size="lg"
+            onClick={() => { triggerLight(); createPath(); }}
+            aria-label="Crea un nuovo percorso di studio"
+            className="h-auto min-h-12 w-full justify-center whitespace-normal px-2 py-2 text-sm sm:px-6 sm:text-base"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            Crea nuovo percorso
+          </Button>
+        </div>
+      )}
       {/* 🧭 P43 — HERO e card compatta del modulo sono la MEDESIMA superficie:
           layoutId condiviso ("course-card-…", stessa tecnica del selettore
           corsi) → la card si comprime/espande con un morph fluido. Nei moduli
@@ -1164,21 +1183,6 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           onOpenInterrogazione={() => openPractice("interrogazione")}
           onOpenPalestra={isScientific ? () => openPractice("palestra") : undefined}
         />
-      )}
-      {/* Il corso attivo guida la pagina; la creazione resta disponibile come azione secondaria. */}
-      {courseViewState === "overview" && (
-        <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pb-4 pt-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => { triggerLight(); onUploadClick(); }}
-            aria-label="Crea un nuovo percorso di studio"
-            className="w-full justify-center"
-          >
-            <Plus className="h-4 w-4" strokeWidth={2.5} />
-            Crea nuovo percorso
-          </Button>
-        </div>
       )}
       {/* 🧭 P42 — lista dei moduli e albero delle lezioni si danno il cambio
           con un cross-animato (solo transform/opacity, 60fps). */}

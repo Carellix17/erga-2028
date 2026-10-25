@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
-describe("grana della carta — design system v3", () => {
+describe("grana locale e alias piatti — design system v4", () => {
   const css = read("src/index.css");
 
   const tileUris = () =>
@@ -69,17 +69,19 @@ describe("grana della carta — design system v3", () => {
     expect(css).toMatch(/\.cover-grain \{[\s\S]*?pointer-events: none/);
   });
 
-  it("mantiene il tavolo sulla Home e le superfici foglio solo nelle card Home", () => {
+  it("la Home non applica grana generale: gli alias carta restano piatti", () => {
     const layout = read("src/components/layout/AppLayout.tsx");
     expect(layout).toContain('isHome && "table-grain"');
+    expect(css).toMatch(/\.paper-grain, \.table-grain \{ background-image: none; \}/);
 
-    const homeFiles = [
+    for (const file of [
       "src/components/home/DailyTimeline.tsx",
       "src/components/home/HomeDashboardSkeleton.tsx",
       "src/components/home/HomeView.tsx",
-      "src/components/home/QuickToolsGrid.tsx",
-    ];
-    for (const file of homeFiles) expect(read(file), file).toContain("paper-grain");
+      "src/components/home/CognitiveTelemetry.tsx",
+    ]) {
+      expect(read(file), file).not.toContain("paper-grain");
+    }
 
     for (const file of [
       "src/components/layout/BottomNav.tsx",
@@ -91,11 +93,12 @@ describe("grana della carta — design system v3", () => {
     expect(read("src/components/layout/BottomNav.tsx")).not.toContain("cover-grain");
   });
 
-  it("la card corso v4 non introduce grana o copertine decorative", () => {
+  it("la card corso riusa soltanto la copertina locale di Studio", () => {
     const hero = read("src/components/home/CourseHeroCard.tsx");
     const background = read("src/components/studio/CourseCardBackground.tsx");
     expect(hero).not.toContain("paper-grain");
-    expect(hero).not.toContain("CourseCardBackground");
+    expect(hero).toContain("CourseCardBackground");
+    expect(hero).toContain("courseCoverVars");
     expect(css).toMatch(/\.paper-grain, \.table-grain \{ background-image: none; \}/);
     expect(background).toContain("cover-grain");
     expect(background).not.toContain("paper-grain");
