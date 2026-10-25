@@ -20,11 +20,14 @@ import { edgeFetch } from "@/lib/edgeFetch";
 import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 import { UnifiedPipelineLoader, type PipelinePhase } from "./UnifiedPipelineLoader";
 import { useGenerationUsage, FREE_LIMIT_MESSAGE } from "@/hooks/useGenerationUsage";
+import { lessonsKeys } from "@/hooks/useLessons";
+import { isStudyMaterialRejected, isUnsuitableMaterialError, UNSUITABLE_MATERIAL_MESSAGE } from "@/lib/studyMaterial";
 
 
 interface UploadSheetProps {
   open: boolean;
   embedded?: boolean;
+  panelRequest?: { tab: "loading" | "manage" } | null;
   onOpenChange: (open: boolean) => void;
   onUpload: (files: { name: string; size: number }[], contextId?: string) => void;
   uploadedFiles: { name: string; size: number }[];
@@ -37,7 +40,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024;
 /** Limite morbido per singola foto DOPO la compressione (stesso valore lato server). */
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
-export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFileDeleted, initialManageContextId, embedded = false }: UploadSheetProps) {
+export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFileDeleted, initialManageContextId, embedded = false, panelRequest }: UploadSheetProps) {
   // La tastiera non può più seppellire il tasto principale: il foglio si
   // alza di `inset` px e si restringe all'altezza davvero visibile
   // (richiesta del proprietario: il tasto SI DEVE sempre vedere).
@@ -82,6 +85,14 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
   useEffect(() => {
     if (open && initialManageContextId) setActiveTab("manage");
   }, [open, initialManageContextId]);
+
+  // An explicit request also works when the embedded panel is already open.
+  // Keep file selections intact when moving between upload and management.
+  useEffect(() => {
+    if (!open || !panelRequest) return;
+    setActiveTab(panelRequest.tab);
+    if (panelRequest.tab === "loading") setLoadingTab("menu");
+  }, [open, panelRequest]);
 
   const handleMainTabChange = (value: string) => {
     setActiveTab(value);
@@ -197,6 +208,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       body: JSON.stringify({ userId: currentUser, action: "listContexts" }),
     });
     const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Impossibile verificare lo stato del percorso.");
     return (data.contexts ?? []).find((c: { id: string }) => c.id === contextId) ?? null;
   };
 
@@ -245,6 +257,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       let rekicked = false;
       for (let attempt = 0; attempt < 90; attempt++) {
         const ctx = await fetchPipelineContext(contextId);
+        if (isStudyMaterialRejected(ctx)) throw new Error(ctx.generation_error || ctx.error_message);
         if (ctx?.processing_status === "completed") { analyzed = true; break; }
         if (ctx?.processing_status === "failed") throw new Error(ctx.error_message || "Non sono riuscito a leggere il materiale.");
         // 🩺 P7 (7 ottobre 2026): dopo ~2 minuti di attesa il lavoro in
@@ -284,8 +297,9 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       for (let attempt = 0; attempt < 240; attempt++) {
         const ctx = await fetchPipelineContext(contextId);
         const status = ctx?.generation_status;
+        if (isStudyMaterialRejected(ctx)) throw new Error(ctx.generation_error || ctx.error_message);
         if (status === "completed") { generated = true; break; }
-        if (status === "failed") throw new Error("La generazione non è riuscita: rilanciala dal bottone «Genera percorso».");
+        if (status === "failed") throw new Error(ctx.generation_error || "La generazione non è riuscita. Riprova tra poco oppure apri un altro percorso.");
         const prog = ctx?.generation_progress;
         if (prog?.totalLessons && typeof prog.generatedCount === "number" && prog.totalLessons > 0) {
           const ratio = Math.min(1, prog.generatedCount / prog.totalLessons);
@@ -302,10 +316,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
       const note = opts.finalNote?.() ?? "";
       toast({ title: "Percorso pronto! 🎉", description: note ? `${opts.courseName} — ${note}` : opts.courseName });
     } catch (error) {
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella preparazione del percorso", variant: "destructive" });
+      const message = error instanceof Error ? error.message : "Errore nella preparazione del percorso";
+      const rejected = isUnsuitableMaterialError(message);
+      toast({ title: rejected ? "Generazione impossibile" : "Errore", description: rejected ? UNSUITABLE_MATERIAL_MESSAGE : message, variant: "destructive" });
     } finally {
-      // Il materiale è caricato: in ogni caso l'utente atterra sul corso in
-      // Studio, dove la generazione si può rilanciare dal bottone che c'è già.
+      // Always release the overlay and refresh Studio, including terminal refusals.
+      void qc.invalidateQueries({ queryKey: lessonsKeys.all(currentUser) });
       if (contextId) finishPipeline();
       setPipeline(null);
     }
@@ -849,7 +865,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
 
   return (
     <>
-    {embedded ? <section aria-label="Materiali di studio" className="flex min-h-[600px] min-w-0 flex-col p-4">{panel}</section> : <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
+    {embedded ? <section aria-label="Materiali di studio" className="material-panel flex min-h-[600px] min-w-0 flex-col p-4">{panel}</section> : <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
       <SheetContent
         side="bottom"
         className="rounded-t-xl pb-safe max-h-[85dvh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden"
@@ -880,4 +896,5 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
     </>
   );
 }
+
 

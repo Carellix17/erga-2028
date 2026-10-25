@@ -147,6 +147,27 @@ describe("P50 lettore a schermo intero", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("il lettore incorporato mantiene il focus sui materiali e usa l'ultimo callback di chiusura", () => {
+    const firstClose = vi.fn();
+    const latestClose = vi.fn();
+    const props = { lesson, embedded: true, lessonNumber: 1, totalLessons: 4, onComplete: vi.fn(), isLastLesson: false };
+    const view = render(<FullscreenLesson {...props} onClose={firstClose} />);
+    const materialInput = document.createElement("input");
+    document.body.appendChild(materialInput);
+    try {
+      materialInput.focus();
+      view.rerender(<FullscreenLesson {...props} readingMode="logica" onClose={latestClose} />);
+      expect(document.activeElement).toBe(materialInput);
+      fireEvent.keyDown(materialInput, { key: "Escape" });
+      expect(latestClose).not.toHaveBeenCalled();
+      fireEvent.keyDown(screen.getByRole("region", { name: /La fotosintesi/ }), { key: "Escape" });
+      expect(latestClose).toHaveBeenCalledTimes(1);
+      expect(firstClose).not.toHaveBeenCalled();
+    } finally {
+      materialInput.remove();
+    }
+  });
+
   it("ESC col pannello del tutor aperto NON chiude la lezione", () => {
     const { onClose } = renderReader();
     // Un altro dialogo (Radix) è aperto: l'ESC deve chiudere quello.
@@ -309,3 +330,4 @@ describe("🅐 FONDAMENTA — gating, esito del completamento e testo scalabile"
     expect(srcFile.match(/text-\[\d+px\]/g)).toBeNull();
   });
 });
+

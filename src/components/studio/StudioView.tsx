@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { FullscreenLessonGate } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
 import { GenerationProgress } from "./GenerationProgress";
+import { CourseSelector } from "./CourseSelector";
+import { isStudyMaterialRejected, isUnsuitableMaterialError, UNSUITABLE_MATERIAL_MESSAGE } from "@/lib/studyMaterial";
 import { ModulePath } from "./ModulePath";
 import { ModulesOverview, MODULES_LAYER_ID, type ModuleCardData } from "./ModulesOverview";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
@@ -72,10 +74,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const handledLessonLaunchRef = useRef<number | null>(null);
   const handledToolLaunchRef = useRef<number | null>(null);
-  // `localStarting` copre la finestra tra il click "Genera" e la prima scrittura
+  // `startingContextId` copre la finestra tra il click "Genera" e la prima scrittura
   // di `generation_status='generating'` da parte del backend. Lo stato vero
   // arriva via Realtime dalla riga di `study_contexts`.
-  const [localStarting, setLocalStarting] = useState(false);
+  const [startingContextId, setStartingContextId] = useState<string | null>(null);
 
   // 🏭 P10b: la sala d'attesa della fabbrica dei moduli (null = chiusa).
   // Il lavoro vero vive sul cloud (generation_progress.moduleGeneration);
@@ -248,9 +250,13 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   const generationBlocked = limitReached && !isDemoContext;
 
   // ── Stato persistente di generazione (sopravvive a chiusura app) ──
-  const generationStatus = activeContext?.generation_status ?? "idle";
+  const generationStatus = activeContext?.new_material_pending && activeContext?.generation_status === "failed"
+    ? "idle" : activeContext?.generation_status ?? "idle";
+  const materialRejected = !activeContext?.new_material_pending && isStudyMaterialRejected(activeContext);
   const generationProgress = activeContext?.generation_progress ?? {};
-  const isGenerating = localStarting || generationStatus === "generating";
+  const isGenerating = !materialRejected && (
+    (!!effectiveContextId && startingContextId === effectiveContextId) || generationStatus === "generating"
+  );
   const generationStep = (generationProgress.step as
     | "analyzing"
     | "creating-index"
@@ -259,14 +265,14 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   const generationTotalLessons = generationProgress.totalLessons ?? 0;
   const generationLessonCount = generationProgress.generatedCount ?? 0;
   // 🏭 P10b: il cantiere del modulo in lavorazione (null = fabbrica ferma).
-  const moduleJob = generationProgress.moduleGeneration ?? null;
+  const moduleJob = materialRejected ? null : generationProgress.moduleGeneration ?? null;
 
   // Quando il backend completa, ricarica le lezioni e mostra un toast.
   useEffect(() => {
     if (generationStatus === "completed") {
       invalidateList(effectiveContextId);
       invalidateContexts();
-    } else if (generationStatus === "failed" && activeContext?.generation_error) {
+    } else if (generationStatus === "failed" && activeContext?.generation_error && !materialRejected) {
       toast({
         title: "Generazione non riuscita",
         description: activeContext.generation_error,
@@ -369,6 +375,10 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
 
   const handleGenerateLessons = async () => {
     if (!currentUser) return;
+    if (materialRejected) {
+      toast({ title: "Generazione impossibile", description: UNSUITABLE_MATERIAL_MESSAGE, variant: "destructive" });
+      return;
+    }
     if (generationBlocked) {
       toast({ title: "Limite raggiunto", description: FREE_LIMIT_MESSAGE, variant: "destructive" });
       return;
@@ -386,7 +396,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       toast({ title: "Generazione già in corso", description: "Stiamo già creando il tuo percorso. Attendi qualche istante." });
       return;
     }
-    setLocalStarting(true);
+    const contextId = effectiveContextId;
+    if (!contextId) return;
+    setStartingContextId(contextId);
     try {
       // Chiedi (una sola volta) il permesso notifiche: avviseremo a fine generazione.
       if (push.supported && push.permission === "default") {
@@ -396,8 +408,6 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       }
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const contextId = selectedContextId || activeContextId;
-      if (!contextId) throw new Error("Seleziona prima un documento.");
 
       // Il backend risponde 202 e prosegue in background (EdgeRuntime.waitUntil).
       // Lo stato della generazione è leggibile via realtime su `study_contexts`.
@@ -410,9 +420,11 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       await refetchLessons();
     } catch (error) {
       console.error("Error generating lessons:", error);
-      toast({ title: "Errore", description: error instanceof Error ? error.message : "Errore nella generazione", variant: "destructive" });
+      const message = error instanceof Error ? error.message : "Errore nella generazione";
+      const rejected = isUnsuitableMaterialError(message);
+      toast({ title: rejected ? "Generazione impossibile" : "Generazione non riuscita", description: rejected ? UNSUITABLE_MATERIAL_MESSAGE : message, variant: "destructive" });
     } finally {
-      setLocalStarting(false);
+      setStartingContextId((pending) => pending === contextId ? null : pending);
     }
   };
 
@@ -520,6 +532,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
   // di quel modulo. Se è tornato ai moduli, la card mostra "Riprendi".
   useEffect(() => {
     if (!moduleScreen || moduleJob) return;
+    if (materialRejected) { setModuleScreen(null); return; }
     const target = moduleScreen.moduleIndex;
     setModuleScreen(null);
     void (async () => {
@@ -612,7 +625,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     });
   };
 
-  const activeCourseId = activeContextId ?? effectiveContextId;
+  const activeCourseId = effectiveContextId;
 
   // ── 🧭 P38: navigazione progressiva (overview ↔ moduli ↔ ramo) ──
   const backToModules = () => {
@@ -900,7 +913,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           activeCourseId={activeCourseId}
           onSelectCourse={handleSelectCourse}
           onSelectingChange={setIsCoursePickerOpen}
-          onRegenerate={handleRegenerateCourse}
+          onRegenerate={materialRejected ? undefined : handleRegenerateCourse}
           onOpenMaterials={handleOpenMaterials}
           onRenameCourse={handleRenameCourse}
           onDeleteCourse={handleDeleteCourse}
@@ -949,6 +962,8 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     const isPdfFailed = contextStatus === "failed";
 
     return (
+      <>
+      <CourseSelector courses={allContexts} activeContextId={effectiveContextId} onSelectCourse={handleSelectCourse} />
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 p-6 text-center animate-fade-up">
         <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
           isPdfFailed ? "bg-error-container" : "bg-card shadow-level-1"
@@ -963,13 +978,17 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         </div>
         <div>
           <h3 className="font-display text-xl font-semibold mb-2">
-            {isPdfProcessing ? "Elaborazione PDF in corso..." : 
+            {materialRejected ? "Generazione impossibile" :
+             isPdfProcessing ? "Elaborazione PDF in corso..." :
              isPdfFailed ? "Errore nell'elaborazione" :
+             generationStatus === "failed" ? "Generazione non riuscita" :
              "Nessuna lezione disponibile"}
           </h3>
-          <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-            {isPdfProcessing ? "Attendi qualche secondo mentre analizziamo il tuo documento." :
+          <p role={materialRejected || isPdfFailed || generationStatus === "failed" ? "alert" : undefined} className="text-muted-foreground max-w-xs text-base leading-relaxed">
+            {materialRejected ? UNSUITABLE_MATERIAL_MESSAGE :
+             isPdfProcessing ? "Attendi qualche secondo mentre analizziamo il tuo documento." :
              isPdfFailed ? contextErrorMessage :
+             generationStatus === "failed" ? activeContext?.generation_error || "Riprova tra poco oppure apri un altro percorso." :
              "L'AI analizzerà i tuoi materiali e creerà un percorso di mini-lezioni personalizzato."}
           </p>
           {contextFileName && (
@@ -977,7 +996,9 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           )}
         </div>
         
-        {isPdfProcessing ? (
+        {materialRejected || isPdfFailed ? (
+          <Button onClick={onUploadClick} size="lg">Carica altri materiali</Button>
+        ) : isPdfProcessing ? (
           <Button onClick={refetchLessons} variant="outline" size="lg">
             <RefreshCw className="w-4 h-4 mr-2" />
             Aggiorna stato
@@ -997,10 +1018,12 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           </p>
         )}
       </div>
+      </>
     );
   }
 
   const currentLesson = activeLessonIndex !== null ? lessons[activeLessonIndex] : null;
+  const showLessonReader = activeLessonIndex !== null && !!currentLesson?.is_generated && !isGeneratingLesson;
   const allGenerated = lessons.length > 0 && lessons.every(l => l.is_generated);
   // 🧭 P38: titolo del modulo aperto, condiviso da barra compatta e ramo.
   const activeModuleTitle = activeModuleIndex != null
@@ -1009,7 +1032,14 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
 
   return (
     <>
-      {activeLessonIndex === null && (<>
+      {materialRejected && (
+        <div role="alert" className="border-b border-border p-6 text-base">
+          <p className="font-semibold">Generazione impossibile</p>
+          <p>{UNSUITABLE_MATERIAL_MESSAGE} Le lezioni precedenti sono ancora disponibili.</p>
+          <Button onClick={onUploadClick} variant="outline" className="mt-3">Carica altri materiali</Button>
+        </div>
+      )}
+      {!showLessonReader && (<>
       {studioSubView ? (
         /* 🏋️ / 🎤 P43 — foglio che SCIVOLA dal basso (300ms) sopra lo Studio
            ancora montato e visibile, sfocato dal backdrop (mai nero pieno).
@@ -1051,21 +1081,6 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         </AnimatePresence>
       ) : (
         <>
-      {/* ➕ P37 — Crea nuovo percorso: in cima, SOLO nella Home Studio. */}
-      {courseViewState === "overview" && (
-        <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pt-3">
-          <Button
-            type="button"
-            size="lg"
-            onClick={onUploadClick}
-            aria-label="Crea un nuovo percorso di studio"
-            className="w-full rounded-button border border-border bg-primary text-primary-foreground shadow-tactile transition-all duration-200 hover:bg-primary/90 hover:shadow-card-active active:scale-[0.985]"
-          >
-            <Plus className="h-4 w-4" strokeWidth={2.5} />
-            Crea nuovo percorso
-          </Button>
-        </div>
-      )}
       {/* 🧭 P43 — HERO e card compatta del modulo sono la MEDESIMA superficie:
           layoutId condiviso ("course-card-…", stessa tecnica del selettore
           corsi) → la card si comprime/espande con un morph fluido. Nei moduli
@@ -1075,7 +1090,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         {courseViewState === "branch" ? (
           <motion.div
             key="module-head"
-            className="sticky top-0 z-20 bg-background px-4 pb-2.5 pt-3"
+            className={`sticky ${embeddedReader ? "top-16" : "top-0"} z-20 bg-background px-4 pb-2.5 pt-3`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
@@ -1096,7 +1111,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
             animate={{ opacity: 1, transition: { delay: 0.1, duration: 0.18 } }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
             className={courseViewState === "modules"
-              ? "studio-section-enter min-w-0 overflow-x-clip sticky top-0 z-20 bg-background"
+              ? `studio-section-enter min-w-0 overflow-x-clip sticky ${embeddedReader ? "top-16" : "top-0"} z-20 bg-background`
               : "studio-section-enter min-w-0 overflow-x-clip"}
           >
       <PathHero
@@ -1115,7 +1130,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         activeCourseId={activeCourseId}
         onSelectCourse={handleSelectCourse}
         onSelectingChange={setIsCoursePickerOpen}
-        onRegenerate={handleRegenerateCourse}
+        onRegenerate={materialRejected ? undefined : handleRegenerateCourse}
         onOpenMaterials={handleOpenMaterials}
         onRenameCourse={handleRenameCourse}
         onDeleteCourse={handleDeleteCourse}
@@ -1143,6 +1158,21 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           onOpenInterrogazione={() => openPractice("interrogazione")}
           onOpenPalestra={isScientific ? () => openPractice("palestra") : undefined}
         />
+      )}
+      {/* Il corso attivo guida la pagina; la creazione resta disponibile come azione secondaria. */}
+      {courseViewState === "overview" && (
+        <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pb-4 pt-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onUploadClick}
+            aria-label="Crea un nuovo percorso di studio"
+            className="w-full justify-center"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            Crea nuovo percorso
+          </Button>
+        </div>
       )}
       {/* 🧭 P42 — lista dei moduli e albero delle lezioni si danno il cambio
           con un cross-animato (solo transform/opacity, 60fps). */}
@@ -1200,7 +1230,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
       )}
 
       </>)}
-      {activeLessonIndex !== null && currentLesson && currentLesson.is_generated && !isGeneratingLesson && (
+      {showLessonReader && activeLessonIndex !== null && currentLesson && (
         <FullscreenLessonGate
           embedded={embeddedReader}
           readingMode={readingMode}
@@ -1278,4 +1308,3 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
     </>
   );
 }
-

@@ -215,9 +215,10 @@ export default {
         "level-3": "var(--shadow-level-3)",
         "level-4": "var(--shadow-level-4)",
         "level-5": "var(--shadow-level-5)",
-        tactile: "var(--shadow-tattile)",
+        tactile: "var(--shadow-tactile)",
         "card-active": "var(--shadow-card-active)",
         hero: "var(--shadow-hero-card)",
+        "primary-action": "var(--shadow-primary-action)",
       },
       fontFamily: {
         sans: ["Ubuntu Sans", "system-ui", "sans-serif"],

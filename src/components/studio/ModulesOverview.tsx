@@ -243,7 +243,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
   );
 
   return (
-    <div className="px-4 pt-5 pb-32 animate-fade-up">
+    <div className="px-4 pt-5 pb-6 animate-fade-up">
       {layer ? createPortal(overlay, layer) : null}
       <div ref={listRef} className="flex flex-col gap-3">
         {modules.map((m) => {
@@ -326,10 +326,10 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
 
               {/* Testo */}
               <span className="flex-1 min-w-0">
-                <span className="block text-[15px] font-semibold leading-snug text-foreground">
+                <span className="block text-base font-semibold leading-snug text-foreground">
                   {m.title}
                 </span>
-                <span className="block text-xs text-muted-foreground mt-1 font-medium">
+                <span className="block text-sm text-muted-foreground mt-1 font-medium">
                   {subtitle}
                 </span>
                 {(isCur || isGen) && (
