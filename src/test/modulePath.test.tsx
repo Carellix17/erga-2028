@@ -316,4 +316,18 @@ describe("P46 — percorso serpentina", () => {
     document.querySelector<HTMLElement>('[data-lesson-node="0"]')?.click();
     expect(onSelect).toHaveBeenCalledWith(0);
   });
+
+  it("mantiene il percorso compatto e rende le azioni della lezione accessibili da tastiera", async () => {
+    const { container } = renderPath();
+    expect(container.querySelector("[data-path-layout=compact]")).toBeTruthy();
+
+    const lesson = screen.getByRole("button", {
+      name: "Lezione 2: Macchine a vapore, in corso",
+    });
+    expect(lesson.tagName).toBe("BUTTON");
+    expect(lesson.getAttribute("aria-current")).toBe("step");
+
+    fireEvent.keyDown(lesson, { key: "ContextMenu" });
+    expect(await screen.findByText("Cosa vuoi fare con questa lezione?")).toBeTruthy();
+  });
 });

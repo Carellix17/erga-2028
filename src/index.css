@@ -187,14 +187,15 @@
     --radius-full: 9999px;
     --radius: 2px;
 
-    /* Flat surfaces, with a hard 2px offset only on primary controls. */
+    /* Flat surfaces; only primary actions get the hard offset from DESIGN.md. */
     --shadow-level-0: none;
     --shadow-level-1: none;
     --shadow-level-2: none;
     --shadow-level-3: none;
     --shadow-level-4: none;
     --shadow-level-5: none;
-    --shadow-tattile: none;
+    --shadow-primary-action: 2px 2px 0 #11120D;
+    --shadow-tactile: none;
     --shadow-card-active: none;
     --shadow-hero-card: none;
 
@@ -362,7 +363,7 @@
     --shadow-level-3: none;
     --shadow-level-4: none;
     --shadow-level-5: none;
-    --shadow-tattile: none;
+    --shadow-tactile: none;
     --shadow-card-active: none;
     --shadow-hero-card: none;
 
@@ -819,7 +820,7 @@
     animation: lesson-sheet-in 280ms cubic-bezier(0.2, 0, 0, 1) both;
   }
   @keyframes lesson-sheet-in {
-    from { transform: translateY(100%); border-radius: 12px 12px 0 0; opacity: 0.98; }
+    from { transform: translateY(100%); border-radius: var(--radius-sheet) var(--radius-sheet) 0 0; opacity: 0.98; }
     to   { transform: translateY(0); border-radius: 0; opacity: 1; }
   }
   /*  P24 — foglio dal basso per i pannelli (sala d'attesa, fogli): sale

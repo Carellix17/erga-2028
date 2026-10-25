@@ -66,15 +66,18 @@ interface ModulePathProps {
 // contrasto. Il modulo in generazione mostra banner + nodi tratteggiati che
 // girano (l'animazione del "respiro" resta solo sul nodo corrente).
 
-const NODE = 56; // diametro del nodo tondo (px)
-const STEP = 132; // distanza verticale fra il centro di un nodo e il successivo
-const TROPHY = 64; // diametro del nodo del test finale
-const COL_A = 25; // % — colonna "centro-sinistra"
-const COL_B = 50; // % — colonna "centro"
-const COL_C = 75; // % — colonna "centro-destra"
-const MID = 50; // % — il trofeo sta in mezzo
-// Serpentina: A → B → C → B → A → … (ampiezza costante, mai fuori schermo)
+const NODE = 48; // bersaglio comodo e più proporzionato alle etichette
+const STEP = 112; // passo compatto; l'etichetta è limitata a tre righe
+const TROPHY = 56; // diametro del nodo del test finale
+const COMPACT_A = 22; // % — mobile: due corsie per dare più spazio ai titoli
+const COMPACT_B = 78;
+const COL_A = 24; // % — tablet/desktop: tre corsie
+const COL_B = 50;
+const COL_C = 76;
+const MID = 50; // % — il test finale sta in mezzo
 const SERPENTINE = [COL_A, COL_B, COL_C, COL_B];
+const COMPACT_SERPENTINE = [COMPACT_A, COMPACT_B];
+const COMPACT_WIDTH = 520;
 const CURVE = 0.42; // quanto la curva "tira" dritta prima di piegare (frazione di STEP)
 const TROPHY_DROP = 24; // quanto il trofeo scende sotto l'ultimo nodo
 const GAP_LABEL = 12; // px fra il bordo del nodo e la scheda del titolo
@@ -256,8 +259,11 @@ export function ModulePath({
     return () => ro.disconnect();
   }, []);
   const W = boxW > 0 ? boxW : FALLBACK_W;
+  const compactPath = W < COMPACT_WIDTH;
   const xAt = (pctX: number) => (pctX / 100) * W; // % → px dentro l'SVG
-  const colOf = (i: number) => SERPENTINE[i % SERPENTINE.length];
+  const colOf = (i: number) => compactPath
+    ? COMPACT_SERPENTINE[i % COMPACT_SERPENTINE.length]
+    : SERPENTINE[i % SERPENTINE.length];
   const rowY = (i: number) => i * STEP + NODE / 2; // centro del nodo i
   const trophyY = n * STEP + TROPHY_DROP; // centro del nodo "test finale"
 
@@ -284,21 +290,27 @@ export function ModulePath({
   }, [modLessons, n, allDone, W]);
 
   /**
-   * 🏷️ Dove sta la scheda del titolo: sempre ACCANTO al nodo, mai dentro.
-   * Colonna sinistra → scheda a destra; colonna destra → scheda a sinistra;
-   * nodi centrali → alternano (2 a destra, 2 a sinistra), così sui 320 px non
-   * si esce mai dallo schermo e il titolo resta per intero.
+   * Le etichette alternano ai lati del nodo. Sui contenitori stretti usiamo
+   * due corsie e una scheda più larga; sui desktop manteniamo la serpentina a
+   * tre corsie. Il testo è limitato visivamente a tre righe, ma il nome
+   * completo resta nel nome accessibile del pulsante.
    */
   const labelLayout = (i: number, colPct: number) => {
     const offset = `calc(${NODE / 2 + GAP_LABEL}px)`;
-    if (colPct === COL_A) return { rightSide: true, pos: { left: `calc(${colPct}% + ${offset})` }, width: "min(48%, 168px)" };
-    if (colPct === COL_C) return { rightSide: false, pos: { right: `calc(${100 - colPct}% + ${offset})` }, width: "min(48%, 168px)" };
-    if (i % 4 === 1) return { rightSide: false, pos: { right: `calc(${100 - colPct}% + ${offset})` }, width: "min(34%, 150px)" };
-    return { rightSide: true, pos: { left: `calc(${colPct}% + ${offset})` }, width: "min(34%, 150px)" };
+    if (compactPath) {
+      const width = "min(60%, 240px)";
+      return colPct === COMPACT_A
+        ? { pos: { left: `calc(${colPct}% + ${offset})` }, width }
+        : { pos: { right: `calc(${100 - colPct}% + ${offset})` }, width };
+    }
+    if (colPct === COL_A) return { pos: { left: `calc(${colPct}% + ${offset})` }, width: "min(42%, 220px)" };
+    if (colPct === COL_C) return { pos: { right: `calc(${100 - colPct}% + ${offset})` }, width: "min(42%, 220px)" };
+    if (i % 4 === 1) return { pos: { right: `calc(${100 - colPct}% + ${offset})` }, width: "min(34%, 220px)" };
+    return { pos: { left: `calc(${colPct}% + ${offset})` }, width: "min(34%, 220px)" };
   };
 
   return (
-    <div className="pb-32 animate-fade-in">
+    <div className="pb-6 animate-fade-in">
       {/* ── Intestazione: torna ai moduli + titolo modulo INTERO ── */}
       <div className="px-4 pt-4">
         {!hideHeader && (
@@ -368,7 +380,8 @@ export function ModulePath({
       {/* ── 🌀 Il percorso serpentina — ingressi a cascata ── */}
       <motion.div
         ref={boxRef}
-        className="relative mx-2 mt-6"
+        data-path-layout={compactPath ? "compact" : "wide"}
+        className="relative mx-2 mt-5"
         style={{ height }}
         initial="hidden"
         animate="visible"
@@ -386,7 +399,7 @@ export function ModulePath({
           <g
             className="segs"
             dangerouslySetInnerHTML={{ __html: segs }}
-            style={{ strokeWidth: 7, strokeLinecap: "round", strokeLinejoin: "round", fill: "none" }}
+            style={{ strokeWidth: 4.5, strokeLinecap: "round", strokeLinejoin: "round", fill: "none" }}
           />
         </svg>
 
@@ -396,11 +409,23 @@ export function ModulePath({
           const y = rowY(i);
           const state: NodeState = isModuleGenerating ? "gen" : stateOf(globalIndex, lesson);
           const clickable = !isModuleGenerating && (state === "av" || state === "cur" || state === "done");
+          const stateLabel = ({ done: "completata", cur: "in corso", av: "disponibile", lock: "bloccata", gen: "in generazione" } as const)[state];
           const lab = labelLayout(i, colPct);
+          const openActions = () => {
+            if (isGeneratingLesson) return;
+            setMenuLesson({ lesson, index: globalIndex });
+            setIsRenaming(false);
+            setRenameValue(lesson.title);
+          };
 
           return (
-            <motion.div
+            <motion.button
               key={lesson.id}
+              type="button"
+              aria-label={`Lezione ${globalIndex + 1}: ${lesson.title}, ${stateLabel}`}
+              aria-disabled={!clickable}
+              aria-current={state === "cur" ? "step" : undefined}
+              data-lesson-row={globalIndex}
               variants={{
                 hidden: { opacity: 0, y: prefersReduced ? 0 : 14 },
                 visible: {
@@ -409,49 +434,52 @@ export function ModulePath({
                   transition: { type: "spring", stiffness: 380, damping: 30, bounce: 0.12, duration: 0.42 },
                 },
               }}
-              className="absolute inset-x-0"
-              style={{ top: y - STEP / 2, height: STEP }}
+              className={cn(
+                "group absolute inset-x-0 bg-transparent p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                clickable ? "cursor-pointer" : "cursor-default",
+              )}
+              style={{ top: y - STEP / 2, height: STEP, touchAction: "manipulation" }}
+              onClick={() => {
+                if (longPressTriggeredRef.current) {
+                  longPressTriggeredRef.current = false;
+                  return;
+                }
+                if (clickable) onSelectLesson(globalIndex);
+              }}
+              onPointerDown={() => startPress(lesson, globalIndex)}
+              onPointerUp={() => { clearPressTimer(); detectDoubleTap(lesson, globalIndex); }}
+              onPointerLeave={clearPressTimer}
+              onPointerCancel={clearPressTimer}
+              onContextMenu={(event) => { event.preventDefault(); openActions(); }}
+              onKeyDown={(event) => {
+                if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+                  event.preventDefault();
+                  openActions();
+                }
+              }}
+              onDoubleClick={openActions}
             >
               {/* ── Il nodo: sempre TONDO, mai con il titolo dentro ── */}
-              <div
+              <span
+                aria-hidden="true"
                 data-lesson-node={globalIndex}
                 data-node-state={state}
                 className={cn(
                   "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full",
-                  "font-display font-semibold text-lg tabular-nums select-none transition-all duration-200",
+                  "font-display font-semibold text-lg tabular-nums select-none transition-transform duration-200",
                   state === "done" && "bg-subject-accent text-subject-accent-foreground shadow-level-2",
                   state === "cur" && "bg-subject-accent text-subject-accent-foreground shadow-level-3 ring-2 ring-background",
                   state === "cur" && !prefersReduced && "animate-breathe-ring",
                   state === "av" && "bg-card border-2 border-border text-foreground",
                   state === "lock" && "bg-surface-container-high border-2 border-border text-muted-foreground",
                   state === "gen" && "bg-card border-[2.5px] border-dashed border-tertiary text-tertiary",
-                  clickable && "cursor-pointer hover:scale-[1.04] active:scale-[0.96]",
+                  clickable && "group-hover:scale-[1.04] group-active:scale-[0.96]",
                 )}
                 style={{
                   left: `calc(${colPct}% - ${NODE / 2}px)`,
                   width: NODE,
                   height: NODE,
-                  touchAction: "manipulation",
-                  WebkitUserSelect: "none",
                   userSelect: "none",
-                }}
-                onClick={() => {
-                  if (longPressTriggeredRef.current) {
-                    longPressTriggeredRef.current = false;
-                    return;
-                  }
-                  if (clickable) onSelectLesson(globalIndex);
-                }}
-                onPointerDown={() => startPress(lesson, globalIndex)}
-                onPointerUp={() => { clearPressTimer(); detectDoubleTap(lesson, globalIndex); }}
-                onPointerLeave={clearPressTimer}
-                onPointerCancel={clearPressTimer}
-                onContextMenu={(e) => e.preventDefault()}
-                onDoubleClick={() => {
-                  if (isGeneratingLesson) return;
-                  setMenuLesson({ lesson, index: globalIndex });
-                  setIsRenaming(false);
-                  setRenameValue(lesson.title);
                 }}
               >
                 {state === "done" ? (
@@ -473,27 +501,25 @@ export function ModulePath({
                     </span>
                   </span>
                 )}
-              </div>
+              </span>
 
-              {/* ── La scheda del titolo: accanto al nodo, sfondo pieno (leggibile
-                     anche sopra la curva), testo che va a capo senza limiti ── */}
-              <div
+              {/* ── Scheda accanto al nodo: massimo tre righe, nome completo accessibile ── */}
+              <span
+                aria-hidden="true"
                 data-lesson-label={globalIndex}
                 className={cn(
-                  "absolute top-1/2 -translate-y-1/2 rounded-xl border bg-card px-3.5 py-2.5 shadow-level-1",
+                  "absolute top-1/2 -translate-y-1/2 rounded-card border bg-card px-3 py-2",
                   state === "cur" ? "border-subject-accent/50" : "border-border",
                   (state === "lock" || state === "gen") && "opacity-80",
-                  clickable && "cursor-pointer",
                 )}
                 style={{ ...lab.pos, width: lab.width, maxWidth: lab.width }}
-                onClick={() => { if (clickable) onSelectLesson(globalIndex); }}
               >
                 <span className="label-small block text-muted-foreground">Lezione {globalIndex + 1}</span>
-                <span className="mt-0.5 block text-[13px] font-semibold leading-snug text-foreground break-words">
+                <span className="mt-0.5 block line-clamp-3 text-base font-semibold leading-snug text-foreground break-words">
                   {lesson.title}
                 </span>
-              </div>
-            </motion.div>
+              </span>
+            </motion.button>
           );
         })}
 
@@ -506,19 +532,23 @@ export function ModulePath({
           className="absolute inset-x-0"
           style={{ top: trophyY - STEP / 2, height: STEP }}
         >
-          <div
+          <button
+            type="button"
+            data-final-test-node
+            disabled={!allDone || !showFinalTest || !onStartFinalTest || !!isLoadingFinalTest}
+            aria-label={typeof finalTestScore === "number" ? `Test finale, ultimo esito ${finalTestScore}%` : "Test finale"}
             className={cn(
-              "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full font-display select-none transition-all duration-200",
-              allDone
-                ? "bg-subject-accent text-subject-accent-foreground shadow-level-3 cursor-pointer hover:scale-[1.04] active:scale-[0.96]"
-                : "bg-surface-container-high border-2 border-border text-muted-foreground",
+              "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full font-display select-none transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              allDone && showFinalTest && onStartFinalTest
+                ? "bg-subject-accent text-subject-accent-foreground shadow-primary-action cursor-pointer hover:scale-[1.04] active:translate-x-px active:translate-y-px active:shadow-none"
+                : "bg-surface-container-high border-2 border-border text-muted-foreground disabled:cursor-default",
             )}
             style={{
               left: `calc(${MID}% - ${TROPHY / 2}px)`,
               width: TROPHY,
               height: TROPHY,
+              borderRadius: "9999px",
             }}
-            role={allDone && showFinalTest && onStartFinalTest ? "button" : undefined}
             onClick={() => {
               if (allDone && showFinalTest && onStartFinalTest && !isLoadingFinalTest) {
                 onStartFinalTest();
@@ -530,29 +560,29 @@ export function ModulePath({
             ) : (
               <Trophy className="h-7 w-7" strokeWidth={1.8} />
             )}
-            <div className="absolute left-1/2 top-[calc(100%+14px)] z-10 -translate-x-1/2 whitespace-nowrap">
-              <div className="rounded-xl border border-border bg-card px-3.5 py-2 text-center shadow-level-1">
+            <span aria-hidden="true" className="absolute left-1/2 top-[calc(100%+10px)] z-10 -translate-x-1/2 whitespace-nowrap">
+              <span className="block rounded-card border border-border bg-card px-3 py-2 text-center">
                 <span className="label-small block text-muted-foreground">Ultimo passo</span>
-                <span className="block text-[13px] font-semibold text-foreground">Test finale</span>
+                <span className="block text-base font-semibold text-foreground">Test finale</span>
                 {/* 🅐 FONDAMENTA — l'esito dell'ultimo test fatto resta visibile */}
                 {typeof finalTestScore === "number" && (
-                  <span className="block text-[11px] font-semibold text-muted-foreground">
+                  <span className="block text-sm font-semibold text-muted-foreground">
                     Ultimo esito: {finalTestScore}%
                   </span>
                 )}
-              </div>
-            </div>
-          </div>
+              </span>
+            </span>
+          </button>
         </motion.div>
       </motion.div>
 
       {/* Bottone modulo completato */}
       {allDone && (
-        <div className="px-4 mt-14">
+        <div className="px-4 mt-6">
           <button
             type="button"
             onClick={onModuleCompleted}
-            className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm transition-all duration-200 hover:bg-primary/90 active:scale-[0.97]"
+            className="flex h-12 w-full items-center justify-center rounded-button border border-input bg-primary px-4 text-center font-mono text-sm font-semibold uppercase leading-tight tracking-wider text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             ✓ Modulo completato — Torna ai moduli
           </button>

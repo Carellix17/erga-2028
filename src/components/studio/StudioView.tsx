@@ -1081,21 +1081,6 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         </AnimatePresence>
       ) : (
         <>
-      {/* ➕ P37 — Crea nuovo percorso: in cima, SOLO nella Home Studio. */}
-      {courseViewState === "overview" && (
-        <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pt-3">
-          <Button
-            type="button"
-            size="lg"
-            onClick={onUploadClick}
-            aria-label="Crea un nuovo percorso di studio"
-            className="w-full rounded-button border border-border bg-primary text-primary-foreground shadow-tactile transition-all duration-200 hover:bg-primary/90 hover:shadow-card-active active:scale-[0.985]"
-          >
-            <Plus className="h-4 w-4" strokeWidth={2.5} />
-            Crea nuovo percorso
-          </Button>
-        </div>
-      )}
       {/* 🧭 P43 — HERO e card compatta del modulo sono la MEDESIMA superficie:
           layoutId condiviso ("course-card-…", stessa tecnica del selettore
           corsi) → la card si comprime/espande con un morph fluido. Nei moduli
@@ -1105,7 +1090,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
         {courseViewState === "branch" ? (
           <motion.div
             key="module-head"
-            className="sticky top-0 z-20 bg-background px-4 pb-2.5 pt-3"
+            className={`sticky ${embeddedReader ? "top-16" : "top-0"} z-20 bg-background px-4 pb-2.5 pt-3`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
@@ -1126,7 +1111,7 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
             animate={{ opacity: 1, transition: { delay: 0.1, duration: 0.18 } }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
             className={courseViewState === "modules"
-              ? "studio-section-enter min-w-0 overflow-x-clip sticky top-0 z-20 bg-background"
+              ? `studio-section-enter min-w-0 overflow-x-clip sticky ${embeddedReader ? "top-16" : "top-0"} z-20 bg-background`
               : "studio-section-enter min-w-0 overflow-x-clip"}
           >
       <PathHero
@@ -1173,6 +1158,21 @@ export function StudioView({ hasFiles, onUploadClick, selectedContextId, lessonL
           onOpenInterrogazione={() => openPractice("interrogazione")}
           onOpenPalestra={isScientific ? () => openPractice("palestra") : undefined}
         />
+      )}
+      {/* Il corso attivo guida la pagina; la creazione resta disponibile come azione secondaria. */}
+      {courseViewState === "overview" && (
+        <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pb-4 pt-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onUploadClick}
+            aria-label="Crea un nuovo percorso di studio"
+            className="w-full justify-center"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            Crea nuovo percorso
+          </Button>
+        </div>
       )}
       {/* 🧭 P42 — lista dei moduli e albero delle lezioni si danno il cambio
           con un cross-animato (solo transform/opacity, 60fps). */}

@@ -511,7 +511,7 @@ export function PathHero({
               layout
               exit={{ opacity: 0, scale: 0.97 }}
               transition={{ duration: 0.18 }}
-              className="mt-5 flex items-stretch gap-2.5"
+              className="mt-5 flex flex-col items-stretch gap-2.5 min-[420px]:flex-row"
             >
               {variant === "resume" ? (
                 /* 🧭 P38 — vista moduli: UN solo pulsante primario, ben visibile. */
@@ -521,11 +521,7 @@ export function PathHero({
                   onClick={onResume}
                   disabled={!canResume}
                   aria-label="Riprendi lezione"
-                  className="inline-flex h-12 w-full items-center justify-center gap-1.5 rounded-full border px-5 text-sm font-semibold transition-opacity duration-200 hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, currentColor 14%, transparent)",
-                    borderColor: "color-mix(in srgb, currentColor 28%, transparent)",
-                  }}
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-button border border-input bg-primary px-5 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
                 >
                   <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Riprendi lezione
@@ -537,11 +533,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={onResume}
-                  className="inline-flex items-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold whitespace-nowrap transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                  }}
+                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-button border border-input bg-primary px-4 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Continua
@@ -552,7 +544,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={openPicker}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-3 text-sm font-semibold whitespace-nowrap transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-button border px-3 text-sm font-semibold whitespace-nowrap transition-opacity duration-200 hover:opacity-80 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   style={{
                     backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
                     borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
@@ -572,18 +564,14 @@ export function PathHero({
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.18 }}
-              className="mt-5 flex items-stretch gap-2.5"
+              className="mt-5 flex flex-col items-stretch gap-2.5 min-[420px]:flex-row"
             >
               {canResume && onResume ? (
                 <motion.button
                   layout
                   type="button"
                   onClick={() => { closePicker(); onResume?.(); }}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 flex-1 px-4 text-sm font-semibold whitespace-nowrap transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                  }}
+                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-button border border-input bg-primary px-4 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
                   Continua
@@ -595,7 +583,7 @@ export function PathHero({
                 layout
                 type="button"
                 onClick={closePicker}
-                className="inline-flex items-center justify-center gap-1.5 rounded-full border h-11 px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.97]"
+                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-button border px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 style={{
                   backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
                   borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
