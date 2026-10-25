@@ -44,7 +44,8 @@ supabase/
 - Import client Supabase: `import { supabase } from "@/integrations/supabase/client"`.
 - Non usare `localStorage` per stato utente: tutto passa per la tabella `user_data`
   via l'hook `useUserData` (vedi `src/hooks/useUserData.ts`).
-- Material Design 3 Expressive: colori vibranti, angoli arrotondati, animazioni spring.
+- **Fonte visiva autorevole**: `DESIGN.md` **v4.0 «Swiss Cognitive Grid + Tactile Studio»**. `PRODUCT.md` prevale sulle decisioni di prodotto, `AGENTS.md` sulle regole operative. Non applicare Material Design né pattern generici da prodotto AI: la grammatica di Erga è una superficie di lavoro scolastica, squadrata e sobria.
+- **Grammatica v4 in sintesi**: superfici piatte (niente ombre morbide, vetro o grana); celle, card, hero e griglia a raggio 0px, controlli 2px, pannelli e dialoghi al massimo 4px; ombra rigida 2px × 2px (`shadow-primary-action`) solo sull'azione primaria, che si riduce in pressione; Ubuntu Sans per UI e corpo, Instrument Serif **solo** per i titoli di lettura dentro `.lesson-paper`, Ubuntu Sans Mono per misure e CTA primaria; palette canvas `#F4F2EC`, celle `#FAF8F3`, foglio `#FFFDF9`, inchiostro `#11120D`, CTA `#C82F0A`, cognitivo `#1D4E5F`; tema giorno/notte; movimento sui token 120/180/240/300/360 ms con `prefers-reduced-motion` rispettato.
 - Nessuna emoji come icona UI: usare Lucide o SVG.
 - Niente nuove dipendenze se CSS/React/librerie già presenti bastano.
 

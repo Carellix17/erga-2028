@@ -2,12 +2,15 @@
 
 Visita di salute completa all'apertura del ciclo di lavoro con l'agente Arena.
 
-Due risultati concreti:
+Tre risultati concreti:
 
 1. **un test rosso pubblicato su `main` è stato riparato** (la CTA primaria usa
    ora un gettone d'ombra, ma il test cercava ancora la vecchia stringa scritta
    a mano);
-2. questo documento, con lo stato misurato del progetto e i punti aperti,
+2. **i documenti di riferimento sono stati riallineati alla grafica v4**
+   (§7.2): `HANDOFF.md` e `docs/external-agent-prompt.md` indicavano ancora la
+   v3 e «Material Design 3 Expressive»;
+3. questo documento, con lo stato misurato del progetto e i punti aperti,
    compresa **un'azione richiesta su Lovable** (§7.1).
 
 Nessuna modifica al funzionamento visibile dell'app: cambiano solo un test e la
@@ -17,10 +20,10 @@ documentazione.
 
 ## 1. In una frase
 
-Erga è verde: **724 test su 724, tipi corretti, compilazione di produzione
-riuscita**. Restano aperti i documenti non allineati alla grafica v4 (§7.2), il
-peso dell'app su telefono (§7.3) e il deploy di due Edge Function già modificate
-su `main` (§7.1).
+Erga è verde: **728 test su 728, tipi corretti, compilazione di produzione
+riuscita**. I documenti di riferimento non allineati alla grafica v4 sono stati
+sistemati (§7.2); restano aperti il peso dell'app su telefono (§7.3) e il deploy
+di due Edge Function già modificate su `main` (§7.1).
 
 ---
 
@@ -47,7 +50,7 @@ su `main` (§7.1).
 
 | Controllo | Esito | Cosa significa in parole povere |
 |---|---|---|
-| Test automatici | ✅ **724 su 724** (82 file) | La rete di sicurezza è completa e verde |
+| Test automatici | ✅ **728 su 728** (84 file) | La rete di sicurezza è completa e verde |
 | Test riparati oggi | ✅ **1** (era rosso su `main`) | Il controllo sulla CTA primaria difende di nuovo la grafica vera |
 | Controllo tipi (TypeScript) | ✅ **0 errori** | Il codice è internamente coerente |
 | Compilazione di produzione | ✅ riuscita in ~21 s | L'app è pubblicabile così com'è |
@@ -62,12 +65,12 @@ su `main` (§7.1).
 
 | Voce | Quantità |
 |---|---|
-| File in `src/` | 348 |
-| Righe di codice TypeScript/TSX | 46.464 |
+| File in `src/` | 350 |
+| Righe di codice TypeScript/TSX | 46.686 |
 | Componenti React | 155 (di cui 51 primitive `ui/`) |
 | Pagine | 19 |
 | Hook | 29 |
-| Test | 82 file, 724 test |
+| Test | 84 file, 728 test |
 | Edge Function (backend) | 31 |
 | Tabelle nel database | 24 (+ 3 funzioni SQL) |
 | Migrazioni SQL | 60 |
@@ -77,10 +80,10 @@ su `main` (§7.1).
 
 | Blocco | Peso | Compresso (gzip) |
 |---|---|---|
-| Area app (`Index`) | 1.322 kB | 381 kB |
-| Landing / vendor | 812 kB | 246 kB |
-| Secondo blocco `index` | 435 kB | 180 kB |
-| CSS principale | 191 kB | 33 kB |
+| Area app (`Index`) | 1.321,99 kB | 381,40 kB |
+| Landing / vendor | 812,48 kB | 246,46 kB |
+| Secondo blocco `index` | 435,18 kB | 180,08 kB |
+| CSS principale | 190,77 kB | 32,81 kB |
 
 La soglia di avviso di Vite è 500 kB: tre blocchi la superano (§7.3).
 
@@ -97,7 +100,7 @@ verifiche e impegni, sessioni Focus e profilo cognitivo a sei misure.
 
 | Stanza | Cosa fa |
 |---|---|
-| **Home** | percorso prioritario da riprendere (8/12) + telemetria cognitiva (4/12), piano del giorno, strumenti rapidi |
+| **Home** | card del percorso autonoma con copertina astratta, radar cognitivo affiancato da «Interrogazione» ed «Esercizi», poi «Carica materiale» + «Chat», e il Piano del giorno a chiudere |
 | **Studio** | materiali a sinistra (4/12), percorso e lettore a destra (8/12); lezioni, esercizi, figure, assistente |
 | **Piano** | calendario di studio, verifiche, impegni, proposte dell'AI |
 | **Core** | profilo cognitivo (esagono), materie, routine settimanale |
@@ -150,7 +153,7 @@ Stato dei guardrail visivi oggi verificato sul codice:
 | Caratteri | Ubuntu Sans (UI e corpo), Instrument Serif (solo lettura editoriale), Ubuntu Sans Mono (misure) |
 | Superfici | piatte: ombre di sistema spente, grana neutralizzata, nessun blur in Home |
 | Azione primaria | ombra rigida 2px in inchiostro, pressione che riduce lo stacco |
-| Home | griglia continua 12 colonne, celle `min-w-0`, avanzamento lineare accessibile, telemetria cognitiva con sei misure autentiche e stato vuoto onesto |
+| Home | sezioni autonome non racchiuse in un contenitore unico, `min-w-0` ovunque, testi che vanno a capo invece di troncarsi, telemetria cognitiva su profilo autentico e stato vuoto onesto |
 
 ### 6.2 Il test rosso riparato oggi
 
@@ -194,28 +197,50 @@ nelle funzioni che lo importano, quindi il deploy delle due funzioni copre anche
 quello.
 
 **Se il deploy non è già stato fatto dalla sessione precedente, il comportamento
-reale dell'app differisce da ciò che c'è nel repository.** Prompt pronto per
-Lovable:
+reale dell'app differisce da ciò che c'è nel repository.**
 
-```
-Sincronizza il repository (branch main) e deploya queste Edge Function, che
-importano il nuovo modulo condiviso supabase/functions/_shared/studyMaterial.ts:
-1. extract-pdf
-2. generate-lessons
-Nessuna migrazione SQL da applicare. Non rigenerare i tipi TypeScript: non ci
-sono nuove tabelle o colonne.
-```
+Il prompt completo da incollare in Lovable, con i vincoli da rispettare e i sei
+controlli di accettazione da eseguire con un account di prova, è già pronto in
+**`docs/LOVABLE_STUDIO_MATERIAL_REJECTION.md`**: usare quello, non una versione
+abbreviata, perché include anche l'ordine dei passaggi (deploy delle due
+funzioni, poi **Update** del frontend) e il divieto di dichiarare online una
+correzione non verificata.
 
-### 7.2 Documenti disallineati rispetto a `DESIGN.md` v4
+### 7.2 Documenti disallineati rispetto a `DESIGN.md` v4 — ✅ chiusa il 25 ottobre
 
-- `HANDOFF.md` indica ancora come fonte autorevole la **v3.0 «Squared &
-  Earthy»** (righe 19, 21 e 407), con palette e caratteri superati.
-- `docs/external-agent-prompt.md` (riga 47) prescrive ancora **«Material Design 3
-  Expressive: colori vibranti, angoli arrotondati, animazioni spring»**, cioè
-  l'opposto della grammatica squadrata v4.
+Erano i primi file che un assistente legge, e indicavano una grafica che non
+esiste più:
 
-Sono i primi file che un assistente legge: finché restano così, il prossimo
-intervento rischia di ripartire dalla grafica sbagliata.
+- `HANDOFF.md` presentava come fonte autorevole la **v3.0 «Squared & Earthy»**
+  (palette Smoky Black/Olive Drab/Bone/Floral White, Playfair Display + Inter,
+  raggi 4/8/12px, grana ed Earthy Stripe) in cinque punti distinti: la sezione
+  «Stato UI», la scheda «Design Tokens», la scheda «Componenti UI», lo stack di
+  styling e le convenzioni finali, più il piè di pagina.
+- `docs/external-agent-prompt.md` prescriveva **«Material Design 3 Expressive:
+  colori vibranti, angoli arrotondati, animazioni spring»**, cioè l'opposto della
+  grammatica squadrata e sobria della v4.
+
+Cosa è stato fatto:
+
+- `HANDOFF.md` ha ora una sezione **«Stato UI — design system v4.0 (corrente)»**
+  con palette giorno/notte, tipografia, geometria 0/2/4px, superfici piatte,
+  gettone `shadow-primary-action`, grana neutralizzata, movimento, contrasto,
+  composizione di Home e Studio e le verifiche misurate; la vecchia sezione v3 è
+  conservata ma **declassata a documentazione storica** con avviso esplicito.
+- Le cinque schede operative e il piè di pagina sono stati riallineati alla v4.
+- La nota sulla suite (che dichiarava «20 test falliti più una suite che non
+  parte») è aggiornata allo stato reale: **728 test verdi in 84 file**.
+- La sezione «Deploy e CI/CD» non dà più un prompt generico («esegui migrazioni e
+  deploy»), ma la traccia prevista da `AGENTS.md`: elencare **solo** i file e le
+  funzioni realmente modificati, con il rinvio a
+  `docs/LOVABLE_STUDIO_MATERIAL_REJECTION.md` come esempio completo.
+- `docs/external-agent-prompt.md` indica ora `DESIGN.md` v4 come fonte visiva
+  autorevole (con `PRODUCT.md` sopra e `AGENTS.md` per le regole operative) e
+  riassume la grammatica v4, vietando esplicitamente Material Design e i pattern
+  generici da prodotto AI.
+
+Restano storici, e vanno letti come tali: `docs/design-system-2026-09-14.md`,
+`docs/registro-redesign-2026-10-03.md` e le analisi precedenti in `docs/`.
 
 ### 7.3 Peso dell'app su telefono
 
