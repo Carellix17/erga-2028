@@ -114,9 +114,12 @@
     "tools": {
       "title": "Strumenti rapidi",
       "upload": "Carica materiale",
+      "chat": "Chat",
       "tutor": "AI Tutor",
-      "exercises": "Crea esercizi",
-      "interrogation": "Interrogazione"
+      "exercises": "Esercizi",
+      "interrogation": "Interrogazione",
+      "practiceGroupAria": "Interrogazione ed esercizi",
+      "materialChatGroupAria": "Materiali e chat"
     },
     "cognitive": {
       "badge": "Profilo cognitivo",

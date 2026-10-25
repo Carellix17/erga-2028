@@ -23,6 +23,7 @@ import type { StudioTool } from "@/components/studio/StudioPractice";
 import { useTranslation } from "react-i18next";
 import { SeoHead } from "@/components/SeoHead";
 import { getAppScrollTop, setAppScrollTop } from "@/lib/appScroll";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type Tab = "home" | "studio" | "piano" | "core";
 
@@ -40,6 +41,7 @@ const Index = () => {
   // calcolato in locale sul suo nuovo profilo cognitivo.
   useDemoHandoff();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [showUpload, setShowUpload] = useState(false);
   const [materialRequest, setMaterialRequest] = useState<{ tab: "loading" | "manage" } | null>(null);
@@ -62,6 +64,18 @@ const Index = () => {
     } else {
       setShowUpload(true);
     }
+  };
+  // La creazione di un nuovo percorso usa il foglio dal basso su smartphone;
+  // le altre richieste di materiali continuano ad aprire il pannello Studio.
+  const openCreatePath = () => {
+    if (activeTab === "studio" && isMobile) {
+      setManageFocusContextId(null);
+      setMaterialRequest({ tab: "loading" });
+      setMaterialsExpanded(false);
+      setShowUpload(true);
+      return;
+    }
+    openUpload();
   };
   // 🧭 Percorsi 2.0 — strumento di Studio da aprire al prossimo ingresso
   // (es. "Chat", "Esercizi" o "Palestra" dalle pillole della Home o dalla chat).
@@ -351,6 +365,7 @@ const Index = () => {
             readingMode={readingMode}
             hasFiles={hasFiles}
             onUploadClick={openUpload}
+            onCreatePathClick={openCreatePath}
             selectedContextId={selectedContextId}
             lessonLaunch={lessonLaunch}
             onLessonLaunchHandled={() => setLessonLaunch(null)}
@@ -384,7 +399,7 @@ const Index = () => {
 
       {createPortal(
       <UploadSheet
-        embedded={activeTab === "studio"}
+        embedded={activeTab === "studio" && !showUpload}
         panelRequest={materialRequest}
         open={activeTab === "studio" || showUpload}
         onOpenChange={(o) => {

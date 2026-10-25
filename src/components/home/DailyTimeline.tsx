@@ -2,13 +2,11 @@ import { BookOpen, CalendarDays, Check, ClipboardCheck, Clock, type LucideIcon }
 import { cn } from "@/lib/utils";
 
 /**
- * DailyTimeline — piano del giorno sulla Home (V2-01, DESIGN.md 2.1 §9).
+ * DailyTimeline — lista verticale del piano del giorno sulla Home.
  *
- * Il prossimo impegno vive su CARTA QUIETA: card opaca raggio 24, filetto
- * delicato, righe serene. Le attività completate si spengono (testo
- * attenuato, barrato, spunta in chip quieto); quelle da fare portano
- * l'icona in un chip tondo del contenuto. Un solo controllo «Vedi tutto»,
- * sobrio (raggio control 8), senza modifiche al flusso del Piano.
+ * Una superficie carta con bordo di griglia, senza ombre o grana. Le attività
+ * completate si spengono (testo attenuato, barrato, spunta); quelle da fare
+ * mantengono un target ampio e un'etichetta che può andare a capo.
  */
 
 export interface TimelineTask {
@@ -50,7 +48,7 @@ export function DailyTimeline({
   if (tasks.length === 0) {
     // Stato senza impegni: breve e utile (2.1 §9), non un pannello vuoto.
     return (
-      <section className="paper-grain rounded-card border border-border bg-card p-5 shadow-tactile">
+      <section className="rounded-card border border-border bg-card p-5">
         <h2 className="text-lg font-semibold text-foreground">{emptyTitle}</h2>
         {emptyDescription && (
           <p className="mt-1 text-sm leading-snug text-muted-foreground">{emptyDescription}</p>
@@ -69,7 +67,7 @@ export function DailyTimeline({
   }
 
   return (
-    <section className="paper-grain overflow-hidden rounded-card border border-border bg-card shadow-tactile">
+    <section className="overflow-hidden rounded-card border border-border bg-card">
       <div className="flex items-center justify-between gap-3 p-4 pb-2 sm:p-5 sm:pb-2.5">
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
         {onSeeAll && (
@@ -110,20 +108,20 @@ export function DailyTimeline({
                 <span className="min-w-0 flex-1">
                   <span
                     className={cn(
-                      "block truncate text-base font-medium leading-snug",
+                      "block break-words text-base font-medium leading-snug",
                       task.isCompleted ? "text-muted-foreground line-through" : "text-foreground",
                     )}
                   >
                     {task.title}
                   </span>
                   {(task.subject || task.time) && (
-                    <span className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
-                      {task.subject && <span className="max-w-[160px] truncate">{task.subject}</span>}
+                    <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-muted-foreground">
+                      {task.subject && <span className="break-words">{task.subject}</span>}
                       {task.subject && task.time && (
                         <span aria-hidden="true" className="text-muted-foreground/60">·</span>
                       )}
                       {task.time && (
-                        <span className="flex items-center gap-1">
+                        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
                           <Clock className="h-3 w-3" aria-hidden="true" />
                           {task.time}
                         </span>

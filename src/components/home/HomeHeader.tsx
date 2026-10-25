@@ -1,11 +1,10 @@
 /**
- * HomeHeader — saluto in cima alla Home (V2-01, DESIGN.md 2.1 §5, §9).
+ * HomeHeader — saluto in cima alla Home, con la scala UI del design v4.
  *
- * Saluto SERIF compatto (Lora 400/500): 32px sul telefono, 40 da sm,
- * 48 da lg — «compact, mai gigantesco». Il nome va a capo sulla seconda
- * riga dentro lo stesso h1 (un solo titolo per gli screen reader).
- * Il sottotitolo è Inter, inchiostro attenuato, e non tronca mai:
- * se serve va a capo (mai ridurre caratteri per far entrare il contenuto).
+ * Il nome va a capo sulla seconda riga dentro lo stesso h1 (un solo titolo
+ * per gli screen reader). Il sottotitolo usa inchiostro attenuato e va a capo
+ * senza ridurre i caratteri. HomeView riserva lo spazio della barra assoluta
+ * prima di montare questo header, così saluto e wordmark non si sovrappongono.
  */
 import { cn } from "@/lib/utils";
 

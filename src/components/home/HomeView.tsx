@@ -12,7 +12,6 @@ import { useWelcomeMessage } from "@/hooks/useWelcomeMessage";
 import { useHaptics } from "@/hooks/useHaptics";
 import { HomeHeader } from "./HomeHeader";
 import { CourseHeroCard } from "./CourseHeroCard";
-import { QuickToolsGrid, type QuickToolItem } from "./QuickToolsGrid";
 import { DailyTimeline } from "./DailyTimeline";
 import { CognitiveTelemetry } from "./CognitiveTelemetry";
 import type { CognitiveProfile } from "@/hooks/useCognitiveProfile";
@@ -60,8 +59,8 @@ export function HomeView({
 
   if (dashboard.isError || !data) {
     return (
-      <div className="pb-10 pt-20">
-        <Card className="paper-grain mx-auto max-w-xl rounded-card border border-border bg-card p-6 text-center">
+      <div className="pb-10 pt-16">
+        <Card className="mx-auto max-w-xl rounded-card border border-border bg-card p-6 text-center">
           <RefreshCw className="mx-auto h-8 w-8 text-destructive" aria-hidden="true" />
           <h1 className="mt-4 text-xl font-semibold">{t("home.error.title")}</h1>
           <p className="mt-2 text-base text-muted-foreground">{t("home.error.description")}</p>
@@ -77,7 +76,7 @@ export function HomeView({
   const hiddenTasks = Math.max(0, data.todayTasks.length - VISIBLE_TASKS);
   const resume = data.resumeLesson;
 
-  // ── Card corso: tre stati reali, nessun contenuto inventato ─────────────
+  // La card in testa riflette soltanto il percorso reale e la sua lezione.
   const heroIsGenerating = !resume && data.isGenerating;
   const heroHasNoLessons = !resume && !data.isGenerating && data.hasContexts;
 
@@ -102,52 +101,28 @@ export function HomeView({
     });
   };
 
-  // ── Strumenti rapidi: apertura delle azioni principali ──────────────────
-  const tools: QuickToolItem[] = [
+  const openStudioTool = (tool: StudioTool) => {
+    triggerLight();
+    onOpenStudioTool?.(tool);
+  };
+
+  const practiceActions = [
     {
-      id: "upload",
-      label: t("home.tools.upload"),
-      icon: Upload,
-      onClick: () => {
-        triggerLight();
-        onUpload();
-      },
+      id: "interrogation",
+      label: t("home.tools.interrogation"),
+      icon: AudioLines,
+      tool: "interrogazione" as const,
     },
-      {
-        id: "tutor",
-        label: t("home.tools.tutor"),
-        icon: MessageSquare,
-        onClick: () => {
-          triggerLight();
-          onOpenStudioTool?.("chat");
-        },
-      },
-      {
-        id: "exercises",
-        label: t("home.tools.exercises"),
-        icon: PencilLine,
-        onClick: () => {
-          triggerLight();
-          onOpenStudioTool?.("esercizi");
-        },
-      },
-      {
-        id: "interrogation",
-        label: t("home.tools.interrogation"),
-        icon: AudioLines,
-        onClick: () => {
-          triggerLight();
-          onOpenStudioTool?.("interrogazione");
-        },
-      },
+    {
+      id: "exercises",
+      label: t("home.tools.exercises"),
+      icon: PencilLine,
+      tool: "esercizi" as const,
+    },
   ];
 
   return (
-    // V2-01: il tavolo è piatto (niente aloni né texture), il saluto serif
-    // è compatto e parte più vicino (pt-20 sm:pt-28); mb-4 sotto il saluto
-    // sopra il gap-6 comune tiene il ritmo tra le card.
-    <div className="min-w-0 pt-8 pb-2 sm:pt-12">
-      {/* 1. Saluto (l'avatar profilo sta nell'header in alto a destra) */}
+    <div className="min-w-0 pt-16 pb-4">
       <HomeHeader
         className="mb-4"
         greeting={welcome.greeting}
@@ -155,101 +130,146 @@ export function HomeView({
         subtitle={welcome.subtitle}
       />
 
-      <div className="cognitive-grid mx-auto grid max-w-7xl grid-cols-12 border border-border bg-card">
-      <section className="col-span-12 min-w-0 border-b border-border lg:col-span-8 lg:border-b-0 lg:border-r">
-      {/* Sessione prioritaria: una sola azione primaria. */}
-      <CourseHeroCard
-        courseTitle={resume?.courseTitle ?? null}
-        contextId={resume?.contextId ?? null}
-        eyebrowText={t("home.course.eyebrow")}
-        lessonTitle={resume?.lessonTitle ?? null}
-        lessonMetaText={
-          resume
-            ? t("home.course.lessonsMeta", { current: resume.lessonNumber, total: resume.lessonCount })
-            : null
-        }
-        progressPercent={resume?.progressPercent ?? null}
-        progressAriaLabel={
-          resume ? t("home.course.progressAria", { percent: Math.min(100, Math.max(0, Math.round(resume.progressPercent))) }) : null
-        }
-        primaryCtaLabel={
-          resume
-            ? resume.lessonNumber > 1
-              ? t("home.resume.continue")
-              : t("home.resume.start")
-            : null
-        }
-        onPrimaryCta={
-          resume
-            ? () => {
-                triggerLight();
-                onResumeLesson(resume.contextId, resume.lessonIndex);
-              }
-            : undefined
-        }
-        emptyTitle={
-          heroIsGenerating
-            ? t("home.resume.generatingTitle")
-            : heroHasNoLessons
-              ? t("home.resume.noLessonTitle")
-              : t("home.resume.noContentTitle")
-        }
-        emptyDescription={
-          heroIsGenerating
-            ? t("home.resume.generatingDescription")
-            : heroHasNoLessons
-              ? t("home.resume.noLessonDescription")
-              : t("home.resume.noContentDescription")
-        }
-        emptyCtaLabel={
-          heroIsGenerating || heroHasNoLessons ? t("home.resume.openStudio") : t("home.resume.upload")
-        }
-        onEmptyCta={
-          heroIsGenerating || heroHasNoLessons
-            ? () => {
-                triggerLight();
-                onOpenStudio();
-              }
-            : () => {
-                triggerLight();
-                onUpload();
-              }
-        }
-      />
+      <div className="flex min-w-0 flex-col gap-4">
+        {/* Il percorso resta una superficie autonoma, con la stessa copertina di Studio. */}
+        <CourseHeroCard
+          courseTitle={resume?.courseTitle ?? null}
+          contextId={resume?.contextId ?? null}
+          eyebrowText={t("home.course.eyebrow")}
+          lessonTitle={resume?.lessonTitle ?? null}
+          lessonMetaText={
+            resume
+              ? t("home.course.lessonsMeta", { current: resume.lessonNumber, total: resume.lessonCount })
+              : null
+          }
+          progressPercent={resume?.progressPercent ?? null}
+          progressAriaLabel={
+            resume
+              ? t("home.course.progressAria", {
+                  percent: Math.min(100, Math.max(0, Math.round(resume.progressPercent))),
+                })
+              : null
+          }
+          primaryCtaLabel={
+            resume
+              ? resume.lessonNumber > 1
+                ? t("home.resume.continue")
+                : t("home.resume.start")
+              : null
+          }
+          onPrimaryCta={
+            resume
+              ? () => {
+                  triggerLight();
+                  onResumeLesson(resume.contextId, resume.lessonIndex);
+                }
+              : undefined
+          }
+          emptyTitle={
+            heroIsGenerating
+              ? t("home.resume.generatingTitle")
+              : heroHasNoLessons
+                ? t("home.resume.noLessonTitle")
+                : t("home.resume.noContentTitle")
+          }
+          emptyDescription={
+            heroIsGenerating
+              ? t("home.resume.generatingDescription")
+              : heroHasNoLessons
+                ? t("home.resume.noLessonDescription")
+                : t("home.resume.noContentDescription")
+          }
+          emptyCtaLabel={
+            heroIsGenerating || heroHasNoLessons ? t("home.resume.openStudio") : t("home.resume.upload")
+          }
+          onEmptyCta={
+            heroIsGenerating || heroHasNoLessons
+              ? () => {
+                  triggerLight();
+                  onOpenStudio();
+                }
+              : () => {
+                  triggerLight();
+                  onUpload();
+                }
+          }
+        />
 
-      </section>
-      <aside className="col-span-12 min-w-0 border-b border-border p-6 lg:col-span-4 lg:border-b-0">
-        <CognitiveTelemetry profile={cognitiveProfile ?? null} />
-      </aside>
-      <section className="col-span-12 min-w-0 border-t border-border">
-      {/* 3. Prossimo impegno: il Piano del giorno (§10: ripresa → prossimo
-          impegno → strumenti rapidi e informazioni secondarie) */}
-      <DailyTimeline
-        title={t("home.today.title")}
-        seeAllLabel={t("home.today.openPlan")}
-        emptyTitle={t("home.today.emptyTitle")}
-        emptyDescription={t("home.today.emptyDescription")}
-        emptyCtaLabel={t("home.today.organize")}
-        tasks={tasks.map((task) => ({
-          id: task.id,
-          title: task.title,
-          time: task.time,
-          subject: task.subject,
-          isCompleted: task.isCompleted,
-          kind: task.kind,
-        }))}
-        onTaskClick={(id) => {
-          const task = data.todayTasks.find((item) => item.id === id);
-          if (task) startTaskFocus(task);
-        }}
-        onSeeAll={hiddenTasks > 0 || showAllTasks ? handleToggleTasks : handleOpenPlan}
-      />
+        {/* Esagono senza card; a fianco, solo gli accessi alla pratica. */}
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-center gap-3 sm:gap-4 lg:max-w-xl">
+          <CognitiveTelemetry profile={cognitiveProfile ?? null} />
+          <div
+            role="group"
+            aria-label={t("home.tools.practiceGroupAria")}
+            className="flex min-w-0 flex-col gap-2"
+          >
+            {practiceActions.map(({ id, label, icon: Icon, tool }) => (
+              <Button
+                key={id}
+                type="button"
+                variant="outline"
+                onClick={() => openStudioTool(tool)}
+                className="h-auto min-h-12 w-full justify-start whitespace-normal px-2.5 py-2 text-left text-[13px] leading-tight sm:px-3 sm:text-sm"
+              >
+                <Icon className="shrink-0" aria-hidden="true" />
+                <span className="min-w-0 break-words">{label}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
 
-      {/* 4. Strumenti rapidi (aprono gli strumenti del Banco in Studio) */}
-      <QuickToolsGrid title={t("home.tools.title")} tools={tools} />
-      </section>
+        {/* Materiali e chat sono il gruppo successivo, distinto dalla pratica. */}
+        <div
+          role="group"
+          aria-label={t("home.tools.materialChatGroupAria")}
+          className="grid min-w-0 grid-cols-2 gap-2"
+        >
+          <Button
+            type="button"
+            size="lg"
+            onClick={() => {
+              triggerLight();
+              onUpload();
+            }}
+            className="h-auto min-h-12 w-full whitespace-normal px-2 py-2 text-[13px] leading-tight sm:text-sm"
+          >
+            <Upload aria-hidden="true" />
+            <span className="min-w-0 break-words">{t("home.tools.upload")}</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={() => openStudioTool("chat")}
+            className="h-auto min-h-12 w-full whitespace-normal px-2 py-2 text-[13px] leading-tight sm:text-sm"
+          >
+            <MessageSquare aria-hidden="true" />
+            <span className="min-w-0 break-words">{t("home.tools.chat")}</span>
+          </Button>
+        </div>
+
+        {/* Le attività del giorno rimangono una lista verticale, fuori dai gruppi azione. */}
+        <DailyTimeline
+          title={t("home.today.title")}
+          seeAllLabel={t("home.today.openPlan")}
+          emptyTitle={t("home.today.emptyTitle")}
+          emptyDescription={t("home.today.emptyDescription")}
+          emptyCtaLabel={t("home.today.organize")}
+          tasks={tasks.map((task) => ({
+            id: task.id,
+            title: task.title,
+            time: task.time,
+            subject: task.subject,
+            isCompleted: task.isCompleted,
+            kind: task.kind,
+          }))}
+          onTaskClick={(id) => {
+            const task = data.todayTasks.find((item) => item.id === id);
+            if (task) startTaskFocus(task);
+          }}
+          onSeeAll={hiddenTasks > 0 || showAllTasks ? handleToggleTasks : handleOpenPlan}
+        />
       </div>
     </div>
   );
 }
-

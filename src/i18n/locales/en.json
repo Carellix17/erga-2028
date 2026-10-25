@@ -114,9 +114,12 @@
     "tools": {
       "title": "Quick tools",
       "upload": "Upload material",
+      "chat": "Chat",
       "tutor": "AI Tutor",
-      "exercises": "Create exercises",
-      "interrogation": "Oral exam"
+      "exercises": "Exercises",
+      "interrogation": "Oral exam",
+      "practiceGroupAria": "Oral exam and exercises",
+      "materialChatGroupAria": "Materials and chat"
     },
     "cognitive": {
       "badge": "Cognitive profile",
