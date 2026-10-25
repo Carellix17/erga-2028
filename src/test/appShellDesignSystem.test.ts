@@ -62,11 +62,19 @@ describe("design system v4 — app shell", () => {
   it("mantiene CTA vermiglia con ombra rigida 2px e testo carta", () => {
     const button = read("src/components/ui/button.tsx");
     const css = read("src/index.css");
+    const tailwind = read("tailwind.config.ts");
 
     expect(button).toMatch(/default:\s*"[^"\n]*bg-primary text-primary-foreground/);
+    // L'ombra rigida è un gettone del sistema, non un valore arbitrario inline:
+    // così lo stesso stacco 2px è condiviso da CTA, PathHero e ModulePath.
     expect(button).toContain("shadow-primary-action");
-    expect(button).not.toMatch(/default:\s*"[^"]*rounded-pill/);
+    expect(tailwind).toContain('"primary-action": "var(--shadow-primary-action)"');
     expect(css).toContain("--shadow-primary-action: 2px 2px 0 #11120D");
+    // Il valore inline precedente non deve tornare (bypasserebbe il gettone).
+    expect(button).not.toContain("shadow-[2px_2px_0px_#11120D]");
+    // In pressione lo stacco si riduce: il controllo si sposta di 1px e l'ombra sparisce.
+    expect(button).toContain("active:translate-x-px active:translate-y-px active:shadow-none");
+    expect(button).not.toMatch(/default:\s*"[^"]*rounded-pill/);
     expect(css).toContain("--primary: 11.6842 90.4762% 41.1765%");
     expect(css).toContain("--primary-deep: 11.2727 92.1788% 35.0980%");
     expect(css).toContain("--primary-foreground: var(--accent-light)");
