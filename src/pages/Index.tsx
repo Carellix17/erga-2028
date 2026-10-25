@@ -333,8 +333,7 @@ const Index = () => {
         )}
         {activeTab === "studio" && (
           <div className="study-workspace grid min-w-0 grid-cols-12 border border-border bg-sheet text-foreground lg:grid-cols-[minmax(18rem,4fr)_minmax(0,8fr)]">
-          <aside className="col-span-12 min-w-0 border-b border-border bg-background lg:col-span-1 lg:border-b-0 lg:border-r">
-            <button type="button" className="min-h-12 w-full px-4 text-left font-medium lg:hidden" aria-expanded={materialsExpanded} aria-controls="study-material-controls" onClick={() => setMaterialsExpanded(value => !value)}>Materiali e lettura</button>
+          <aside className={`col-span-12 min-w-0 border-b border-border bg-background lg:col-span-1 lg:border-b-0 lg:border-r ${materialsExpanded ? "block" : "hidden lg:block"}`}>
             <div id="study-material-controls" className={materialsExpanded ? "block" : "hidden lg:block"}>
             <div className="border-b border-border p-4">
               <label htmlFor="reading-mode" className="block text-sm font-medium">Taglio di lettura</label>

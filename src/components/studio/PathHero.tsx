@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useHaptics } from "@/hooks/useHaptics";
 import { cleanCourseName } from "@/lib/courseName";
 import { getAccentForeground } from "@/lib/subjectColors";
 import { courseCoverVars } from "@/lib/courseIdentity";
@@ -174,6 +175,7 @@ export function PathHero({
   isRegenerating = false,
   onSelectingChange,
 }: PathHeroProps) {
+  const { triggerLight } = useHaptics();
   const [isSelectingCourse, setIsSelectingCourse] = useState(false);
   const [transitioningId, setTransitioningId] = useState<string | null>(null);
   const heroRef = useRef<HTMLDivElement | null>(null);
@@ -250,9 +252,10 @@ export function PathHero({
   }, []);
 
   const openPicker = useCallback(() => {
+    triggerLight();
     setIsSelectingCourse(true);
     onSelectingChange?.(true);
-  }, [onSelectingChange]);
+  }, [onSelectingChange, triggerLight]);
 
   const closePicker = useCallback(() => {
     setIsSelectingCourse(false);
@@ -261,6 +264,7 @@ export function PathHero({
 
   const handleSelectCourse = useCallback((course: CourseOption) => {
     if (isTransitioningRef.current) return;
+    triggerLight();
     if (course.id === activeCourseId) {
       closePicker();
       return;
@@ -298,7 +302,7 @@ export function PathHero({
       isTransitioningRef.current = false;
       document.body.style.overflow = prevOverflowRef.current || "";
     }, 650));
-  }, [activeCourseId, closePicker, onSelectCourse]);
+  }, [activeCourseId, closePicker, onSelectCourse, triggerLight]);
 
   const handleSaveRename = async () => {
     if (!onRenameCourse) return;
@@ -376,7 +380,7 @@ export function PathHero({
           /* ✕ P40 — vista moduli: la X chiude i moduli (nessun menù). */
           <button
             type="button"
-            onClick={onCloseModules}
+            onClick={() => { triggerLight(); onCloseModules(); }}
             aria-label="Chiudi moduli"
             className="relative w-10 h-10 rounded-full transition-opacity duration-200 flex items-center justify-center shrink-0 hover:opacity-80 active:scale-[0.95] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             style={{
@@ -386,7 +390,7 @@ export function PathHero({
             <X className="w-5 h-5 text-current" strokeWidth={2} />
           </button>
         ) : (
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={(open) => { if (open) triggerLight(); }}>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
@@ -413,7 +417,7 @@ export function PathHero({
             )}
             {onRegenerate && (
               <DropdownMenuItem
-                onSelect={onRegenerate}
+                onSelect={() => { triggerLight(); onRegenerate?.(); }}
                 disabled={isGenerating || isRegenerating || generationBlocked}
                 className="rounded-button cursor-pointer"
               >
@@ -423,7 +427,7 @@ export function PathHero({
               </DropdownMenuItem>
             )}
             {onOpenMaterials && (
-              <DropdownMenuItem onSelect={onOpenMaterials} className="rounded-button cursor-pointer">
+              <DropdownMenuItem onSelect={() => { triggerLight(); onOpenMaterials?.(); }} className="rounded-button cursor-pointer">
                 <FolderOpen className="w-4 h-4 text-foreground/80" strokeWidth={1.75} />
                 <span className="flex-1">Apri materiali</span>
               </DropdownMenuItem>
@@ -431,6 +435,7 @@ export function PathHero({
             {onRenameCourse && (
               <DropdownMenuItem
                 onSelect={() => {
+                  triggerLight();
                   setRenameValue(title ?? "");
                   setRenameOpen(true);
                 }}
@@ -444,7 +449,7 @@ export function PathHero({
               <>
                 <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem
-                  onSelect={() => setConfirmDelete(true)}
+                  onSelect={() => { triggerLight(); setConfirmDelete(true); }}
                   className="rounded-button cursor-pointer text-destructive focus:text-destructive"
                 >
                   <Trash2 className="w-4 h-4" strokeWidth={1.75} />
@@ -511,19 +516,19 @@ export function PathHero({
               layout
               exit={{ opacity: 0, scale: 0.97 }}
               transition={{ duration: 0.18 }}
-              className="mt-5 flex flex-col items-stretch gap-2.5 min-[420px]:flex-row"
+              className="mt-5 flex items-stretch gap-2"
             >
               {variant === "resume" ? (
                 /* 🧭 P38 — vista moduli: UN solo pulsante primario, ben visibile. */
                 <motion.button
                   layout
                   type="button"
-                  onClick={onResume}
+                  onClick={() => { triggerLight(); onResume?.(); }}
                   disabled={!canResume}
                   aria-label="Riprendi lezione"
                   className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-button border border-input bg-primary px-5 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
                 >
-                  <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Riprendi lezione
                 </motion.button>
               ) : (
@@ -532,10 +537,10 @@ export function PathHero({
                 <motion.button
                   layout
                   type="button"
-                  onClick={onResume}
-                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-button border border-input bg-primary px-4 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  onClick={() => { triggerLight(); onResume(); }}
+                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-button border border-input bg-primary px-1.5 text-xs font-mono font-semibold uppercase tracking-normal text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:gap-2 sm:px-4 sm:text-sm sm:tracking-wider"
                 >
-                  <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Continua
                 </motion.button>
               )}
@@ -544,13 +549,13 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={openPicker}
-                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-button border px-3 text-sm font-semibold whitespace-nowrap transition-opacity duration-200 hover:opacity-80 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-button border px-1.5 text-xs font-semibold whitespace-nowrap transition-opacity duration-200 hover:opacity-80 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:gap-1.5 sm:px-3 sm:text-sm"
                   style={{
                     backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
                     borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
                   }}
                 >
-                  <ArrowLeftRight className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  <ArrowLeftRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Cambia corso
                 </motion.button>
               )}
@@ -564,16 +569,16 @@ export function PathHero({
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.18 }}
-              className="mt-5 flex flex-col items-stretch gap-2.5 min-[420px]:flex-row"
+              className="mt-5 flex items-stretch gap-2"
             >
               {canResume && onResume ? (
                 <motion.button
                   layout
                   type="button"
-                  onClick={() => { closePicker(); onResume?.(); }}
-                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-button border border-input bg-primary px-4 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  onClick={() => { triggerLight(); closePicker(); onResume?.(); }}
+                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-button border border-input bg-primary px-1.5 text-xs font-mono font-semibold uppercase tracking-normal text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:gap-2 sm:px-4 sm:text-sm sm:tracking-wider"
                 >
-                  <BookOpen className="w-4 h-4 shrink-0" strokeWidth={1.9} />
+                  <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Continua
                 </motion.button>
               ) : (
@@ -582,8 +587,8 @@ export function PathHero({
               <motion.button
                 layout
                 type="button"
-                onClick={closePicker}
-                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-button border px-4 text-sm font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onClick={() => { triggerLight(); closePicker(); }}
+                className="inline-flex h-11 min-w-0 items-center justify-center gap-1 rounded-button border px-1.5 text-xs font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:gap-1.5 sm:px-4 sm:text-sm"
                 style={{
                   backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
                   borderColor: "color-mix(in srgb, currentColor 20%, transparent)",

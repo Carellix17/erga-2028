@@ -24,8 +24,9 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     render(<PathHero {...base} onSelectCourse={() => {}} />);
     // P37: il pulsante primario della card percorso si chiama "Continua"
     expect(screen.getAllByText("Continua").length).toBeGreaterThan(0);
-    // P39: "Cambia corso" non va MAI a capo, nemmeno su 360px
+    // Su mobile le due azioni restano affiancate e le etichette non si spezzano.
     expect(screen.getByText("Cambia corso").className).toMatch(/whitespace-nowrap/);
+    expect(screen.getByText("Continua").parentElement?.className).not.toMatch(/flex-col/);
     fireEvent.click(screen.getByText("Cambia corso"));
     expect(screen.getByText("Annulla")).toBeTruthy();
     // gli altri corsi compaiono DOPO la centratura (fase 2)

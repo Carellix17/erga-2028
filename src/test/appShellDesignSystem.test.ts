@@ -64,8 +64,9 @@ describe("design system v4 — app shell", () => {
     const css = read("src/index.css");
 
     expect(button).toMatch(/default:\s*"[^"\n]*bg-primary text-primary-foreground/);
-    expect(button).toContain("shadow-[2px_2px_0px_#11120D]");
+    expect(button).toContain("shadow-primary-action");
     expect(button).not.toMatch(/default:\s*"[^"]*rounded-pill/);
+    expect(css).toContain("--shadow-primary-action: 2px 2px 0 #11120D");
     expect(css).toContain("--primary: 11.6842 90.4762% 41.1765%");
     expect(css).toContain("--primary-deep: 11.2727 92.1788% 35.0980%");
     expect(css).toContain("--primary-foreground: var(--accent-light)");

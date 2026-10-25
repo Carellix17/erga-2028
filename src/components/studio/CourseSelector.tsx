@@ -2,6 +2,7 @@ import { BookOpen, Globe, FileText, Pencil, Loader2, ChevronDown, Check, MoreHor
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
+import { useHaptics } from "@/hooks/useHaptics";
 import {
   Drawer,
   DrawerContent,
@@ -60,6 +61,7 @@ export function CourseSelector({
   onOpenMaterials,
   isRegenerating,
 }: CourseSelectorProps) {
+  const { triggerLight } = useHaptics();
   // N.B.: gli hook devono essere chiamati PRIMA di qualunque return anticipato
   // (regole di React). L'uscita "nessun corso" e' piu' sotto, dopo gli hook.
   const [open, setOpen] = useState(false);
@@ -132,13 +134,14 @@ export function CourseSelector({
     clearLongPress();
     longPressTimer.current = window.setTimeout(() => {
       longPressTriggered.current = true;
-      try { navigator.vibrate?.(20); } catch { /* alcune piattaforme non supportano la vibrazione: si ignora */ }
+      triggerLight();
       setRenameValue(cleanName(course.file_name));
       setRenameCourse(course);
     }, 500);
   };
 
   const handleSelect = (course: Course) => {
+    triggerLight();
     onSelectCourse(course.id);
     setOpen(false);
   };
@@ -205,7 +208,10 @@ export function CourseSelector({
                 longPressTriggered.current = false;
                 return;
               }
-              if (multi) setOpen(true);
+              if (multi) {
+                triggerLight();
+                setOpen(true);
+              }
             }}
             onPointerDown={() => startLongPress(active)}
             onPointerUp={clearLongPress}
@@ -244,7 +250,7 @@ export function CourseSelector({
               ref={moreBtnRef}
               type="button"
               aria-label="Azioni corso"
-              onClick={() => setMenuOpen((v) => !v)}
+              onClick={() => { triggerLight(); setMenuOpen((v) => !v); }}
               className="w-[52px] rounded-card bg-card hover:bg-surface-container-high active:bg-surface-container-highest transition-colors duration-200 flex items-center justify-center flex-shrink-0"
             >
               <MoreHorizontal className="w-5 h-5 text-foreground" />
@@ -274,6 +280,7 @@ export function CourseSelector({
                   role="menuitem"
                   disabled={a.loading}
                   onClick={() => {
+                    triggerLight();
                     setMenuOpen(false);
                     a.onClick();
                   }}
