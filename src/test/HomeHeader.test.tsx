@@ -8,13 +8,14 @@ import tailwindConfig from "../../tailwind.config";
 const fontFamilies = tailwindConfig.theme.extend.fontFamily;
 
 /**
- * Saluto della Home — pilota V2-01 (DESIGN.md 2.1 §5, §9).
- * Serif compatto (Lora 400/500): 32px telefono, 40 sm, 48 lg.
+ * Saluto della Home — DESIGN.md v4.0 «Swiss Cognitive Grid».
+ * Ubuntu Sans per UI e corpo (il serif editoriale Instrument Serif resta
+ * confinato alla carta di lettura): 32px telefono, 40 sm, 48 lg.
  * «Compact, mai gigantesco»: la scala D1 da 43–86px è archiviata.
  */
 
 describe("Font del messaggio di benvenuto", () => {
-  it("carica Lora e Inter da Google Fonts come family variable (2.1 §5)", () => {
+  it("carica Ubuntu Sans, Ubuntu Sans Mono e Instrument Serif da Google Fonts", () => {
     const html = readFileSync(resolve(__dirname, "../../index.html"), "utf8");
     const doc = new DOMParser().parseFromString(html, "text/html");
     const link = doc.querySelector<HTMLLinkElement>('link[rel="stylesheet"][href^="https://fonts.googleapis.com/css2"]');
@@ -22,17 +23,29 @@ describe("Font del messaggio di benvenuto", () => {
 
     const url = new URL(link!.href);
     expect(url.searchParams.getAll("family").sort()).toEqual([
-      "Inter:ital,wght@0,400..700;1,400..700",
-      "Playfair Display:ital,wght@0,400..700;1,400..700",
+      "Instrument Serif:ital@0;1",
+      "Ubuntu Sans Mono:wght@400;500;600;700",
+      "Ubuntu Sans:ital,wght@0,400..700;1,400..700",
     ]);
     expect(url.searchParams.get("display")).toBe("swap");
+    // Le famiglie v3 non devono rientrare.
+    const families = url.searchParams.getAll("family").join("|");
+    expect(families).not.toContain("Playfair");
+    expect(families).not.toContain("Inter");
+    expect(families).not.toContain("Lora");
+    expect(families).not.toContain("Montserrat");
   });
 
-  it("configura Lora per il display serif e Inter per interfaccia e lettura", () => {
-    expect(fontFamilies.display).toEqual(["Playfair Display", "Lora", "Georgia", "serif"]);
-    expect(fontFamilies.serif).toEqual(["Playfair Display", "Lora", "Georgia", "serif"]);
-    expect(fontFamilies.sans).toEqual(["Inter", "system-ui", "-apple-system", "sans-serif"]);
-    expect(fontFamilies.reading).toEqual(["Inter", "system-ui", "-apple-system", "sans-serif"]);
+  it("configura Ubuntu Sans per interfaccia e lettura, Instrument Serif solo editoriale", () => {
+    expect(fontFamilies.sans).toEqual(["Ubuntu Sans", "system-ui", "sans-serif"]);
+    expect(fontFamilies.interface).toEqual(["Ubuntu Sans", "system-ui", "sans-serif"]);
+    expect(fontFamilies.reading).toEqual(["Ubuntu Sans", "system-ui", "sans-serif"]);
+    // Alias legacy: `display` e `serif` risolvono a Ubuntu Sans, non a un serif.
+    expect(fontFamilies.display).toEqual(["Ubuntu Sans", "system-ui", "sans-serif"]);
+    expect(fontFamilies.serif).toEqual(["Ubuntu Sans", "system-ui", "sans-serif"]);
+    // Il serif editoriale esiste come token dedicato e per le misure c'è il mono.
+    expect(fontFamilies.editorial).toEqual(["Instrument Serif", "Georgia", "serif"]);
+    expect(fontFamilies.mono).toEqual(["Ubuntu Sans Mono", "ui-monospace", "monospace"]);
     expect(fontFamilies).not.toHaveProperty("welcome-title");
     expect(fontFamilies).not.toHaveProperty("welcome");
   });

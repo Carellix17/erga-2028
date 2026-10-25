@@ -85,7 +85,7 @@ function queryHomeRoot(container: HTMLElement): HTMLElement | null {
   return container.firstElementChild as HTMLElement | null;
 }
 
-describe("HomeView modulare (V3)", () => {
+describe("HomeView modulare (V4)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDashboard();
@@ -101,11 +101,12 @@ describe("HomeView modulare (V3)", () => {
     // Titolo corto → resta al gradone (text-3xl, sm:text-4xl)
     const courseHeading = screen.getByRole("heading", { name: "Fisica" });
     expect(courseHeading.className).toContain("text-3xl");
-    expect(screen.getByText("Percorso attivo")).toBeInTheDocument();
     expect(screen.getByText("Il moto rettilineo")).toBeInTheDocument();
     expect(screen.getByText("3 di 10 lezioni")).toBeInTheDocument();
-    // Anello di avanzamento presente (nessun menù a tre puntini)
-    expect(screen.getByRole("img", { name: /avanzamento del percorso: 20%/i })).toBeInTheDocument();
+    // DESIGN.md v4: avanzamento lineare (non più l'anello v3), accessibile.
+    expect(
+      screen.getByRole("progressbar", { name: /avanzamento del percorso: 20%/i }),
+    ).toBeInTheDocument();
     // QuickToolsGrid
     expect(screen.getByText("Carica materiale")).toBeInTheDocument();
     expect(screen.getByText("AI Tutor")).toBeInTheDocument();
@@ -173,10 +174,37 @@ describe("HomeView modulare (V3)", () => {
     expect(callbacks.onOpenStudioTool).toHaveBeenCalledWith("interrogazione");
   });
 
-  it("non mostra né collega il profilo cognitivo dalla Home", () => {
-    render(<HomeView {...callbacks} />);
-    expect(screen.queryByText(/profilo cognitivo/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /profilo cognitivo/i })).not.toBeInTheDocument();
+  it("mostra la telemetria cognitiva in Home: esagono autentico, nessun punteggio inventato", () => {
+    // Senza profilo la cella esiste, ma dichiara apertamente che il dato manca
+    // (PRODUCT.md: mai inventare punteggi).
+    const { unmount } = render(<HomeView {...callbacks} />);
+    expect(screen.getByRole("heading", { name: "Il tuo esagono" })).toBeInTheDocument();
+    expect(screen.getByText(/profilo cognitivo non è disponibile/i)).toBeInTheDocument();
+    expect(screen.queryByText("/100")).not.toBeInTheDocument();
+    unmount();
+
+    // Con il profilo reale compaiono le sei misure autentiche.
+    render(
+      <HomeView
+        {...callbacks}
+        cognitiveProfile={{
+          nome: "Vale",
+          eta: 17,
+          istituto: "Liceo Scientifico",
+          log_score: 72,
+          mem_score: 58,
+          foc_score: 64,
+          voc_score: 81,
+          ans_score: 47,
+          app_score: 66,
+        }}
+      />,
+    );
+    for (const label of ["Logica", "Memoria", "Focus", "Lessico", "Calma", "Pratica"]) {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
+    expect(screen.getByText("72")).toBeInTheDocument();
+    expect(screen.queryByText(/profilo cognitivo non è disponibile/i)).not.toBeInTheDocument();
   });
 
   it("D2: il prossimo impegno viene prima degli strumenti rapidi (§10)", () => {
@@ -228,7 +256,7 @@ describe("HomeView modulare (V3)", () => {
     });
   });
 
-  it("non provoca overflow orizzontale: contenitore con clip e saluto che va a capo", () => {
+  it("non provoca overflow orizzontale: celle min-w-0 e testi che vanno a capo", () => {
     mockDashboard({
       ...dashboardData,
       displayName: "Alessandro Molto Lungo Con Nome Che Non Finisce Mai",
@@ -240,20 +268,29 @@ describe("HomeView modulare (V3)", () => {
     });
     const { container } = render(<HomeView {...callbacks} />);
     const root = queryHomeRoot(container);
-    expect(root?.className).toContain("overflow-x-clip");
     expect(root?.className).toContain("min-w-0");
+    // Griglia continua v4: 12 colonne, larghezza massima, celle che non sfondano.
+    const grid = container.querySelector<HTMLElement>(".cognitive-grid");
+    expect(grid).not.toBeNull();
+    expect(grid?.className).toContain("grid-cols-12");
+    expect(grid?.className).toContain("max-w-7xl");
+    for (const cell of Array.from(grid?.children ?? [])) {
+      expect(cell.className, cell.tagName).toContain("min-w-0");
+    }
     const heading = screen.getByRole("heading", { level: 1 });
     // Il saluto non si tronca: va a capo in modo bilanciato senza sfondare.
     expect(heading.className).toMatch(/text-balance|break-words/);
     expect(heading.className).not.toMatch(/truncate/);
-    // Il titolo del corso va a capo (break-words): mai ridurre i caratteri
-    // per far entrare il contenuto (V2-01: scala fissa, niente gradino lungo)
+    // Il titolo del corso va a capo: scala fissa + misura in caratteri, mai
+    // ridurre i caratteri o troncare per far entrare il contenuto.
     const courseTitle = screen.getByText(/Materia con nome lunghissimo/);
-    expect(courseTitle.className).toMatch(/truncate|line-clamp|break-words/);
     expect(courseTitle.className).toContain("break-words");
-    expect(courseTitle.className).not.toContain("text-4xl");
+    expect(courseTitle.className).toContain("max-w-[22ch]");
+    expect(courseTitle.className).not.toMatch(/truncate|line-clamp/);
+    // Il titolo della lezione va a capo con interlinea compatta.
     const lessonTitle = screen.getByText(/Titolo lunghissimo/);
-    expect(lessonTitle.className).toMatch(/truncate|line-clamp/);
+    expect(lessonTitle.className).not.toMatch(/truncate|line-clamp/);
+    expect(lessonTitle.className).toContain("leading-snug");
   });
 
   it("il compito del piano del giorno avvia una sessione Focus quando consentito", () => {

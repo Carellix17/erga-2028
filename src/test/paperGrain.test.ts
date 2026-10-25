@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
-describe("grana della carta — design system v3", () => {
+describe("grana della carta — design system v4", () => {
   const css = read("src/index.css");
 
   const tileUris = () =>
@@ -69,18 +69,24 @@ describe("grana della carta — design system v3", () => {
     expect(css).toMatch(/\.cover-grain \{[\s\S]*?pointer-events: none/);
   });
 
-  it("mantiene il tavolo sulla Home e le superfici foglio solo nelle card Home", () => {
+  it("tiene le classi di grana solo sulle superfici Home dichiarate e le rende piatte in v4", () => {
     const layout = read("src/components/layout/AppLayout.tsx");
     expect(layout).toContain('isHome && "table-grain"');
 
+    // Ganci di grana superstiti: solo le superfici Home dichiarate.
     const homeFiles = [
-      "src/components/home/CourseHeroCard.tsx",
       "src/components/home/DailyTimeline.tsx",
       "src/components/home/HomeDashboardSkeleton.tsx",
       "src/components/home/HomeView.tsx",
       "src/components/home/QuickToolsGrid.tsx",
     ];
     for (const file of homeFiles) expect(read(file), file).toContain("paper-grain");
+
+    // La cella corso v4 è piatta: nessuna grana né texture.
+    const hero = read("src/components/home/CourseHeroCard.tsx");
+    expect(hero).not.toContain("paper-grain");
+    expect(hero).not.toContain("table-grain");
+    expect(hero).not.toContain("cover-grain");
 
     for (const file of [
       "src/components/layout/BottomNav.tsx",
@@ -90,16 +96,22 @@ describe("grana della carta — design system v3", () => {
       expect(read(file), file).not.toContain("table-grain");
     }
     expect(read("src/components/layout/BottomNav.tsx")).not.toContain("cover-grain");
+
+    // DESIGN.md v4: «Nessuna grana su .paper-grain e .table-grain».
+    // Le regole restano nel CSS come alias piatti di compatibilità.
+    expect(css).toMatch(/\.paper-grain, \.table-grain \{ background-image: none; \}/);
   });
 
-  it("non sovrappone grana foglio e copertina corso attiva", () => {
+  it("confinato il satinato alle copertine: la cella corso v4 non lo usa", () => {
     const hero = read("src/components/home/CourseHeroCard.tsx");
     const background = read("src/components/studio/CourseCardBackground.tsx");
-    expect(hero).toContain("paper-grain"); // stato vuoto
-    expect(hero).toContain("CourseCardBackground"); // stato attivo
+    // La grana di copertina vive solo nel sistema copertine condiviso.
     expect(background).toContain("cover-grain");
     expect(background).not.toContain("paper-grain");
     expect(background).not.toContain("table-grain");
+    // La cella corso della Home non sovrappone né grana né copertina astratta.
+    expect(hero).not.toContain("CourseCardBackground");
+    expect(hero).not.toContain("btn-satin");
   });
 
   it("rispetta trasparenza ridotta, contrasto elevato e forced colors", () => {

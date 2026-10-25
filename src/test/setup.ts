@@ -5,19 +5,25 @@ import i18n from "@/i18n";
 // e il rilevatore di lingua prenderebbe l'app in inglese.
 void i18n.changeLanguage("it");
 
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
-  }),
-});
+// Alcuni file di test dichiarano `// @vitest-environment node` (es.
+// pdfSelection.test.ts, che lavora solo su File e Uint8Array): lì `window`
+// non esiste. Senza questa guardia il setup si interrompe, il file non si
+// carica e i suoi test non vengono mai eseguiti.
+if (typeof window !== "undefined") {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => {},
+    }),
+  });
+}
 
 // P42: jsdom non ha ResizeObserver, usato da @radix-ui/react-use-size (Slider)
 class ResizeObserverStub {
