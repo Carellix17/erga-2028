@@ -14,6 +14,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+artifacts/visual-browser/
 *.local
 
 # Editor directories and files

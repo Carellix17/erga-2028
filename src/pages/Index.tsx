@@ -356,7 +356,7 @@ const Index = () => {
               </select>
               <p className="mt-2 text-sm text-muted-foreground">{readingMode === "calma" ? "Testo più arioso per leggere con calma." : "Formule e passaggi chiave in evidenza."}</p>
             </div>
-            <div ref={setMaterialPane} />
+            <div ref={setMaterialPane} className="scroll-mt-16" />
             </div>
           </aside>
           <section aria-label="Percorso e minilezioni" className="col-span-12 min-w-0 bg-sheet lg:col-span-1">

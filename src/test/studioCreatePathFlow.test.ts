@@ -24,6 +24,7 @@ describe("creazione di un nuovo percorso in Studio", () => {
     expect(index).toContain("setShowUpload(true)");
     expect(index).toContain('embedded={activeTab === "studio" && !showUpload}');
     expect(index).toContain("onCreatePathClick={openCreatePath}");
+    expect(index).toContain('ref={setMaterialPane} className="scroll-mt-16"');
     expect(studio).toContain("onUploadClick={createPath}");
     expect(uploadSheet).toContain('side="bottom"');
   });
