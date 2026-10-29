@@ -1038,7 +1038,10 @@ erga-2028/
 ### 🚀 **Deploy e CI/CD**
 
 - **Piattaforma**: Lovable Cloud (gestibile solo tramite Lovable)
-- **Deploy**: Automatico tramite Lovable al push su main
+- **Frontend**: va in produzione solo con Publish/Update dall'editor Lovable.
+- **Edge functions**: Lovable sincronizza il codice da GitHub ma NON le deploya al push; serve un prompt di deploy cumulativo nella chat Lovable (vedi registro DEL-2026-10-29-01 del CTO), che consuma crediti.
+- **Migrazioni SQL**: NON vengono eseguite al push; vanno incollate a mano nell'editor SQL di Lovable Cloud.
+- **Secrets**: si aggiungono a mano nelle impostazioni di Lovable Cloud (solo nomi nella documentazione, mai valori).
 - **Preview**: Generazione automatica anteprime per ogni commit
 - **Migrazioni**: Gestite tramite Drizzle ORM e Supabase
 - **Variabili d'Ambiente**: Configurate tramite Lovable e file `.env.*`
