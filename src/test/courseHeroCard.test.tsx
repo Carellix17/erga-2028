@@ -19,11 +19,12 @@ describe("CourseHeroCard title contrast", () => {
     expect(article).not.toHaveAttribute("data-auto-contrast");
   });
 
-  it("auto-resolves ink for the empty-state title on its theme surface", () => {
+  it("uses a fixed foreground color for the empty-state title", () => {
     const { container } = render(<CourseHeroCard emptyTitle="Scegli un percorso" />);
     const article = container.querySelector("article")!;
 
-    expect(screen.getByRole("heading", { level: 2, name: "Scegli un percorso" })).toHaveClass("text-contrast");
-    expect(article).toHaveAttribute("data-auto-contrast");
+    expect(screen.getByRole("heading", { level: 2, name: "Scegli un percorso" })).toHaveClass("text-foreground");
+    expect(screen.getByRole("heading", { level: 2, name: "Scegli un percorso" })).not.toHaveClass("text-contrast");
+    expect(article).not.toHaveAttribute("data-auto-contrast");
   });
 });

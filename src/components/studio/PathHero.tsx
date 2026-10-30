@@ -66,6 +66,8 @@ interface PathHeroProps {
   /** Zero-based index of the current lesson (same source used by Home). */
   currentLessonIndex: number;
   totalLessons: number;
+  /** L'ultima lezione risulta completata nel registro persistito. */
+  isCourseFinished?: boolean;
   /** La fabbrica è in corso: l'eroe mostra la barra di trasformazione. */
   isGenerating?: boolean;
   progressPercent?: number;
@@ -159,6 +161,7 @@ export function PathHero({
   title,
   currentLessonIndex,
   totalLessons,
+  isCourseFinished = false,
   isGenerating = false,
   progressPercent = 0,
   canResume = false,
@@ -196,7 +199,7 @@ export function PathHero({
   const prefersReducedMotion = usePrefersReducedMotion();
   const effectiveLayoutTransition = prefersReducedMotion ? { layout: { duration: 0 } } : heroLayoutTransition;
   const multi = courses.length > 1;
-  const progress = getCourseProgress(currentLessonIndex, totalLessons);
+  const progress = getCourseProgress(currentLessonIndex, totalLessons, isCourseFinished);
   const pct = progress.completionPercent;
   const barPct = isGenerating
     ? Math.min(100, Math.max(4, progressPercent))
@@ -495,9 +498,11 @@ export function PathHero({
       ) : (
         <>
           <div className="mt-4 flex items-baseline justify-between gap-3">
-            <p className="text-sm text-contrast-secondary">
-              {t("lesson.lessonOf", { number: progress.lessonNumber, total: progress.totalLessons })}
-            </p>
+            {progress.totalLessons > 0 && (
+              <p className="text-sm text-contrast-secondary">
+                {t("lesson.lessonOf", { number: progress.lessonNumber, total: progress.totalLessons })}
+              </p>
+            )}
             <p className="text-sm font-semibold tabular-nums text-contrast">{pct}%</p>
           </div>
           <div

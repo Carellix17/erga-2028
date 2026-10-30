@@ -54,7 +54,6 @@ export function CourseHeroCard({
   return (
     <article
       className="relative isolate min-w-0 overflow-hidden border border-border bg-card"
-      data-auto-contrast={!active ? "" : undefined}
       style={active ? coverStyle : undefined}
     >
       {active && <CourseCardBackground courseName={courseTitle ?? ""} />}
@@ -93,7 +92,7 @@ export function CourseHeroCard({
       ) : (
         <div className="p-5 sm:p-6">
           <BookOpen className="mb-4 h-7 w-7 text-cognitive" aria-hidden="true" />
-          <h2 className="max-w-[24ch] break-words text-2xl font-semibold leading-tight text-contrast sm:text-3xl">
+          <h2 className="max-w-[24ch] break-words text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
             {emptyTitle ?? "Scegli o carica il tuo primo percorso"}
           </h2>
           {emptyDescription && (

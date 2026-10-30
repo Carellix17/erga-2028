@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCourseProgress } from "@/lib/courseProgress";
+import { getCompletedLessonOrders, getCourseProgress, isLastLessonCompleted } from "@/lib/courseProgress";
 
 describe("getCourseProgress", () => {
   it("uses a one-based lesson position and completion based on prior lessons", () => {
@@ -14,6 +14,25 @@ describe("getCourseProgress", () => {
       totalLessons: 22,
       completedCount: 1,
       completionPercent: 5,
+    });
+  });
+
+  it("shows 100% when the last lesson is marked complete, without moving the saved index", () => {
+    const completedOrders = getCompletedLessonOrders([
+      { order: 0 },
+      { order: 4 },
+      { order: "invalid" },
+      null,
+    ]);
+    const isFinished = isLastLessonCompleted(completedOrders, 4);
+
+    expect(completedOrders).toEqual([0, 4]);
+    expect(isFinished).toBe(true);
+    expect(getCourseProgress(3, 5, isFinished)).toEqual({
+      lessonNumber: 4,
+      totalLessons: 5,
+      completedCount: 5,
+      completionPercent: 100,
     });
   });
 

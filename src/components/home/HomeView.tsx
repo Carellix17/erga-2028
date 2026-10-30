@@ -209,7 +209,7 @@ export function HomeView({
                 type="button"
                 variant="outline"
                 onClick={() => openStudioTool(tool)}
-                className="w-full justify-start px-2.5 text-left sm:px-3"
+                className="h-auto min-h-12 w-full whitespace-normal justify-start px-2.5 text-left sm:px-3"
               >
                 <Icon className="shrink-0" aria-hidden="true" />
                 <span className="min-w-0 break-words">{label}</span>
@@ -233,7 +233,7 @@ export function HomeView({
                 triggerLight();
                 onUpload();
               }}
-              className="w-full px-2"
+              className="h-auto min-h-12 w-full whitespace-normal px-2"
             >
               <Upload aria-hidden="true" />
               <span className="min-w-0 break-words">{t("home.tools.upload")}</span>
@@ -244,7 +244,7 @@ export function HomeView({
             variant="outline"
             size="lg"
             onClick={() => openStudioTool("chat")}
-            className="w-full px-2"
+            className="h-auto min-h-12 w-full whitespace-normal px-2"
           >
             <MessageSquare aria-hidden="true" />
             <span className="min-w-0 break-words">{t("home.tools.chat")}</span>

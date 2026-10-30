@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { computeStudyStreak, daysUntil, formatEventTime, toLocalDayKey } from "@/lib/homeDashboard";
+import { getCompletedLessonOrders, isLastLessonCompleted } from "@/lib/courseProgress";
+import { computeStudyStreak, daysUntil, formatEventTime, selectHomeResumeLesson, toLocalDayKey } from "@/lib/homeDashboard";
 
 describe("home dashboard utilities", () => {
   it("formatta una data con la giornata locale", () => {
@@ -28,6 +29,31 @@ describe("home dashboard utilities", () => {
   it("interrompe la serie se manca sia oggi sia ieri", () => {
     const now = new Date(2026, 7, 20, 12);
     expect(computeStudyStreak([new Date(2026, 7, 18, 16).toISOString()], now)).toBe(0);
+  });
+
+  it("usa lo stesso indice per titolo e posizione della lezione da riprendere e riconosce il corso finito", () => {
+    const lessons = [
+      { title: "Moto uniforme", is_generated: true, lesson_order: 0 },
+      { title: "In attesa di generazione", is_generated: false, lesson_order: 1 },
+      { title: "Accelerazione", is_generated: true, lesson_order: 2 },
+    ];
+    const selection = selectHomeResumeLesson(lessons, 1);
+
+    expect(selection).toMatchObject({
+      lessonIndex: 2,
+      lessonTitle: "Accelerazione",
+      lessonNumber: 3,
+      lessonCount: 3,
+      progressPercent: 67,
+    });
+
+    const completedOrders = getCompletedLessonOrders([{ order: 2 }]);
+    const finishedSelection = selectHomeResumeLesson(
+      lessons,
+      1,
+      isLastLessonCompleted(completedOrders, lessons[lessons.length - 1]?.lesson_order),
+    );
+    expect(finishedSelection).toMatchObject({ lessonIndex: 2, lessonTitle: "Accelerazione", lessonNumber: 3, progressPercent: 100 });
   });
 
   it("calcola i giorni mancanti e pulisce gli orari", () => {

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { User, Palette, Accessibility, FileText, ChevronRight, Languages } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
 import { SettingsPlanCard } from "@/components/settings/SettingsPlanCard";
@@ -15,6 +15,7 @@ const ITEMS = [
 
 export default function SettingsIndex() {
   const { triggerLight } = useHaptics();
+  const location = useLocation();
 
   return (
     <SettingsPage>
@@ -32,7 +33,7 @@ export default function SettingsIndex() {
         {ITEMS.map(({ to, icon: Icon, title, desc }) => (
           <Link
             key={to}
-            to={to}
+            to={{ pathname: to, search: location.search }}
             onClick={() => triggerLight()}
             className="erga-list-item flex items-center gap-4 rounded-card p-4 text-left transition-all duration-200 ease-m3-emphasized active:scale-[0.99]"
           >

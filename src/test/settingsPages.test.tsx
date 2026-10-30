@@ -1,10 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import SettingsIndex from "@/pages/settings/SettingsIndex";
 import SettingsAccessibility from "@/pages/settings/SettingsAccessibility";
 import SettingsAccount from "@/pages/settings/SettingsAccount";
 import SettingsAppearance from "@/pages/settings/SettingsAppearance";
@@ -13,6 +14,10 @@ import SettingsTerms from "@/pages/settings/SettingsTerms";
 
 vi.mock("@/hooks/useHomeDashboard", () => ({
   useHomeDashboard: () => ({ data: { streakDays: 0 } }),
+}));
+
+vi.mock("@/components/settings/SettingsPlanCard", () => ({
+  SettingsPlanCard: () => <section aria-label="Piano" />,
 }));
 
 vi.mock("@/hooks/useProfileData", () => ({
@@ -97,6 +102,11 @@ vi.mock("@/components/subscription/SubscriptionSheet", () => ({
   SubscriptionSheet: () => <div data-testid="subscription-sheet" />,
 }));
 
+function CurrentLocation() {
+  const location = useLocation();
+  return <output data-testid="location">{location.pathname}{location.search}</output>;
+}
+
 function renderSettingsPage(ui: React.ReactElement, route: string) {
   return render(
     <HelmetProvider>
@@ -110,6 +120,24 @@ function renderSettingsPage(ui: React.ReactElement, route: string) {
 }
 
 describe("pagine impostazioni", () => {
+  it("preserves the active app tab when opening a settings subpage", () => {
+    render(
+      <HelmetProvider>
+        <MemoryRouter initialEntries={["/app/impostazioni?tab=studio"]}>
+          <ThemeProvider>
+            <AccessibilityProvider>
+              <SettingsIndex />
+              <CurrentLocation />
+            </AccessibilityProvider>
+          </ThemeProvider>
+        </MemoryRouter>
+      </HelmetProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("link", { name: /Generale/ }));
+    expect(screen.getByTestId("location")).toHaveTextContent("/app/impostazioni/account?tab=studio");
+  });
+
   it.each([
     ["Generale", <SettingsAccount />, "/app/impostazioni/account"],
     ["Lingua", <SettingsLanguage />, "/app/impostazioni/lingua"],

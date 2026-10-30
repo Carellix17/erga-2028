@@ -19,6 +19,7 @@ import { ModuleHeaderCard, PracticeLaunchers, SheetDrawer, type StudioTool } fro
 import { fetchContextSubjectInfo } from "@/lib/subjectFamily";
 import { AnimatePresence, motion } from "framer-motion";
 import { cleanCourseName } from "@/lib/courseName";
+import { isLastLessonCompleted } from "@/lib/courseProgress";
 import { getSubjectAccent } from "@/lib/subjectColors";
 import { useSubjectAccent } from "@/hooks/useSubjectAccent";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -155,25 +156,27 @@ export function StudioView({
   const [isCoursePickerOpen, setIsCoursePickerOpen] = useState(false);
   const [activeModuleIndex, setActiveModuleIndex] = useState<number | null>(null);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
-  const openLessonReader = useCallback(
-    (index: number) => {
-      onLessonHistoryOpen?.();
-      setActiveLessonIndex(index);
-    },
-    [onLessonHistoryOpen],
-  );
-  const closeLessonReader = useCallback(
-    () => {
-      onLessonHistoryClose?.();
-      setActiveLessonIndex(null);
-    },
-    [onLessonHistoryClose],
-  );
+  const onLessonHistoryOpenRef = useRef(onLessonHistoryOpen);
+  const onLessonHistoryCloseRef = useRef(onLessonHistoryClose);
+  useEffect(() => {
+    onLessonHistoryOpenRef.current = onLessonHistoryOpen;
+    onLessonHistoryCloseRef.current = onLessonHistoryClose;
+  }, [onLessonHistoryOpen, onLessonHistoryClose]);
+  const openLessonReader = useCallback((index: number) => {
+    onLessonHistoryOpenRef.current?.();
+    setActiveLessonIndex(index);
+  }, []);
+  const closeLessonReader = useCallback(() => {
+    onLessonHistoryCloseRef.current?.();
+    setActiveLessonIndex(null);
+  }, []);
   const lastLessonHistoryBackRequestRef = useRef(lessonHistoryBackRequest ?? 0);
   useEffect(() => {
     const request = lessonHistoryBackRequest ?? 0;
     if (request === lastLessonHistoryBackRequestRef.current) return;
     lastLessonHistoryBackRequestRef.current = request;
+    // The browser Back already consumed the overlay entry; do not call
+    // closeLessonReader here or it would navigate back a second time.
     setActiveLessonIndex(null);
   }, [lessonHistoryBackRequest]);
   const [activeContextId, setActiveContextId] = useState<string | null>(null);
@@ -264,14 +267,15 @@ export function StudioView({
     return () => { alive = false; };
   }, [effectiveContextId]);
 
-  // A different source opens its own course overview; never reuse a lesson index.
+  // A different source opens its own course overview; close through the
+  // overlay-history bridge before resetting any lesson/context state.
   useEffect(() => {
-    setActiveLessonIndex(null);
+    closeLessonReader();
     setActiveModuleIndex(null);
     setModuleScreen(null);
     setShowFinalTest(false);
     setCourseViewState("overview");
-  }, [effectiveContextId]);
+  }, [effectiveContextId, closeLessonReader]);
 
   const activeContext = allContexts.find((c) => c.id === effectiveContextId) || null;
 
@@ -341,6 +345,10 @@ export function StudioView({
   // 🅐 FONDAMENTA — la memoria vera: spunte delle lezioni completate ed
   // esito del test finale, salvati nel database (best-effort, silenzioso).
   const completedOrders = lessonsQuery.data?.completed ?? [];
+  const isCourseFinished = isLastLessonCompleted(
+    completedOrders,
+    lessons[lessons.length - 1]?.lesson_order,
+  );
   const finalTestResult = lessonsQuery.data?.finalTest ?? null;
   const markLessonComplete = useMarkLessonComplete(effectiveContextId);
   const saveFinalTestResult = useSaveFinalTestResult(effectiveContextId);
@@ -664,8 +672,8 @@ export function StudioView({
     // 📌 P17: lo spillo del "vai a quel corso" vale solo per l'arrivo —
     // toccare un altro corso a mano lo stacca SUBITO (era il bug del comando ignorato).
     onClearContext?.();
+    closeLessonReader();
     setActiveContextId(contextId);
-    setActiveLessonIndex(null);
     setCurrentLessonIndex(0);
     // ⚡ P16: il furgoncino parte SUBITO, prima ancora di ridisegnare:
     // quando Studio torna su questo percorso, la lista è quasi sempre pronta.
@@ -870,11 +878,13 @@ export function StudioView({
     setActiveModuleIndex(moduleIndexOf(index));
     setCourseViewState("branch");
     if (lesson?.is_generated) {
-      setActiveLessonIndex(index);
+      // Match a lesson opened in Studio: first Back closes the reader; the
+      // following Back returns to Home, where the launch originated.
+      openLessonReader(index);
       if (index > cachedCurrentIndex) updateProgress.mutate(index);
     }
     onLessonLaunchHandled?.();
-  }, [lessonLaunch, effectiveContextId, lessons, cachedCurrentIndex, updateProgress, onLessonLaunchHandled]);
+  }, [lessonLaunch, effectiveContextId, lessons, cachedCurrentIndex, updateProgress, onLessonLaunchHandled, openLessonReader]);
 
   const handleRegenerateLesson = async (index: number) => {
     const lesson = lessons[index];
@@ -958,6 +968,7 @@ export function StudioView({
           title={heroTitle}
           currentLessonIndex={0}
           totalLessons={0}
+          isCourseFinished={false}
           isGenerating
           progressPercent={generationPercent}
           courses={allContexts}
@@ -1188,6 +1199,7 @@ export function StudioView({
         title={heroTitle}
         currentLessonIndex={Math.max(0, Math.min(currentLessonIndex, lessons.length))}
         totalLessons={lessons.length}
+        isCourseFinished={isCourseFinished}
         isGenerating={isGenerating}
         progressPercent={generationPercent}
         canResume={courseViewState === "modules"

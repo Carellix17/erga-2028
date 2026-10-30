@@ -27,6 +27,16 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     expect(screen.getByRole("button", { name: "Azioni corso" }).className).toMatch(/w-11 h-11/);
   });
 
+  it("mostra il 100% quando l'ultima lezione risulta completata", () => {
+    render(<PathHero {...base} isCourseFinished onSelectCourse={() => {}} />);
+    expect(screen.getByText("100%")).toBeInTheDocument();
+  });
+
+  it("non mostra una posizione di lezione quando il corso non ha lezioni", () => {
+    render(<PathHero {...base} totalLessons={0} currentLessonIndex={0} onSelectCourse={() => {}} />);
+    expect(screen.queryByText(/Lezione 0 di 0/)).toBeNull();
+  });
+
   it("apre il selettore: appare Annulla subito, gli altri corsi dopo la centratura", async () => {
     render(<PathHero {...base} onSelectCourse={() => {}} />);
     // P37: il pulsante primario della card percorso si chiama "Continua"

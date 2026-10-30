@@ -1,15 +1,35 @@
-/**
- * 📜 Il "dove scorre l'app":
- * - su DESKTOP (≥768px) l'app shell sigilla la viewport e la colonna del
- *   contenuto (#app-scroll-view) scorre da sola, mentre sidebar e struttura
- *   restano immobili;
- * - su MOBILE lo scroll resta sulla finestra, come sempre.
- *
- * Questo helper capisce chi è il vero contenitore di scroll AL MOMENTO della
- * chiamata, così chi salva/ripristina posizioni o torna in alto non deve
- * conoscere la differenza (e non si rompe nulla nei test jsdom).
- */
+export type AppScrollTab = "home" | "piano" | "studio" | "core";
+export type AppScrollPositions = Record<AppScrollTab, number>;
 
+function tabFromSearch(search: string): AppScrollTab {
+  const requestedTab = new URLSearchParams(search).get("tab");
+  return requestedTab === "home" || requestedTab === "piano" || requestedTab === "studio" || requestedTab === "core"
+    ? requestedTab
+    : "home";
+}
+
+/**
+ * Save the tab being left when browser Back/Forward changes the URL directly.
+ * Settings and lesson-overlay POPs keep the same tab and must not replace its
+ * saved position with the scroll position of their own screen.
+ */
+export function saveDepartingAppTabScroll(
+  pathname: string,
+  search: string,
+  activeTab: AppScrollTab,
+  scrollTop: number,
+  scrollPositions: AppScrollPositions,
+): void {
+  const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+  if (normalizedPath !== "/app" || tabFromSearch(search) === activeTab) return;
+  scrollPositions[activeTab] = Math.max(0, scrollTop);
+}
+
+/**
+ * 📜 Il "dove scorre l'app": su desktop scorre #app-scroll-view, mentre su
+ * mobile lo scroll vive sulla finestra. I helper scelgono il contenitore che
+ * è effettivamente scrollabile nel momento della chiamata.
+ */
 function getScrollContainer(): HTMLElement | null {
   if (typeof document === "undefined") return null;
   const el = document.getElementById("app-scroll-view");

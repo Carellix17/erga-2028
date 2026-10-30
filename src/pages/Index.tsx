@@ -22,7 +22,7 @@ import { useDemoHandoff } from "@/hooks/useDemoHandoff";
 import type { StudioTool } from "@/components/studio/StudioPractice";
 import { useTranslation } from "react-i18next";
 import { SeoHead } from "@/components/SeoHead";
-import { getAppScrollTop, setAppScrollTop } from "@/lib/appScroll";
+import { getAppScrollTop, saveDepartingAppTabScroll, setAppScrollTop } from "@/lib/appScroll";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppTab, type AppTab } from "@/hooks/useAppTab";
 import { useOverlayHistory } from "@/hooks/useOverlayHistory";
@@ -42,6 +42,7 @@ const Index = () => {
   useDemoHandoff();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const location = useLocation();
   const { activeTab, navigateToTab } = useAppTab();
   const [lessonHistoryBackRequest, setLessonHistoryBackRequest] = useState(0);
   const handleLessonHistoryBack = useCallback(
@@ -94,10 +95,14 @@ const Index = () => {
   // Su desktop lo scroll vive nella content-card (app shell), su mobile nella
   // finestra: il helper appScroll sceglie il contenitore giusto.
   const scrollPositions = useRef<Record<AppTab, number>>({ home: 0, studio: 0, piano: 0, core: 0 });
+  const liveScrollRef = useRef(0);
+  const activeTabRef = useRef(activeTab);
   const changeTab = useCallback(
     (tab: AppTab, { replace = true }: { replace?: boolean } = {}) => {
       if (tab === activeTab) return;
-      scrollPositions.current[activeTab] = getAppScrollTop();
+      const currentScrollTop = getAppScrollTop();
+      scrollPositions.current[activeTab] = currentScrollTop;
+      liveScrollRef.current = currentScrollTop;
       // Ripristino SINCRONO, prima del re-render: prima viveva in un
       // useEffect successivo al paint e, con html{scroll-behavior:smooth},
       // la finestra scorreva in animazione mentre la sotto-pillola scivolava
@@ -113,6 +118,7 @@ const Index = () => {
   );
 
   useEffect(() => {
+    activeTabRef.current = activeTab;
     setAppScrollTop(scrollPositions.current[activeTab]);
   }, [activeTab]);
 
@@ -207,18 +213,32 @@ const Index = () => {
   // attiva, scroll e cache dati sopravvivono all'andata e al ritorno.
   // Prima erano route separate: uscendo, l'intera app si smontava e si
   // rimontava da zero (skeleton + stato perso), sembrava un reload.
-  const isSettingsRoute = useLocation().pathname.startsWith("/app/impostazioni");
+  const isSettingsRoute = location.pathname.startsWith("/app/impostazioni");
 
   // Memoria continua dello scroll: catturata a ogni scorrimento (finestra o
   // content-card desktop — capture prende entrambi) per poter salvare la
-  // posizione anche un istante prima che la shell venga sostituita.
-  const liveScrollRef = useRef(0);
+  // posizione anche un istante prima che la shell venga sostituita. Sulla POP
+  // del browser salviamo la scheda che si sta lasciando prima di ripristinarne
+  // la destinazione; settings e overlay non cambiano scheda e vengono ignorati.
   useEffect(() => {
     const onScroll = () => {
       liveScrollRef.current = getAppScrollTop();
     };
+    const onPopState = () => {
+      saveDepartingAppTabScroll(
+        window.location.pathname,
+        window.location.search,
+        activeTabRef.current,
+        liveScrollRef.current,
+        scrollPositions.current,
+      );
+    };
     window.addEventListener("scroll", onScroll, { passive: true, capture: true });
-    return () => window.removeEventListener("scroll", onScroll, { capture: true });
+    window.addEventListener("popstate", onPopState, { capture: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll, { capture: true });
+      window.removeEventListener("popstate", onPopState, { capture: true });
+    };
   }, []);
 
   const wasSettingsRef = useRef(false);
@@ -334,7 +354,9 @@ const Index = () => {
             onResumeLesson={(contextId, lessonIndex) => {
               setSelectedContextId(contextId);
               setLessonLaunch({ contextId, lessonIndex, requestId: Date.now() });
-              // Keep the source tab in history so Back from the launched lesson returns here.
+              // Studio opens this through the same overlay-history path as a
+              // lesson opened there: first Back closes the reader, the next
+              // returns to the source Home tab.
               changeTab("studio", { replace: false });
             }}
             onOpenPlan={() => changeTab("piano", { replace: false })}

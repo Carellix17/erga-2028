@@ -142,10 +142,12 @@ describe("Impostazioni senza «ricaricata»: route figlie di /app", () => {
 
   it("Index resta montato: renderizza l'Outlet sulle pagine impostazioni e ne ripristina lo scroll", () => {
     const index = read("src/pages/Index.tsx");
-    expect(index).toContain("useLocation().pathname.startsWith(\"/app/impostazioni\")");
+    expect(index).toContain("location.pathname.startsWith(\"/app/impostazioni\")");
     expect(index).toContain("if (isSettingsRoute) return <Outlet />;");
     // memoria dello scroll continua + ripristino al ritorno
     expect(index).toContain("liveScrollRef");
     expect(index).toMatch(/setAppScrollTop\(scrollPositions\.current\[activeTab\]\)/);
+    expect(index).toContain("saveDepartingAppTabScroll");
+    expect(index).toContain('window.addEventListener("popstate", onPopState');
   });
 });
