@@ -380,8 +380,8 @@ export function FullscreenLesson({
       </div>
 
       {/* Content area */}
-      <div className="lesson-paper min-h-0 flex-1 overflow-y-auto px-6 py-8 sm:px-12 flex flex-col" data-reading-mode={readingMode} ref={contentRef}>
-        <div className="flex-1 flex flex-col justify-center max-w-[65ch] mx-auto w-full">
+      <div className="lesson-paper min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-4 sm:py-8 flex flex-col" data-reading-mode={readingMode} ref={contentRef}>
+        <div className="mx-auto flex w-full max-w-[720px] flex-1 flex-col justify-center">
           {showResumeNotice && (
             <div
               role="status"
@@ -434,10 +434,10 @@ export function FullscreenLesson({
       </div>
 
       {/* Bottom action */}
-      <div className="flex-shrink-0 p-4 pb-8 safe-area-bottom">
-        <div className="flex items-center gap-3">
-          {/* 🔽 P7 — "Spiegami meglio": tastino 3-linee, senza scritte.
-              Apre la finestra dal basso (stessa di "evento+"). */}
+      <div className="flex-shrink-0 px-4 pt-4 pb-8 safe-area-bottom">
+        <div className="mx-auto flex w-full max-w-[720px] flex-col gap-3">
+          {/* L'assistente mantiene la stessa apertura e lo stesso bootstrap AI;
+              il footer condivide ora la colonna del contenuto. */}
           <SlideAIAssistant
             slideText={currentSlideText}
             lessonTitle={lesson.title}
@@ -446,7 +446,7 @@ export function FullscreenLesson({
           <Button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="min-w-0 flex-1 h-auto min-h-12 whitespace-normal px-3 py-3 text-sm tracking-normal bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.97]"
+            className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-sm tracking-normal bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.97]"
             size="lg"
           >
             {currentStep === steps.length - 1
@@ -811,28 +811,17 @@ function SlideAIAssistant({
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <button
+          type="button"
           className={cn(
-            "h-12 w-12 rounded-button flex items-center justify-center flex-shrink-0",
-            "bg-card text-foreground border border-outline-variant/60",
+            "inline-flex h-11 w-fit items-center justify-center gap-2 rounded-button px-3",
+            "bg-card text-sm font-medium text-foreground border border-outline-variant/60",
             "hover:bg-surface-container-high transition-colors"
           )}
           aria-label={t("lesson.explainBetterSlide")}
           title={t("lesson.explainBetter")}
         >
-          {/* Tre linee orizzontali stile Google Docs, quella di mezzo più corta — nessuna scritta (P7) */}
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            className="w-5 h-5"
-            aria-hidden="true"
-          >
-            <line x1="4" y1="6" x2="20" y2="6" />
-            <line x1="4" y1="12" x2="14" y2="12" />
-            <line x1="4" y1="18" x2="20" y2="18" />
-          </svg>
+          <Sparkles className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+          <span>{t("lesson.explainShort")}</span>
         </button>
       </SheetTrigger>
       {/* 🎨 P9a — sfondo avorio e angoli ora li mette il foglio stesso */}

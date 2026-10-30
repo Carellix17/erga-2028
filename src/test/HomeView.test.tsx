@@ -108,7 +108,7 @@ describe("HomeView modulare (V3)", () => {
     const courseHeading = screen.getByRole("heading", { name: "Fisica" });
     expect(courseHeading.className).toContain("text-3xl");
     expect(screen.getByText("Il moto rettilineo")).toBeInTheDocument();
-    expect(screen.getByText("3 di 10 lezioni")).toBeInTheDocument();
+    expect(screen.getByText("Lezione 3 di 10")).toBeInTheDocument();
     expect(container.querySelector("[data-cover-root]")).toBeInTheDocument();
     const progress = screen.getByRole("progressbar", { name: /avanzamento del percorso: 20%/i });
     expect(progress).toHaveAttribute("aria-valuenow", "20");

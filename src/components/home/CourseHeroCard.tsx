@@ -12,7 +12,7 @@ interface CourseHeroCardProps {
   eyebrowText?: string | null;
   /** Titolo della lezione da riprendere. */
   lessonTitle?: string | null;
-  /** Riga di metadati sotto la lezione, es. "7 di 28 lezioni". */
+  /** Riga di metadati sotto la lezione, es. "Lezione 7 di 28". */
   lessonMetaText?: string | null;
   /** Avanzamento del percorso 0-100, mostrato nella barra lineare. */
   progressPercent?: number | null;

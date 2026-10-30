@@ -84,6 +84,27 @@ describe("P50 lettore a schermo intero", () => {
     expect(dialog.getAttribute("aria-modal")).toBe("true");
   });
 
+  it("mostra l'icona sparkles e la scritta Spiegami senza cambiare l'aria-label", () => {
+    renderReader();
+    const assistant = screen.getByRole("button", { name: "Spiegami meglio questa slide" });
+    expect(assistant).toHaveTextContent("Spiegami");
+    expect(assistant).toHaveAttribute("aria-label", "Spiegami meglio questa slide");
+    expect(assistant.querySelector("svg")).not.toBeNull();
+  });
+
+  it("allinea contenuto e barra inferiore nella colonna max-w 720px", () => {
+    renderReader();
+    const dialog = screen.getByRole("dialog", { name: /Lezione 1 di 4: La fotosintesi/ });
+    const contentColumn = dialog.querySelector(".lesson-paper > div");
+    const bottomColumn = dialog.querySelector(".safe-area-bottom > div");
+    const continueButton = screen.getByRole("button", { name: /Continua/ });
+
+    expect(contentColumn?.className).toContain("max-w-[720px]");
+    expect(bottomColumn?.className).toContain("max-w-[720px]");
+    expect(continueButton.className).toContain("w-full");
+    expect(continueButton.className).not.toContain("flex-1");
+  });
+
   it("parte dal concetto chiave e avanza col pulsante Continua", async () => {
     renderReader();
     expect(screen.getByText("Concetto chiave")).toBeTruthy();

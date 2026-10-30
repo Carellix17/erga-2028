@@ -12,13 +12,20 @@ describe("PathHero — selettore percorsi (morphing)", () => {
 
   const base = {
     title: "Storia",
-    completedCount: 1,
+    currentLessonIndex: 1,
     totalLessons: 5,
     canResume: true,
     onResume: () => {},
     courses,
     activeCourseId: "1",
   };
+
+  it("mostra la posizione 1-based e il progresso condiviso; Azioni corso misura 44×44", () => {
+    render(<PathHero {...base} onSelectCourse={() => {}} />);
+    expect(screen.getByText("Lezione 2 di 5")).toBeInTheDocument();
+    expect(screen.getByText("20%")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Azioni corso" }).className).toMatch(/w-11 h-11/);
+  });
 
   it("apre il selettore: appare Annulla subito, gli altri corsi dopo la centratura", async () => {
     render(<PathHero {...base} onSelectCourse={() => {}} />);

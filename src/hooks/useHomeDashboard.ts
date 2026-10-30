@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCourseName } from "@/lib/courseName";
+import { getCourseProgress } from "@/lib/courseProgress";
 import { addDays, computeStudyStreak, daysUntil, formatEventTime, toLocalDayKey } from "@/lib/homeDashboard";
 
 export interface HomeResumeLesson {
@@ -10,6 +11,7 @@ export interface HomeResumeLesson {
   lessonTitle: string;
   courseTitle: string;
   coverUrl: string | null;
+  /** One-based position from saved course progress; lessonIndex remains the resume target. */
   lessonNumber: number;
   lessonCount: number;
   progressPercent: number;
@@ -210,15 +212,16 @@ export function useHomeDashboard() {
         const lesson = lessonIndex >= 0 ? lessons[lessonIndex] : null;
 
         if (lesson) {
+          const courseProgress = getCourseProgress(clampedIndex, lessons.length);
           resumeLesson = {
             contextId: activeContext.id,
             lessonIndex,
             lessonTitle: lesson.title,
             courseTitle: cleanCourseName(activeContext.file_name) || activeContext.file_name,
             coverUrl: activeContext.cover_image_url,
-            lessonNumber: lessonIndex + 1,
-            lessonCount: lessons.length,
-            progressPercent: lessons.length > 0 ? Math.round((clampedIndex / lessons.length) * 100) : 0,
+            lessonNumber: courseProgress.lessonNumber,
+            lessonCount: courseProgress.totalLessons,
+            progressPercent: courseProgress.completionPercent,
           };
         }
       }

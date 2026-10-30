@@ -8,7 +8,9 @@ import { fileURLToPath } from "node:url";
 import puppeteer from "puppeteer-core";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const outputDir = path.join(root, "artifacts", "visual-browser");
+const outputDir = process.env.VISUAL_OUTPUT_DIR
+  ? path.resolve(root, process.env.VISUAL_OUTPUT_DIR)
+  : path.join(root, "artifacts", "visual-browser");
 let baseUrl;
 let origin;
 const viewports = [
@@ -16,6 +18,8 @@ const viewports = [
   { name: "tablet", width: 820, height: 1180, isMobile: false },
   { name: "desktop", width: 1440, height: 900, isMobile: false },
 ];
+const prompt7Viewports = viewports.filter((viewport) => viewport.width === 390 || viewport.width === 1440);
+const enforcePrompt7 = process.env.VISUAL_EXPECT_PROMPT7 !== "false";
 
 let viteProcess;
 let viteOutput = "";
@@ -23,6 +27,7 @@ let browser;
 const report = {
   generatedAt: new Date().toISOString(),
   viewports: [],
+  prompt7Captures: [],
   blockedExternalRequests: [],
   pageErrors: [],
 };
@@ -129,6 +134,11 @@ async function inspectHome(viewport) {
       (element) => element.textContent?.trim() === "Erga",
     );
     const greeting = document.querySelector("main h1");
+    const coursePosition = [...document.querySelectorAll("main *")].find(
+      (element) => element.childElementCount === 0 && element.textContent?.trim().startsWith("Lezione "),
+    );
+    const progressbar = document.querySelector('main [role="progressbar"]');
+    const courseProgressPercent = progressbar?.parentElement?.querySelector("span")?.textContent?.trim() ?? null;
     const items = [...document.querySelectorAll("main ul > li")];
     const nav = [...document.querySelectorAll('nav[aria-label]')]
       .filter((element) => getComputedStyle(element).display !== "none")
@@ -143,6 +153,8 @@ async function inspectHome(viewport) {
       greetingFound: !!greetingRect,
       brandBottom: brandRect?.bottom ?? null,
       greetingTop: greetingRect?.top ?? null,
+      coursePositionText: coursePosition?.textContent?.trim() ?? null,
+      courseProgressPercent,
       listCount: items.length,
       listRects: items.map((item) => {
         const rect = item.getBoundingClientRect();
@@ -194,7 +206,16 @@ async function inspectHome(viewport) {
   await page.screenshot({ path: path.join(outputDir, `home-${viewport.name}-timeline.png`), fullPage: true });
   await page.close();
 
-  return { view: "home", viewport: viewport.name, width: viewport.width, height: viewport.height, ...widths, lastTaskRect };
+  return {
+    view: "home",
+    viewport: viewport.name,
+    width: viewport.width,
+    height: viewport.height,
+    coursePositionText: metrics.coursePositionText,
+    courseProgressPercent: metrics.courseProgressPercent,
+    ...widths,
+    lastTaskRect,
+  };
 }
 
 async function inspectStudio(viewport) {
@@ -327,6 +348,139 @@ async function inspectStudio(viewport) {
   return { view: "studio", viewport: viewport.name, width: viewport.width, height: viewport.height, ...widthsBefore, widthsAfter, embeddedPanel };
 }
 
+async function inspectPrompt7(viewport) {
+  const studioPage = await newIsolatedPage(viewport);
+  await openFixture(studioPage, "studio");
+  await studioPage.waitForSelector('button[aria-label="Crea un nuovo percorso di studio"]', {
+    visible: true,
+    timeout: 15_000,
+  });
+  const studioMetrics = await studioPage.evaluate(() => {
+    const bounds = (element) => {
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        backgroundColor: style.backgroundColor,
+        className: typeof element.className === "string" ? element.className : "",
+      };
+    };
+    const buttons = [...document.querySelectorAll("button")];
+    const continueButton = buttons.find((button) => button.textContent?.trim().startsWith("Continua"));
+    const progressPosition = [...document.querySelectorAll("main *")]
+      .find((element) => element.childElementCount === 0 && element.textContent?.trim().startsWith("Lezione "));
+    return {
+      createPath: bounds(document.querySelector('button[aria-label="Crea un nuovo percorso di studio"]')),
+      continue: bounds(continueButton),
+      courseActions: bounds(document.querySelector('button[aria-label="Azioni corso"]')),
+      progressText: progressPosition?.textContent?.trim() ?? null,
+      progressPercent: progressPosition?.parentElement?.querySelector("p:last-of-type")?.textContent?.trim() ?? null,
+    };
+  });
+  assert.ok(studioMetrics.createPath, `${viewport.name}: CTA Crea nuovo percorso non trovata`);
+  assert.ok(studioMetrics.continue, `${viewport.name}: CTA Continua non trovata`);
+  if (enforcePrompt7) {
+    assert.match(studioMetrics.createPath.className, /bg-sheet/,
+      `${viewport.name}: «Crea nuovo percorso» non usa lo stile outline`);
+    assert.doesNotMatch(studioMetrics.createPath.className, /bg-primary/,
+      `${viewport.name}: «Crea nuovo percorso» appare ancora come CTA primaria piena`);
+    assert.equal(studioMetrics.courseActions?.width, 44,
+      `${viewport.name}: «Azioni corso» non misura 44px di larghezza`);
+    assert.equal(studioMetrics.courseActions?.height, 44,
+      `${viewport.name}: «Azioni corso» non misura 44px di altezza`);
+    assert.equal(studioMetrics.progressText, "Lezione 2 di 8",
+      `${viewport.name}: posizione del corso incoerente in Studio`);
+    const homeProgress = report.viewports.find(
+      (entry) => entry.view === "home" && entry.width === viewport.width,
+    );
+    assert.ok(homeProgress, `${viewport.name}: avanzamento Home non rilevato`);
+    assert.equal(homeProgress.coursePositionText, studioMetrics.progressText,
+      `${viewport.name}: Home e Studio mostrano posizioni diverse per lo stesso corso`);
+    assert.equal(homeProgress.courseProgressPercent, studioMetrics.progressPercent,
+      `${viewport.name}: Home e Studio mostrano percentuali diverse per lo stesso corso`);
+    assert.ok(studioMetrics.continue.y >= 0 && studioMetrics.continue.y + studioMetrics.continue.height <= viewport.height,
+      `${viewport.name}: «Continua» non è visibile above the fold`);
+  }
+  const studioWidths = await assertNoHorizontalOverflow(studioPage, `${viewport.name} Studio prompt 7`);
+  const studioScreenshot = `studio-${viewport.width}x${viewport.height}.png`;
+  await studioPage.screenshot({ path: path.join(outputDir, studioScreenshot), fullPage: false });
+  await studioPage.close();
+  report.prompt7Captures.push({
+    view: "studio",
+    viewport: viewport.name,
+    width: viewport.width,
+    height: viewport.height,
+    screenshot: studioScreenshot,
+    ...studioMetrics,
+    ...studioWidths,
+  });
+
+  const lessonPage = await newIsolatedPage(viewport);
+  await openFixture(lessonPage, "lesson");
+  await lessonPage.waitForSelector('[role="dialog"][aria-label*="Velocità media e istantanea"]', {
+    visible: true,
+    timeout: 15_000,
+  });
+  const lessonMetrics = await lessonPage.evaluate(() => {
+    const bounds = (element) => {
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      return {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+      };
+    };
+    const reader = document.querySelector(".lesson-reader");
+    const buttons = [...(reader?.querySelectorAll("button") ?? [])];
+    const continueButton = buttons.find((button) => button.textContent?.trim().startsWith("Continua"));
+    const assistantButton = reader?.querySelector('button[aria-label="Spiegami meglio questa slide"]');
+    return {
+      assistantText: assistantButton?.textContent?.trim() ?? null,
+      assistantAriaLabel: assistantButton?.getAttribute("aria-label") ?? null,
+      assistant: bounds(assistantButton),
+      contentColumn: bounds(reader?.querySelector(".lesson-paper > div")),
+      bottomColumn: bounds(reader?.querySelector(".safe-area-bottom > div")),
+      continue: bounds(continueButton),
+    };
+  });
+  assert.equal(lessonMetrics.assistantAriaLabel, "Spiegami meglio questa slide",
+    `${viewport.name}: etichetta accessibile di Spiegami è cambiata`);
+  assert.ok(lessonMetrics.continue, `${viewport.name}: pulsante Continua del lettore non trovato`);
+  if (enforcePrompt7) {
+    assert.equal(lessonMetrics.assistantText, "Spiegami",
+      `${viewport.name}: etichetta visibile «Spiegami» non trovata`);
+    assert.ok(lessonMetrics.contentColumn.width <= 720,
+      `${viewport.name}: la colonna del contenuto supera 720px`);
+    assert.ok(lessonMetrics.bottomColumn.width <= 720,
+      `${viewport.name}: la colonna inferiore supera 720px`);
+    assert.equal(lessonMetrics.continue.width, lessonMetrics.bottomColumn.width,
+      `${viewport.name}: «Continua» non riempie la colonna inferiore`);
+    assert.ok(Math.abs(lessonMetrics.contentColumn.x + lessonMetrics.contentColumn.width / 2 - viewport.width / 2) <= 1,
+      `${viewport.name}: il contenuto non è centrato`);
+    assert.ok(Math.abs(lessonMetrics.bottomColumn.x + lessonMetrics.bottomColumn.width / 2 - viewport.width / 2) <= 1,
+      `${viewport.name}: la barra inferiore non è centrata`);
+  }
+  const lessonWidths = await assertNoHorizontalOverflow(lessonPage, `${viewport.name} lezione prompt 7`);
+  const lessonScreenshot = `lesson-${viewport.width}x${viewport.height}.png`;
+  await lessonPage.screenshot({ path: path.join(outputDir, lessonScreenshot), fullPage: false });
+  await lessonPage.close();
+  report.prompt7Captures.push({
+    view: "lesson",
+    viewport: viewport.name,
+    width: viewport.width,
+    height: viewport.height,
+    screenshot: lessonScreenshot,
+    ...lessonMetrics,
+    ...lessonWidths,
+  });
+}
+
 async function stopVite() {
   if (!viteProcess || viteProcess.exitCode !== null) return;
   viteProcess.kill("SIGTERM");
@@ -389,6 +543,9 @@ try {
   for (const viewport of viewports) {
     report.viewports.push(await inspectHome(viewport));
     report.viewports.push(await inspectStudio(viewport));
+  }
+  for (const viewport of prompt7Viewports) {
+    await inspectPrompt7(viewport);
   }
 
   assert.deepEqual(report.blockedExternalRequests, [], "La fixture ha tentato richieste verso servizi esterni.");

@@ -1,3 +1,7 @@
+import { getCourseProgress } from "@/lib/courseProgress";
+
+const visualCourseProgress = getCourseProgress(1, 8);
+
 const tasks = [
   {
     id: "visual-task-1",
@@ -42,9 +46,9 @@ const data = {
     lessonTitle: "Velocità, spazio e tempo: un ripasso guidato",
     courseTitle: "Fisica — moto rettilineo",
     coverUrl: null,
-    lessonNumber: 2,
-    lessonCount: 8,
-    progressPercent: 25,
+    lessonNumber: visualCourseProgress.lessonNumber,
+    lessonCount: visualCourseProgress.totalLessons,
+    progressPercent: visualCourseProgress.completionPercent,
   },
   activeContextId: "visual-context",
   hasContexts: true,

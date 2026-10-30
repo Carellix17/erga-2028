@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { HomeView } from "@/components/home/HomeView";
 import { StudioView } from "@/components/studio/StudioView";
 import { UploadSheet } from "@/components/upload/UploadSheet";
+import { LessonReaderPreview } from "./LessonReaderPreview";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { StudioTool } from "@/components/studio/StudioPractice";
 import i18n from "@/i18n";
@@ -25,7 +26,10 @@ type MaterialRequest = { tab: "loading" | "manage" } | null;
 
 export function VisualPreview() {
   const requestedView = new URLSearchParams(window.location.search).get("view");
-  const [activeTab, setActiveTab] = useState<Tab>(requestedView === "studio" ? "studio" : "home");
+  const isLessonPreview = requestedView === "lesson";
+  const [activeTab, setActiveTab] = useState<Tab>(
+    requestedView === "studio" || isLessonPreview ? "studio" : "home",
+  );
   const [showUpload, setShowUpload] = useState(false);
   const [materialsExpanded, setMaterialsExpanded] = useState(false);
   const [materialRequest, setMaterialRequest] = useState<MaterialRequest>(null);
@@ -82,7 +86,9 @@ export function VisualPreview() {
         onTabChange={setActiveTab}
         headerTitle={activeTab === "home" || activeTab === "core" ? null : activeTab === "studio" ? "Studio" : "Piano"}
       >
-        {activeTab === "home" ? (
+        {isLessonPreview ? (
+          <section className="min-h-[50vh] p-6" aria-label="Anteprima lettore lezione" />
+        ) : activeTab === "home" ? (
           <HomeView
             cognitiveProfile={{
               nome: "Arianna",
@@ -139,11 +145,13 @@ export function VisualPreview() {
         )}
       </AppLayout>
 
+      {isLessonPreview && <LessonReaderPreview />}
+
       {createPortal(
         <UploadSheet
-          embedded={activeTab === "studio" && !showUpload}
+          embedded={activeTab === "studio" && !showUpload && !isLessonPreview}
           panelRequest={materialRequest}
-          open={activeTab === "studio" || showUpload}
+          open={(activeTab === "studio" && !isLessonPreview) || showUpload}
           onOpenChange={handleOpenChange}
           onUpload={() => {}}
           uploadedFiles={[]}
