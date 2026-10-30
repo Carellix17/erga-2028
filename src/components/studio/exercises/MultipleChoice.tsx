@@ -59,10 +59,10 @@ export function MultipleChoice({
                 !showResult && !isSelected && "border-outline-variant bg-surface-container-lowest text-foreground hover:border-primary/50 hover:bg-primary/5 active:scale-[0.97]",
                 // Selected pre-submit
                 !showResult && isSelected && "border-primary bg-primary/10 text-foreground scale-[1.02] shadow-level-1",
-                // Correct answer revealed — GREEN
-                showResult && isCorrectOption && "border-emerald-500 bg-emerald-500/15 dark:bg-emerald-950/40 animate-feedback-correct",
-                // Wrong answer selected — RED
-                showResult && isSelected && !isCorrectOption && "border-rose-500 bg-rose-500/15 dark:bg-rose-950/40 animate-feedback-wrong",
+                // Correct answer revealed — success
+                showResult && isCorrectOption && "border-success bg-success/10 animate-feedback-correct",
+                // Wrong answer selected — destructive
+                showResult && isSelected && !isCorrectOption && "border-destructive bg-destructive/10 animate-feedback-wrong",
                 // Other options after submit — muted
                 showResult && !isSelected && !isCorrectOption && "border-outline-variant opacity-50"
               )}
@@ -73,21 +73,21 @@ export function MultipleChoice({
                   "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 transition-all",
                   !showResult && !isSelected && "bg-surface-container-highest text-muted-foreground",
                   !showResult && isSelected && "bg-primary text-primary-foreground",
-                  showResult && isCorrectOption && "bg-emerald-600 text-white",
-                  showResult && isSelected && !isCorrectOption && "bg-rose-600 text-white",
+                  showResult && isCorrectOption && "bg-success text-success-foreground",
+                  showResult && isSelected && !isCorrectOption && "bg-destructive text-destructive-foreground",
                 )}>
                   {showResult && isCorrectOption ? (
-                    <CheckCircle2 className="w-5 h-5" />
+                    <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
                   ) : showResult && isSelected && !isCorrectOption ? (
-                    <XCircle className="w-5 h-5" />
+                    <XCircle className="h-5 w-5" aria-hidden="true" />
                   ) : (
                     String.fromCharCode(65 + index)
                   )}
                 </div>
                 <span className={cn(
                   "body-large flex-1",
-                  showResult && isCorrectOption && "text-emerald-900 dark:text-emerald-100 font-medium",
-                  showResult && isSelected && !isCorrectOption && "text-rose-900 dark:text-rose-100 font-medium",
+                  showResult && isCorrectOption && "text-success font-medium",
+                  showResult && isSelected && !isCorrectOption && "text-destructive font-medium",
                 )}>
                   <MathText text={option} />
                 </span>
@@ -102,12 +102,17 @@ export function MultipleChoice({
           role="status"
           aria-live="polite"
           className={cn(
-          "p-4 rounded-2xl text-center font-medium flex items-center justify-center gap-2 animate-fade-up border",
+          "flex items-center justify-center gap-2 rounded-2xl border p-4 text-center font-medium animate-fade-up",
           isCorrect
-            ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100"
-            : "border-rose-500/40 bg-rose-500/15 text-rose-900 dark:bg-rose-950/40 dark:text-rose-100"
+            ? "border-success bg-success/10 text-success"
+            : "border-destructive bg-destructive/10 text-destructive"
         )}>
-          {isCorrect ? t("exercise.perfect") : t("exercise.correctHighlighted")}
+          {isCorrect ? (
+            <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
+          ) : (
+            <XCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
+          )}
+          <span>{isCorrect ? t("exercise.perfect") : t("exercise.correctHighlighted")}</span>
           {!isCorrect && (
             <span className="sr-only"> {t("exercise.correctWas", { answer: options[correctIndex] })}</span>
           )}

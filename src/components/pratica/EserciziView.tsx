@@ -770,9 +770,14 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                         className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-foreground/[0.03] transition-colors"
                       >
                         <div className={cn(
-                          "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-display font-semibold text-sm",
-                          pct >= 70 ? "bg-emerald-500/15 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" : pct >= 50 ? "bg-warning/10 text-warning" : "bg-rose-500/15 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300"
+                          "w-11 h-11 rounded-xl flex flex-shrink-0 flex-col items-center justify-center font-display text-sm font-semibold",
+                          pct >= 70 ? "bg-success/10 text-success" : pct >= 50 ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive"
                         )}>
+                          {pct >= 70 ? (
+                            <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                          ) : pct < 50 ? (
+                            <XCircle className="h-4 w-4" aria-hidden="true" />
+                          ) : null}
                           {pct}%
                         </div>
                         <div className="flex-1 min-w-0">
@@ -789,9 +794,17 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                             <p className="body-small text-success">Nessun errore: perfetto</p>
                           ) : (
                             wrong.map((d, i) => (
-                              <div key={i} className="p-2.5 rounded-xl bg-rose-500/10 dark:bg-rose-950/30 border border-rose-500/20 space-y-1">
-                                <p className="body-small font-medium text-foreground">{d.q}</p>
-                                {d.correctAnswer && <p className="body-small text-emerald-700 dark:text-emerald-300 font-medium">✓ {d.correctAnswer}</p>}
+                              <div key={i} className="space-y-1 rounded-xl border border-destructive bg-destructive/10 p-2.5">
+                                <p className="flex items-start gap-2 body-small font-medium text-foreground">
+                                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+                                  {d.q}
+                                </p>
+                                {d.correctAnswer && (
+                                  <p className="inline-flex items-center gap-1 body-small font-medium text-success">
+                                    <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+                                    {d.correctAnswer}
+                                  </p>
+                                )}
                                 {d.explanation && (
                                   <div className="body-small text-muted-foreground prose prose-sm max-w-none prose-p:my-1">
                                     <ReactMarkdown>{d.explanation}</ReactMarkdown>
@@ -876,12 +889,17 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
     return (
       <div className="no-halo fixed inset-0 z-50 bg-background flex flex-col h-full px-4 py-6 items-center justify-center space-y-6 pt-safe pb-safe">
         <div className={cn(
-          "w-28 h-28 rounded-full flex flex-col items-center justify-center",
-          grade >= 7 ? "bg-emerald-500/15 dark:bg-emerald-950/40" : grade >= 5 ? "bg-warning/10" : "bg-rose-500/15 dark:bg-rose-950/40"
+          "flex h-28 w-28 flex-col items-center justify-center rounded-full",
+          grade >= 7 ? "bg-success/10" : grade >= 5 ? "bg-warning/10" : "bg-destructive/10"
         )}>
+          {grade >= 7 ? (
+            <CheckCircle2 className="h-5 w-5 text-success" aria-hidden="true" />
+          ) : grade < 5 ? (
+            <XCircle className="h-5 w-5 text-destructive" aria-hidden="true" />
+          ) : null}
           <span className={cn(
             "font-display text-4xl font-semibold",
-            grade >= 7 ? "text-emerald-700 dark:text-emerald-300" : grade >= 5 ? "text-warning" : "text-rose-700 dark:text-rose-300"
+            grade >= 7 ? "text-success" : grade >= 5 ? "text-warning" : "text-destructive"
           )}>
             {grade}
           </span>
@@ -900,12 +918,19 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
             ripresi subito mentre sono freschi (e salvati in cronologia). */}
         {results.some((r) => !r.isCorrect) && (
           <div className="w-full max-w-md max-h-[36vh] overflow-y-auto space-y-2 scrollbar-thin">
-            <p className="label-medium font-semibold text-rose-700 dark:text-rose-300 text-left">Da ripassare ({results.filter((r) => !r.isCorrect).length}):</p>
+            <p className="flex items-center gap-2 text-left label-medium font-semibold text-destructive">
+              <XCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Da ripassare ({results.filter((r) => !r.isCorrect).length}):
+            </p>
             {results.filter((r) => !r.isCorrect).map((r, i) => (
-              <div key={i} className="text-left p-3 rounded-2xl bg-rose-500/10 dark:bg-rose-950/30 border border-rose-500/20 space-y-1.5">
-                <p className="body-small font-medium text-foreground">{r.exercise.question}</p>
-                <p className="body-small text-emerald-700 dark:text-emerald-300 font-medium">
-                  ✓ {Array.isArray(r.exercise.correctAnswer) ? r.exercise.correctAnswer.join(", ") : r.exercise.correctAnswer}
+              <div key={i} className="space-y-1.5 rounded-2xl border border-destructive bg-destructive/10 p-3 text-left">
+                <p className="flex items-start gap-2 body-small font-medium text-foreground">
+                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+                  {r.exercise.question}
+                </p>
+                <p className="inline-flex items-center gap-1 body-small font-medium text-success">
+                  <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  {Array.isArray(r.exercise.correctAnswer) ? r.exercise.correctAnswer.join(", ") : r.exercise.correctAnswer}
                 </p>
                 {r.exercise.explanation && (
                   <div className="body-small text-muted-foreground prose prose-sm max-w-none prose-p:my-1">
@@ -982,7 +1007,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
         </div>
 
         {/* Answer input based on type — MC/TF options restano visibili
-            dopo la verifica, colorate: verde = corretta, rosso = sbagliata. */}
+            dopo la verifica con feedback semantico e icone. */}
         <div className="space-y-2">
             {(currentExercise.type === "multiple_choice" || currentExercise.type === "true_false") && (
               <div className="space-y-2">
@@ -1001,15 +1026,19 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                             ? "bg-primary text-primary-foreground border-primary shadow-level-1"
                             : "bg-surface-container text-foreground border-outline-variant/30 hover:bg-surface-container-high"
                         ),
-                        // ✅ Risposta corretta rivelata — VERDE
-                        isCorrectOption && "border-emerald-500 bg-emerald-500/15 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 font-medium",
-                        // ❌ Risposta sbagliata selezionata — ROSSO
-                        isWrongPick && "border-rose-500 bg-rose-500/15 dark:bg-rose-950/40 text-rose-900 dark:text-rose-100 font-medium",
+                        // Risposta corretta rivelata — success
+                        isCorrectOption && "border-success bg-success/10 text-success font-medium",
+                        // Risposta sbagliata selezionata — destructive
+                        isWrongPick && "border-destructive bg-destructive/10 text-destructive font-medium",
                         // Distrattori non scelti dopo la verifica — attenuati
                         showResult && !isCorrectOption && !isWrongPick && "bg-surface-container text-foreground border-outline-variant/30 opacity-50"
                       )}
                     >
-                      <span className="body-medium">{opt}</span>
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="body-medium flex-1">{opt}</span>
+                        {isCorrectOption && <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-hidden="true" />}
+                        {isWrongPick && <XCircle className="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />}
+                      </span>
                     </button>
                   );
                 })}
@@ -1087,26 +1116,28 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
           <div className={cn(
             "p-4 rounded-2xl border animate-fade-up mt-4",
             results[results.length - 1]?.isCorrect
-              ? "border-emerald-500/40 bg-emerald-500/15 dark:bg-emerald-950/40"
-              : "border-rose-500/40 bg-rose-500/15 dark:bg-rose-950/40"
+              ? "border-success bg-success/10"
+              : "border-destructive bg-destructive/10"
           )}>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center gap-2">
               {results[results.length - 1]?.isCorrect
-                ? <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                : <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                ? <CheckCircle2 className="h-5 w-5 text-success" aria-hidden="true" />
+                : <XCircle className="h-5 w-5 text-destructive" aria-hidden="true" />
               }
               <span className={cn(
                 "label-large font-semibold",
-                results[results.length - 1]?.isCorrect
-                  ? "text-emerald-900 dark:text-emerald-100"
-                  : "text-rose-900 dark:text-rose-100"
+                results[results.length - 1]?.isCorrect ? "text-success" : "text-destructive"
               )}>
                 {results[results.length - 1]?.isCorrect ? "Corretto" : "Non corretto"}
               </span>
             </div>
             {!results[results.length - 1]?.isCorrect && (
-              <p className="body-small text-muted-foreground mb-2">
-                Risposta corretta: <strong className="text-emerald-700 dark:text-emerald-300">{Array.isArray(currentExercise.correctAnswer) ? currentExercise.correctAnswer.join(", ") : currentExercise.correctAnswer}</strong>
+              <p className="mb-2 body-small text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <Check className="h-4 w-4 text-success" aria-hidden="true" />
+                  Risposta corretta:
+                </span>{" "}
+                <strong className="text-success">{Array.isArray(currentExercise.correctAnswer) ? currentExercise.correctAnswer.join(", ") : currentExercise.correctAnswer}</strong>
               </p>
             )}
             <div className="body-small text-muted-foreground prose prose-sm">
