@@ -8,7 +8,9 @@
     "next": "Avanti",
     "language": "Lingua",
     "italian": "Italiano",
-    "english": "Inglese"
+    "english": "Inglese",
+    "showPassword": "Mostra password",
+    "hidePassword": "Nascondi password"
   },
   "nav": {
     "studio": "Studio",
@@ -282,6 +284,12 @@
     "heroChip1": "Micro-lezioni",
     "heroChip2": "Esercizi mirati",
     "heroChip3": "Simulazioni orali"
+  },
+  "notFound": {
+    "title": "Pagina non trovata",
+    "description": "Il link potrebbe essere sbagliato o la pagina è stata spostata.",
+    "home": "Torna alla home",
+    "signIn": "Accedi"
   },
   "signup": {
     "title": "Crea il tuo account",

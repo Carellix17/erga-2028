@@ -326,17 +326,22 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        aria-label={showPassword ? "Nascondi password" : "Mostra password"}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                        aria-label={t(showPassword ? "common.hidePassword" : "common.showPassword")}
+                        aria-pressed={showPassword}
+                        className="absolute right-1 top-1/2 grid h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 place-items-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" aria-hidden="true" />
+                        ) : (
+                          <Eye className="h-5 w-5" aria-hidden="true" />
+                        )}
                       </button>
                     </GlassField>
                     <div className="flex justify-end">
                       <button
                         type="button"
                         onClick={() => { setShowForgot(true); setForgotEmail(email); }}
-                        className="text-xs font-semibold text-brand-deep transition-colors hover:underline"
+                        className="inline-flex min-h-[44px] items-center px-2 py-3 text-xs font-semibold text-brand-deep transition-colors hover:underline"
                       >
                         {t("login.forgot")}
                       </button>
@@ -350,7 +355,7 @@ export default function Login() {
 
                   <p className="text-center text-sm text-muted-foreground">
                     {t("login.noAccount")}{" "}
-                    <Link to="/registrati" className="font-medium text-brand-deep hover:underline">
+                    <Link to="/registrati" className="inline-flex min-h-[44px] items-center py-3 font-medium text-brand-deep hover:underline">
                       {t("login.goSignup")}
                     </Link>
                   </p>
@@ -439,7 +444,7 @@ export default function Login() {
           </div>
 
           <div className="relative max-w-md">
-            <h2 className="font-radja text-4xl leading-tight lg:text-5xl">
+            <h2 className="font-radja text-4xl leading-tight text-white lg:text-5xl">
               {t("login.heroTitle")}
             </h2>
             <p className="mt-5 text-sm leading-relaxed text-white/60">
@@ -462,7 +467,7 @@ export default function Login() {
             </div>
           </div>
 
-          <p className="relative text-[11px] uppercase tracking-[0.18em] text-white/35">
+          <p className="relative text-xs uppercase tracking-[0.18em] text-white/60">
             Erga · beta gratuita
           </p>
         </div>

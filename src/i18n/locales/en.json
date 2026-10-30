@@ -8,7 +8,9 @@
     "next": "Next",
     "language": "Language",
     "italian": "Italian",
-    "english": "English"
+    "english": "English",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "nav": {
     "studio": "Studio",
@@ -282,6 +284,12 @@
     "heroChip1": "Micro-lessons",
     "heroChip2": "Targeted exercises",
     "heroChip3": "Oral simulations"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The link may be incorrect or the page may have moved.",
+    "home": "Return to home",
+    "signIn": "Sign in"
   },
   "signup": {
     "title": "Create your account",
