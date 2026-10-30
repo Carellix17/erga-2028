@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { FullscreenLessonGate } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
 import { GenerationProgress } from "./GenerationProgress";
@@ -64,6 +64,10 @@ interface StudioViewProps {
   selectedContextId?: string | null;
   lessonLaunch?: { contextId: string; lessonIndex: number; requestId: number } | null;
   onLessonLaunchHandled?: () => void;
+  /** A Studio lesson adds a same-URL history entry; Back closes the reader. */
+  lessonHistoryBackRequest?: number;
+  onLessonHistoryOpen?: () => void;
+  onLessonHistoryClose?: () => void;
   /** 🧭 Percorsi 2.0 — strumento di Studio da aprire all'ingresso
    *  (chat/esercizi/interrogazione/palestra), es. dalle pillole della Home. */
   toolLaunch?: { tool: StudioTool; requestId: number } | null;
@@ -73,7 +77,24 @@ interface StudioViewProps {
   onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
-export function StudioView({ hasFiles, onUploadClick, onCreatePathClick, selectedContextId, lessonLaunch, onLessonLaunchHandled, toolLaunch, onToolLaunchHandled, onClearContext, onOpenCourseMaterials, onFullscreenChange, embeddedReader = false, readingMode = "calma" }: StudioViewProps) {
+export function StudioView({
+  hasFiles,
+  onUploadClick,
+  onCreatePathClick,
+  selectedContextId,
+  lessonLaunch,
+  onLessonLaunchHandled,
+  lessonHistoryBackRequest,
+  onLessonHistoryOpen,
+  onLessonHistoryClose,
+  toolLaunch,
+  onToolLaunchHandled,
+  onClearContext,
+  onOpenCourseMaterials,
+  onFullscreenChange,
+  embeddedReader = false,
+  readingMode = "calma",
+}: StudioViewProps) {
   const { triggerLight } = useHaptics();
   const createPath = onCreatePathClick ?? onUploadClick;
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
@@ -134,6 +155,27 @@ export function StudioView({ hasFiles, onUploadClick, onCreatePathClick, selecte
   const [isCoursePickerOpen, setIsCoursePickerOpen] = useState(false);
   const [activeModuleIndex, setActiveModuleIndex] = useState<number | null>(null);
   const [activeLessonIndex, setActiveLessonIndex] = useState<number | null>(null);
+  const openLessonReader = useCallback(
+    (index: number) => {
+      onLessonHistoryOpen?.();
+      setActiveLessonIndex(index);
+    },
+    [onLessonHistoryOpen],
+  );
+  const closeLessonReader = useCallback(
+    () => {
+      onLessonHistoryClose?.();
+      setActiveLessonIndex(null);
+    },
+    [onLessonHistoryClose],
+  );
+  const lastLessonHistoryBackRequestRef = useRef(lessonHistoryBackRequest ?? 0);
+  useEffect(() => {
+    const request = lessonHistoryBackRequest ?? 0;
+    if (request === lastLessonHistoryBackRequestRef.current) return;
+    lastLessonHistoryBackRequestRef.current = request;
+    setActiveLessonIndex(null);
+  }, [lessonHistoryBackRequest]);
   const [activeContextId, setActiveContextId] = useState<string | null>(null);
   // 🔖 P10a: segnalibro nel cloud — l'app ricorda l'ultimo percorso VISTO
   // (non solo l'ultimo generato), condiviso fra tutti i dispositivi.
@@ -551,7 +593,7 @@ export function StudioView({ hasFiles, onUploadClick, onCreatePathClick, selecte
       const stillOnModule = courseViewState === "branch" && activeModuleIndex === target;
       if (first?.is_generated) {
         if (stillOnModule) {
-          setActiveLessonIndex(firstIdx);
+          openLessonReader(firstIdx);
           if (firstIdx > cachedCurrentIndex) updateProgress.mutate(firstIdx);
         }
         toast({ title: `Modulo ${target + 1} pronto!`, description: "Le nuove lezioni ti aspettano: buono studio!" });
@@ -654,7 +696,7 @@ export function StudioView({ hasFiles, onUploadClick, onCreatePathClick, selecte
   // stesso segnalibro cloud già usato dalla card percorso.
   const resumeCurrentLesson = () => {
     const l = lessons[currentLessonIndex];
-    if (l?.is_generated) setActiveLessonIndex(currentLessonIndex);
+    if (l?.is_generated) openLessonReader(currentLessonIndex);
   };
 
   const openModule = async (moduleIndex: number) => {
@@ -774,7 +816,7 @@ export function StudioView({ hasFiles, onUploadClick, onCreatePathClick, selecte
       return;
     }
     if (lesson.is_generated) {
-      setActiveLessonIndex(index);
+      openLessonReader(index);
       if (index > cachedCurrentIndex) updateProgress.mutate(index);
       return;
     }
@@ -797,7 +839,7 @@ export function StudioView({ hasFiles, onUploadClick, onCreatePathClick, selecte
       // 🚦 P9: riparazione fallita → il vagone non si apre vuoto.
       const moduleLesson = lessons[index];
       if (!moduleLesson?.is_generated && !(await generateLessonContent(index))) return;
-      setActiveLessonIndex(index);
+      openLessonReader(index);
       if (index > cachedCurrentIndex) updateProgress.mutate(index);
     }
   };
@@ -1247,11 +1289,11 @@ export function StudioView({ hasFiles, onUploadClick, onCreatePathClick, selecte
           contextId={effectiveContextId ?? null}
           lessonNumber={activeLessonIndex + 1}
           totalLessons={lessons.length}
-          onClose={() => setActiveLessonIndex(null)}
+          onClose={closeLessonReader}
           onComplete={(result) => {
             const nextIndex = activeLessonIndex < lessons.length - 1 ? activeLessonIndex + 1 : activeLessonIndex;
             setCurrentLessonIndex(nextIndex);
-            setActiveLessonIndex(null);
+            closeLessonReader();
             if (nextIndex > cachedCurrentIndex) updateProgress.mutate(nextIndex);
             // 🅐 FONDAMENTA — registra la lezione completata con l'esito
             // degli esercizi (best-effort: se il backend non è pronto, silenzio).

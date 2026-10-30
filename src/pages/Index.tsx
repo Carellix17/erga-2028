@@ -24,8 +24,8 @@ import { useTranslation } from "react-i18next";
 import { SeoHead } from "@/components/SeoHead";
 import { getAppScrollTop, setAppScrollTop } from "@/lib/appScroll";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-type Tab = "home" | "studio" | "piano" | "core";
+import { useAppTab, type AppTab } from "@/hooks/useAppTab";
+import { useOverlayHistory } from "@/hooks/useOverlayHistory";
 
 interface UploadedFile {
   name: string;
@@ -42,7 +42,14 @@ const Index = () => {
   useDemoHandoff();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const [activeTab, setActiveTab] = useState<Tab>("home");
+  const { activeTab, navigateToTab } = useAppTab();
+  const [lessonHistoryBackRequest, setLessonHistoryBackRequest] = useState(0);
+  const handleLessonHistoryBack = useCallback(
+    () => setLessonHistoryBackRequest((request) => request + 1),
+    [],
+  );
+  const { pushEntry: pushLessonHistoryEntry, closeEntry: closeLessonHistoryEntry } =
+    useOverlayHistory(handleLessonHistoryBack);
   const [showUpload, setShowUpload] = useState(false);
   const [materialRequest, setMaterialRequest] = useState<{ tab: "loading" | "manage" } | null>(null);
   const [uploaderHost] = useState(() => document.createElement("div"));
@@ -86,18 +93,23 @@ const Index = () => {
   // 🧭 P24 — memoria di posizione: ogni stanza riapre DOV'ERA (oggetti persistenti).
   // Su desktop lo scroll vive nella content-card (app shell), su mobile nella
   // finestra: il helper appScroll sceglie il contenitore giusto.
-  const scrollPositions = useRef<Record<Tab, number>>({ home: 0, studio: 0, piano: 0, core: 0 });
+  const scrollPositions = useRef<Record<AppTab, number>>({ home: 0, studio: 0, piano: 0, core: 0 });
   const changeTab = useCallback(
-    (tab: Tab) => {
+    (tab: AppTab, { replace = true }: { replace?: boolean } = {}) => {
+      if (tab === activeTab) return;
       scrollPositions.current[activeTab] = getAppScrollTop();
       // Ripristino SINCRONO, prima del re-render: prima viveva in un
       // useEffect successivo al paint e, con html{scroll-behavior:smooth},
       // la finestra scorreva in animazione mentre la sotto-pillola scivolava
       // — da qui i «salti» della pillola segnalati dal proprietario (6/10).
       setAppScrollTop(scrollPositions.current[tab]);
-      setActiveTab(tab);
+      navigateToTab(tab, { replace });
     },
-    [activeTab]
+    [activeTab, navigateToTab]
+  );
+  const changeTabFromDock = useCallback(
+    (tab: AppTab) => changeTab(tab, { replace: false }),
+    [changeTab],
   );
 
   useEffect(() => {
@@ -175,7 +187,7 @@ const Index = () => {
 
   const handleSelectFile = (contextId: string) => {
     setSelectedContextId(contextId);
-    changeTab("studio");
+    changeTab("studio", { replace: false });
   };
 
   const handleFileDeleted = () => {
@@ -286,7 +298,7 @@ const Index = () => {
       />
       <AppLayout
         activeTab={activeTab}
-        onTabChange={changeTab}
+        onTabChange={changeTabFromDock}
         headerTitle={headerTitle}
         hideChrome={isFullscreen}
       >
@@ -318,16 +330,17 @@ const Index = () => {
         {activeTab === "home" && (
           <HomeView
             cognitiveProfile={cognitive}
-            onOpenStudio={() => changeTab("studio")}
+            onOpenStudio={() => changeTab("studio", { replace: false })}
             onResumeLesson={(contextId, lessonIndex) => {
               setSelectedContextId(contextId);
               setLessonLaunch({ contextId, lessonIndex, requestId: Date.now() });
-              changeTab("studio");
+              // Keep the source tab in history so Back from the launched lesson returns here.
+              changeTab("studio", { replace: false });
             }}
-            onOpenPlan={() => changeTab("piano")}
+            onOpenPlan={() => changeTab("piano", { replace: false })}
             onOpenStudioTool={(tool) => {
               setToolLaunch({ tool, requestId: Date.now() });
-              changeTab("studio");
+              changeTab("studio", { replace: false });
             }}
             onUpload={openUpload}
           />
@@ -369,6 +382,9 @@ const Index = () => {
             selectedContextId={selectedContextId}
             lessonLaunch={lessonLaunch}
             onLessonLaunchHandled={() => setLessonLaunch(null)}
+            lessonHistoryBackRequest={lessonHistoryBackRequest}
+            onLessonHistoryOpen={pushLessonHistoryEntry}
+            onLessonHistoryClose={closeLessonHistoryEntry}
             toolLaunch={toolLaunch}
             onToolLaunchHandled={() => setToolLaunch(null)}
             onClearContext={() => setSelectedContextId(null)}

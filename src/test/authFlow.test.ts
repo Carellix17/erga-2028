@@ -23,6 +23,7 @@ describe("normalizeEmail", () => {
 describe("safeNextPath", () => {
   it("mantiene i path interni sicuri", () => {
     expect(safeNextPath("/app")).toBe("/app");
+    expect(safeNextPath("/app?tab=studio")).toBe("/app?tab=studio");
     expect(safeNextPath("/app/impostazioni?tab=1")).toBe("/app/impostazioni?tab=1");
   });
 
