@@ -273,7 +273,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
               </span>
             );
           } else if (isLocked) {
-            badge = <span className="badge-chip bg-surface-container-high text-muted-foreground">Da sbloccare</span>;
+            badge = <span className="badge-chip bg-surface-container-high text-ink-muted">Da sbloccare</span>;
           } else {
             badge = <span className="badge-chip bg-surface-container-high text-foreground">Apri</span>;
           }
@@ -301,7 +301,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                 "interactive-card flex items-center gap-3.5 rounded-card bg-card border border-border px-4 py-4 text-left shadow-level-1",
                 !isLocked && "hover:border-primary/30 hover:bg-surface-container-low",
                 isCur && "border-subject-accent ring-2 ring-subject-accent",
-                isLocked && "opacity-60 cursor-default",
+                isLocked && "cursor-default",
               )}
             >
               {/* Targa numero */}
@@ -311,7 +311,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                   isDone && "bg-subject-accent text-subject-accent-foreground",
                   isCur && "bg-subject-accent text-subject-accent-foreground",
                   isGen && "bg-surface-container-high text-muted-foreground",
-                  isLocked && "bg-surface-container-high text-muted-foreground",
+                  isLocked && "bg-surface-container-high text-ink-muted",
                   !isDone && !isCur && !isGen && !isLocked && "bg-primary text-primary-foreground",
                 )}
               >
@@ -329,7 +329,10 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                 <span className="block text-base font-semibold leading-snug text-foreground">
                   {m.title}
                 </span>
-                <span className="block text-sm text-muted-foreground mt-1 font-medium">
+                <span className={cn(
+                  "mt-1 block text-sm font-medium",
+                  isLocked ? "text-ink-muted" : "text-muted-foreground",
+                )}>
                   {subtitle}
                 </span>
                 {(isCur || isGen) && (
