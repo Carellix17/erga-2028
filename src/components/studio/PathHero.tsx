@@ -534,15 +534,17 @@ export function PathHero({
               ) : (
                 <>
               {canResume && onResume && (
-                <motion.button
-                  layout
+                <Button
+                  asChild
                   type="button"
                   onClick={() => { triggerLight(); onResume(); }}
-                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-button border border-input bg-primary px-1.5 text-xs font-mono font-semibold uppercase tracking-normal text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:gap-2 sm:px-4 sm:text-sm sm:tracking-wider"
+                  className="min-w-0 flex-1 gap-1 px-1.5 sm:gap-2 sm:px-4"
                 >
-                  <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
-                  Continua
-                </motion.button>
+                  <motion.button layout>
+                    <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
+                    Continua
+                  </motion.button>
+                </Button>
               )}
               {multi && onSelectCourse && (
                 <motion.button
@@ -572,15 +574,17 @@ export function PathHero({
               className="mt-5 flex items-stretch gap-2"
             >
               {canResume && onResume ? (
-                <motion.button
-                  layout
+                <Button
+                  asChild
                   type="button"
                   onClick={() => { triggerLight(); closePicker(); onResume?.(); }}
-                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-button border border-input bg-primary px-1.5 text-xs font-mono font-semibold uppercase tracking-normal text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:gap-2 sm:px-4 sm:text-sm sm:tracking-wider"
+                  className="min-w-0 flex-1 gap-1 px-1.5 sm:gap-2 sm:px-4"
                 >
-                  <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
-                  Continua
-                </motion.button>
+                  <motion.button layout>
+                    <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
+                    Continua
+                  </motion.button>
+                </Button>
               ) : (
                 <div className="flex-1" />
               )}

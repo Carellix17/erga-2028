@@ -209,7 +209,7 @@ export function HomeView({
                 type="button"
                 variant="outline"
                 onClick={() => openStudioTool(tool)}
-                className="h-auto min-h-12 w-full justify-start whitespace-normal px-2.5 py-2 text-left text-[13px] leading-tight sm:px-3 sm:text-sm"
+                className="w-full justify-start px-2.5 text-left sm:px-3"
               >
                 <Icon className="shrink-0" aria-hidden="true" />
                 <span className="min-w-0 break-words">{label}</span>
@@ -222,26 +222,29 @@ export function HomeView({
         <div
           role="group"
           aria-label={t("home.tools.materialChatGroupAria")}
-          className="grid min-w-0 grid-cols-2 gap-2"
+          className={`grid min-w-0 gap-2 ${data.hasContexts ? "grid-cols-2" : "grid-cols-1"}`}
         >
-          <Button
-            type="button"
-            size="lg"
-            onClick={() => {
-              triggerLight();
-              onUpload();
-            }}
-            className="h-auto min-h-12 w-full whitespace-normal px-2 py-2 text-[13px] leading-tight sm:text-sm"
-          >
-            <Upload aria-hidden="true" />
-            <span className="min-w-0 break-words">{t("home.tools.upload")}</span>
-          </Button>
+          {data.hasContexts && (
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={() => {
+                triggerLight();
+                onUpload();
+              }}
+              className="w-full px-2"
+            >
+              <Upload aria-hidden="true" />
+              <span className="min-w-0 break-words">{t("home.tools.upload")}</span>
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
             size="lg"
             onClick={() => openStudioTool("chat")}
-            className="h-auto min-h-12 w-full whitespace-normal px-2 py-2 text-[13px] leading-tight sm:text-sm"
+            className="w-full px-2"
           >
             <MessageSquare aria-hidden="true" />
             <span className="min-w-0 break-words">{t("home.tools.chat")}</span>

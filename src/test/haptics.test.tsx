@@ -125,11 +125,11 @@ describe("haptics", () => {
     expect(vibrateMock).toHaveBeenCalledWith(10);
   });
 
-  it("applica feedback light agli strumenti rapidi della Home", () => {
+  it("applica feedback light alla CTA upload della Home vuota senza duplicare il pulsante", () => {
     render(<HomeView {...callbacks} />);
 
-    // Strumento rapido "Carica materiale": feedback light + azione di upload
-    fireEvent.click(screen.getByText("Carica materiale"));
+    expect(screen.queryByRole("button", { name: "Carica materiale" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Aggiungi materiale" }));
     expect(vibrateMock).toHaveBeenCalledWith(10);
     expect(callbacks.onUpload).toHaveBeenCalled();
   });
