@@ -169,8 +169,18 @@ export default function Registrati() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-muted-foreground hover:text-foreground transition-colors">
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={t(showPassword ? "common.hidePassword" : "common.showPassword")}
+                  aria-pressed={showPassword}
+                  className="absolute right-1 top-1/2 grid h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 place-items-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-5 w-5" aria-hidden="true" />
+                  )}
                 </button>
               </div>
               <div className={cn("flex items-center gap-1 text-xs", isLengthValid ? "text-tertiary" : "text-muted-foreground")}>
@@ -205,7 +215,7 @@ export default function Registrati() {
 
             <p className="text-center text-sm text-muted-foreground">
               {t("signup.haveAccount")}{" "}
-              <Link to="/login" className="text-brand-deep font-medium hover:underline">
+              <Link to="/login" className="inline-flex min-h-[44px] items-center py-3 text-brand-deep font-medium hover:underline">
                 {t("signup.goLogin")}
               </Link>
             </p>

@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { SeoHead } from "@/components/SeoHead";
+import { useTranslation } from "react-i18next";
 
 export default function ChangePassword() {
   const [newPassword, setNewPassword] = useState("");
@@ -19,6 +20,7 @@ export default function ChangePassword() {
   const { currentEmail, isGoogleUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
 
   // 💌 P41: chi arriva dal link "reimposta password" atterra qui con ?code=:
@@ -87,9 +89,19 @@ export default function ChangePassword() {
                 <Label htmlFor="new-password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Nuova password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="pl-10 pr-10" autoComplete="new-password" required />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="Nuova password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="pl-10 pr-12" autoComplete="new-password" required />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={t(showPassword ? "common.hidePassword" : "common.showPassword")}
+                    aria-pressed={showPassword}
+                    className="absolute right-1 top-1/2 grid h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 place-items-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" aria-hidden="true" />
+                    ) : (
+                      <Eye className="h-5 w-5" aria-hidden="true" />
+                    )}
                   </button>
                 </div>
                 <div className={cn("flex items-center gap-1 text-xs", isLengthValid ? "text-brand-deep" : "text-muted-foreground")}>
