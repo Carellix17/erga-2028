@@ -6,7 +6,7 @@
    La regex filtro-emoji del TTS (riga speakIfEnabled) lavora volutamente su code unit:
    aggiungere il flag `u` cambierebbe il testo parlato = logica. Intatta. */
 import { useState, useRef, useEffect, useCallback } from"react";
-import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX, Loader2, CheckCircle2, Brain, ArrowLeft } from "lucide-react";
+import { Mic, MicOff, RotateCcw, BookOpen, MessageSquare, Play, Square, Volume2, VolumeX, Loader2, CheckCircle2, XCircle, Brain, ArrowLeft } from "lucide-react";
 import { Button } from"@/components/ui/button";
 import { Slider } from"@/components/ui/slider";
 import { cn } from"@/lib/utils";
@@ -600,8 +600,8 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  // Final report screen
  if (mode ==="report" && finalReport) {
  const avg = finalReport.average;
- const avgColor = avg >= 7 ?"text-emerald-700 dark:text-emerald-300" : avg >= 5 ?"text-warning" :"text-rose-700 dark:text-rose-300";
- const avgBg = avg >= 7 ?"bg-emerald-500/15 dark:bg-emerald-950/40" : avg >= 5 ?"bg-warning/10" :"bg-rose-500/15 dark:bg-rose-950/40";
+ const avgColor = avg >= 7 ? "text-success" : avg >= 5 ? "text-warning" : "text-destructive";
+ const avgBg = avg >= 7 ? "bg-success/10" : avg >= 5 ? "bg-warning/10" : "bg-destructive/10";
  return (
  <div className="flex flex-col h-full">
  <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-6 space-y-5">
@@ -618,7 +618,8 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  avgBg
  )}>
  <p className="label-medium text-muted-foreground uppercase tracking-wider">Voto complessivo</p>
- <p className={cn("font-display text-7xl font-semibold tabular-nums", avgColor)}>
+ <p className={cn("inline-flex w-full items-center justify-center gap-2 font-display text-7xl font-semibold tabular-nums", avgColor)}>
+ {avg >= 7 ? <CheckCircle2 className="h-7 w-7 shrink-0" aria-hidden="true" /> : avg < 5 ? <XCircle className="h-7 w-7 shrink-0" aria-hidden="true" /> : null}
  {avg.toFixed(1).replace(".",",")}
  </p>
  <p className="label-small text-muted-foreground">media su {finalReport.scores.length} domande</p>
@@ -628,14 +629,15 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  <p className="label-large font-semibold tracking-tight text-foreground">Voti per domanda</p>
  <ul className="space-y-2">
           {finalReport.scores.map((s) => {
- const c = s.score >= 7 ?"text-emerald-700 dark:text-emerald-300" : s.score >= 5 ?"text-warning" :"text-rose-700 dark:text-rose-300";
+ const c = s.score >= 7 ? "text-success" : s.score >= 5 ? "text-warning" : "text-destructive";
  return (
  <li
  key={s.question}
  className="flex items-center justify-between p-3 rounded-xl bg-surface-container-high border border-outline-variant/60"
  >
  <span className="label-medium text-foreground">Domanda {s.question}</span>
- <span className={cn("font-display font-semibold tabular-nums", c)}>
+ <span className={cn("inline-flex items-center gap-1 font-display font-semibold tabular-nums", c)}>
+ {s.score >= 7 ? <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" /> : s.score < 5 ? <XCircle className="h-4 w-4 shrink-0" aria-hidden="true" /> : null}
  {s.score.toString().replace(".",",")}/10
  </span>
  </li>
@@ -679,13 +681,14 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  </span>
  {score !== null && (
             <span className={cn(
-"px-2.5 py-0.5 rounded-full label-small",
- score >= 7 ?"bg-emerald-500/15 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" :
- score >= 5 ?"bg-warning/10 text-warning" :
-"bg-rose-500/15 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300"
- )}>
- {score}/10
- </span>
+              "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 label-small",
+              score >= 7 ? "bg-success/10 text-success" :
+              score >= 5 ? "bg-warning/10 text-warning" :
+              "bg-destructive/10 text-destructive"
+            )}>
+              {score >= 7 ? <CheckCircle2 className="h-3 w-3 shrink-0" aria-hidden="true" /> : score < 5 ? <XCircle className="h-3 w-3 shrink-0" aria-hidden="true" /> : null}
+              {score}/10
+            </span>
  )}
  </div>
  <div className="flex items-center gap-1">

@@ -41,11 +41,15 @@ export function FillBlank({
                   <span className={cn(
                     "inline-flex items-center gap-1 px-3 py-1 rounded-xl font-semibold transition-all border",
                     isCorrect
-                      ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100 animate-feedback-correct"
-                      : "border-rose-500/40 bg-rose-500/15 text-rose-900 dark:bg-rose-950/40 dark:text-rose-100 animate-feedback-wrong"
+                      ? "border-success bg-success/10 text-success animate-feedback-correct"
+                      : "border-destructive bg-destructive/10 text-destructive animate-feedback-wrong"
                   )}>
                     {answer || "___"}
-                    {isCorrect ? <CheckCircle2 className="w-4 h-4 inline" /> : <XCircle className="w-4 h-4 inline" />}
+                    {isCorrect ? (
+                      <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    ) : (
+                      <XCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    )}
                   </span>
                 ) : (
                   <Input
@@ -77,13 +81,20 @@ export function FillBlank({
       {showResult && (
         <div role="status" aria-live="polite" className="animate-fade-up">
           {isCorrect ? (
-            <div className="p-4 rounded-2xl text-center font-medium border border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-success bg-success/10 p-4 text-center font-medium text-success">
+              <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
               {t("exercise.exact")}
             </div>
           ) : (
-            <div className="p-4 rounded-2xl bg-surface-container-low text-center border border-emerald-500/30">
-              <p className="body-small text-muted-foreground mb-1">{t("exercise.correctAnswer")}</p>
-              <p className="title-medium text-emerald-700 dark:text-emerald-300 font-semibold">{correctAnswer}</p>
+            <div className="rounded-2xl border border-success bg-surface-container-low p-4 text-center">
+              <p className="mb-1 inline-flex items-center gap-1 body-small text-muted-foreground">
+                <XCircle className="h-4 w-4 text-destructive" aria-hidden="true" />
+                {t("exercise.correctAnswer")}
+              </p>
+              <p className="inline-flex items-center justify-center gap-1 title-medium font-semibold text-success">
+                <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
+                {correctAnswer}
+              </p>
             </div>
           )}
         </div>
