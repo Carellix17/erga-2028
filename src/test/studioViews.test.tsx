@@ -204,9 +204,12 @@ describe("P38 — navigazione progressiva del corso", () => {
         onOpenModule={onOpenModule}
       />,
     );
-    expect(screen.getByText("Completa il modulo precedente")).toBeTruthy();
+    const reason = screen.getByText("Completa il modulo precedente");
+    expect(reason).toHaveClass("text-ink-muted");
+    expect(screen.getByText("Da sbloccare")).toHaveClass("text-ink-muted");
     const locked = screen.getByRole("button", { name: "Modulo 2: Modulo 2" }) as HTMLButtonElement;
     expect(locked.disabled).toBe(true);
+    expect(locked).not.toHaveClass("opacity-60");
     fireEvent.click(locked); // jsdom non spara il click sui disabled, ma verifichiamo il contratto
     expect(onOpenModule).not.toHaveBeenCalled();
   });

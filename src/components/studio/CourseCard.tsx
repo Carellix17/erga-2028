@@ -50,7 +50,10 @@ export function CourseCard({
   // Il nome passa PULITO (cleanCourseName): la variante di composizione
   // nasce dall'hash del nome, così la copertina è identica a quella della
   // Home, che riceve già il nome senza estensione.
-  const { style: coverStyle } = courseCoverVars(cleanCourseName(course.file_name));
+  // Il campo e l'inchiostro devono risolvere lo stesso nome canonico: i corsi
+  // non riconosciuti usano un hash stabile, che cambia se resta l'estensione.
+  const displayName = cleanCourseName(course.file_name);
+  const { style: coverStyle } = courseCoverVars(displayName);
 
   return (
     <motion.button
@@ -63,7 +66,7 @@ export function CourseCard({
         className,
       )}
     >
-      <CourseCardBackground courseName={course.file_name} />
+      <CourseCardBackground courseName={displayName} />
       <div className="relative z-10">
         {children}
         {/* «Scegli» sulla copertina: velo satinato a pillola (2.1 §4). */}
