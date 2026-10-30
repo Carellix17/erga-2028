@@ -14,6 +14,7 @@ import { BrandMark } from "./BrandMark";
 import { DeferredHexagon } from "./DeferredHexagon";
 import { MaterialJourney } from "./MaterialJourney";
 import { PhoneHome, PhoneShell } from "./PhoneMocks";
+import { FileText, BookOpenCheck, CalendarClock } from "lucide-react";
 import "./landing.css";
 
 const SIGNUP_PATH = "/registrati";
@@ -32,28 +33,6 @@ export function ErgaMarketing() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const revealItems = document.querySelectorAll(".erga-lp .lp-reveal");
-    if (!("IntersectionObserver" in window)) {
-      revealItems.forEach((el) => el.classList.add("is-in"));
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-in");
-            io.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
-    );
-    revealItems.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -99,7 +78,6 @@ export function ErgaMarketing() {
   return (
     <div className="erga-lp">
       <a className="lp-skip" href="#contenuto">Salta al contenuto</a>
-      <div className="lp-progress" aria-hidden />
 
       <header className="lp-nav">
         <div className="lp-nav-inner">
@@ -150,15 +128,15 @@ export function ErgaMarketing() {
 
       <main id="contenuto">
         <section className="lp-hero" id="top">
-          <div className="lp-hero-bg" aria-hidden />
           <div className="lp-wrap lp-hero-grid">
             <div>
-              <p className="lp-eyebrow">Beta gratuita per le scuole superiori</p>
+
               <h1 className="lp-display">
-                Ogni mente ha la sua geometria
+                Il tuo materiale.
+                <br />Il tuo modo di studiare.
               </h1>
               <p className="lp-lead">
-                Trasforma PDF, foto e appunti in lezioni brevi, esercizi mirati e un piano di studio costruito sul tuo modo di imparare.
+                Da PDF, foto e appunti a lezioni, esercizi e un piano per la tua settimana. Erga collega ciò che studi al tuo modo di imparare.
               </p>
               <div className="lp-hero-actions">
                 <Link className="lp-btn lp-btn-red" to={SIGNUP_PATH}>
@@ -171,25 +149,20 @@ export function ErgaMarketing() {
             </div>
 
             <div className="lp-stage">
-              <div className="lp-hex-orbit" aria-hidden>
-                <svg viewBox="0 0 400 400">
-                  <g fill="none" stroke="hsl(var(--accent-warm) / .2)" strokeWidth="1">
-                    <polygon points="200,40 330,115 330,285 200,360 70,285 70,115" />
-                  </g>
-                  <polygon fill="none" stroke="hsl(var(--marketing-rose) / .45)" strokeWidth="1.2" points="200,56 318,124 318,276 200,344 82,276 82,124" />
-                </svg>
-              </div>
-              <div className="lp-hero-materials" aria-hidden>
-                <div className="lp-hero-word word-a">PDF</div>
-                <div className="lp-hero-word word-b">FOTO</div>
-                <div className="lp-hero-word word-c">PIANO</div>
-              </div>
-              <PhoneShell tab="home" tilt label="Schermata dimostrativa della Home di Erga">
-                <div className="lp-phone-screen-swap">
-                  <PhoneHome />
+              <div className="lp-stage-heading"><BrandMark /><span>Il tuo prossimo passo, in chiaro.</span></div>
+              <div className="lp-stage-content">
+                <div className="lp-material-stack" aria-label="Dal materiale al percorso">
+                  <div><FileText aria-hidden /><span>Il tuo materiale<strong>Appunti di storia.pdf</strong></span></div>
+                  <ArrowRight className="lp-stack-arrow" aria-hidden />
+                  <div><BookOpenCheck aria-hidden /><span>Il tuo percorso<strong>Lezioni ed esercizi</strong></span></div>
+                  <ArrowRight className="lp-stack-arrow" aria-hidden />
+                  <div><CalendarClock aria-hidden /><span>Il tuo piano<strong>Un passo alla volta</strong></span></div>
                 </div>
-              </PhoneShell>
-              <span className="lp-hero-demo">Esempio dimostrativo</span>
+                <PhoneShell tab="home" label="Schermata dimostrativa della Home di Erga">
+                  <div className="lp-phone-screen-swap"><PhoneHome /></div>
+                </PhoneShell>
+              </div>
+              <span className="lp-hero-demo">Anteprima dimostrativa · Dati di esempio</span>
             </div>
           </div>
         </section>
@@ -197,7 +170,7 @@ export function ErgaMarketing() {
         <div className="lp-proof" aria-label="Cosa include la beta">
           <div className="lp-wrap">
             <div className="lp-proof-row">
-              <span>Materiali tuoi</span><span>Profilo cognitivo</span><span>Piano modificabile</span><span>Dati separati per utente</span>
+              <span><Check aria-hidden />Materiali tuoi</span><span><Check aria-hidden />Profilo cognitivo</span><span><Check aria-hidden />Piano modificabile</span><span><Check aria-hidden />Beta gratuita</span>
             </div>
           </div>
         </div>
@@ -214,12 +187,12 @@ export function ErgaMarketing() {
           <div className="lp-wrap">
             <div className="lp-sec-head lp-reveal">
               <h2 className="lp-h2">Preparati nel modo che serve oggi.</h2>
-              <p className="lp-lead">Esempi dimostrativi basati sulle funzioni disponibili nella beta, non testimonianze di utenti reali.</p>
+              <p className="lp-lead">Una verifica, un’interrogazione o una settimana piena: scegli gli strumenti per il lavoro che hai davanti.</p>
             </div>
 
             <div className="lp-scenarios">
               <article className="lp-scenario lp-reveal">
-                <div className="lp-scenario-icon" aria-hidden><Atom /></div>
+                <Atom className="lp-scenario-icon" aria-hidden />
                 <span className="lp-scenario-label">Verifica di fisica</span>
                 <h3 className="lp-h3">Dal capitolo agli esercizi.</h3>
                 <p>Carichi la dispensa, controlli il percorso e prepari un set di esercizi sugli argomenti scelti.</p>
@@ -229,7 +202,7 @@ export function ErgaMarketing() {
               </article>
 
               <article className="lp-scenario lp-reveal">
-                <div className="lp-scenario-icon" aria-hidden><Mic2 /></div>
+                <Mic2 className="lp-scenario-icon" aria-hidden />
                 <span className="lp-scenario-label">Interrogazione di italiano</span>
                 <h3 className="lp-h3">Dal capitolo alla voce.</h3>
                 <p>Organizzi i passaggi, ripassi i concetti e usi la simulazione orale per allenare l’esposizione.</p>
@@ -239,7 +212,7 @@ export function ErgaMarketing() {
               </article>
 
               <article className="lp-scenario lp-reveal">
-                <div className="lp-scenario-icon" aria-hidden><CalendarCheck2 /></div>
+                <CalendarCheck2 className="lp-scenario-icon" aria-hidden />
                 <span className="lp-scenario-label">Settimana piena</span>
                 <h3 className="lp-h3">Dagli impegni a una proposta.</h3>
                 <p>Inserisci verifiche e attività, poi controlli il piano suggerito prima di aggiungerlo al calendario.</p>
@@ -296,7 +269,7 @@ export function ErgaMarketing() {
             <aside className="lp-final-box lp-reveal" id="inizia" aria-labelledby="final-cta-title">
               <div className="lp-final-thread" aria-hidden><span className="line" /><span className="dot a" /><span className="dot b" /><span className="dot c" /></div>
               <h2 className="lp-h2" id="final-cta-title">Prova Erga con il tuo materiale.</h2>
-              <p className="lp-lead">Crea il profilo, completa il questionario cognitivo e aggiungi il primo argomento di studio.</p>
+              <p className="lp-lead">Ogni mente ha la sua geometria. Trova il tuo punto di partenza: crea il profilo e aggiungi il primo argomento.</p>
               <div className="lp-onboard-cta">
                 <Link className="lp-btn lp-btn-red" to={SIGNUP_PATH}>Crea il profilo gratuito<ArrowRight aria-hidden /></Link>
                 <span className="lp-onboard-note">Beta gratuita. Nessuna carta richiesta.</span>
@@ -306,7 +279,7 @@ export function ErgaMarketing() {
         </section>
       </main>
 
-      <div className="erga-earthy-stripe" aria-hidden="true" />
+
       <footer>
         <div className="lp-wrap">
           <div className="lp-foot">
