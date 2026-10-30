@@ -63,6 +63,42 @@ function LessonHistoryHarness() {
       <button type="button" onClick={() => { closeEntry(); setLessonOpen(false); }}>
         Close lesson
       </button>
+      <button type="button" onClick={() => { closeEntry(); setLessonOpen(false); pushEntry(); setLessonOpen(true); }}>
+        Close and reopen lesson
+      </button>
+      <button type="button" onClick={() => navigate(-1)}>Browser back</button>
+    </>
+  );
+}
+
+function HomeResumeHistoryHarness() {
+  const { activeTab, navigateToTab, navigateFromDock } = useAppTab();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [launchRequested, setLaunchRequested] = useState(false);
+  const [readerOpen, setReaderOpen] = useState(false);
+  const { pushEntry } = useOverlayHistory(() => setReaderOpen(false));
+
+  useEffect(() => {
+    if (!launchRequested || activeTab !== "studio") return;
+    // Mirrors StudioView's one-shot lessonLaunch effect after the tab URL has changed.
+    pushEntry();
+    setReaderOpen(true);
+    setLaunchRequested(false);
+  }, [launchRequested, activeTab, pushEntry]);
+
+  return (
+    <>
+      <BottomNav activeTab={activeTab} onTabChange={navigateFromDock} />
+      <output data-testid="active-tab">{activeTab}</output>
+      <output data-testid="current-url">{location.pathname}{location.search}</output>
+      {readerOpen && <div role="dialog" aria-label="Lesson reader">Lesson</div>}
+      <button type="button" onClick={() => {
+        setLaunchRequested(true);
+        navigateToTab("studio", { replace: false });
+      }}>
+        Resume lesson from Home
+      </button>
       <button type="button" onClick={() => navigate(-1)}>Browser back</button>
     </>
   );
@@ -72,6 +108,14 @@ function renderLessonHistoryHarness(initialEntries: string[]) {
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <LessonHistoryHarness />
+    </MemoryRouter>,
+  );
+}
+
+function renderHomeResumeHistoryHarness() {
+  return render(
+    <MemoryRouter initialEntries={["/app"]}>
+      <HomeResumeHistoryHarness />
     </MemoryRouter>,
   );
 }
@@ -146,6 +190,22 @@ describe("URL-backed primary tab navigation", () => {
     await expectActiveTab("home", "/app", container);
   });
 
+  it("Riprendi da Home usa lo stesso Back del lettore aperto da Studio", async () => {
+    const { container } = renderHomeResumeHistoryHarness();
+    await expectActiveTab("home", "/app", container);
+
+    fireEvent.click(screen.getByRole("button", { name: "Resume lesson from Home" }));
+    await expectActiveTab("studio", "/app?tab=studio", container);
+    expect(screen.getByRole("dialog", { name: "Lesson reader" })).toBeInTheDocument();
+
+    // Back uno chiude il lettore ma resta in Studio; Back due torna alla Home sorgente.
+    fireEvent.click(screen.getByRole("button", { name: "Browser back" }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Lesson reader" })).toBeNull());
+    await expectActiveTab("studio", "/app?tab=studio", container);
+    fireEvent.click(screen.getByRole("button", { name: "Browser back" }));
+    await expectActiveTab("home", "/app", container);
+  });
+
   it("Back closes a Studio lesson reader before leaving the Studio tab", async () => {
     const { container } = renderLessonHistoryHarness(["/app", "/app?tab=studio"]);
     await expectActiveTab("studio", "/app?tab=studio", container);
@@ -168,6 +228,22 @@ describe("URL-backed primary tab navigation", () => {
     expect(screen.getByRole("dialog", { name: "Lesson reader" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Close lesson" }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Lesson reader" })).toBeNull());
+    await expectActiveTab("studio", "/app?tab=studio", container);
+
+    fireEvent.click(screen.getByRole("button", { name: "Browser back" }));
+    await expectActiveTab("home", "/app", container);
+  });
+
+  it("queues a fresh entry when a lesson is reopened before its close POP settles", async () => {
+    const { container } = renderLessonHistoryHarness(["/app", "/app?tab=studio"]);
+    fireEvent.click(screen.getByRole("button", { name: "Open Studio lesson" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close and reopen lesson" }));
+
+    expect(screen.getByRole("dialog", { name: "Lesson reader" })).toBeInTheDocument();
+    await expectActiveTab("studio", "/app?tab=studio", container);
+
+    fireEvent.click(screen.getByRole("button", { name: "Browser back" }));
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Lesson reader" })).toBeNull());
     await expectActiveTab("studio", "/app?tab=studio", container);
 

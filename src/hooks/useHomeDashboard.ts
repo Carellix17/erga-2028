@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCourseName } from "@/lib/courseName";
-import { getCourseProgress } from "@/lib/courseProgress";
-import { addDays, computeStudyStreak, daysUntil, formatEventTime, toLocalDayKey } from "@/lib/homeDashboard";
+import { getCompletedLessonOrders, isLastLessonCompleted } from "@/lib/courseProgress";
+import { addDays, computeStudyStreak, daysUntil, formatEventTime, selectHomeResumeLesson, toLocalDayKey } from "@/lib/homeDashboard";
 
 export interface HomeResumeLesson {
   contextId: string;
@@ -11,7 +11,7 @@ export interface HomeResumeLesson {
   lessonTitle: string;
   courseTitle: string;
   coverUrl: string | null;
-  /** One-based position from saved course progress; lessonIndex remains the resume target. */
+  /** One-based position of the same lesson selected by lessonIndex. */
   lessonNumber: number;
   lessonCount: number;
   progressPercent: number;
@@ -195,7 +195,7 @@ export function useHomeDashboard() {
             .order("lesson_order", { ascending: true }),
           supabase
             .from("lesson_progress")
-            .select("current_lesson_index")
+            .select("current_lesson_index, completed_lessons")
             .eq("user_id", currentUser as string)
             .eq("context_id", activeContext.id)
             .maybeSingle(),
@@ -204,24 +204,20 @@ export function useHomeDashboard() {
         assertNoError(progressRes.error, "Impossibile caricare il progresso");
 
         const lessons = lessonsRes.data ?? [];
-        const storedIndex = Math.max(0, Number(progressRes.data?.current_lesson_index ?? 0));
-        const clampedIndex = Math.min(storedIndex, Math.max(0, lessons.length - 1));
-        const forwardIndex = lessons.findIndex((lesson, index) => index >= clampedIndex && lesson.is_generated);
-        const fallbackIndex = lessons.findIndex((lesson) => lesson.is_generated);
-        const lessonIndex = forwardIndex >= 0 ? forwardIndex : fallbackIndex;
-        const lesson = lessonIndex >= 0 ? lessons[lessonIndex] : null;
+        const completedOrders = getCompletedLessonOrders(progressRes.data?.completed_lessons);
+        const lastLessonOrder = lessons[lessons.length - 1]?.lesson_order;
+        const selection = selectHomeResumeLesson(
+          lessons,
+          progressRes.data?.current_lesson_index,
+          isLastLessonCompleted(completedOrders, lastLessonOrder),
+        );
 
-        if (lesson) {
-          const courseProgress = getCourseProgress(clampedIndex, lessons.length);
+        if (selection) {
           resumeLesson = {
             contextId: activeContext.id,
-            lessonIndex,
-            lessonTitle: lesson.title,
+            ...selection,
             courseTitle: cleanCourseName(activeContext.file_name) || activeContext.file_name,
             coverUrl: activeContext.cover_image_url,
-            lessonNumber: courseProgress.lessonNumber,
-            lessonCount: courseProgress.totalLessons,
-            progressPercent: courseProgress.completionPercent,
           };
         }
       }

@@ -20,11 +20,17 @@ function copyLocationState(state: unknown): LocationStateRecord {
  * Gives a transient fullscreen overlay its own browser-history entry without
  * changing the URL. Back closes the overlay first; an explicit close consumes
  * that entry so the next Back continues to the previous app location.
+ *
+ * If the overlay is reopened before that explicit-close POP settles, the new
+ * open is queued and receives a fresh entry after the close completes. This
+ * keeps the pending Back from being mistaken for a Back on the reopened view.
  */
 export function useOverlayHistory(onBack: () => void) {
   const location = useLocation();
   const navigate = useNavigate();
   const activeEntryIdRef = useRef<string | null>(null);
+  const closingEntryIdRef = useRef<string | null>(null);
+  const reopenAfterCloseRef = useRef(false);
   const sequenceRef = useRef(0);
   const onBackRef = useRef(onBack);
   const currentEntryId = getOverlayHistoryId(location.state);
@@ -34,6 +40,10 @@ export function useOverlayHistory(onBack: () => void) {
   }, [onBack]);
 
   const pushEntry = useCallback(() => {
+    if (closingEntryIdRef.current) {
+      reopenAfterCloseRef.current = true;
+      return;
+    }
     if (activeEntryIdRef.current) return;
 
     const entryId = `${Date.now()}-${++sequenceRef.current}`;
@@ -46,19 +56,40 @@ export function useOverlayHistory(onBack: () => void) {
 
   const closeEntry = useCallback(() => {
     const activeEntryId = activeEntryIdRef.current;
-    if (!activeEntryId) return;
+    if (!activeEntryId || closingEntryIdRef.current === activeEntryId) return;
 
-    activeEntryIdRef.current = null;
-    if (currentEntryId === activeEntryId) navigate(-1);
+    // A browser Back may already have moved away from the overlay while React
+    // is waiting to run its location effect. Let that POP close the UI once.
+    if (currentEntryId !== activeEntryId) {
+      activeEntryIdRef.current = null;
+      return;
+    }
+
+    closingEntryIdRef.current = activeEntryId;
+    navigate(-1);
   }, [currentEntryId, navigate]);
 
   useEffect(() => {
+    const closingEntryId = closingEntryIdRef.current;
+    if (closingEntryId) {
+      if (currentEntryId === closingEntryId) return;
+
+      closingEntryIdRef.current = null;
+      if (activeEntryIdRef.current === closingEntryId) activeEntryIdRef.current = null;
+
+      if (reopenAfterCloseRef.current) {
+        reopenAfterCloseRef.current = false;
+        pushEntry();
+      }
+      return;
+    }
+
     const activeEntryId = activeEntryIdRef.current;
     if (!activeEntryId || activeEntryId === currentEntryId) return;
 
     activeEntryIdRef.current = null;
     onBackRef.current();
-  }, [currentEntryId, location.key]);
+  }, [currentEntryId, location.key, pushEntry]);
 
   return { pushEntry, closeEntry };
 }

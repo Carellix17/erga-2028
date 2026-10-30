@@ -8,7 +8,7 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { SubscriptionSheet } from "@/components/subscription/SubscriptionSheet";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +36,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
   const { profile: cognitive } = useCognitiveProfile();
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { tier } = useSubscription();
   const [showSubscription, setShowSubscription] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
@@ -56,7 +57,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
     if (window.history.length > 1) {
       navigate(-1);
     } else {
-      navigate("/app");
+      navigate({ pathname: "/app", search: location.search });
     }
   };
 
@@ -128,7 +129,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
             variant="ghost"
             size="icon-sm"
             aria-label="Impostazioni"
-            onClick={() => navigate("/app/impostazioni")}
+            onClick={() => navigate({ pathname: "/app/impostazioni", search: location.search })}
             className="h-11 w-11 shrink-0 rounded-pill"
           >
             <Settings className="h-5 w-5" aria-hidden="true" />

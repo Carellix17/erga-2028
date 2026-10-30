@@ -14,10 +14,13 @@ const outputDir = process.env.VISUAL_OUTPUT_DIR
 let baseUrl;
 let origin;
 const viewports = [
+  { name: "small-smartphone", width: 320, height: 844, isMobile: true },
+  { name: "compact-smartphone", width: 360, height: 844, isMobile: true },
   { name: "smartphone", width: 390, height: 844, isMobile: true },
   { name: "tablet", width: 820, height: 1180, isMobile: false },
   { name: "desktop", width: 1440, height: 900, isMobile: false },
 ];
+const studioViewports = viewports.filter((viewport) => viewport.width >= 390);
 const prompt7Viewports = viewports.filter((viewport) => viewport.width === 390 || viewport.width === 1440);
 const enforcePrompt7 = process.env.VISUAL_EXPECT_PROMPT7 !== "false";
 
@@ -162,9 +165,28 @@ async function inspectHome(viewport) {
       }),
       nav,
       courseCoverFound: !!document.querySelector("[data-cover-root]"),
-      requiredActionsFound: ["Interrogazione", "Esercizi", "Carica materiale", "Chat"].every(
-        (label) => [...document.querySelectorAll("button")].some((button) => button.textContent?.includes(label)),
-      ),
+      actionButtons: ["Interrogazione", "Esercizi", "Carica materiale", "Chat"].map((label) => {
+        const button = [...document.querySelectorAll("button")]
+          .find((candidate) => candidate.textContent?.includes(label));
+        const text = [...(button?.querySelectorAll("span") ?? [])]
+          .find((candidate) => candidate.textContent?.trim() === label);
+        const buttonRect = button?.getBoundingClientRect();
+        const textRect = text?.getBoundingClientRect();
+        const buttonStyle = button ? getComputedStyle(button) : null;
+        return {
+          label,
+          found: !!button,
+          left: buttonRect?.left ?? null,
+          right: buttonRect?.right ?? null,
+          clientWidth: button?.clientWidth ?? null,
+          scrollWidth: button?.scrollWidth ?? null,
+          clientHeight: button?.clientHeight ?? null,
+          scrollHeight: button?.scrollHeight ?? null,
+          whiteSpace: buttonStyle?.whiteSpace ?? null,
+          textLeft: textRect?.left ?? null,
+          textRight: textRect?.right ?? null,
+        };
+      }),
     };
   });
 
@@ -178,7 +200,17 @@ async function inspectHome(viewport) {
   assert.ok(metrics.listRects[0].top < metrics.listRects[1].top && metrics.listRects[1].top < metrics.listRects[2].top,
     `${viewport.name}: le attività non sono in ordine verticale`);
   assert.ok(metrics.courseCoverFound, `${viewport.name}: copertina del percorso non renderizzata`);
-  assert.ok(metrics.requiredActionsFound, `${viewport.name}: mancano azioni principali Home`);
+  for (const action of metrics.actionButtons) {
+    assert.ok(action.found, `${viewport.name}: azione Home «${action.label}» non trovata`);
+    assert.equal(action.whiteSpace, "normal",
+      `${viewport.name}: «${action.label}» non consente il ritorno a capo`);
+    assert.ok(action.left >= -1 && action.right <= viewport.width + 1,
+      `${viewport.name}: pulsante «${action.label}» tagliato lateralmente (${JSON.stringify(action)})`);
+    assert.ok(action.textLeft >= action.left - 1 && action.textRight <= action.right + 1,
+      `${viewport.name}: etichetta «${action.label}» esce dal pulsante (${JSON.stringify(action)})`);
+    assert.ok(action.scrollWidth <= action.clientWidth + 2 && action.scrollHeight <= action.clientHeight + 2,
+      `${viewport.name}: contenuto del pulsante «${action.label}» tagliato (${JSON.stringify(action)})`);
+  }
   assert.ok(metrics.nav.length > 0, `${viewport.name}: navigazione app non visibile`);
   for (const rect of metrics.nav) {
     assert.ok(rect.left >= -1 && rect.right <= viewport.width + 1, `${viewport.name}: navigazione tagliata lateralmente`);
@@ -542,6 +574,8 @@ try {
 
   for (const viewport of viewports) {
     report.viewports.push(await inspectHome(viewport));
+  }
+  for (const viewport of studioViewports) {
     report.viewports.push(await inspectStudio(viewport));
   }
   for (const viewport of prompt7Viewports) {

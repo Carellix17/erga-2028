@@ -36,6 +36,8 @@ export function AppHeader({
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const openSettings = () => navigate({ pathname: "/app/impostazioni", search: location.search });
+  const backToApp = () => navigate({ pathname: "/app", search: location.search });
 
   const normalizedPath = location.pathname.replace(/\/+$/, "") || "/";
   const isSettingsRoute = SETTINGS_ROOTS.some(
@@ -50,7 +52,7 @@ export function AppHeader({
   const planButton = (
     <button
       type="button"
-      onClick={() => navigate("/app/impostazioni")}
+      onClick={openSettings}
       aria-label={t("header.subscriptionPlan", { plan: tierLabel })}
       title={t("header.subscriptionPlan", { plan: tierLabel })}
       className={cn(
@@ -96,7 +98,7 @@ export function AppHeader({
                   variant="ghost"
                   size="icon-sm"
                   aria-label={t("common.back")}
-                  onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/app"))}
+                  onClick={() => (window.history.length > 1 ? navigate(-1) : backToApp())}
                   className="h-11 w-11 shrink-0"
                 >
                   <ArrowLeft className="h-5 w-5" aria-hidden="true" />
@@ -126,7 +128,7 @@ export function AppHeader({
               size="icon-sm"
               aria-label={t("header.settings")}
               title={t("header.settings")}
-              onClick={() => navigate("/app/impostazioni")}
+              onClick={openSettings}
               className="h-11 w-11 shrink-0 bg-surface-container-high shadow-none hover:bg-surface-container-highest"
             >
               <Settings className="h-5 w-5" aria-hidden="true" />

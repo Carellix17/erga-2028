@@ -61,7 +61,7 @@ vi.mock("@/components/subscription/SubscriptionSheet", () => ({
 
 function LocationProbe() {
   const location = useLocation();
-  return <span data-testid="location">{location.pathname}</span>;
+  return <span data-testid="location">{location.pathname}{location.search}</span>;
 }
 
 function renderProfile(route = "/app/profilo") {
@@ -90,6 +90,12 @@ describe("ProfileView ripristinata", () => {
     expect(screen.getByTestId("location")).toHaveTextContent("/app/impostazioni");
   });
 
+  it("conserva la scheda Studio entrando nelle Impostazioni dal profilo", () => {
+    renderProfile("/app/profilo?tab=studio");
+    fireEvent.click(screen.getByRole("button", { name: "Impostazioni" }));
+    expect(screen.getByTestId("location")).toHaveTextContent("/app/impostazioni?tab=studio");
+  });
+
   it("ha il pulsante di uscita in alto a destra", () => {
     renderProfile();
     expect(screen.getByRole("button", { name: "Esci dall'account" })).toBeInTheDocument();
@@ -100,5 +106,11 @@ describe("ProfileView ripristinata", () => {
     fireEvent.click(screen.getByRole("button", { name: "Indietro" }));
     // In un MemoryRouter senza cronologia precedente si torna ad /app
     expect(screen.getByTestId("location")).toHaveTextContent("/app");
+  });
+
+  it("il fallback Indietro dal profilo conserva la scheda precedente", () => {
+    renderProfile("/app/profilo?tab=core");
+    fireEvent.click(screen.getByRole("button", { name: "Indietro" }));
+    expect(screen.getByTestId("location")).toHaveTextContent("/app?tab=core");
   });
 });

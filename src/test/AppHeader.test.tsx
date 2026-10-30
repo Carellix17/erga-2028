@@ -18,13 +18,13 @@ vi.mock("@/hooks/useSubscription", () => ({
 
 function LocationProbe() {
   const location = useLocation();
-  return <span data-testid="location">{location.pathname}</span>;
+  return <span data-testid="location">{location.pathname}{location.search}</span>;
 }
 
-function renderHeader(title: string | null = "Studio", route = "/app", integratedHome = false) {
+function renderHeader(title: string | null = "Studio", route = "/app", integratedHome = false, showBack = false) {
   return render(
     <MemoryRouter initialEntries={[route]}>
-      <AppHeader title={title} integratedHome={integratedHome} />
+      <AppHeader title={title} integratedHome={integratedHome} showBack={showBack} />
       <LocationProbe />
     </MemoryRouter>,
   );
@@ -139,5 +139,16 @@ describe("AppHeader", () => {
     fireEvent.click(screen.getByRole("button", { name: SETTINGS_NAME }));
     expect(screen.getByTestId("location")).toHaveTextContent("/app/impostazioni");
     expect(screen.getByTestId("location")).not.toHaveTextContent("?");
+  });
+
+  it("conserva la scheda entrando e uscendo dalle Impostazioni anche con il fallback", () => {
+    renderHeader("Studio", "/app?tab=studio", false, true);
+    fireEvent.click(screen.getByRole("button", { name: SETTINGS_NAME }));
+    expect(screen.getByTestId("location")).toHaveTextContent("/app/impostazioni?tab=studio");
+
+    // In MemoryRouter window.history è vuota: AppHeader usa il fallback /app,
+    // che deve mantenere la scheda proveniente dalla pagina Impostazioni.
+    fireEvent.click(screen.getByRole("button", { name: "Indietro" }));
+    expect(screen.getByTestId("location")).toHaveTextContent("/app?tab=studio");
   });
 });

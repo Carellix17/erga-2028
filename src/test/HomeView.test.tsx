@@ -123,6 +123,9 @@ describe("HomeView modulare (V3)", () => {
     expect(exercises).toBeInTheDocument();
     expect(upload).toBeInTheDocument();
     expect(chat).toBeInTheDocument();
+    for (const action of [interrogation, exercises, upload, chat]) {
+      expect(action).toHaveClass("h-auto", "min-h-12", "whitespace-normal");
+    }
     expect(screen.getByText("Ripasso cinematica")).toBeInTheDocument();
     expect(screen.queryByText(/azioni consigliate/i)).not.toBeInTheDocument();
 
@@ -149,6 +152,22 @@ describe("HomeView modulare (V3)", () => {
     lines.forEach((line) => expect(line.className).toContain("block"));
     // il nome accessibile resta un unico titolo leggibile, es. "Buongiorno Vale"
     expect(heading).toHaveAccessibleName(/^Buon(giorno|asera) Vale$/);
+  });
+
+  it("mostra il 100% quando la Home riceve un corso completato", () => {
+    mockDashboard({
+      ...dashboardData,
+      resumeLesson: {
+        ...dashboardData.resumeLesson!,
+        lessonNumber: 10,
+        lessonCount: 10,
+        progressPercent: 100,
+      },
+    });
+    render(<HomeView {...callbacks} />);
+
+    expect(screen.getByRole("progressbar", { name: /avanzamento del percorso: 100%/i })).toHaveAttribute("aria-valuenow", "100");
+    expect(screen.getByText("100%")).toBeInTheDocument();
   });
 
   it("la CTA della card corso riprende la lezione reale", () => {

@@ -1,3 +1,5 @@
+import { getCourseProgress } from "@/lib/courseProgress";
+
 export function toLocalDayKey(value: Date | string): string {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
@@ -48,4 +50,42 @@ export function formatEventTime(value?: string | null): string | null {
   if (!value) return null;
   const match = /^(\d{2}):(\d{2})/.exec(value);
   return match ? `${match[1]}:${match[2]}` : null;
+}
+
+export interface HomeResumeLessonSelection {
+  lessonIndex: number;
+  lessonTitle: string;
+  lessonNumber: number;
+  lessonCount: number;
+  progressPercent: number;
+}
+
+/**
+ * Select the next generated lesson at or after saved progress (falling back to
+ * the first generated lesson). The title and visible lesson number are both
+ * derived from this exact index, so Home can never resume one lesson while
+ * labelling another.
+ */
+export function selectHomeResumeLesson(
+  lessons: readonly { title: string; is_generated: boolean }[],
+  storedIndex: number | null | undefined,
+  isCourseFinished = false,
+): HomeResumeLessonSelection | null {
+  const parsedIndex = Number(storedIndex ?? 0);
+  const safeIndex = Number.isFinite(parsedIndex) ? Math.max(0, Math.floor(parsedIndex)) : 0;
+  const clampedIndex = Math.min(safeIndex, Math.max(0, lessons.length - 1));
+  const forwardIndex = lessons.findIndex((lesson, index) => index >= clampedIndex && lesson.is_generated);
+  const fallbackIndex = lessons.findIndex((lesson) => lesson.is_generated);
+  const lessonIndex = forwardIndex >= 0 ? forwardIndex : fallbackIndex;
+  const lesson = lessonIndex >= 0 ? lessons[lessonIndex] : null;
+  if (!lesson) return null;
+
+  const progress = getCourseProgress(lessonIndex, lessons.length, isCourseFinished);
+  return {
+    lessonIndex,
+    lessonTitle: lesson.title,
+    lessonNumber: progress.lessonNumber,
+    lessonCount: progress.totalLessons,
+    progressPercent: progress.completionPercent,
+  };
 }
