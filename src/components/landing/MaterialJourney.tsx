@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { BookOpenCheck, CalendarClock, FileText, Globe2, Image as ImageIcon } from "lucide-react";
 import { PhoneHome, PhonePiano, PhoneShell, PhoneStudio } from "./PhoneMocks";
 
@@ -36,6 +36,7 @@ type SubjectKey = keyof typeof SUBJECTS;
 
 export function MaterialJourney() {
   const [activeStep, setActiveStep] = useState(0);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [subject, setSubject] = useState<SubjectKey>("fisica");
   const current = JOURNEY_STEPS[activeStep];
   const subjectData = SUBJECTS[subject];
@@ -58,12 +59,20 @@ export function MaterialJourney() {
           <div className="lp-journey-copy">
             <div className="lp-journey-tabs" role="tablist" aria-label="Dal materiale al piano">
               {JOURNEY_STEPS.map((step, index) => (
-                <button key={step.id} type="button" role="tab" aria-selected={activeStep === index} aria-controls="journey-panel" onClick={() => setActiveStep(index)}>
+                <button key={step.id} ref={(node) => { tabRefs.current[index] = node; }} id={`journey-tab-${step.id}`} type="button" role="tab" tabIndex={activeStep === index ? 0 : -1} aria-selected={activeStep === index} aria-controls="journey-panel" onClick={() => setActiveStep(index)} onKeyDown={(event) => {
+                  const next = event.key === "ArrowRight" ? (index + 1) % JOURNEY_STEPS.length
+                    : event.key === "ArrowLeft" ? (index + JOURNEY_STEPS.length - 1) % JOURNEY_STEPS.length
+                    : event.key === "Home" ? 0 : event.key === "End" ? JOURNEY_STEPS.length - 1 : null;
+                  if (next === null) return;
+                  event.preventDefault();
+                  setActiveStep(next);
+                  tabRefs.current[next]?.focus();
+                }}>
                   <step.Icon aria-hidden /><span>{step.label}</span>
                 </button>
               ))}
             </div>
-            <div id="journey-panel" role="tabpanel" className="lp-journey-detail" key={`${current.id}-${subject}`}>
+            <div id="journey-panel" role="tabpanel" aria-labelledby={`journey-tab-${current.id}`} tabIndex={0} className="lp-journey-detail" key={`${current.id}-${subject}`}>
               <p>{subjectData.label}</p>
               <h3>{current.title}</h3>
               <p>{current.description}</p>

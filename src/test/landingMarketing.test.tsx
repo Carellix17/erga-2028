@@ -17,7 +17,7 @@ describe("landing marketing", () => {
 
     // Titolo hero aggiornato dalla sessione landing (un solo h1)
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      /ogni mente ha la sua geometria/i,
+      /il tuo materiale.*il tuo modo di studiare/i,
     );
     expect(screen.getByText(/beta gratuita · nessuna carta richiesta · pro in arrivo/i)).toBeInTheDocument();
     expect(document.body).not.toHaveTextContent("6,99 €");
@@ -107,5 +107,22 @@ describe("landing marketing", () => {
 
     expect(container.querySelector(".lp-showcase-phone nav")).not.toBeInTheDocument();
     expect(screen.getByText("Le basi della cinematica")).toBeInTheDocument();
+  });
+});
+
+describe("accessibilità dei passaggi dimostrativi", () => {
+  it("permette di cambiare passaggio con frecce, Home ed End", () => {
+    renderLanding();
+    const first = screen.getByRole("tab", { name: "Materiale" });
+    first.focus();
+    fireEvent.keyDown(first, { key: "ArrowRight" });
+    const next = screen.getByRole("tab", { name: "Percorso" });
+    expect(next).toHaveFocus();
+    expect(next).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel")).toHaveAttribute("aria-labelledby", next.id);
+    fireEvent.keyDown(next, { key: "End" });
+    expect(screen.getByRole("tab", { name: "Piano" })).toHaveFocus();
+    fireEvent.keyDown(screen.getByRole("tab", { name: "Piano" }), { key: "Home" });
+    expect(first).toHaveFocus();
   });
 });

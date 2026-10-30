@@ -240,10 +240,10 @@ export function HexagonPlay() {
     <>
       <div className="lp-hex-layout">
         <div className="lp-reveal">
-          <p className="lp-eyebrow">Provalo</p>
+
           <h2 className="lp-h2">L’Esagono cognitivo.</h2>
           <p className="lp-lead lp-hex-intro">
-            Non sei un voto. Sei sei forze. Trascina un vertice e osserva come cambiano la spiegazione e il piano.
+            Logica, Memoria, Focus, Lessico, Calma e Pratica: sei aree per adattare il modo di presentare lo studio. Esplora un esempio modificando i vertici.
           </p>
           <div className="lp-effect-flow" aria-label="Il profilo modifica la lezione e poi il piano">
             <span><b>1</b>Profilo</span>
@@ -291,13 +291,13 @@ export function HexagonPlay() {
               <polygon points="200,90 300,148 300,252 200,310 100,252 100,148" />
               <polygon points="200,130 270,170 270,230 200,270 130,230 130,170" />
             </g>
-            <g stroke="hsl(var(--accent-warm) / .22)" strokeWidth="1">
+            <g stroke="hsl(var(--line))" strokeWidth="1">
               {VERTS.map((v) => {
                 const end = polar(v.angle, MAX_R);
                 return <line key={v.key} x1={CX} y1={CY} x2={end.x} y2={end.y} />;
               })}
             </g>
-            <polygon points={points} fill="hsl(var(--accent-warm) / .12)" stroke="hsl(var(--accent-warm) / .72)" strokeWidth="1.6" />
+            <polygon points={points} fill="hsl(var(--cognitive) / .12)" stroke="hsl(var(--cognitive))" strokeWidth="1.6" />
             {VERTS.map((v) => {
               const p = polar(v.angle, scoreToR(scores[v.key]));
               const lab = labelPos(v.angle);
@@ -337,7 +337,7 @@ export function HexagonPlay() {
                     cx={p.x}
                     cy={p.y}
                     r={on ? 10 : 8}
-                    fill={on ? "hsl(var(--marketing-gold))" : "hsl(var(--accent-light))"}
+                    fill={on ? "hsl(var(--primary))" : "hsl(var(--cognitive))"}
                     className="lp-hex-dot"
                     aria-hidden="true"
                   />
@@ -352,6 +352,7 @@ export function HexagonPlay() {
       </div>
 
       <div className="lp-bridge lp-reveal">
+        <p className="lp-demo-caption">Simulazione dimostrativa: i valori e il piano qui sotto sono esempi, non una valutazione del tuo profilo.</p>
         <div className="lp-ctrls">
           <div className="lp-ctrl">
             <div className="lp-ctrl-top">
