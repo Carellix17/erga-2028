@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -19,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useHaptics } from "@/hooks/useHaptics";
 import { cleanCourseName } from "@/lib/courseName";
+import { getCourseProgress } from "@/lib/courseProgress";
 import { getAccentForeground } from "@/lib/subjectColors";
 import { courseCoverVars } from "@/lib/courseIdentity";
 import { CourseCard, courseDisplayName } from "./CourseCard";
@@ -61,7 +63,8 @@ export interface CourseOption {
 interface PathHeroProps {
   /** Nome del percorso (senza estensione né prefissi). */
   title?: string | null;
-  completedCount: number;
+  /** Zero-based index of the current lesson (same source used by Home). */
+  currentLessonIndex: number;
   totalLessons: number;
   /** La fabbrica è in corso: l'eroe mostra la barra di trasformazione. */
   isGenerating?: boolean;
@@ -154,7 +157,7 @@ const cardMotion = {
  */
 export function PathHero({
   title,
-  completedCount,
+  currentLessonIndex,
   totalLessons,
   isGenerating = false,
   progressPercent = 0,
@@ -175,6 +178,7 @@ export function PathHero({
   isRegenerating = false,
   onSelectingChange,
 }: PathHeroProps) {
+  const { t } = useTranslation();
   const { triggerLight } = useHaptics();
   const [isSelectingCourse, setIsSelectingCourse] = useState(false);
   const [transitioningId, setTransitioningId] = useState<string | null>(null);
@@ -192,7 +196,8 @@ export function PathHero({
   const prefersReducedMotion = usePrefersReducedMotion();
   const effectiveLayoutTransition = prefersReducedMotion ? { layout: { duration: 0 } } : heroLayoutTransition;
   const multi = courses.length > 1;
-  const pct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+  const progress = getCourseProgress(currentLessonIndex, totalLessons);
+  const pct = progress.completionPercent;
   const barPct = isGenerating
     ? Math.min(100, Math.max(4, progressPercent))
     : pct;
@@ -395,7 +400,7 @@ export function PathHero({
             <button
               type="button"
               aria-label="Azioni corso"
-              className="relative w-10 h-10 rounded-full transition-opacity duration-200 flex items-center justify-center shrink-0 hover:opacity-80 active:scale-[0.95]"
+              className="relative w-11 h-11 rounded-full transition-opacity duration-200 flex items-center justify-center shrink-0 hover:opacity-80 active:scale-[0.95]"
               style={{
                 backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)",
               }}
@@ -491,7 +496,7 @@ export function PathHero({
         <>
           <div className="mt-4 flex items-baseline justify-between gap-3">
             <p className="text-sm text-contrast-secondary">
-              {completedCount} di {totalLessons} lezioni
+              {t("lesson.lessonOf", { number: progress.lessonNumber, total: progress.totalLessons })}
             </p>
             <p className="text-sm font-semibold tabular-nums text-contrast">{pct}%</p>
           </div>

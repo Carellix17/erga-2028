@@ -956,7 +956,7 @@ export function StudioView({
       <>
         <PathHero
           title={heroTitle}
-          completedCount={0}
+          currentLessonIndex={0}
           totalLessons={0}
           isGenerating
           progressPercent={generationPercent}
@@ -1139,6 +1139,7 @@ export function StudioView({
           <Button
             type="button"
             size="lg"
+            variant="outline"
             onClick={() => { triggerLight(); createPath(); }}
             aria-label="Crea un nuovo percorso di studio"
             className="h-auto min-h-12 w-full justify-center whitespace-normal px-2 py-2 text-sm sm:px-6 sm:text-base"
@@ -1185,7 +1186,7 @@ export function StudioView({
         variant={courseViewState === "modules" ? "resume" : "full"}
         onCloseModules={courseViewState === "modules" ? backToOverview : undefined}
         title={heroTitle}
-        completedCount={Math.max(0, Math.min(currentLessonIndex, lessons.length))}
+        currentLessonIndex={Math.max(0, Math.min(currentLessonIndex, lessons.length))}
         totalLessons={lessons.length}
         isGenerating={isGenerating}
         progressPercent={generationPercent}

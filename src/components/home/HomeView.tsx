@@ -139,7 +139,7 @@ export function HomeView({
           lessonTitle={resume?.lessonTitle ?? null}
           lessonMetaText={
             resume
-              ? t("home.course.lessonsMeta", { current: resume.lessonNumber, total: resume.lessonCount })
+              ? t("lesson.lessonOf", { number: resume.lessonNumber, total: resume.lessonCount })
               : null
           }
           progressPercent={resume?.progressPercent ?? null}
@@ -152,7 +152,7 @@ export function HomeView({
           }
           primaryCtaLabel={
             resume
-              ? resume.lessonNumber > 1
+              ? resume.lessonIndex > 0
                 ? t("home.resume.continue")
                 : t("home.resume.start")
               : null

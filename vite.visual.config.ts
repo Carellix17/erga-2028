@@ -21,6 +21,7 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: "@/hooks/useHomeDashboard", replacement: mock("useHomeDashboard.ts") },
+      { find: "@/hooks/useLessonFigures", replacement: mock("lessonFigures.ts") },
       { find: "@/contexts/FocusContext", replacement: mock("focusContext.ts") },
       { find: "@/hooks/useHaptics", replacement: mock("haptics.ts") },
       { find: "@/contexts/AuthContext", replacement: mock("authContext.ts") },

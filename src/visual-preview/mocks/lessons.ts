@@ -4,6 +4,10 @@ const lessons = [
   { id: "visual-lesson-1", context_id: contextId, title: "Velocità media e istantanea", lesson_order: 1, is_generated: true },
   { id: "visual-lesson-2", context_id: contextId, title: "Leggere un grafico spazio-tempo", lesson_order: 2, is_generated: true },
   { id: "visual-lesson-3", context_id: contextId, title: "Accelerazione costante", lesson_order: 3, is_generated: true },
+  { id: "visual-lesson-4", context_id: contextId, title: "Moto uniformemente accelerato", lesson_order: 4, is_generated: true },
+  { id: "visual-lesson-5", context_id: contextId, title: "Caduta libera", lesson_order: 5, is_generated: true },
+  { id: "visual-lesson-6", context_id: contextId, title: "Il moto circolare", lesson_order: 6, is_generated: true },
+  { id: "visual-lesson-7", context_id: contextId, title: "Ripasso di cinematica", lesson_order: 7, is_generated: true },
 ];
 
 const listData = { lessons, currentIndex: 1, completed: [], finalTest: null };
