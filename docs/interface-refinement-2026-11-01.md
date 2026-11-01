@@ -77,3 +77,36 @@ La suite verifica il comportamento nel DOM e il profilo browser verifica i casi 
 ## Pubblicazione
 
 Le modifiche sono proposte in un ramo separato. Dopo la revisione visiva e il merge, usare **Update in Lovable** e verificare l’app pubblicata. Nessuna modifica è dichiarata online da questa sessione.
+
+
+## Aggiornamento richiesto: calendario e sessione giornaliera
+
+Il brief successivo sostituisce la composizione agenda-prima: ora il mese resta aperto all’ingresso e le scadenze lo precedono. La PR #104 è stata resa pronta per la revisione; non è stata unita né pubblicata.
+
+- Fascia di scadenze reali in ordine cronologico, con tre/quattro/cinque/sei/sette card per fascia di larghezza, numero dei giorni, materia, titolo e data. Scorrimento touch e frecce, nessuna rotazione automatica. Le copertine sono lo stesso componente di Studio: collegamento esplicito al percorso, altrimenti corrispondenza di materia, poi fallback sulla materia.
+- Calendario mensile con date native accessibili; quantità di eventi su telefono, titoli sintetizzati da ellissi sulle celle più larghe. Toccando una data si apre la giornata intera. Le azioni di aggiunta e generazione sono subito sotto, rispettivamente vermiglie e cognitive.
+- Sessione giornaliera dedicata a oggi o a qualunque data, con navigazione precedente/successivo/Oggi, URL persistente e ritorno al calendario. Verifiche, studio e impegni personali sono tutti presenti. I record privi di ora sono separati dalla griglia delle 24 ore; eventi allo stesso orario si impilano senza coprirsi. La prima posizione visibile corrisponde al primo evento con orario salvato.
+- Il Piano funziona anche senza materiali. Da una giornata, il modulo aggiunta riceve quella data. La generazione rimane indisponibile senza materiali e impegni, con spiegazione; un errore di lettura del calendario offre Riprova. Corretto anche il giorno locale degli eventi «Altro», prima ricavato tagliando una data UTC.
+
+La vista giornaliera segue la distinzione mese/giorno osservata nelle guide ufficiali di [Google Calendar](https://support.google.com/calendar/answer/6110849?co=GENIE.Platform%3DDesktop&hl=it) e [Fantastical](https://flexibits.com/fantastical-ios/help/calendar-views); la forma, la tipografia e le copertine restano quelle di Erga. Nessun nuovo servizio o calendario esterno viene collegato.
+
+### Movimento
+
+| Prima | Dopo | Motivo |
+|---|---|---|
+| Passaggio fra composizioni senza una giornata autonoma | Entrata direzionale di 8 px / 180 ms tra mese e giornata | Conservare la relazione fra data e programma |
+| Lista di prossimi eventi verticale | Scorrimento orizzontale nativo con snap e frecce | Rendere raggiungibili tutte le scadenze anche senza trascinare |
+| Cambio mese istantaneo | Cambio direzionale 180 ms, senza entrate annidate | Comunicare avanti/indietro |
+| Attesa fissa prima dell’eliminazione | 180 ms, immediata con movimento ridotto | Allineare feedback visivo e risposta |
+
+Solo transform e opacity per gli ingressi; colori/opacità per i controlli. Preferenze di sistema ed Erga rispettate. Le attivazioni da tastiera evitano gli spostamenti; il focus passa al titolo della giornata e ritorna alla data che l’ha aperta. Nessun contenuto attende uno stagger o un’animazione per essere disponibile.
+
+### Verifica di questo aggiornamento
+
+- **92 file / 773 test superati**. Le regressioni coprono apertura calendario, URL giornaliero, data preselezionata, giorni vuoti, navigazione, focus, callback di modifica/eliminazione, orari locali, convenzione legacy del mezzogiorno e identità delle copertine.
+- Chromium locale isolato, dati dimostrativi, font reali, 375/390/768/1024/1440 px. Tema scuro a 390/768/1024 px, controlli di movimento normale e ridotto. Due passaggi: il primo ha evidenziato lo scorrimento iniziale errato della giornata e la spezzatura dei titoli stretti; correzioni e conferma completate.
+- Nel passaggio conclusivo: **66 screenshot**, 72 record di verifica, nessuna segnalazione del profilo, errore JavaScript o richiesta esterna inattesa. Verificati numero delle card visibili, frecce, colori distinti e posizione delle azioni, calendario aperto, eventi personali e simultanei, inizio sul primo orario, ritorno del focus e transizioni a 180 ms.
+- ESLint dei file modificati e controllo delle differenze senza errori. Il detector mantiene solo l’avvertenza sul font Instrument Serif, richiesto dall’identità confermata.
+- TypeScript e build diretta Vite/PWA verificati. Lo script npm di prebuild richiede Bun, non installato in questo ambiente; il sito è stato compilato con il comando Vite del progetto. Non cambiano rotte o sitemap.
+
+La griglia conserva gli orari di inizio disponibili e non attribuisce durate inesistenti. Il formato storico delle valutazioni non distingue una prova effettivamente a mezzogiorno da una senza orario: resta la convenzione già usata dal modulo. Restano da provare aptica e tastiera su telefono fisico, integrazione autenticata dopo pubblicazione e un audit completo di contrasto/accessibilità. Nessuna modifica al database o alle Edge Function, nessuna nuova dipendenza.

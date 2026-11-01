@@ -1368,6 +1368,101 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .lesson-step-enter[data-direction="back"] { animation-name: lesson-step-back; }
 @keyframes lesson-step-back { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
 .plan-agenda-enter { animation: plan-agenda-enter var(--motion-standard) var(--ease-out); }
+/* Piano: the same matter covers as Studio, followed by a quiet working calendar. */
+.planner-workspace {
+  --planner-gap: .5rem;
+  --planner-card-padding: .5rem;
+  --planner-visible-cards: 3;
+  --planner-day-height: 3.25rem;
+  --planner-day-padding: .25rem;
+  --planner-hour-height: 4rem;
+  --planner-time-gutter: 3.5rem;
+  --planner-countdown-size: 2rem;
+  --planner-motion-distance: 8px;
+}
+.planner-deadlines {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - (var(--planner-visible-cards) - 1) * var(--planner-gap)) / var(--planner-visible-cards));
+  gap: var(--planner-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  padding-bottom: var(--planner-gap);
+}
+.planner-deadline {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: var(--planner-card-padding);
+  text-align: left;
+  scroll-snap-align: start;
+  transition: opacity var(--motion-micro) var(--ease-out);
+}
+.planner-deadline:active { opacity: .8; }
+.planner-deadline:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; color: rgb(var(--contrast-ink)); }
+.planner-countdown { font-size: var(--planner-countdown-size); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+.planner-deadline-title { overflow-wrap: break-word; hyphens: auto; font-size: 1rem; font-weight: 600; line-height: 1.25; }
+.planner-month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.planner-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--planner-day-padding);
+  min-width: 0;
+  min-height: var(--planner-day-height);
+  padding: var(--planner-day-padding);
+  border-right: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
+  text-align: left;
+  transition: background-color var(--motion-micro) var(--ease-out), color var(--motion-micro) var(--ease-out);
+}
+.planner-day:nth-child(7n) { border-right: 0; }
+.planner-day:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: -2px; }
+.planner-day-outside { color: hsl(var(--muted-foreground)); background: hsl(var(--background)); }
+.planner-day-today { background: hsl(var(--secondary)); }
+.planner-day-number { font-size: 1rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.planner-day-today .planner-day-number { color: hsl(var(--primary)); font-weight: 700; text-decoration: underline; text-underline-offset: .25rem; }
+.planner-day-count { display: flex; align-items: center; gap: var(--planner-day-padding); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.planner-day-dot { width: var(--planner-day-padding); height: var(--planner-day-padding); background: currentColor; border-radius: 50%; }
+.planner-day-titles { display: none; width: 100%; min-width: 0; font-size: .875rem; line-height: 1.5; }
+.planner-day-titles > span { display: block; }
+.planner-generate { background: hsl(var(--cognitive)); color: hsl(var(--background)); border-color: hsl(var(--cognitive)); }
+.planner-generate:hover { background: hsl(var(--cognitive) / .9); }
+.planner-timeline { position: relative; max-height: 65dvh; min-height: 16rem; overflow-y: auto; border: 1px solid hsl(var(--border)); background: hsl(var(--sheet)); scrollbar-gutter: stable; }
+.planner-hour { display: grid; grid-template-columns: var(--planner-time-gutter) minmax(0, 1fr); min-height: var(--planner-hour-height); border-top: 1px solid hsl(var(--border)); }
+.planner-hour:first-child { border-top: 0; }
+.planner-hour-label { padding: var(--planner-gap); font-size: .75rem; color: hsl(var(--muted-foreground)); border-right: 1px solid hsl(var(--border)); }
+.planner-schedule-event { display: flex; align-items: start; gap: var(--planner-gap); padding: var(--planner-card-padding); background: hsl(var(--secondary)); transition: opacity var(--motion-standard) var(--ease-out); }
+.planner-view-enter, .planner-month-enter, .planner-day-enter { animation: planner-view-enter var(--motion-standard) var(--ease-out); }
+.planner-motion-back { --planner-motion-distance: -8px; }
+.planner-view-enter .planner-month-enter, .planner-no-motion .planner-view-enter, .planner-no-motion .planner-month-enter { animation: none; }
+.planner-no-motion .planner-deadlines { scroll-behavior: auto; }
+@keyframes planner-view-enter { from { opacity: .65; transform: translateX(var(--planner-motion-distance)); } to { opacity: 1; transform: none; } }
+@media (hover: hover) and (pointer: fine) {
+  .planner-day:hover { background: hsl(var(--secondary)); }
+  .planner-deadline:hover { opacity: .92; }
+}
+@media (min-width: 640px) {
+  .planner-workspace { --planner-visible-cards: 4; --planner-card-padding: 1rem; --planner-day-height: 5.5rem; --planner-day-padding: .5rem; --planner-countdown-size: 2.5rem; }
+  .planner-day { align-items: start; }
+  .planner-day-count { display: none; }
+  .planner-day-titles { display: block; }
+}
+@media (min-width: 1024px) { .planner-workspace { --planner-visible-cards: 5; } }
+@media (min-width: 1280px) { .planner-workspace { --planner-visible-cards: 6; } }
+@media (min-width: 1536px) { .planner-workspace { --planner-visible-cards: 7; } }
+@media (prefers-reduced-motion: reduce) {
+  .planner-view-enter, .planner-month-enter, .planner-day-enter { animation: none; }
+  .planner-deadlines { scroll-behavior: auto; }
+}
+.reduce-motion .planner-view-enter, .reduce-motion .planner-month-enter, .reduce-motion .planner-day-enter { animation: none; }
+.reduce-motion .planner-deadlines { scroll-behavior: auto; }
 @keyframes plan-agenda-enter { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   .app-nav-indicator, .lesson-step { transition: none; }

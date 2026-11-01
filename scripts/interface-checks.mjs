@@ -31,7 +31,7 @@ export async function inspectInterface({ browser, baseUrl, outputDir, report, fo
     const controls = [...document.querySelectorAll("button,select,textarea,a[href]")].filter(visible);
     const clipped = controls.filter((node) => {
       const bounds = node.getBoundingClientRect();
-      return bounds.x < -1 || bounds.right > window.innerWidth + 1;
+      return !node.closest(".planner-deadlines") && (bounds.x < -1 || bounds.right > window.innerWidth + 1);
     }).map((node) => ({ name: node.getAttribute("aria-label") || node.textContent?.trim().slice(0, 70), ...rect(node) }));
     const croppedText = controls.filter((node) => node.scrollWidth > node.clientWidth + 2 || node.scrollHeight > node.clientHeight + 2).map((node) => ({ name: node.getAttribute("aria-label") || node.textContent?.trim().slice(0, 70), ...rect(node) }));
     const small = controls.filter((node) => node.getBoundingClientRect().height < 43).map((node) => ({ name: node.getAttribute("aria-label") || node.textContent?.trim().slice(0, 70), ...rect(node) }));
@@ -102,22 +102,45 @@ export async function inspectInterface({ browser, baseUrl, outputDir, report, fo
     }
 
     await open("piano");
-    const agenda = await page.evaluate(() => document.body.textContent.includes("Ripasso: il moto rettilineo") && document.body.textContent.includes("Verifica sui Promessi sposi"));
-    verify(agenda, "Agenda not available at first load", { view: "piano", width: viewport.width });
+    const calendarVisible = await page.$eval('.planner-month-grid', (node) => node.getBoundingClientRect().height > 0);
+    verify(calendarVisible, "Month calendar hidden at first load", { view: "piano", width: viewport.width });
+    const deadlines = await page.$eval('.planner-deadlines', (node) => {
+      const list = node.getBoundingClientRect();
+      const cards = [...node.querySelectorAll('button')].map((card) => card.getBoundingClientRect());
+      return { visible: cards.filter((card) => card.left >= list.left - 1 && card.right <= list.right + 1).length, count: cards.length };
+    });
+    verify(deadlines.visible === (viewport.width < 640 ? 3 : viewport.width < 1024 ? 4 : viewport.width < 1280 ? 5 : 6), `Wrong number of visible deadlines: ${JSON.stringify(deadlines)}`, { view: "piano", width: viewport.width });
+    verify(deadlines.count === 8, "Missing imminent test cards", { view: "piano", width: viewport.width });
+    const actionsBelow = await page.evaluate(() => document.querySelector('.planner-actions').getBoundingClientRect().top >= document.querySelector('.planner-month-grid').getBoundingClientRect().bottom);
+    const actionColors = await page.$$eval('.planner-actions button', (buttons) => buttons.map((button) => ({ background: getComputedStyle(button).backgroundColor, color: getComputedStyle(button).color })));
+    verify(actionColors[0].background !== actionColors[1].background, "Planner actions use the same color", { view: "piano", width: viewport.width });
+    verify(actionsBelow, "Planner actions are not below the calendar", { view: "piano", width: viewport.width });
     await capture("piano");
-    if (viewport.width < 1280) {
-      const disclosure = await page.$('button[aria-controls][aria-expanded="false"]');
-      assert.ok(disclosure, "Calendar disclosure not found");
-      await disclosure.click();
-      await pause(80);
-    }
+    await (await byLabel(page, "Altre scadenze")).click();
+    await pause(220);
+    verify(await page.$eval('.planner-deadlines', (node) => node.scrollLeft > 0), "Deadline arrows fail to scroll", { view: "piano", width: viewport.width });
+    await capture("piano-scadenze");
+    await page.$eval('.planner-month-grid', (node) => node.scrollIntoView({ block: "center" }));
     await capture("piano-calendar");
-    const day = await page.$('button[aria-current="date"]');
-    assert.ok(day, "Current calendar day not found");
-    await day.click();
-    const todayOnly = await page.evaluate(() => !document.body.textContent.includes("Verifica sui Promessi sposi"));
-    verify(todayOnly, "Calendar date does not filter the agenda", { view: "piano", width: viewport.width });
-    await page.evaluate(() => [...document.querySelectorAll("button")].find((node) => node.textContent.trim() === "Tutti i prossimi").click());
+    await page.click('button[aria-current="date"]');
+    await page.waitForSelector('.planner-timeline');
+    const fullDay = await page.evaluate(() => ["Ripasso: il moto rettilineo", "Ripasso delle formule", "Allenamento di pallavolo", "Consegna ricerca di storia", "Interrogazione sul moto"].every((title) => document.body.textContent.includes(title)));
+    verify(fullDay, "Daily schedule omits a study session, exam or personal event", { view: "piano-day", width: viewport.width });
+    const firstHourVisible = await page.$eval('.planner-timeline', (node) => Math.abs(node.querySelector('[data-hour="9"]').getBoundingClientRect().top - node.getBoundingClientRect().top - node.clientTop) < 2);
+    verify(firstHourVisible, "Daily schedule does not begin at the first saved event", { view: "piano-day", width: viewport.width });
+    await capture("piano-day");
+    await page.$eval('.planner-timeline', (node) => { node.scrollTop += node.querySelector('[data-hour="15"]').getBoundingClientRect().top - node.getBoundingClientRect().top - node.clientTop; });
+    await capture("piano-day-study");
+    await (await byLabel(page, "Giorno successivo")).click();
+    const tomorrow = await page.evaluate(() => document.body.textContent.includes("Verifica sui Promessi sposi") && !document.body.textContent.includes("Allenamento di pallavolo"));
+    verify(tomorrow, "Daily next-day navigation is inconsistent", { view: "piano-day", width: viewport.width });
+    await page.evaluate(() => [...document.querySelectorAll('button')].find((node) => node.textContent.includes('Torna al calendario')).click());
+    await page.waitForSelector('.planner-month-grid');
+    const restoredFocus = await page.evaluate(() => document.activeElement?.getAttribute('aria-current') === 'date');
+    verify(restoredFocus, "Returning from the day loses the selected calendar button", { view: "piano-day", width: viewport.width });
+    await page.evaluate(() => [...document.querySelectorAll('button')].find((node) => node.textContent.includes('Sessione giornaliera')).click());
+    await page.waitForSelector('.planner-timeline');
+    await page.evaluate(() => [...document.querySelectorAll('button')].find((node) => node.textContent.includes('Torna al calendario')).click());
 
     await open("studio");
     await page.waitForSelector('button[aria-label="Crea un nuovo percorso di studio"]', { visible: true });
@@ -183,6 +206,11 @@ export async function inspectInterface({ browser, baseUrl, outputDir, report, fo
       for (const view of ["home", "piano", "studio", "lesson"]) {
         await open(view, "dark");
         await capture(view, "dark");
+        if (view === "piano") {
+          await page.evaluate(() => [...document.querySelectorAll('button')].find((node) => node.textContent.includes('Sessione giornaliera')).click());
+          await page.waitForSelector('.planner-timeline');
+          await capture("piano-day", "dark");
+        }
       }
       await open("home");
       await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "no-preference" }]);
@@ -194,6 +222,14 @@ export async function inspectInterface({ browser, baseUrl, outputDir, report, fo
       }));
       verify(motion.haptics.length === 1 && motion.haptics[0] === 36, `Navigation haptic missing or duplicated: ${JSON.stringify(motion.haptics)}`, { view: "motion", width: viewport.width });
       report.interfaceCaptures.push({ view: "motion", width: viewport.width, ...motion });
+      await open("piano");
+      await page.click('button[data-plan-opener="daily"]');
+      const plannerMotion = await page.$eval('.planner-view-enter', (node) => getComputedStyle(node).animationDuration);
+      verify(plannerMotion === "0.18s", `Unexpected planner transition duration: ${plannerMotion}`, { view: "planner-motion", width: viewport.width });
+      await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
+      const plannerReduced = await page.$eval('.planner-view-enter', (node) => getComputedStyle(node).animationName);
+      verify(plannerReduced === "none", "Planner ignores reduced motion", { view: "planner-motion", width: viewport.width });
+      report.interfaceCaptures.push({ view: "planner-motion", width: viewport.width, duration: plannerMotion, reduced: plannerReduced });
     }
     await page.close();
   }

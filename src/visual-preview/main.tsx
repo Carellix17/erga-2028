@@ -150,11 +150,27 @@ export function VisualPreview() {
           </div>
           </>
         ) : activeTab === "piano" ? (
-          <AppointmentsCalendar evaluations={[]} events={[
+          <AppointmentsCalendar evaluations={[
+            { id: "demo-eval-today", title: "Interrogazione sul moto", subject_id: "demo-physics", type: "orale" as const, date: new Date(new Date().setHours(9, 0, 0, 0)).toISOString(), topic_type: "linked" as const, topic_id: "demo-course" },
+            { id: "demo-eval-history", title: "La rivoluzione francese", subject_id: "demo-history", type: "scritta" as const, date: format(addDays(new Date(), 2), "yyyy-MM-dd"), topic_type: "free" as const, topic_id: null },
+          ].map((event) => ({ ...event, user_id: "demo", description: null, free_topic_title: null, goal: null, is_completed: false, created_at: "2026-11-01" }))} events={[
             { id: "demo-today", title: "Ripasso: il moto rettilineo", subject: "Fisica", event_date: format(new Date(), "yyyy-MM-dd"), event_time: "15:30", event_type: "study" },
             { id: "demo-tomorrow", title: "Verifica sui Promessi sposi", subject: "Italiano", event_date: format(addDays(new Date(), 1), "yyyy-MM-dd"), event_type: "test" },
+            ...[
+              { subject: "Matematica", title: "Verifica sulle funzioni", days: 4 },
+              { subject: "Inglese", title: "Interrogazione di inglese", days: 5 },
+              { subject: "Scienze", title: "La struttura della cellula", days: 7 },
+              { subject: "Filosofia", title: "Socrate e Platone", days: 8 },
+              { subject: "Arte", title: "Il Rinascimento", days: 10 },
+            ].map((event, index) => ({ id: `demo-deadline-${index}`, title: event.title, subject: event.subject, event_date: format(addDays(new Date(), event.days), "yyyy-MM-dd"), event_type: "test" as const })),
+            { id: "demo-extra", title: "Allenamento di pallavolo", subject: "Altro", event_date: format(new Date(), "yyyy-MM-dd"), event_time: "18:00", event_type: "assignment" },
+            { id: "demo-all-day", title: "Consegna ricerca di storia", subject: "Storia", event_date: format(new Date(), "yyyy-MM-dd"), event_type: "assignment" },
+            { id: "demo-simultaneous", title: "Ripasso delle formule", subject: "Fisica", event_date: format(new Date(), "yyyy-MM-dd"), event_time: "15:30", event_type: "study" },
             { id: "demo-week", title: "Esercizi sulle disequazioni", subject: "Matematica", event_date: format(addDays(new Date(), 3), "yyyy-MM-dd"), event_time: "16:00", event_type: "assignment" },
-          ]} subjects={[]} exitingIds={[]} onAddEvent={() => window.alert("Anteprima: aggiunta evento dimostrativa.")} showGeneratePlan onGeneratePlan={() => window.alert("Anteprima: nessuna generazione AI viene eseguita.")} isGeneratingPlan={false} onEditEvaluation={() => {}} onEditStudyEvent={() => {}} onDeleteEvaluation={() => {}} onDeleteStudyEvent={() => {}} />
+          ]} subjects={[
+            { id: "demo-physics", user_id: "demo", name: "Fisica", color: null },
+            { id: "demo-history", user_id: "demo", name: "Storia", color: null },
+          ]} courses={[{ id: "demo-course", file_name: "Fisica: il moto rettilineo.pdf" }]} exitingIds={[]} onAddEvent={() => window.alert("Anteprima: aggiunta evento dimostrativa.")} showGeneratePlan onGeneratePlan={() => window.alert("Anteprima: nessuna generazione AI viene eseguita.")} isGeneratingPlan={false} onEditEvaluation={() => {}} onEditStudyEvent={() => {}} onDeleteEvaluation={() => {}} onDeleteStudyEvent={() => {}} />
         ) : (
           <section className="min-h-[50vh] p-6" aria-label="Anteprima area applicativa">
             <h1 className="text-2xl font-semibold">Anteprima {activeTab}</h1>
