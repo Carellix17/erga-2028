@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,9 @@ import {
 import { ChevronDown } from "lucide-react";
 import { useUserSubjects } from "@/hooks/useUserSubjects";
 import { useFileContextsQuery } from "@/hooks/useFileContexts";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { PillToggle } from "@/components/ui/pill-toggle";
+import { addOneHour } from "@/lib/plannerEntries";
 import { resolveSubjectColor } from "@/lib/subjectColors";
 import type { Evaluation, EvaluationType } from "@/hooks/useEvaluations";
 import { cn } from "@/lib/utils";
@@ -42,6 +44,21 @@ const VERIFICA_MODE_LABEL: Record<VerificaMode, string> = {
 };
 
 const NONE = "__none__";
+type FormField = "title" | "date" | "description" | "endTime";
+type FormFieldErrors = Partial<Record<FormField, string>>;
+
+function extractEndTimeFromDescription(description: string, untilLabel: string) {
+  const markers = Array.from(new Set([untilLabel.trim(), "fino alle", "until"]))
+    .filter(Boolean)
+    .join("|");
+  const pattern = new RegExp(
+    String.raw`(?:\s*·\s*)?(?:${markers})\s+((?:[01]\d|2[0-3]):[0-5]\d)\s*$`,
+    "i",
+  );
+  const match = pattern.exec(description);
+  if (!match || match.index === undefined) return { description, endTime: "" };
+  return { description: description.slice(0, match.index).trim(), endTime: match[1] };
+}
 
 export interface EvalFormInput {
   type: EvaluationType;
@@ -84,6 +101,7 @@ export function AddEventSheet({
   onSubmit,
 }: AddEventSheetProps) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const editingId = initial?.id ?? null;
   const formId = useId();
   const ids = {
@@ -95,6 +113,10 @@ export function AddEventSheet({
     startTime: `${formId}-start-time`,
     endTime: `${formId}-end-time`,
     endTimeError: `${formId}-end-time-error`,
+    endTimeDefaultHint: `${formId}-end-time-default-hint`,
+    titleError: `${formId}-title-error`,
+    dateError: `${formId}-date-error`,
+    descriptionError: `${formId}-description-error`,
     topicLabel: `${formId}-topic-label`,
     course: `${formId}-course`,
     freeTopic: `${formId}-free-topic`,
@@ -115,6 +137,12 @@ export function AddEventSheet({
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [endTouched, setEndTouched] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FormFieldErrors>({});
+  const titleRef = useRef<HTMLInputElement>(null);
+  const dateRef = useRef<HTMLInputElement>(null);
+  const endTimeRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const [subjectId, setSubjectId] = useState<string>(NONE);
   const [topicMode, setTopicMode] = useState<"linked" | "free">("free");
   const [courseId, setCourseId] = useState<string>("");
@@ -132,10 +160,14 @@ export function AddEventSheet({
     if (!open) return;
     if (initial) {
       const isCompito = initial.type === "compito";
+      const originalDescription = initial.description ?? "";
+      const extracted = isCompito
+        ? { description: originalDescription, endTime: "" }
+        : extractEndTimeFromDescription(originalDescription, t("piano.sheet.until"));
       setCategory(isCompito ? "compito" : "verifica");
       setMode(isCompito ? "scritta" : (initial.type as VerificaMode));
       setTitle(initial.title);
-      setDescription(initial.description ?? "");
+      setDescription(extracted.description);
       setDate(initial.date ? initial.date.slice(0, 10) : "");
       if (initial.date) {
         const d = new Date(initial.date);
@@ -145,26 +177,29 @@ export function AddEventSheet({
       } else {
         setTime("");
       }
-      setEndTime("");
+      setEndTime(extracted.endTime);
+      setEndTouched(!!extracted.endTime);
       setSubjectId(initial.subject_id ?? NONE);
       setTopicMode(initial.topic_type);
       setCourseId(initial.topic_type === "linked" ? (initial.topic_id ?? "") : "");
       setFreeTopic(initial.free_topic_title ?? "");
       setGoal(initial.goal ?? null);
-      setShowNotes(!!initial.description || initial.goal != null);
+      setShowNotes(!!originalDescription || initial.goal != null);
     } else {
       // Nuovo evento: la categoria e il giorno possono arrivare dalla vista
       // Diario (presetCategory / presetDate), altrimenti i valori di sempre.
       setCategory(presetCategory ?? "verifica");
       setMode("scritta"); setTitle(""); setDescription("");
       setDate(presetDate ?? ""); setTime(""); setEndTime(""); setSubjectId(NONE);
+      setEndTouched(false);
       setTopicMode("free"); setCourseId(""); setFreeTopic("");
       setGoal(null); setShowNotes(false);
       // Un compito nasce con la descrizione aperta: è lì che si scrive cosa c'è da fare.
       if (presetCategory === "compito") setShowNotes(true);
     }
+    setFieldErrors({});
     setEndError(null);
-  }, [open, initial, presetCategory, presetDate]);
+  }, [open, initial, presetCategory, presetDate, t]);
 
   /** Per le verifiche, preserva l'ora di fine nella descrizione: evaluations ha un solo campo orario. */
   const descriptionWithEnd = () => {
@@ -192,30 +227,51 @@ export function AddEventSheet({
     return null;
   };
 
+  const clearFieldError = (field: Exclude<FormField, "endTime">) => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Validazione per categoria: mai stringhe vuote verso il DB
+    const nextErrors: FormFieldErrors = {};
     if (category === "compito") {
-      // In modifica basta il titolo esistente: compiti creati prima avevano
-      // solo il titolo e devono restare salvabili.
-      if ((!description.trim() && !(editingId && title.trim())) || !date) return;
-    } else if (!title.trim() || !date) {
+      // Conserva la compatibilità con i compiti preesistenti salvabili tramite il titolo.
+      if (!description.trim() && !(editingId && title.trim())) {
+        nextErrors.description = t("piano.sheet.compitoRequired");
+      }
+    } else if (!title.trim()) {
+      nextErrors.title = t("piano.sheet.titleRequired");
+    }
+    if (!date) nextErrors.date = t("piano.sheet.dateRequired");
+
+    // P47 — una verifica senza ora di fine (o con fine prima dell'inizio) non parte.
+    const timeError = category === "verifica"
+      ? validateVerificaTimes()
+      : category === "altro"
+        ? validateAltroTimes()
+        : null;
+    setFieldErrors(nextErrors);
+    setEndError(timeError);
+
+    const errorOrder: FormField[] = category === "compito"
+      ? ["date", "description"]
+      : ["title", "date", "endTime"];
+    const firstInvalidField = errorOrder.find((field) =>
+      field === "endTime" ? !!timeError : !!nextErrors[field]
+    );
+    if (firstInvalidField) {
+      if (firstInvalidField === "title") titleRef.current?.focus();
+      else if (firstInvalidField === "date") dateRef.current?.focus();
+      else if (firstInvalidField === "description") descriptionRef.current?.focus();
+      else endTimeRef.current?.focus();
       return;
     }
-    // P47 — una verifica senza ora di fine (o con fine prima dell'inizio) non parte.
-    if (category === "verifica") {
-      const timeError = validateVerificaTimes();
-      if (timeError) {
-        setEndError(timeError);
-        return;
-      }
-    } else if (category === "altro") {
-      const timeError = validateAltroTimes();
-      if (timeError) {
-        setEndError(timeError);
-        return;
-      }
-    }
+
     setSubmitting(true);
     try {
       if (category === "altro") {
@@ -276,10 +332,21 @@ export function AddEventSheet({
     }
   };
 
-  const canSubmit =
-    category === "compito"
-      ? !!date && (!!description.trim() || !!(editingId && title.trim()))
-      : !!title.trim() && !!date;
+  const errorOrder: FormField[] = category === "compito"
+    ? ["date", "description"]
+    : ["title", "date", "endTime"];
+  const firstErrorField = errorOrder.find((field) =>
+    field === "endTime" ? !!endError : !!fieldErrors[field]
+  );
+  const requiredSuffix = (
+    <span className="ml-1 text-xs font-normal text-muted-foreground">{" "}({t("piano.sheet.required")})</span>
+  );
+  const renderFieldError = (field: FormField, id: string, message: string | null | undefined, className = "text-xs font-medium text-destructive") => {
+    if (!message) return null;
+    return firstErrorField === field
+      ? <p id={id} role="alert" className={className}>{message}</p>
+      : <p id={id} className={className}>{message}</p>;
+  };
 
   const subjectSelect = (
     <div className="min-w-0 space-y-2">
@@ -290,7 +357,7 @@ export function AddEventSheet({
         <SelectTrigger
           id={ids.subject}
           aria-labelledby={`${ids.subjectLabel} ${ids.subject}`}
-          className="w-full h-11 rounded-2xl bg-secondary/70 border border-transparent px-3 body-medium transition-colors"
+          className="w-full h-11 rounded-control border border-input bg-sheet px-4 py-2.5 text-base text-foreground"
         >
           <SelectValue placeholder={t("piano.sheet.none")} />
         </SelectTrigger>
@@ -314,58 +381,92 @@ export function AddEventSheet({
 
   const dateField = (
     <div className="min-w-0 space-y-2">
-      <Label htmlFor={ids.date} className="label-large">{t("piano.sheet.date")}</Label>
-      <Input id={ids.date} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <Label htmlFor={ids.date} className="label-large">
+        {t("piano.sheet.date")}{requiredSuffix}
+      </Label>
+      <Input
+        id={ids.date}
+        ref={dateRef}
+        type="date"
+        value={date}
+        onChange={(e) => { setDate(e.target.value); clearFieldError("date"); }}
+        aria-label={t("piano.sheet.date")}
+        aria-required="true"
+        aria-invalid={!!fieldErrors.date}
+        aria-describedby={fieldErrors.date ? ids.dateError : undefined}
+      />
+      {renderFieldError("date", ids.dateError, fieldErrors.date)}
     </div>
   );
 
-  /**
-   * Intervallo orario su una riga a 2 colonne. Per la verifica l'ora di fine
-   * è obbligatoria (asterisco + niente "(opzionale)"); per "Altro" resta
-   * facoltativa. Eventuali errori compaiono sotto il campo con role="alert".
-   */
-  const timeRange = (requireEnd: boolean) => (
-    <div className="grid grid-cols-2 gap-3">
-      <div className="min-w-0 space-y-2">
-        <Label htmlFor={ids.startTime} className="label-large">{t("piano.sheet.startTime")}</Label>
-        <Input
-          id={ids.startTime}
-          type="time"
-          value={time}
-          onChange={(e) => {
-            setTime(e.target.value);
-            setEndError(null);
-          }}
-        />
-      </div>
-      <div className="min-w-0 space-y-2">
-        <Label htmlFor={ids.endTime} className="label-large">
-          {t("piano.sheet.endTime")}
-          {requireEnd && <span aria-hidden="true" className="ml-0.5 text-destructive">*</span>}
-          {!requireEnd && (
-            <span className="text-muted-foreground font-normal">
-              {" "}({t("piano.sheet.optional").replace(/[()]/g, "")})
-            </span>
+  /** Intervallo orario su una riga a 2 colonne; per Altro l'ora di fine resta facoltativa. */
+  const timeRange = (requireEnd: boolean) => {
+    const endIsRequired = requireEnd && !editingId;
+    const showDefaultHint = endIsRequired;
+    const endTimeDescribedBy = [
+      showDefaultHint ? ids.endTimeDefaultHint : undefined,
+      endError ? ids.endTimeError : undefined,
+    ].filter(Boolean).join(" ") || undefined;
+
+    return (
+      <div className="grid grid-cols-2 gap-3">
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor={ids.startTime} className="label-large">{t("piano.sheet.startTime")}</Label>
+          <Input
+            id={ids.startTime}
+            type="time"
+            value={time}
+            onChange={(e) => {
+              const nextTime = e.target.value;
+              setTime(nextTime);
+              if (category === "verifica" && !endTouched) {
+                setEndTime(nextTime ? addOneHour(nextTime) ?? "" : "");
+              }
+              setEndError(null);
+            }}
+          />
+        </div>
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor={ids.endTime} className="label-large">
+            {t("piano.sheet.endTime")}
+            {endIsRequired
+              ? requiredSuffix
+              : (
+                <span className="text-muted-foreground font-normal">
+                  {" "}({t("piano.sheet.optional").replace(/[()]/g, "")})
+                </span>
+              )}
+          </Label>
+          <Input
+            id={ids.endTime}
+            ref={endTimeRef}
+            type="time"
+            value={endTime}
+            onChange={(e) => {
+              setEndTime(e.target.value);
+              setEndTouched(true);
+              setEndError(null);
+            }}
+            aria-required={endIsRequired}
+            aria-invalid={!!endError}
+            aria-describedby={endTimeDescribedBy}
+          />
+          {showDefaultHint && (
+            <p id={ids.endTimeDefaultHint} className="text-xs text-muted-foreground">
+              {t("piano.sheet.endTimeDefaultHint")}
+            </p>
           )}
-        </Label>
-        <Input
-          id={ids.endTime}
-          type="time"
-          value={endTime}
-          onChange={(e) => {
-            setEndTime(e.target.value);
-            setEndError(null);
-          }}
-          aria-invalid={!!endError}
-          aria-describedby={endError ? ids.endTimeError : undefined}
-        />
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="pb-safe max-h-[92vh] overflow-y-auto">
+      <SheetContent
+        side={isMobile ? "bottom" : "right"}
+        className={cn("pb-safe max-h-[92vh] overflow-y-auto", !isMobile && "w-full sm:max-w-md")}
+      >
         <SheetHeader className="mb-4">
           <SheetTitle className="title-large font-display">
             {editingId ? t("piano.sheet.editTitle") : t("piano.sheet.addTitle")}
@@ -373,6 +474,7 @@ export function AddEventSheet({
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          <p className="text-xs text-muted-foreground">{t("piano.sheet.requiredFieldsHint")}</p>
           {/* 🎛️ P46 — TRE tab primari, iniziale maiuscola */}
           <PillToggle<Category>
             aria-label={t("piano.sheet.type")}
@@ -383,7 +485,9 @@ export function AddEventSheet({
             ]}
             value={category}
             onChange={(nextCategory) => {
+              if (nextCategory === "altro" && category === "verifica" && !endTouched) setEndTime("");
               setCategory(nextCategory);
+              setFieldErrors({});
               setEndError(null);
             }}
             variant="track"
@@ -395,15 +499,22 @@ export function AddEventSheet({
                   L'input del titolo si espande a sinistra; a destra il pill
                   compatto apre la tendina delle modalità. Nessuna riga "Modalità" separata. */}
               <div className="space-y-2">
-                <Label htmlFor={ids.title} className="label-large">{t("piano.sheet.title")}</Label>
-                <div className="flex items-center rounded-2xl border border-border bg-card py-1.5 pl-4 pr-1.5 shadow-sm transition-[border-color,box-shadow] focus-within:border-ring/50 focus-within:ring-2 focus-within:ring-ring/20">
+                <Label htmlFor={ids.title} className="label-large">
+                  {t("piano.sheet.title")}{requiredSuffix}
+                </Label>
+                <div className="flex h-11 items-center rounded-control border border-input bg-sheet px-3 transition-colors focus-within:border-control-line">
                   <input
                     id={ids.title}
+                    ref={titleRef}
                     type="text"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => { setTitle(e.target.value); clearFieldError("title"); }}
                     placeholder={t("piano.sheet.titlePlaceholder")}
-                    className="h-9 min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground md:text-sm"
+                    aria-label={t("piano.sheet.title")}
+                    aria-required="true"
+                    aria-invalid={!!fieldErrors.title}
+                    aria-describedby={fieldErrors.title ? ids.titleError : undefined}
+                    className="h-10 min-w-0 flex-1 bg-transparent px-1 text-base text-foreground outline-none placeholder:text-muted-foreground md:text-sm"
                   />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -431,6 +542,7 @@ export function AddEventSheet({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
+                {renderFieldError("title", ids.titleError, fieldErrors.title)}
               </div>
 
               {/* P47 — Data + Materia affiancate (griglia fissa a 2 colonne anche su mobile) */}
@@ -441,11 +553,7 @@ export function AddEventSheet({
 
               {/* Riga 3 — Intervallo orario: per la verifica l'ora di fine è obbligatoria */}
               {timeRange(true)}
-              {endError && (
-                <p id={ids.endTimeError} role="alert" className="-mt-2 text-xs font-medium text-destructive">
-                  {endError}
-                </p>
-              )}
+              {renderFieldError("endTime", ids.endTimeError, endError, "-mt-2 text-xs font-medium text-destructive")}
 
               {/* Riga 4 — Argomento: Da corso | Libero */}
               <div className="space-y-2">
@@ -464,15 +572,16 @@ export function AddEventSheet({
                   ]}
                   value={topicMode}
                   onChange={setTopicMode}
-                  size="sm"
+                  size="md"
                   grow
+                  className="[&>button]:h-11 [&>button]:text-sm [&>button[aria-checked=true]]:!border-input [&>button[aria-checked=true]]:!bg-secondary [&>button[aria-checked=true]]:!text-foreground [&>button[aria-checked=true]]:!shadow-none"
                 />
                 {topicMode === "linked" ? (
                   <Select value={courseId} onValueChange={setCourseId}>
                     <SelectTrigger
                       id={ids.course}
                       aria-labelledby={`${ids.topicLabel} ${ids.course}`}
-                      className="w-full h-11 rounded-2xl bg-secondary/70 border border-transparent px-3 body-medium transition-colors"
+                      className="w-full h-11 rounded-control border border-input bg-sheet px-4 py-2.5 text-base text-foreground"
                     >
                       <SelectValue placeholder={t("piano.sheet.coursePlaceholder")} />
                     </SelectTrigger>
@@ -495,13 +604,14 @@ export function AddEventSheet({
 
               {/* Riga 5 — Note & Obiettivo voto (richimabili a richiesta) */}
               <div className="space-y-3">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setShowNotes(!showNotes)}
-                  className="text-sm font-semibold text-brand-deep hover:underline"
+                  className="min-h-11 h-auto justify-start px-3 text-sm font-semibold text-brand-deep hover:underline"
                 >
                   {showNotes ? t("piano.sheet.hideNotes") : t("piano.sheet.addNotes")}
-                </button>
+                </Button>
                 {showNotes && (
                   <>
                     <Label htmlFor={ids.notes} className="sr-only" id={ids.notesLabel}>
@@ -509,28 +619,41 @@ export function AddEventSheet({
                     </Label>
                     <Textarea id={ids.notes} rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("piano.sheet.notesPlaceholder")} />
                     <div className="space-y-2 rounded-2xl border border-outline-variant/60 p-4">
-                      <div className="flex items-center justify-between">
-                        <Label id={ids.goalLabel} className="label-large">{t("piano.sheet.goalLabel")}</Label>
-                        {/* Indicatore visivo del voto scelto (null finché non toccato) */}
-                        <span className="label-large font-semibold text-brand-deep">
-                          {goal != null ? goal.toFixed(goal % 1 ? 1 : 0) : "—"}
-                        </span>
-                      </div>
-                      {/* Il DB salva goal come smallint: step intero 6-10 */}
-                      <Slider
-                        id={ids.goalSlider}
-                        value={[goal ?? 6]}
-                        min={6}
-                        max={10}
-                        step={1}
-                        onValueChange={(v) => setGoal(v[0])}
-                        aria-labelledby={ids.goalLabel}
-                        thumbProps={{ id: ids.goalThumb, "aria-labelledby": ids.goalLabel }}
-                      />
-                      {goal != null && (
-                        <button type="button" onClick={() => setGoal(null)} className="text-xs text-muted-foreground hover:text-foreground hover:underline">
-                          {t("piano.sheet.goalClear")}
-                        </button>
+                      {goal == null ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="min-h-11 h-auto justify-start px-3 text-sm"
+                          onClick={() => setGoal(6)}
+                        >
+                          {t("piano.sheet.goalSet")}
+                        </Button>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <Label id={ids.goalLabel} className="label-large">{t("piano.sheet.goalLabel")}</Label>
+                            <span className="label-large font-semibold text-brand-deep">{goal.toFixed(goal % 1 ? 1 : 0)}</span>
+                          </div>
+                          {/* Il DB salva goal come smallint: step intero 6-10 */}
+                          <Slider
+                            id={ids.goalSlider}
+                            value={[goal]}
+                            min={6}
+                            max={10}
+                            step={1}
+                            onValueChange={(v) => setGoal(v[0])}
+                            aria-labelledby={ids.goalLabel}
+                            thumbProps={{ id: ids.goalThumb, "aria-labelledby": ids.goalLabel }}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="min-h-11 h-auto justify-start px-3 text-sm text-muted-foreground hover:text-foreground"
+                            onClick={() => setGoal(null)}
+                          >
+                            {t("piano.sheet.goalClear")}
+                          </Button>
+                        </>
                       )}
                     </div>
                   </>
@@ -548,14 +671,22 @@ export function AddEventSheet({
               </div>
               {/* Riga 2 — Descrizione ampia (il titolo si ricava da qui) */}
               <div className="space-y-2">
-                <Label htmlFor={ids.compito} className="label-large">{t("piano.sheet.compitoLabel")}</Label>
+                <Label htmlFor={ids.compito} className="label-large">
+                  {t("piano.sheet.compitoLabel")}{!(editingId && title.trim()) && requiredSuffix}
+                </Label>
                 <Textarea
                   id={ids.compito}
+                  ref={descriptionRef}
                   rows={5}
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e) => { setDescription(e.target.value); clearFieldError("description"); }}
                   placeholder={t("piano.sheet.compitoPlaceholder")}
+                  aria-label={t("piano.sheet.compitoLabel")}
+                  aria-required={!(editingId && !!title.trim())}
+                  aria-invalid={!!fieldErrors.description}
+                  aria-describedby={fieldErrors.description ? ids.descriptionError : undefined}
                 />
+                {renderFieldError("description", ids.descriptionError, fieldErrors.description)}
               </div>
             </>
           )}
@@ -566,8 +697,21 @@ export function AddEventSheet({
                 {t("piano.sheet.altroHint")}
               </p>
               <div className="space-y-2">
-                <Label htmlFor={ids.altroTitle} className="label-large">{t("piano.sheet.title")}</Label>
-                <Input id={ids.altroTitle} placeholder={t("piano.sheet.altroPlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} />
+                <Label htmlFor={ids.altroTitle} className="label-large">
+                  {t("piano.sheet.title")}{requiredSuffix}
+                </Label>
+                <Input
+                  id={ids.altroTitle}
+                  ref={titleRef}
+                  placeholder={t("piano.sheet.altroPlaceholder")}
+                  value={title}
+                  onChange={(e) => { setTitle(e.target.value); clearFieldError("title"); }}
+                  aria-label={t("piano.sheet.title")}
+                  aria-required="true"
+                  aria-invalid={!!fieldErrors.title}
+                  aria-describedby={fieldErrors.title ? ids.titleError : undefined}
+                />
+                {renderFieldError("title", ids.titleError, fieldErrors.title)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor={ids.altroNotes} className="label-large">
@@ -577,15 +721,11 @@ export function AddEventSheet({
               </div>
               {dateField}
               {timeRange(false)}
-              {endError && (
-                <p id={ids.endTimeError} role="alert" className="-mt-2 text-xs font-medium text-destructive">
-                  {endError}
-                </p>
-              )}
+              {renderFieldError("endTime", ids.endTimeError, endError, "-mt-2 text-xs font-medium text-destructive")}
             </>
           )}
 
-          <Button type="submit" className="w-full" size="lg" disabled={submitting || !canSubmit}>
+          <Button type="submit" className="w-full" size="lg" disabled={submitting}>
             {submitting
               ? t("piano.sheet.saving")
               : category === "compito"

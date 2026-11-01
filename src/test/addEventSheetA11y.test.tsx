@@ -56,11 +56,16 @@ describe("AddEventSheet — accessibilità dei controlli", () => {
     expect(screen.getByRole("menuitemradio", { name: "Scritta" })).toHaveAttribute("aria-checked", "true");
   });
 
-  it("collega l'etichetta Obiettivo di voto allo slider dopo aver aggiunto le note", () => {
+  it("collega l'etichetta Obiettivo di voto allo slider solo dopo aver impostato un obiettivo", () => {
     renderOpenSheet();
 
+    expect(screen.queryByRole("slider", { name: "Obiettivo di voto" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Aggiungi note/i }));
 
+    expect(screen.getByRole("button", { name: "Imposta obiettivo" })).toBeInTheDocument();
+    expect(screen.queryByRole("slider", { name: "Obiettivo di voto" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Imposta obiettivo" }));
     expect(screen.getByRole("slider", { name: "Obiettivo di voto" })).toBeInTheDocument();
   });
 });
