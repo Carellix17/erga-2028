@@ -23,7 +23,6 @@ export default defineConfig({
       { find: "@/hooks/useHomeDashboard", replacement: mock("useHomeDashboard.ts") },
       { find: "@/hooks/useLessonFigures", replacement: mock("lessonFigures.ts") },
       { find: "@/contexts/FocusContext", replacement: mock("focusContext.ts") },
-      { find: "@/hooks/useHaptics", replacement: mock("haptics.ts") },
       { find: "@/contexts/AuthContext", replacement: mock("authContext.ts") },
       { find: "@/hooks/useSubscription", replacement: mock("subscription.ts") },
       { find: "@/hooks/useSubjectAccent", replacement: mock("subjectAccent.ts") },

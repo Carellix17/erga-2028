@@ -1,3 +1,5 @@
+import { MotionPreferences } from "@/components/shared/MotionPreferences";
+import { InteractionFeedback } from "@/components/shared/InteractionFeedback";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import "./App.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -83,7 +85,9 @@ const App = () => (
         <SaveStatusProvider>
           <ThemeProvider>
             <AccessibilityProvider>
+            <MotionPreferences>
             <FocusProvider>
+              <InteractionFeedback />
               <Toaster />
               <Sonner />
               <BrowserRouter>
@@ -129,6 +133,7 @@ const App = () => (
             </ErrorBoundary>
               </BrowserRouter>
             </FocusProvider>
+            </MotionPreferences>
             </AccessibilityProvider>
           </ThemeProvider>
         </SaveStatusProvider>

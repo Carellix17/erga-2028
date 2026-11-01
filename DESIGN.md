@@ -1,6 +1,6 @@
 ---
 name: Erga
-description: 'Swiss Cognitive Grid + Tactile Studio — design system v4.0'
+description: 'Swiss Cognitive Grid + Tactile Studio — design system v4.1'
 colors:
   canvas: '#F4F2EC'
   surface-primary: '#FAF8F3'
@@ -37,9 +37,9 @@ spacing:
   cell-large: '32px'
 ---
 
-# Erga — DESIGN SYSTEM v4.0
+# Erga — DESIGN SYSTEM v4.1
 
-**Swiss Cognitive Grid + Tactile Studio · 17 ottobre 2026**
+**Swiss Cognitive Grid + Tactile Studio · 1 novembre 2026**
 
 Questo documento sostituisce il sistema v3 «Squared & Earthy» ed è la fonte visiva per il lavoro successivo. `PRODUCT.md` prevale sulle decisioni di prodotto. I valori eseguibili sono in `src/index.css` e `tailwind.config.ts`; i nomi legacy restano alias di compatibilità. Il sidecar `.impeccable/design.json` è storico e non è stato riallineato in questa revisione.
 
@@ -76,7 +76,7 @@ Il tema notte conserva gli override `.dark` in CSS: canvas `#0A0A08`, superficie
 |---|---|---|
 | UI e corpo | Ubuntu Sans | Navigazione, titoli dell'app, corsi, form, spiegazioni |
 | Lettura editoriale | Instrument Serif | Concetto e intestazioni delle parti dentro `.lesson-paper` |
-| Misure e azioni | Ubuntu Sans Mono | Punteggi, percentuali, numeri di pagina, metadati numerici e CTA primaria del componente Button |
+| Misure | Ubuntu Sans Mono | Punteggi, percentuali, numeri di pagina e metadati numerici; i pulsanti usano Ubuntu Sans |
 
 `font-display` e l'alias legacy `font-serif` risolvono a Ubuntu Sans; per i titoli didattici usare `font-editorial` o le regole della carta lezione. Instrument Serif non si estende indiscriminatamente a tutti i titoli dell'app.
 
@@ -86,7 +86,7 @@ La scala base usa 16 px per UI e corpo; il corpo lezione usa 17 px con interline
 
 - Celle, card corso, hero e griglia: raggio **0 px**, separatori **1 px**, senza spazi vuoti tra celle contigue.
 - Pulsanti e input: raggio **2 px**. Pannelli e dialoghi: massimo **4 px**. Avatar, radio e indicatori realmente circolari conservano `rounded-full`.
-- Superfici piatte, senza ombre morbide o vetro. L'azione primaria usa un'ombra rigida **2 px × 2 px**, con pressione che riduce lo stacco; il colore dell'ombra primaria è #11120D in entrambi i temi.
+- Superfici e pulsanti piatti, senza ombre rigide, vetro o spostamenti diagonali alla pressione. Le CTA usano colore e peso tipografico; il bordo primario segue il colore del pulsante. `--shadow-primary-action` resta un alias a `none` per compatibilità. La pressione cambia brevemente opacità o colore.
 - Focus visibile: contorno semantico **2 px**, offset **2 px**. Privilegiare target di almeno **44 px**, nomi accessibili e ordine da tastiera coerente.
 - Nessuna grana su `.paper-grain` e `.table-grain`: gli alias esistenti ora rendono superfici piatte. La vecchia firma a gradiente diventa una linea decorativa vermiglia di 2 px.
 
@@ -96,7 +96,17 @@ Il movimento deve comunicare stato o continuità. I token condivisi sono 120/180
 
 **Home.** `HomeView` mantiene la card del percorso autonoma, compatta e con la stessa copertina astratta usata in Studio. Sotto, il radar cognitivo è senza card e senza misure numeriche; a fianco ci sono solo gli accessi «Interrogazione» ed «Esercizi», senza intestazione visibile. «Carica materiale» e «Chat» formano il gruppo successivo; il Piano del giorno chiude la pagina come lista verticale a colonna singola. Non racchiudere queste sezioni in un unico contenitore. `CognitiveTelemetry` legge il profilo autentico; se manca, mostra un messaggio esplicito e non inventa punteggi. Mantenere contenuti e CTA raggiungibili su telefono, tablet e desktop, con spazio riservato al dock mobile.
 
-**Studio.** `Index` compone materiali e controlli a sinistra (**4/12**) e percorso/lettore a destra (**8/12**) su desktop. Sotto `lg`, «Materiali e lettura» è una sezione collassabile con stato accessibile. Il pulsante «Crea nuovo percorso» è in cima alla panoramica; su smartphone apre dal basso il flusso di caricamento esistente, senza espandere il pannello materiali incorporato. Le altre richieste di materiali in Studio mantengono il pannello incorporato; fuori da Studio il caricamento continua a usare lo sheet. Il lettore incorporato conserva avanzamento, esercizi, figure, assistente e ripresa. Il foglio destro dispone di scorrimento interno su desktop e flusso naturale sulle larghezze inferiori.
+**Navigazione.** Su telefono la barra è attaccata al bordo inferiore, a tutta larghezza, con quattro destinazioni persistenti e safe area interna. Un unico indicatore a larghezza fissa scorre in 180 ms, senza misure JavaScript né molle. Su tablet la rail misura 84 px; da `lg` la sidebar misura 224 px. Nessun contenitore flottante o margine esterno.
+
+**Piano.** Il mese è sempre visibile all’ingresso, anche senza materiali. Sopra il calendario, le verifiche e interrogazioni future non completate formano una fascia orizzontale: tre card visibili su telefono, quattro su tablet, cinque/sei o più sugli schermi larghi, con scorrimento nativo e frecce accessibili. Il numero dei giorni è il primo dato; seguono materia, titolo e data. Riutilizzare `CourseCardBackground`, `courseCoverVars` e il nome canonico del corso collegato (oppure il corso della materia o la materia come fallback), per conservare la grafica di Studio. Niente card dimostrative nell’app reale.
+
+Il comando «Sessione giornaliera» apre oggi; ogni data del mese e ogni scadenza aprono la giornata corrispondente, identificata da `planDay` nell’URL. La giornata include verifiche, studio e impegni personali, con una sezione separata per gli eventi senza orario e una griglia delle 24 ore che parte dal primo impegno salvato. Gli eventi simultanei rimangono leggibili senza sovrapporsi. Non inventare durate o un’ora per i dati che non la conservano. Le valutazioni storiche salvate a mezzogiorno seguono la convenzione già presente nel modulo: orario non specificato. Il ritorno al mese ripristina focus e posizione della pagina; aggiungere dalla giornata precompila la data.
+
+«Aggiungi evento» (vermiglio) e «Genera piano di studio» (cognitivo) sono immediatamente sotto il calendario. La proposta AI resta revisionabile; il pulsante dipende da materiali e impegni salvati. Errori di caricamento hanno un messaggio con Riprova.
+
+**Studio.** Da `xl`, `Index` affianca materiali e controlli (**3/10**, minimo 16 rem) e percorso (**7/10**). Sotto `xl`, il comando esplicito «Materiali e lettura» apre la sezione collassabile con `aria-expanded` e `aria-controls`. Il pulsante «Crea nuovo percorso» mantiene il caricamento esistente. La lettura normale del prodotto rimane immersiva a schermo intero, come sul ramo main dopo #103: un portale Radix protegge focus e scroll e permette il ritorno al percorso. La prop `embedded` rimane disponibile come regione nel flusso senza posizione fissa. Avanzamento, esercizi, figure, assistente e ripresa conservano i contratti esistenti.
+
+**Movimento e aptica.** La navigazione usa sola traslazione per continuità; il lettore distingue avanti/indietro con 8 px, uscita 120 ms e ingresso 180 ms; l'agenda cambia con una breve entrata di 180 ms solo alla selezione. Nessun riordinamento della lista al movimento del mouse. La preferenza di movimento ridotto del sistema e di Erga vale sia per CSS sia per le animazioni Framer attraverso `MotionPreferences`. Il feedback aptico è condiviso dai controlli, senza raddoppiare i segnali espliciti degli esercizi. Impostazioni → Accessibilità offre Disattivato/Leggero/Standard/Deciso. I livelli modificano durata e ritmo: la Vibration API non controlla l'ampiezza del motore; i browser senza supporto continuano a funzionare senza vibrazione.
 
 **Taglio di lettura.** Calma porta l'interlinea di paragrafi ed elenchi a 1,85; Logica evidenzia grassetti e formule con il colore cognitivo. È uno stato locale di **presentazione**: non riscrive lezioni, non cambia richieste o generazione AI e non costituisce un nuovo profilo cognitivo.
 
@@ -106,6 +116,6 @@ Il movimento deve comunicare stato o continuità. I token condivisi sono 120/180
 
 Fonti della specifica: brief approvato per v4, `PRODUCT.md`, `src/index.css`, `tailwind.config.ts`, `HomeView`, `CourseHeroCard`, `CognitiveTelemetry`, `Index`, `StudioView`, `FullscreenLesson`, `UploadSheet`, `PdfPagePicker` e `src/lib/pdfSelection.ts`. Le fonti Google Fonts sono dichiarate nell'HTML dell'app; la disponibilità effettiva dei font richiede una verifica nel browser.
 
-La verifica disponibile per questa revisione comprende **337 parsing sintattici superati**. L'ambiente non ha consentito l'installazione delle dipendenze per problemi DNS: **build completa, controlli con dipendenze e verifica visiva nel browser non sono stati completati**. La nuova dipendenza PDF è dichiarata in `package.json`, ma non è stato possibile aggiornare il lockfile in questo ambiente. Non interpretare il parsing come prova di correttezza dei tipi, dei flussi o del rendering.
+La revisione v4.1 include controlli TypeScript, test di comportamento e build Vite/PWA. Il dettaglio aggiornato e i limiti sono in `docs/interface-refinement-2026-11-01.md`. Non interpretare i test del DOM come verifica visiva o prova dell'aptica fisica.
 
-Prima della pubblicazione restano da verificare build e lockfile, giorno/notte, caricamento PDF completo e parziale, lettore, tastiera, contrasto effettivo, overflow e comportamento a 375/768/1024/1440 px. Il backend resta Lovable Cloud; ogni modifica visibile deve essere trasferita e pubblicata con **Update** in Lovable prima di dichiararla online.
+La versione proposta è stata verificata visivamente con dati dimostrativi in Chromium locale a 375/390/768/1024/1440 px, anche in giorno/notte. La verifica ha corretto Esc del tutor, allineamento del lettore, target da 44 px e attese del menu materiali. Restano tastiera e aptica su dispositivo fisico, audit di contrasto completo e integrazione mobile autenticata sul sito pubblicato. Il backend resta Lovable Cloud; dopo il merge usare **Update** in Lovable prima di dichiarare la modifica online.

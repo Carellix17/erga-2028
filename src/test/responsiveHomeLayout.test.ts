@@ -11,15 +11,17 @@ describe("layout responsive Home e shell", () => {
 
     // Mobile: viewport dinamico, pagina scrollabile e spazio sufficiente al dock.
     expect(layout).toContain("min-h-screen min-h-dvh");
-    expect(layout).toContain("pb-[calc(5.5rem+env(safe-area-inset-bottom))]");
-    expect(nav).toContain("fixed bottom-0");
-    expect(nav).toContain("mb-[max(env(safe-area-inset-bottom,0px),0.75rem)]");
+    expect(layout).toContain("pb-[calc(5rem+env(safe-area-inset-bottom,0px))]");
+    expect(nav).toContain("fixed inset-x-0 bottom-0");
+    expect(nav).toContain("pb-[env(safe-area-inset-bottom,0px)]");
+    expect(nav).not.toContain("mb-[max(env(safe-area-inset-bottom");
 
     // Tablet/desktop: shell a viewport pieno, contenuto scrollabile, rail/sidebar raggiungibili.
     expect(layout).toContain("md:h-dvh md:min-h-0 md:overflow-hidden");
     expect(layout).toContain("md:overflow-x-hidden md:overflow-y-auto");
-    expect(nav).toContain("md:flex md:h-full md:w-[84px]");
-    expect(nav).toContain("lg:w-64");
+    expect(nav).toContain("w-[84px]");
+    expect(nav).toContain("md:flex");
+    expect(nav).toContain("lg:w-56");
   });
 
   it("non impone larghezze fisse né troncamenti alle sezioni Home", () => {

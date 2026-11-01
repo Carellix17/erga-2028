@@ -1,3 +1,5 @@
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, CheckCircle2, Loader2, Sparkles, Send, Bot, User as UserIcon, RotateCcw } from "lucide-react";
@@ -90,7 +92,24 @@ function buildSteps(explanationParts: ExplanationPart[], exercises: Exercise[], 
   return steps;
 }
 
-/** Scroll in cima robusto (jsdom non implementa scrollTo: mai far esplodere nulla). */
+/** Use the existing Radix focus/scroll management for immersive reading. */
+function ReaderSurface({ embedded, onClose, children }: { embedded?: boolean; onClose: () => void; children: React.ReactElement }) {
+  const restoreFocus = useRef(document.activeElement as HTMLElement | null);
+  if (embedded) return children;
+  return (
+    <DialogPrimitive.Root open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-sheet" />
+        <DialogPrimitive.Content asChild aria-describedby={undefined}
+          onCloseAutoFocus={(event) => { event.preventDefault(); if (restoreFocus.current?.isConnected) restoreFocus.current.focus(); }}>
+          {children}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  );
+}
+
+/** Scroll reset with a jsdom-safe fallback. */
 function scrollToTop(el: HTMLElement | null) {
   if (!el) return;
   try {
@@ -173,7 +192,8 @@ export function FullscreenLesson({
   // ♿ P50 — «Riduci movimento» vale anche per le pause del lettore: chi lo
   // attiva non deve aspettare un'animazione che non vede.
   const prefersReducedMotion = usePrefersReducedMotion();
-  const stepDelayMs = prefersReducedMotion ? 0 : 250;
+  const stepDelayMs = prefersReducedMotion ? 0 : 120;
+  const [stepDirection, setStepDirection] = useState<"forward" | "back">("forward");
 
   const step = steps[currentStep];
 
@@ -198,7 +218,9 @@ export function FullscreenLesson({
   }, [step, lesson, explanationParts, exercises, t]);
 
   const gotoStep = useCallback((next: number) => {
-    const target = Math.max(0, next);
+    const target = Math.min(steps.length - 1, Math.max(0, next));
+    setStepDirection(target < currentStep ? "back" : "forward");
+    if (stepTimerRef.current !== null) window.clearTimeout(stepTimerRef.current);
     if (stepDelayMs === 0) {
       setCurrentStep(target);
       setCurrentExerciseAnswered(false);
@@ -212,7 +234,7 @@ export function FullscreenLesson({
       setIsAnimating(false);
       stepTimerRef.current = null;
     }, stepDelayMs);
-  }, [stepDelayMs]);
+  }, [stepDelayMs, steps.length, currentStep]);
 
   const handleContinue = useCallback(() => {
     if (isAnimating) return;
@@ -241,6 +263,9 @@ export function FullscreenLesson({
 
   const handleRestart = useCallback(() => {
     triggerLight();
+    if (stepTimerRef.current !== null) window.clearTimeout(stepTimerRef.current);
+    stepTimerRef.current = null;
+    setIsAnimating(false);
     clearLessonResume(lesson.id);
     setShowResumeNotice(false);
     setExerciseResults({});
@@ -274,10 +299,10 @@ export function FullscreenLesson({
     previouslyFocusedRef.current = document.activeElement;
     rootRef.current?.focus?.();
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || event.defaultPrevented) return;
       if (embedded && !rootRef.current?.contains(event.target as Node)) return;
-      const openDialog = document.querySelector('[role="dialog"][data-state="open"]');
-      if (openDialog && openDialog !== rootRef.current) return;
+      const anotherDialog = Array.from(document.querySelectorAll('[role="dialog"][data-state="open"]')).some((dialog) => dialog !== rootRef.current);
+      if (anotherDialog) return;
       onCloseRef.current();
     };
     window.addEventListener("keydown", onKeyDown);
@@ -308,14 +333,16 @@ export function FullscreenLesson({
   return (
     // P24 — il foglio che sale: la lezione entra dal basso arrotondata
     // e si apre a schermo pieno (animate-lesson-sheet-in)
+    <ReaderSurface embedded={embedded} onClose={onClose}>
     <div
       ref={rootRef}
       role={embedded ? "region" : "dialog"}
       aria-modal={embedded ? undefined : true}
       aria-label={`${t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })}: ${lesson.title}`}
       tabIndex={-1}
-      className="lesson-reader no-halo fixed inset-0 z-50 flex flex-col animate-lesson-sheet-in focus:outline-none"
+      className={cn("lesson-reader no-halo flex min-w-0 flex-col focus:outline-none", embedded ? "relative min-h-[32rem] lg:h-[calc(100dvh-8rem)]" : "fixed inset-0 z-50 h-dvh animate-lesson-sheet-in")}
     >
+      {!embedded && <DialogPrimitive.Title className="sr-only">{t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })}: {lesson.title}</DialogPrimitive.Title>}
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
         <div className="flex items-center gap-2 mb-2">
@@ -358,7 +385,7 @@ export function FullscreenLesson({
               <div
                 key={i}
                 className={cn(
-                  "flex-1 rounded-sm transition-all duration-500 ease-m3-emphasized",
+                  "flex-1 rounded-sm transition-colors duration-150",
                   i <= currentStep ? "bg-primary" : "bg-surface-container-highest"
                 )}
               />
@@ -374,14 +401,14 @@ export function FullscreenLesson({
             </span>
           )}
         </div>
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="break-words text-sm text-muted-foreground text-center">
           {t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })} · <span className="text-foreground font-semibold">{lesson.title}</span>
         </p>
       </div>
 
       {/* Content area */}
       <div className="lesson-paper min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-4 sm:py-8 flex flex-col" data-reading-mode={readingMode} ref={contentRef}>
-        <div className="mx-auto flex w-full max-w-[720px] flex-1 flex-col justify-center">
+        <div className="mx-auto flex w-full max-w-[720px] flex-1 flex-col justify-start">
           {showResumeNotice && (
             <div
               role="status"
@@ -400,7 +427,7 @@ export function FullscreenLesson({
               </button>
             </div>
           )}
-          <div key={currentStep} className={cn("animate-lesson-in", isAnimating && "animate-lesson-out")}>
+          <div key={currentStep} data-direction={stepDirection} data-leaving={isAnimating} className="lesson-step lesson-step-enter">
             {step.type === "concept" && <ConceptStep concept={lesson.concept} />}
             {step.type === "explanation_part" && step.explanationPartIndex !== undefined && (
               <ExplanationPartStep
@@ -434,7 +461,7 @@ export function FullscreenLesson({
       </div>
 
       {/* Bottom action */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-8 safe-area-bottom">
+      <div className="lesson-footer flex-shrink-0 border-t border-border bg-sheet px-4 pt-3 pb-4 safe-area-bottom">
         <div className="mx-auto flex w-full max-w-[720px] flex-col gap-3">
           {/* L'assistente mantiene la stessa apertura e lo stesso bootstrap AI;
               il footer condivide ora la colonna del contenuto. */}
@@ -445,8 +472,8 @@ export function FullscreenLesson({
           />
           <Button
             onClick={handleContinue}
-            disabled={!canContinue}
-            className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-sm tracking-normal bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.97]"
+            disabled={!canContinue || isAnimating}
+            className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-sm tracking-normal bg-primary text-primary-foreground hover:bg-primary-deep"
             size="lg"
           >
             {currentStep === steps.length - 1
@@ -459,6 +486,7 @@ export function FullscreenLesson({
         </div>
       </div>
     </div>
+    </ReaderSurface>
   );
 }
 
@@ -672,6 +700,7 @@ function SlideAIAssistant({
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const keyboard = useKeyboardInset();
   const [messages, setMessages] = useState<SlideAIMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -827,10 +856,11 @@ function SlideAIAssistant({
       {/* 🎨 P9a — sfondo avorio e angoli ora li mette il foglio stesso */}
       <SheetContent
         side="bottom"
-        className="pb-safe max-h-[92vh] h-[85vh] p-0 flex flex-col gap-0"
+        className="pb-safe max-h-[92dvh] h-[85dvh] p-0 flex flex-col gap-0"
+        style={{ bottom: keyboard.inset, ...(keyboard.inset > 0 && keyboard.viewportHeight ? { maxHeight: keyboard.viewportHeight } : {}) }}
       >
         {/* Header */}
-        <SheetHeader className="flex items-center gap-3 px-4 py-3 border-b border-border/40 flex-shrink-0 space-y-0 text-left">
+        <SheetHeader className="flex min-h-16 flex-row items-center gap-3 px-4 py-3 pr-16 border-b border-border/40 flex-shrink-0 space-y-0 text-left">
           <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
             <Sparkles className="w-4 h-4 text-foreground" strokeWidth={1.75} />
           </div>
@@ -864,9 +894,9 @@ function SlideAIAssistant({
               </div>
               <div
                 className={cn(
-                  "max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed",
+                  "max-w-[82%] px-3.5 py-2.5 rounded-control text-base leading-relaxed",
                   msg.role === "assistant"
-                    ? "bg-surface-container-high text-foreground rounded-bl-md prose prose-sm max-w-none prose-p:my-2"
+                    ? "bg-surface-container-high text-foreground rounded-bl-md prose prose-base max-w-none prose-p:my-2"
                     : "bg-primary text-primary-foreground rounded-br-md whitespace-pre-wrap"
                 )}
               >
@@ -912,11 +942,12 @@ function SlideAIAssistant({
                   handleSend();
                 }
               }}
+              aria-label={t("lesson.askPlaceholder")}
               placeholder={t("lesson.askPlaceholder")}
               rows={1}
               disabled={isLoading}
               className={cn(
-                "flex-1 resize-none rounded-2xl px-3 py-2.5 text-sm",
+                "min-w-0 flex-1 resize-none rounded-control px-3 py-2.5 text-base",
                 "bg-surface-container-high border border-outline-variant/60",
                 "focus:outline-none focus:ring-2 focus:ring-primary/30",
                 "placeholder:text-muted-foreground max-h-28 overflow-y-auto",
@@ -928,7 +959,8 @@ function SlideAIAssistant({
               size="icon"
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="w-10 h-10 rounded-full flex-shrink-0"
+              aria-label={t("lesson.sendMessage")}
+              className="h-11 w-11 flex-shrink-0"
             >
               <Send className="w-4 h-4" />
             </Button>

@@ -5,11 +5,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "relative inline-flex min-w-0 touch-manipulation select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-button text-interface font-semibold transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-200 ease-in-out active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transform-none motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "relative inline-flex min-w-0 touch-manipulation select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-button text-interface font-semibold transition-[background-color,border-color,color,opacity] duration-150 active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transform-none motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "border border-input bg-primary text-primary-foreground font-sans font-semibold text-[15px] shadow-primary-action hover:bg-primary-deep",
+        default: "border border-primary bg-primary text-primary-foreground font-sans font-semibold text-[15px] hover:bg-primary-deep",
         destructive: "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90",
         outline: "border border-input bg-sheet text-foreground hover:bg-secondary",
         secondary: "border border-line bg-secondary text-secondary-foreground shadow-level-0 hover:bg-secondary/80",

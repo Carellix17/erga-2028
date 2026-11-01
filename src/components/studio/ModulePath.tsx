@@ -545,7 +545,7 @@ export function ModulePath({
             className={cn(
               "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full font-display select-none transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               allDone && showFinalTest && onStartFinalTest
-                ? "bg-subject-accent text-subject-accent-foreground shadow-primary-action cursor-pointer hover:scale-[1.04] active:translate-x-px active:translate-y-px active:shadow-none"
+                ? "bg-subject-accent text-subject-accent-foreground  cursor-pointer hover:scale-[1.04] active:opacity-80"
                 : "bg-surface-container-high border-2 border-border text-muted-foreground disabled:cursor-default",
             )}
             style={{
@@ -588,7 +588,7 @@ export function ModulePath({
           <button
             type="button"
             onClick={() => { triggerSuccess(); onModuleCompleted(); }}
-            className="flex h-12 w-full items-center justify-center rounded-button border border-input bg-primary px-4 text-center font-mono text-sm font-semibold uppercase leading-tight tracking-wider text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-12 w-full items-center justify-center rounded-button border border-input bg-primary px-4 text-center font-sans text-sm font-semibold leading-tight text-primary-foreground  transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             ✓ Modulo completato — Torna ai moduli
           </button>

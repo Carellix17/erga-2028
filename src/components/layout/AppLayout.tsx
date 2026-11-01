@@ -20,21 +20,7 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
-/**
- * 🏠 App shell — Erga
- *
- * MOBILE (<768px): scroll del documento, dock flottante rettangolare in basso.
- *
- * DESKTOP/TABLET (≥768px): viewport "sigillata" (h-dvh + overflow-hidden) con
- * due superfici sospese e indipendenti, squadrate (D2):
- * - a sinistra la rail (768–1199px) o la sidebar (≥1200px), vedi BottomNav:
- *   staccata dal bordo, ferma mentre il contenuto scorre;
- * - a destra la content-card: è l'UNICA a scorrere (overflow-y-auto), con
- *   l'intestazione appiccicosa che resta in cima al suo scroll.
- * Lo scroll dell'app su desktop avviene quindi dentro #app-scroll-view
- * (vedi src/lib/appScroll.ts), mai sulla finestra → zero doppie scrollbar.
- * Con hideChrome il contenuto è full-bleed (lezioni/esercizi a schermo intero).
- */
+/** Attached mobile bar and desktop sidebar; one scroll owner per viewport. */
 export function AppLayout({
   activeTab,
   onTabChange,
@@ -49,8 +35,7 @@ export function AppLayout({
     <div
       className={cn(
         "erga-app-shell flex min-h-screen min-h-dvh w-full max-w-full flex-col overflow-x-hidden bg-background md:flex-row",
-        // 🖥️ Shell desktop: viewport sigillata con distacco perimetrale (p-3)
-        // e spazio tra le due card (gap-3). Su mobile niente cambia.
+        // Desktop: attached sidebar and a single scrolling content surface.
         "md:h-dvh md:min-h-0 md:overflow-hidden md:gap-0 md:p-0",
         // 📱 Modalità riempi-schermo (Pratica): sigillata anche su mobile
         fillViewport && "h-dvh min-h-0 overflow-hidden",
@@ -70,9 +55,7 @@ export function AppLayout({
           // Gate isHome: le altre schede restano lisce finché il
           // proprietario non estende la prova.
           isHome && "table-grain",
-          // 🖥️ Content-card: superficie dedicata, angoli arrotondati, ombra.
-          // In modalità normale è lei a scorrere (header incluso); in modalità
-          // fillViewport lo scroll è gestito dalle viste interne.
+          // Normal views scroll here; immersive tools own their internal scroll.
           "md:h-full md:min-h-0 md:border-l md:border-border md:bg-background",
           fillViewport ? "min-h-0 md:overflow-hidden" : "md:overflow-x-hidden md:overflow-y-auto",
         )}
@@ -80,9 +63,8 @@ export function AppLayout({
         {!hideChrome && <AppHeader title={headerTitle} integratedHome={isHome} />}
         <main
           className={cn(
-            // D2: lo spazio del dock è riservato dal contenuto, safe area compresa
-          // (il dock è fisso e non copre mai l'ultima riga).
-          "mx-auto w-full max-w-lg overflow-visible px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 md:max-w-2xl md:pb-6 lg:max-w-7xl",
+            // Reserve the attached mobile bar plus the device safe area.
+          "mx-auto w-full max-w-lg overflow-visible px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:px-6 md:max-w-2xl md:pb-6 lg:max-w-7xl",
             fillViewport && "flex min-h-0 flex-1 flex-col overflow-hidden",
           )}
         >

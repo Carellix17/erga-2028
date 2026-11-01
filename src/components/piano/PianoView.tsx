@@ -1,6 +1,8 @@
+import { triggerHaptic } from "@/utils/haptics";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { StudyPlanSkeleton } from "./StudyPlanSkeleton";
 import { AppointmentsCalendar } from "./AppointmentsCalendar";
@@ -12,7 +14,9 @@ import {
   type Evaluation,
 } from "@/hooks/useEvaluations";
 import { useUserSubjects } from "@/hooks/useUserSubjects";
-import { EmptyState } from "@/components/shared/EmptyState";
+import { useFileContextsQuery } from "@/hooks/useFileContexts";
+import { format, parseISO } from "date-fns";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,42 +36,42 @@ interface PianoViewProps {
 
 interface PlanSuggestionData { explanation: string; studySessions: { subject: string; title: string; date: string; time?: string; }[]; }
 
-/**
- * 🗓️ La stanza Piano: il calendario degli appuntamenti dello studente.
- * Un'unica superficie scura con il mese corrente (dati dall'orologio di
- * sistema), il conteggio degli eventi per giorno e, sotto la griglia,
- * "Aggiungi evento". "Genera piano di studio" compare solo dopo che lo
- * studente ha aggiunto un evento in questa sessione.
- */
-export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
+/** Calendario e scadenze; ogni giorno apre tutti gli impegni, anche senza materiali. */
+export function PianoView({ hasFiles }: PianoViewProps) {
   const [showAddSheet, setShowAddSheet] = useState(false);
+  const [eventDate, setEventDate] = useState<string | undefined>();
   const [editingEval, setEditingEval] = useState<Evaluation | null>(null);
   const [editingStudyEvent, setEditingStudyEvent] = useState<StudyEvent | null>(null);
   const [suggestion, setSuggestion] = useState<PlanSuggestionData | null>(null);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<StudyEvent | null>(null);
   const [evalToDelete, setEvalToDelete] = useState<Evaluation | null>(null);
-  /** True dopo il primo evento aggiunto in questa sessione: svela "Genera piano di studio". */
-  const [hasAddedEvent, setHasAddedEvent] = useState(false);
   // Elementi che si stanno "dissolvendo" prima dell'eliminazione vera
   const [exitingIds, setExitingIds] = useState<string[]>([]);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const notify = (options: Parameters<typeof toast>[0]) => {
+    triggerHaptic(options.variant === "destructive" ? "error" : "success");
+    return toast(options);
+  };
   const { t } = useTranslation();
+  const reducedMotion = usePrefersReducedMotion();
 
-  const eventsQuery = useStudyEventsQuery(hasFiles);
+  const eventsQuery = useStudyEventsQuery(true);
   const addEvents = useAddStudyEvents();
   const deleteEvent = useDeleteStudyEvent();
   const updateEvent = useUpdateStudyEvent();
   const events = eventsQuery.data ?? [];
-  const evaluationsQuery = useEvaluations(hasFiles);
+  const evaluationsQuery = useEvaluations(true);
   const evaluations = evaluationsQuery.data ?? [];
   const addEvaluation = useAddEvaluation();
   const updateEvaluation = useUpdateEvaluation();
   const deleteEvaluation = useDeleteEvaluation();
   const { data: userSubjects = [] } = useUserSubjects();
 
-  const isLoading = eventsQuery.isLoading && events.length === 0;
+  const { data: courses = [] } = useFileContextsQuery();
+  const isLoading = eventsQuery.isLoading || evaluationsQuery.isLoading;
+  const loadError = eventsQuery.isError || evaluationsQuery.isError;
   const isDeleting = deleteEvent.isPending;
 
   const generatePlan = async () => {
@@ -82,8 +86,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || t("piano.errorGenerate"));
       setSuggestion(data.plan);
+      triggerHaptic("success");
     } catch (error) { console.error("Error generating plan:", error);
-      toast({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorGenerate"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorGenerate"), variant: "destructive" });
     } finally { setIsGeneratingPlan(false); }
   };
 
@@ -94,17 +99,17 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         subject: s.subject, title: s.title, date: s.date, time: s.time, type: "study" as const,
       }));
       await addEvents.mutateAsync(studyEvents);
-      toast({ title: t("piano.toastAccepted"), description: t("piano.toastAcceptedDesc") });
+      notify({ title: t("piano.toastAccepted"), description: t("piano.toastAcceptedDesc") });
       setSuggestion(null);
     } catch (error) {
-      toast({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorSave"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorSave"), variant: "destructive" });
     }
   };
 
   /** Elimina con dissolvenza: marca l'elemento, lascia partire l'animazione, poi rimuove davvero. */
   const withExit = async (ids: string[], action: () => Promise<unknown>) => {
     setExitingIds(ids);
-    await new Promise((r) => setTimeout(r, 280));
+    if (!reducedMotion) await new Promise((resolve) => setTimeout(resolve, 180));
     try {
       await action();
     } finally {
@@ -118,9 +123,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     setEventToDelete(null); // chiudi subito: l'elemento si dissolve nella lista
     try {
       await withExit([ev.id], () => deleteEvent.mutateAsync(ev.id));
-      toast({ title: t("piano.toastEventDeleted"), description: t("piano.toastRemovedFromCalendar", { title: ev.title }) });
+      notify({ title: t("piano.toastEventDeleted"), description: t("piano.toastRemovedFromCalendar", { title: ev.title }) });
     } catch (error) {
-      toast({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorDelete"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorDelete"), variant: "destructive" });
     }
   };
 
@@ -130,9 +135,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     setEvalToDelete(null);
     try {
       await withExit([ev.id], () => deleteEvaluation.mutateAsync(ev.id));
-      toast({ title: t("piano.toastEvalDeleted") });
+      notify({ title: t("piano.toastEvalDeleted") });
     } catch (err) {
-      toast({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorDelete"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorDelete"), variant: "destructive" });
     }
   };
 
@@ -144,12 +149,11 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         await addEvents.mutateAsync([{
           subject: "Altro",
           title: input.title,
-          date: input.date.slice(0, 10),
+          date: format(parseISO(input.date), "yyyy-MM-dd"),
           time: input.startTime ?? undefined,
           type: "assignment",
         }]);
-        toast({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
-        setHasAddedEvent(true);
+        notify({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
         return;
       }
       // Solo le colonne realmente presenti in `evaluations`: i campi di sola UI
@@ -157,14 +161,13 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       const { category: _category, startTime: _startTime, endTime: _endTime, ...payload } = input;
       if (editingId) {
         await updateEvaluation.mutateAsync({ id: editingId, ...payload });
-        toast({ title: t("piano.toastSaved") });
+        notify({ title: t("piano.toastSaved") });
       } else {
         await addEvaluation.mutateAsync(payload);
-        toast({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
-        setHasAddedEvent(true);
+        notify({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
       }
     } catch (err) {
-      toast({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorSave"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorSave"), variant: "destructive" });
       throw err;
     }
   };
@@ -172,9 +175,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const handleSaveStudyEvent = async (input: Parameters<typeof updateEvent.mutateAsync>[0]) => {
     try {
       await updateEvent.mutateAsync(input);
-      toast({ title: t("piano.toastSessionUpdated") });
+      notify({ title: t("piano.toastSessionUpdated") });
     } catch (err) {
-      toast({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorEdit"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorEdit"), variant: "destructive" });
       throw err;
     }
   };
@@ -182,25 +185,29 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   // Regola degli hook: tutte le chiamate prima di qualsiasi return anticipato.
   const showPlanSkeleton = useDelayedLoading(isLoading, 100);
 
-  if (!hasFiles) return <EmptyState onUploadClick={onUploadClick} />;
   if (showPlanSkeleton) return <StudyPlanSkeleton />;
   if (isLoading) return null;
 
   return (
-    <div className="p-4 pb-28 space-y-4 animate-fade-up min-w-0 overflow-x-clip">
+    <div className="min-w-0 space-y-6">
       {suggestion && (
         <PlanSuggestion explanation={suggestion.explanation} onAccept={handleAcceptPlan} onDecline={() => setSuggestion(null)} />
       )}
 
-      {/* Superficie principale Olive Drab della vista Piano. */}
-      <section className="rounded-card border border-border bg-card p-4 shadow-level-1 sm:p-6" aria-label={t("piano.upcoming")}>
+      {loadError && <div role="alert" className="border border-destructive p-4 text-base">
+        <p>{t("piano.loadError")}</p>
+        <Button variant="outline" className="mt-3" onClick={() => { void eventsQuery.refetch(); void evaluationsQuery.refetch(); }}>{t("piano.retry")}</Button>
+      </div>}
+      {/* Calendario sempre accessibile, anche senza materiale caricato. */}
+      <section className="min-w-0" aria-label={t("piano.workspaceTitle")}>
         <AppointmentsCalendar
           evaluations={evaluations}
           events={events}
           subjects={userSubjects}
+          courses={courses}
           exitingIds={exitingIds}
-          onAddEvent={() => { setEditingEval(null); setShowAddSheet(true); }}
-          showGeneratePlan={hasAddedEvent}
+          onAddEvent={(date) => { setEventDate(date); setEditingEval(null); setShowAddSheet(true); }}
+          showGeneratePlan={hasFiles && !loadError && (events.length > 0 || evaluations.some((evaluation) => !evaluation.is_completed))}
           onGeneratePlan={generatePlan}
           isGeneratingPlan={isGeneratingPlan}
           onEditEvaluation={setEditingEval}
@@ -214,6 +221,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         open={showAddSheet || !!editingEval}
         onOpenChange={(o) => { if (!o) { setShowAddSheet(false); setEditingEval(null); } }}
         initial={editingEval}
+        presetDate={eventDate}
         onSubmit={handleSubmitEval}
       />
 

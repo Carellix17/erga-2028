@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { FullscreenLesson } from "@/components/studio/FullscreenLesson";
 
 const lesson = {
@@ -16,12 +18,14 @@ const lesson = {
 
 /** Isolated, deterministic fixture for the lesson reader's responsive layout. */
 export function LessonReaderPreview() {
+  const [open, setOpen] = useState(true);
+  if (!open) return <Button onClick={() => setOpen(true)}>Apri lezione demo</Button>;
   return (
     <FullscreenLesson
       lesson={lesson}
       lessonNumber={2}
       totalLessons={8}
-      onClose={() => {}}
+      onClose={() => setOpen(false)}
       onComplete={() => {}}
       isLastLesson={false}
     />

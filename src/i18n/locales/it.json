@@ -499,7 +499,42 @@
       "emptyTitle": "Giornata libera",
       "emptyHint": "Niente compiti né verifiche per questo giorno. Se ti va, aggiungine uno: alleggerisce i giorni pieni."
     },
-    "viewDiary": "Diario"
+    "viewDiary": "Diario",
+    "workspaceTitle": "Il tuo piano",
+    "workspaceSubtitle": "Prima ciò che hai davanti oggi. Poi il resto della settimana.",
+    "today": "Oggi",
+    "allUpcoming": "Tutti i prossimi",
+    "emptyDay": "Nessun impegno per questo giorno.",
+    "calendar": "Calendario",
+    "previousMonth": "Mese precedente",
+    "nextMonth": "Mese successivo",
+    "eventCount_one": "1 impegno",
+    "eventCount_other": "{{count}} impegni",
+    "editEntry": "Modifica {{title}}",
+    "deleteEntry": "Elimina {{title}}",
+    "generateHint": "Aggiungi verifiche e impegni. Erga propone come distribuire lo studio: controlli tu prima di confermare.",
+    "completed": "Completato",
+    "dailySession": "Sessione giornaliera",
+    "dailySubtitle": "Studio e impegni, ora per ora.",
+    "importantDeadlines": "Verifiche e interrogazioni in arrivo",
+    "previousDeadlines": "Scadenze precedenti",
+    "nextDeadlines": "Altre scadenze",
+    "noDeadlines": "Nessuna verifica o interrogazione in arrivo. I tuoi altri impegni restano nel calendario.",
+    "daysRemaining_one": "Manca 1 giorno",
+    "daysRemaining_other": "Mancano {{count}} giorni",
+    "remainingUnit_one": "giorno",
+    "remainingUnit_other": "giorni",
+    "inCalendar": "in agenda",
+    "evaluation": "Verifica",
+    "backToCalendar": "Torna al calendario",
+    "previousDay": "Giorno precedente",
+    "nextDay": "Giorno successivo",
+    "withoutTime": "Senza orario",
+    "noUntimedEvents": "Nessun impegno senza orario.",
+    "hourByHour": "Ora per ora",
+    "generateUnavailable": "Per generare un piano, carica i materiali di studio e aggiungi almeno una verifica o un impegno.",
+    "loadError": "Non è stato possibile caricare tutti gli impegni. Riprova per vedere il calendario completo.",
+    "retry": "Riprova"
   },
   "lesson": {
     "close": "Chiudi lezione",
@@ -535,7 +570,8 @@
     "aiError": "Non sono riuscito a generare la spiegazione. Riprova tra poco.",
     "aiReplyError": "Errore nella risposta. Riprova.",
     "resumeNotice": "Ripresa dalla slide {{number}} di {{total}}",
-    "restart": "Ricomincia"
+    "restart": "Ricomincia",
+    "sendMessage": "Invia messaggio"
   },
   "finalTest": {
     "title": "Test Finale",
@@ -604,5 +640,17 @@
     "changeModule": "Cambia modulo",
     "error": "Il tutor non è riuscito a preparare gli esercizi. Riprova.",
     "unavailable": "Palestra non disponibile adesso. Riprova tra poco."
+  },
+  "feedback": {
+    "title": "Feedback aptico",
+    "description": "Tocchi per selezioni e navigazione; ritmi distinti per conferme ed errori.",
+    "off": "Disattivato",
+    "subtle": "Leggero",
+    "standard": "Standard",
+    "strong": "Deciso",
+    "deviceNote": "Dove supportato dal browser. I livelli cambiano durata e ritmo: la forza del motore dipende dal dispositivo."
+  },
+  "studio": {
+    "materialsAndReading": "Materiali e lettura"
   }
 }
