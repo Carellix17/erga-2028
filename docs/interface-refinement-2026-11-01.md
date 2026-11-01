@@ -4,7 +4,7 @@ Base: `main` al commit `87f3304`. Direzione richiesta: conservare geometria squa
 
 ## Evidenze e limiti
 
-La landing pubblica è stata aperta e osservata nel Browser. L’accesso sicuro alle schermate autenticate non si è concluso. L’anteprima di sviluppo non era raggiungibile dal browser remoto; l’apertura di file locali è stata rifiutata dalla sua policy e non è stata aggirata. Questa è una revisione del codice con test del DOM e build, **non un audit visivo completo dell’area autenticata**. Non sono disponibili screenshot verificati delle nuove schermate; nessuna conformità WCAG completa è dichiarata.
+La landing pubblica e, dopo l’accesso manuale dell’utente, Home, Piano, agenda, Studio, moduli e lettore autenticati sono stati osservati nel Browser a **1363 × 936 CSS px**. Sono state verificate apertura e chiusura della lezione senza completare attività o modificare gli impegni. La versione pubblicata conserva ancora i controlli precedenti alla PR: queste osservazioni confermano i problemi di partenza, non verificano visivamente il nuovo codice. L’anteprima di sviluppo non era raggiungibile dal browser remoto; l’apertura di file locali è stata rifiutata dalla sua policy e non è stata aggirata. Il Browser non espone una API documentata per ridimensionare il viewport: **mobile e tablet restano da verificare**, così come il rendering della PR. Nessuna conformità WCAG completa è dichiarata.
 
 Le domande su priorità del Piano, bug specifici di Studio e diffusione aptica non hanno ricevuto risposte. Per procedere sono stati assunti: agenda di oggi e prossime scadenze come vista iniziale; mantenimento del lettore immersivo già presente in main; feedback diffuso ma breve con un controllo per ridurlo o disattivarlo.
 
@@ -20,6 +20,16 @@ Le domande su priorità del Piano, bug specifici di Studio e diffusione aptica n
 | 6. Lettura di una lezione | Dialogo dichiarato ma privo di focus trap; safe area senza regole CSS; animazioni ampie con attesa 250 ms | Portale e gestione focus/scroll Radix già in dipendenza, ritorno al controllo iniziale, safe area definite; passaggio direzionale di 8 px, uscita 120 ms e ingresso 180 ms |
 | 7. Tutor della lezione | Campo e invio privi di nome accessibile; controlli di dimensione ridotta | Etichette accessibili e invio 44 px; campo da 16 px e larghezza riducibile |
 | 8. Feedback e preferenze | Aptica solo in alcuni componenti, impulsi da 10 ms, nessun controllo utente; preferenze JS non uniformi | Feedback condiviso anche nei pannelli portalled, priorità dei segnali semantici e protezione dai doppioni; livelli Disattivato/Leggero/Standard/Deciso; MotionPreferences per CSS e Framer |
+
+## Riscontro sul prodotto autenticato
+
+1. **Home — utilizzabile sul desktop osservato.** Percorso, progressi, strumenti e piano del giorno risultano raggiungibili. Persistono il forte stacco delle CTA e molto spazio tra il radar e gli strumenti.
+2. **Piano — priorità da correggere.** All’apertura compare il mese; l’agenda richiede il toggle a icone. Dopo l’apertura, la lista ha uno scorrimento interno rigido e i controlli modifica/elimina dipendono dall’hover. Il comando di generazione non appare benché siano presenti impegni salvati.
+3. **Studio e moduli — navigazione funzionante, densità da rifinire.** Materiali e percorso occupano colonne affiancate sul desktop; la hero dei moduli rimane fissa durante la consultazione. Le CTA mantengono l’ombra rigida e alcuni comandi usano ancora il tutto maiuscolo.
+4. **Lettore — apertura e ritorno funzionanti, disposizione precedente confermata.** Nella versione pubblicata il footer occupa tutta la larghezza, con tutor a sinistra e Continua molto esteso; il testo ha una colonna più stretta. La PR già allinea i comandi alla colonna di lettura e aggiunge la gestione del focus mancante nella schermata osservata.
+5. **Mobile e tablet — non ancora verificati nel Browser.** Nessuna immagine ritagliata o valutazione del solo CSS viene presentata come simulazione di dispositivo.
+
+Le catture del prodotto autenticato sono usate internamente come evidenza; dati e materiali dell’account non vengono caricati nel repository pubblico.
 
 ## Scelte conservate
 
