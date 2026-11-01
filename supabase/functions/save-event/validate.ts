@@ -138,6 +138,59 @@ export function buildStudyEventInsert(userId: string, event: UnknownRecord): Unk
   };
 }
 
+export type StudyEventUpdateBuildResult =
+  | { ok: true; id: string; version: number; data: Record<string, unknown> }
+  | {
+      ok: false;
+      status: 400;
+      error: "version_required" | "Missing event id" | "Nessuna modifica valida";
+    };
+
+/** Builds a validated, version-aware update patch without I/O or side effects. */
+export function buildStudyEventUpdate(event: UnknownRecord, nowIso: string): StudyEventUpdateBuildResult {
+  const id = typeof event.id === "string" ? event.id.trim() : "";
+  if (!id) return { ok: false, status: 400, error: "Missing event id" };
+  if (typeof event.version !== "number" || !Number.isInteger(event.version) || event.version < 0) {
+    return { ok: false, status: 400, error: "version_required" };
+  }
+
+  const allowedTypes = ["study", "test", "assignment"];
+  const data: Record<string, unknown> = {};
+  if (typeof event.subject === "string" && event.subject.trim()) data.subject = event.subject.trim().slice(0, 80);
+  if (typeof event.title === "string" && event.title.trim()) data.title = event.title.trim().slice(0, 200);
+  if (typeof event.date === "string" && !Number.isNaN(Date.parse(event.date))) data.event_date = event.date;
+  if (typeof event.time === "string" && /^\d{2}:\d{2}$/.test(event.time)) data.event_time = event.time;
+  if (event.time === null) data.event_time = null;
+  if (typeof event.type === "string" && allowedTypes.includes(event.type)) data.event_type = event.type;
+
+  const fields = validateStudyEventFields(event);
+  if (fields.notes !== undefined) data.notes = fields.notes;
+  if (fields.end_time !== undefined) data.end_time = fields.end_time;
+  if (fields.lesson_from !== undefined && fields.lesson_to !== undefined) {
+    data.lesson_from = fields.lesson_from;
+    data.lesson_to = fields.lesson_to;
+  }
+  if (fields.status !== undefined) {
+    data.status = fields.status;
+    const completed = fields.status === "done";
+    data.is_completed = completed;
+    data.completed_at = completed ? nowIso : null;
+  }
+  if (typeof event.locked === "boolean") data.locked = event.locked;
+
+  // Explicit completion takes precedence over a simultaneous status field.
+  if (typeof event.completed === "boolean") {
+    data.status = event.completed ? "done" : "planned";
+    data.is_completed = event.completed;
+    data.completed_at = event.completed ? nowIso : null;
+  }
+
+  if (Object.keys(data).length === 0) {
+    return { ok: false, status: 400, error: "Nessuna modifica valida" };
+  }
+  return { ok: true, id, version: event.version, data };
+}
+
 const SNAPSHOT_KEYS = [
   "subject",
   "title",

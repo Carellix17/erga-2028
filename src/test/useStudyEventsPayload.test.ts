@@ -109,6 +109,34 @@ describe("study event mutation payloads", () => {
     });
   });
 
+  it("keeps optimistic status and completion fields coherent", async () => {
+    mockedEdgeFetch.mockResolvedValue({ success: true } as never);
+    const client = makeClient();
+    const queryKey = studyEventsKeys.all("user-1");
+    client.setQueryData(queryKey, [cachedEvent({
+      status: "done",
+      is_completed: true,
+      completed_at: "2026-10-31T10:00:00.000Z",
+    })]);
+    const { result } = renderHook(() => useUpdateStudyEvent(), { wrapper: makeWrapper(client) });
+
+    await act(async () => {
+      await result.current.mutateAsync({ id: "event-1", version: 0, status: "planned" });
+    });
+    expect(client.getQueryData<StudyEvent[]>(queryKey)?.[0]).toMatchObject({
+      status: "planned",
+      is_completed: false,
+      completed_at: null,
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ id: "event-1", version: 0, status: "done" });
+    });
+    const completed = client.getQueryData<StudyEvent[]>(queryKey)?.[0];
+    expect(completed).toMatchObject({ status: "done", is_completed: true });
+    expect(completed?.completed_at).toEqual(expect.any(String));
+  });
+
   it("sends an atomic plan-change package with its reason", async () => {
     mockedEdgeFetch.mockResolvedValue({ packageId: "package-1" } as never);
     const client = makeClient();

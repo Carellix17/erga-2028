@@ -1,6 +1,7 @@
 import {
   MAX_PLAN_CHANGES,
   buildStudyEventInsert,
+  buildStudyEventUpdate,
   validatePlanChanges,
   validateStudyEventFields,
 } from "./validate.ts";
@@ -19,6 +20,7 @@ function assert(condition: boolean, message: string): void {
 
 const contextId = "9f6a1a2b-3c4d-5e6f-8a9b-0c1d2e3f4a5b";
 const evaluationId = "a6b2c1d0-4e5f-6789-abcd-0123456789ab";
+const nowIso = "2026-11-01T12:34:56.000Z";
 
 Deno.test("normalizes the new event fields to database column names", () => {
   const fields = validateStudyEventFields({
@@ -86,6 +88,108 @@ Deno.test("requires strict end times after a valid start time and trims notes to
   assertEquals(validateStudyEventFields({ time: "16:00:00", endTime: "16:30" }), { end_time: "16:30" });
   const notes = validateStudyEventFields({ notes: `  ${"x".repeat(1005)}  ` }).notes;
   assert(notes?.length === 1000, "notes should be trimmed and capped at 1000 characters");
+});
+
+Deno.test("builds completed updates with only the completion fields and the supplied timestamp", () => {
+  const update = buildStudyEventUpdate({ id: "event-1", version: 0, completed: true }, nowIso);
+  assert(update.ok, "expected completed update to be valid");
+  if (update.ok) {
+    assertEquals(update.id, "event-1");
+    assertEquals(update.version, 0);
+    assertEquals(update.data, {
+      status: "done",
+      is_completed: true,
+      completed_at: nowIso,
+    });
+    assertEquals(Object.keys(update.data), ["status", "is_completed", "completed_at"]);
+  }
+});
+
+Deno.test("requires a non-negative integer version for updates", () => {
+  for (const event of [
+    { id: "event-1", completed: true },
+    { id: "event-1", version: -1, completed: true },
+    { id: "event-1", version: 1.5, completed: true },
+  ]) {
+    assertEquals(buildStudyEventUpdate(event, nowIso), {
+      ok: false,
+      status: 400,
+      error: "version_required",
+    });
+  }
+});
+
+Deno.test("drops incomplete lesson pairs independently for adds and updates", () => {
+  const base = { subject: "Fisica", title: "Ripasso", date: "2026-11-05", time: "15:00", type: "study" };
+  for (const incompletePair of [{ lessonFrom: 1 }, { lessonTo: 2 }]) {
+    const insert = buildStudyEventInsert("user-1", { ...base, notes: " Nota ", ...incompletePair });
+    assertEquals(insert, {
+      user_id: "user-1",
+      subject: "Fisica",
+      title: "Ripasso",
+      event_date: "2026-11-05",
+      event_time: "15:00",
+      event_type: "study",
+      notes: "Nota",
+    });
+
+    const update = buildStudyEventUpdate({
+      id: "event-1",
+      version: 0,
+      notes: " Nota ",
+      ...incompletePair,
+    }, nowIso);
+    assert(update.ok, "expected the other valid update field to remain");
+    if (update.ok) assertEquals(update.data, { notes: "Nota" });
+  }
+});
+
+Deno.test("discards an end time earlier than the supplied start while retaining other fields", () => {
+  const base = { subject: "Fisica", title: "Ripasso", date: "2026-11-05", type: "study" };
+  const insert = buildStudyEventInsert("user-1", {
+    ...base,
+    time: "19:00",
+    endTime: "18:00",
+    notes: " Da fare ",
+  });
+  assertEquals(insert.notes, "Da fare");
+  assert(!("end_time" in insert), "invalid end time must be omitted from the add payload");
+
+  const update = buildStudyEventUpdate({
+    id: "event-1",
+    version: 0,
+    time: "19:00",
+    endTime: "18:00",
+    notes: " Da fare ",
+    locked: true,
+  }, nowIso);
+  assert(update.ok, "expected other update fields to remain valid");
+  if (update.ok) assertEquals(update.data, { event_time: "19:00", notes: "Da fare", locked: true });
+});
+
+Deno.test("keeps status, is_completed and completed_at coherent", () => {
+  const planned = buildStudyEventUpdate({ id: "event-1", version: 0, status: "planned" }, nowIso);
+  assert(planned.ok, "expected planned status to be valid");
+  if (planned.ok) {
+    assertEquals(planned.data, { status: "planned", is_completed: false, completed_at: null });
+  }
+
+  const done = buildStudyEventUpdate({ id: "event-1", version: 0, status: "done" }, nowIso);
+  assert(done.ok, "expected done status to be valid");
+  if (done.ok) {
+    assertEquals(done.data, { status: "done", is_completed: true, completed_at: nowIso });
+  }
+
+  const explicitIncomplete = buildStudyEventUpdate({
+    id: "event-1",
+    version: 0,
+    status: "done",
+    completed: false,
+  }, nowIso);
+  assert(explicitIncomplete.ok, "expected explicit completion to take precedence");
+  if (explicitIncomplete.ok) {
+    assertEquals(explicitIncomplete.data, { status: "planned", is_completed: false, completed_at: null });
+  }
 });
 
 Deno.test("accepts planner change batches only when each change is valid and within the limit", () => {

@@ -2,9 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import {
   buildStudyEventInsert,
+  buildStudyEventUpdate,
   isPlanChangeReason,
   validatePlanChanges,
-  validateStudyEventFields,
 } from "./validate.ts";
 
 serve(withCors(async (req) => {
@@ -83,56 +83,20 @@ serve(withCors(async (req) => {
 
     if (action === "update" && body.event) {
       // Modifica di un singolo evento, con optimistic concurrency sul campo version.
-      const ev = body.event;
-      const id = typeof ev.id === "string" ? ev.id.trim() : "";
-      if (!id) return errorResponse("Missing event id", 400);
-      if (!Number.isInteger(ev.version) || ev.version < 0) {
-        return errorResponse("version_required", 400);
-      }
-      const version = ev.version as number;
-
-      const allowedTypes = ["study", "test", "assignment"];
-      const updateData: Record<string, unknown> = {};
-      if (typeof ev.subject === "string" && ev.subject.trim()) updateData.subject = ev.subject.trim().slice(0, 80);
-      if (typeof ev.title === "string" && ev.title.trim()) updateData.title = ev.title.trim().slice(0, 200);
-      if (typeof ev.date === "string" && !Number.isNaN(Date.parse(ev.date))) updateData.event_date = ev.date;
-      if (typeof ev.time === "string" && /^\d{2}:\d{2}$/.test(ev.time)) updateData.event_time = ev.time;
-      if (ev.time === null) updateData.event_time = null;
-      if (typeof ev.type === "string" && allowedTypes.includes(ev.type)) updateData.event_type = ev.type;
-
-      const validatedFields = validateStudyEventFields(ev);
-      if (validatedFields.notes !== undefined) updateData.notes = validatedFields.notes;
-      if (validatedFields.end_time !== undefined) updateData.end_time = validatedFields.end_time;
-      if (validatedFields.lesson_from !== undefined && validatedFields.lesson_to !== undefined) {
-        updateData.lesson_from = validatedFields.lesson_from;
-        updateData.lesson_to = validatedFields.lesson_to;
-      }
-      if (validatedFields.status !== undefined) {
-        updateData.status = validatedFields.status;
-        if (validatedFields.status === "done") updateData.is_completed = true;
-      }
-      if (typeof ev.locked === "boolean") updateData.locked = ev.locked;
-
-      // Explicit completion takes precedence over a simultaneous status field.
-      if (typeof ev.completed === "boolean") {
-        const completedAt = new Date().toISOString();
-        updateData.status = ev.completed ? "done" : "planned";
-        updateData.is_completed = ev.completed;
-        updateData.completed_at = ev.completed ? completedAt : null;
-      }
-
-      if (Object.keys(updateData).length === 0) return errorResponse("Nessuna modifica valida", 400);
+      const nowIso = new Date().toISOString();
+      const update = buildStudyEventUpdate(body.event, nowIso);
+      if (!update.ok) return errorResponse(update.error, update.status);
 
       const { error, data } = await supabase
         .from("study_events")
         .update({
-          ...updateData,
-          version: version + 1,
-          updated_at: new Date().toISOString(),
+          ...update.data,
+          version: update.version + 1,
+          updated_at: nowIso,
         })
-        .eq("id", id)
+        .eq("id", update.id)
         .eq("user_id", userId)
-        .eq("version", version)
+        .eq("version", update.version)
         .select("id");
 
       if (error) {

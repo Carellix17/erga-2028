@@ -193,8 +193,10 @@ function applyOptimisticUpdate(event: StudyEvent, update: UpdateStudyEventInput)
     next.lesson_to = update.lessonTo;
   }
   if (update.status !== undefined) {
+    const completed = update.status === "done";
     next.status = update.status;
-    if (update.status === "done") next.is_completed = true;
+    next.is_completed = completed;
+    next.completed_at = completed ? new Date().toISOString() : null;
   }
   if (update.locked !== undefined) next.locked = update.locked;
   if (update.completed !== undefined) return applyCompleted(next, update.completed);
