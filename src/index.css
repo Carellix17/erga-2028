@@ -1424,10 +1424,32 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 }
 .planner-day:nth-child(7n) { border-right: 0; }
 .planner-day:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: -2px; }
+/*
+   Audit contrasto WCAG 2.2 (testo normale; token HSL convertiti in sRGB a 8 bit):
+   | Stato / testo su sfondo                                                            | Giorno | Notte*  | Alto contrasto (giorno) |
+   |-----------------------------------------------------------------------------------|--------|---------|-------------------------|
+   | Oggi (--foreground su --secondary)                                                 | 15.10:1 | 14.71:1 | 15.10:1                 |
+   | Fuori mese (day --muted-foreground; dark --steel su --background)                   | 7.12:1  | 10.55:1 | 8.08:1                  |
+   * Notte: valore minimo sulle righe (steel sopra il gradiente); alto contrasto
+     notte conserva gli stessi token e gli stessi rapporti del tema notte.
+   Il valore alto-contrasto giorno usa --ink-muted; tutti i rapporti superano 4.5:1.
+*/
 .planner-day-outside { color: hsl(var(--muted-foreground)); background: hsl(var(--background)); }
+.dark .planner-day-outside:not(.planner-day-today) {
+  color: hsl(var(--steel));
+  background-color: hsl(var(--background));
+  background-image: repeating-linear-gradient(135deg, hsl(var(--border) / .22) 0 1px, transparent 1px 6px);
+}
 .planner-day-today { background: hsl(var(--secondary)); }
 .planner-day-number { font-size: 1rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
-.planner-day-today .planner-day-number { color: hsl(var(--primary)); font-weight: 700; text-decoration: underline; text-underline-offset: .25rem; }
+.planner-day-today .planner-day-number {
+  color: hsl(var(--foreground));
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: currentColor;
+  text-underline-offset: .25rem;
+}
 .planner-day-count { display: flex; align-items: center; gap: var(--planner-day-padding); font-size: .75rem; font-variant-numeric: tabular-nums; }
 .planner-day-dot { width: var(--planner-day-padding); height: var(--planner-day-padding); background: currentColor; border-radius: 50%; }
 .planner-day-titles { display: none; width: 100%; min-width: 0; font-size: .875rem; line-height: 1.5; }
@@ -1446,6 +1468,10 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 @keyframes planner-view-enter { from { opacity: .65; transform: translateX(var(--planner-motion-distance)); } to { opacity: 1; transform: none; } }
 @media (hover: hover) and (pointer: fine) {
   .planner-day:hover { background: hsl(var(--secondary)); }
+  .dark .planner-day-outside:not(.planner-day-today):hover {
+    background-color: hsl(var(--background));
+    background-image: repeating-linear-gradient(135deg, hsl(var(--border) / .22) 0 1px, transparent 1px 6px);
+  }
   .planner-deadline:hover { opacity: .92; }
 }
 @media (min-width: 640px) {

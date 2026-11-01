@@ -129,4 +129,28 @@ describe("design system v4.1 — app shell", () => {
     expect(html).not.toContain("Playfair+Display");
     expect(html).not.toContain("Montserrat");
   });
+
+  it("mantiene il contrasto AA del giorno di oggi e documenta i rapporti dei temi", () => {
+    const css = read("src/index.css");
+    const todayRule = css.match(/\.planner-day-today \.planner-day-number\s*\{([^}]*)\}/)?.[1] ?? "";
+
+    expect(todayRule).toContain("color: hsl(var(--foreground))");
+    expect(todayRule).not.toContain("var(--primary)");
+    expect(todayRule).toContain("font-weight: 700");
+    expect(todayRule).toContain("text-decoration-thickness: 2px");
+    expect(todayRule).toContain("text-decoration-color: currentColor");
+    expect(css).toContain(".dark .planner-day-outside:not(.planner-day-today)");
+    expect(css).toContain("color: hsl(var(--steel))");
+    expect(css).toContain("repeating-linear-gradient");
+    expect(css).toMatch(/\|\s*Oggi \(--foreground su --secondary\)\s*\|\s*15\.10:1\s*\|\s*14\.71:1\s*\|\s*15\.10:1/);
+    expect(css).toMatch(/\|\s*Fuori mese \(day --muted-foreground; dark --steel su --background\)\s*\|\s*7\.12:1\s*\|\s*10\.55:1\s*\|\s*8\.08:1/);
+  });
+
+  it("nomina il Piano con l'intestazione del calendario", () => {
+    const calendar = read("src/components/piano/AppointmentsCalendar.tsx");
+    const pianoView = read("src/components/piano/PianoView.tsx");
+
+    expect(pianoView).toContain('<section className="min-w-0" aria-labelledby="planner-calendar-heading">');
+    expect((calendar.match(/id="planner-calendar-heading"/g) ?? [])).toHaveLength(2);
+  });
 });
