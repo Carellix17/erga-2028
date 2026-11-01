@@ -1,32 +1,24 @@
-import { useMemo, useState } from "react";
-import { AnimatePresence, MotionConfig, motion } from "framer-motion";
+import { useId, useMemo, useState } from "react";
 import {
-  BookOpen, ClipboardCheck, Columns3, Grid, Hammer, Loader2, Mic, Pencil, PencilLine, Plus, Trash2,
+  BookOpen, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck,
+  Hammer, Loader2, Mic, Pencil, PencilLine, Plus, Sparkles, Trash2,
 } from "lucide-react";
 import {
-  eachDayOfInterval, endOfMonth, endOfWeek, format, getDate, isSameMonth, isToday,
-  startOfMonth, startOfWeek, startOfToday,
+  addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isSameMonth, isToday,
+  isValid, parseISO, startOfMonth, startOfWeek, startOfToday,
 } from "date-fns";
-import { it, enUS, type Locale } from "date-fns/locale";
+import { it, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import type { Evaluation, EvaluationType } from "@/hooks/useEvaluations";
 import type { StudyEvent } from "@/hooks/useStudyEvents";
 import type { UserSubject } from "@/hooks/useUserSubjects";
 import { dayKey } from "@/lib/weekPlanner";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
-/**
- * Calendario appuntamenti Piano — canvas Olive/Bone, con gli accenti materia
- * del design system, mantenendo grouping, animazioni e azioni esistenti. Il mese è sempre quello reale,
- * letto dall'orologio di sistema, e le voci sono verifiche,
- * interrogazioni, compiti e sessioni dello studente.
- */
-
-/** Una voce del calendario: verifica, compito o sessione di studio. */
 export interface CalendarEntry {
   id: string;
   date: Date;
-  /** "HH:mm" se noto. */
   time?: string;
   title: string;
   subject: string | null;
@@ -35,88 +27,18 @@ export interface CalendarEntry {
   original: { kind: "evaluation"; data: Evaluation } | { kind: "studyEvent"; data: StudyEvent };
 }
 
-/** Dentro lo stesso giorno: prima le voci con l'ora, poi quelle senza. */
-const byTime = (a: CalendarEntry, b: CalendarEntry) =>
-  (a.time ?? "zz:zz").localeCompare(b.time ?? "zz:zz");
-
-type DayType = {
-  /** Etichetta della cella: "01".."31" per i giorni del mese, "-2"/"+3" fuori. */
-  day: string;
-  /** Chiave yyyy-MM-dd dei giorni reali (i giorni fuori mese non ce l'hanno). */
-  key?: string;
-  isToday: boolean;
-  classNames: string;
-  meetingInfo?: CalendarEntry[];
-};
-
-interface DayProps {
-  day: DayType;
-  onHover: (dayKey: string | null) => void;
-}
-
-const Day = ({ day, onHover }: DayProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-  return (
-    <motion.div
-      className={cn("relative flex items-center justify-center py-1", day.classNames)}
-      style={{ height: "4rem", borderRadius: 12 }}
-      onMouseEnter={() => {
-        setIsHovered(true);
-        onHover(day.key ?? day.day);
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        onHover(null);
-      }}
-    >
-      <motion.div className="flex flex-col items-center justify-center">
-        {!(day.day[0] === "+" || day.day[0] === "-") && (
-          <span className="text-sm font-medium text-secondary-foreground">{day.day}</span>
-        )}
-      </motion.div>
-      {day.meetingInfo && (
-        <motion.div
-          className="absolute bottom-1 right-1 flex size-5 items-center justify-center rounded-full bg-primary p-1 text-[10px] font-semibold text-primary-foreground"
-          layoutId={`day-${day.key}-meeting-count`}
-          style={{ borderRadius: "50%" }}
-        >
-          {day.meetingInfo.length}
-        </motion.div>
-      )}
-
-      <AnimatePresence>
-        {day.meetingInfo && isHovered && (
-          <div className="absolute inset-0 flex size-full items-center justify-center">
-            <motion.div
-              className="flex size-10 items-center justify-center rounded-full bg-primary p-1 text-xs font-semibold text-primary-foreground"
-              layoutId={`day-${day.key}-meeting-count`}
-              style={{ borderRadius: "50%" }}
-            >
-              {day.meetingInfo.length}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-};
-
 const EVAL_ICONS: Record<EvaluationType, typeof Mic> = {
-  orale: Mic,
-  interrogazione: Mic,
-  scritta: PencilLine,
-  compito: BookOpen,
-  pratica: Hammer,
+  orale: Mic, interrogazione: Mic, scritta: PencilLine, compito: BookOpen, pratica: Hammer,
 };
+const byTime = (a: CalendarEntry, b: CalendarEntry) =>
+  (a.time ?? "zz:zz").localeCompare(b.time ?? "zz:zz") || a.title.localeCompare(b.title);
 
 interface AppointmentsCalendarProps {
   evaluations: Evaluation[];
   events: StudyEvent[];
   subjects: UserSubject[];
-  /** Id in dissolvenza prima dell'eliminazione vera. */
   exitingIds: string[];
   onAddEvent: () => void;
-  /** Il bottone "Genera piano di studio" appare solo dopo il primo evento aggiunto. */
   showGeneratePlan: boolean;
   onGeneratePlan: () => void;
   isGeneratingPlan: boolean;
@@ -126,57 +48,35 @@ interface AppointmentsCalendarProps {
   onDeleteStudyEvent: (event: StudyEvent) => void;
 }
 
+/** Agenda first; the month is an explicit date selector, never a hover-driven reorder. */
 export function AppointmentsCalendar({
-  evaluations,
-  events,
-  subjects,
-  exitingIds,
-  onAddEvent,
-  showGeneratePlan,
-  onGeneratePlan,
-  isGeneratingPlan,
-  onEditEvaluation,
-  onEditStudyEvent,
-  onDeleteEvaluation,
-  onDeleteStudyEvent,
+  evaluations, events, subjects, exitingIds, onAddEvent, showGeneratePlan,
+  onGeneratePlan, isGeneratingPlan, onEditEvaluation, onEditStudyEvent,
+  onDeleteEvaluation, onDeleteStudyEvent,
 }: AppointmentsCalendarProps) {
-  const [moreView, setMoreView] = useState(false);
-  const [hoveredDay, setHoveredDay] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
-  const dateLocale: Locale = i18n.language.startsWith("en") ? enUS : it;
-
-  /** Il mese è sempre quello segnato dall'orologio di sistema. */
-  const today = useMemo(() => new Date(), []);
-  const monthStart = useMemo(() => startOfMonth(today), [today]);
-
+  const locale = i18n.language.startsWith("en") ? enUS : it;
+  const calendarId = useId();
+  const [month, setMonth] = useState(() => startOfMonth(new Date()));
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const subjectById = useMemo(() => new Map(subjects.map((s) => [s.id, s])), [subjects]);
 
-  /** Tutte le voci del piano, already tradotte e iconizzate. */
-  const entries = useMemo<CalendarEntry[]>(() => {
-    const fromEvaluations: CalendarEntry[] = evaluations.map((ev) => ({
-      id: ev.id,
-      date: new Date(ev.date),
-      title: ev.title,
+  const entries = useMemo<CalendarEntry[]>(() => [
+    ...evaluations.map((ev): CalendarEntry => ({
+      id: ev.id, date: parseISO(ev.date), title: ev.title,
       subject: ev.subject_id ? subjectById.get(ev.subject_id)?.name ?? null : null,
-      typeLabel: t(`piano.sheet.evalType_${ev.type}`),
-      TypeIcon: EVAL_ICONS[ev.type] ?? ClipboardCheck,
+      typeLabel: t(`piano.sheet.evalType_${ev.type}`), TypeIcon: EVAL_ICONS[ev.type] ?? ClipboardCheck,
       original: { kind: "evaluation", data: ev },
-    }));
-    const fromEvents: CalendarEntry[] = events.map((ev) => ({
-      id: ev.id,
-      date: new Date(ev.event_date),
-      time: ev.event_time,
-      title: ev.title,
+    })),
+    ...events.map((ev): CalendarEntry => ({
+      id: ev.id, date: parseISO(ev.event_date), time: ev.event_time?.slice(0, 5), title: ev.title,
       subject: ev.subject && ev.subject !== "Altro" ? ev.subject : null,
-      typeLabel:
-        ev.event_type === "study" ? t("piano.type_study")
-        : ev.event_type === "test" ? t("piano.type_test")
-        : t("piano.type_assignment"),
+      typeLabel: t(`piano.type_${ev.event_type}`),
       TypeIcon: ev.event_type === "study" ? BookOpen : ClipboardCheck,
       original: { kind: "studyEvent", data: ev },
-    }));
-    return [...fromEvaluations, ...fromEvents];
-  }, [evaluations, events, subjectById, t]);
+    })),
+  ].filter((entry) => isValid(entry.date)), [evaluations, events, subjectById, t]);
 
   const entriesByKey = useMemo(() => {
     const map = new Map<string, CalendarEntry[]>();
@@ -184,242 +84,131 @@ export function AppointmentsCalendar({
       const key = dayKey(entry.date);
       map.set(key, [...(map.get(key) ?? []), entry]);
     }
-    for (const list of map.values()) {
-      list.sort(byTime);
-    }
+    for (const list of map.values()) list.sort(byTime);
     return map;
   }, [entries]);
 
-  const daysOfWeek = useMemo(() => {
-    const week = eachDayOfInterval({ start: startOfWeek(today, { locale: dateLocale }), end: endOfWeek(today, { locale: dateLocale }) });
-    return week.map((d) => format(d, "EEE", { locale: dateLocale }).toUpperCase());
-  }, [today, dateLocale]);
+  const groups = useMemo(() => [...entriesByKey.entries()]
+    .filter(([key, list]) => selectedKey ? key === selectedKey : list[0].date >= startOfToday())
+    .sort(([a], [b]) => a.localeCompare(b)), [entriesByKey, selectedKey]);
+  const days = eachDayOfInterval({
+    start: startOfWeek(month, { weekStartsOn: 1 }),
+    end: endOfWeek(endOfMonth(month), { weekStartsOn: 1 }),
+  });
+  const weekDays = days.slice(0, 7).map((date) => format(date, "EEEEE", { locale }));
+  const todayKey = dayKey(new Date());
 
-  const days = useMemo<DayType[]>(() => {
-    const grid = eachDayOfInterval({
-      start: startOfWeek(monthStart, { locale: dateLocale }),
-      end: endOfWeek(endOfMonth(monthStart), { locale: dateLocale }),
-    });
-    let outsideBefore = 0;
-    let outsideAfter = 0;
-    return grid.map((date) => {
-      if (!isSameMonth(date, monthStart)) {
-        const label = date < monthStart ? `-${++outsideBefore}` : `+${++outsideAfter}`;
-        return { day: label, isToday: false, classNames: "bg-card/60" };
-      }
-      const key = dayKey(date);
-      const meetingInfo = entriesByKey.get(key);
-      return {
-        day: String(getDate(date)).padStart(2, "0"),
-        key,
-        isToday: isToday(date),
-        classNames: cn(
-          "bg-secondary text-secondary-foreground",
-          meetingInfo && "cursor-pointer",
-          isToday(date) && "ring-2 ring-primary",
-        ),
-        meetingInfo,
-      };
-    });
-  }, [monthStart, dateLocale, entriesByKey]);
-
-  /** Prossimi eventi: da oggi in avanti, raggruppati per giorno. */
-  const upcomingDays = useMemo(() => {
-    const cutoff = startOfToday();
-    const groups = new Map<string, CalendarEntry[]>();
-    for (const entry of entries) {
-      if (entry.date < cutoff) continue;
-      const key = dayKey(entry.date);
-      groups.set(key, [...(groups.get(key) ?? []), entry]);
-    }
-    return [...groups.entries()]
-      .map(([key, list]) => ({ key, date: list[0].date, entries: list.sort(byTime) }))
-      .sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [entries]);
-
-  /** Il giorno su cui è fermo il mouse sale in cima alla lista. */
-  const sortedUpcomingDays = useMemo(() => {
-    if (!hoveredDay) return upcomingDays;
-    return [...upcomingDays].sort((a, b) => {
-      if (a.key === hoveredDay) return -1;
-      if (b.key === hoveredDay) return 1;
-      return 0;
-    });
-  }, [upcomingDays, hoveredDay]);
-
-  const handleDayHover = (key: string | null) => setHoveredDay(key);
-
-  const editEntry = (entry: CalendarEntry) =>
-    entry.original.kind === "evaluation"
-      ? onEditEvaluation(entry.original.data)
-      : onEditStudyEvent(entry.original.data);
-
-  const deleteEntry = (entry: CalendarEntry) =>
-    entry.original.kind === "evaluation"
-      ? onDeleteEvaluation(entry.original.data)
-      : onDeleteStudyEvent(entry.original.data);
+  const editEntry = (entry: CalendarEntry) => entry.original.kind === "evaluation"
+    ? onEditEvaluation(entry.original.data) : onEditStudyEvent(entry.original.data);
+  const deleteEntry = (entry: CalendarEntry) => entry.original.kind === "evaluation"
+    ? onDeleteEvaluation(entry.original.data) : onDeleteStudyEvent(entry.original.data);
 
   return (
-    <MotionConfig reducedMotion="user">
-      <motion.div className="relative mx-auto flex w-full flex-col items-center justify-center gap-8 lg:flex-row">
-        <motion.div layout className="w-full max-w-lg">
-          <motion.div key="calendar-view" className="flex w-full flex-col gap-4">
-            <div className="flex w-full items-center justify-between">
-              <motion.h2 className="font-display text-[1.875rem] font-medium tracking-tight text-card-foreground">
-                {format(monthStart, "MMM", { locale: dateLocale }).toUpperCase()}{" "}
-                <span className="opacity-50">{format(monthStart, "yyyy")}</span>
-              </motion.h2>
-              <motion.button
-                type="button"
-                aria-pressed={moreView}
-                aria-label={t("piano.toggleUpcoming")}
-                className="relative flex h-11 w-[88px] items-center gap-3 rounded-control border border-input bg-primary/25 px-1.5 py-1 text-card-foreground"
-                onClick={() => setMoreView(!moreView)}
-              >
-                <Columns3 className="z-[2]" />
-                <Grid className="z-[2]" />
-                <div
-                  className="absolute left-0 top-0 h-8 w-8 rounded-button bg-secondary transition-transform duration-300"
-                  style={{
-                    top: "50%",
-                    transform: moreView
-                      ? "translateY(-50%) translateX(40px)"
-                      : "translateY(-50%) translateX(4px)",
-                  }}
-                />
-              </motion.button>
-            </div>
-            <div className="grid grid-cols-7 gap-2">
-              {daysOfWeek.map((day) => (
-                <div key={day} className="rounded-control bg-secondary py-2 text-center text-xs font-semibold text-secondary-foreground">
-                  {day}
-                </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-2">
-              {days.map((day, index) => (
-                <Day key={day.key ?? `outside-${index}`} day={day} onHover={handleDayHover} />
-              ))}
-            </div>
+    <div className="min-w-0 py-6">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="font-display text-3xl font-semibold tracking-tight text-foreground">{t("piano.workspaceTitle")}</h2>
+          <p className="mt-2 max-w-prose text-base text-muted-foreground">{t("piano.workspaceSubtitle")}</p>
+        </div>
+        <Button onClick={onAddEvent} data-haptic="medium" className="shrink-0">
+          <Plus aria-hidden="true" />{t("piano.addEventFull")}
+        </Button>
+      </div>
 
-            {/* Bottoni: larghi quanto la griglia, volutamente sottili. */}
-            <button
-              type="button"
-              onClick={onAddEvent}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-button border border-line bg-secondary px-5 text-interface font-semibold text-secondary-foreground transition-colors duration-200 hover:bg-secondary/80 active:scale-[0.98]"
-            >
-              <Plus className="w-4 h-4" />
-              {t("piano.addEventFull")}
-            </button>
-            <AnimatePresence>
-              {showGeneratePlan && (
-                <motion.button
-                  type="button"
-                  onClick={onGeneratePlan}
-                  disabled={isGeneratingPlan}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex h-11 w-full items-center justify-center gap-2 rounded-button bg-primary px-5 text-interface font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary-deep active:scale-[0.98] disabled:opacity-70"
-                >
-                  {isGeneratingPlan ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      {t("piano.generating")}
-                    </>
-                  ) : (
-                    t("piano.generate")
-                  )}
-                </motion.button>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </motion.div>
-        {moreView && (
-          <motion.div
-            className="w-full max-w-lg"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.div key="more-view" className="flex w-full flex-col gap-4">
-              <div className="flex w-full flex-col items-start justify-between">
-                <motion.h2 className="font-display text-[1.875rem] font-medium tracking-tight text-card-foreground">
-                  {t("piano.upcoming")}
-                </motion.h2>
-                <p className="font-medium text-ink-muted/80">{t("piano.upcomingSubtitle")}</p>
+      <div className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <section className="min-w-0" aria-label={t("piano.upcoming")}>
+          <div className="mb-4 flex min-h-11 flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+            <h3 className="text-lg font-semibold">
+              {selectedKey ? format(parseISO(selectedKey), "EEEE d MMMM", { locale }) : t("piano.upcoming")}
+            </h3>
+            <div className="flex items-center gap-1">
+              <Button variant={selectedKey === todayKey ? "secondary" : "ghost"} size="sm" aria-pressed={selectedKey === todayKey}
+                onClick={() => { setSelectedKey(todayKey); setMonth(startOfMonth(new Date())); }}>{t("piano.today")}</Button>
+              <Button variant={selectedKey === null ? "secondary" : "ghost"} size="sm" aria-pressed={selectedKey === null}
+                onClick={() => setSelectedKey(null)}>{t("piano.allUpcoming")}</Button>
+            </div>
+          </div>
+          <div key={selectedKey ?? "upcoming"} className="plan-agenda-enter" aria-live="polite" aria-atomic="false">
+            {groups.length === 0 ? (
+              <div className="border border-border bg-sheet px-5 py-8">
+                <CalendarDays className="mb-4 h-6 w-6 text-muted-foreground" aria-hidden="true" />
+                <p className="text-lg font-semibold">{t(selectedKey ? "piano.emptyDay" : "piano.noEvents")}</p>
+                <p className="mt-2 max-w-prose text-base text-muted-foreground">{t("piano.noEventsHint")}</p>
+                <Button variant="outline" onClick={onAddEvent} className="mt-5"><Plus aria-hidden="true" />{t("piano.addEventFull")}</Button>
               </div>
-              <motion.div
-                className="flex h-[620px] flex-col items-start justify-start overflow-hidden overflow-y-scroll rounded-card border border-line bg-secondary text-secondary-foreground shadow-level-2"
-                layout
-              >
-                {sortedUpcomingDays.length === 0 ? (
-                  <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-6 text-center">
-                    <p className="font-medium text-secondary-foreground">{t("piano.noEvents")}</p>
-                    <p className="text-sm text-ink-muted/80">{t("piano.noEventsHint")}</p>
-                  </div>
-                ) : (
-                  <AnimatePresence>
-                    {sortedUpcomingDays.map(({ key, entries: dayEntries }) => (
-                      <motion.div key={key} className="w-full border-b border-control-line py-0 last:border-b-0" layout>
-                        {dayEntries.map((entry, mIndex) => (
-                          <motion.div
-                            key={entry.id}
-                            className={cn(
-                              "group relative border-b border-control-line p-3 last:border-b-0",
-                              exitingIds.includes(entry.id) &&
-                                "opacity-0 scale-95 transition-all duration-300",
-                            )}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2, delay: mIndex * 0.05 }}
-                          >
-                            <div className="mb-2 flex items-center justify-between gap-2">
-                              <span className="text-sm text-secondary-foreground">
-                                {format(entry.date, "EEE, d MMM", { locale: dateLocale })}
-                              </span>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  aria-label="Modifica evento"
-                                  onClick={() => editEntry(entry)}
-                                  className="rounded-button p-2 text-ink-muted opacity-0 transition-all hover:bg-primary/10 hover:text-secondary-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  aria-label="Elimina evento"
-                                  onClick={() => deleteEntry(entry)}
-                                  className="rounded-button p-2 text-ink-muted opacity-0 transition-all hover:bg-primary/10 hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                              {entry.time && <span className="text-sm text-secondary-foreground">{entry.time}</span>}
-                            </div>
-                            <h3 className="mb-1 text-lg font-semibold text-secondary-foreground">{entry.title}</h3>
-                            {entry.subject && (
-                              <p className="mb-1 text-sm text-ink-muted">{entry.subject}</p>
-                            )}
-                            <div className="flex items-center text-primary">
-                              <entry.TypeIcon className="mr-1 h-4 w-4" />
-                              <span className="text-sm">{entry.typeLabel}</span>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                )}
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        )}
-      </motion.div>
-    </MotionConfig>
+            ) : groups.map(([key, dayEntries]) => (
+              <section key={key} className="mb-6 last:mb-0" aria-label={format(dayEntries[0].date, "EEEE d MMMM", { locale })}>
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                  {key === todayKey && <span className="bg-secondary px-2 py-1 text-foreground">{t("piano.today")}</span>}
+                  <time dateTime={key}>{format(dayEntries[0].date, "EEEE d MMMM", { locale })}</time>
+                </div>
+                <ul className="divide-y divide-border border-y border-border">
+                  {dayEntries.map((entry) => (
+                    <li key={`${entry.original.kind}-${entry.id}`} className={cn(
+                      "flex min-w-0 items-start gap-3 py-4 transition-opacity duration-150",
+                      exitingIds.includes(entry.id) && "pointer-events-none opacity-0",
+                    )}>
+                      <div className="grid h-11 w-11 shrink-0 place-items-center bg-secondary text-cognitive"><entry.TypeIcon className="h-5 w-5" aria-hidden="true" /></div>
+                      <div className="min-w-0 flex-1">
+                        <p className={cn("break-words text-base font-semibold leading-snug text-foreground", entry.original.kind === "evaluation" && entry.original.data.is_completed && "line-through text-muted-foreground")}>{entry.title}</p>
+                        {entry.original.kind === "evaluation" && entry.original.data.is_completed && <span className="text-sm text-muted-foreground">{t("piano.completed")}</span>}
+                        <p className="mt-1 break-words text-sm text-muted-foreground">{[entry.subject, entry.typeLabel].filter(Boolean).join(" · ")}</p>
+                        {entry.time && <time className="mt-2 block font-mono text-sm tabular-nums text-foreground">{entry.time}</time>}
+                      </div>
+                      <div className="flex shrink-0 flex-col sm:flex-row">
+                        <Button variant="ghost" size="icon" aria-label={t("piano.editEntry", { title: entry.title })} onClick={() => editEntry(entry)}><Pencil aria-hidden="true" /></Button>
+                        <Button variant="ghost" size="icon" aria-label={t("piano.deleteEntry", { title: entry.title })} onClick={() => deleteEntry(entry)} data-haptic="warning" className="text-muted-foreground hover:text-destructive"><Trash2 aria-hidden="true" /></Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        </section>
+
+        <aside className="min-w-0 space-y-6">
+          <section className="border border-border bg-sheet">
+            <button type="button" className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring xl:hidden"
+              aria-expanded={calendarOpen} aria-controls={calendarId} onClick={() => setCalendarOpen((open) => !open)}>
+              <span className="flex items-center gap-2"><CalendarDays className="h-4 w-4" aria-hidden="true" />{t("piano.calendar")}</span>
+              <ChevronDown className={cn("h-4 w-4 transition-transform motion-reduce:transition-none", calendarOpen && "rotate-180")} aria-hidden="true" />
+            </button>
+            <div id={calendarId} className={cn("p-3 sm:p-4", !calendarOpen && "hidden xl:block")}>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h3 className="text-lg font-semibold capitalize" aria-live="polite">{format(month, "MMMM yyyy", { locale })}</h3>
+                <div className="flex">
+                  <Button variant="ghost" size="icon" aria-label={t("piano.previousMonth")} onClick={() => setMonth((value) => addMonths(value, -1))}><ChevronLeft aria-hidden="true" /></Button>
+                  <Button variant="ghost" size="icon" aria-label={t("piano.nextMonth")} onClick={() => setMonth((value) => addMonths(value, 1))}><ChevronRight aria-hidden="true" /></Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-7" aria-hidden="true">{weekDays.map((day, index) => <span key={index} className="py-2 text-center text-xs font-medium text-muted-foreground">{day}</span>)}</div>
+              <div className="grid grid-cols-7 gap-y-1">
+                {days.map((date) => {
+                  const key = dayKey(date);
+                  const count = entriesByKey.get(key)?.length ?? 0;
+                  return <button key={key} type="button" aria-pressed={selectedKey === key} aria-current={isToday(date) ? "date" : undefined}
+                    aria-label={`${format(date, "EEEE d MMMM yyyy", { locale })}, ${t("piano.eventCount", { count })}`}
+                    onClick={() => setSelectedKey((current) => current === key ? null : key)}
+                    className={cn("relative flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-button text-sm tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                      selectedKey === key ? "bg-primary font-semibold text-primary-foreground" : "hover:bg-secondary",
+                      !isSameMonth(date, month) && selectedKey !== key && "text-muted-foreground",
+                      isToday(date) && selectedKey !== key && "bg-secondary font-semibold underline underline-offset-4")}>{format(date, "d")}
+                    <span className={cn("h-1 w-1 rounded-full bg-current", !count && "invisible")} aria-hidden="true" />
+                  </button>;
+                })}
+              </div>
+            </div>
+          </section>
+          <section className="border-t border-border pt-5">
+            <h3 className="flex items-center gap-2 text-base font-semibold"><Sparkles className="h-4 w-4 text-cognitive" aria-hidden="true" />{t("piano.generate")}</h3>
+            <p className="mb-4 mt-2 text-sm leading-relaxed text-muted-foreground">{t("piano.generateHint")}</p>
+            <Button variant="outline" className="w-full whitespace-normal" onClick={onGeneratePlan} disabled={!showGeneratePlan || isGeneratingPlan} data-haptic="medium">
+              {isGeneratingPlan && <Loader2 className="animate-spin" aria-hidden="true" />}{t(isGeneratingPlan ? "piano.generating" : "piano.generate")}
+            </Button>
+          </section>
+        </aside>
+      </div>
+    </div>
   );
 }

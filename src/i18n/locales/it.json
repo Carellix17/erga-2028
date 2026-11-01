@@ -499,7 +499,21 @@
       "emptyTitle": "Giornata libera",
       "emptyHint": "Niente compiti né verifiche per questo giorno. Se ti va, aggiungine uno: alleggerisce i giorni pieni."
     },
-    "viewDiary": "Diario"
+    "viewDiary": "Diario",
+    "workspaceTitle": "Il tuo piano",
+    "workspaceSubtitle": "Prima ciò che hai davanti oggi. Poi il resto della settimana.",
+    "today": "Oggi",
+    "allUpcoming": "Tutti i prossimi",
+    "emptyDay": "Nessun impegno per questo giorno.",
+    "calendar": "Calendario",
+    "previousMonth": "Mese precedente",
+    "nextMonth": "Mese successivo",
+    "eventCount_one": "1 impegno",
+    "eventCount_other": "{{count}} impegni",
+    "editEntry": "Modifica {{title}}",
+    "deleteEntry": "Elimina {{title}}",
+    "generateHint": "Aggiungi verifiche e impegni. Erga propone come distribuire lo studio: controlli tu prima di confermare.",
+    "completed": "Completato"
   },
   "lesson": {
     "close": "Chiudi lezione",
@@ -535,7 +549,8 @@
     "aiError": "Non sono riuscito a generare la spiegazione. Riprova tra poco.",
     "aiReplyError": "Errore nella risposta. Riprova.",
     "resumeNotice": "Ripresa dalla slide {{number}} di {{total}}",
-    "restart": "Ricomincia"
+    "restart": "Ricomincia",
+    "sendMessage": "Invia messaggio"
   },
   "finalTest": {
     "title": "Test Finale",
@@ -604,5 +619,17 @@
     "changeModule": "Cambia modulo",
     "error": "Il tutor non è riuscito a preparare gli esercizi. Riprova.",
     "unavailable": "Palestra non disponibile adesso. Riprova tra poco."
+  },
+  "feedback": {
+    "title": "Feedback aptico",
+    "description": "Tocchi per selezioni e navigazione; ritmi distinti per conferme ed errori.",
+    "off": "Disattivato",
+    "subtle": "Leggero",
+    "standard": "Standard",
+    "strong": "Deciso",
+    "deviceNote": "Dove supportato dal browser. I livelli cambiano durata e ritmo: la forza del motore dipende dal dispositivo."
+  },
+  "studio": {
+    "materialsAndReading": "Materiali e lettura"
   }
 }

@@ -499,7 +499,21 @@
       "emptyTitle": "Free day",
       "emptyHint": "No homework or tests for this day. If you like, add one: it makes the busy days lighter."
     },
-    "viewDiary": "Diary"
+    "viewDiary": "Diary",
+    "workspaceTitle": "Your study plan",
+    "workspaceSubtitle": "Start with what is ahead today. Then see the rest of your week.",
+    "today": "Today",
+    "allUpcoming": "All upcoming",
+    "emptyDay": "Nothing scheduled for this day.",
+    "calendar": "Calendar",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "eventCount_one": "1 event",
+    "eventCount_other": "{{count}} events",
+    "editEntry": "Edit {{title}}",
+    "deleteEntry": "Delete {{title}}",
+    "generateHint": "Add tests and commitments. Erga suggests how to spread your study time. You review it before confirming.",
+    "completed": "Completed"
   },
   "lesson": {
     "close": "Close lesson",
@@ -535,7 +549,8 @@
     "aiError": "I couldn't generate the explanation. Try again shortly.",
     "aiReplyError": "Error in the reply. Try again.",
     "resumeNotice": "Resumed from slide {{number}} of {{total}}",
-    "restart": "Start over"
+    "restart": "Start over",
+    "sendMessage": "Send message"
   },
   "finalTest": {
     "title": "Final Test",
@@ -604,5 +619,17 @@
     "changeModule": "Change module",
     "error": "The tutor couldn't prepare the exercises. Try again.",
     "unavailable": "Gym unavailable right now. Try again soon."
+  },
+  "feedback": {
+    "title": "Haptic feedback",
+    "description": "Taps for selections and navigation; distinct patterns for confirmations and errors.",
+    "off": "Off",
+    "subtle": "Light",
+    "standard": "Standard",
+    "strong": "Firm",
+    "deviceNote": "Where supported by your browser. Levels change timing and rhythm; motor strength depends on your device."
+  },
+  "studio": {
+    "materialsAndReading": "Materials and reading"
   }
 }

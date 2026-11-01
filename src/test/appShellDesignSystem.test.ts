@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
-describe("design system v4 — app shell", () => {
+describe("design system v4.1 — app shell", () => {
   it("espone celle piatte, controlli 2px e pannelli 4px previsti da DESIGN.md", () => {
     const tailwind = read("tailwind.config.ts");
     const css = read("src/index.css");
@@ -59,37 +59,38 @@ describe("design system v4 — app shell", () => {
     expect(input).toContain("border-input");
   });
 
-  it("mantiene CTA vermiglia con ombra rigida 2px e testo carta", () => {
+  it("mantiene CTA vermiglia piatta con testo carta e senza spostamenti diagonali", () => {
     const button = read("src/components/ui/button.tsx");
     const css = read("src/index.css");
     const tailwind = read("tailwind.config.ts");
 
     expect(button).toMatch(/default:\s*"[^"\n]*bg-primary text-primary-foreground/);
-    // L'ombra rigida è un gettone del sistema, non un valore arbitrario inline:
-    // così lo stesso stacco 2px è condiviso da CTA, PathHero e ModulePath.
-    expect(button).toContain("shadow-primary-action");
+    // Flat actions retain the legacy shadow token only as a no-op alias.
     expect(tailwind).toContain('"primary-action": "var(--shadow-primary-action)"');
-    expect(css).toContain("--shadow-primary-action: 2px 2px 0 #11120D");
-    // Il valore inline precedente non deve tornare (bypasserebbe il gettone).
-    expect(button).not.toContain("shadow-[2px_2px_0px_#11120D]");
-    // In pressione lo stacco si riduce: il controllo si sposta di 1px e l'ombra sparisce.
-    expect(button).toContain("active:translate-x-px active:translate-y-px active:shadow-none");
+    expect(css).toContain("--shadow-primary-action: none");
+    expect(button).not.toContain("shadow-primary-action");
+    expect(button).not.toContain("active:translate-x");
+    expect(button).not.toContain("active:translate-y");
     expect(button).not.toMatch(/default:\s*"[^"]*rounded-pill/);
     expect(css).toContain("--primary: 11.6842 90.4762% 41.1765%");
     expect(css).toContain("--primary-deep: 11.2727 92.1788% 35.0980%");
     expect(css).toContain("--primary-foreground: var(--accent-light)");
   });
 
-  it("nav mobile: dock Olive Drab da 64px con safe area e quattro destinazioni", () => {
+  it("nav mobile: barra attaccata da 64px con safe area e quattro destinazioni", () => {
     const nav = read("src/components/layout/BottomNav.tsx");
 
     expect(nav).not.toContain("from-black");
     expect(nav).not.toContain("bg-gradient-to-t");
     expect(nav).toContain("env(safe-area-inset-bottom");
-    expect(nav).toContain("rounded-nav");
+    expect(nav).toContain("fixed inset-x-0 bottom-0");
+    expect(nav).toContain("border-t border-border bg-sheet");
+    expect(nav).not.toContain("pointer-events-none md:hidden");
     expect(nav).toContain("h-16");
     expect(nav).toContain("grid-cols-4");
-    expect(nav).toContain("stiffness: 400, damping: 30");
+    expect(nav).toContain("app-nav-indicator");
+    expect(nav).not.toContain("ResizeObserver");
+    expect(read("src/index.css")).toContain(".app-nav-indicator { transition: transform");
     expect(nav).toContain('{ id: "core" as Tab, i18nKey: "nav.core"');
     expect(nav).toContain("aria-current");
     expect(nav).not.toContain("layoutId=");
@@ -97,8 +98,9 @@ describe("design system v4 — app shell", () => {
 
   it("mantiene la rail tablet e la sidebar desktop senza cambiare la navigazione", () => {
     const nav = read("src/components/layout/BottomNav.tsx");
-    expect(nav).toContain("md:flex md:h-full md:w-[84px]");
-    expect(nav).toContain("lg:w-64");
+    expect(nav).toContain("w-[84px]");
+    expect(nav).toContain("md:flex");
+    expect(nav).toContain("lg:w-56");
     expect(nav).not.toContain("xl:w-64");
   });
 

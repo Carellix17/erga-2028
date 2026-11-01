@@ -187,14 +187,14 @@
     --radius-full: 9999px;
     --radius: 2px;
 
-    /* Flat surfaces; only primary actions get the hard offset from DESIGN.md. */
+    /* Flat, squared controls: shape and colour carry hierarchy. */
     --shadow-level-0: none;
     --shadow-level-1: none;
     --shadow-level-2: none;
     --shadow-level-3: none;
     --shadow-level-4: none;
     --shadow-level-5: none;
-    --shadow-primary-action: 2px 2px 0 #11120D;
+    --shadow-primary-action: none;
     --shadow-tactile: none;
     --shadow-card-active: none;
     --shadow-hero-card: none;
@@ -1335,7 +1335,7 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .lesson-reader { background: hsl(var(--sheet)); }
 .lesson-paper { font-family: 'Ubuntu Sans', system-ui, sans-serif; font-size: 17px; line-height: 1.65; }
 .lesson-paper :where(h1,h2,h3,.text-scene-title,.lesson-scene-title) { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; letter-spacing: -0.02em; line-height: 1.08; }
-.lesson-paper :where(blockquote,pre,.katex-display) { border-left: 4px solid hsl(var(--ink)); background: hsl(var(--background)); padding: 16px; }
+.lesson-paper :where(blockquote,pre,.katex-display) { border-left: 1px solid hsl(var(--line)); background: hsl(var(--background)); padding: 16px; }
 .lesson-paper .prose { font-size: 17px; line-height: 1.65; }
 .lesson-paper .lesson-scene-title { font-size: clamp(1.75rem, 3vw, 2.5rem); }
 .lesson-paper .lesson-scene-title :where(p,strong) { font-family: inherit; font-weight: 400; line-height: 1.08; }
@@ -1350,3 +1350,24 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .material-panel button.bg-primary { padding-inline: 12px; }
 @media (prefers-reduced-motion: reduce) { .study-workspace *, .cognitive-grid * { scroll-behavior:auto; } }
 
+
+/* Attached navigation: a single, interruptible movement; CSS respects both preferences. */
+.app-nav-indicator { transition: transform var(--motion-standard) var(--ease-out); }
+.safe-area-top { padding-top: max(1rem, env(safe-area-inset-top, 0px)); }
+.safe-area-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); }
+.lesson-paper { overscroll-behavior: contain; scrollbar-gutter: stable; }
+.lesson-step { transition: opacity var(--motion-micro) var(--ease-out), transform var(--motion-micro) var(--ease-out); }
+.lesson-step[data-leaving="true"] { opacity: 0; transform: translateX(-8px); }
+.lesson-step[data-direction="back"][data-leaving="true"] { transform: translateX(8px); }
+.lesson-step-enter { animation: lesson-step-enter var(--motion-standard) var(--ease-out); }
+@keyframes lesson-step-enter { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
+.lesson-step-enter[data-direction="back"] { animation-name: lesson-step-back; }
+@keyframes lesson-step-back { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+.plan-agenda-enter { animation: plan-agenda-enter var(--motion-standard) var(--ease-out); }
+@keyframes plan-agenda-enter { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .app-nav-indicator, .lesson-step { transition: none; }
+  .lesson-step-enter, .plan-agenda-enter { animation: none; }
+}
+.reduce-motion .app-nav-indicator, .reduce-motion .lesson-step { transition: none; }
+.reduce-motion .lesson-step-enter, .reduce-motion .plan-agenda-enter { animation: none; }

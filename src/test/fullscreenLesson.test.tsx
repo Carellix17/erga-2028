@@ -84,6 +84,24 @@ describe("P50 lettore a schermo intero", () => {
     expect(dialog.getAttribute("aria-modal")).toBe("true");
   });
 
+  it("porta il lettore fuori dalla shell, trattiene il focus e lo restituisce alla chiusura", async () => {
+    const opener = document.createElement("button");
+    opener.textContent = "Apri lezione";
+    document.body.append(opener);
+    opener.focus();
+    const { unmount, container } = render(
+      <FullscreenLesson lesson={lesson} lessonNumber={1} totalLessons={4} onClose={vi.fn()} onComplete={vi.fn()} isLastLesson={false} />,
+    );
+    const dialog = screen.getByRole("dialog", { name: /La fotosintesi/ });
+    expect(container.contains(dialog)).toBe(false);
+    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+    opener.focus();
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    unmount();
+    await waitFor(() => expect(opener).toHaveFocus());
+    opener.remove();
+  });
+
   it("mostra l'icona sparkles e la scritta Spiegami senza cambiare l'aria-label", () => {
     renderReader();
     const assistant = screen.getByRole("button", { name: "Spiegami meglio questa slide" });

@@ -127,9 +127,6 @@ export function StudioView({
   const immersiveSubView = studioSubView !== null;
   // 🧭 P38: anche il Livello 2 (percorso a ramo) è full-screen → navbar nascosta.
   const hideNavbar = immersiveSubView || (!embeddedReader && courseViewState === "branch");
-  useEffect(() => {
-    onFullscreenChange?.(hideNavbar);
-  }, [hideNavbar, onFullscreenChange]);
   // Se la stanza si smonta con la barra nascosta (es. cambio scheda forzato
   // dagli eventi dell'agente), la navigazione torna sempre visibile.
   useEffect(() => () => {

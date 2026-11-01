@@ -536,7 +536,7 @@ export function PathHero({
                   onClick={() => { triggerLight(); onResume?.(); }}
                   disabled={!canResume}
                   aria-label="Riprendi lezione"
-                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-button border border-input bg-primary px-5 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-primary-action transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:translate-x-px active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-button border border-input bg-primary px-5 font-sans text-sm font-semibold text-primary-foreground  transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
                 >
                   <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Riprendi lezione

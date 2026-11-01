@@ -1,3 +1,4 @@
+import { triggerHaptic } from "@/utils/haptics";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -32,13 +33,7 @@ interface PianoViewProps {
 
 interface PlanSuggestionData { explanation: string; studySessions: { subject: string; title: string; date: string; time?: string; }[]; }
 
-/**
- * 🗓️ La stanza Piano: il calendario degli appuntamenti dello studente.
- * Un'unica superficie scura con il mese corrente (dati dall'orologio di
- * sistema), il conteggio degli eventi per giorno e, sotto la griglia,
- * "Aggiungi evento". "Genera piano di studio" compare solo dopo che lo
- * studente ha aggiunto un evento in questa sessione.
- */
+/** Agenda e scadenze prima del mese; proposte AI sempre revisionabili. */
 export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [editingEval, setEditingEval] = useState<Evaluation | null>(null);
@@ -47,12 +42,14 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<StudyEvent | null>(null);
   const [evalToDelete, setEvalToDelete] = useState<Evaluation | null>(null);
-  /** True dopo il primo evento aggiunto in questa sessione: svela "Genera piano di studio". */
-  const [hasAddedEvent, setHasAddedEvent] = useState(false);
   // Elementi che si stanno "dissolvendo" prima dell'eliminazione vera
   const [exitingIds, setExitingIds] = useState<string[]>([]);
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const notify = (options: Parameters<typeof toast>[0]) => {
+    triggerHaptic(options.variant === "destructive" ? "error" : "success");
+    return toast(options);
+  };
   const { t } = useTranslation();
 
   const eventsQuery = useStudyEventsQuery(hasFiles);
@@ -82,8 +79,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || t("piano.errorGenerate"));
       setSuggestion(data.plan);
+      triggerHaptic("success");
     } catch (error) { console.error("Error generating plan:", error);
-      toast({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorGenerate"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorGenerate"), variant: "destructive" });
     } finally { setIsGeneratingPlan(false); }
   };
 
@@ -94,10 +92,10 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
         subject: s.subject, title: s.title, date: s.date, time: s.time, type: "study" as const,
       }));
       await addEvents.mutateAsync(studyEvents);
-      toast({ title: t("piano.toastAccepted"), description: t("piano.toastAcceptedDesc") });
+      notify({ title: t("piano.toastAccepted"), description: t("piano.toastAcceptedDesc") });
       setSuggestion(null);
     } catch (error) {
-      toast({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorSave"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorSave"), variant: "destructive" });
     }
   };
 
@@ -118,9 +116,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     setEventToDelete(null); // chiudi subito: l'elemento si dissolve nella lista
     try {
       await withExit([ev.id], () => deleteEvent.mutateAsync(ev.id));
-      toast({ title: t("piano.toastEventDeleted"), description: t("piano.toastRemovedFromCalendar", { title: ev.title }) });
+      notify({ title: t("piano.toastEventDeleted"), description: t("piano.toastRemovedFromCalendar", { title: ev.title }) });
     } catch (error) {
-      toast({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorDelete"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorDelete"), variant: "destructive" });
     }
   };
 
@@ -130,9 +128,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
     setEvalToDelete(null);
     try {
       await withExit([ev.id], () => deleteEvaluation.mutateAsync(ev.id));
-      toast({ title: t("piano.toastEvalDeleted") });
+      notify({ title: t("piano.toastEvalDeleted") });
     } catch (err) {
-      toast({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorDelete"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorDelete"), variant: "destructive" });
     }
   };
 
@@ -148,8 +146,7 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
           time: input.startTime ?? undefined,
           type: "assignment",
         }]);
-        toast({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
-        setHasAddedEvent(true);
+        notify({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
         return;
       }
       // Solo le colonne realmente presenti in `evaluations`: i campi di sola UI
@@ -157,14 +154,13 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
       const { category: _category, startTime: _startTime, endTime: _endTime, ...payload } = input;
       if (editingId) {
         await updateEvaluation.mutateAsync({ id: editingId, ...payload });
-        toast({ title: t("piano.toastSaved") });
+        notify({ title: t("piano.toastSaved") });
       } else {
         await addEvaluation.mutateAsync(payload);
-        toast({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
-        setHasAddedEvent(true);
+        notify({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
       }
     } catch (err) {
-      toast({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorSave"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorSave"), variant: "destructive" });
       throw err;
     }
   };
@@ -172,9 +168,9 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   const handleSaveStudyEvent = async (input: Parameters<typeof updateEvent.mutateAsync>[0]) => {
     try {
       await updateEvent.mutateAsync(input);
-      toast({ title: t("piano.toastSessionUpdated") });
+      notify({ title: t("piano.toastSessionUpdated") });
     } catch (err) {
-      toast({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorEdit"), variant: "destructive" });
+      notify({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorEdit"), variant: "destructive" });
       throw err;
     }
   };
@@ -187,20 +183,20 @@ export function PianoView({ hasFiles, onUploadClick }: PianoViewProps) {
   if (isLoading) return null;
 
   return (
-    <div className="p-4 pb-28 space-y-4 animate-fade-up min-w-0 overflow-x-clip">
+    <div className="min-w-0 space-y-6">
       {suggestion && (
         <PlanSuggestion explanation={suggestion.explanation} onAccept={handleAcceptPlan} onDecline={() => setSuggestion(null)} />
       )}
 
-      {/* Superficie principale Olive Drab della vista Piano. */}
-      <section className="rounded-card border border-border bg-card p-4 shadow-level-1 sm:p-6" aria-label={t("piano.upcoming")}>
+      {/* Agenda e strumenti condividono i token del tema. */}
+      <section className="min-w-0" aria-label={t("piano.workspaceTitle")}>
         <AppointmentsCalendar
           evaluations={evaluations}
           events={events}
           subjects={userSubjects}
           exitingIds={exitingIds}
           onAddEvent={() => { setEditingEval(null); setShowAddSheet(true); }}
-          showGeneratePlan={hasAddedEvent}
+          showGeneratePlan={events.length > 0 || evaluations.some((evaluation) => !evaluation.is_completed)}
           onGeneratePlan={generatePlan}
           isGeneratingPlan={isGeneratingPlan}
           onEditEvaluation={setEditingEval}

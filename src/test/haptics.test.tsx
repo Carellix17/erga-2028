@@ -11,6 +11,7 @@ import { getHapticPattern, supportsHaptics, triggerHaptic } from "@/utils/haptic
 const startSession = vi.fn();
 const openSetup = vi.fn();
 const vibrateMock = vi.fn(() => true);
+let clock = 0;
 
 vi.mock("@/hooks/useHomeDashboard", async () => {
   const actual = await vi.importActual<typeof import("@/hooks/useHomeDashboard")>("@/hooks/useHomeDashboard");
@@ -86,6 +87,9 @@ function mockDashboard(data: HomeDashboardData | undefined = dashboardData) {
 describe("haptics", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
+    clock += 1000;
+    vi.spyOn(performance, "now").mockImplementation(() => clock);
     mockDashboard();
     Object.defineProperty(window.navigator, "vibrate", {
       configurable: true,
@@ -94,11 +98,11 @@ describe("haptics", () => {
   });
 
   it("espone pattern coerenti e rileva il supporto del browser", () => {
-    expect(getHapticPattern("light")).toBe(10);
-    expect(getHapticPattern("medium")).toBe(25);
-    expect(getHapticPattern("success")).toEqual([10, 40, 10]);
-    expect(getHapticPattern("warning")).toEqual([20, 60, 20]);
-    expect(getHapticPattern("error")).toEqual([50, 30, 50, 30, 50]);
+    expect(getHapticPattern("light")).toBe(20);
+    expect(getHapticPattern("medium")).toBe(36);
+    expect(getHapticPattern("success")).toEqual([24, 50, 40]);
+    expect(getHapticPattern("warning")).toEqual([36, 65, 36]);
+    expect(getHapticPattern("error")).toEqual([48, 65, 48]);
     expect(supportsHaptics()).toBe(true);
   });
 
@@ -122,7 +126,7 @@ describe("haptics", () => {
     );
 
     fireEvent.click(screen.getByRole("link", { name: /Generale/i }));
-    expect(vibrateMock).toHaveBeenCalledWith(10);
+    expect(vibrateMock).toHaveBeenCalledWith(20);
   });
 
   it("applica feedback light alla CTA upload della Home vuota senza duplicare il pulsante", () => {
@@ -130,7 +134,7 @@ describe("haptics", () => {
 
     expect(screen.queryByRole("button", { name: "Carica materiale" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Aggiungi materiale" }));
-    expect(vibrateMock).toHaveBeenCalledWith(10);
+    expect(vibrateMock).toHaveBeenCalledWith(20);
     expect(callbacks.onUpload).toHaveBeenCalled();
   });
 
@@ -139,7 +143,7 @@ describe("haptics", () => {
 
     // Stato vuoto: la CTA "Organizza la settimana" porta al Piano con feedback light
     fireEvent.click(screen.getByText(/organizza la settimana/i));
-    expect(vibrateMock).toHaveBeenCalledWith(10);
+    expect(vibrateMock).toHaveBeenCalledWith(20);
     expect(callbacks.onOpenPlan).toHaveBeenCalled();
   });
 });

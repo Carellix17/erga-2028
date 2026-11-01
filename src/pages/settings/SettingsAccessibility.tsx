@@ -1,4 +1,7 @@
-import { Type, Contrast, Wind, Volume2 } from "lucide-react";
+import { useState } from "react";
+import { readHapticPreference, setHapticPreference, triggerHaptic, type HapticPreference } from "@/utils/haptics";
+import { useTranslation } from "react-i18next";
+import { Type, Contrast, Wind, Volume2, Vibrate } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
 import { PremiumToggle } from "@/components/ui/bouncy-toggle";
 import { useAccessibility, type TextScale } from "@/contexts/AccessibilityContext";
@@ -32,6 +35,8 @@ function Row({
 }
 
 export default function SettingsAccessibility() {
+  const { t } = useTranslation();
+  const [haptics, setHaptics] = useState(readHapticPreference);
   const { settings, update } = useAccessibility();
   const { triggerLight } = useHaptics();
 
@@ -92,6 +97,19 @@ export default function SettingsAccessibility() {
               aria-label="Riduci le animazioni"
             />
           </div>
+        </Row>
+
+        <Row icon={Vibrate} title={t("feedback.title")} desc={t("feedback.description")}>
+          <label htmlFor="haptic-feedback" className="sr-only">{t("feedback.title")}</label>
+          <select id="haptic-feedback" value={haptics} onChange={(event) => {
+            const value = event.target.value as HapticPreference;
+            setHapticPreference(value);
+            setHaptics(value);
+            triggerHaptic("medium");
+          }} className="min-h-12 w-full rounded-control border border-input bg-sheet px-3 text-base text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            {(["off", "subtle", "standard", "strong"] as const).map((value) => <option key={value} value={value}>{t(`feedback.${value}`)}</option>)}
+          </select>
+          <p className="mt-2 text-sm text-muted-foreground">{t("feedback.deviceNote")}</p>
         </Row>
 
         <Row icon={Volume2} title="Lettura vocale" desc="Attiva di default la voce nelle interrogazioni e nelle lezioni.">
