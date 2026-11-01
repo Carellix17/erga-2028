@@ -8,6 +8,7 @@ import type { StudyEventSource, StudyEventStatus } from "@/lib/planner/types";
 
 export interface PlannerEntry {
   id: string;
+  kind: "evaluation" | "study" | "assignment" | "personal";
   date: Date;
   time?: string;
   title: string;
@@ -55,7 +56,7 @@ export function plannerEntries(
       const time = isValid(date) && event.date.includes("T") ? format(date, "HH:mm") : undefined;
       const linked = (event.topic_type === "linked" ? courses.find((course) => course.id === event.topic_id) : undefined) ?? subjectCourse(subject?.name);
       return {
-        id: event.id, date: startOfDay(date), time: time === "12:00" ? undefined : time,
+        id: event.id, kind: "evaluation", date: startOfDay(date), time: time === "12:00" ? undefined : time,
         title: event.title, subject: subject?.name ?? null,
         coverName: linked ? cleanCourseName(linked.file_name) : subject?.name ?? event.title,
         customColor: linked ? undefined : subject?.color, important: event.type !== "compito", completed: !!event.is_completed,
@@ -65,8 +66,15 @@ export function plannerEntries(
     ...events.map((event): PlannerEntry => {
       const subject = subjects.find((item) => item.name.toLocaleLowerCase() === event.subject.toLocaleLowerCase());
       const course = subjectCourse(subject?.name ?? event.subject);
+      const kind: PlannerEntry["kind"] = event.event_type === "study"
+        ? "study"
+        : event.event_type === "test"
+          ? "evaluation"
+          : event.event_type === "assignment" && event.subject.trim().toLocaleLowerCase() === "altro"
+            ? "personal"
+            : "assignment";
       return {
-        id: event.id, date: parseISO(event.event_date.slice(0, 10)), time: validEventTime(event.event_time),
+        id: event.id, kind, date: parseISO(event.event_date.slice(0, 10)), time: validEventTime(event.event_time),
         title: event.title, subject: event.subject && event.subject !== "Altro" ? event.subject : null,
         coverName: course ? cleanCourseName(course.file_name) : subject?.name ?? event.subject ?? event.title, customColor: course ? undefined : subject?.color,
         important: event.event_type === "test",

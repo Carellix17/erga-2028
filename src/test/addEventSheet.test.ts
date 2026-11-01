@@ -62,6 +62,22 @@ describe("AddEventSheet — densità P47", () => {
     expect(SHEET).not.toMatch(/endTime"\)\} <span[^>]*>\(opzionale\)/);
   });
 
+  it("mantiene in Altro Note e ora di fine opzionali e mostra l'errore sotto il campo", () => {
+    const altroBlock = SHEET.slice(
+      SHEET.indexOf('{category === "altro" && ('),
+      SHEET.indexOf('<Button type="submit"')
+    );
+    expect(altroBlock).toContain("{timeRange(false)}");
+    expect(altroBlock.match(/t\("piano\.sheet\.notes"\)/g)).toHaveLength(1);
+    expect(altroBlock).not.toContain("piano.sheet.optional");
+    expect(altroBlock).toContain('role="alert"');
+    expect(SHEET).toContain('setEndTime("")');
+    expect(SHEET).toContain("validateAltroTimes");
+    expect(SHEET).toContain("{timeRange(true)}");
+    expect(IT).toContain('"notes": "Note (opzionale)"');
+    expect(EN).toContain('"notes": "Notes (optional)"');
+  });
+
   it("valida: fine mancante alla creazione e fine <= inizio", () => {
     expect(SHEET).toContain("endTimeRequired");
     expect(SHEET).toContain("endTimeAfterStart");

@@ -146,12 +146,16 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       if (input.category === "altro" && !editingId) {
         // P46: impegno extra-scolastico → study_events (colonne esistenti,
         // event_type 'assignment' e materia "Altro": nessuna migrazione).
+        const notes = input.description?.trim();
+        const endTime = input.endTime?.trim();
         await addEvents.mutateAsync([{
           subject: "Altro",
           title: input.title,
           date: format(parseISO(input.date), "yyyy-MM-dd"),
           time: input.startTime ?? undefined,
           type: "assignment",
+          ...(notes ? { notes } : {}),
+          ...(endTime ? { endTime } : {}),
         }]);
         notify({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
         return;

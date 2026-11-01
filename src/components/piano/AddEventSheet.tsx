@@ -55,7 +55,7 @@ export interface EvalFormInput {
   goal?: number | null;
   /** P46: "altro" = impegno extra-scolastico (salvato come study_event). */
   category?: Category;
-  /** "HH:MM" di inizio e fine (la fine va in descrizione: il DB ha un solo orario). */
+  /** "HH:MM" di inizio/fine; per Altro l'ora di fine si salva come campo separato. */
   startTime?: string | null;
   endTime?: string | null;
 }
@@ -122,7 +122,7 @@ export function AddEventSheet({
   const [goal, setGoal] = useState<number | null>(null);
   const [showNotes, setShowNotes] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  /** P47 — eventuale errore sugli orari della verifica (mostrato sotto il campo Ora fine). */
+  /** Errore dell'intervallo orario, mostrato sotto il campo Ora fine. */
   const [endError, setEndError] = useState<string | null>(null);
 
   const { data: subjects = [] } = useUserSubjects();
@@ -166,7 +166,7 @@ export function AddEventSheet({
     setEndError(null);
   }, [open, initial, presetCategory, presetDate]);
 
-  /** Descrizione + eventuale "fino alle" (il DB ha un solo orario per evento). */
+  /** Per le verifiche, preserva l'ora di fine nella descrizione: evaluations ha un solo campo orario. */
   const descriptionWithEnd = () => {
     const base = description.trim();
     if (!endTime || endTime === time || category === "compito") return base || undefined;
@@ -183,6 +183,11 @@ export function AddEventSheet({
    */
   const validateVerificaTimes = (): string | null => {
     if (!endTime && !editingId) return t("piano.sheet.endTimeRequired");
+    if (time && endTime && endTime <= time) return t("piano.sheet.endTimeAfterStart");
+    return null;
+  };
+
+  const validateAltroTimes = (): string | null => {
     if (time && endTime && endTime <= time) return t("piano.sheet.endTimeAfterStart");
     return null;
   };
@@ -204,6 +209,12 @@ export function AddEventSheet({
         setEndError(timeError);
         return;
       }
+    } else if (category === "altro") {
+      const timeError = validateAltroTimes();
+      if (timeError) {
+        setEndError(timeError);
+        return;
+      }
     }
     setSubmitting(true);
     try {
@@ -212,7 +223,7 @@ export function AddEventSheet({
           type: "compito", // mai usato: il campo category="altro" instrada su study_events
           category: "altro",
           title: title.trim(),
-          description: descriptionWithEnd(),
+          description: description.trim() || undefined,
           date: new Date(`${date}T${time ? `${time}:00` : "12:00:00"}`).toISOString(),
           subject_id: null,
           topic_type: "free",
@@ -345,8 +356,8 @@ export function AddEventSheet({
             setEndTime(e.target.value);
             setEndError(null);
           }}
-          aria-invalid={requireEnd && !!endError}
-          aria-describedby={requireEnd && endError ? ids.endTimeError : undefined}
+          aria-invalid={!!endError}
+          aria-describedby={endError ? ids.endTimeError : undefined}
         />
       </div>
     </div>
@@ -371,7 +382,10 @@ export function AddEventSheet({
               { value: "altro", label: t("piano.sheet.altro") },
             ]}
             value={category}
-            onChange={setCategory}
+            onChange={(nextCategory) => {
+              setCategory(nextCategory);
+              setEndError(null);
+            }}
             variant="track"
           />
 
@@ -557,12 +571,17 @@ export function AddEventSheet({
               </div>
               <div className="space-y-2">
                 <Label htmlFor={ids.altroNotes} className="label-large">
-                  {t("piano.sheet.notes")} <span className="text-muted-foreground font-normal">({t("piano.sheet.optional").replace(/[()]/g, "")})</span>
+                  {t("piano.sheet.notes")}
                 </Label>
                 <Textarea id={ids.altroNotes} rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("piano.sheet.notesPlaceholder")} />
               </div>
               {dateField}
               {timeRange(false)}
+              {endError && (
+                <p id={ids.endTimeError} role="alert" className="-mt-2 text-xs font-medium text-destructive">
+                  {endError}
+                </p>
+              )}
             </>
           )}
 

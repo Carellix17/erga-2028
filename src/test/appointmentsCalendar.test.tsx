@@ -1,10 +1,37 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { addDays, addMonths, format } from "date-fns";
 import { it as italianLocale } from "date-fns/locale";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { AppointmentsCalendar } from "@/components/piano/AppointmentsCalendar";
+import { PianoView } from "@/components/piano/PianoView";
 import type { StudyEvent } from "@/hooks/useStudyEvents";
+
+const { addStudyEventsMutateAsync, toast } = vi.hoisted(() => ({
+  addStudyEventsMutateAsync: vi.fn(),
+  toast: vi.fn(),
+}));
+
+vi.mock("@/hooks/useStudyEvents", () => ({
+  useStudyEventsQuery: () => ({ data: [], isLoading: false, isError: false, refetch: vi.fn() }),
+  useAddStudyEvents: () => ({ mutateAsync: addStudyEventsMutateAsync }),
+  useDeleteStudyEvent: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateStudyEvent: () => ({ mutateAsync: vi.fn() }),
+}));
+vi.mock("@/hooks/useEvaluations", () => ({
+  useEvaluations: () => ({ data: [], isLoading: false, isError: false, refetch: vi.fn() }),
+  useAddEvaluation: () => ({ mutateAsync: vi.fn() }),
+  useUpdateEvaluation: () => ({ mutateAsync: vi.fn() }),
+  useDeleteEvaluation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ currentUser: null }) }));
+vi.mock("@/hooks/useUserSubjects", () => ({ useUserSubjects: () => ({ data: [] }) }));
+vi.mock("@/hooks/useFileContexts", () => ({ useFileContextsQuery: () => ({ data: [] }) }));
+vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast }) }));
+vi.mock("@/hooks/usePrefersReducedMotion", () => ({ usePrefersReducedMotion: () => false }));
+vi.mock("@/hooks/useDelayedLoading", () => ({ useDelayedLoading: () => false }));
+vi.mock("@/utils/haptics", () => ({ triggerHaptic: vi.fn() }));
+vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { getSession: vi.fn() } } }));
 
 const capitalizeFirstLetter = (value: string) => value.charAt(0).toLocaleUpperCase() + value.slice(1);
 const today = new Date();
@@ -22,6 +49,11 @@ const props = {
 };
 const Location = () => <output data-testid="location">{useLocation().search}</output>;
 const mount = (overrides = {}, url = "/app?tab=piano") => render(<MemoryRouter initialEntries={[url]}><AppointmentsCalendar {...props} {...overrides} /><Location /></MemoryRouter>);
+const mountPiano = () => render(<MemoryRouter initialEntries={["/app?tab=piano"]}><PianoView hasFiles={false} onUploadClick={vi.fn()} /></MemoryRouter>);
+const openAltroSheet = async () => {
+  fireEvent.click(screen.getByRole("button", { name: "Aggiungi evento" }));
+  fireEvent.click(await screen.findByRole("radio", { name: "Altro" }));
+};
 beforeEach(() => { vi.spyOn(window, "scrollTo").mockImplementation(() => {}); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.clearAllMocks(); });
 
@@ -99,6 +131,52 @@ describe("calendar and daily schedule", () => {
     fireEvent.click(screen.getByRole("button", { name: "Elimina Verifica di italiano" }));
     expect(props.onDeleteStudyEvent).toHaveBeenCalledWith(events[3]);
   });
+  it("saves Altro notes and end time, rejects an end time at or before the start, and avoids duplicate optional labels", async () => {
+    addStudyEventsMutateAsync.mockResolvedValue({});
+    mountPiano();
+    await openAltroSheet();
+
+    const endTime = screen.getByLabelText("Ora fine (opzionale)");
+    expect(endTime).toHaveValue("");
+    expect(screen.getByLabelText("Note (opzionale)")).toBeVisible();
+    fireEvent.change(screen.getByLabelText("Titolo"), { target: { value: "Allenamento pallavolo" } });
+    fireEvent.change(screen.getByLabelText("Data"), { target: { value: "2026-11-02" } });
+    fireEvent.change(screen.getByLabelText("Ora inizio"), { target: { value: "17:00" } });
+    fireEvent.change(endTime, { target: { value: "16:00" } });
+    fireEvent.change(screen.getByLabelText("Note (opzionale)"), { target: { value: "  Portare scarpe  " } });
+    fireEvent.click(screen.getByRole("button", { name: "Salva evento" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent("L'ora di fine deve essere dopo l'ora di inizio");
+    expect(addStudyEventsMutateAsync).not.toHaveBeenCalled();
+
+    fireEvent.change(endTime, { target: { value: "18:30" } });
+    fireEvent.click(screen.getByRole("button", { name: "Salva evento" }));
+    await waitFor(() => expect(addStudyEventsMutateAsync).toHaveBeenCalledTimes(1));
+    expect(addStudyEventsMutateAsync.mock.calls[0][0]).toEqual([{
+      subject: "Altro",
+      title: "Allenamento pallavolo",
+      date: "2026-11-02",
+      time: "17:00",
+      type: "assignment",
+      notes: "Portare scarpe",
+      endTime: "18:30",
+    }]);
+  });
+
+  it("omits blank notes and end time from the Altro add payload", async () => {
+    addStudyEventsMutateAsync.mockResolvedValue({});
+    mountPiano();
+    await openAltroSheet();
+    fireEvent.change(screen.getByLabelText("Titolo"), { target: { value: "Cena" } });
+    fireEvent.change(screen.getByLabelText("Data"), { target: { value: "2026-11-03" } });
+    fireEvent.click(screen.getByRole("button", { name: "Salva evento" }));
+
+    await waitFor(() => expect(addStudyEventsMutateAsync).toHaveBeenCalledTimes(1));
+    const [event] = addStudyEventsMutateAsync.mock.calls[0][0];
+    expect(event).not.toHaveProperty("notes");
+    expect(event).not.toHaveProperty("endTime");
+  });
+
   it("supports empty calendars, empty days and direct daily URLs", () => {
     mount({ events: [], showGeneratePlan: false }, `/app?tab=piano&planDay=${key}`);
     expect(screen.getByText("Nessun impegno per questo giorno.")).toBeVisible();

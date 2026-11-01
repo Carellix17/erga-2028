@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -22,6 +23,8 @@ export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEv
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [notes, setNotes] = useState("");
   const [type, setType] = useState<StudyEvent["event_type"]>("study");
   const [submitting, setSubmitting] = useState(false);
 
@@ -31,6 +34,8 @@ export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEv
     setTitle(event.title);
     setDate(event.event_date ? event.event_date.slice(0, 10) : "");
     setTime(event.event_time ?? "");
+    setEndTime(event.end_time ?? "");
+    setNotes(event.notes ?? "");
     setType(event.event_type);
   }, [event]);
 
@@ -46,6 +51,8 @@ export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEv
         date,
         time: time || null,
         type,
+        ...(endTime.trim() ? { endTime: endTime.trim() } : {}),
+        ...(notes.trim() ? { notes: notes.trim() } : {}),
       });
       onOpenChange(false);
     } finally {
@@ -99,6 +106,16 @@ export function EditStudyEventSheet({ event, onOpenChange, onSave }: EditStudyEv
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="se-end-time" className="label-large">{t("piano.sheet.endTime")} {t("piano.sheet.optional")}</Label>
+            <Input id="se-end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="se-notes" className="label-large">{t("piano.sheet.notes")}</Label>
+            <Textarea id="se-notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("piano.sheet.notesPlaceholder")} />
           </div>
 
           <Button type="submit" className="w-full" size="lg" disabled={submitting || !title.trim() || !date}>
