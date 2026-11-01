@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { plannerEntries, validEventTime } from "@/lib/plannerEntries";
 import type { Evaluation } from "@/hooks/useEvaluations";
+import type { StudyEvent } from "@/hooks/useStudyEvents";
 import { resolveCourseCover } from "@/lib/courseIdentity";
 
 const evaluation = (overrides: Partial<Evaluation> = {}): Evaluation => ({
@@ -30,6 +31,66 @@ describe("planner data used by both month and day", () => {
     const entries = plannerEntries([evaluation(), evaluation({ id: "hw", type: "compito" }), evaluation({ id: "done", is_completed: true }), evaluation({ id: "bad", date: "bad" })], [], subjects);
     expect(entries).toHaveLength(3);
     expect(entries.filter((entry) => entry.important && !entry.completed).map((entry) => entry.id)).toEqual(["exam"]);
+  });
+  it("maps extended study-event fields and treats either completion marker as done", () => {
+    const events: StudyEvent[] = [
+      {
+        id: "slot-done",
+        subject: "Fisica",
+        title: "Ripasso",
+        event_date: "2026-11-06",
+        event_time: "15:00",
+        event_type: "study",
+        status: "done",
+        is_completed: false,
+        end_time: "16:00",
+        notes: "Capitolo 2",
+        context_id: "context-id",
+        lesson_from: 1,
+        lesson_to: 2,
+        source: "auto",
+        move_count: 3,
+        original_date: "2026-11-05",
+        original_time: "14:00",
+        locked: true,
+        version: 4,
+      },
+      {
+        id: "legacy-done",
+        subject: "Fisica",
+        title: "Esercizi",
+        event_date: "2026-11-07",
+        event_type: "study",
+        status: "partial",
+        is_completed: true,
+      },
+      {
+        id: "not-done",
+        subject: "Fisica",
+        title: "Lettura",
+        event_date: "2026-11-08",
+        event_type: "study",
+        status: "planned",
+        is_completed: false,
+      },
+    ];
+    const entries = plannerEntries([], events, subjects);
+
+    expect(entries.map((entry) => entry.completed)).toEqual([true, true, false]);
+    expect(entries[0]).toMatchObject({
+      endTime: "16:00",
+      notes: "Capitolo 2",
+      status: "done",
+      contextId: "context-id",
+      lessonFrom: 1,
+      lessonTo: 2,
+      source: "auto",
+      moveCount: 3,
+      originalDate: "2026-11-05",
+      originalTime: "14:00",
+      locked: true,
+      version: 4,
+    });
   });
   it("does not put malformed times on the hourly grid", () => {
     expect(validEventTime("15:30:00")).toBe("15:30");
