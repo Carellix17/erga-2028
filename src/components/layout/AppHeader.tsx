@@ -56,7 +56,7 @@ export function AppHeader({
       aria-label={t("header.subscriptionPlan", { plan: tierLabel })}
       title={t("header.subscriptionPlan", { plan: tierLabel })}
       className={cn(
-        "flex h-8 shrink-0 items-center rounded-pill border border-border bg-card px-3 text-xs font-semibold text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "flex h-11 shrink-0 items-center rounded-pill border border-border bg-card px-3 text-xs font-semibold text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         "md:hidden",
         // Sulla Home la barra è un overlay senza eventi: solo i controlli
         // reali tornano cliccabili, non l'intera fascia trasparente.

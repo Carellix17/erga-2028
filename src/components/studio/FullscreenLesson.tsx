@@ -1,3 +1,4 @@
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -100,8 +101,7 @@ function ReaderSurface({ embedded, onClose, children }: { embedded?: boolean; on
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-sheet" />
         <DialogPrimitive.Content asChild aria-describedby={undefined}
-          onCloseAutoFocus={(event) => { event.preventDefault(); if (restoreFocus.current?.isConnected) restoreFocus.current.focus(); }}
-          onEscapeKeyDown={(event) => event.preventDefault()}>
+          onCloseAutoFocus={(event) => { event.preventDefault(); if (restoreFocus.current?.isConnected) restoreFocus.current.focus(); }}>
           {children}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
@@ -299,7 +299,7 @@ export function FullscreenLesson({
     previouslyFocusedRef.current = document.activeElement;
     rootRef.current?.focus?.();
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || event.defaultPrevented) return;
       if (embedded && !rootRef.current?.contains(event.target as Node)) return;
       const anotherDialog = Array.from(document.querySelectorAll('[role="dialog"][data-state="open"]')).some((dialog) => dialog !== rootRef.current);
       if (anotherDialog) return;
@@ -461,7 +461,7 @@ export function FullscreenLesson({
       </div>
 
       {/* Bottom action */}
-      <div className="flex-shrink-0 border-t border-border bg-sheet px-4 pt-3 pb-4 safe-area-bottom">
+      <div className="lesson-footer flex-shrink-0 border-t border-border bg-sheet px-4 pt-3 pb-4 safe-area-bottom">
         <div className="mx-auto flex w-full max-w-[720px] flex-col gap-3">
           {/* L'assistente mantiene la stessa apertura e lo stesso bootstrap AI;
               il footer condivide ora la colonna del contenuto. */}
@@ -700,6 +700,7 @@ function SlideAIAssistant({
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const keyboard = useKeyboardInset();
   const [messages, setMessages] = useState<SlideAIMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -855,10 +856,11 @@ function SlideAIAssistant({
       {/* 🎨 P9a — sfondo avorio e angoli ora li mette il foglio stesso */}
       <SheetContent
         side="bottom"
-        className="pb-safe max-h-[92vh] h-[85vh] p-0 flex flex-col gap-0"
+        className="pb-safe max-h-[92dvh] h-[85dvh] p-0 flex flex-col gap-0"
+        style={{ bottom: keyboard.inset, ...(keyboard.inset > 0 && keyboard.viewportHeight ? { maxHeight: keyboard.viewportHeight } : {}) }}
       >
         {/* Header */}
-        <SheetHeader className="flex items-center gap-3 px-4 py-3 border-b border-border/40 flex-shrink-0 space-y-0 text-left">
+        <SheetHeader className="flex min-h-16 flex-row items-center gap-3 px-4 py-3 pr-16 border-b border-border/40 flex-shrink-0 space-y-0 text-left">
           <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
             <Sparkles className="w-4 h-4 text-foreground" strokeWidth={1.75} />
           </div>
@@ -892,9 +894,9 @@ function SlideAIAssistant({
               </div>
               <div
                 className={cn(
-                  "max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed",
+                  "max-w-[82%] px-3.5 py-2.5 rounded-control text-base leading-relaxed",
                   msg.role === "assistant"
-                    ? "bg-surface-container-high text-foreground rounded-bl-md prose prose-sm max-w-none prose-p:my-2"
+                    ? "bg-surface-container-high text-foreground rounded-bl-md prose prose-base max-w-none prose-p:my-2"
                     : "bg-primary text-primary-foreground rounded-br-md whitespace-pre-wrap"
                 )}
               >

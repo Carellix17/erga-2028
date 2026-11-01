@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { readFileSync } from "fs";
@@ -204,6 +205,33 @@ describe("P50 lettore a schermo intero", () => {
       expect(firstClose).not.toHaveBeenCalled();
     } finally {
       materialInput.remove();
+    }
+  });
+
+  it("un solo Escape chiude il tutor Radix senza chiudere la lezione", async () => {
+    const originalScroll = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollIntoView");
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", { configurable: true, value: vi.fn() });
+    const session = vi.spyOn(supabase.auth, "getSession").mockResolvedValue({ data: { session: null }, error: null });
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      body: { getReader: () => ({ read: async () => ({ done: true }) }) },
+    } as unknown as Response);
+    try {
+      const { onClose } = renderReader();
+      const reader = screen.getByRole("dialog", { name: /La fotosintesi/ });
+      fireEvent.click(screen.getByRole("button", { name: "Spiegami meglio questa slide" }));
+      const input = await screen.findByRole("textbox", { name: /Chiedi qualcosa su questa slide/ });
+      fireEvent.keyDown(input, { key: "Escape" });
+      expect(onClose).not.toHaveBeenCalled();
+      await waitFor(() => expect(screen.queryByRole("textbox")).not.toBeInTheDocument());
+      fireEvent.keyDown(reader, { key: "Escape" });
+      expect(onClose).toHaveBeenCalledTimes(1);
+    } finally {
+      cleanup();
+      session.mockRestore();
+      fetchMock.mockRestore();
+      if (originalScroll) Object.defineProperty(HTMLElement.prototype, "scrollIntoView", originalScroll);
+      else delete HTMLElement.prototype.scrollIntoView;
     }
   });
 

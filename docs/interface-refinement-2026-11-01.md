@@ -4,7 +4,7 @@ Base: `main` al commit `87f3304`. Direzione richiesta: conservare geometria squa
 
 ## Evidenze e limiti
 
-La landing pubblica e, dopo l’accesso manuale dell’utente, Home, Piano, agenda, Studio, moduli e lettore autenticati sono stati osservati nel Browser a **1363 × 936 CSS px**. Sono state verificate apertura e chiusura della lezione senza completare attività o modificare gli impegni. La versione pubblicata conserva ancora i controlli precedenti alla PR: queste osservazioni confermano i problemi di partenza, non verificano visivamente il nuovo codice. L’anteprima di sviluppo non era raggiungibile dal browser remoto; l’apertura di file locali è stata rifiutata dalla sua policy e non è stata aggirata. Il Browser non espone una API documentata per ridimensionare il viewport: **mobile e tablet restano da verificare**, così come il rendering della PR. Nessuna conformità WCAG completa è dichiarata.
+La landing pubblica e, dopo l’accesso manuale dell’utente, Home, Piano, agenda, Studio, moduli e lettore autenticati sono stati osservati nel Browser a **1363 × 936 CSS px**. Sono state verificate apertura e chiusura della lezione senza completare attività o modificare gli impegni. La versione pubblicata conserva ancora i controlli precedenti alla PR: queste osservazioni confermano i problemi di partenza, non verificano visivamente il nuovo codice. L’anteprima di sviluppo non era raggiungibile dal browser remoto; l’apertura di file locali è stata rifiutata dalla sua policy e non è stata aggirata. Il Browser cloud non espone una API documentata per ridimensionare il viewport. Dopo autorizzazione dell’utente, il rendering della PR è stato verificato in Chromium locale con dati dimostrativi e backend isolato a **375×812, 390×844, 768×1024, 1024×768 e 1440×900**. Nessuna conformità WCAG completa è dichiarata.
 
 Le domande su priorità del Piano, bug specifici di Studio e diffusione aptica non hanno ricevuto risposte. Per procedere sono stati assunti: agenda di oggi e prossime scadenze come vista iniziale; mantenimento del lettore immersivo già presente in main; feedback diffuso ma breve con un controllo per ridurlo o disattivarlo.
 
@@ -27,9 +27,21 @@ Le domande su priorità del Piano, bug specifici di Studio e diffusione aptica n
 2. **Piano — priorità da correggere.** All’apertura compare il mese; l’agenda richiede il toggle a icone. Dopo l’apertura, la lista ha uno scorrimento interno rigido e i controlli modifica/elimina dipendono dall’hover. Il comando di generazione non appare benché siano presenti impegni salvati.
 3. **Studio e moduli — navigazione funzionante, densità da rifinire.** Materiali e percorso occupano colonne affiancate sul desktop; la hero dei moduli rimane fissa durante la consultazione. Le CTA mantengono l’ombra rigida e alcuni comandi usano ancora il tutto maiuscolo.
 4. **Lettore — apertura e ritorno funzionanti, disposizione precedente confermata.** Nella versione pubblicata il footer occupa tutta la larghezza, con tutor a sinistra e Continua molto esteso; il testo ha una colonna più stretta. La PR già allinea i comandi alla colonna di lettura e aggiunge la gestione del focus mancante nella schermata osservata.
-5. **Mobile e tablet — non ancora verificati nel Browser.** Nessuna immagine ritagliata o valutazione del solo CSS viene presentata come simulazione di dispositivo.
+5. **Mobile e tablet — verificati in Chromium locale con dati dimostrativi.** Home, Piano, calendario aperto, Studio, materiali, upload mobile, lettore e tutor sono stati provati alle larghezze dichiarate. Sono state acquisite le schermate effettivamente renderizzate; nessuna immagine ritagliata viene presentata come simulazione di dispositivo.
 
 Le catture del prodotto autenticato sono usate internamente come evidenza; dati e materiali dell’account non vengono caricati nel repository pubblico.
+
+## Correzioni emerse dalla verifica responsive
+
+- **Esc nel tutor:** la prima verifica nel browser ha riprodotto la chiusura contemporanea di tutor e lezione. Il lettore ora rispetta l’evento già gestito da Radix: il primo Esc chiude soltanto il tutor, il secondo la lezione. La regressione è coperta anche da un test con il tutor reale montato nel DOM.
+- **Allineamento su tablet/desktop:** lettura e footer ora riservano la stessa larghezza alle barre di scorrimento native. Le colonne restano allineate anche a 768 px.
+- **Target tattili:** chiusura dei pannelli, selettori Caricamento/Gestisci e pulsante del piano nella Home hanno altezza e area minima da 44 px.
+- **Menu dei materiali:** PDF, foto e web compaiono senza attese decorative; le descrizioni lunghe vanno a capo. Il movimento ridotto azzera anche i ritardi delle animazioni.
+- **Tutor su telefono:** l’intestazione lascia spazio alla chiusura, il testo usa 16 px, il pannello usa dvh e si aggancia all’altezza visibile tramite il gancio tastiera già esistente. La tastiera fisica del telefono resta da provare sul dispositivo.
+
+Il profilo riproducibile è `VISUAL_PROFILE=interface-refinement node scripts/visual-check.mjs`; `VISUAL_FONTS_CSS` può indicare una cache CSS dei font del marchio. In questa verifica sono stati usati Ubuntu Sans, Ubuntu Sans Mono e Instrument Serif reali, acquisiti dalle dichiarazioni ufficiali Google Fonts e forniti localmente al browser. Nessuna richiesta verso servizi Erga è stata effettuata; la risposta del tutor è esplicitamente simulata.
+
+La seconda e ultima verifica visiva comprende **51 registrazioni di controllo**, incluse le schermate giorno/notte a 390/768/1024 px e i controlli di movimento e dispatch aptico. Esito: nessun errore JavaScript, richiesta esterna inattesa, overflow orizzontale, controllo tagliato o target di altezza insufficiente nei casi provati. Sono state verificate selezione del giorno, apertura materiali/upload, allineamento del lettore, mantenimento del focus e comportamento di Esc. La sensazione aptica fisica non è verificabile in Chromium senza hardware.
 
 ## Scelte conservate
 
@@ -51,14 +63,14 @@ I livelli aptici modificano durata e ritmo, non l’ampiezza del motore. Sono ne
 
 ## Verifica
 
-- Suite completa: **91 file, 767 test superati** (inclusi regressioni sul lettore, focus, ritorno alla Home, ripresa, eventi, selezione date e aptica).
+- Suite completa: **91 file, 768 test superati** (inclusi regressioni sul lettore, focus, ritorno alla Home, ripresa, eventi, selezione date e aptica).
 - TypeScript: superato.
 - Build di produzione Vite e service worker PWA: superata. Warning di dimensione di alcuni bundle presenti; non è stata introdotta una nuova libreria.
 - ESLint sui file modificati: nessun errore; tre avvertenze preesistenti (dipendenze hook in StudioView ed export per Fast Refresh nel componente Button).
 - Detector Impeccable: il bordo di lettura da 4 px è stato ridotto a un separatore da 1 px. Il rilievo sul font editoriale è incompatibile con il brief confermato e non richiede cambiare Instrument Serif.
 - `git diff --check`: superato.
 
-La suite verifica il comportamento nel DOM; restano da verificare visivamente 375/390/768/1024/1440 px, giorno/notte, zoom, overflow, contrasto, tastiera mobile, tutor aperto sopra il lettore e sensazione aptica sul telefono.
+La suite verifica il comportamento nel DOM e il profilo browser verifica i casi responsive sopra elencati. Restano la prova fisica di tastiera e aptica sul telefono, l’integrazione mobile autenticata sul sito pubblicato, zoom e un audit di contrasto/accessibilità completo. I test con dati dimostrativi non provano la correttezza delle risposte AI o dei servizi backend.
 
 `.impeccable/design.json` risultava già più vecchio di DESIGN.md: non viene rigenerato incidentalmente. Il riallineamento può essere svolto separatamente; la fonte di questa revisione è DESIGN.md v4.1.
 

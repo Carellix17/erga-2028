@@ -581,11 +581,11 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
         </div>
 
         <Tabs value={activeTab} onValueChange={handleMainTabChange} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-2 mb-4 p-1.5 h-13 bg-surface-container-highest rounded-xl shrink-0">
-            <TabsTrigger value="loading" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
+          <TabsList className="mb-4 grid h-auto min-h-14 w-full shrink-0 grid-cols-2 rounded-control bg-secondary p-1.5">
+            <TabsTrigger value="loading" className="min-h-11 rounded-control text-sm transition-colors duration-150 data-[state=active]:bg-sheet data-[state=active]:text-foreground data-[state=active]:shadow-none">
               Caricamento
             </TabsTrigger>
-            <TabsTrigger value="manage" className="rounded-lg data-[state=active]:bg-tertiary data-[state=active]:text-tertiary-foreground data-[state=active]:shadow-level-1 transition-all duration-300 text-xs">
+            <TabsTrigger value="manage" className="min-h-11 rounded-control text-sm transition-colors duration-150 data-[state=active]:bg-sheet data-[state=active]:text-foreground data-[state=active]:shadow-none">
               Gestisci
             </TabsTrigger>
           </TabsList>
@@ -603,23 +603,23 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                     Scegli come vuoi caricare i tuoi materiali
                   </p>
                   <div className="grid gap-3">
-                    <Button type="button" style={{ animationDelay: "80ms" }} onClick={() => setLoadingTab("upload")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40 leaf-rise">
+                    <Button type="button" onClick={() => setLoadingTab("upload")} variant="outline" className="h-auto min-h-16 w-full justify-start gap-3 whitespace-normal rounded-control border-border bg-sheet py-3 text-base hover:bg-secondary">
                       <FileText className="w-5 h-5 text-brand-deep" />
-                      <div className="text-left">
+                      <div className="min-w-0 flex-1 text-left">
                         <p className="font-medium">Carica PDF</p>
                         <p className="body-small text-muted-foreground">Appunti, dispense o documenti</p>
                       </div>
                     </Button>
-                    <Button type="button" style={{ animationDelay: "160ms" }} onClick={() => setLoadingTab("photos")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40 leaf-rise">
+                    <Button type="button" onClick={() => setLoadingTab("photos")} variant="outline" className="h-auto min-h-16 w-full justify-start gap-3 whitespace-normal rounded-control border-border bg-sheet py-3 text-base hover:bg-secondary">
                       <Camera className="w-5 h-5 text-brand-deep" />
-                      <div className="text-left">
+                      <div className="min-w-0 flex-1 text-left">
                         <p className="font-medium">Carica foto</p>
                         <p className="body-small text-muted-foreground">Scatta o scegli immagini</p>
                       </div>
                     </Button>
-                    <Button type="button" style={{ animationDelay: "240ms" }} onClick={() => setLoadingTab("web")} variant="outline" className="h-16 justify-start gap-3 rounded-xl bg-surface-container border-outline-variant hover:bg-primary-container/40 leaf-rise">
+                    <Button type="button" onClick={() => setLoadingTab("web")} variant="outline" className="h-auto min-h-16 w-full justify-start gap-3 whitespace-normal rounded-control border-border bg-sheet py-3 text-base hover:bg-secondary">
                       <Globe className="w-5 h-5 text-brand-deep" />
-                      <div className="text-left">
+                      <div className="min-w-0 flex-1 text-left">
                         <p className="font-medium">Ricerca web</p>
                         <p className="body-small text-muted-foreground">Contenuti reali da Wikipedia, o un manuale AI</p>
                       </div>

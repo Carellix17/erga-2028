@@ -87,7 +87,7 @@ export function VisualPreview() {
   return (
     <MemoryRouter initialEntries={["/app"]}>
       <InteractionFeedback />
-      <div className="bg-secondary px-4 py-2 text-center text-xs text-muted-foreground">Anteprima isolata · Dati dimostrativi · Nessun accesso al tuo account</div>
+      <p className="sr-only">Anteprima isolata · Dati dimostrativi · Nessun accesso al tuo account</p>
       <AppLayout
         activeTab={activeTab}
         onTabChange={setActiveTab}

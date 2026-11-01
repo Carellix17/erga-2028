@@ -114,4 +114,4 @@ Fonti della specifica: brief approvato per v4, `PRODUCT.md`, `src/index.css`, `t
 
 La revisione v4.1 include controlli TypeScript, test di comportamento e build Vite/PWA. Il dettaglio aggiornato e i limiti sono in `docs/interface-refinement-2026-11-01.md`. Non interpretare i test del DOM come verifica visiva o prova dell'aptica fisica.
 
-Prima della pubblicazione restano la verifica visiva delle schermate autenticate a 375/390/768/1024/1440 px, giorno/notte, tastiera reale, tastiera mobile, contrasto effettivo e prova dell'aptica sul dispositivo. Il backend resta Lovable Cloud; dopo il merge usare **Update** in Lovable prima di dichiarare la modifica online.
+La versione proposta è stata verificata visivamente con dati dimostrativi in Chromium locale a 375/390/768/1024/1440 px, anche in giorno/notte. La verifica ha corretto Esc del tutor, allineamento del lettore, target da 44 px e attese del menu materiali. Restano tastiera e aptica su dispositivo fisico, audit di contrasto completo e integrazione mobile autenticata sul sito pubblicato. Il backend resta Lovable Cloud; dopo il merge usare **Update** in Lovable prima di dichiarare la modifica online.

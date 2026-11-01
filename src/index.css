@@ -1052,6 +1052,7 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
@@ -1355,7 +1356,10 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .app-nav-indicator { transition: transform var(--motion-standard) var(--ease-out); }
 .safe-area-top { padding-top: max(1rem, env(safe-area-inset-top, 0px)); }
 .safe-area-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); }
-.lesson-paper { overscroll-behavior: contain; scrollbar-gutter: stable; }
+.lesson-paper { overscroll-behavior: contain; }
+/* Reserve the same native scrollbar space for reading and its controls. */
+.lesson-paper, .lesson-footer { scrollbar-gutter: stable both-edges; }
+.lesson-footer { overflow-y: auto; }
 .lesson-step { transition: opacity var(--motion-micro) var(--ease-out), transform var(--motion-micro) var(--ease-out); }
 .lesson-step[data-leaving="true"] { opacity: 0; transform: translateX(-8px); }
 .lesson-step[data-direction="back"][data-leaving="true"] { transform: translateX(8px); }
@@ -1371,3 +1375,5 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 }
 .reduce-motion .app-nav-indicator, .reduce-motion .lesson-step { transition: none; }
 .reduce-motion .lesson-step-enter, .reduce-motion .plan-agenda-enter { animation: none; }
+
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-delay: 0ms !important; }

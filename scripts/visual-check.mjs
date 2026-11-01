@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createServer } from "node:net";
@@ -22,6 +22,7 @@ const viewports = [
 ];
 const studioViewports = viewports.filter((viewport) => viewport.width >= 390);
 const prompt7Viewports = viewports.filter((viewport) => viewport.width === 390 || viewport.width === 1440);
+const interfaceMode = process.env.VISUAL_PROFILE === "interface-refinement";
 const enforcePrompt7 = process.env.VISUAL_EXPECT_PROMPT7 !== "false";
 
 let viteProcess;
@@ -572,6 +573,11 @@ try {
     defaultViewport: null,
   });
 
+  if (interfaceMode) {
+    const { inspectInterface } = await import("./interface-checks.mjs");
+    const fontStyles = process.env.VISUAL_FONTS_CSS ? await readFile(process.env.VISUAL_FONTS_CSS, "utf8") : null;
+    await inspectInterface({ browser, baseUrl, outputDir, report, fontStyles });
+  } else {
   for (const viewport of viewports) {
     report.viewports.push(await inspectHome(viewport));
   }
@@ -580,6 +586,8 @@ try {
   }
   for (const viewport of prompt7Viewports) {
     await inspectPrompt7(viewport);
+  }
+
   }
 
   assert.deepEqual(report.blockedExternalRequests, [], "La fixture ha tentato richieste verso servizi esterni.");
