@@ -199,7 +199,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
         <Button variant="outline" className="mt-3" onClick={() => { void eventsQuery.refetch(); void evaluationsQuery.refetch(); }}>{t("piano.retry")}</Button>
       </div>}
       {/* Calendario sempre accessibile, anche senza materiale caricato. */}
-      <section className="min-w-0" aria-label={t("piano.workspaceTitle")}>
+      <section className="min-w-0" aria-labelledby="planner-calendar-heading">
         <AppointmentsCalendar
           evaluations={evaluations}
           events={events}

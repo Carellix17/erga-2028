@@ -35,6 +35,8 @@ interface AppointmentsCalendarProps {
 }
 
 /** The month is the entry point. A date URL opens its complete daily schedule. */
+const capitalizeFirstLetter = (value: string) => value.charAt(0).toLocaleUpperCase() + value.slice(1);
+
 export function AppointmentsCalendar({
   evaluations, events, subjects, courses, exitingIds, onAddEvent, showGeneratePlan,
   onGeneratePlan, isGeneratingPlan, onEditEvaluation, onEditStudyEvent,
@@ -123,7 +125,7 @@ export function AppointmentsCalendar({
             <Button variant="ghost" onClick={closeDay} className="mb-3 -ml-4"><ArrowLeft aria-hidden="true" />{t("piano.backToCalendar")}</Button>
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold capitalize tracking-tight outline-none sm:text-3xl">{format(parseISO(selectedKey), "EEEE d MMMM", { locale })}</h2>
+                <h2 id="planner-calendar-heading" ref={headingRef} tabIndex={-1} className="text-2xl font-semibold tracking-tight outline-none sm:text-3xl">{capitalizeFirstLetter(format(parseISO(selectedKey), "EEEE d MMMM", { locale }))}</h2>
                 <p className="mt-1 text-base text-muted-foreground">{t("piano.dailySubtitle")}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -140,20 +142,20 @@ export function AppointmentsCalendar({
         ) : (
           <>
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-3xl font-semibold tracking-tight">{t("piano.workspaceTitle")}</h2>
+              <h2 id="planner-calendar-heading" className="text-3xl font-semibold tracking-tight">{t("piano.workspaceTitle")}</h2>
               <Button variant="outline" onClick={() => openDay(dayKey(new Date()))} data-plan-opener="daily" data-haptic="medium"><CalendarDays aria-hidden="true" />{t("piano.dailySession")}<ArrowUpRight aria-hidden="true" /></Button>
             </div>
 
-            <section className="mb-5 min-w-0" aria-label={t("piano.importantDeadlines")}>
+            <section className="mb-5 min-w-0" aria-labelledby="planner-deadlines-heading">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <h3 className="text-base font-semibold">{t("piano.importantDeadlines")}</h3>
+                <h3 id="planner-deadlines-heading" className="text-base font-semibold">{t("piano.importantDeadlines")}</h3>
                 {deadlines.length > 0 && <div className="flex gap-1">
                   <Button variant="ghost" size="icon" aria-label={t("piano.previousDeadlines")} aria-controls="planner-deadlines" disabled={deadlineEdges.start} onClick={() => scrollDeadlines(-1)}><ChevronLeft aria-hidden="true" /></Button>
                   <Button variant="ghost" size="icon" aria-label={t("piano.nextDeadlines")} aria-controls="planner-deadlines" disabled={deadlineEdges.end} onClick={() => scrollDeadlines(1)}><ChevronRight aria-hidden="true" /></Button>
                 </div>}
               </div>
               {deadlines.length === 0 ? <p className="border border-border bg-sheet p-4 text-base text-muted-foreground">{t("piano.noDeadlines")}</p> : (
-                <ul ref={deadlinesRef} id="planner-deadlines" className="planner-deadlines" aria-label={t("piano.importantDeadlines")}>
+                <ul ref={deadlinesRef} id="planner-deadlines" className="planner-deadlines">
                   {deadlines.map((entry) => {
                     const remaining = differenceInCalendarDays(entry.date, startOfToday());
                     const label = remaining === 0 ? t("piano.today") : t("piano.daysRemaining", { count: remaining });
@@ -178,7 +180,7 @@ export function AppointmentsCalendar({
 
             <section className="border border-border bg-sheet" aria-label={t("piano.calendar")}>
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2 sm:px-5">
-                <h3 className="text-xl font-semibold capitalize" aria-live="polite">{format(month, "MMMM yyyy", { locale })}</h3>
+                <h3 className="text-xl font-semibold" aria-live="polite">{capitalizeFirstLetter(format(month, "MMMM yyyy", { locale }))}</h3>
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" size="sm" onClick={() => { setMonthChanged(true); setDirection(new Date() >= month ? 1 : -1); setMonth(startOfMonth(new Date())); }}>{t("piano.today")}</Button>
                   <Button variant="ghost" size="icon" aria-label={t("piano.previousMonth")} onClick={() => { setMonthChanged(true); setDirection(-1); setMonth((value) => addMonths(value, -1)); }}><ChevronLeft aria-hidden="true" /></Button>
@@ -186,7 +188,14 @@ export function AppointmentsCalendar({
                 </div>
               </div>
               <div key={format(month, "yyyy-MM")} className={cn(monthChanged && "planner-month-enter", direction < 0 && "planner-motion-back")}>
-                <div className="grid grid-cols-7 border-b border-border" aria-hidden="true">{days.slice(0, 7).map((date, index) => <span key={index} className="py-2 text-center text-sm font-medium text-muted-foreground">{format(date, "EEEEE", { locale })}</span>)}</div>
+                <div className="grid grid-cols-7 border-b border-border" aria-hidden="true">
+                  {days.slice(0, 7).map((date) => (
+                    <span key={dayKey(date)} className="py-2 text-center text-sm font-medium text-muted-foreground">
+                      <span className="sm:hidden">{format(date, "EEEEE", { locale })}</span>
+                      <span className="hidden sm:inline">{format(date, "EEE", { locale })}</span>
+                    </span>
+                  ))}
+                </div>
                 <div className="planner-month-grid">
                   {days.map((date) => {
                     const key = dayKey(date);
