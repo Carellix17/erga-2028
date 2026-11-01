@@ -23,11 +23,14 @@ describe("AddEventSheet — densità P47", () => {
     expect(SHEET).toContain("DropdownMenuTrigger");
     expect(SHEET).toContain("DropdownMenuContent");
     expect(SHEET).toContain("VERIFICA_MODES.map");
-    // la barra racchiude l'input del titolo E il selettore modalità in un flex
-    expect(SHEET).toMatch(/aria-label=\{t\("piano\.sheet\.mode"\)\}/);
+    // La modalità è annunciata insieme al valore visibile, senza aria-label generici.
+    expect(SHEET).toContain('<span className="sr-only">{t("piano.sheet.mode")}:</span>');
+    expect(SHEET).not.toMatch(/aria-label=\{t\("piano\.sheet\.mode"\)\}/);
+    expect(SHEET).toContain("DropdownMenuRadioGroup");
+    expect(SHEET).toContain("DropdownMenuRadioItem");
   });
 
-  it("elenco modalità invariato: Orale, Scritta, Pratica, Presentazione", () => {
+  it("elenco modalità invariato: Orale, Scritta, Pratica, Interrogazione", () => {
     expect(SHEET).toContain('"orale", "scritta", "pratica", "interrogazione"');
     expect(SHEET).toContain("piano.sheet.modeOrale");
     expect(SHEET).toContain("piano.sheet.modeScritta");
@@ -71,5 +74,16 @@ describe("AddEventSheet — densità P47", () => {
     expect(IT).toContain('"endTimeAfterStart"');
     expect(EN).toContain('"endTimeRequired"');
     expect(EN).toContain('"endTimeAfterStart"');
+  });
+
+  it("usa le etichette delle schede e della modalità tradotte e capitalizzate", () => {
+    expect(IT).toContain('"verifica": "Verifica"');
+    expect(IT).toContain('"compito": "Compito"');
+    expect(IT).toContain('"altro": "Altro"');
+    expect(IT).toContain('"modePresentazione": "Interrogazione"');
+    expect(EN).toContain('"verifica": "Test"');
+    expect(EN).toContain('"compito": "Assignment"');
+    expect(EN).toContain('"altro": "Other"');
+    expect(EN).toContain('"modePresentazione": "Oral test"');
   });
 });
