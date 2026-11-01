@@ -9,6 +9,20 @@ function redactEmail(email: string | null | undefined): string {
   return `${localPart[0]}***@${domain}`
 }
 
+function redactEmailAddresses(value: string): string {
+  return value.replace(
+    /[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+    (email) => redactEmail(email),
+  )
+}
+
+function errorCode(error: unknown): string {
+  if (typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'string') {
+    return error.code
+  }
+  return 'unknown'
+}
+
 function jsonResponse(data: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
@@ -50,6 +64,26 @@ Deno.serve(async (req) => {
 
   const recipient = user.email
   const templateName = 'welcome'
+  // ILIKE ignores case; escape pattern characters so the address match stays exact.
+  const recipientPattern = recipient.toLowerCase().replace(/[\\%_]/g, '\\$&')
+
+  try {
+    const { data: sentWelcome, error: lookupError } = await supabase
+      .from('email_send_log')
+      .select('id')
+      .eq('template_name', templateName)
+      .ilike('recipient_email', recipientPattern)
+      .eq('status', 'sent')
+      .limit(1)
+
+    if (lookupError) {
+      console.error('Failed to check sent welcome email', { code: errorCode(lookupError) })
+    } else if (sentWelcome?.length) {
+      return jsonResponse({ success: true, skipped: 'already_sent' })
+    }
+  } catch (error) {
+    console.error('Failed to check sent welcome email', { code: errorCode(error) })
+  }
 
   let name: string | undefined
   try {
@@ -75,10 +109,7 @@ Deno.serve(async (req) => {
         status: 'suppressed',
       })
       if (logError) {
-        console.error('Failed to log suppressed welcome email', {
-          code: logError.code,
-          message: logError.message,
-        })
+        console.error('Failed to log suppressed welcome email', { code: logError.code })
       }
       return jsonResponse({ success: false, reason: 'recipient_suppressed' })
     }
@@ -90,10 +121,7 @@ Deno.serve(async (req) => {
       status: 'sent',
     })
     if (logError) {
-      console.error('Failed to log sent welcome email', {
-        code: logError.code,
-        message: logError.message,
-      })
+      console.error('Failed to log sent welcome email', { code: logError.code })
     }
 
     console.log('Welcome email sent', { recipient_redacted: redactEmail(recipient) })
@@ -102,7 +130,7 @@ Deno.serve(async (req) => {
     const errorMsg = error instanceof Error ? error.message : String(error)
     console.error('Welcome email send failed', {
       recipient_redacted: redactEmail(recipient),
-      error: errorMsg,
+      code: errorCode(error),
     })
 
     const { error: logError } = await supabase.from('email_send_log').insert({
@@ -110,13 +138,10 @@ Deno.serve(async (req) => {
       template_name: templateName,
       recipient_email: recipient,
       status: 'failed',
-      error_message: errorMsg.slice(0, 1000),
+      error_message: redactEmailAddresses(errorMsg).slice(0, 1000),
     })
     if (logError) {
-      console.error('Failed to log failed welcome email', {
-        code: logError.code,
-        message: logError.message,
-      })
+      console.error('Failed to log failed welcome email', { code: logError.code })
     }
 
     return jsonResponse({ error: 'Failed to send welcome email' }, 500)

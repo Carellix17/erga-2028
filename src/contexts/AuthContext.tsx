@@ -7,9 +7,9 @@ async function sendWelcomeEmail(userId: string, email: string, name?: string) {
     await supabase.functions.invoke("send-welcome-email", {
       body: { name },
     });
-  } catch (error) {
-    // La welcome email non deve bloccare l'autenticazione.
-    console.error("Auth: invio welcome email fallito", error);
+  } catch {
+    // La welcome email non deve bloccare l'autenticazione o esporre dati nei log.
+    console.error("Auth: invio welcome email fallito");
   }
 }
 
@@ -78,17 +78,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setIsLoading(false);
 
-      // Invia la welcome email al primo accesso effettivo (signup, OAuth o
-      // conferma email). L'idempotency key previene duplicati lato server.
+      // Invia la welcome email solo per un account appena creato. Il ref evita
+      // duplicati nella pagina corrente; localStorage ricorda l'invio tra mount
+      // e ricaricamenti, senza salvare email o altri dati personali.
       const user = session?.user;
-      if (
-        event === "SIGNED_IN" &&
-        user?.email &&
-        welcomeSentForSession.current !== user.id
-      ) {
-        welcomeSentForSession.current = user.id;
-        const name = user.user_metadata?.name || user.user_metadata?.full_name;
-        sendWelcomeEmail(user.id, user.email, typeof name === "string" ? name : undefined);
+      if (event !== "SIGNED_IN" || !user?.email) return;
+
+      const now = Date.now();
+      const createdAt = Date.parse(user.created_at);
+      const accountAge = now - createdAt;
+      if (!Number.isFinite(createdAt) || accountAge < 0 || accountAge > 10 * 60 * 1000) return;
+
+      const welcomeStorageKey = `erga:welcome:${user.id}`;
+      let alreadyWelcomed = false;
+      try {
+        alreadyWelcomed = localStorage.getItem(welcomeStorageKey) !== null;
+      } catch {
+        // Storage non disponibile: il ref conserva comunque la protezione in memoria.
+      }
+      if (alreadyWelcomed || welcomeSentForSession.current === user.id) return;
+
+      welcomeSentForSession.current = user.id;
+      const name = user.user_metadata?.name || user.user_metadata?.full_name;
+      void sendWelcomeEmail(user.id, user.email, typeof name === "string" ? name : undefined);
+      try {
+        localStorage.setItem(welcomeStorageKey, "sent");
+      } catch {
+        // La welcome email non deve bloccare l'autenticazione se storage non è disponibile.
       }
     });
 
