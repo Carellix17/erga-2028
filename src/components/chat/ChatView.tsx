@@ -267,19 +267,40 @@ export function ChatView({ hasFiles, onUploadClick, contextId, seedMessage, onSe
         return { role: m.role, content: m.content };
       });
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      // Token fresco prima del flusso: getSession() può restituire una
+      // sessione scaduta (il 401 "Unauthorized" segnalato in anteprima).
+      const freshToken = async () => {
+        let { data: { session } } = await supabase.auth.getSession();
+        const nowSec = Math.floor(Date.now() / 1000);
+        if (session?.expires_at && session.expires_at - nowSec < 60) {
+          const { data, error } = await supabase.auth.refreshSession();
+          if (!error && data.session) session = data.session;
+        }
+        return session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      };
+      const chatBody = JSON.stringify({
+        userId: currentUser,
+        messages: apiMessages,
+        language: currentLanguage(),
+        topicContextId: convContextId,
+        topicSystemPrompt,
+      });
       abortRef.current = new AbortController();
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+      const chatUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+      let response = await fetch(chatUrl,
+        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${await freshToken()}` },
           signal: abortRef.current.signal,
-          body: JSON.stringify({
-            userId: currentUser,
-            messages: apiMessages,
-            language: currentLanguage(),
-            topicContextId: convContextId,
-            topicSystemPrompt,
-          }) });
+          body: chatBody });
+      if (response.status === 401) {
+        // Token rifiutato: UN rinnovo forzato + un solo nuovo tentativo.
+        const { data: r } = await supabase.auth.refreshSession();
+        if (r.session) {
+          response = await fetch(chatUrl,
+            { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${r.session.access_token}` },
+              signal: abortRef.current.signal,
+              body: chatBody });
+        }
+      }
       if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || "Errore nella risposta"); }
 
       const contentType = response.headers.get("content-type");

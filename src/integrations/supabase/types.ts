@@ -390,6 +390,65 @@ export type Database = {
         }
         Relationships: []
       }
+      focus_sessions: {
+        Row: {
+          block_index: number
+          device_id: string | null
+          end_reason: string | null
+          ended_at: string | null
+          id: string
+          paused_at: string | null
+          pauses: Json
+          phase: string
+          phase_ends_at: string | null
+          slot_id: string | null
+          started_at: string
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          block_index?: number
+          device_id?: string | null
+          end_reason?: string | null
+          ended_at?: string | null
+          id?: string
+          paused_at?: string | null
+          pauses?: Json
+          phase?: string
+          phase_ends_at?: string | null
+          slot_id?: string | null
+          started_at?: string
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          block_index?: number
+          device_id?: string | null
+          end_reason?: string | null
+          ended_at?: string | null
+          id?: string
+          paused_at?: string | null
+          pauses?: Json
+          phase?: string
+          phase_ends_at?: string | null
+          slot_id?: string | null
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "focus_sessions_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "study_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_figures: {
         Row: {
           bbox: Json
@@ -474,6 +533,66 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_reading_logs: {
+        Row: {
+          active_seconds: number
+          base_estimate_min: number
+          completed_at: string
+          context_id: string | null
+          exercise_count: number
+          id: string
+          lesson_order: number
+          slot_id: string | null
+          subject: string | null
+          subject_type: string | null
+          user_id: string
+          word_count: number
+        }
+        Insert: {
+          active_seconds: number
+          base_estimate_min: number
+          completed_at?: string
+          context_id?: string | null
+          exercise_count?: number
+          id?: string
+          lesson_order: number
+          slot_id?: string | null
+          subject?: string | null
+          subject_type?: string | null
+          user_id: string
+          word_count: number
+        }
+        Update: {
+          active_seconds?: number
+          base_estimate_min?: number
+          completed_at?: string
+          context_id?: string | null
+          exercise_count?: number
+          id?: string
+          lesson_order?: number
+          slot_id?: string | null
+          subject?: string | null
+          subject_type?: string | null
+          user_id?: string
+          word_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_reading_logs_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "study_contexts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_reading_logs_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "study_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mini_lessons: {
         Row: {
           concept: string
@@ -529,6 +648,111 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      plan_changes: {
+        Row: {
+          applied_at: string | null
+          changes: Json
+          created_at: string
+          id: string
+          reason: string
+          status: string
+          undone_at: string | null
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          changes: Json
+          created_at?: string
+          id?: string
+          reason: string
+          status?: string
+          undone_at?: string | null
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          changes?: Json
+          created_at?: string
+          id?: string
+          reason?: string
+          status?: string
+          undone_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      planner_events: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          props: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          name: string
+          props?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          name?: string
+          props?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      planner_settings: {
+        Row: {
+          ask_before_move: boolean
+          daily_limit_free_min: number
+          daily_limit_school_min: number
+          lessons_per_block: number
+          long_break_min: number
+          max_block_min: number
+          medium_break_min: number
+          notify_types: Json
+          short_break_min: number
+          sound_enabled: boolean
+          subject_types: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ask_before_move?: boolean
+          daily_limit_free_min?: number
+          daily_limit_school_min?: number
+          lessons_per_block?: number
+          long_break_min?: number
+          max_block_min?: number
+          medium_break_min?: number
+          notify_types?: Json
+          short_break_min?: number
+          sound_enabled?: boolean
+          subject_types?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ask_before_move?: boolean
+          daily_limit_free_min?: number
+          daily_limit_school_min?: number
+          lessons_per_block?: number
+          long_break_min?: number
+          max_block_min?: number
+          medium_break_min?: number
+          notify_types?: Json
+          short_break_min?: number
+          sound_enabled?: boolean
+          subject_types?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       push_subscriptions: {
         Row: {
@@ -604,6 +828,62 @@ export type Database = {
           },
         ]
       }
+      scheduled_pushes: {
+        Row: {
+          body: string
+          cancelled_at: string | null
+          created_at: string
+          focus_session_id: string | null
+          id: string
+          kind: string
+          send_at: string
+          sent_at: string | null
+          skip_reason: string | null
+          tag: string | null
+          title: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          cancelled_at?: string | null
+          created_at?: string
+          focus_session_id?: string | null
+          id?: string
+          kind: string
+          send_at: string
+          sent_at?: string | null
+          skip_reason?: string | null
+          tag?: string | null
+          title: string
+          url?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          cancelled_at?: string | null
+          created_at?: string
+          focus_session_id?: string | null
+          id?: string
+          kind?: string
+          send_at?: string
+          sent_at?: string | null
+          skip_reason?: string | null
+          tag?: string | null
+          title?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_pushes_focus_session_id_fkey"
+            columns: ["focus_session_id"]
+            isOneToOne: false
+            referencedRelation: "focus_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       study_contexts: {
         Row: {
           content: string
@@ -672,36 +952,99 @@ export type Database = {
       }
       study_events: {
         Row: {
+          completed_at: string | null
+          context_id: string | null
           created_at: string
+          end_time: string | null
+          evaluation_id: string | null
           event_date: string
           event_time: string | null
           event_type: string
           id: string
+          is_completed: boolean
+          lesson_from: number | null
+          lesson_to: number | null
+          locked: boolean
+          move_count: number
+          notes: string | null
+          original_date: string | null
+          original_time: string | null
+          source: string
+          status: string
           subject: string
           title: string
+          updated_at: string
           user_id: string
+          version: number
         }
         Insert: {
+          completed_at?: string | null
+          context_id?: string | null
           created_at?: string
+          end_time?: string | null
+          evaluation_id?: string | null
           event_date: string
           event_time?: string | null
           event_type: string
           id?: string
+          is_completed?: boolean
+          lesson_from?: number | null
+          lesson_to?: number | null
+          locked?: boolean
+          move_count?: number
+          notes?: string | null
+          original_date?: string | null
+          original_time?: string | null
+          source?: string
+          status?: string
           subject: string
           title: string
+          updated_at?: string
           user_id: string
+          version?: number
         }
         Update: {
+          completed_at?: string | null
+          context_id?: string | null
           created_at?: string
+          end_time?: string | null
+          evaluation_id?: string | null
           event_date?: string
           event_time?: string | null
           event_type?: string
           id?: string
+          is_completed?: boolean
+          lesson_from?: number | null
+          lesson_to?: number | null
+          locked?: boolean
+          move_count?: number
+          notes?: string | null
+          original_date?: string | null
+          original_time?: string | null
+          source?: string
+          status?: string
           subject?: string
           title?: string
+          updated_at?: string
           user_id?: string
+          version?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "study_events_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "study_contexts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_events_evaluation_id_fkey"
+            columns: ["evaluation_id"]
+            isOneToOne: false
+            referencedRelation: "evaluations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       study_sessions_logs: {
         Row: {
@@ -829,6 +1172,36 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      user_consents: {
+        Row: {
+          created_at: string
+          granted: boolean
+          id: number
+          policy_version: string
+          purpose: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted: boolean
+          id?: never
+          policy_version: string
+          purpose: string
+          source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted?: boolean
+          id?: never
+          policy_version?: string
+          purpose?: string
+          source?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -984,9 +1357,37 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_plan_changes: {
+        Args: { p_changes: Json; p_reason: string; p_user_id: string }
+        Returns: string
+      }
       check_and_increment_demo_usage: {
         Args: { p_ip_hash: string; p_window?: string }
         Returns: number
+      }
+      claim_due_pushes: {
+        Args: { p_limit?: number }
+        Returns: {
+          body: string
+          cancelled_at: string | null
+          created_at: string
+          focus_session_id: string | null
+          id: string
+          kind: string
+          send_at: string
+          sent_at: string | null
+          skip_reason: string | null
+          tag: string | null
+          title: string
+          url: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "scheduled_pushes"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       cleanup_demo_rate_limits: { Args: never; Returns: undefined }
       has_active_subscription: {
@@ -997,6 +1398,10 @@ export type Database = {
       is_pro_user: {
         Args: { check_env?: string; user_text: string }
         Returns: boolean
+      }
+      purge_user_planner_data: {
+        Args: { p_include_consents?: boolean; p_user_id: string }
+        Returns: Json
       }
       user_is_pro: { Args: { _user_id: string }; Returns: boolean }
     }
