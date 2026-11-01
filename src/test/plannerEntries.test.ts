@@ -19,6 +19,23 @@ describe("planner data used by both month and day", () => {
     expect(entries.map((entry) => entry.time)).toEqual([undefined, undefined, "09:30"]);
     expect(entries[2].date.getDate()).toBe(5);
   });
+  it("assigns a stable kind to evaluations and each study-event type", () => {
+    const events: StudyEvent[] = [
+      { id: "study", subject: "Fisica", title: "Ripasso", event_date: "2026-11-06", event_type: "study" },
+      { id: "assignment", subject: "Fisica", title: "Esercizi", event_date: "2026-11-06", event_type: "assignment" },
+      { id: "personal", subject: " aLtRo ", title: "Allenamento", event_date: "2026-11-06", event_type: "assignment" },
+      { id: "test", subject: "Fisica", title: "Verifica", event_date: "2026-11-06", event_type: "test" },
+    ];
+
+    expect(plannerEntries([evaluation()], events, subjects).map(({ id, kind }) => [id, kind])).toEqual([
+      ["exam", "evaluation"],
+      ["study", "study"],
+      ["assignment", "assignment"],
+      ["personal", "personal"],
+      ["test", "evaluation"],
+    ]);
+  });
+
   it("reuses the exact linked Studio cover, with a subject fallback", () => {
     const [linked] = plannerEntries([evaluation({ topic_type: "linked", topic_id: "course" })], [], subjects, [{ id: "course", file_name: "Fisica del moto.pdf" }]);
     const [fallback] = plannerEntries([evaluation()], [], subjects);
