@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import { useUserSubjects } from "@/hooks/useUserSubjects";
@@ -85,6 +85,28 @@ export function AddEventSheet({
 }: AddEventSheetProps) {
   const { t } = useTranslation();
   const editingId = initial?.id ?? null;
+  const formId = useId();
+  const ids = {
+    title: `${formId}-title`,
+    modeButton: `${formId}-mode-button`,
+    subjectLabel: `${formId}-subject-label`,
+    subject: `${formId}-subject`,
+    date: `${formId}-date`,
+    startTime: `${formId}-start-time`,
+    endTime: `${formId}-end-time`,
+    endTimeError: `${formId}-end-time-error`,
+    topicLabel: `${formId}-topic-label`,
+    course: `${formId}-course`,
+    freeTopic: `${formId}-free-topic`,
+    notesLabel: `${formId}-notes-label`,
+    notes: `${formId}-notes`,
+    goalLabel: `${formId}-goal-label`,
+    goalSlider: `${formId}-goal-slider`,
+    goalThumb: `${formId}-goal-thumb`,
+    compito: `${formId}-compito`,
+    altroTitle: `${formId}-altro-title`,
+    altroNotes: `${formId}-altro-notes`,
+  };
 
   const [category, setCategory] = useState<Category>("verifica");
   const [mode, setMode] = useState<VerificaMode>("scritta");
@@ -250,9 +272,15 @@ export function AddEventSheet({
 
   const subjectSelect = (
     <div className="min-w-0 space-y-2">
-      <Label className="label-large">{t("piano.sheet.subject")}</Label>
+      <Label id={ids.subjectLabel} htmlFor={ids.subject} className="label-large">
+        {t("piano.sheet.subject")}
+      </Label>
       <Select value={subjectId} onValueChange={setSubjectId}>
-        <SelectTrigger className="w-full h-11 rounded-2xl bg-secondary/70 border border-transparent px-3 body-medium transition-colors">
+        <SelectTrigger
+          id={ids.subject}
+          aria-labelledby={`${ids.subjectLabel} ${ids.subject}`}
+          className="w-full h-11 rounded-2xl bg-secondary/70 border border-transparent px-3 body-medium transition-colors"
+        >
           <SelectValue placeholder={t("piano.sheet.none")} />
         </SelectTrigger>
         <SelectContent>
@@ -275,8 +303,8 @@ export function AddEventSheet({
 
   const dateField = (
     <div className="min-w-0 space-y-2">
-      <Label htmlFor="ev-date" className="label-large">{t("piano.sheet.date")}</Label>
-      <Input id="ev-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <Label htmlFor={ids.date} className="label-large">{t("piano.sheet.date")}</Label>
+      <Input id={ids.date} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
     </div>
   );
 
@@ -288,9 +316,9 @@ export function AddEventSheet({
   const timeRange = (requireEnd: boolean) => (
     <div className="grid grid-cols-2 gap-3">
       <div className="min-w-0 space-y-2">
-        <Label htmlFor="ev-start" className="label-large">{t("piano.sheet.startTime")}</Label>
+        <Label htmlFor={ids.startTime} className="label-large">{t("piano.sheet.startTime")}</Label>
         <Input
-          id="ev-start"
+          id={ids.startTime}
           type="time"
           value={time}
           onChange={(e) => {
@@ -300,7 +328,7 @@ export function AddEventSheet({
         />
       </div>
       <div className="min-w-0 space-y-2">
-        <Label htmlFor="ev-end" className="label-large">
+        <Label htmlFor={ids.endTime} className="label-large">
           {t("piano.sheet.endTime")}
           {requireEnd && <span aria-hidden="true" className="ml-0.5 text-destructive">*</span>}
           {!requireEnd && (
@@ -310,7 +338,7 @@ export function AddEventSheet({
           )}
         </Label>
         <Input
-          id="ev-end"
+          id={ids.endTime}
           type="time"
           value={endTime}
           onChange={(e) => {
@@ -318,7 +346,7 @@ export function AddEventSheet({
             setEndError(null);
           }}
           aria-invalid={requireEnd && !!endError}
-          aria-describedby={requireEnd && endError ? "ev-end-error" : undefined}
+          aria-describedby={requireEnd && endError ? ids.endTimeError : undefined}
         />
       </div>
     </div>
@@ -338,9 +366,9 @@ export function AddEventSheet({
           <PillToggle<Category>
             aria-label={t("piano.sheet.type")}
             options={[
-              { value: "verifica", label: "Verifica" },
-              { value: "compito", label: "Compito" },
-              { value: "altro", label: "Altro" },
+              { value: "verifica", label: t("piano.sheet.verifica") },
+              { value: "compito", label: t("piano.sheet.compito") },
+              { value: "altro", label: t("piano.sheet.altro") },
             ]}
             value={category}
             onChange={setCategory}
@@ -352,34 +380,43 @@ export function AddEventSheet({
               {/* P47 — Barra unica Titolo + Modalità: un solo blocco visivo.
                   L'input del titolo si espande a sinistra; a destra il pill
                   compatto apre la tendina delle modalità. Nessuna riga "Modalità" separata. */}
-              <div className="flex items-center rounded-2xl border border-border bg-card py-1.5 pl-4 pr-1.5 shadow-sm transition-[border-color,box-shadow] focus-within:border-ring/50 focus-within:ring-2 focus-within:ring-ring/20">
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={t("piano.sheet.titlePlaceholder")}
-                  aria-label={t("piano.sheet.title")}
-                  className="h-9 min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground md:text-sm"
-                />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label={t("piano.sheet.mode")}
-                      className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-secondary px-3 text-xs font-semibold text-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-                    >
-                      {t(VERIFICA_MODE_LABEL[mode])}
-                      <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 opacity-70" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-[10rem]">
-                    {VERIFICA_MODES.map((value) => (
-                      <DropdownMenuItem key={value} onSelect={() => setMode(value)}>
-                        {t(VERIFICA_MODE_LABEL[value])}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              <div className="space-y-2">
+                <Label htmlFor={ids.title} className="label-large">{t("piano.sheet.title")}</Label>
+                <div className="flex items-center rounded-2xl border border-border bg-card py-1.5 pl-4 pr-1.5 shadow-sm transition-[border-color,box-shadow] focus-within:border-ring/50 focus-within:ring-2 focus-within:ring-ring/20">
+                  <input
+                    id={ids.title}
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder={t("piano.sheet.titlePlaceholder")}
+                    className="h-9 min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground md:text-sm"
+                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        id={ids.modeButton}
+                        type="button"
+                        className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-secondary px-3 text-xs font-semibold text-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                      >
+                        <span className="sr-only">{t("piano.sheet.mode")}:</span>
+                        {t(VERIFICA_MODE_LABEL[mode])}
+                        <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 opacity-70" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-[10rem]">
+                      <DropdownMenuRadioGroup
+                        value={mode}
+                        onValueChange={(value) => setMode(value as VerificaMode)}
+                      >
+                        {VERIFICA_MODES.map((value) => (
+                          <DropdownMenuRadioItem key={value} value={value}>
+                            {t(VERIFICA_MODE_LABEL[value])}
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
 
               {/* P47 — Data + Materia affiancate (griglia fissa a 2 colonne anche su mobile) */}
@@ -391,14 +428,20 @@ export function AddEventSheet({
               {/* Riga 3 — Intervallo orario: per la verifica l'ora di fine è obbligatoria */}
               {timeRange(true)}
               {endError && (
-                <p id="ev-end-error" role="alert" className="-mt-2 text-xs font-medium text-destructive">
+                <p id={ids.endTimeError} role="alert" className="-mt-2 text-xs font-medium text-destructive">
                   {endError}
                 </p>
               )}
 
               {/* Riga 4 — Argomento: Da corso | Libero */}
               <div className="space-y-2">
-                <Label className="label-large">{t("piano.sheet.topic")}</Label>
+                <Label
+                  id={ids.topicLabel}
+                  htmlFor={topicMode === "free" ? ids.freeTopic : undefined}
+                  className="label-large"
+                >
+                  {t("piano.sheet.topic")}
+                </Label>
                 <PillToggle<"linked" | "free">
                   aria-label={t("piano.sheet.topic")}
                   options={[
@@ -412,7 +455,11 @@ export function AddEventSheet({
                 />
                 {topicMode === "linked" ? (
                   <Select value={courseId} onValueChange={setCourseId}>
-                    <SelectTrigger className="w-full h-11 rounded-2xl bg-secondary/70 border border-transparent px-3 body-medium transition-colors">
+                    <SelectTrigger
+                      id={ids.course}
+                      aria-labelledby={`${ids.topicLabel} ${ids.course}`}
+                      className="w-full h-11 rounded-2xl bg-secondary/70 border border-transparent px-3 body-medium transition-colors"
+                    >
                       <SelectValue placeholder={t("piano.sheet.coursePlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -423,6 +470,8 @@ export function AddEventSheet({
                   </Select>
                 ) : (
                   <Input
+                    id={ids.freeTopic}
+                    aria-labelledby={ids.topicLabel}
                     placeholder={t("piano.sheet.topicPlaceholder")}
                     value={freeTopic}
                     onChange={(e) => setFreeTopic(e.target.value)}
@@ -441,10 +490,13 @@ export function AddEventSheet({
                 </button>
                 {showNotes && (
                   <>
-                    <Textarea id="ev-desc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("piano.sheet.notesPlaceholder")} />
+                    <Label htmlFor={ids.notes} className="sr-only" id={ids.notesLabel}>
+                      {t("piano.sheet.notes")}
+                    </Label>
+                    <Textarea id={ids.notes} rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("piano.sheet.notesPlaceholder")} />
                     <div className="space-y-2 rounded-2xl border border-outline-variant/60 p-4">
                       <div className="flex items-center justify-between">
-                        <Label className="label-large">{t("piano.sheet.goalLabel")}</Label>
+                        <Label id={ids.goalLabel} className="label-large">{t("piano.sheet.goalLabel")}</Label>
                         {/* Indicatore visivo del voto scelto (null finché non toccato) */}
                         <span className="label-large font-semibold text-brand-deep">
                           {goal != null ? goal.toFixed(goal % 1 ? 1 : 0) : "—"}
@@ -452,12 +504,14 @@ export function AddEventSheet({
                       </div>
                       {/* Il DB salva goal come smallint: step intero 6-10 */}
                       <Slider
+                        id={ids.goalSlider}
                         value={[goal ?? 6]}
                         min={6}
                         max={10}
                         step={1}
                         onValueChange={(v) => setGoal(v[0])}
-                        aria-label={t("piano.sheet.goalLabel")}
+                        aria-labelledby={ids.goalLabel}
+                        thumbProps={{ id: ids.goalThumb, "aria-labelledby": ids.goalLabel }}
                       />
                       {goal != null && (
                         <button type="button" onClick={() => setGoal(null)} className="text-xs text-muted-foreground hover:text-foreground hover:underline">
@@ -480,9 +534,9 @@ export function AddEventSheet({
               </div>
               {/* Riga 2 — Descrizione ampia (il titolo si ricava da qui) */}
               <div className="space-y-2">
-                <Label htmlFor="ev-compito" className="label-large">{t("piano.sheet.compitoLabel")}</Label>
+                <Label htmlFor={ids.compito} className="label-large">{t("piano.sheet.compitoLabel")}</Label>
                 <Textarea
-                  id="ev-compito"
+                  id={ids.compito}
                   rows={5}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -498,14 +552,14 @@ export function AddEventSheet({
                 {t("piano.sheet.altroHint")}
               </p>
               <div className="space-y-2">
-                <Label htmlFor="ev-altro-title" className="label-large">{t("piano.sheet.title")}</Label>
-                <Input id="ev-altro-title" placeholder={t("piano.sheet.altroPlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} />
+                <Label htmlFor={ids.altroTitle} className="label-large">{t("piano.sheet.title")}</Label>
+                <Input id={ids.altroTitle} placeholder={t("piano.sheet.altroPlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ev-altro-notes" className="label-large">
+                <Label htmlFor={ids.altroNotes} className="label-large">
                   {t("piano.sheet.notes")} <span className="text-muted-foreground font-normal">({t("piano.sheet.optional").replace(/[()]/g, "")})</span>
                 </Label>
-                <Textarea id="ev-altro-notes" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("piano.sheet.notesPlaceholder")} />
+                <Textarea id={ids.altroNotes} rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("piano.sheet.notesPlaceholder")} />
               </div>
               {dateField}
               {timeRange(false)}
