@@ -4,6 +4,7 @@ import { cleanCourseName } from "@/lib/courseName";
 import type { Evaluation } from "@/hooks/useEvaluations";
 import type { StudyEvent } from "@/hooks/useStudyEvents";
 import type { UserSubject } from "@/hooks/useUserSubjects";
+import type { StudyEventSource, StudyEventStatus } from "@/lib/planner/types";
 
 export interface PlannerEntry {
   id: string;
@@ -15,6 +16,18 @@ export interface PlannerEntry {
   customColor?: string | null;
   important: boolean;
   completed: boolean;
+  endTime?: string | null;
+  notes?: string | null;
+  status?: StudyEventStatus;
+  contextId?: string | null;
+  lessonFrom?: number | null;
+  lessonTo?: number | null;
+  source?: StudyEventSource;
+  moveCount?: number;
+  originalDate?: string | null;
+  originalTime?: string | null;
+  locked?: boolean;
+  version?: number;
   original: { kind: "evaluation"; data: Evaluation } | { kind: "studyEvent"; data: StudyEvent };
 }
 export const validEventTime = (time?: string | null) =>
@@ -56,7 +69,20 @@ export function plannerEntries(
         id: event.id, date: parseISO(event.event_date.slice(0, 10)), time: validEventTime(event.event_time),
         title: event.title, subject: event.subject && event.subject !== "Altro" ? event.subject : null,
         coverName: course ? cleanCourseName(course.file_name) : subject?.name ?? event.subject ?? event.title, customColor: course ? undefined : subject?.color,
-        important: event.event_type === "test", completed: false,
+        important: event.event_type === "test",
+        completed: event.status === "done" || event.is_completed === true,
+        endTime: event.end_time,
+        notes: event.notes,
+        status: event.status,
+        contextId: event.context_id,
+        lessonFrom: event.lesson_from,
+        lessonTo: event.lesson_to,
+        source: event.source,
+        moveCount: event.move_count,
+        originalDate: event.original_date,
+        originalTime: event.original_time,
+        locked: event.locked,
+        version: event.version,
         original: { kind: "studyEvent", data: event },
       };
     }),

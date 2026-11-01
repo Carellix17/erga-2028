@@ -1,12 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import {
+  buildStudyEventInsert,
+  buildStudyEventUpdate,
+  isPlanChangeReason,
+  validatePlanChanges,
+} from "./validate.ts";
 
 serve(withCors(async (req) => {
   try {
     const body = await req.json();
     const { events, action } = body;
 
-    // Validate authentication and get userId
+    // Validate authentication and get userId.
     let auth;
     try {
       auth = await validateAuth(req, body);
@@ -16,19 +22,36 @@ serve(withCors(async (req) => {
     }
     const { userId, supabase } = auth;
 
-
     console.log(`Save event for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
 
-    if (action === "add" && events) {
-      // Add new events
-      const eventsToInsert = events.map((event: { subject: string; title: string; date: string; time?: string; type: string }) => ({
-        user_id: userId,
-        subject: event.subject,
-        title: event.title,
-        event_date: event.date,
-        event_time: event.time || null,
-        event_type: event.type,
-      }));
+    if (action === "applyChanges") {
+      if (!isPlanChangeReason(body.reason)) return errorResponse("reason_invalid", 400);
+      const validation = validatePlanChanges(body.changes);
+      if (!validation.ok) return errorResponse(validation.error, 400);
+
+      const { data, error } = await supabase.rpc("apply_plan_changes", {
+        p_user_id: userId,
+        p_reason: body.reason,
+        p_changes: validation.changes,
+      });
+      if (error) {
+        if (error.code === "40001") return errorResponse("version_conflict", 409);
+        console.error("Apply plan changes error:", error);
+        throw new Error("Errore nell'applicazione delle modifiche al piano");
+      }
+
+      return successResponse({ packageId: data });
+    }
+
+    if (action === "add" && Array.isArray(events)) {
+      // Aggiunge sempre e solo i campi base legacy più i nuovi campi validati.
+      // Le chiavi opzionali assenti/non valide non entrano nell'INSERT.
+      const eventsToInsert = events.map((rawEvent: unknown) => {
+        const event = rawEvent && typeof rawEvent === "object"
+          ? rawEvent as Record<string, unknown>
+          : {};
+        return buildStudyEventInsert(userId, event);
+      });
 
       const { error } = await supabase
         .from("study_events")
@@ -43,7 +66,7 @@ serve(withCors(async (req) => {
     }
 
     if (action === "delete" && events) {
-      // Delete events by id - ensure user owns the events
+      // Delete events by id - ensure user owns the events.
       const { error } = await supabase
         .from("study_events")
         .delete()
@@ -59,41 +82,34 @@ serve(withCors(async (req) => {
     }
 
     if (action === "update" && body.event) {
-      // Modifica di un singolo evento esistente, sempre vincolata al proprietario.
-      const ev = body.event;
-      const id = String(ev.id || "");
-      if (!id) return errorResponse("Missing event id", 400);
-
-      // Whitelist dei campi modificabili + validazioni
-      const allowedTypes = ["study", "test", "assignment"];
-      const updateData: Record<string, unknown> = {};
-      if (typeof ev.subject === "string" && ev.subject.trim()) updateData.subject = ev.subject.trim().slice(0, 80);
-      if (typeof ev.title === "string" && ev.title.trim()) updateData.title = ev.title.trim().slice(0, 200);
-      if (typeof ev.date === "string" && !Number.isNaN(Date.parse(ev.date))) updateData.event_date = ev.date;
-      if (typeof ev.time === "string" && /^\d{2}:\d{2}$/.test(ev.time)) updateData.event_time = ev.time;
-      if (ev.time === null) updateData.event_time = null;
-      if (typeof ev.type === "string" && allowedTypes.includes(ev.type)) updateData.event_type = ev.type;
-      if (Object.keys(updateData).length === 0) return errorResponse("Nessuna modifica valida", 400);
+      // Modifica di un singolo evento, con optimistic concurrency sul campo version.
+      const nowIso = new Date().toISOString();
+      const update = buildStudyEventUpdate(body.event, nowIso);
+      if (!update.ok) return errorResponse(update.error, update.status);
 
       const { error, data } = await supabase
         .from("study_events")
-        .update(updateData)
-        .eq("id", id)
-        .eq("user_id", userId)   // <-- nessuno puo' modificare eventi altrui
+        .update({
+          ...update.data,
+          version: update.version + 1,
+          updated_at: nowIso,
+        })
+        .eq("id", update.id)
+        .eq("user_id", userId)
+        .eq("version", update.version)
         .select("id");
 
       if (error) {
         console.error("Update error:", error);
         throw new Error("Errore nella modifica dell'evento");
       }
-      if (!data || data.length === 0) return errorResponse("Evento non trovato", 404);
+      if (!data || data.length === 0) return errorResponse("version_conflict", 409);
 
       return successResponse({ success: true });
     }
 
     if (action === "deleteByType" && typeof body.eventType === "string") {
-      // Elimina tutte le sessioni di un tipo (es. solo quelle "study" generate dall'AI),
-      // sempre e solo quelle dell'utente autenticato.
+      // Delete all matching event types for this user only.
       const allowedTypes = ["study", "test", "assignment"];
       if (!allowedTypes.includes(body.eventType)) return errorResponse("Tipo non valido", 400);
 
@@ -112,7 +128,7 @@ serve(withCors(async (req) => {
     }
 
     if (action === "deleteAll") {
-      // Elimina TUTTI gli eventi del piano dell'utente (doppia conferma lato UI)
+      // Delete all planner events for this user (the UI requires confirmation).
       const { error } = await supabase
         .from("study_events")
         .delete()
@@ -127,7 +143,6 @@ serve(withCors(async (req) => {
     }
 
     if (action === "list") {
-      // List all events for user
       const { data, error } = await supabase
         .from("study_events")
         .select("*")
@@ -143,7 +158,6 @@ serve(withCors(async (req) => {
     }
 
     return errorResponse("Invalid action", 400);
-
   } catch (error) {
     console.error("Error:", error);
     return errorResponse("Errore nel salvataggio degli eventi. Riprova.");
