@@ -335,6 +335,7 @@ function PartialProgressSlot({
     style={position}
     exiting={item.exiting}
     partialProgress={partialProgress}
+    entry={entry}
     onEdit={item.showActions ? () => onEdit(entry) : undefined}
     onDelete={item.showActions ? () => onDelete(entry) : undefined}
   />;
@@ -447,6 +448,7 @@ export function DayTimeline({
                   key={`untimed-${entry.kind}-${entry.id}`}
                   slot={entrySlot(entry)}
                   exiting={exitingIds.includes(entry.id)}
+                  entry={entry}
                   onEdit={() => onEdit(entry)}
                   onDelete={() => onDelete(entry)}
                 />
@@ -489,6 +491,7 @@ export function DayTimeline({
                   slot={item.slot}
                   style={position}
                   exiting={item.exiting}
+                  entry={item.showActions ? item.entry : undefined}
                   onEdit={onEditAction}
                   onDelete={onDeleteAction}
                 />;
