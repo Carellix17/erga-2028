@@ -70,7 +70,7 @@ describe("AddEventSheet — densità P47", () => {
     expect(altroBlock).toContain("{timeRange(false)}");
     expect(altroBlock.match(/t\("piano\.sheet\.notes"\)/g)).toHaveLength(1);
     expect(altroBlock).not.toContain("piano.sheet.optional");
-    expect(altroBlock).toContain('role="alert"');
+    expect(altroBlock).toContain('renderFieldError("endTime", ids.endTimeError, endError');
     expect(SHEET).toContain('setEndTime("")');
     expect(SHEET).toContain("validateAltroTimes");
     expect(SHEET).toContain("{timeRange(true)}");
@@ -90,6 +90,15 @@ describe("AddEventSheet — densità P47", () => {
     expect(IT).toContain('"endTimeAfterStart"');
     expect(EN).toContain('"endTimeRequired"');
     expect(EN).toContain('"endTimeAfterStart"');
+  });
+
+  it("usa la precompilazione dell'ora e aiuti localizzati", () => {
+    expect(SHEET).toContain("addOneHour");
+    expect(SHEET).toContain("endTouched");
+    expect(IT).toContain('"endTimeDefaultHint"');
+    expect(EN).toContain('"endTimeDefaultHint"');
+    expect(IT).toContain('"requiredFieldsHint": "I campi obbligatori sono indicati"');
+    expect(EN).toContain('"requiredFieldsHint": "Required fields are indicated"');
   });
 
   it("usa le etichette delle schede e della modalità tradotte e capitalizzate", () => {

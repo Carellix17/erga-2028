@@ -33,6 +33,15 @@ export interface PlannerEntry {
 }
 export const validEventTime = (time?: string | null) =>
   time && /^([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(time) ? time.slice(0, 5) : undefined;
+export function addOneHour(hhmm: string): string | null {
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(hhmm)) return null;
+  const [hours, minutes] = hhmm.split(":").map(Number);
+  const startMinutes = hours * 60 + minutes;
+  const endMinutes = Math.min(startMinutes + 60, 23 * 60 + 59);
+  if (endMinutes <= startMinutes) return null;
+  return `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
+}
+
 export const comparePlannerEntries = (a: PlannerEntry, b: PlannerEntry) =>
   (a.time ?? "zz:zz").localeCompare(b.time ?? "zz:zz") || a.title.localeCompare(b.title);
 

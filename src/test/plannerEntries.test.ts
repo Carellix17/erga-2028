@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { plannerEntries, validEventTime } from "@/lib/plannerEntries";
+import { addOneHour, plannerEntries, validEventTime } from "@/lib/plannerEntries";
 import type { Evaluation } from "@/hooks/useEvaluations";
 import type { StudyEvent } from "@/hooks/useStudyEvents";
 import { resolveCourseCover } from "@/lib/courseIdentity";
@@ -11,6 +11,14 @@ const evaluation = (overrides: Partial<Evaluation> = {}): Evaluation => ({
 const subjects = [{ id: "physics", user_id: "demo", name: "Fisica", color: "fisica" }];
 
 describe("planner data used by both month and day", () => {
+  it("adds one hour without crossing the day boundary", () => {
+    expect(addOneHour("16:15")).toBe("17:15");
+    expect(addOneHour("09:00")).toBe("10:00");
+    expect(addOneHour("23:30")).toBe("23:59");
+    expect(addOneHour("")).toBeNull();
+    expect(addOneHour("25:00")).toBeNull();
+  });
+
   it("preserves real local times, distinguishing date-only and legacy noon records", () => {
     const entries = plannerEntries([
       evaluation(), evaluation({ id: "noon", date: new Date(2026, 10, 5, 12).toISOString() }),
