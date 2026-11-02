@@ -24,6 +24,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { StudyEventStatus } from "@/lib/planner/types";
+import type { PlannerEntry } from "@/lib/plannerEntries";
+import { SlotDoneMenu } from "./SlotDoneMenu";
 
 export type PlanSlotKind = "study" | "evaluation" | "assignment" | "busy" | "pause" | "routine";
 
@@ -60,6 +62,7 @@ export interface PlanSlotProps {
   exiting?: boolean;
   ariaLabel?: string;
   partialProgress?: { done: number; total: number };
+  entry?: PlannerEntry;
   onEdit?: () => void;
   onDelete?: () => void;
 }
@@ -151,6 +154,7 @@ export function PlanSlot({
   exiting = false,
   ariaLabel,
   partialProgress,
+  entry,
   onEdit,
   onDelete,
 }: PlanSlotProps) {
@@ -250,8 +254,9 @@ export function PlanSlot({
         </span>}
         {moveLabel && <span className="planner-slot-moved">{moveLabel}</span>}
 
-        {(onEdit || onDelete) && !isRoutine && (
+        {(entry || onEdit || onDelete) && !isRoutine && !isPause && (
           <div className="planner-slot-actions">
+            {entry && <SlotDoneMenu entry={entry} slot={slot} />}
             {onEdit && <Button variant="ghost" size="icon" className="h-11 w-11" aria-label={t("piano.editEntry", { title: slot.title || slot.subject || typeLabel })} onClick={onEdit}><PencilLine aria-hidden="true" /></Button>}
             {onDelete && <Button variant="ghost" size="icon" className="h-11 w-11 text-muted-foreground hover:text-destructive" aria-label={t("piano.deleteEntry", { title: slot.title || slot.subject || typeLabel })} onClick={onDelete} data-haptic="warning"><Trash2 aria-hidden="true" /></Button>}
           </div>

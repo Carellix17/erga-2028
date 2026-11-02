@@ -57,6 +57,7 @@ import {
 } from "@/hooks/useGenerationUsage";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useDeleteFileContext } from "@/hooks/useFileContexts";
+import { useSlotProgress } from "@/hooks/useSlotProgress";
 
 interface StudioViewProps {
   hasFiles: boolean;
@@ -351,6 +352,7 @@ export function StudioView({
   );
   const finalTestResult = lessonsQuery.data?.finalTest ?? null;
   const markLessonComplete = useMarkLessonComplete(effectiveContextId);
+  const updateSlotProgress = useSlotProgress();
   const saveFinalTestResult = useSaveFinalTestResult(effectiveContextId);
   const updateProgress = useUpdateLessonProgress(effectiveContextId);
   const { invalidateList, invalidateContexts, setLessonsList } = useLessonsCacheControls();
@@ -1335,6 +1337,7 @@ export function StudioView({
               correct: result.correct,
               total: result.total,
             });
+            updateSlotProgress.mutate({ contextId: effectiveContextId, order: currentLesson.lesson_order });
             // 🌲 P24: finito l'ultimo passo di un modulo → torna alla schermata
             // dei moduli (il prossimo mostra "in generazione" se parte la fabbrica).
             if (nextIndex < lessons.length && isFirstOfModule(nextIndex)) {
