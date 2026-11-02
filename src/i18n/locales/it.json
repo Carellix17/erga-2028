@@ -600,6 +600,22 @@
       "view": "Vedi",
       "later": "Più tardi"
     },
+    "autoReplan": {
+      "movedToast": "Saltata. L'ho spostata a {{day}} {{time}}, il primo spazio libero.",
+      "partialToast": "La sessione parziale è stata aggiornata.",
+      "splitToast": "Ho diviso la sessione in due parti più corte.",
+      "noSpaceToast": "Saltata. Non ho trovato spazio libero prima della verifica di {{deadline}}.",
+      "chooseTime": "Scegli io",
+      "noSpaceTitle": "Non trovo spazio prima della verifica di {{deadline}}.",
+      "noSpaceDescription": "Puoi scegliere un orario o riorganizzare la settimana.",
+      "chooseYourTime": "Scegli tu un orario",
+      "shortenSessions": "Accorcia altre sessioni",
+      "moveLimitTitle": "{{subject}} è stata rimandata {{count}} volte.",
+      "moveLimitDescription": "La teniamo {{day}} o la dividiamo in due parti più corte?",
+      "keepDay": "La teniamo {{day}}",
+      "splitInTwo": "La dividiamo in due parti più corte",
+      "partTitle": "{{title}} · parte {{part}}"
+    },
     "changePreview": {
       "title": "Anteprima delle modifiche",
       "description": "Controlla la proposta e scegli quali modifiche applicare. Il piano non cambia finché non confermi.",

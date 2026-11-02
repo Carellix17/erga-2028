@@ -600,6 +600,22 @@
       "view": "View",
       "later": "Later"
     },
+    "autoReplan": {
+      "movedToast": "Skipped. I moved it to {{day}} at {{time}}, the first free slot.",
+      "partialToast": "The partially completed session was updated.",
+      "splitToast": "I split the session into two shorter parts.",
+      "noSpaceToast": "Skipped. I could not find a free time before the {{deadline}} test.",
+      "chooseTime": "I'll choose",
+      "noSpaceTitle": "I can't find a free time before the {{deadline}} test.",
+      "noSpaceDescription": "Choose a time yourself or reorganize the week.",
+      "chooseYourTime": "Choose a time",
+      "shortenSessions": "Shorten other sessions",
+      "moveLimitTitle": "{{subject}} has been rescheduled {{count}} times.",
+      "moveLimitDescription": "Keep it on {{day}} or split it into two shorter parts?",
+      "keepDay": "Keep it on {{day}}",
+      "splitInTwo": "Split it into two shorter parts",
+      "partTitle": "{{title}} · part {{part}}"
+    },
     "changePreview": {
       "title": "Preview changes",
       "description": "Review the proposal and choose which changes to apply. Your plan stays as it is until you confirm.",
