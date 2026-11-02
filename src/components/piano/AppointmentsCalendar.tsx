@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowUpRight, CalendarDays, ChevronLeft, ChevronRight, Loader2, Plus, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, CalendarDays, ChevronLeft, ChevronRight, Loader2, Plus, Sparkles, Upload } from "lucide-react";
 import {
   addDays, addMonths, differenceInCalendarDays, eachDayOfInterval, endOfMonth, endOfWeek,
   format, isSameMonth, isToday, isValid, parseISO, startOfMonth, startOfWeek, startOfToday,
@@ -10,13 +10,14 @@ import { useTranslation } from "react-i18next";
 import type { Evaluation } from "@/hooks/useEvaluations";
 import type { StudyEvent } from "@/hooks/useStudyEvents";
 import type { UserSubject } from "@/hooks/useUserSubjects";
+import { useUserRoutines, type UserRoutine } from "@/hooks/useUserRoutines";
 import { dayKey } from "@/lib/weekPlanner";
 import { comparePlannerEntries, plannerEntries } from "@/lib/plannerEntries";
 import { courseCoverVars } from "@/lib/courseIdentity";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
-import { DailySchedule } from "./DailySchedule";
+import { DayTimeline } from "./DayTimeline";
 
 interface AppointmentsCalendarProps {
   evaluations: Evaluation[];
@@ -35,6 +36,7 @@ interface AppointmentsCalendarProps {
 }
 
 /** The month is the entry point. A date URL opens its complete daily schedule. */
+const EMPTY_ROUTINES: UserRoutine[] = [];
 const capitalizeFirstLetter = (value: string) => value.charAt(0).toLocaleUpperCase() + value.slice(1);
 
 export function AppointmentsCalendar({
@@ -43,6 +45,8 @@ export function AppointmentsCalendar({
   onDeleteEvaluation, onDeleteStudyEvent,
 }: AppointmentsCalendarProps) {
   const { t, i18n } = useTranslation();
+  const { data: routineData, isLoading: routinesLoading } = useUserRoutines();
+  const routines = routineData ?? EMPTY_ROUTINES;
   const locale = i18n.language.startsWith("en") ? enUS : it;
   const [params, setParams] = useSearchParams();
   const rawDay = params.get("planDay");
@@ -135,7 +139,8 @@ export function AppointmentsCalendar({
                 <Button onClick={() => onAddEvent(selectedKey)} data-haptic="medium"><Plus aria-hidden="true" />{t("piano.addEventFull")}</Button>
               </div>
             </div>
-            <DailySchedule dateKey={selectedKey} entries={entriesByKey.get(selectedKey) ?? []} exitingIds={exitingIds}
+            <DayTimeline dateKey={selectedKey} entries={entriesByKey.get(selectedKey) ?? []} exitingIds={exitingIds}
+              routines={routines} routinesLoading={routinesLoading}
               onEdit={(entry) => entry.original.kind === "evaluation" ? onEditEvaluation(entry.original.data) : onEditStudyEvent(entry.original.data)}
               onDelete={(entry) => entry.original.kind === "evaluation" ? onDeleteEvaluation(entry.original.data) : onDeleteStudyEvent(entry.original.data)} />
           </>
@@ -154,7 +159,13 @@ export function AppointmentsCalendar({
                   <Button variant="ghost" size="icon" aria-label={t("piano.nextDeadlines")} aria-controls="planner-deadlines" disabled={deadlineEdges.end} onClick={() => scrollDeadlines(1)}><ChevronRight aria-hidden="true" /></Button>
                 </div>}
               </div>
-              {deadlines.length === 0 ? <p className="border border-border bg-sheet p-4 text-base text-muted-foreground">{t("piano.noDeadlines")}</p> : (
+              {deadlines.length === 0 ? <div className="planner-empty-plan border border-border bg-sheet p-4">
+                <p className="text-base font-medium">{t("piano.noDeadlinesPlan")}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button onClick={() => onAddEvent()} data-haptic="medium"><Plus aria-hidden="true" />{t("piano.addEvaluationEmpty")}</Button>
+                  <Button variant="outline" onClick={() => window.dispatchEvent(new CustomEvent("erga:goto-tab", { detail: "studio" }))} data-haptic="medium"><Upload aria-hidden="true" />{t("piano.uploadMaterialEmpty")}</Button>
+                </div>
+              </div> : (
                 <ul ref={deadlinesRef} id="planner-deadlines" className="planner-deadlines">
                   {deadlines.map((entry) => {
                     const remaining = differenceInCalendarDays(entry.date, startOfToday());
