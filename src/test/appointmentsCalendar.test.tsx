@@ -49,7 +49,7 @@ const props = {
   onDeleteEvaluation: vi.fn(), onDeleteStudyEvent: vi.fn(),
 };
 const Location = () => <output data-testid="location">{useLocation().search}</output>;
-const mount = (overrides = {}, url = "/app?tab=piano") => render(<MemoryRouter initialEntries={[url]}><AppointmentsCalendar {...props} {...overrides} /><Location /></MemoryRouter>);
+const mount = (overrides = {}, url = "/app?tab=piano&view=month") => render(<MemoryRouter initialEntries={[url]}><AppointmentsCalendar {...props} {...overrides} /><Location /></MemoryRouter>);
 const mountPiano = () => render(<MemoryRouter initialEntries={["/app?tab=piano"]}><PianoView hasFiles={false} onUploadClick={vi.fn()} /></MemoryRouter>);
 const openAltroSheet = async () => {
   fireEvent.click(screen.getByRole("button", { name: "Aggiungi evento" }));
@@ -69,7 +69,7 @@ describe("calendar and daily schedule", () => {
 
   it("shows one named deadline heading and leaves the list without a duplicate label", () => {
     mount();
-    const title = "Verifiche e interrogazioni in arrivo";
+    const title = "Prossime verifiche";
 
     expect(screen.getAllByRole("heading", { name: title })).toHaveLength(1);
     const region = screen.getByRole("region", { name: title });
@@ -77,9 +77,9 @@ describe("calendar and daily schedule", () => {
     expect(within(region).getByRole("list")).not.toHaveAccessibleName(title);
   });
 
-  it("keeps localized narrow and abbreviated weekday labels inside an aria-hidden row", () => {
+  it("keeps localized narrow and abbreviated weekday labels in the month grid header", () => {
     const { container } = mount();
-    const weekdayRow = container.querySelector('[aria-hidden="true"].grid-cols-7');
+    const weekdayRow = container.querySelector(".planner-month-weekdays[role=\"row\"]");
     expect(weekdayRow).not.toBeNull();
 
     const cells = Array.from(weekdayRow!.querySelectorAll(":scope > span"));
@@ -88,25 +88,25 @@ describe("calendar and daily schedule", () => {
     expect(cells.map((cell) => cell.children[1]?.textContent)).toEqual(["lun", "mar", "mer", "gio", "ven", "sab", "dom"]);
   });
 
-  it("always exposes the month, upcoming tests, then both actions", () => {
+  it("keeps the add and plan actions in the shared header above the month", () => {
     mount();
     const calendar = screen.getByRole("region", { name: "Calendario" });
     expect(within(calendar).getAllByRole("button").length).toBeGreaterThan(30);
     expect(screen.getByRole("button", { name: /Verifica di italiano, Manca 1 giorno/ })).toBeVisible();
     expect(screen.getByRole("button", { name: "Genera piano di studio" })).toBeEnabled();
     const add = screen.getByRole("button", { name: "Aggiungi evento" });
-    expect(calendar.compareDocumentPosition(add) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(add.compareDocumentPosition(calendar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
   it("opens today's full schedule, with other events and a separate untimed section", () => {
     mount();
-    fireEvent.click(screen.getByRole("button", { name: "Sessione giornaliera" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Giorno" }));
     expect(screen.getByText("Ripasso di fisica")).toBeVisible();
     expect(screen.getByText("Allenamento")).toBeVisible();
     expect(within(screen.getByRole("region", { name: "Senza orario" })).getByText("Consegna ricerca")).toBeVisible();
     expect(screen.getByText("15:30")).toBeVisible();
     expect(document.querySelectorAll("[data-hour]")).toHaveLength(17);
     expect(screen.getByText("Adesso", { exact: false })).toBeVisible();
-    expect(screen.getByTestId("location")).toHaveTextContent(`tab=piano&planDay=${key}`);
+    expect(screen.getByTestId("location")).toHaveTextContent(`tab=piano&view=day&planDay=${key}`);
     fireEvent.click(screen.getByRole("button", { name: "Aggiungi evento" }));
     expect(props.onAddEvent).toHaveBeenCalledWith(key);
   });
@@ -120,7 +120,7 @@ describe("calendar and daily schedule", () => {
     expect(screen.getByRole("heading", { name: capitalizeFirstLetter(format(today, "EEEE d MMMM", { locale: italianLocale })) })).toHaveFocus();
     fireEvent.click(screen.getByRole("button", { name: "Giorno successivo" }));
     expect(screen.queryByText("Allenamento")).not.toBeInTheDocument();
-    expect(screen.getByText("Verifica di italiano")).toBeVisible();
+    expect(screen.getAllByText("Verifica di italiano")).toHaveLength(2);
     fireEvent.click(screen.getByRole("button", { name: "Torna al calendario" }));
     expect(document.querySelector('button[aria-current="date"]')).toHaveFocus();
     expect(screen.getByRole("region", { name: "Calendario" })).toBeVisible();
@@ -200,7 +200,7 @@ describe("calendar and daily schedule", () => {
     window.removeEventListener("erga:goto-tab", navigate);
   });
   it("ignores malformed date links and supports month navigation", () => {
-    mount({}, "/app?tab=piano&planDay=invalid");
+    mount({}, "/app?tab=piano&view=month&planDay=invalid");
     fireEvent.click(screen.getByRole("button", { name: "Mese successivo" }));
     expect(screen.getByRole("heading", { name: capitalizeFirstLetter(format(addMonths(today, 1), "MMMM yyyy", { locale: italianLocale })) })).toBeVisible();
   });
