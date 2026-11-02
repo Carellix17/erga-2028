@@ -170,7 +170,7 @@ export function VisualPreview() {
           ]} subjects={[
             { id: "demo-physics", user_id: "demo", name: "Fisica", color: null },
             { id: "demo-history", user_id: "demo", name: "Storia", color: null },
-          ]} courses={[{ id: "demo-course", file_name: "Fisica: il moto rettilineo.pdf" }]} exitingIds={[]} onAddEvent={() => window.alert("Anteprima: aggiunta evento dimostrativa.")} showGeneratePlan onGeneratePlan={() => window.alert("Anteprima: nessuna generazione AI viene eseguita.")} isGeneratingPlan={false} onEditEvaluation={() => {}} onEditStudyEvent={() => {}} onDeleteEvaluation={() => {}} onDeleteStudyEvent={() => {}} />
+          ]} courses={[{ id: "demo-course", file_name: "Fisica: il moto rettilineo.pdf" }]} exitingIds={[]} onAddEvent={() => window.alert("Anteprima: aggiunta evento dimostrativa.")} showGeneratePlan onPreparePlan={() => window.alert("Anteprima: nessuna generazione AI viene eseguita.")} isPreparingPlan={false} onOpenHistory={() => window.alert("Anteprima: cronologia modifiche.")} onEditEvaluation={() => {}} onEditStudyEvent={() => {}} onDeleteEvaluation={() => {}} onDeleteStudyEvent={() => {}} />
         ) : (
           <section className="min-h-[50vh] p-6" aria-label="Anteprima area applicativa">
             <h1 className="text-2xl font-semibold">Anteprima {activeTab}</h1>

@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { addDays, addMonths, format } from "date-fns";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { it as italianLocale } from "date-fns/locale";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { AppointmentsCalendar } from "@/components/piano/AppointmentsCalendar";
@@ -13,10 +14,13 @@ const { addStudyEventsMutateAsync, toast } = vi.hoisted(() => ({
 }));
 
 vi.mock("@/hooks/useStudyEvents", () => ({
+  studyEventsKeys: { all: (userId: string | null) => ["study-events", userId] },
+  PlanConflictError: class PlanConflictError extends Error {},
   useStudyEventsQuery: () => ({ data: [], isLoading: false, isError: false, refetch: vi.fn() }),
   useAddStudyEvents: () => ({ mutateAsync: addStudyEventsMutateAsync }),
   useDeleteStudyEvent: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useUpdateStudyEvent: () => ({ mutateAsync: vi.fn() }),
+  useApplyPlanChanges: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock("@/hooks/useEvaluations", () => ({
   useEvaluations: () => ({ data: [], isLoading: false, isError: false, refetch: vi.fn() }),
@@ -25,6 +29,9 @@ vi.mock("@/hooks/useEvaluations", () => ({
   useDeleteEvaluation: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ currentUser: null }) }));
+vi.mock("@/hooks/usePlannerData", () => ({
+  usePlannerData: () => ({ data: undefined, isLoading: false, isError: false, refetch: vi.fn() }),
+}));
 vi.mock("@/hooks/useUserSubjects", () => ({ useUserSubjects: () => ({ data: [] }) }));
 vi.mock("@/hooks/useUserRoutines", () => ({ useUserRoutines: () => ({ data: [], isLoading: false }) }));
 vi.mock("@/hooks/useFileContexts", () => ({ useFileContextsQuery: () => ({ data: [] }) }));
@@ -45,12 +52,19 @@ const events: StudyEvent[] = [
 ];
 const props = {
   evaluations: [], events, subjects: [], exitingIds: [], onAddEvent: vi.fn(), showGeneratePlan: true,
-  onGeneratePlan: vi.fn(), isGeneratingPlan: false, onEditEvaluation: vi.fn(), onEditStudyEvent: vi.fn(),
+  onPreparePlan: vi.fn(), isPreparingPlan: false, onOpenHistory: vi.fn(), onEditEvaluation: vi.fn(), onEditStudyEvent: vi.fn(),
   onDeleteEvaluation: vi.fn(), onDeleteStudyEvent: vi.fn(),
 };
 const Location = () => <output data-testid="location">{useLocation().search}</output>;
 const mount = (overrides = {}, url = "/app?tab=piano&view=month") => render(<MemoryRouter initialEntries={[url]}><AppointmentsCalendar {...props} {...overrides} /><Location /></MemoryRouter>);
-const mountPiano = () => render(<MemoryRouter initialEntries={["/app?tab=piano"]}><PianoView hasFiles={false} onUploadClick={vi.fn()} /></MemoryRouter>);
+const mountPiano = () => {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={["/app?tab=piano"]}><PianoView hasFiles={false} onUploadClick={vi.fn()} /></MemoryRouter>
+    </QueryClientProvider>,
+  );
+};
 const openAltroSheet = async () => {
   fireEvent.click(screen.getByRole("button", { name: "Aggiungi evento" }));
   fireEvent.click(await screen.findByRole("radio", { name: "Altro" }));
@@ -93,10 +107,20 @@ describe("calendar and daily schedule", () => {
     const calendar = screen.getByRole("region", { name: "Calendario" });
     expect(within(calendar).getAllByRole("button").length).toBeGreaterThan(30);
     expect(screen.getByRole("button", { name: /Verifica di italiano, Manca 1 giorno/ })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Genera piano di studio" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Prepara il piano" })).toBeEnabled();
     const add = screen.getByRole("button", { name: "Aggiungi evento" });
     expect(add.compareDocumentPosition(calendar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
+  it("opens the change history from the accessible planner menu", async () => {
+    mount();
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Altre azioni del piano" }), {
+      button: 0,
+      pointerType: "mouse",
+    });
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Cronologia modifiche" }));
+    expect(props.onOpenHistory).toHaveBeenCalledTimes(1);
+  });
+
   it("opens today's full schedule, with other events and a separate untimed section", () => {
     mount();
     fireEvent.click(screen.getByRole("radio", { name: "Giorno" }));
@@ -105,7 +129,16 @@ describe("calendar and daily schedule", () => {
     expect(within(screen.getByRole("region", { name: "Senza orario" })).getByText("Consegna ricerca")).toBeVisible();
     expect(screen.getByText("15:30")).toBeVisible();
     expect(document.querySelectorAll("[data-hour]")).toHaveLength(17);
-    expect(screen.getByText("Adesso", { exact: false })).toBeVisible();
+    const romeHour = Number(new Intl.DateTimeFormat("en", {
+      hour: "2-digit",
+      hourCycle: "h23",
+      timeZone: "Europe/Rome",
+    }).format(new Date()));
+    if (romeHour >= 7 && romeHour < 23) {
+      expect(screen.getByTestId("now-line")).toHaveTextContent(/^Adesso/);
+    } else {
+      expect(screen.queryByTestId("now-line")).not.toBeInTheDocument();
+    }
     expect(screen.getByTestId("location")).toHaveTextContent(`tab=piano&view=day&planDay=${key}`);
     fireEvent.click(screen.getByRole("button", { name: "Aggiungi evento" }));
     expect(props.onAddEvent).toHaveBeenCalledWith(key);
@@ -183,7 +216,7 @@ describe("calendar and daily schedule", () => {
     mount({ events: [], showGeneratePlan: false }, `/app?tab=piano&planDay=${key}`);
     expect(screen.getByText("Giorno libero")).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Torna al calendario" }));
-    expect(screen.getByRole("button", { name: "Genera piano di studio" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Prepara il piano" })).toBeDisabled();
     expect(document.querySelector('button[aria-current="date"]')).toBeVisible();
   });
 
