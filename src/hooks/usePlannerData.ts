@@ -31,6 +31,7 @@ interface PlannerSourceData {
   completedByContext: Record<string, number[]>;
   readingLogs: LessonReadingLogRow[];
   settings: PlannerSettings;
+  askBeforeMove: boolean;
   subjectOverrides: Record<string, SubjectType>;
   contextMetadata: Record<string, PlannerContextMetadata>;
 }
@@ -230,6 +231,7 @@ async function loadPlannerData(userId: string): Promise<PlannerSourceData> {
     completedByContext,
     readingLogs: (logsRes.data ?? []) as LessonReadingLogRow[],
     settings,
+    askBeforeMove: settingsRow?.ask_before_move ?? false,
     subjectOverrides: subjectOverrides(settingsRow?.subject_types),
     contextMetadata,
   };
@@ -298,6 +300,7 @@ function emptyPlannerData(): PlannerSourceData {
     completedByContext: {},
     readingLogs: [],
     settings: {},
+    askBeforeMove: false,
     subjectOverrides: {},
     contextMetadata: {},
   };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { enUS, it } from "date-fns/locale";
@@ -9,10 +9,12 @@ import { triggerHaptic } from "@/utils/haptics";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { usePlannerData, plannerDataKeys } from "@/hooks/usePlannerData";
+import { useAutoReplan, type AutoReplanApplyRequest, type AutoReplanApplyResult, type AutoReplanPreview, type ReplanPrompt } from "@/hooks/useAutoReplan";
 import { StudyPlanSkeleton } from "./StudyPlanSkeleton";
 import { AppointmentsCalendar } from "./AppointmentsCalendar";
 import { ChangePreview } from "./ChangePreview";
 import { PlanHistory } from "./PlanHistory";
+import { NoSpaceDialog } from "./NoSpaceDialog";
 import { AddEventSheet, type EvalFormInput } from "./AddEventSheet";
 import { EditStudyEventSheet } from "./EditStudyEventSheet";
 import {
@@ -54,7 +56,14 @@ interface PlanProposal {
   reason: PlanChangeReason;
   changes: PlanChange[];
   warnings: PlanWarning[];
-  evaluations: ScheduleEvaluation[];
+  evaluations: readonly Pick<ScheduleEvaluation, "id" | "title" | "subject">[];
+  afterApplyPrompt?: ReplanPrompt;
+}
+
+interface PackageToastOptions {
+  title: string;
+  description?: ReactNode;
+  chooseTime?: boolean;
 }
 
 interface AutomaticPlanBanner {
@@ -106,12 +115,13 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [automaticBanner, setAutomaticBanner] = useState<AutomaticPlanBanner | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [autoPrompt, setAutoPrompt] = useState<ReplanPrompt | null>(null);
   // Elementi che si stanno "dissolvendo" prima dell'eliminazione vera.
   const [exitingIds, setExitingIds] = useState<string[]>([]);
   const dismissedAutomaticIds = useRef(new Set<string>());
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast, dismiss } = useToast();
   const { t, i18n } = useTranslation();
   const reducedMotion = usePrefersReducedMotion();
@@ -217,24 +227,34 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     }
   };
 
+  const openWeekView = () => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("view", "week");
+      return next;
+    });
+  };
+
+  const invalidatePlannerQueries = async () => Promise.all([
+    queryClient.invalidateQueries({ queryKey: eventQueryKey }),
+    queryClient.invalidateQueries({ queryKey: plannerDataKeys.all(currentUser) }),
+    queryClient.invalidateQueries({ queryKey: planChangesKeys.all(currentUser) }),
+  ]);
+
   const undoAppliedPlan = async (record: UndoPlanRecord) => {
     try {
       await queryClient.invalidateQueries({ queryKey: eventQueryKey });
       const latest = queryClient.getQueryData<StudyEvent[]>(eventQueryKey) ?? eventsQuery.data ?? [];
       const inverse = createInversePlanChanges(record.changes, record.eventsBefore, record.eventsAfter, latest);
       await applyPlanChanges.mutateAsync({ reason: "manual", changes: inverse });
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: eventQueryKey }),
-        queryClient.invalidateQueries({ queryKey: plannerDataKeys.all(currentUser) }),
-        queryClient.invalidateQueries({ queryKey: planChangesKeys.all(currentUser) }),
-      ]);
+      await invalidatePlannerQueries();
       notify({ title: t("piano.changePreview.undone") });
     } catch (error) {
       if (error instanceof UndoCompletedSlotError) {
         notify({ title: t("piano.planHistory.completed", { slot: error.slotTitle }), variant: "destructive" });
       } else if (isPlanConflict(error)) {
         notify({ title: t("piano.planHistory.conflict"), variant: "destructive" });
-        await queryClient.invalidateQueries({ queryKey: eventQueryKey });
+        await invalidatePlannerQueries();
       } else if (error instanceof UndoTargetUnavailableError) {
         notify({ title: t("piano.planHistory.unavailable"), variant: "destructive" });
       } else {
@@ -244,32 +264,47 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     }
   };
 
-  const applyProposal = async (selectedChanges: PlanChange[]) => {
-    if (!proposal || selectedChanges.length === 0) return;
+  const applyPlanPackage = async (
+    reason: PlanChangeReason,
+    changes: PlanChange[],
+    toastOptions: PackageToastOptions,
+  ): Promise<AutoReplanApplyResult> => {
+    if (!changes.length) return "failed";
     const record: UndoPlanRecord = {
-      changes: selectedChanges,
+      changes,
       eventsBefore: queryClient.getQueryData<StudyEvent[]>(eventQueryKey) ?? events,
       eventsAfter: [],
     };
     try {
-      await applyPlanChanges.mutateAsync({ reason: proposal.reason, changes: selectedChanges });
+      await applyPlanChanges.mutateAsync({ reason, changes });
       await queryClient.refetchQueries({ queryKey: eventQueryKey, type: "active" });
       record.eventsAfter = queryClient.getQueryData<StudyEvent[]>(eventQueryKey) ?? [];
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: plannerDataKeys.all(currentUser) }),
-        queryClient.invalidateQueries({ queryKey: planChangesKeys.all(currentUser) }),
-      ]);
+      await invalidatePlannerQueries();
       const toastId: { current?: string } = {};
+      const description = toastOptions.chooseTime ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {toastOptions.description && <span>{toastOptions.description}</span>}
+          <Button
+            variant="link"
+            className="min-h-11 px-1"
+            onClick={() => {
+              openWeekView();
+              if (toastId.current) dismiss(toastId.current);
+            }}
+          >
+            {t("piano.autoReplan.chooseTime")}
+          </Button>
+        </div>
+      ) : toastOptions.description;
       const toastResult = notify({
-        title: t("piano.changePreview.applied", { count: selectedChanges.length }),
-        ...(proposal.warnings.length > 0
-          ? { description: t("piano.changePreview.appliedWithWarnings", { count: proposal.warnings.length }) }
-          : {}),
+        title: toastOptions.title,
+        ...(description ? { description } : {}),
         duration: 10_000,
         "aria-live": "polite",
         action: (
           <ToastAction
             altText={t("piano.slotUndo")}
+            className="h-11"
             onClick={(event) => {
               event.preventDefault();
               void undoAppliedPlan(record).finally(() => {
@@ -282,18 +317,73 @@ export function PianoView({ hasFiles }: PianoViewProps) {
         ),
       });
       toastId.current = toastResult.id;
-      setPreviewOpen(false);
-      setProposal(null);
+      return "applied";
     } catch (error) {
-      console.error("Error applying the study plan:", error);
+      console.error("Error applying planner changes:", error);
       if (isPlanConflict(error)) {
         notify({ title: t("piano.planHistory.conflict"), variant: "destructive" });
-        await queryClient.invalidateQueries({ queryKey: eventQueryKey });
-      } else {
-        notify({ title: t("piano.error"), description: t("piano.errorSave"), variant: "destructive" });
+        await invalidatePlannerQueries();
+        return "conflict";
       }
+      notify({ title: t("piano.error"), description: t("piano.errorSave"), variant: "destructive" });
+      return "failed";
     }
   };
+
+  const applyAutoReplan = async (request: AutoReplanApplyRequest): Promise<AutoReplanApplyResult> => {
+    const day = request.targetDate
+      ? format(parseISO(request.targetDate.slice(0, 10)), "EEEE", { locale: (i18n.resolvedLanguage ?? i18n.language).startsWith("en") ? enUS : it })
+      : "";
+    const title = request.kind === "moved" || request.kind === "kept"
+      ? t("piano.autoReplan.movedToast", { day, time: request.targetTime?.slice(0, 5) ?? "" })
+      : request.kind === "partial"
+        ? t("piano.autoReplan.partialToast")
+        : request.kind === "split"
+          ? t("piano.autoReplan.splitToast")
+          : t("piano.autoReplan.noSpaceToast", { deadline: request.deadline ?? "" });
+    return applyPlanPackage(request.reason, request.changes, {
+      title,
+      chooseTime: request.kind === "moved" || request.kind === "kept",
+    });
+  };
+
+  const applyProposal = async (selectedChanges: PlanChange[]) => {
+    if (!proposal || selectedChanges.length === 0) return;
+    const activeProposal = proposal;
+    const result = await applyPlanPackage(activeProposal.reason, selectedChanges, {
+      title: t("piano.changePreview.applied", { count: selectedChanges.length }),
+      ...(activeProposal.warnings.length > 0
+        ? { description: t("piano.changePreview.appliedWithWarnings", { count: activeProposal.warnings.length }) }
+        : {}),
+    });
+    if (result !== "applied") return;
+    if (activeProposal.afterApplyPrompt) setAutoPrompt(activeProposal.afterApplyPrompt);
+    setPreviewOpen(false);
+    setProposal(null);
+  };
+
+  const openReplanPreview = (nextProposal: AutoReplanPreview) => {
+    setProposal({
+      reason: nextProposal.reason,
+      changes: nextProposal.changes,
+      warnings: nextProposal.warnings,
+      evaluations: nextProposal.evaluations,
+    });
+    setPreviewOpen(true);
+  };
+
+  const autoReplan = useAutoReplan({
+    plannerData: plannerDataQuery.data,
+    events: eventsQuery.data,
+    enabled: !isLoading && !loadError,
+    blocked: isLoading || loadError || previewOpen || historyOpen || !!autoPrompt
+      || showAddSheet || !!editingEval || !!editingStudyEvent || !!eventToDelete || !!evalToDelete
+      || searchParams.has("slot") || applyPlanChanges.isPending,
+    prompt: autoPrompt,
+    onPromptChange: setAutoPrompt,
+    onPreview: openReplanPreview,
+    onApply: applyAutoReplan,
+  });
 
   /** Elimina con dissolvenza: marca l'elemento, lascia partire l'animazione, poi rimuove davvero. */
   const withExit = async (ids: string[], action: () => Promise<unknown>) => {
@@ -394,11 +484,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
 
   const handleModifyPlan = () => {
     setPreviewOpen(false);
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current);
-      next.set("view", "week");
-      return next;
-    });
+    openWeekView();
   };
 
   const showPlanSkeleton = useDelayedLoading(isLoading, 100);
@@ -484,6 +570,16 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       />
 
       <PlanHistory open={historyOpen} onOpenChange={setHistoryOpen} />
+
+      <NoSpaceDialog
+        prompt={autoPrompt}
+        isApplying={applyPlanChanges.isPending}
+        onDismiss={() => setAutoPrompt(null)}
+        onKeep={() => void autoReplan.handleKeep(autoPrompt)}
+        onSplit={() => void autoReplan.handleSplit(autoPrompt)}
+        onChooseTime={() => { setAutoPrompt(null); openWeekView(); }}
+        onShortenSessions={() => { setAutoPrompt(null); openWeekView(); }}
+      />
 
       {/* Conferma eliminazione singola sessione */}
       <AlertDialog open={!!eventToDelete} onOpenChange={() => setEventToDelete(null)}>
