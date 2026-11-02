@@ -16,7 +16,7 @@ import { PdfCrop } from "./PdfCrop";
 import { useLessonFigures, prefetchLessonFigures, type LessonFigure } from "@/hooks/useLessonFigures";
 import { LessonFigureGallery } from "./LessonFigureGallery";
 import { useFocus } from "@/contexts/FocusContext";
-import { FocusPill } from "@/components/focus/FocusPill";
+import { TimerChip } from "@/components/focus/TimerChip";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useHaptics } from "@/hooks/useHaptics";
 import { prepareLessonExercises } from "@/lib/lessonExercises";
@@ -397,7 +397,7 @@ export function FullscreenLesson({
 
           {/* Contatore sobrio (o la pillola del focus, se è attiva) */}
           {focusActive ? (
-            <FocusPill variant="warning" />
+            <TimerChip />
           ) : (
             <span className="text-xs font-semibold text-muted-foreground tabular-nums">
               {currentStep + 1}/{steps.length}

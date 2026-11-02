@@ -707,6 +707,34 @@
     "strong": "Firm",
     "deviceNote": "Where supported by your browser. Levels change timing and rhythm; motor strength depends on your device."
   },
+  "focusTimer": {
+    "phaseFocus": "Focus",
+    "phaseShort": "Break",
+    "phaseLong": "Long break",
+    "panelTitle": "Study timer",
+    "panelDescription": "Control the session without losing track of time.",
+    "defaultSubject": "Study",
+    "openTimerAria": "Open timer for {{subject}}, {{time}}",
+    "overrun": "+{{time}} over",
+    "pause": "Pause timer",
+    "resume": "Resume timer",
+    "addFiveMinutes": "+5 min",
+    "finished": "I'm done",
+    "interrupt": "Interrupt",
+    "interruptTitle": "Interrupt this session?",
+    "interruptDescription": "The session will end and the study time will be recorded.",
+    "confirmInterrupt": "Interrupt session",
+    "lessonNumber": "Mini-lesson {{number}}",
+    "lessonRange": "Mini-lessons {{from}}–{{to}}",
+    "announceFiveMinutes": "Five minutes remain in this phase.",
+    "announcePhaseEnd": "Phase finished.",
+    "announceOverrun": "The timer is running overtime.",
+    "existingSession": "An active session already existed, so it was resumed.",
+    "syncError": "The timer could not sync. Try again shortly.",
+    "restoreError": "The session could not be restored from the cloud.",
+    "logged": "Session recorded! Erga is calibrating your study plan.",
+    "logError": "The session could not be saved."
+  },
   "studio": {
     "materialsAndReading": "Materials and reading"
   }

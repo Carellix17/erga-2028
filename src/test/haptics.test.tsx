@@ -20,6 +20,7 @@ vi.mock("@/hooks/useHomeDashboard", async () => {
 
 vi.mock("@/contexts/FocusContext", () => ({
   useFocus: () => ({ startSession, openSetup, openFullscreen: vi.fn(), isActive: false }),
+  useOptionalFocus: () => null,
 }));
 
 vi.mock("@/components/studio/CourseCardBackground", () => ({

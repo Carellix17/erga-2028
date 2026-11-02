@@ -1,6 +1,7 @@
 import { Pause, Play, RotateCcw, Minus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { useFocus, formatMMSS, FOCUS_DURATIONS } from "@/contexts/FocusContext";
+import { useFocus, formatMMSS } from "@/contexts/FocusContext";
 import { cn } from "@/lib/utils";
 
 const PHASE_LABEL: Record<string, string> = {
@@ -10,8 +11,11 @@ const PHASE_LABEL: Record<string, string> = {
 };
 
 export function FocusFullscreen() {
+  const { t } = useTranslation();
   const {
     remaining,
+    overrun,
+    phaseDurationSeconds,
     phase,
     cycle,
     isRunning,
@@ -25,10 +29,11 @@ export function FocusFullscreen() {
     extend,
   } = useFocus();
 
-  const total = phase === "focus"
-    ? (task?.durationMinutes ? task.durationMinutes * 60 : FOCUS_DURATIONS.focus)
-    : FOCUS_DURATIONS[phase];
-  const progress = 1 - remaining / total;
+  const total = Math.max(1, phaseDurationSeconds);
+  const progress = overrun > 0 ? 1 : Math.max(0, Math.min(1, 1 - remaining / total));
+  const timerLabel = overrun > 0
+    ? t("focusTimer.overrun", { time: formatMMSS(overrun) })
+    : formatMMSS(remaining);
   const size = 260;
   const stroke = 10;
   const r = (size - stroke) / 2;
@@ -79,11 +84,13 @@ export function FocusFullscreen() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={cn(
-              "font-display font-semibold tabular-nums tracking-tight text-foreground",
-              "text-6xl",
-            )}>
-              {formatMMSS(remaining)}
+            <span
+              className={cn(
+                "whitespace-nowrap font-display font-semibold tabular-nums tracking-tight text-foreground",
+                overrun > 0 ? "text-3xl" : "text-6xl",
+              )}
+            >
+              {timerLabel}
             </span>
             <span className="text-xs uppercase tracking-wider text-muted-foreground mt-2">
               {PHASE_LABEL[phase]}
