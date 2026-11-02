@@ -1,12 +1,18 @@
-import { triggerHaptic } from "@/utils/haptics";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { format, parseISO } from "date-fns";
+import { enUS, it } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { triggerHaptic } from "@/utils/haptics";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { usePlannerData, plannerDataKeys } from "@/hooks/usePlannerData";
 import { StudyPlanSkeleton } from "./StudyPlanSkeleton";
 import { AppointmentsCalendar } from "./AppointmentsCalendar";
-import { PlanSuggestion } from "./PlanSuggestion";
+import { ChangePreview } from "./ChangePreview";
+import { PlanHistory } from "./PlanHistory";
 import { AddEventSheet, type EvalFormInput } from "./AddEventSheet";
 import { EditStudyEventSheet } from "./EditStudyEventSheet";
 import {
@@ -15,15 +21,25 @@ import {
 } from "@/hooks/useEvaluations";
 import { useUserSubjects } from "@/hooks/useUserSubjects";
 import { useFileContextsQuery } from "@/hooks/useFileContexts";
-import { format, parseISO } from "date-fns";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { ToastAction } from "@/components/ui/toast";
 import {
-  useStudyEventsQuery, useAddStudyEvents, useDeleteStudyEvent, useUpdateStudyEvent,
+  PlanConflictError,
+  studyEventsKeys,
+  useStudyEventsQuery,
+  useAddStudyEvents,
+  useDeleteStudyEvent,
+  useUpdateStudyEvent,
+  useApplyPlanChanges,
   type StudyEvent,
 } from "@/hooks/useStudyEvents";
+import { planChangesKeys } from "@/hooks/usePlanChanges";
+import { buildPlan, type PlanWarning, type ScheduleEvaluation } from "@/lib/planner/schedule";
+import { plannerDateKey } from "@/lib/planner/freeTime";
+import type { PlanChange, PlanChangeReason } from "@/lib/planner/types";
+import { createInversePlanChanges, UndoCompletedSlotError, UndoTargetUnavailableError } from "./planChangeUndo";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -34,7 +50,48 @@ interface PianoViewProps {
   onUploadClick: () => void;
 }
 
-interface PlanSuggestionData { explanation: string; studySessions: { subject: string; title: string; date: string; time?: string; }[]; }
+interface PlanProposal {
+  reason: PlanChangeReason;
+  changes: PlanChange[];
+  warnings: PlanWarning[];
+  evaluations: ScheduleEvaluation[];
+}
+
+interface AutomaticPlanBanner {
+  evaluationId: string;
+  subject: string;
+  date: string;
+  proposal: PlanProposal;
+}
+
+interface UndoPlanRecord {
+  changes: PlanChange[];
+  eventsBefore: StudyEvent[];
+  eventsAfter: StudyEvent[];
+}
+
+function planChangesFromSlots(slots: ReturnType<typeof buildPlan>["slots"]): PlanChange[] {
+  return slots.map((slot) => ({
+    op: "insert",
+    after: {
+      event_date: slot.event_date,
+      event_time: slot.event_time,
+      end_time: slot.end_time,
+      context_id: slot.context_id,
+      lesson_from: slot.lesson_from,
+      lesson_to: slot.lesson_to,
+      evaluation_id: slot.evaluation_id,
+      source: slot.source,
+      subject: slot.subject,
+      title: slot.title,
+    },
+  }));
+}
+
+function isPlanConflict(error: unknown): boolean {
+  return error instanceof PlanConflictError
+    || (error instanceof Error && (error.message === "version_conflict" || error.message === "409"));
+}
 
 /** Calendario e scadenze; ogni giorno apre tutti gli impegni, anche senza materiali. */
 export function PianoView({ hasFiles }: PianoViewProps) {
@@ -42,41 +99,45 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   const [eventDate, setEventDate] = useState<string | undefined>();
   const [editingEval, setEditingEval] = useState<Evaluation | null>(null);
   const [editingStudyEvent, setEditingStudyEvent] = useState<StudyEvent | null>(null);
-  const [suggestion, setSuggestion] = useState<PlanSuggestionData | null>(null);
-  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<StudyEvent | null>(null);
   const [evalToDelete, setEvalToDelete] = useState<Evaluation | null>(null);
-  // Elementi che si stanno "dissolvendo" prima dell'eliminazione vera
+  const [isPreparingPlan, setIsPreparingPlan] = useState(false);
+  const [proposal, setProposal] = useState<PlanProposal | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [automaticBanner, setAutomaticBanner] = useState<AutomaticPlanBanner | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  // Elementi che si stanno "dissolvendo" prima dell'eliminazione vera.
   const [exitingIds, setExitingIds] = useState<string[]>([]);
+  const dismissedAutomaticIds = useRef(new Set<string>());
   const { currentUser } = useAuth();
-  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [, setSearchParams] = useSearchParams();
+  const { toast, dismiss } = useToast();
+  const { t, i18n } = useTranslation();
+  const reducedMotion = usePrefersReducedMotion();
+  const plannerDataQuery = usePlannerData();
+
   const notify = (options: Parameters<typeof toast>[0]) => {
     triggerHaptic(options.variant === "destructive" ? "error" : "success");
     return toast(options);
   };
-  const { t } = useTranslation();
-  const friendlyError = (kind: "save" | "edit" | "delete" | "generate") => {
+  const friendlyError = (kind: "save" | "edit" | "delete") => {
     switch (kind) {
       case "save": return t("piano.errorSave");
       case "edit": return t("piano.errorEdit");
       case "delete": return t("piano.errorDelete");
-      case "generate": return t("piano.errorGenerate");
     }
   };
-  const reportOperationError = (
-    kind: "save" | "edit" | "delete" | "generate",
-    error: unknown,
-    context: string,
-  ) => {
+  const reportOperationError = (kind: "save" | "edit" | "delete", error: unknown, context: string) => {
     console.error(context, error);
     notify({ title: t("piano.error"), description: friendlyError(kind), variant: "destructive" });
   };
-  const reducedMotion = usePrefersReducedMotion();
 
   const eventsQuery = useStudyEventsQuery(true);
   const addEvents = useAddStudyEvents();
   const deleteEvent = useDeleteStudyEvent();
   const updateEvent = useUpdateStudyEvent();
+  const applyPlanChanges = useApplyPlanChanges();
   const events = eventsQuery.data ?? [];
   const evaluationsQuery = useEvaluations(true);
   const evaluations = evaluationsQuery.data ?? [];
@@ -84,41 +145,153 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   const updateEvaluation = useUpdateEvaluation();
   const deleteEvaluation = useDeleteEvaluation();
   const { data: userSubjects = [] } = useUserSubjects();
-
   const { data: courses = [] } = useFileContextsQuery();
   const isLoading = eventsQuery.isLoading || evaluationsQuery.isLoading;
-  const loadError = eventsQuery.isError || evaluationsQuery.isError;
+  const loadError = eventsQuery.isError || evaluationsQuery.isError || plannerDataQuery.isError;
   const isDeleting = deleteEvent.isPending;
+  const eventQueryKey = studyEventsKeys.all(currentUser);
 
-  const generatePlan = async () => {
-    if (!currentUser) return;
-    setIsGeneratingPlan(true);
+  const eligibleEvaluations = useMemo(() => {
+    const data = plannerDataQuery.data;
+    if (!data) return [];
+    const today = plannerDateKey(new Date());
+    return data.evaluations.filter((evaluation) => {
+      const dueDay = plannerDateKey(evaluation.date);
+      const alreadyHasStudySlot = data.events.some((event) =>
+        event.evaluation_id === evaluation.id && event.event_type === "study",
+      );
+      return !evaluation.is_completed && !!dueDay && dueDay > today && !alreadyHasStudySlot;
+    });
+  }, [plannerDataQuery.data]);
+  const canPreparePlan = eligibleEvaluations.length > 0
+    && (hasFiles || eligibleEvaluations.some((evaluation) => evaluation.topic_id === null));
+
+  const makeProposal = useCallback((selectedEvaluations: readonly ScheduleEvaluation[]): PlanProposal | null => {
+    const data = plannerDataQuery.data;
+    if (!data) return null;
+    const result = buildPlan(data.buildPlanInput({
+      today: new Date(),
+      horizonDays: 30,
+      evaluations: selectedEvaluations,
+    }));
+    return {
+      reason: "generate",
+      changes: planChangesFromSlots(result.slots),
+      warnings: result.warnings,
+      evaluations: [...selectedEvaluations],
+    };
+  }, [plannerDataQuery.data]);
+
+  useEffect(() => {
+    if (!plannerDataQuery.data || plannerDataQuery.isError || automaticBanner || previewOpen || historyOpen) return;
+    const target = eligibleEvaluations.find((evaluation) => !dismissedAutomaticIds.current.has(evaluation.id));
+    if (!target) return;
+    const nextProposal = makeProposal([target]);
+    if (!nextProposal || nextProposal.changes.length === 0) return;
+    setAutomaticBanner({
+      evaluationId: target.id,
+      subject: target.subject || target.title,
+      date: target.date,
+      proposal: nextProposal,
+    });
+  }, [automaticBanner, eligibleEvaluations, historyOpen, makeProposal, plannerDataQuery.data, plannerDataQuery.isError, previewOpen]);
+
+  const preparePlan = async () => {
+    if (!plannerDataQuery.data) return;
+    setIsPreparingPlan(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-plan`,
-        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({ userId: currentUser }) });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || t("piano.errorGenerate"));
-      setSuggestion(data.plan);
-      triggerHaptic("success");
+      const nextProposal = makeProposal(eligibleEvaluations);
+      if (!nextProposal) return;
+      eligibleEvaluations.forEach((evaluation) => dismissedAutomaticIds.current.add(evaluation.id));
+      setAutomaticBanner(null);
+      setProposal(nextProposal);
+      setPreviewOpen(true);
+      if (!nextProposal.changes.length && nextProposal.warnings.length === 0) {
+        notify({ title: t("piano.changePreview.empty") });
+      }
     } catch (error) {
-      reportOperationError("generate", error, "Error generating plan:");
-    } finally { setIsGeneratingPlan(false); }
+      console.error("Error preparing the study plan:", error);
+      notify({ title: t("piano.error"), description: t("piano.errorSave"), variant: "destructive" });
+    } finally {
+      setIsPreparingPlan(false);
+    }
   };
 
-  const handleAcceptPlan = async () => {
-    if (!suggestion) return;
+  const undoAppliedPlan = async (record: UndoPlanRecord) => {
     try {
-      const studyEvents = suggestion.studySessions.map(s => ({
-        subject: s.subject, title: s.title, date: s.date, time: s.time, type: "study" as const,
-      }));
-      await addEvents.mutateAsync(studyEvents);
-      notify({ title: t("piano.toastAccepted"), description: t("piano.toastAcceptedDesc") });
-      setSuggestion(null);
+      await queryClient.invalidateQueries({ queryKey: eventQueryKey });
+      const latest = queryClient.getQueryData<StudyEvent[]>(eventQueryKey) ?? eventsQuery.data ?? [];
+      const inverse = createInversePlanChanges(record.changes, record.eventsBefore, record.eventsAfter, latest);
+      await applyPlanChanges.mutateAsync({ reason: "manual", changes: inverse });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: eventQueryKey }),
+        queryClient.invalidateQueries({ queryKey: plannerDataKeys.all(currentUser) }),
+        queryClient.invalidateQueries({ queryKey: planChangesKeys.all(currentUser) }),
+      ]);
+      notify({ title: t("piano.changePreview.undone") });
     } catch (error) {
-      reportOperationError("save", error, "Error accepting study plan:");
+      if (error instanceof UndoCompletedSlotError) {
+        notify({ title: t("piano.planHistory.completed", { slot: error.slotTitle }), variant: "destructive" });
+      } else if (isPlanConflict(error)) {
+        notify({ title: t("piano.planHistory.conflict"), variant: "destructive" });
+        await queryClient.invalidateQueries({ queryKey: eventQueryKey });
+      } else if (error instanceof UndoTargetUnavailableError) {
+        notify({ title: t("piano.planHistory.unavailable"), variant: "destructive" });
+      } else {
+        console.error("Error undoing plan changes:", error);
+        notify({ title: t("piano.errorSave"), variant: "destructive" });
+      }
+    }
+  };
+
+  const applyProposal = async (selectedChanges: PlanChange[]) => {
+    if (!proposal || selectedChanges.length === 0) return;
+    const record: UndoPlanRecord = {
+      changes: selectedChanges,
+      eventsBefore: queryClient.getQueryData<StudyEvent[]>(eventQueryKey) ?? events,
+      eventsAfter: [],
+    };
+    try {
+      await applyPlanChanges.mutateAsync({ reason: proposal.reason, changes: selectedChanges });
+      await queryClient.refetchQueries({ queryKey: eventQueryKey, type: "active" });
+      record.eventsAfter = queryClient.getQueryData<StudyEvent[]>(eventQueryKey) ?? [];
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: plannerDataKeys.all(currentUser) }),
+        queryClient.invalidateQueries({ queryKey: planChangesKeys.all(currentUser) }),
+      ]);
+      const toastId: { current?: string } = {};
+      const toastResult = notify({
+        title: t("piano.changePreview.applied", { count: selectedChanges.length }),
+        ...(proposal.warnings.length > 0
+          ? { description: t("piano.changePreview.appliedWithWarnings", { count: proposal.warnings.length }) }
+          : {}),
+        duration: 10_000,
+        "aria-live": "polite",
+        action: (
+          <ToastAction
+            altText={t("piano.slotUndo")}
+            onClick={(event) => {
+              event.preventDefault();
+              void undoAppliedPlan(record).finally(() => {
+                if (toastId.current) dismiss(toastId.current);
+              });
+            }}
+          >
+            {t("piano.slotUndo")}
+          </ToastAction>
+        ),
+      });
+      toastId.current = toastResult.id;
+      setPreviewOpen(false);
+      setProposal(null);
+    } catch (error) {
+      console.error("Error applying the study plan:", error);
+      if (isPlanConflict(error)) {
+        notify({ title: t("piano.planHistory.conflict"), variant: "destructive" });
+        await queryClient.invalidateQueries({ queryKey: eventQueryKey });
+      } else {
+        notify({ title: t("piano.error"), description: t("piano.errorSave"), variant: "destructive" });
+      }
     }
   };
 
@@ -136,7 +309,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   const handleDeleteEvent = async () => {
     if (!eventToDelete) return;
     const ev = eventToDelete;
-    setEventToDelete(null); // chiudi subito: l'elemento si dissolve nella lista
+    setEventToDelete(null);
     try {
       await withExit([ev.id], () => deleteEvent.mutateAsync(ev.id));
       notify({ title: t("piano.toastEventDeleted"), description: t("piano.toastRemovedFromCalendar", { title: ev.title }) });
@@ -186,6 +359,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
         await addEvaluation.mutateAsync(payload);
         notify({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
       }
+      void plannerDataQuery.refetch();
     } catch (error) {
       reportOperationError(
         editingId ? "edit" : "save",
@@ -206,21 +380,58 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     }
   };
 
-  // Regola degli hook: tutte le chiamate prima di qualsiasi return anticipato.
+  const openAutomaticProposal = (banner: AutomaticPlanBanner) => {
+    dismissedAutomaticIds.current.add(banner.evaluationId);
+    setProposal({ ...banner.proposal, reason: "generate" });
+    setAutomaticBanner(null);
+    setPreviewOpen(true);
+  };
+
+  const dismissAutomaticProposal = (banner: AutomaticPlanBanner) => {
+    dismissedAutomaticIds.current.add(banner.evaluationId);
+    setAutomaticBanner(null);
+  };
+
+  const handleModifyPlan = () => {
+    setPreviewOpen(false);
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("view", "week");
+      return next;
+    });
+  };
+
   const showPlanSkeleton = useDelayedLoading(isLoading, 100);
 
   if (showPlanSkeleton) return <StudyPlanSkeleton />;
   if (isLoading) return null;
 
+  const locale = (i18n.resolvedLanguage ?? i18n.language).startsWith("en") ? enUS : it;
+  const automaticDate = automaticBanner && plannerDateKey(automaticBanner.date)
+    ? format(parseISO(plannerDateKey(automaticBanner.date)), "EEEE d MMMM", { locale })
+    : automaticBanner?.date ?? "";
+
   return (
     <div className="min-w-0 space-y-6">
-      {suggestion && (
-        <PlanSuggestion explanation={suggestion.explanation} onAccept={handleAcceptPlan} onDecline={() => setSuggestion(null)} />
+      {automaticBanner && (
+        <aside role="status" aria-live="polite" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <p className="min-w-0 flex-1 text-sm font-medium">
+            {t("piano.autoPlan.banner", { subject: automaticBanner.subject, date: automaticDate })}
+          </p>
+          <div className="flex shrink-0 gap-2">
+            <Button onClick={() => openAutomaticProposal(automaticBanner)} className="min-h-11">{t("piano.autoPlan.view")}</Button>
+            <Button variant="ghost" onClick={() => dismissAutomaticProposal(automaticBanner)} className="min-h-11">{t("piano.autoPlan.later")}</Button>
+          </div>
+        </aside>
       )}
 
       {loadError && <div role="alert" className="border border-destructive p-4 text-base">
         <p>{t("piano.loadError")}</p>
-        <Button variant="outline" className="mt-3" onClick={() => { void eventsQuery.refetch(); void evaluationsQuery.refetch(); }}>{t("piano.retry")}</Button>
+        <Button variant="outline" className="mt-3" onClick={() => {
+          void eventsQuery.refetch();
+          void evaluationsQuery.refetch();
+          void plannerDataQuery.refetch();
+        }}>{t("piano.retry")}</Button>
       </div>}
       {/* Calendario sempre accessibile, anche senza materiale caricato. */}
       <section className="min-w-0" aria-labelledby="planner-calendar-heading">
@@ -231,9 +442,10 @@ export function PianoView({ hasFiles }: PianoViewProps) {
           courses={courses}
           exitingIds={exitingIds}
           onAddEvent={(date) => { setEventDate(date); setEditingEval(null); setShowAddSheet(true); }}
-          showGeneratePlan={hasFiles && !loadError && (events.length > 0 || evaluations.some((evaluation) => !evaluation.is_completed))}
-          onGeneratePlan={generatePlan}
-          isGeneratingPlan={isGeneratingPlan}
+          showGeneratePlan={canPreparePlan && !loadError}
+          onPreparePlan={() => void preparePlan()}
+          isPreparingPlan={isPreparingPlan}
+          onOpenHistory={() => setHistoryOpen(true)}
           onEditEvaluation={setEditingEval}
           onEditStudyEvent={setEditingStudyEvent}
           onDeleteEvaluation={setEvalToDelete}
@@ -243,7 +455,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
 
       <AddEventSheet
         open={showAddSheet || !!editingEval}
-        onOpenChange={(o) => { if (!o) { setShowAddSheet(false); setEditingEval(null); } }}
+        onOpenChange={(open) => { if (!open) { setShowAddSheet(false); setEditingEval(null); } }}
         initial={editingEval}
         presetDate={eventDate}
         onSubmit={handleSubmitEval}
@@ -251,13 +463,27 @@ export function PianoView({ hasFiles }: PianoViewProps) {
 
       <EditStudyEventSheet
         event={editingStudyEvent}
-        onOpenChange={(o) => { if (!o) setEditingStudyEvent(null); }}
+        onOpenChange={(open) => { if (!open) setEditingStudyEvent(null); }}
         onSave={handleSaveStudyEvent}
       />
 
       {(isDeleting || deleteEvaluation.isPending) && (
         <span role="status" className="sr-only">{t("piano.deleting")}</span>
       )}
+
+      <ChangePreview
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        changes={proposal?.changes ?? []}
+        warnings={proposal?.warnings ?? []}
+        evaluations={proposal?.evaluations ?? []}
+        isApplying={applyPlanChanges.isPending}
+        onApply={applyProposal}
+        onModify={handleModifyPlan}
+        onLeave={() => setPreviewOpen(false)}
+      />
+
+      <PlanHistory open={historyOpen} onOpenChange={setHistoryOpen} />
 
       {/* Conferma eliminazione singola sessione */}
       <AlertDialog open={!!eventToDelete} onOpenChange={() => setEventToDelete(null)}>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Plus, Sparkles, Upload } from "lucide-react";
+import { ArrowLeft, CalendarClock, ChevronLeft, ChevronRight, History, Loader2, MoreHorizontal, Plus, Upload } from "lucide-react";
 import {
   addDays, addMonths, differenceInCalendarDays, endOfWeek, format, isSameMonth,
   isToday, isValid, parseISO, startOfMonth, startOfToday, startOfWeek,
@@ -16,6 +16,12 @@ import { comparePlannerEntries, plannerEntries, type PlannerEntry } from "@/lib/
 import { courseCoverVars } from "@/lib/courseIdentity";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PillToggle } from "@/components/ui/pill-toggle";
 import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -31,8 +37,9 @@ interface AppointmentsCalendarProps {
   exitingIds: string[];
   onAddEvent: (date?: string) => void;
   showGeneratePlan: boolean;
-  onGeneratePlan: () => void;
-  isGeneratingPlan: boolean;
+  onPreparePlan: () => void;
+  isPreparingPlan: boolean;
+  onOpenHistory: () => void;
   onEditEvaluation: (evaluation: Evaluation) => void;
   onEditStudyEvent: (event: StudyEvent) => void;
   onDeleteEvaluation: (evaluation: Evaluation) => void;
@@ -60,7 +67,7 @@ function dayCounts(entries: readonly PlannerEntry[]) {
 
 export function AppointmentsCalendar({
   evaluations, events, subjects, courses, exitingIds, onAddEvent, showGeneratePlan,
-  onGeneratePlan, isGeneratingPlan, onEditEvaluation, onEditStudyEvent,
+  onPreparePlan, isPreparingPlan, onOpenHistory, onEditEvaluation, onEditStudyEvent,
   onDeleteEvaluation, onDeleteStudyEvent,
 }: AppointmentsCalendarProps) {
   const { t, i18n } = useTranslation();
@@ -265,10 +272,23 @@ export function AppointmentsCalendar({
           <Button onClick={() => onAddEvent(selectedKey)} aria-label={t("piano.addEventFull")} data-haptic="medium" className="h-11 min-w-11 gap-2">
             <Plus aria-hidden="true" /><span>{t("piano.addShort")}</span>
           </Button>
-          <Button variant="outline" className="planner-generate h-11 whitespace-normal" onClick={onGeneratePlan} disabled={!showGeneratePlan || isGeneratingPlan} data-haptic="medium" aria-describedby="planner-generate-hint">
-            {isGeneratingPlan ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Sparkles aria-hidden="true" />}
-            {t(isGeneratingPlan ? "piano.generating" : "piano.generate")}
+          <Button variant="outline" className="planner-generate h-11 whitespace-normal" onClick={onPreparePlan} disabled={!showGeneratePlan || isPreparingPlan} data-haptic="medium" aria-describedby="planner-generate-hint">
+            {isPreparingPlan ? <Loader2 className="animate-spin" aria-hidden="true" /> : <CalendarClock aria-hidden="true" />}
+            {t(isPreparingPlan ? "piano.preparingPlan" : "piano.preparePlan")}
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0" aria-label={t("piano.planMenu")}>
+                <MoreHorizontal aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={onOpenHistory} className="min-h-11">
+                <History className="mr-2 h-4 w-4" aria-hidden="true" />
+                {t("piano.planHistory.title")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
