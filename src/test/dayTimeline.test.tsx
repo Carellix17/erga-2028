@@ -60,6 +60,38 @@ function studyEntry(overrides: Partial<PlannerEntry> = {}): PlannerEntry {
   };
 }
 
+function personalEntry(id: string, time: string, endTime: string, title: string): PlannerEntry {
+  const original: StudyEvent = {
+    id,
+    subject: "Altro",
+    title,
+    event_date: dateKey,
+    event_time: time,
+    end_time: endTime,
+    event_type: "assignment",
+    status: "planned",
+    move_count: 0,
+  };
+  return {
+    id,
+    kind: "personal",
+    date: new Date(2026, 10, 2),
+    time,
+    title,
+    subject: null,
+    coverName: "Altro",
+    important: false,
+    completed: false,
+    endTime,
+    status: "planned",
+    contextId: null,
+    lessonFrom: null,
+    lessonTo: null,
+    moveCount: 0,
+    original: { kind: "studyEvent", data: original },
+  };
+}
+
 const defaultProps = {
   dateKey,
   entries: [] as PlannerEntry[],
@@ -116,18 +148,69 @@ describe("DayTimeline", () => {
     expect(within(school).queryByRole("button")).not.toBeInTheDocument();
   });
 
+  it("allarga la fascia per includere gli impegni Altro prima della sveglia e dopo il sonno", () => {
+    const early = personalEntry("early-other", "06:30", "06:50", "Allenamento presto");
+    const late = personalEntry("late-other", "23:15", "23:45", "Rientro tardi");
+    const onEdit = vi.fn();
+    const onDelete = vi.fn();
+    const now = new Date("2026-11-02T12:00:00+01:00");
+    const { container } = render(<DayTimeline {...defaultProps} entries={[early, late]} onEdit={onEdit} onDelete={onDelete} now={now} />);
+
+    const list = screen.getByRole("list", { name: "Slot della giornata in ordine cronologico" });
+    const earlySlot = within(list).getByRole("listitem", { name: /Altro, Allenamento presto.*06:30.*06:50/i });
+    const lateSlot = within(list).getByRole("listitem", { name: /Altro, Rientro tardi.*23:15.*23:45/i });
+    expect(earlySlot).toBeVisible();
+    expect(lateSlot).toBeVisible();
+    fireEvent.click(within(earlySlot).getByRole("button", { name: "Modifica Allenamento presto" }));
+    fireEvent.click(within(earlySlot).getByRole("button", { name: "Elimina Allenamento presto" }));
+    fireEvent.click(within(lateSlot).getByRole("button", { name: "Modifica Rientro tardi" }));
+    fireEvent.click(within(lateSlot).getByRole("button", { name: "Elimina Rientro tardi" }));
+    expect(onEdit).toHaveBeenNthCalledWith(1, early);
+    expect(onDelete).toHaveBeenNthCalledWith(1, early);
+    expect(onEdit).toHaveBeenNthCalledWith(2, late);
+    expect(onDelete).toHaveBeenNthCalledWith(2, late);
+
+    const grid = container.querySelector(".planner-day-grid")!;
+    const hourLabels = container.querySelectorAll(".planner-day-hour-label");
+    expect(grid).toHaveAttribute("data-start-minute", "360");
+    expect(grid).toHaveAttribute("data-end-minute", "1440");
+    expect(hourLabels[0]).toHaveTextContent("06:00");
+    expect(hourLabels[hourLabels.length - 1]).toHaveTextContent("24:00");
+  });
+
+  it("include gli impegni serali oltre il sonno della routine", () => {
+    const sleep = routine({ id: "sleep-monday", kind: "sleep", label: "Sonno", start_time: "22:00:00", end_time: "07:00:00" });
+    const late = personalEntry("late-near-bedtime", "22:30", "22:45", "Allenamento tardi");
+    const now = new Date("2026-11-01T12:00:00+01:00");
+    const { container } = render(<DayTimeline {...defaultProps} entries={[late]} routines={[sleep]} now={now} />);
+
+    expect(screen.getByRole("listitem", { name: /Altro, Allenamento tardi.*22:30.*22:45/i })).toBeVisible();
+    const grid = container.querySelector(".planner-day-grid")!;
+    expect(grid).toHaveAttribute("data-end-minute", "1380");
+    expect(container.querySelectorAll(".planner-day-hour-label")).toHaveLength(17);
+    expect(container.querySelector(".planner-day-hour-label:last-child")).toHaveTextContent("23:00");
+  });
+
   it("disegna NowLine solo per oggi e non introduce scroll interno sotto lg", () => {
     const now = new Date("2026-11-02T10:45:00+01:00");
-    const { container, rerender } = render(<DayTimeline {...defaultProps} now={now} />);
+    const inRangeEvent = personalEntry("in-range", "10:00", "10:30", "Impegno in fascia");
+    const { container, rerender } = render(<DayTimeline {...defaultProps} entries={[inRangeEvent]} now={now} />);
 
     expect(screen.getByRole("status", { name: "Adesso 10:45" })).toBeVisible();
     const dayTimeline = screen.getByTestId("day-timeline");
+    const grid = container.querySelector(".planner-day-grid")!;
     const track = container.querySelector(".planner-day-grid-track")!;
+    expect(grid).toHaveAttribute("data-start-minute", "420");
+    expect(grid).toHaveAttribute("data-end-minute", "1380");
+    const hourLabels = container.querySelectorAll(".planner-day-hour-label");
+    expect(hourLabels).toHaveLength(17);
+    expect(hourLabels[0]).toHaveTextContent("07:00");
+    expect(hourLabels[16]).toHaveTextContent("23:00");
     expect(getComputedStyle(dayTimeline).overflowY).toBe("visible");
     expect(getComputedStyle(track).overflowY).toBe("visible");
     expect(document.querySelector(".planner-day-grid")).not.toHaveClass("overflow-y-auto");
 
-    rerender(<DayTimeline {...defaultProps} dateKey="2026-11-03" now={now} />);
+    rerender(<DayTimeline {...defaultProps} dateKey="2026-11-03" entries={[]} now={now} />);
     expect(screen.queryByTestId("now-line")).not.toBeInTheDocument();
 
     const css = readFileSync("src/index.css", "utf8");
@@ -136,10 +219,23 @@ describe("DayTimeline", () => {
     expect(css).toContain("@media (min-width: 1024px) { .planner-day-timeline { --planner-day-hour-height: 5rem; }");
   });
 
-  it("announces a free day when there are no user events", () => {
+  it("announces a free day with only a verification, but not when there is a study slot", () => {
     const now = new Date("2026-11-01T12:00:00+01:00");
-    render(<DayTimeline {...defaultProps} now={now} />);
+    const verification = studyEntry({
+      id: "history-test",
+      kind: "evaluation",
+      title: "Verifica di storia",
+      subject: "Storia",
+      time: "10:00",
+      endTime: "11:00",
+      lessonFrom: null,
+      lessonTo: null,
+    });
+    const { rerender } = render(<DayTimeline {...defaultProps} entries={[verification]} now={now} />);
     expect(screen.getByText("Giorno libero")).toBeVisible();
+
+    rerender(<DayTimeline {...defaultProps} entries={[verification, studyEntry()]} now={now} />);
+    expect(screen.queryByText("Giorno libero")).not.toBeInTheDocument();
   });
 
   it("shows partial lesson progress from the saved course record", () => {

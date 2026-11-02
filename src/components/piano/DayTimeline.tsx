@@ -72,16 +72,33 @@ function getDayRoutineSegments(dateKey: string, routines: readonly UserRoutine[]
   })));
 }
 
-function visibleRange(dateKey: string, routines: readonly UserRoutine[]) {
+function visibleRange(dateKey: string, routines: readonly UserRoutine[], entries: readonly PlannerEntry[]) {
   const segments = getDayRoutineSegments(dateKey, routines);
   const sleep = segments.filter((segment) => segment.routine.kind === "sleep");
   const wake = sleep.filter((segment) => segment.start < 12 * 60 && segment.end <= 12 * 60)
     .reduce<number | null>((latest, segment) => Math.max(latest ?? 0, segment.end), null);
   const bedtime = sleep.filter((segment) => segment.start >= 17 * 60)
     .reduce<number | null>((earliest, segment) => Math.min(earliest ?? 24 * 60, segment.start), null);
-  const startMinute = wake ?? DEFAULT_WAKE_MINUTE;
-  const endMinute = bedtime ?? DEFAULT_BEDTIME_MINUTE;
-  if (endMinute <= startMinute) return { startMinute: DEFAULT_WAKE_MINUTE, endMinute: DEFAULT_BEDTIME_MINUTE, routineSegments: segments };
+  let startMinute = wake ?? DEFAULT_WAKE_MINUTE;
+  let endMinute = bedtime ?? DEFAULT_BEDTIME_MINUTE;
+  if (endMinute <= startMinute) {
+    startMinute = DEFAULT_WAKE_MINUTE;
+    endMinute = DEFAULT_BEDTIME_MINUTE;
+  }
+
+  // User commitments always stay visible, even when they fall before waking or
+  // after bedtime. Routine blocks alone may be clipped to this expanded range.
+  for (const entry of entries) {
+    const start = minuteOf(entry.time);
+    if (start === null) continue;
+    const savedEnd = minuteOf(validEventTime(entry.endTime));
+    const effectiveEnd = savedEnd !== null && savedEnd > start
+      ? savedEnd
+      : Math.min(24 * 60, start + 1);
+    startMinute = Math.min(startMinute, Math.floor(start / 60) * 60);
+    endMinute = Math.max(endMinute, Math.min(24 * 60, Math.ceil(effectiveEnd / 60) * 60));
+  }
+
   return { startMinute, endMinute, routineSegments: segments };
 }
 
@@ -362,7 +379,7 @@ export function DayTimeline({
   const pixelsPerHour = usePixelsPerHour();
   const gridRef = useRef<HTMLDivElement>(null);
   const lastScrolledDay = useRef<string | null>(null);
-  const frame = useMemo(() => visibleRange(dateKey, routines), [dateKey, routines]);
+  const frame = useMemo(() => visibleRange(dateKey, routines, entries), [dateKey, entries, routines]);
   const { startMinute, endMinute, routineSegments } = frame;
   const totalHeight = ((endMinute - startMinute) / 60) * pixelsPerHour;
   const minimumHeightMinutes = (MIN_SLOT_HEIGHT / pixelsPerHour) * 60;
@@ -387,6 +404,7 @@ export function DayTimeline({
   const clock = now ?? new Date();
   const todayKey = plannerDateKey(clock);
   const isToday = todayKey === dateKey;
+  const hasStudySlot = entries.some((entry) => entry.kind === "study");
 
   useEffect(() => {
     if (!isToday || routinesLoading || lastScrolledDay.current === dateKey) return;
@@ -418,7 +436,7 @@ export function DayTimeline({
 
   return (
     <div className="planner-day-timeline" data-testid="day-timeline" style={{ overflowY: "visible" }}>
-      {entries.length === 0 && !routinesLoading && <p className="planner-free-day">{t("piano.freeDay")}</p>}
+      {!hasStudySlot && !routinesLoading && <p className="planner-free-day">{t("piano.freeDay")}</p>}
 
       <section className="mb-4" aria-label={t("piano.withoutTime")}>
         <h3 className="mb-2 text-base font-semibold">{t("piano.withoutTime")}</h3>
