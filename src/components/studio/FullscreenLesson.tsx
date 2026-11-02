@@ -1,4 +1,5 @@
 import { useKeyboardInset } from "@/hooks/useKeyboardInset";
+import { useActiveTime } from "@/hooks/useActiveTime";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -62,9 +63,9 @@ interface FullscreenLessonProps {
   lessonNumber: number;
   totalLessons: number;
   onClose: () => void;
-  /** 🅐 FONDAMENTA — al termine porta con sé l'esito degli esercizi, così la
-   * schermata chiamante può registrare «lezione completata» nel database. */
-  onComplete: (result: { correct: number; total: number }) => void;
+  /** Al termine porta con sé l'esito degli esercizi e il tempo di lettura attivo
+   * per consentire alla schermata chiamante di registrare il completamento. */
+  onComplete: (result: { correct: number; total: number; activeSeconds: number }) => void;
   isLastLesson: boolean;
   nextLessonId?: string | null;
 }
@@ -123,6 +124,7 @@ export function FullscreenLesson({
   lesson, lessonNumber, totalLessons, onClose, onComplete, isLastLesson, nextLessonId, embedded = false, readingMode = "calma",
 }: FullscreenLessonProps) {
   const { t } = useTranslation();
+  const { getSeconds: getActiveSeconds } = useActiveTime(true);
   const { triggerLight, triggerSuccess, triggerError } = useHaptics();
   const { isActive: focusActive } = useFocus();
   const explanationParts = useMemo(
@@ -250,9 +252,10 @@ export function FullscreenLesson({
       onComplete({
         correct: Object.values(exerciseResults).filter(Boolean).length,
         total: exercises.length,
+        activeSeconds: getActiveSeconds(),
       });
     }
-  }, [currentStep, steps.length, onComplete, isAnimating, gotoStep, lesson.id, exerciseResults, exercises.length, triggerLight, triggerSuccess]);
+  }, [currentStep, steps.length, onComplete, isAnimating, gotoStep, lesson.id, exerciseResults, exercises.length, triggerLight, triggerSuccess, getActiveSeconds]);
 
   const handleBack = useCallback(() => {
     if (isAnimating || currentStep === 0) return;

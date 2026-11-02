@@ -17,6 +17,7 @@ import { ScientificGymView } from "@/components/pratica/ScientificGymView";
 import { ChatView } from "@/components/chat/ChatView";
 import { ModuleHeaderCard, PracticeLaunchers, SheetDrawer, type StudioTool } from "./StudioPractice";
 import { fetchContextSubjectInfo } from "@/lib/subjectFamily";
+import { insertReadingLog } from "@/lib/planner/readingLog";
 import { AnimatePresence, motion } from "framer-motion";
 import { cleanCourseName } from "@/lib/courseName";
 import { isLastLessonCompleted } from "@/lib/courseProgress";
@@ -54,6 +55,11 @@ import {
 } from "@/hooks/useGenerationUsage";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useDeleteFileContext } from "@/hooks/useFileContexts";
+
+// Temporary baseline; a later planner task will replace this simple estimator.
+function estimateBaseMinutes(words: number, exercises: number): number {
+  return words / 100 + exercises * 1.5;
+}
 
 interface StudioViewProps {
   hasFiles: boolean;
@@ -1301,6 +1307,25 @@ export function StudioView({
           totalLessons={lessons.length}
           onClose={closeLessonReader}
           onComplete={(result) => {
+            // 🌿 S-08: registra solo il completamento, senza salvare testi della lezione.
+            // Se l'Edge Function precedente non ha ancora esposto le metriche, saltiamo
+            // il log anziché memorizzare un conteggio inventato.
+            const wordCount = currentLesson.word_count;
+            if (currentUser && typeof wordCount === "number") {
+              const exerciseCount = currentLesson.exercise_count ?? 0;
+              void insertReadingLog({
+                activeSeconds: result.activeSeconds,
+                baseEstimateMin: estimateBaseMinutes(wordCount, exerciseCount),
+                contextId: effectiveContextId,
+                exerciseCount,
+                lessonOrder: currentLesson.lesson_order,
+                subject: activeContext?.subject ?? null,
+                subjectType: activeContext?.subject_family ?? null,
+                userId: currentUser,
+                wordCount,
+              });
+            }
+
             const nextIndex = activeLessonIndex < lessons.length - 1 ? activeLessonIndex + 1 : activeLessonIndex;
             setCurrentLessonIndex(nextIndex);
             closeLessonReader();

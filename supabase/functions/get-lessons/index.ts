@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { toLessonMeta } from "./lessonMeta.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -29,13 +30,12 @@ serve(withCors(async (req) => {
         }
       }
 
-      // ⚡ P16: la corsia LEGGERA — la lista viaggia con i soli metadati
-      // (titoli, ordine, stato, pagine). I contenuti pesanti (concept,
-      // explanation, example, exercises) si prendono UNO ALLA VOLTA con
-      // "getLesson", solo quando l'utente apre davvero quella lezione.
+      // ⚡ P16: la lista resta leggera e non restituisce mai i testi delle lezioni.
+      // I contenuti vengono letti qui solo per calcolare le metriche mostrate nel percorso;
+      // il testo completo continua ad arrivare uno alla volta con "getLesson".
       let lessonsQuery = supabase
         .from("mini_lessons")
-        .select("id, title, is_generated, lesson_order, context_id, page_start, page_end")
+        .select("id, title, is_generated, lesson_order, context_id, page_start, page_end, concept, explanation, example, exercises")
         .order("lesson_order", { ascending: true });
 
       if (contextId) {
@@ -84,9 +84,11 @@ serve(withCors(async (req) => {
         .map((c) => (typeof c?.order === "number" ? c.order : null))
         .filter((o): o is number => o !== null);
 
+      const lessonMetas = (lessons ?? []).map(toLessonMeta);
+
       return successResponse({
         success: true,
-        lessons: lessons || [],
+        lessons: lessonMetas,
         currentIndex: progress?.current_lesson_index || 0,
         completed,
         finalTest: (progress?.final_test as Record<string, unknown> | null) ?? null,

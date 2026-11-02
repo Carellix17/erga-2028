@@ -382,11 +382,15 @@ describe("🅐 FONDAMENTA — gating, esito del completamento e testo scalabile"
     expect(btn).toBeDisabled();
   });
 
-  it("a fine lezione consegna l'esito {correct, total} a onComplete", async () => {
+  it("a fine lezione consegna esito esercizi e secondi attivi a onComplete", async () => {
     const { onComplete } = renderReader();
     // 7 passi: concept, 2 parti, esempio, 2 esercizi, sintesi
     await attraversa(7);
-    expect(onComplete).toHaveBeenCalledWith({ correct: expect.any(Number), total: 2 });
+    expect(onComplete).toHaveBeenCalledWith({
+      correct: expect.any(Number),
+      total: 2,
+      activeSeconds: expect.any(Number),
+    });
   });
 
   it("nessuna misura di testo in pixel fissi: solo rem (il cursore «testo grande» funziona)", () => {
