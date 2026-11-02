@@ -3,6 +3,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { EditStudyEventSheet } from "@/components/piano/EditStudyEventSheet";
 import type { StudyEvent, UpdateStudyEventInput } from "@/hooks/useStudyEvents";
 
+vi.mock("@/hooks/useUserSubjects", () => ({
+  useUserSubjects: () => ({
+    data: [
+      { id: "subject-physics", user_id: "user-1", name: "Fisica", color: null },
+      { id: "subject-math", user_id: "user-1", name: "Matematica", color: null },
+    ],
+  }),
+}));
+
 const event = (overrides: Partial<StudyEvent> = {}): StudyEvent => ({
   id: "event-1",
   subject: "Fisica",
@@ -49,6 +58,31 @@ describe("EditStudyEventSheet optional details", () => {
       notes: "Ripassare le formule",
     });
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("keeps an exact quarter-hour time and exposes subject and time accessibly", async () => {
+    const onSave = vi.fn<(input: UpdateStudyEventInput) => Promise<void>>().mockResolvedValue(undefined);
+    render(<EditStudyEventSheet event={event({ event_time: "16:15" })} onOpenChange={vi.fn()} onSave={onSave} />);
+
+    const subject = await screen.findByRole("combobox", { name: /materia/i });
+    const time = screen.getByLabelText(/orario/i);
+    expect(subject).toHaveTextContent("Fisica");
+    expect(time).toHaveValue("16:15");
+
+    fireEvent.click(screen.getByRole("button", { name: "Salva modifiche" }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    expect(onSave.mock.calls[0][0]).toEqual(expect.objectContaining({ subject: "Fisica", time: "16:15" }));
+  });
+
+  it("keeps an unlisted saved subject as an option and offers Altro", async () => {
+    render(<EditStudyEventSheet event={event({ subject: "Storia dell'arte" })} onOpenChange={vi.fn()} onSave={vi.fn()} />);
+
+    const subject = await screen.findByRole("combobox", { name: /materia/i });
+    expect(subject).toHaveTextContent("Storia dell'arte");
+    const nativeSelect = subject.parentElement?.querySelector("select");
+    expect(nativeSelect).toHaveValue("saved:Storia dell'arte");
+    expect(Array.from(nativeSelect?.options ?? []).map((option) => option.textContent)).toContain("Storia dell'arte");
+    expect(Array.from(nativeSelect?.options ?? []).map((option) => option.textContent)).toContain("Altro");
   });
 
   it("omits end time and notes when the fields are cleared", async () => {

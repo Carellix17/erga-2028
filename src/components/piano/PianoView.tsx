@@ -55,6 +55,22 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     return toast(options);
   };
   const { t } = useTranslation();
+  const friendlyError = (kind: "save" | "edit" | "delete" | "generate") => {
+    switch (kind) {
+      case "save": return t("piano.errorSave");
+      case "edit": return t("piano.errorEdit");
+      case "delete": return t("piano.errorDelete");
+      case "generate": return t("piano.errorGenerate");
+    }
+  };
+  const reportOperationError = (
+    kind: "save" | "edit" | "delete" | "generate",
+    error: unknown,
+    context: string,
+  ) => {
+    console.error(context, error);
+    notify({ title: t("piano.error"), description: friendlyError(kind), variant: "destructive" });
+  };
   const reducedMotion = usePrefersReducedMotion();
 
   const eventsQuery = useStudyEventsQuery(true);
@@ -87,8 +103,8 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       if (!response.ok) throw new Error(data.error || t("piano.errorGenerate"));
       setSuggestion(data.plan);
       triggerHaptic("success");
-    } catch (error) { console.error("Error generating plan:", error);
-      notify({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorGenerate"), variant: "destructive" });
+    } catch (error) {
+      reportOperationError("generate", error, "Error generating plan:");
     } finally { setIsGeneratingPlan(false); }
   };
 
@@ -102,7 +118,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       notify({ title: t("piano.toastAccepted"), description: t("piano.toastAcceptedDesc") });
       setSuggestion(null);
     } catch (error) {
-      notify({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorSave"), variant: "destructive" });
+      reportOperationError("save", error, "Error accepting study plan:");
     }
   };
 
@@ -125,7 +141,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       await withExit([ev.id], () => deleteEvent.mutateAsync(ev.id));
       notify({ title: t("piano.toastEventDeleted"), description: t("piano.toastRemovedFromCalendar", { title: ev.title }) });
     } catch (error) {
-      notify({ title: t("piano.error"), description: error instanceof Error ? error.message : t("piano.errorDelete"), variant: "destructive" });
+      reportOperationError("delete", error, "Error deleting study event:");
     }
   };
 
@@ -136,8 +152,8 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     try {
       await withExit([ev.id], () => deleteEvaluation.mutateAsync(ev.id));
       notify({ title: t("piano.toastEvalDeleted") });
-    } catch (err) {
-      notify({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorDelete"), variant: "destructive" });
+    } catch (error) {
+      reportOperationError("delete", error, "Error deleting evaluation:");
     }
   };
 
@@ -170,9 +186,13 @@ export function PianoView({ hasFiles }: PianoViewProps) {
         await addEvaluation.mutateAsync(payload);
         notify({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
       }
-    } catch (err) {
-      notify({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorSave"), variant: "destructive" });
-      throw err;
+    } catch (error) {
+      reportOperationError(
+        editingId ? "edit" : "save",
+        error,
+        editingId ? "Error editing planner event:" : "Error saving planner event:",
+      );
+      throw error;
     }
   };
 
@@ -180,9 +200,9 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     try {
       await updateEvent.mutateAsync(input);
       notify({ title: t("piano.toastSessionUpdated") });
-    } catch (err) {
-      notify({ title: t("piano.error"), description: err instanceof Error ? err.message : t("piano.errorEdit"), variant: "destructive" });
-      throw err;
+    } catch (error) {
+      reportOperationError("edit", error, "Error editing study event:");
+      throw error;
     }
   };
 
@@ -235,6 +255,10 @@ export function PianoView({ hasFiles }: PianoViewProps) {
         onSave={handleSaveStudyEvent}
       />
 
+      {(isDeleting || deleteEvaluation.isPending) && (
+        <span role="status" className="sr-only">{t("piano.deleting")}</span>
+      )}
+
       {/* Conferma eliminazione singola sessione */}
       <AlertDialog open={!!eventToDelete} onOpenChange={() => setEventToDelete(null)}>
         <AlertDialogContent>
@@ -247,7 +271,12 @@ export function PianoView({ hasFiles }: PianoViewProps) {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>{t("piano.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteEvent} className="bg-destructive hover:bg-destructive/90" disabled={isDeleting}>
-              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : t("piano.delete")}
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                  <span className="sr-only">{t("piano.deleting")}</span>
+                </>
+              ) : t("piano.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -269,7 +298,12 @@ export function PianoView({ hasFiles }: PianoViewProps) {
               className="bg-destructive hover:bg-destructive/90"
               disabled={deleteEvaluation.isPending}
             >
-              {deleteEvaluation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("piano.delete")}
+              {deleteEvaluation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                  <span className="sr-only">{t("piano.deleting")}</span>
+                </>
+              ) : t("piano.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
