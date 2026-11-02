@@ -360,6 +360,8 @@
     }
   },
   "piano": {
+    "loading": "Caricamento del piano…",
+    "deleting": "Eliminazione…",
     "generate": "Genera piano di studio",
     "generating": "Generazione piano...",
     "focus": "Focus",

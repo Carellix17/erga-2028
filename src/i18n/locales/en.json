@@ -360,6 +360,8 @@
     }
   },
   "piano": {
+    "loading": "Loading planner…",
+    "deleting": "Deleting…",
     "generate": "Generate study plan",
     "generating": "Generating plan...",
     "focus": "Focus",
