@@ -1,20 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
-import { countWords } from "../_shared/wordCount.ts";
-
-interface LessonListRow {
-  concept: unknown;
-  context_id: string | null;
-  example: unknown;
-  exercises: unknown;
-  explanation: unknown;
-  id: string;
-  is_generated: boolean;
-  lesson_order: number;
-  page_end: number | null;
-  page_start: number | null;
-  title: string;
-}
+import { toLessonMeta } from "./lessonMeta.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -98,23 +84,7 @@ serve(withCors(async (req) => {
         .map((c) => (typeof c?.order === "number" ? c.order : null))
         .filter((o): o is number => o !== null);
 
-      // Espone solo i metadati: concept, explanation, example ed exercises
-      // non devono entrare nella risposta della lista.
-      const lessonMetas = ((lessons ?? []) as LessonListRow[]).map((lesson) => ({
-        id: lesson.id,
-        title: lesson.title,
-        is_generated: lesson.is_generated,
-        lesson_order: lesson.lesson_order,
-        context_id: lesson.context_id,
-        page_start: lesson.page_start,
-        page_end: lesson.page_end,
-        word_count: lesson.is_generated === false
-          ? null
-          : countWords(typeof lesson.concept === "string" ? lesson.concept : "")
-            + countWords(typeof lesson.explanation === "string" ? lesson.explanation : "")
-            + countWords(typeof lesson.example === "string" ? lesson.example : ""),
-        exercise_count: Array.isArray(lesson.exercises) ? lesson.exercises.length : 0,
-      }));
+      const lessonMetas = (lessons ?? []).map(toLessonMeta);
 
       return successResponse({
         success: true,
