@@ -26,6 +26,7 @@ vi.mock("@/hooks/useEvaluations", () => ({
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ currentUser: null }) }));
 vi.mock("@/hooks/useUserSubjects", () => ({ useUserSubjects: () => ({ data: [] }) }));
+vi.mock("@/hooks/useUserRoutines", () => ({ useUserRoutines: () => ({ data: [], isLoading: false }) }));
 vi.mock("@/hooks/useFileContexts", () => ({ useFileContextsQuery: () => ({ data: [] }) }));
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast }) }));
 vi.mock("@/hooks/usePrefersReducedMotion", () => ({ usePrefersReducedMotion: () => false }));
@@ -103,7 +104,8 @@ describe("calendar and daily schedule", () => {
     expect(screen.getByText("Allenamento")).toBeVisible();
     expect(within(screen.getByRole("region", { name: "Senza orario" })).getByText("Consegna ricerca")).toBeVisible();
     expect(screen.getByText("15:30")).toBeVisible();
-    expect(document.querySelectorAll("[data-hour]")).toHaveLength(24);
+    expect(document.querySelectorAll("[data-hour]")).toHaveLength(17);
+    expect(screen.getByText("Adesso", { exact: false })).toBeVisible();
     expect(screen.getByTestId("location")).toHaveTextContent(`tab=piano&planDay=${key}`);
     fireEvent.click(screen.getByRole("button", { name: "Aggiungi evento" }));
     expect(props.onAddEvent).toHaveBeenCalledWith(key);
@@ -177,12 +179,25 @@ describe("calendar and daily schedule", () => {
     expect(event).not.toHaveProperty("endTime");
   });
 
-  it("supports empty calendars, empty days and direct daily URLs", () => {
+  it("supports empty calendars, free days and direct daily URLs", () => {
     mount({ events: [], showGeneratePlan: false }, `/app?tab=piano&planDay=${key}`);
-    expect(screen.getByText("Nessun impegno per questo giorno.")).toBeVisible();
+    expect(screen.getByText("Giorno libero")).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Torna al calendario" }));
     expect(screen.getByRole("button", { name: "Genera piano di studio" })).toBeDisabled();
     expect(document.querySelector('button[aria-current="date"]')).toBeVisible();
+  });
+
+  it("offers test and material actions when no deadline is upcoming", () => {
+    mount({ events: [], evaluations: [] });
+    expect(screen.getByText("Il tuo piano parte dalle verifiche…")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Aggiungi una verifica" }));
+    expect(props.onAddEvent).toHaveBeenCalledWith();
+
+    const navigate = vi.fn();
+    window.addEventListener("erga:goto-tab", navigate);
+    fireEvent.click(screen.getByRole("button", { name: "Carica materiale" }));
+    expect(navigate).toHaveBeenCalledWith(expect.objectContaining({ detail: "studio" }));
+    window.removeEventListener("erga:goto-tab", navigate);
   });
   it("ignores malformed date links and supports month navigation", () => {
     mount({}, "/app?tab=piano&planDay=invalid");
