@@ -707,6 +707,34 @@
     "strong": "Deciso",
     "deviceNote": "Dove supportato dal browser. I livelli cambiano durata e ritmo: la forza del motore dipende dal dispositivo."
   },
+  "focusTimer": {
+    "phaseFocus": "Focus",
+    "phaseShort": "Pausa",
+    "phaseLong": "Pausa lunga",
+    "panelTitle": "Timer di studio",
+    "panelDescription": "Controlla la sessione senza perdere il conto del tempo.",
+    "defaultSubject": "Studio",
+    "openTimerAria": "Apri timer per {{subject}}, {{time}}",
+    "overrun": "+{{time}} oltre",
+    "pause": "Metti in pausa il timer",
+    "resume": "Riprendi il timer",
+    "addFiveMinutes": "+5 min",
+    "finished": "Ho finito",
+    "interrupt": "Interrompi",
+    "interruptTitle": "Interrompere la sessione?",
+    "interruptDescription": "La sessione verrà chiusa e il tempo di studio sarà registrato.",
+    "confirmInterrupt": "Interrompi sessione",
+    "lessonNumber": "Minilezione {{number}}",
+    "lessonRange": "Minilezioni {{from}}–{{to}}",
+    "announceFiveMinutes": "Mancano 5 minuti alla fine della fase.",
+    "announcePhaseEnd": "Fase terminata.",
+    "announceOverrun": "Il timer è oltre il tempo previsto.",
+    "existingSession": "C'era già una sessione attiva: l'ho ripresa.",
+    "syncError": "Il timer non si è sincronizzato. Riprova tra poco.",
+    "restoreError": "Non è stato possibile riprendere la sessione dal cloud.",
+    "logged": "Sessione registrata! Erga sta calibrando il tuo algoritmo.",
+    "logError": "Non è stato possibile salvare la sessione."
+  },
   "studio": {
     "materialsAndReading": "Materiali e lettura"
   }

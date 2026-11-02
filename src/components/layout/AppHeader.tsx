@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
+import { TimerChip } from "@/components/focus/TimerChip";
 
 interface AppHeaderProps {
   title?: string | null;
@@ -116,6 +117,7 @@ export function AppHeader({
         </div>
 
         <div className={cn("ml-auto flex shrink-0 items-center gap-2", integratedHome && "pointer-events-auto")}>
+          <TimerChip />
           {/* Le Impostazioni restano in cima a destra. Nascoste solo dentro
               le pagine impostazioni, che hanno già la loro navigazione con
               indietro. Niente più serie né piano qui: il piano vive nella
