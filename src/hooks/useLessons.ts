@@ -15,6 +15,10 @@ export interface LessonMeta {
   context_id?: string;
   page_start?: number | null;
   page_end?: number | null;
+  /** Null for placeholders; omitted when an older Edge Function is still deployed. */
+  word_count?: number | null;
+  /** Number of exercises in the lesson, or zero when there are none. */
+  exercise_count?: number;
 }
 
 export interface Lesson extends LessonMeta {
@@ -46,6 +50,9 @@ export interface StudyContextSummary {
   id: string;
   file_name: string;
   created_at: string;
+  subject?: string | null;
+  /** The context's subject category, used as the reading log subject_type. */
+  subject_family?: string | null;
   lesson_count?: number;
   processing_status?: string | null;
   error_message?: string | null;
