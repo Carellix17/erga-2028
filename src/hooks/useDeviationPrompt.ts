@@ -6,9 +6,12 @@ import type { PlannerData } from "@/hooks/usePlannerData";
 import type { StudyEvent } from "@/hooks/useStudyEvents";
 import { buildPlan, type ExistingPlannerSlot, type PlanWarning, type ScheduleEvaluation } from "@/lib/planner/schedule";
 import {
+  addPlannerDays,
   plannerDateKey,
   plannerDateTimeParts,
+  plannerMinutesToTime,
   plannerTimeToMinutes,
+  type PlannerBusyEvent,
 } from "@/lib/planner/freeTime";
 import type {
   PlanChange,
@@ -79,9 +82,61 @@ function dayTimeIsFuture(day: string | null | undefined, time: string | null | u
   if (slotDay < today) return false;
 
   const slotMinute = plannerTimeToMinutes(time);
+  const nowMinute = currentRomeMinute(now);
+  if (slotMinute === null || nowMinute === null) return false;
+  return slotMinute >= nowMinute;
+}
+
+function currentRomeMinute(now: Date): number | null {
   const current = plannerDateTimeParts(now);
-  if (slotMinute === null || !current) return false;
-  return slotMinute > current.hour * 60 + current.minute;
+  if (!current) return null;
+  return current.hour * 60 + current.minute + current.second / 60 + now.getMilliseconds() / 60_000;
+}
+
+function isBusyAtOrAfterNow(event: StudyEvent, today: string, nowMinute: number): boolean {
+  const eventDay = plannerDateKey(event.event_date);
+  if (!eventDay) return false;
+  if (eventDay > today) return true;
+
+  const start = plannerTimeToMinutes(event.event_time);
+  if (start === null) return false;
+  const explicitEnd = plannerTimeToMinutes(event.end_time);
+
+  if (eventDay === today) {
+    if (start >= nowMinute) return true;
+    const end = explicitEnd === null
+      ? Math.min(start + 60, 24 * 60)
+      : explicitEnd > start
+        ? explicitEnd
+        : explicitEnd < start
+          ? 24 * 60
+          : start;
+    return end > nowMinute;
+  }
+
+  // Anche un evento iniziato ieri può essere ancora in corso se attraversa mezzanotte.
+  if (eventDay === addPlannerDays(today, -1)) {
+    const endToday = explicitEnd !== null && explicitEnd < start
+      ? explicitEnd
+      : explicitEnd === null && start + 60 > 24 * 60
+        ? start + 60 - 24 * 60
+        : null;
+    return endToday !== null && endToday > nowMinute;
+  }
+  return false;
+}
+
+function elapsedTimeBlock(today: string, now: Date): PlannerBusyEvent | null {
+  const current = plannerDateTimeParts(now);
+  if (!current || current.day !== today) return null;
+  const minuteOfDay = current.hour * 60 + current.minute + current.second / 60 + now.getMilliseconds() / 60_000;
+  const roundedEnd = Math.ceil(minuteOfDay / 5) * 5;
+  if (roundedEnd <= 0) return null;
+
+  // Il planner non interpreta 24:00; a questo limite 23:59 rende indisponibile
+  // anche l'ultimo minuto, troppo breve per essere uno slot di studio valido.
+  const endTime = roundedEnd >= 24 * 60 ? "23:59" : plannerMinutesToTime(roundedEnd);
+  return { event_date: today, event_time: "00:00", end_time: endTime };
 }
 
 function isEditableFutureStudy(event: StudyEvent, now: Date): event is VersionedStudyEvent {
@@ -278,7 +333,12 @@ function buildDeviationProposal(
   const targetSlots = selectedEvents.filter((event) => belongsToEvaluations(event, evaluations));
   const targetIds = new Set(targetSlots.map((event) => event.id));
   const baseInput = data.buildPlanInput({ today: now, horizonDays: 30, evaluations });
-  const busyEvents = events.filter((event) => dayTimeIsFuture(event.event_date, event.event_time, now) && !targetIds.has(event.id));
+  const nowMinute = currentRomeMinute(now) ?? 0;
+  const elapsedBlock = elapsedTimeBlock(today, now);
+  const busyEvents: PlannerBusyEvent[] = [
+    ...events.filter((event) => !targetIds.has(event.id) && isBusyAtOrAfterNow(event, today, nowMinute)),
+    ...(elapsedBlock ? [elapsedBlock] : []),
+  ];
   const result = buildPlan({
     ...baseInput,
     busyEvents,

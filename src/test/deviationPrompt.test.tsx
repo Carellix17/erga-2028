@@ -133,6 +133,17 @@ vi.mock("@/lib/planner/schedule", async (importOriginal) => {
 
 const STORAGE_KEY = "erga:replan-dismissed:v1";
 const FIXED_NOW = Date.parse("2026-11-03T10:00:00.000Z");
+const FIXED_EIGHTEEN = Date.parse("2026-11-03T17:00:00.000Z");
+
+type PreviewChange = {
+  op: "delete" | "update" | "insert";
+  after?: { event_date: string; event_time: string };
+};
+
+async function useActualBuildPlan() {
+  const schedule = await vi.importActual<typeof import("@/lib/planner/schedule")>("@/lib/planner/schedule");
+  mocks.buildPlan.mockImplementation((input: BuildPlanInput) => schedule.buildPlan(input));
+}
 
 function studyEvent(overrides: Partial<StudyEvent> = {}): StudyEvent {
   return {
@@ -180,7 +191,7 @@ function movedScheduleSlot(): ScheduledSlot {
   };
 }
 
-function evaluation(): ScheduleEvaluation {
+function evaluation(overrides: Partial<ScheduleEvaluation> = {}): ScheduleEvaluation {
   return {
     id: "evaluation-1",
     title: "Verifica di Biologia",
@@ -190,17 +201,27 @@ function evaluation(): ScheduleEvaluation {
     topic_id: "context-1",
     subject_id: "subject-1",
     subject: "Biologia",
+    ...overrides,
   };
 }
 
-function makePlannerData(events: StudyEvent[] = [studyEvent()]): PlannerData {
-  const evaluations = [evaluation()];
+function makePlannerData(
+  events: StudyEvent[] = [studyEvent()],
+  setup: {
+    evaluations?: ScheduleEvaluation[];
+    lessonsByContext?: PlannerData["lessonsByContext"];
+    completedByContext?: PlannerData["completedByContext"];
+  } = {},
+): PlannerData {
+  const evaluations = setup.evaluations ?? [evaluation()];
+  const lessonsByContext = setup.lessonsByContext ?? {};
+  const completedByContext = setup.completedByContext ?? {};
   return {
     routines: [],
     events: events as unknown as PlannerData["events"],
     evaluations,
-    lessonsByContext: {},
-    completedByContext: {},
+    lessonsByContext,
+    completedByContext,
     readingLogs: [],
     settings: {},
     askBeforeMove: false,
@@ -210,8 +231,8 @@ function makePlannerData(events: StudyEvent[] = [studyEvent()]): PlannerData {
       today: options.today ?? new Date(),
       horizonDays: options.horizonDays ?? 30,
       evaluations: options.evaluations ?? evaluations,
-      lessonsByContext: {},
-      completedByContext: {},
+      lessonsByContext,
+      completedByContext,
       estimateFn: mocks.estimateFn,
       routines: [],
       busyEvents: events,
@@ -387,6 +408,112 @@ describe("deviation replan prompt", () => {
       },
     });
     expect(JSON.stringify(mocks.telemetry[0].payload.props).length).toBeLessThanOrEqual(512);
+  });
+
+  it("renders the main replan message at the base text size", () => {
+    render(createElement(PromptHarness));
+    act(() => emitDeviationPromptSignal(signal({ id: "base-text-size" })));
+
+    const paragraph = screen.getByTestId("replan-banner").querySelector("p");
+    expect(paragraph).toHaveClass("text-base");
+    expect(paragraph).not.toHaveClass("text-sm");
+  });
+
+  it("keeps a remaining mini-lesson schedulable from 18:00 instead of deleting it", async () => {
+    const event = studyEvent({
+      event_date: "2026-11-04",
+      event_time: "08:00",
+      end_time: "08:20",
+      title: "Biologia · lezione 1",
+      lesson_from: 1,
+      lesson_to: 1,
+    });
+    mocks.events = [event];
+    mocks.plannerData = makePlannerData([event], {
+      evaluations: [evaluation({ date: "2026-11-04" })],
+      lessonsByContext: { "context-1": { lessons: [{ lesson_order: 1 }] } },
+    });
+    vi.setSystemTime(FIXED_EIGHTEEN);
+    await useActualBuildPlan();
+    render(createElement(PromptHarness));
+    act(() => emitDeviationPromptSignal(signal({ id: "replan-at-18" })));
+
+    fireEvent.click(screen.getByRole("button", { name: "Vediamo" }));
+    await waitFor(() => expect(mocks.onPreview).toHaveBeenCalledTimes(1));
+
+    const planInput = mocks.buildPlan.mock.calls[0][0] as BuildPlanInput;
+    expect(planInput.busyEvents).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        event_date: "2026-11-03",
+        event_time: "00:00",
+        end_time: "18:00",
+      }),
+    ]));
+    const proposal = mocks.onPreview.mock.calls[0]?.[0] as { changes: PreviewChange[] };
+    expect(proposal.changes.some((change) => change.op === "delete")).toBe(false);
+    expect(proposal.changes.some((change) => change.op === "update" || change.op === "insert")).toBe(true);
+
+    const proposedSlots = proposal.changes.flatMap((change) => change.after ? [change.after] : []);
+    expect(proposedSlots).toContainEqual(expect.objectContaining({
+      event_date: "2026-11-03",
+      event_time: "18:00",
+    }));
+    expect(proposedSlots.every((slot) =>
+      slot.event_date > "2026-11-03"
+      || (slot.event_date === "2026-11-03" && slot.event_time >= "18:00"),
+    )).toBe(true);
+  });
+
+  it("counts an event already in progress today as busy until it ends", async () => {
+    const target = studyEvent({
+      event_date: "2026-11-04",
+      event_time: "08:00",
+      end_time: "08:20",
+      title: "Biologia · lezione 1",
+      lesson_from: 1,
+      lesson_to: 1,
+    });
+    const ongoing = studyEvent({
+      id: "ongoing-appointment",
+      subject: "Inglese",
+      title: "Lezione di inglese",
+      event_date: "2026-11-03",
+      event_time: "17:30",
+      end_time: "18:30",
+      event_type: "assignment",
+      context_id: null,
+      evaluation_id: null,
+      lesson_from: null,
+      lesson_to: null,
+      source: "auto",
+    });
+    mocks.events = [target, ongoing];
+    mocks.plannerData = makePlannerData([target, ongoing], {
+      evaluations: [evaluation({ date: "2026-11-04" })],
+      lessonsByContext: { "context-1": { lessons: [{ lesson_order: 1 }] } },
+    });
+    vi.setSystemTime(FIXED_EIGHTEEN);
+    await useActualBuildPlan();
+    render(createElement(PromptHarness));
+    act(() => emitDeviationPromptSignal(signal({ id: "ongoing-blocker" })));
+
+    fireEvent.click(screen.getByRole("button", { name: "Vediamo" }));
+    await waitFor(() => expect(mocks.onPreview).toHaveBeenCalledTimes(1));
+
+    const planInput = mocks.buildPlan.mock.calls[0][0] as BuildPlanInput;
+    expect(planInput.busyEvents).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        event_date: "2026-11-03",
+        event_time: "17:30",
+        end_time: "18:30",
+      }),
+    ]));
+    const proposal = mocks.onPreview.mock.calls[0]?.[0] as { changes: PreviewChange[] };
+    const update = proposal.changes.find((change) => change.op === "update");
+    expect(update?.after).toMatchObject({
+      event_date: "2026-11-03",
+      event_time: "18:30",
+    });
   });
 
   it("snoozes the same reason and day for 24 hours and keeps storage content minimal", () => {

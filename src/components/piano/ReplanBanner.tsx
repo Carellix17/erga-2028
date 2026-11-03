@@ -49,7 +49,7 @@ export function ReplanBanner({ prompt, notice, isBuilding, onShown, onReorganize
       className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4"
       data-testid="replan-banner"
     >
-      <p className="min-w-0 flex-1 text-sm font-medium">
+      <p className="min-w-0 flex-1 text-base font-medium">
         {prompt
           ? t(`piano.replanPrompt.${prompt.reason}`, { subject: prompt.subject, planned, actual })
           : notice}
