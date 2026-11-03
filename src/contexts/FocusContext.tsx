@@ -31,6 +31,7 @@ import {
   type PauseInterval,
 } from "@/lib/focusClock";
 import type { FocusSessionRow } from "@/lib/planner/types";
+import type { FocusBoundaryEvent } from "@/lib/focus/deviationPrompt";
 
 export type { FocusEndReason, FocusPhase } from "@/lib/focusClock";
 
@@ -99,6 +100,7 @@ interface FocusContextValue {
   task: FocusTask | null;
   sessionKey: string | null;
   lastEndedSession: FocusEndedSession | null;
+  lastBoundaryEvent: FocusBoundaryEvent | null;
   awaitingChoice: boolean;
   announcement: string;
   acknowledgeEndedSession: (sessionKey: string) => void;
@@ -284,6 +286,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const [lastEndedSession, setLastEndedSession] = useState<FocusEndedSession | null>(null);
+  const [lastBoundaryEvent, setLastBoundaryEvent] = useState<FocusBoundaryEvent | null>(null);
   const activeSessionRef = useRef<ActiveFocusSession | null>(null);
   const userIdRef = useRef(userId);
   const focusSettingsRef = useRef(focusSettings);
@@ -615,6 +618,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
       activeSessionRef.current = null;
       setActiveSession(null);
       setLastEndedSession(null);
+      setLastBoundaryEvent(null);
       pendingStartRef.current = null;
       setSyncing(false);
       return;
@@ -750,8 +754,17 @@ export function FocusProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      const sessionKey = String(finalSession.startedAt);
+      setLastBoundaryEvent({
+        id: `${sessionKey}:ended:${endedAt}`,
+        sessionKey,
+        kind: "ended",
+        phase: finalSession.phase,
+        at: endedAt,
+        reason,
+      });
       setLastEndedSession({
-        sessionKey: String(finalSession.startedAt),
+        sessionKey,
         task: finalSession.task,
         reason,
         endedAt,
@@ -952,6 +965,16 @@ export function FocusProvider({ children }: { children: ReactNode }) {
       phaseDurationSeconds: transition.phaseDurationSeconds,
       lastAccrualAt: timestamp,
     };
+    if (accrued.phase === "focus" && transition.phase !== "focus") {
+      const sessionKey = String(accrued.startedAt);
+      setLastBoundaryEvent({
+        id: `${sessionKey}:pause:${transition.phase}:${timestamp}`,
+        sessionKey,
+        kind: "pause",
+        phase: transition.phase,
+        at: timestamp,
+      });
+    }
     clockBaselineRef.current = null;
     void persistTransition(accrued, next);
   }, [accrueFocusTime, endWithReason, persistTransition]);
@@ -1082,6 +1105,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     task: activeSession?.task ?? null,
     sessionKey,
     lastEndedSession,
+    lastBoundaryEvent,
     awaitingChoice,
     announcement,
     acknowledgeEndedSession,
@@ -1110,6 +1134,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     extendByMinutes,
     fullscreen,
     lastEndedSession,
+    lastBoundaryEvent,
     isActive,
     isRunning,
     isSyncing,

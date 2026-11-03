@@ -647,6 +647,15 @@
       "splitInTwo": "Split it into two shorter parts",
       "partTitle": "{{title}} · part {{part}}"
     },
+    "replanPrompt": {
+      "slower": "You studied {{subject}} more slowly than planned today ({{actual}} instead of {{planned}}). Want to reorganize?",
+      "faster": "You studied {{subject}} faster than planned today ({{actual}} instead of {{planned}}). Want to reorganize?",
+      "reorganize": "Let's see",
+      "later": "Later",
+      "noChanges": "The plan holds as it is: nothing needs to change.",
+      "prepareError": "I couldn't prepare a proposal. The plan wasn't changed.",
+      "conflict": "The plan changed in the meantime"
+    },
     "changePreview": {
       "title": "Preview changes",
       "description": "Review the proposal and choose which changes to apply. Your plan stays as it is until you confirm.",
