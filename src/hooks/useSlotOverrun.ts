@@ -28,6 +28,7 @@ import {
 } from "@/lib/planner/freeTime";
 import { detectDeviation } from "@/lib/planner/deviation";
 import type { PlanChange } from "@/lib/planner/types";
+import { emitDeviationPromptSignal } from "@/lib/focus/deviationPrompt";
 import {
   createSlotExtensionPlan,
   findNextScheduleItem,
@@ -321,7 +322,7 @@ export function useSlotOverrun() {
     return true;
   }, [applyPlanChanges, invalidatePlannerQueries, toggleStudyEventCompleted]);
 
-  const recordDeviationForDoneSlot = useCallback((event: StudyEvent, focusSeconds: number) => {
+  const recordDeviationForDoneSlot = useCallback((event: StudyEvent, focusSeconds: number, sessionKey: string) => {
     const start = plannerTimeToMinutes(event.event_time);
     const end = plannerTimeToMinutes(event.end_time);
     if (start === null || end === null || end <= start) return;
@@ -335,8 +336,20 @@ export function useSlotOverrun() {
       lessonRatios: ratio < 0.7 ? [ratio] : [],
       blockRunning: false,
     });
-    if (deviation) toast({ title: t(`focusTimer.deviation.${deviation}`), "aria-live": "polite" });
-  }, [t, toast]);
+    if (deviation) {
+      emitDeviationPromptSignal({
+        id: sessionKey,
+        userId: currentUser ?? null,
+        reason: deviation,
+        subject: event.subject,
+        plannedMin,
+        actualMin,
+        evaluationId: event.evaluation_id ?? null,
+        contextId: event.context_id ?? null,
+        createdAt: Date.now(),
+      });
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     const ended = focus?.lastEndedSession;
@@ -374,7 +387,7 @@ export function useSlotOverrun() {
           if (wasDeclaredDone) {
             try {
               const markedDone = await markEndedSlotDone(event);
-              if (markedDone) recordDeviationForDoneSlot(event, ended.focusSeconds);
+              if (markedDone) recordDeviationForDoneSlot(event, ended.focusSeconds, ended.sessionKey);
             } catch (error) {
               reportSaveError(error);
             }
@@ -548,7 +561,7 @@ export function useSlotOverrun() {
       earlyFinishDoneSessions.current.add(prompt.sessionKey);
       if (markedDone) {
         const focusSeconds = earlyFinishFocusSeconds.current.get(prompt.sessionKey);
-        if (focusSeconds !== undefined) recordDeviationForDoneSlot(prompt.event, focusSeconds);
+        if (focusSeconds !== undefined) recordDeviationForDoneSlot(prompt.event, focusSeconds, prompt.sessionKey);
       }
       earlyFinishFocusSeconds.current.delete(prompt.sessionKey);
       setEarlyFinish(null);

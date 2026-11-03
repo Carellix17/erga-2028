@@ -647,6 +647,15 @@
       "splitInTwo": "La dividiamo in due parti più corte",
       "partTitle": "{{title}} · parte {{part}}"
     },
+    "replanPrompt": {
+      "slower": "Oggi hai studiato {{subject}} più lentamente del previsto ({{actual}} invece di {{planned}}). Vuoi riorganizzare?",
+      "faster": "Oggi hai studiato {{subject}} più velocemente del previsto ({{actual}} invece di {{planned}}). Vuoi riorganizzare?",
+      "reorganize": "Vediamo",
+      "later": "Più tardi",
+      "noChanges": "Il piano regge così: non serve cambiare niente.",
+      "prepareError": "Non sono riuscito a preparare una proposta. Il piano non è stato modificato.",
+      "conflict": "Il piano è cambiato nel frattempo"
+    },
     "changePreview": {
       "title": "Anteprima delle modifiche",
       "description": "Controlla la proposta e scegli quali modifiche applicare. Il piano non cambia finché non confermi.",

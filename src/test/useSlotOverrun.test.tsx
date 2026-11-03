@@ -1,4 +1,4 @@
-import { act, cleanup, render, renderHook, waitFor } from "@testing-library/react";
+import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { createElement, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
@@ -6,6 +6,10 @@ import { FocusProvider, FOCUS_STORAGE_KEY, useFocus } from "@/contexts/FocusCont
 import { useSlotOverrun } from "@/hooks/useSlotOverrun";
 import { PlanConflictError, type StudyEvent } from "@/hooks/useStudyEvents";
 import { getStudyEventEndInstant } from "@/lib/focus/slotOverrun";
+import {
+  acknowledgeDeviationPromptSignal,
+  getPendingDeviationSignals,
+} from "@/lib/focus/deviationPrompt";
 
 interface TestTask {
   label: string;
@@ -217,6 +221,7 @@ function FocusMonitor() {
     "div",
     null,
     createElement("span", { "data-testid": "phase" }, focus.phase),
+    createElement("span", { "data-testid": "boundary" }, focus.lastBoundaryEvent?.kind ?? ""),
     createElement("div", { "aria-live": "assertive", "data-testid": "announcement" }, flow.announcement),
   );
 }
@@ -270,6 +275,7 @@ async function mountEarlyEndedSession(event = studyEvent(), nextEvent = studyEve
 }
 
 beforeEach(() => {
+  for (const pending of getPendingDeviationSignals()) acknowledgeDeviationPromptSignal(pending.id);
   window.localStorage.clear();
   window.sessionStorage.clear();
   mocks.focus.current = null;
@@ -292,6 +298,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  for (const pending of getPendingDeviationSignals()) acknowledgeDeviationPromptSignal(pending.id);
   vi.useRealTimers();
 });
 
@@ -415,8 +422,14 @@ describe("useSlotOverrun timing and declared completion", () => {
 
     expect(mocks.applyChanges).toHaveBeenCalledTimes(1);
     expect(mocks.toggleCompleted).not.toHaveBeenCalled();
-    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
-      title: "Ho registrato uno scostamento: hai impiegato meno tempo del previsto.",
+    expect(getPendingDeviationSignals()).toContainEqual(expect.objectContaining({
+      id: "ended-session",
+      reason: "faster",
+      subject: event.subject,
+      plannedMin: 50,
+      actualMin: 3,
+      evaluationId: null,
+      contextId: event.context_id,
     }));
   });
 
@@ -498,6 +511,7 @@ describe("FocusProvider auto-pause integration", () => {
     expect(mocks.updatePayloads.filter((payload) => payload.end_reason === "auto_paused")).toHaveLength(1);
     expect(mocks.toastInfo).toHaveBeenCalledTimes(1);
     expect(mocks.toastInfo).toHaveBeenCalledWith("Timer in pausa: non so se stai ancora studiando.", { duration: 10_000 });
+    expect(screen.getByTestId("boundary")).toHaveTextContent("ended");
     expect(mocks.applyChanges).not.toHaveBeenCalled();
     expect(mocks.toggleCompleted).not.toHaveBeenCalled();
   });

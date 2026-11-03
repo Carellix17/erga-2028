@@ -10,9 +10,11 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { usePlannerData, plannerDataKeys } from "@/hooks/usePlannerData";
 import { useAutoReplan, type AutoReplanApplyRequest, type AutoReplanApplyResult, type AutoReplanPreview, type ReplanPrompt } from "@/hooks/useAutoReplan";
+import { useDeviationPrompt, type DeviationPlanProposal } from "@/hooks/useDeviationPrompt";
 import { StudyPlanSkeleton } from "./StudyPlanSkeleton";
 import { AppointmentsCalendar } from "./AppointmentsCalendar";
 import { ChangePreview } from "./ChangePreview";
+import { ReplanBanner } from "./ReplanBanner";
 import { PlanHistory } from "./PlanHistory";
 import { NoSpaceDialog } from "./NoSpaceDialog";
 import { AddEventSheet, type EvalFormInput } from "./AddEventSheet";
@@ -59,12 +61,14 @@ interface PlanProposal {
   warnings: PlanWarning[];
   evaluations: readonly Pick<ScheduleEvaluation, "id" | "title" | "subject">[];
   afterApplyPrompt?: ReplanPrompt;
+  deviationSignalId?: string;
 }
 
 interface PackageToastOptions {
   title: string;
   description?: ReactNode;
   chooseTime?: boolean;
+  conflictTitle?: string;
   failure?: {
     title: string;
     retryLabel: string;
@@ -151,6 +155,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   const [moveSheetOpen, setMoveSheetOpen] = useState(false);
   const [moveInteractionActive, setMoveInteractionActive] = useState(false);
   const movePackageInFlight = useRef(false);
+  const deviationPackagesInFlight = useRef(new Set<string>());
   // Elementi che si stanno "dissolvendo" prima dell'eliminazione vera.
   const [exitingIds, setExitingIds] = useState<string[]>([]);
   const dismissedAutomaticIds = useRef(new Set<string>());
@@ -226,6 +231,17 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       evaluations: [...selectedEvaluations],
     };
   }, [plannerDataQuery.data]);
+
+  const openDeviationPreview = useCallback((nextProposal: DeviationPlanProposal) => {
+    setProposal({
+      reason: nextProposal.reason,
+      changes: nextProposal.changes,
+      warnings: nextProposal.warnings,
+      evaluations: nextProposal.evaluations,
+      deviationSignalId: nextProposal.signalId,
+    });
+    setPreviewOpen(true);
+  }, []);
 
   useEffect(() => {
     if (!plannerDataQuery.data || plannerDataQuery.isError || automaticBanner || previewOpen || historyOpen) return;
@@ -356,8 +372,12 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     } catch (error) {
       console.error("Error applying planner changes:", error);
       if (isPlanConflict(error)) {
-        notify({ title: t("piano.planHistory.conflict"), variant: "destructive" });
-        await invalidatePlannerQueries();
+        notify({ title: toastOptions.conflictTitle ?? t("piano.planHistory.conflict"), variant: "destructive" });
+        if (toastOptions.conflictTitle) {
+          await Promise.all([eventsQuery.refetch(), plannerDataQuery.refetch()]);
+        } else {
+          await invalidatePlannerQueries();
+        }
         return "conflict";
       }
       const retryAction = toastOptions.failure ? (
@@ -452,16 +472,29 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   const applyProposal = async (selectedChanges: PlanChange[]) => {
     if (!proposal || selectedChanges.length === 0) return;
     const activeProposal = proposal;
-    const result = await applyPlanPackage(activeProposal.reason, selectedChanges, {
-      title: t("piano.changePreview.applied", { count: selectedChanges.length }),
-      ...(activeProposal.warnings.length > 0
-        ? { description: t("piano.changePreview.appliedWithWarnings", { count: activeProposal.warnings.length }) }
-        : {}),
-    });
-    if (result !== "applied") return;
-    if (activeProposal.afterApplyPrompt) setAutoPrompt(activeProposal.afterApplyPrompt);
-    setPreviewOpen(false);
-    setProposal(null);
+    const signalId = activeProposal.deviationSignalId;
+    if (signalId && deviationPackagesInFlight.current.has(signalId)) return;
+    if (signalId) deviationPackagesInFlight.current.add(signalId);
+    try {
+      const result = await applyPlanPackage(activeProposal.reason, selectedChanges, {
+        title: t("piano.changePreview.applied", { count: selectedChanges.length }),
+        ...(signalId ? { conflictTitle: t("piano.replanPrompt.conflict") } : {}),
+        ...(activeProposal.warnings.length > 0
+          ? { description: t("piano.changePreview.appliedWithWarnings", { count: activeProposal.warnings.length }) }
+          : {}),
+      });
+      if (result === "conflict" && signalId) {
+        setPreviewOpen(false);
+        setProposal(null);
+        return;
+      }
+      if (result !== "applied") return;
+      if (activeProposal.afterApplyPrompt) setAutoPrompt(activeProposal.afterApplyPrompt);
+      setPreviewOpen(false);
+      setProposal(null);
+    } finally {
+      if (signalId) deviationPackagesInFlight.current.delete(signalId);
+    }
   };
 
   const openReplanPreview = (nextProposal: AutoReplanPreview) => {
@@ -485,6 +518,17 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     onPromptChange: setAutoPrompt,
     onPreview: openReplanPreview,
     onApply: applyAutoReplan,
+  });
+
+  const deviationPromptBlocked = isLoading || loadError || previewOpen || historyOpen || !!autoPrompt
+    || !!automaticBanner || isPreparingPlan || showAddSheet || !!editingEval || !!editingStudyEvent
+    || !!eventToDelete || !!evalToDelete || moveSheetOpen || moveInteractionActive
+    || searchParams.has("slot") || applyPlanChanges.isPending;
+  const deviationPrompt = useDeviationPrompt({
+    plannerData: plannerDataQuery.data,
+    events,
+    blocked: deviationPromptBlocked,
+    onPreview: openDeviationPreview,
   });
 
   /** Elimina con dissolvenza: marca l'elemento, lascia partire l'animazione, poi rimuove davvero. */
@@ -612,6 +656,15 @@ export function PianoView({ hasFiles }: PianoViewProps) {
           </div>
         </aside>
       )}
+
+      <ReplanBanner
+        prompt={deviationPrompt.prompt}
+        notice={deviationPrompt.notice}
+        isBuilding={deviationPrompt.isBuilding}
+        onShown={deviationPrompt.onShown}
+        onReorganize={deviationPrompt.reorganize}
+        onLater={deviationPrompt.dismissLater}
+      />
 
       {loadError && <div role="alert" className="border border-destructive p-4 text-base">
         <p>{t("piano.loadError")}</p>
