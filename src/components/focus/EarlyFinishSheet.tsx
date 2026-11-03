@@ -7,6 +7,8 @@ import type { EarlyFinishPrompt } from "@/lib/focus/slotOverrun";
 
 interface EarlyFinishSheetProps {
   prompt: EarlyFinishPrompt | null;
+  isSaving: boolean;
+  onMarkDone: () => void;
   onStartNext: () => void;
   onStartBreak: () => void;
   onLeaveFree: () => void;
@@ -29,6 +31,8 @@ function useDesktopViewport(): boolean {
 
 export function EarlyFinishSheet({
   prompt,
+  isSaving,
+  onMarkDone,
   onStartNext,
   onStartBreak,
   onLeaveFree,
@@ -81,15 +85,18 @@ export function EarlyFinishSheet({
       </p>
 
       <div className="grid gap-2">
+        <Button type="button" className="min-h-11 w-full justify-start" disabled={isSaving} onClick={onMarkDone}>
+          {t("focusTimer.markAsDone")}
+        </Button>
         {prompt.nextStudyEvent && (
-          <Button type="button" className="min-h-11 w-full justify-start" onClick={onStartNext}>
+          <Button type="button" className="min-h-11 w-full justify-start" disabled={isSaving} onClick={onStartNext}>
             {t("focusTimer.startNext")}
           </Button>
         )}
-        <Button type="button" variant="outline" className="min-h-11 w-full justify-start" onClick={onStartBreak}>
+        <Button type="button" variant="outline" className="min-h-11 w-full justify-start" disabled={isSaving} onClick={onStartBreak}>
           {t("focusTimer.startBreak")}
         </Button>
-        <Button type="button" variant="ghost" className="min-h-11 w-full justify-start" onClick={onLeaveFree}>
+        <Button type="button" variant="ghost" className="min-h-11 w-full justify-start" disabled={isSaving} onClick={onLeaveFree}>
           {t("focusTimer.leaveFree")}
         </Button>
         <Button type="button" variant="ghost" className="min-h-11 w-full justify-start text-muted-foreground" onClick={onDismiss}>

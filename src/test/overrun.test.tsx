@@ -197,13 +197,52 @@ describe("slot extension package", () => {
 });
 
 describe("overrun sheet interactions", () => {
+  it("puts Segna come fatto first and routes that explicit action only to mark-done", () => {
+    const onMarkDone = vi.fn();
+    const onStartNext = vi.fn();
+    const onStartBreak = vi.fn();
+    const onLeaveFree = vi.fn();
+    render(
+      <EarlyFinishSheet
+        isSaving={false}
+        onMarkDone={onMarkDone}
+        prompt={{
+          sessionKey: "session-1",
+          event: studyEvent(),
+          subject: "Fisica",
+          lessonFrom: 0,
+          lessonTo: 0,
+          nextItem: null,
+          nextStudyEvent: null,
+        }}
+        onStartNext={onStartNext}
+        onStartBreak={onStartBreak}
+        onLeaveFree={onLeaveFree}
+        onDismiss={vi.fn()}
+      />,
+    );
+
+    const markDone = screen.getByRole("button", { name: "Segna come fatto" });
+    expect(screen.getAllByRole("button")[0]).toBe(markDone);
+    expect(markDone).toHaveClass("min-h-11");
+    fireEvent.click(markDone);
+
+    expect(onMarkDone).toHaveBeenCalledOnce();
+    expect(onStartNext).not.toHaveBeenCalled();
+    expect(onStartBreak).not.toHaveBeenCalled();
+    expect(onLeaveFree).not.toHaveBeenCalled();
+  });
+
   it("keeps the early-finish sheet non-modal and Escape does not run any action", () => {
+    const onMarkDone = vi.fn();
     const onStartNext = vi.fn();
     const onStartBreak = vi.fn();
     const onLeaveFree = vi.fn();
     const onDismiss = vi.fn();
     render(
       <EarlyFinishSheet
+        isSaving={false}
+        onMarkDone={onMarkDone}
         prompt={{
           sessionKey: "session-1",
           event: studyEvent(),
@@ -224,6 +263,7 @@ describe("overrun sheet interactions", () => {
     fireEvent.keyDown(window, { key: "Escape" });
 
     expect(onDismiss).toHaveBeenCalledOnce();
+    expect(onMarkDone).not.toHaveBeenCalled();
     expect(onStartNext).not.toHaveBeenCalled();
     expect(onStartBreak).not.toHaveBeenCalled();
     expect(onLeaveFree).not.toHaveBeenCalled();

@@ -94,6 +94,8 @@ function FocusSessionSheets() {
       />
       <EarlyFinishSheet
         prompt={flow.earlyFinish}
+        isSaving={flow.isSaving}
+        onMarkDone={flow.markEarlyFinishDone}
         onStartNext={flow.startNextStudy}
         onStartBreak={flow.startBreak}
         onLeaveFree={flow.leaveFree}

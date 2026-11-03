@@ -825,6 +825,7 @@
     "decideLater": "Decide later",
     "earlyFinishTitle": "Finished early",
     "earlyFinishQuestion": "You finished before the slot ended.",
+    "markAsDone": "Mark as done",
     "startNext": "Start the next task",
     "startBreak": "Take a break",
     "leaveFree": "Leave the time free",

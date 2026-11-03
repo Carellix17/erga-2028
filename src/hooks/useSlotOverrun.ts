@@ -113,6 +113,11 @@ export function useSlotOverrun() {
     deadline: string;
   } | null>(null);
   const handledEndedSessions = useRef(new Set<string>());
+  const declaredDoneSessions = useRef(new Set<string>());
+  const earlyFinishFocusSeconds = useRef(new Map<string, number>());
+  const earlyFinishDoneInFlight = useRef(new Set<string>());
+  const earlyFinishDoneSessions = useRef(new Set<string>());
+  const [isMarkingDone, setIsMarkingDone] = useState(false);
   const actionInFlight = useRef(false);
 
   const activeSessionKey = focus?.sessionKey ?? null;
@@ -291,9 +296,9 @@ export function useSlotOverrun() {
     }
   }, [applyPlanChanges, currentUser, events, invalidatePlannerQueries, queryClient, refetchPlannerData, reportSaveError, showUndoToast, t]);
 
-  const markEndedSlotDone = useCallback(async (event: StudyEvent): Promise<void> => {
+  const markEndedSlotDone = useCallback(async (event: StudyEvent): Promise<boolean> => {
     const status = event.status ?? (event.is_completed ? "done" : "planned");
-    if (status === "done" || event.is_completed === true || event.completed_at) return;
+    if (status === "done" || event.is_completed === true || event.completed_at) return false;
     if (!Number.isInteger(event.version) || (event.version as number) < 0) {
       throw new Error("version_required");
     }
@@ -308,17 +313,36 @@ export function useSlotOverrun() {
       if (changes.length) {
         await applyPlanChanges.mutateAsync({ reason: "manual", changes });
         await invalidatePlannerQueries();
-        return;
+        return true;
       }
     }
     await toggleStudyEventCompleted.mutateAsync({ id: event.id, next: true, version: event.version });
     await invalidatePlannerQueries();
+    return true;
   }, [applyPlanChanges, invalidatePlannerQueries, toggleStudyEventCompleted]);
+
+  const recordDeviationForDoneSlot = useCallback((event: StudyEvent, focusSeconds: number) => {
+    const start = plannerTimeToMinutes(event.event_time);
+    const end = plannerTimeToMinutes(event.end_time);
+    if (start === null || end === null || end <= start) return;
+    const plannedMin = end - start;
+    const actualMin = Math.round(focusSeconds / 60);
+    if (Math.abs(actualMin - plannedMin) < 10) return;
+    const ratio = plannedMin > 0 ? actualMin / plannedMin : 1;
+    const deviation = detectDeviation({
+      plannedMin,
+      actualMin,
+      lessonRatios: ratio < 0.7 ? [ratio] : [],
+      blockRunning: false,
+    });
+    if (deviation) toast({ title: t(`focusTimer.deviation.${deviation}`), "aria-live": "polite" });
+  }, [t, toast]);
 
   useEffect(() => {
     const ended = focus?.lastEndedSession;
     if (!ended || handledEndedSessions.current.has(ended.sessionKey) || !plannerQuery.isFetched || !plannerData) return;
     handledEndedSessions.current.add(ended.sessionKey);
+    const wasDeclaredDone = declaredDoneSessions.current.delete(ended.sessionKey);
 
     void (async () => {
       try {
@@ -326,13 +350,7 @@ export function useSlotOverrun() {
           ? events.find((item) => item.id === ended.task.eventId) ?? null
           : null;
         const countAsFinished = ended.reason === "finished" || ended.reason === "overrun";
-        if (countAsFinished && event?.event_type === "study") {
-          try {
-            await markEndedSlotDone(event);
-          } catch (error) {
-            reportSaveError(error);
-          }
-
+        if (countAsFinished && event && isEligiblePlannedStudy(ended.task, event)) {
           if (isAtLeastTenMinutesEarly(event, ended.endedAt)) {
             const day = plannerDateKey(event.event_date);
             const endMinute = plannerTimeToMinutes(event.end_time);
@@ -341,6 +359,7 @@ export function useSlotOverrun() {
               ? findNextScheduleItem(day, endMinute, event.id, events, routines)
               : null;
             const details = subjectAndLessons(event, ended.task);
+            earlyFinishFocusSeconds.current.set(ended.sessionKey, ended.focusSeconds);
             setEarlyFinish({
               sessionKey: ended.sessionKey,
               event,
@@ -352,20 +371,12 @@ export function useSlotOverrun() {
             });
           }
 
-          const start = plannerTimeToMinutes(event.event_time);
-          const end = plannerTimeToMinutes(event.end_time);
-          if (start !== null && end !== null && end > start) {
-            const plannedMin = end - start;
-            const actualMin = Math.round(ended.focusSeconds / 60);
-            if (Math.abs(actualMin - plannedMin) >= 10) {
-              const ratio = plannedMin > 0 ? actualMin / plannedMin : 1;
-              const deviation = detectDeviation({
-                plannedMin,
-                actualMin,
-                lessonRatios: ratio < 0.7 ? [ratio] : [],
-                blockRunning: false,
-              });
-              if (deviation) toast({ title: t(`focusTimer.deviation.${deviation}`), "aria-live": "polite" });
+          if (wasDeclaredDone) {
+            try {
+              const markedDone = await markEndedSlotDone(event);
+              if (markedDone) recordDeviationForDoneSlot(event, ended.focusSeconds);
+            } catch (error) {
+              reportSaveError(error);
             }
           }
         }
@@ -373,7 +384,7 @@ export function useSlotOverrun() {
         focusRef.current?.acknowledgeEndedSession(ended.sessionKey);
       }
     })();
-  }, [events, focus?.lastEndedSession, markEndedSlotDone, plannerData, plannerQuery.isFetched, reportSaveError, routines, t, toast]);
+  }, [events, focus?.lastEndedSession, markEndedSlotDone, plannerData, plannerQuery.isFetched, recordDeviationForDoneSlot, reportSaveError, routines]);
 
   const dismissOverrun = useCallback(() => {
     if (activeSessionKey) updateUiState(activeSessionKey, { decided: true });
@@ -381,6 +392,7 @@ export function useSlotOverrun() {
 
   const finishSession = useCallback(() => {
     if (!focus || !activeSessionKey) return;
+    declaredDoneSessions.current.add(activeSessionKey);
     updateUiState(activeSessionKey, { decided: true });
     const reason = focus.overrun > 0 ? "overrun" : "finished";
     focus.endWithReason(reason);
@@ -519,21 +531,53 @@ export function useSlotOverrun() {
     }
   }, [activeEvent, activeSessionKey, applyPackage, events, focus, now, plannerData, reportSaveError, routines, t, updateUiState]);
 
-  const dismissEarlyFinish = useCallback(() => setEarlyFinish(null), []);
+  const dismissEarlyFinish = useCallback(() => {
+    if (earlyFinish) earlyFinishFocusSeconds.current.delete(earlyFinish.sessionKey);
+    setEarlyFinish(null);
+  }, [earlyFinish]);
+
+  const markEarlyFinishDone = useCallback(async () => {
+    const prompt = earlyFinish;
+    if (!prompt
+      || earlyFinishDoneSessions.current.has(prompt.sessionKey)
+      || earlyFinishDoneInFlight.current.has(prompt.sessionKey)) return;
+    earlyFinishDoneInFlight.current.add(prompt.sessionKey);
+    setIsMarkingDone(true);
+    try {
+      const markedDone = await markEndedSlotDone(prompt.event);
+      earlyFinishDoneSessions.current.add(prompt.sessionKey);
+      if (markedDone) {
+        const focusSeconds = earlyFinishFocusSeconds.current.get(prompt.sessionKey);
+        if (focusSeconds !== undefined) recordDeviationForDoneSlot(prompt.event, focusSeconds);
+      }
+      earlyFinishFocusSeconds.current.delete(prompt.sessionKey);
+      setEarlyFinish(null);
+    } catch (error) {
+      reportSaveError(error);
+    } finally {
+      earlyFinishDoneInFlight.current.delete(prompt.sessionKey);
+      setIsMarkingDone(false);
+    }
+  }, [earlyFinish, markEndedSlotDone, recordDeviationForDoneSlot, reportSaveError]);
 
   const startNextStudy = useCallback(() => {
     if (!earlyFinish?.nextStudyEvent) return;
     const task = taskFromEvent(earlyFinish.nextStudyEvent);
+    earlyFinishFocusSeconds.current.delete(earlyFinish.sessionKey);
     setEarlyFinish(null);
     focusRef.current?.startSession(task, task.durationMinutes);
   }, [earlyFinish]);
 
   const startBreak = useCallback(() => {
+    if (earlyFinish) earlyFinishFocusSeconds.current.delete(earlyFinish.sessionKey);
     setEarlyFinish(null);
     focusRef.current?.startPause();
-  }, []);
+  }, [earlyFinish]);
 
-  const leaveFree = useCallback(() => setEarlyFinish(null), []);
+  const leaveFree = useCallback(() => {
+    if (earlyFinish) earlyFinishFocusSeconds.current.delete(earlyFinish.sessionKey);
+    setEarlyFinish(null);
+  }, [earlyFinish]);
 
   const dismissNoSpace = useCallback(() => setNoSpacePrompt(null), []);
 
@@ -544,6 +588,10 @@ export function useSlotOverrun() {
 
   const activeSubject = lessonDetails?.subject ?? null;
   const overrunAnnouncement = liveAnnouncement;
+  const isSaving = applyPlanChanges.isPending
+    || toggleStudyEventCompleted.isPending
+    || focus?.isSyncing === true
+    || isMarkingDone;
 
   return {
     open: canShowOverrun,
@@ -554,17 +602,18 @@ export function useSlotOverrun() {
       nextItem,
       extensionMinutes: extension?.minutes ?? 0,
       extensionLimit: extensionLimitInfo,
-      isSaving: applyPlanChanges.isPending || focus?.isSyncing === true,
+      isSaving,
     } : null,
     earlyFinish,
     noSpacePrompt,
     announcement: overrunAnnouncement,
-    isSaving: applyPlanChanges.isPending || focus?.isSyncing === true,
+    isSaving,
     dismissOverrun,
     finishSession,
     extendSlot,
     stopHere,
     dismissEarlyFinish,
+    markEarlyFinishDone,
     startNextStudy,
     startBreak,
     leaveFree,
