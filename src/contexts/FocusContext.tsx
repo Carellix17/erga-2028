@@ -46,6 +46,19 @@ export interface FocusTask {
   durationMinutes?: number;
   lessonFrom?: number | null;
   lessonTo?: number | null;
+  /** A standalone break timer must not be recorded as a study session. */
+  isBreak?: boolean;
+}
+
+export interface FocusEndedSession {
+  sessionKey: string;
+  task: FocusTask;
+  reason: FocusEndReason;
+  endedAt: number;
+  startedAt: number;
+  focusSeconds: number;
+  focusDurationSeconds: number;
+  phase: FocusPhase;
 }
 
 export interface FocusSettings {
@@ -84,8 +97,11 @@ interface FocusContextValue {
   overrun: number;
   phaseDurationSeconds: number;
   task: FocusTask | null;
+  sessionKey: string | null;
+  lastEndedSession: FocusEndedSession | null;
   awaitingChoice: boolean;
   announcement: string;
+  acknowledgeEndedSession: (sessionKey: string) => void;
   openSetup: () => void;
   openFullscreen: () => void;
   minimize: () => void;
@@ -94,7 +110,9 @@ interface FocusContextValue {
   end: () => void;
   endWithReason: (reason: FocusEndReason) => void;
   startSession: (task: FocusTask, customDurationMinutes?: number) => void;
+  startPause: () => void;
   extend: () => void;
+  extendByMinutes: (minutes: number) => void;
   addFiveMinutes: () => void;
   nextPhase: () => void;
 }
@@ -265,11 +283,12 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   const [focusSettings, setFocusSettings] = useState<FocusSettings>(DEFAULT_BREAKS);
   const [isSyncing, setIsSyncing] = useState(false);
   const [announcement, setAnnouncement] = useState("");
+  const [lastEndedSession, setLastEndedSession] = useState<FocusEndedSession | null>(null);
   const activeSessionRef = useRef<ActiveFocusSession | null>(null);
   const userIdRef = useRef(userId);
   const focusSettingsRef = useRef(focusSettings);
   const syncingRef = useRef(false);
-  const pendingStartRef = useRef<{ task: FocusTask; duration?: number } | null>(null);
+  const pendingStartRef = useRef<{ task: FocusTask; duration?: number; phase?: FocusPhase } | null>(null);
   const autoPausedSessionRef = useRef<string | null>(null);
   const clockBaselineRef = useRef<{
     sessionId: string | null;
@@ -330,12 +349,16 @@ export function FocusProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    const isStandaloneBreak = !row.slot_id
+      && row.block_index === 0
+      && fromStoredPhase(row.phase) !== "focus";
     return {
-      label: row.slot_id ? "Sessione di studio" : "Studio libero",
+      label: isStandaloneBreak ? t("focusTimer.pauseTask") : row.slot_id ? "Sessione di studio" : "Studio libero",
       eventId: row.slot_id ?? undefined,
       sourceType: row.slot_id ? "planned" : "adhoc",
+      ...(isStandaloneBreak ? { isBreak: true } : {}),
     };
-  }, []);
+  }, [t]);
 
   const sessionFromRow = useCallback(async (
     row: StoredSessionRow,
@@ -499,7 +522,11 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     }
   }, [enrichTask, installSession, sessionFromRow, setSyncing, t]);
 
-  const beginSession = useCallback((task: FocusTask, customDurationMinutes?: number) => {
+  const beginSession = useCallback((
+    task: FocusTask,
+    customDurationMinutes?: number,
+    initialPhase: FocusPhase = "focus",
+  ) => {
     const uid = userIdRef.current;
     if (!uid || activeSessionRef.current) return;
     const requestedDurationMinutes = customDurationMinutes
@@ -508,7 +535,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     const focusTestMode = typeof window !== "undefined"
       && new URLSearchParams(window.location.search).get("focusTest") === "1";
     const durationMinutes = focusTestMode ? 1 : requestedDurationMinutes;
-    const durationSeconds = Math.max(1, durationMinutes) * 60;
+    const durationSeconds = Math.max(1, Math.floor(durationMinutes)) * 60;
     const nowValue = Date.now();
     const initialClock = startClock(nowValue, durationSeconds);
     const current: ActiveFocusSession = {
@@ -520,14 +547,14 @@ export function FocusProvider({ children }: { children: ReactNode }) {
         durationMinutes,
         ...task,
       },
-      phase: initialClock.phase,
+      phase: initialPhase,
       cycle: 0,
       startedAt: nowValue,
       phaseEndsAt: initialClock.phaseEndsAt,
       pausedAt: null,
       pauses: [],
       version: 0,
-      focusDurationSeconds: initialClock.phaseDurationSeconds,
+      focusDurationSeconds: initialPhase === "focus" ? initialClock.phaseDurationSeconds : DURATIONS.focus,
       phaseDurationSeconds: initialClock.phaseDurationSeconds,
       focusSeconds: 0,
       lastAccrualAt: nowValue,
@@ -557,10 +584,38 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     beginSession(task, customDurationMinutes);
   }, [beginSession]);
 
+  const startPause = useCallback(() => {
+    // Keep the same synchronous sound unlock contract as an ordinary start gesture.
+    unlockFocusSound();
+    const uid = userIdRef.current;
+    if (!uid) return;
+    const task: FocusTask = {
+      label: t("focusTimer.pauseTask"),
+      sourceType: "adhoc",
+      durationMinutes: 5,
+      isBreak: true,
+    };
+    if (syncingRef.current) {
+      pendingStartRef.current = { task, duration: 5, phase: "short" };
+      return;
+    }
+    if (activeSessionRef.current) {
+      setFullscreen(true);
+      return;
+    }
+    beginSession(task, 5, "short");
+  }, [beginSession, t]);
+
+  const acknowledgeEndedSession = useCallback((sessionKey: string) => {
+    setLastEndedSession((current) => current?.sessionKey === sessionKey ? null : current);
+  }, []);
+
   useEffect(() => {
     if (!userId) {
       activeSessionRef.current = null;
       setActiveSession(null);
+      setLastEndedSession(null);
+      pendingStartRef.current = null;
       setSyncing(false);
       return;
     }
@@ -598,7 +653,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
       const pendingStart = pendingStartRef.current;
       pendingStartRef.current = null;
       if (pendingStart && !activeSessionRef.current) {
-        beginSession(pendingStart.task, pendingStart.duration);
+        beginSession(pendingStart.task, pendingStart.duration, pendingStart.phase);
       } else if (pendingStart && activeSessionRef.current) {
         setFullscreen(true);
       }
@@ -695,15 +750,26 @@ export function FocusProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      setLastEndedSession({
+        sessionKey: String(finalSession.startedAt),
+        task: finalSession.task,
+        reason,
+        endedAt,
+        startedAt: finalSession.startedAt,
+        focusSeconds: finalSession.focusSeconds,
+        focusDurationSeconds: finalSession.focusDurationSeconds,
+        phase: finalSession.phase,
+      });
       installSession(null);
       setFullscreen(false);
       setSetupOpen(false);
       autoPausedSessionRef.current = null;
       clockBaselineRef.current = null;
+      if (reason === "auto_paused") toast.info(t("focusTimer.autoPaused"), { duration: 10_000 });
 
       const actualMinutes = Math.max(1, Math.round(finalSession.focusSeconds / 60));
       const currentTask = finalSession.task;
-      if (currentTask && uid && actualMinutes > 0) {
+      if (currentTask && !currentTask.isBreak && uid && actualMinutes > 0) {
         try {
           const { error } = await supabase.from("study_sessions_logs").insert({
             user_id: uid,
@@ -730,8 +796,16 @@ export function FocusProvider({ children }: { children: ReactNode }) {
       toast.error(t("focusTimer.syncError"));
     } finally {
       setSyncing(false);
+      const pendingStart = pendingStartRef.current;
+      if (pendingStart) {
+        pendingStartRef.current = null;
+        if (reason !== "auto_paused") {
+          if (!activeSessionRef.current) beginSession(pendingStart.task, pendingStart.duration, pendingStart.phase);
+          else setFullscreen(true);
+        }
+      }
     }
-  }, [accrueFocusTime, installSession, queryClient, reconcileFromDatabase, setSyncing, t]);
+  }, [accrueFocusTime, beginSession, installSession, queryClient, reconcileFromDatabase, setSyncing, t]);
 
   const persistTransition = useCallback(async (
     previous: ActiveFocusSession,
@@ -852,6 +926,10 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   const startNextPhase = useCallback(() => {
     const current = activeSessionRef.current;
     if (!current || syncingRef.current) return;
+    if (current.task.isBreak) {
+      void endWithReason("finished");
+      return;
+    }
     const timestamp = Date.now();
     const accrued = accrueFocusTime(timestamp) ?? current;
     const transition = advancePhase(
@@ -876,7 +954,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     };
     clockBaselineRef.current = null;
     void persistTransition(accrued, next);
-  }, [accrueFocusTime, persistTransition]);
+  }, [accrueFocusTime, endWithReason, persistTransition]);
 
   const extend = useCallback(() => {
     const current = activeSessionRef.current;
@@ -896,20 +974,27 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     void persistTransition(accrued, next);
   }, [accrueFocusTime, persistTransition]);
 
-  const addFiveMinutes = useCallback(() => {
+  const extendByMinutes = useCallback((minutes: number) => {
+    if (!Number.isFinite(minutes) || minutes <= 0) return;
     const current = activeSessionRef.current;
     if (!current || syncingRef.current) return;
+    const durationSeconds = Math.floor(minutes) * 60;
+    if (durationSeconds <= 0) return;
     const timestamp = Date.now();
     const accrued = accrueFocusTime(timestamp) ?? current;
     const anchor = Math.max(accrued.phaseEndsAt, accrued.pausedAt ?? timestamp);
     const next: ActiveFocusSession = {
       ...accrued,
-      phaseEndsAt: anchor + 5 * 60 * 1000,
-      phaseDurationSeconds: accrued.phaseDurationSeconds + 5 * 60,
+      phaseEndsAt: anchor + durationSeconds * 1000,
+      phaseDurationSeconds: accrued.phaseDurationSeconds + durationSeconds,
     };
     clockBaselineRef.current = null;
     void persistTransition(accrued, next);
   }, [accrueFocusTime, persistTransition]);
+
+  const addFiveMinutes = useCallback(() => {
+    extendByMinutes(5);
+  }, [extendByMinutes]);
 
   useEffect(() => {
     const current = activeSession;
@@ -981,6 +1066,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     : 0;
   const isActive = activeSession !== null;
   const isRunning = !!activeSession && activeSession.pausedAt == null;
+  const sessionKey = activeSession ? String(activeSession.startedAt) : null;
   const awaitingChoice = !!activeSession && remaining === 0;
 
   const value = useMemo<FocusContextValue>(() => ({
@@ -994,8 +1080,11 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     overrun: overtime,
     phaseDurationSeconds: activeSession?.phaseDurationSeconds ?? DURATIONS.focus,
     task: activeSession?.task ?? null,
+    sessionKey,
+    lastEndedSession,
     awaitingChoice,
     announcement,
+    acknowledgeEndedSession,
     openSetup: () => setSetupOpen(true),
     openFullscreen: () => setFullscreen(true),
     minimize: () => setFullscreen(false),
@@ -1004,25 +1093,32 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     end,
     endWithReason,
     startSession,
+    startPause,
     extend,
+    extendByMinutes,
     addFiveMinutes,
     nextPhase: startNextPhase,
   }), [
     activeSession,
+    acknowledgeEndedSession,
     addFiveMinutes,
     announcement,
     awaitingChoice,
     end,
     endWithReason,
     extend,
+    extendByMinutes,
     fullscreen,
+    lastEndedSession,
     isActive,
     isRunning,
     isSyncing,
     overtime,
     remaining,
     restart,
+    sessionKey,
     startNextPhase,
+    startPause,
     startSession,
     toggleRun,
   ]);

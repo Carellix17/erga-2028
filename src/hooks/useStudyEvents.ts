@@ -46,6 +46,11 @@ export class PlanConflictError extends Error {
   }
 }
 
+function isVersionConflict(error: unknown): boolean {
+  return error instanceof PlanConflictError
+    || (error instanceof Error && (error.message === "version_conflict" || error.message === "409"));
+}
+
 function normalizePlanError(error: unknown): Error {
   if (error instanceof PlanConflictError) return error;
   if (error instanceof Error && error.message === "version_conflict") return new PlanConflictError();
@@ -251,6 +256,7 @@ export function useToggleStudyEventCompleted() {
         event: { id: input.id, version, completed: input.next },
       });
     },
+    retry: (failureCount, error) => !isVersionConflict(error) && failureCount < 2,
     onMutate: async ({ id, next }) => {
       await qc.cancelQueries({ queryKey });
       const previous = qc.getQueryData<StudyEvent[]>(queryKey);
@@ -289,6 +295,10 @@ export function useApplyPlanChanges() {
       reason,
       changes,
     }),
+    // A stale version is a user-visible plan conflict, not a transient error.
+    // Retrying the same package could only repeat the conflict; keep retries for
+    // genuinely transient failures while stopping immediately on 409/version_conflict.
+    retry: (failureCount, error) => !isVersionConflict(error) && failureCount < 2,
     onSettled: () => qc.invalidateQueries({ queryKey }),
   });
 }
