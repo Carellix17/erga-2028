@@ -12,6 +12,7 @@ import type { StudyEvent } from "@/hooks/useStudyEvents";
 import type { UserSubject } from "@/hooks/useUserSubjects";
 import { useUserRoutines, type UserRoutine } from "@/hooks/useUserRoutines";
 import { dayKey, getWeekDays } from "@/lib/weekPlanner";
+import { plannerDateKey } from "@/lib/planner/freeTime";
 import { comparePlannerEntries, plannerEntries, type PlannerEntry } from "@/lib/plannerEntries";
 import { courseCoverVars } from "@/lib/courseIdentity";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,8 @@ import { PillToggle } from "@/components/ui/pill-toggle";
 import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DayTimeline } from "./DayTimeline";
+import { MoveSlotSheet, type MoveSlotRequest } from "./MoveSlotSheet";
+import type { MoveSlotSaveTarget, MoveSlotTarget } from "@/lib/planner/conflicts";
 import { WeekStrip } from "./WeekStrip";
 import { WeekView } from "./WeekView";
 
@@ -44,6 +47,10 @@ interface AppointmentsCalendarProps {
   onEditStudyEvent: (event: StudyEvent) => void;
   onDeleteEvaluation: (evaluation: Evaluation) => void;
   onDeleteStudyEvent: (event: StudyEvent) => void;
+  onMoveSlot?: (event: StudyEvent, target: MoveSlotSaveTarget) => Promise<"applied" | "conflict" | "failed">;
+  isMoving?: boolean;
+  onMoveSheetOpenChange?: (open: boolean) => void;
+  onMoveInteractionChange?: (active: boolean) => void;
 }
 
 type CalendarView = "day" | "week" | "month";
@@ -68,7 +75,8 @@ function dayCounts(entries: readonly PlannerEntry[]) {
 export function AppointmentsCalendar({
   evaluations, events, subjects, courses, exitingIds, onAddEvent, showGeneratePlan,
   onPreparePlan, isPreparingPlan, onOpenHistory, onEditEvaluation, onEditStudyEvent,
-  onDeleteEvaluation, onDeleteStudyEvent,
+  onDeleteEvaluation, onDeleteStudyEvent, onMoveSlot, isMoving = false,
+  onMoveSheetOpenChange, onMoveInteractionChange,
 }: AppointmentsCalendarProps) {
   const { t, i18n } = useTranslation();
   const { data: routineData, isLoading: routinesLoading } = useUserRoutines();
@@ -110,6 +118,7 @@ export function AppointmentsCalendar({
   const deadlines = useMemo(() => entries.filter((entry) => entry.important && !entry.completed && entry.date >= startOfToday())
     .sort((a, b) => a.date.getTime() - b.date.getTime() || comparePlannerEntries(a, b)), [entries]);
   const selectedSlot = entries.find((entry) => entry.id === slotId) ?? null;
+  const [moveRequest, setMoveRequest] = useState<MoveSlotRequest | null>(null);
   const monthStart = startOfMonth(selectedDate);
   const monthGridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const monthDays = Array.from({ length: 42 }, (_, index) => addDays(monthGridStart, index));
@@ -245,6 +254,32 @@ export function AppointmentsCalendar({
 
   const scrollDeadlines = (sign: number) => deadlinesRef.current?.scrollBy({ left: sign * deadlinesRef.current.clientWidth, behavior: "auto" });
   const selectedDayEntries = entriesByKey.get(selectedKey) ?? [];
+  const requestMove = (entry: PlannerEntry, target?: MoveSlotTarget) => {
+    if (
+      !onMoveSlot
+      || entry.kind !== "study"
+      || entry.completed
+      || entry.status === "done"
+      || entry.status === "skipped"
+      || !entry.time
+      || entry.original.kind !== "studyEvent"
+      || entry.original.data.event_type !== "study"
+      || entry.original.data.is_completed
+      || entry.original.data.status === "done"
+      || entry.original.data.status === "skipped"
+    ) return;
+    const event = entry.original.data;
+    const moveTarget = target ?? {
+      date: plannerDateKey(event.event_date) ?? dayKey(entry.date),
+      time: entry.time,
+    };
+    setMoveRequest({ event, target: moveTarget });
+    onMoveSheetOpenChange?.(true);
+  };
+  const closeMoveSheet = () => {
+    setMoveRequest(null);
+    onMoveSheetOpenChange?.(false);
+  };
   const viewOptions = [
     { value: "day" as const, label: t("piano.day") },
     { value: "week" as const, label: t("piano.week") },
@@ -348,7 +383,9 @@ export function AppointmentsCalendar({
             <DayTimeline dateKey={selectedKey} entries={selectedDayEntries} exitingIds={exitingIds}
               routines={routines} routinesLoading={routinesLoading}
               onEdit={(entry) => entry.original.kind === "evaluation" ? onEditEvaluation(entry.original.data) : onEditStudyEvent(entry.original.data)}
-              onDelete={(entry) => entry.original.kind === "evaluation" ? onDeleteEvaluation(entry.original.data) : onDeleteStudyEvent(entry.original.data)} />
+              onDelete={(entry) => entry.original.kind === "evaluation" ? onDeleteEvaluation(entry.original.data) : onDeleteStudyEvent(entry.original.data)}
+              onMove={onMoveSlot ? requestMove : undefined}
+              onMoveInteractionChange={onMoveInteractionChange} />
           </section>
         )}
 
@@ -419,6 +456,21 @@ export function AppointmentsCalendar({
 
       <p id="planner-generate-hint" className="mt-3 max-w-prose text-sm leading-relaxed text-muted-foreground">{t(showGeneratePlan ? "piano.generateHint" : "piano.generateUnavailable")}</p>
       <div className="planner-bottom-safe-space" aria-hidden="true" />
+
+      {onMoveSlot && (
+        <MoveSlotSheet
+          request={moveRequest}
+          entries={entries}
+          routines={routines}
+          routinesLoading={routinesLoading}
+          isSaving={isMoving}
+          onOpenChange={(open) => {
+            if (open) onMoveSheetOpenChange?.(true);
+            else closeMoveSheet();
+          }}
+          onSave={onMoveSlot}
+        />
+      )}
 
       <Dialog open={!!slotId} onOpenChange={(open) => { if (!open) closeSlot(); }}>
         <DialogContent>

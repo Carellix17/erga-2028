@@ -39,7 +39,8 @@ import {
 import { planChangesKeys } from "@/hooks/usePlanChanges";
 import { buildPlan, type PlanWarning, type ScheduleEvaluation } from "@/lib/planner/schedule";
 import { plannerDateKey } from "@/lib/planner/freeTime";
-import type { PlanChange, PlanChangeReason } from "@/lib/planner/types";
+import type { MoveSlotSaveTarget } from "@/lib/planner/conflicts";
+import type { PlanChange, PlanChangeEventValues, PlanChangeReason, PlanChangeSnapshot } from "@/lib/planner/types";
 import { createInversePlanChanges, UndoCompletedSlotError, UndoTargetUnavailableError } from "./planChangeUndo";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,6 +65,11 @@ interface PackageToastOptions {
   title: string;
   description?: ReactNode;
   chooseTime?: boolean;
+  failure?: {
+    title: string;
+    retryLabel: string;
+    onRetry: () => void;
+  };
 }
 
 interface AutomaticPlanBanner {
@@ -102,6 +108,32 @@ function isPlanConflict(error: unknown): boolean {
     || (error instanceof Error && (error.message === "version_conflict" || error.message === "409"));
 }
 
+function moveEventSnapshot(event: StudyEvent): PlanChangeSnapshot {
+  return {
+    completed_at: event.completed_at ?? null,
+    context_id: event.context_id ?? null,
+    end_time: event.end_time ?? null,
+    event_date: plannerDateKey(event.event_date) ?? event.event_date.slice(0, 10),
+    event_time: event.event_time ?? null,
+    event_type: event.event_type,
+    evaluation_id: event.evaluation_id ?? null,
+    id: event.id,
+    is_completed: event.is_completed ?? event.status === "done",
+    lesson_from: event.lesson_from ?? null,
+    lesson_to: event.lesson_to ?? null,
+    locked: event.locked ?? false,
+    move_count: event.move_count ?? 0,
+    notes: event.notes ?? null,
+    original_date: event.original_date ?? null,
+    original_time: event.original_time ?? null,
+    source: event.source ?? "manual",
+    status: event.status ?? "planned",
+    subject: event.subject,
+    title: event.title,
+    version: event.version ?? 0,
+  };
+}
+
 /** Calendario e scadenze; ogni giorno apre tutti gli impegni, anche senza materiali. */
 export function PianoView({ hasFiles }: PianoViewProps) {
   const [showAddSheet, setShowAddSheet] = useState(false);
@@ -116,6 +148,9 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   const [automaticBanner, setAutomaticBanner] = useState<AutomaticPlanBanner | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [autoPrompt, setAutoPrompt] = useState<ReplanPrompt | null>(null);
+  const [moveSheetOpen, setMoveSheetOpen] = useState(false);
+  const [moveInteractionActive, setMoveInteractionActive] = useState(false);
+  const movePackageInFlight = useRef(false);
   // Elementi che si stanno "dissolvendo" prima dell'eliminazione vera.
   const [exitingIds, setExitingIds] = useState<string[]>([]);
   const dismissedAutomaticIds = useRef(new Set<string>());
@@ -325,8 +360,75 @@ export function PianoView({ hasFiles }: PianoViewProps) {
         await invalidatePlannerQueries();
         return "conflict";
       }
-      notify({ title: t("piano.error"), description: t("piano.errorSave"), variant: "destructive" });
+      const retryAction = toastOptions.failure ? (
+        <ToastAction
+          altText={toastOptions.failure.retryLabel}
+          className="h-11"
+          onClick={(event) => {
+            event.preventDefault();
+            toastOptions.failure?.onRetry();
+          }}
+        >
+          {toastOptions.failure.retryLabel}
+        </ToastAction>
+      ) : undefined;
+      notify({
+        title: toastOptions.failure?.title ?? t("piano.error"),
+        ...(!toastOptions.failure ? { description: t("piano.errorSave") } : {}),
+        variant: "destructive",
+        duration: 10_000,
+        ...(retryAction ? { action: retryAction } : {}),
+      });
       return "failed";
+    }
+  };
+
+  const applyManualMove = async (
+    event: StudyEvent,
+    target: MoveSlotSaveTarget,
+  ): Promise<AutoReplanApplyResult> => {
+    if (movePackageInFlight.current) return "failed";
+    movePackageInFlight.current = true;
+    try {
+      if (
+        event.event_type !== "study"
+        || event.is_completed
+        || event.status === "done"
+        || event.status === "skipped"
+        || event.version === undefined
+      ) return "failed";
+
+      const originalDate = plannerDateKey(event.event_date) ?? event.event_date.slice(0, 10);
+      const after = {
+        event_date: target.date,
+        event_time: target.time,
+        end_time: target.endTime,
+        locked: true,
+        move_count: (event.move_count ?? 0) + 1,
+        original_date: event.original_date ?? originalDate,
+        original_time: event.original_time ?? event.event_time ?? null,
+        source: "manual" as const,
+      } as PlanChangeEventValues & { locked: true };
+      const change: PlanChange = {
+        op: "update",
+        event_id: event.id,
+        version: event.version,
+        before: moveEventSnapshot(event),
+        after,
+      };
+      const locale = (i18n.resolvedLanguage ?? i18n.language).startsWith("en") ? enUS : it;
+      const day = format(parseISO(target.date), "EEEE", { locale });
+      const stayAt = event.event_time?.slice(0, 5) ?? "";
+      return await applyPlanPackage("manual", [change], {
+        title: t("piano.move.saved", { day, time: target.time }),
+        failure: {
+          title: t("piano.move.failed", { time: stayAt }),
+          retryLabel: t("piano.move.retry"),
+          onRetry: () => { void applyManualMove(event, target); },
+        },
+      });
+    } finally {
+      movePackageInFlight.current = false;
     }
   };
 
@@ -378,7 +480,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     enabled: !isLoading && !loadError,
     blocked: isLoading || loadError || previewOpen || historyOpen || !!autoPrompt
       || showAddSheet || !!editingEval || !!editingStudyEvent || !!eventToDelete || !!evalToDelete
-      || searchParams.has("slot") || applyPlanChanges.isPending,
+      || moveSheetOpen || moveInteractionActive || searchParams.has("slot") || applyPlanChanges.isPending,
     prompt: autoPrompt,
     onPromptChange: setAutoPrompt,
     onPreview: openReplanPreview,
@@ -536,6 +638,10 @@ export function PianoView({ hasFiles }: PianoViewProps) {
           onEditStudyEvent={setEditingStudyEvent}
           onDeleteEvaluation={setEvalToDelete}
           onDeleteStudyEvent={setEventToDelete}
+          onMoveSlot={applyManualMove}
+          isMoving={applyPlanChanges.isPending}
+          onMoveSheetOpenChange={setMoveSheetOpen}
+          onMoveInteractionChange={setMoveInteractionActive}
         />
       </section>
 

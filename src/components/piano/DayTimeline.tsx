@@ -5,6 +5,7 @@ import { useLessonsQuery } from "@/hooks/useLessons";
 import type { UserRoutine } from "@/hooks/useUserRoutines";
 import { comparePlannerEntries, validEventTime, type PlannerEntry } from "@/lib/plannerEntries";
 import { plannerDateKey, plannerDateTimeParts } from "@/lib/planner/freeTime";
+import type { MoveSlotTarget } from "@/lib/planner/conflicts";
 import { pauses, type TimelineSegment } from "@/lib/planner/schedule";
 import { routineSegmentsForDay, timeToMinutes } from "@/lib/weekPlanner";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,8 @@ interface DayTimelineProps {
   exitingIds: string[];
   onEdit: (entry: PlannerEntry) => void;
   onDelete: (entry: PlannerEntry) => void;
+  onMove?: (entry: PlannerEntry, target?: MoveSlotTarget) => void;
+  onMoveInteractionChange?: (active: boolean) => void;
   /** Routine data is read-only; when omitted the current user's routines are queried here. */
   routines?: UserRoutine[];
   routinesLoading?: boolean;
@@ -314,13 +317,21 @@ function usePixelsPerHour() {
 function PartialProgressSlot({
   item,
   position,
+  dateKey,
+  pixelsPerHour,
   onEdit,
   onDelete,
+  onMove,
+  onMoveInteractionChange,
 }: {
   item: PositionedTimelineItem;
   position: CSSProperties;
+  dateKey: string;
+  pixelsPerHour: number;
   onEdit: (entry: PlannerEntry) => void;
   onDelete: (entry: PlannerEntry) => void;
+  onMove?: (entry: PlannerEntry, target?: MoveSlotTarget) => void;
+  onMoveInteractionChange?: (active: boolean) => void;
 }) {
   const entry = item.entry!;
   const { data } = useLessonsQuery(entry.contextId);
@@ -338,6 +349,10 @@ function PartialProgressSlot({
     entry={entry}
     onEdit={item.showActions ? () => onEdit(entry) : undefined}
     onDelete={item.showActions ? () => onDelete(entry) : undefined}
+    onMove={item.showActions ? onMove : undefined}
+    moveDate={dateKey}
+    pixelsPerHour={pixelsPerHour}
+    onMoveInteractionChange={onMoveInteractionChange}
   />;
 }
 
@@ -370,6 +385,8 @@ export function DayTimeline({
   exitingIds,
   onEdit,
   onDelete,
+  onMove,
+  onMoveInteractionChange,
   routines: suppliedRoutines,
   routinesLoading: suppliedRoutinesLoading,
   now,
@@ -434,6 +451,23 @@ export function DayTimeline({
     if (!item.entry || !item.showActions) return undefined;
     return () => kind === "edit" ? onEdit(item.entry!) : onDelete(item.entry!);
   };
+  const moveActionFor = (item: PositionedTimelineItem) => {
+    const entry = item.entry;
+    if (
+      !onMove
+      || !entry
+      || !item.showActions
+      || item.slot.kind !== "study"
+      || !entry.time
+      || entry.completed
+      || entry.status === "done"
+      || entry.status === "skipped"
+      || entry.original.kind !== "studyEvent"
+      || entry.original.data.event_type !== "study"
+      || entry.original.data.is_completed
+    ) return undefined;
+    return onMove;
+  };
 
   return (
     <div className="planner-day-timeline" data-testid="day-timeline" style={{ overflowY: "visible" }}>
@@ -477,13 +511,18 @@ export function DayTimeline({
                 const position = itemPosition(item.start, item.end, item.lane, item.laneCount, pixelsPerHour, startMinute, endMinute, index);
                 const onEditAction = actionFor(item, "edit");
                 const onDeleteAction = actionFor(item, "delete");
+                const onMoveAction = moveActionFor(item);
                 if (item.entry?.status === "partial" && item.entry.contextId && item.showActions) {
                   return <PartialProgressSlot
                     key={item.key}
                     item={item}
                     position={position}
+                    dateKey={dateKey}
+                    pixelsPerHour={pixelsPerHour}
                     onEdit={onEdit}
                     onDelete={onDelete}
+                    onMove={onMoveAction}
+                    onMoveInteractionChange={onMoveInteractionChange}
                   />;
                 }
                 return <PlanSlot
@@ -494,6 +533,10 @@ export function DayTimeline({
                   entry={item.showActions ? item.entry : undefined}
                   onEdit={onEditAction}
                   onDelete={onDeleteAction}
+                  onMove={onMoveAction}
+                  moveDate={dateKey}
+                  pixelsPerHour={pixelsPerHour}
+                  onMoveInteractionChange={onMoveInteractionChange}
                 />;
               })}
             </ol>
