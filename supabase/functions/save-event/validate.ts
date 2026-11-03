@@ -319,6 +319,7 @@ function sanitizeUpdateAfter(value: unknown): UnknownRecord | undefined {
   normalizeLessonRange(value, after);
 
   if (isStudyEventStatus(value.status)) after.status = value.status.trim();
+  if (typeof value.locked === "boolean") after.locked = value.locked;
   if (isNonNegativeInteger(value.move_count)) after.move_count = value.move_count;
   if (value.original_date === null) after.original_date = null;
   else if (isDate(value.original_date)) after.original_date = value.original_date;

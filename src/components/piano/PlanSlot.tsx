@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FocusEvent as ReactFocusEvent, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import {
   BookOpen,
   Bus,
@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Lock,
   Moon,
+  Move,
   PencilLine,
   SkipForward,
   Trash2,
@@ -24,6 +25,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { StudyEventStatus } from "@/lib/planner/types";
+import type { MoveSlotTarget } from "@/lib/planner/conflicts";
+import { addPlannerDays, plannerMinutesToTime, plannerTimeToMinutes } from "@/lib/planner/freeTime";
 import type { PlannerEntry } from "@/lib/plannerEntries";
 import { SlotDoneMenu } from "./SlotDoneMenu";
 
@@ -65,6 +68,10 @@ export interface PlanSlotProps {
   entry?: PlannerEntry;
   onEdit?: () => void;
   onDelete?: () => void;
+  onMove?: (entry: PlannerEntry, target?: MoveSlotTarget) => void;
+  moveDate?: string;
+  pixelsPerHour?: number;
+  onMoveInteractionChange?: (active: boolean) => void;
 }
 
 const formatDuration = (minutes: number, language: string) => {
@@ -148,7 +155,28 @@ function movedFrom(slot: PlanSlotData, language: string, t: TFunction) {
   return t("piano.timelineMovedFrom", { when });
 }
 
+interface PointerStart {
+  pointerId: number;
+  x: number;
+  y: number;
+  startMinutes: number;
+  date: string;
+  element: HTMLLIElement;
+}
+
+function dragTimeAt(pointer: PointerStart, clientY: number, pixelsPerHour: number) {
+  const raw = pointer.startMinutes + ((clientY - pointer.y) / Math.max(1, pixelsPerHour)) * 60;
+  const snapped = Math.round(raw / 5) * 5;
+  return plannerMinutesToTime(Math.max(0, Math.min(23 * 60 + 55, snapped)));
+}
+
+function moveDayLabel(date: string, language: string) {
+  const parsed = parseISO(date.slice(0, 10));
+  return isValid(parsed) ? format(parsed, "EEEE d MMMM", { locale: language.startsWith("en") ? enUS : it }) : date;
+}
+
 export function PlanSlot({
+
   slot,
   style,
   exiting = false,
@@ -157,6 +185,10 @@ export function PlanSlot({
   entry,
   onEdit,
   onDelete,
+  onMove,
+  moveDate,
+  pixelsPerHour = 96,
+  onMoveInteractionChange,
 }: PlanSlotProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
@@ -211,6 +243,196 @@ export function PlanSlot({
   } : undefined;
   const routineIcon = isRoutine ? getRoutineIcon(slot.routineKind, slot.routineLabel) : null;
   const RoutineIcon = routineIcon;
+  const canMove = !!onMove
+    && !!entry
+    && !!moveDate
+    && slot.kind === "study"
+    && !!slot.startTime
+    && !isDone
+    && slot.status !== "skipped"
+    && !exiting;
+  const moveRef = useRef({ onMove, onMoveInteractionChange, entry, date: moveDate, startTime: slot.startTime, pixelsPerHour });
+  moveRef.current = { onMove, onMoveInteractionChange, entry, date: moveDate, startTime: slot.startTime, pixelsPerHour };
+  const pointerStartRef = useRef<PointerStart | null>(null);
+  const holdTimerRef = useRef<number | null>(null);
+  const draggingRef = useRef(false);
+  const keyboardActiveRef = useRef(false);
+  const cancelMoveRef = useRef<() => void>(() => {});
+  const [dragTarget, setDragTarget] = useState<MoveSlotTarget | null>(null);
+  const [keyboardTarget, setKeyboardTarget] = useState<MoveSlotTarget | null>(null);
+  keyboardActiveRef.current = keyboardTarget !== null;
+  const activeMoveTarget = dragTarget ?? keyboardTarget;
+  const moveAnnouncement = activeMoveTarget
+    ? t("piano.move.keyboardAnnouncement", {
+      day: moveDayLabel(activeMoveTarget.date, language),
+      time: activeMoveTarget.time,
+    })
+    : "";
+  const interactiveStyle = canMove
+    ? { ...(renderedStyle ?? {}), touchAction: "pan-y" as const }
+    : renderedStyle;
+
+  const clearHoldTimer = () => {
+    if (holdTimerRef.current !== null) window.clearTimeout(holdTimerRef.current);
+    holdTimerRef.current = null;
+  };
+
+  const cancelMoveInteraction = () => {
+    clearHoldTimer();
+    const pointer = pointerStartRef.current;
+    if (pointer && pointer.element.hasPointerCapture?.(pointer.pointerId)) {
+      try { pointer.element.releasePointerCapture(pointer.pointerId); } catch { /* pointer may already be cancelled */ }
+    }
+    pointerStartRef.current = null;
+    const wasActive = draggingRef.current || keyboardActiveRef.current;
+    draggingRef.current = false;
+    keyboardActiveRef.current = false;
+    setDragTarget(null);
+    setKeyboardTarget(null);
+    if (wasActive) moveRef.current.onMoveInteractionChange?.(false);
+  };
+  cancelMoveRef.current = cancelMoveInteraction;
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLLIElement>) => {
+    if (!canMove || event.button !== 0 || event.isPrimary === false) return;
+    if (event.target instanceof Element && event.target.closest(".planner-slot-actions, button, a, input")) return;
+    const startMinutes = plannerTimeToMinutes(moveRef.current.startTime);
+    const date = moveRef.current.date;
+    if (startMinutes === null || !date) return;
+    const pointerId = event.pointerId;
+    pointerStartRef.current = {
+      pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      startMinutes,
+      date,
+      element: event.currentTarget,
+    };
+    clearHoldTimer();
+    holdTimerRef.current = window.setTimeout(() => {
+      const pointer = pointerStartRef.current;
+      if (!pointer || pointer.pointerId !== pointerId) return;
+      draggingRef.current = true;
+      setDragTarget({ date: pointer.date, time: dragTimeAt(pointer, pointer.y, moveRef.current.pixelsPerHour) });
+      moveRef.current.onMoveInteractionChange?.(true);
+      try { pointer.element.setPointerCapture(pointer.pointerId); } catch { /* unsupported pointer capture is harmless */ }
+    }, 300);
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLLIElement>) => {
+    const pointer = pointerStartRef.current;
+    if (!pointer || pointer.pointerId !== event.pointerId) return;
+    if (!draggingRef.current) {
+      if (Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y) > 8) {
+        clearHoldTimer();
+        pointerStartRef.current = null;
+      }
+      return;
+    }
+    event.preventDefault();
+    setDragTarget({
+      date: pointer.date,
+      time: dragTimeAt(pointer, event.clientY, moveRef.current.pixelsPerHour),
+    });
+  };
+
+  const finishPointer = (event: ReactPointerEvent<HTMLLIElement>, commit: boolean) => {
+    const pointer = pointerStartRef.current;
+    if (!pointer || pointer.pointerId !== event.pointerId) return;
+    clearHoldTimer();
+    pointerStartRef.current = null;
+    if (draggingRef.current && commit) {
+      moveRef.current.onMove?.(moveRef.current.entry!, {
+        date: pointer.date,
+        time: dragTimeAt(pointer, event.clientY, moveRef.current.pixelsPerHour),
+      });
+    }
+    const wasDragging = draggingRef.current;
+    draggingRef.current = false;
+    setDragTarget(null);
+    if (wasDragging) moveRef.current.onMoveInteractionChange?.(false);
+  };
+
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLLIElement>) => {
+    if (!canMove) return;
+    if (event.key === "Escape" && (draggingRef.current || keyboardActiveRef.current)) {
+      event.preventDefault();
+      event.stopPropagation();
+      cancelMoveInteraction();
+      return;
+    }
+    if (event.target !== event.currentTarget) return;
+
+    const directions: Record<string, number> = {
+      ArrowUp: -15,
+      ArrowDown: 15,
+    };
+    if (event.altKey && Object.prototype.hasOwnProperty.call(directions, event.key)) {
+      const current = keyboardTarget ?? {
+        date: moveRef.current.date!,
+        time: moveRef.current.startTime!,
+      };
+      const currentMinutes = plannerTimeToMinutes(current.time);
+      if (currentMinutes === null) return;
+      const next = {
+        date: current.date,
+        time: plannerMinutesToTime(Math.max(0, Math.min(23 * 60 + 55, currentMinutes + directions[event.key]))),
+      };
+      setKeyboardTarget(next);
+      if (!keyboardActiveRef.current) moveRef.current.onMoveInteractionChange?.(true);
+      keyboardActiveRef.current = true;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if (event.altKey && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
+      const current = keyboardTarget ?? {
+        date: moveRef.current.date!,
+        time: moveRef.current.startTime!,
+      };
+      setKeyboardTarget({
+        date: addPlannerDays(current.date, event.key === "ArrowLeft" ? -1 : 1),
+        time: current.time,
+      });
+      if (!keyboardActiveRef.current) moveRef.current.onMoveInteractionChange?.(true);
+      keyboardActiveRef.current = true;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if (event.key === "Enter" && keyboardTarget) {
+      event.preventDefault();
+      event.stopPropagation();
+      moveRef.current.onMove?.(moveRef.current.entry!, keyboardTarget);
+      setKeyboardTarget(null);
+      keyboardActiveRef.current = false;
+      moveRef.current.onMoveInteractionChange?.(false);
+    }
+  };
+
+  const handleBlur = (event: ReactFocusEvent<HTMLLIElement>) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null) || !keyboardActiveRef.current) return;
+    setKeyboardTarget(null);
+    keyboardActiveRef.current = false;
+    moveRef.current.onMoveInteractionChange?.(false);
+  };
+
+  const isDragging = dragTarget !== null;
+  useEffect(() => {
+    if (!isDragging) return;
+    const handleGlobalEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      cancelMoveRef.current();
+    };
+    window.addEventListener("keydown", handleGlobalEscape);
+    return () => window.removeEventListener("keydown", handleGlobalEscape);
+  }, [isDragging]);
+
+  useEffect(() => () => {
+    if (holdTimerRef.current !== null) window.clearTimeout(holdTimerRef.current);
+    if (draggingRef.current || keyboardActiveRef.current) moveRef.current.onMoveInteractionChange?.(false);
+  }, []);
 
   return (
     <li
@@ -220,14 +442,24 @@ export function PlanSlot({
       data-slot-state={status?.key}
       data-readonly={isRoutine ? "true" : undefined}
       data-exiting={exiting ? "true" : undefined}
+      data-dragging={dragTarget ? "true" : undefined}
+      tabIndex={canMove ? 0 : undefined}
+      onPointerDown={canMove ? handlePointerDown : undefined}
+      onPointerMove={canMove ? handlePointerMove : undefined}
+      onPointerUp={canMove ? (event) => finishPointer(event, true) : undefined}
+      onPointerCancel={canMove ? (event) => finishPointer(event, false) : undefined}
+      onKeyDown={canMove ? handleKeyDown : undefined}
+      onBlur={canMove ? handleBlur : undefined}
       className={cn(
         "planner-slot",
+        dragTarget && "ring-2 ring-primary shadow-level-2",
+        canMove && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         `planner-slot--${slot.kind}`,
         isDone && "planner-slot--done",
         exiting && "planner-slot--exiting",
         !style && "planner-slot--untimed",
       )}
-      style={renderedStyle}
+      style={interactiveStyle}
     >
       <div className="planner-slot-content">
         <div className="planner-slot-heading">
@@ -253,10 +485,17 @@ export function PlanSlot({
           {progressLabel && <span className="planner-slot-progress">{progressLabel}</span>}
         </span>}
         {moveLabel && <span className="planner-slot-moved">{moveLabel}</span>}
+        {activeMoveTarget && (
+          <span className="inline-flex min-h-11 items-center rounded-md border border-primary bg-background/90 px-3 font-mono text-sm shadow-sm" aria-hidden="true">
+            {t("piano.move.dragLabel", { time: activeMoveTarget.time })}
+          </span>
+        )}
+        {canMove && <span className="sr-only" aria-live="polite">{moveAnnouncement}</span>}
 
-        {(entry || onEdit || onDelete) && !isRoutine && !isPause && (
+        {(entry || onEdit || onDelete || canMove) && !isRoutine && !isPause && (
           <div className="planner-slot-actions">
             {entry && <SlotDoneMenu entry={entry} slot={slot} />}
+            {canMove && entry && onMove && <Button variant="ghost" size="icon" className="h-11 w-11" aria-label={t("piano.move.moveAction", { title: slot.title || slot.subject || typeLabel })} onClick={() => onMove(entry)}><Move aria-hidden="true" /></Button>}
             {onEdit && <Button variant="ghost" size="icon" className="h-11 w-11" aria-label={t("piano.editEntry", { title: slot.title || slot.subject || typeLabel })} onClick={onEdit}><PencilLine aria-hidden="true" /></Button>}
             {onDelete && <Button variant="ghost" size="icon" className="h-11 w-11 text-muted-foreground hover:text-destructive" aria-label={t("piano.deleteEntry", { title: slot.title || slot.subject || typeLabel })} onClick={onDelete} data-haptic="warning"><Trash2 aria-hidden="true" /></Button>}
           </div>
