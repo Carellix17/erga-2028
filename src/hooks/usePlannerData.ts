@@ -23,7 +23,7 @@ interface PlannerContextMetadata {
   lessons: PlannerLessonMetadata[];
 }
 
-interface PlannerSourceData {
+export interface PlannerSourceData {
   routines: PlannerRoutine[];
   events: StudyEventRow[];
   evaluations: ScheduleEvaluation[];
@@ -253,19 +253,24 @@ function createEstimateFn(data: PlannerSourceData, isPro: boolean): EstimateFn {
   };
 }
 
-export function usePlannerData() {
+/** Shared owner-scoped planner query, without the Pro estimate adapter. */
+export function usePlannerSourceData(enabled = true) {
   const { currentUser } = useAuth();
-  const { isPro } = useSubscription();
-  const query = useQuery<PlannerSourceData>({
+  return useQuery<PlannerSourceData>({
     queryKey: plannerDataKeys.all(currentUser),
     queryFn: async () => {
       if (!currentUser) return emptyPlannerData();
       return loadPlannerData(currentUser);
     },
-    enabled: !!currentUser,
+    enabled: !!currentUser && enabled,
     staleTime: 30_000,
     refetchOnMount: "always",
   });
+}
+
+export function usePlannerData() {
+  const { isPro } = useSubscription();
+  const query = usePlannerSourceData();
 
   const data = useMemo<PlannerData | undefined>(() => {
     if (!query.data) return undefined;

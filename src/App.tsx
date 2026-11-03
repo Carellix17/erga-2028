@@ -9,11 +9,15 @@ import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SaveStatusProvider } from "@/contexts/SaveStatusContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { FocusProvider } from "@/contexts/FocusContext";
+import { OverrunSheet } from "@/components/focus/OverrunSheet";
+import { EarlyFinishSheet } from "@/components/focus/EarlyFinishSheet";
+import { NoSpaceDialog } from "@/components/piano/NoSpaceDialog";
+import { useSlotOverrun } from "@/hooks/useSlotOverrun";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import Landing from "./pages/Landing";
@@ -67,6 +71,49 @@ const persister = createSyncStoragePersister({
   key: "erga-query-dispensa-v1",
 });
 
+function FocusSessionSheets() {
+  const flow = useSlotOverrun();
+  const navigate = useNavigate();
+  const overrun = flow.overrun;
+
+  return (
+    <>
+      <div className="sr-only" aria-live="assertive" aria-atomic="true">{flow.announcement}</div>
+      <OverrunSheet
+        open={flow.open}
+        subject={overrun?.subject ?? ""}
+        lessonLabel={overrun?.lessonLabel ?? null}
+        nextItem={overrun?.nextItem ?? null}
+        extensionMinutes={overrun?.extensionMinutes ?? 0}
+        extensionLimit={overrun?.extensionLimit ?? { minutes: 0, time: null, item: null }}
+        isSaving={flow.isSaving}
+        onExtend={(minutes) => { void flow.extendSlot(minutes); }}
+        onFinish={flow.finishSession}
+        onStop={() => { void flow.stopHere(); }}
+        onDismiss={flow.dismissOverrun}
+      />
+      <EarlyFinishSheet
+        prompt={flow.earlyFinish}
+        isSaving={flow.isSaving}
+        onMarkDone={flow.markEarlyFinishDone}
+        onStartNext={flow.startNextStudy}
+        onStartBreak={flow.startBreak}
+        onLeaveFree={flow.leaveFree}
+        onDismiss={flow.dismissEarlyFinish}
+      />
+      <NoSpaceDialog
+        prompt={flow.noSpacePrompt}
+        isApplying={flow.isSaving}
+        onDismiss={flow.dismissNoSpace}
+        onKeep={flow.dismissNoSpace}
+        onSplit={flow.dismissNoSpace}
+        onChooseTime={() => flow.navigateToPlan(navigate)}
+        onShortenSessions={() => flow.navigateToPlan(navigate)}
+      />
+    </>
+  );
+}
+
 const App = () => (
   <PersistQueryClientProvider
     client={queryClient}
@@ -92,6 +139,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
               <PaymentTestModeBanner />
+              <FocusSessionSheets />
             <ErrorBoundary>
           <Suspense fallback={<SplashScreen />}>
           <Routes>

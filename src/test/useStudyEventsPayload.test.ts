@@ -160,6 +160,24 @@ describe("study event mutation payloads", () => {
     });
   });
 
+  it("does not retry a stale applyChanges package when the client has mutation retries enabled", async () => {
+    mockedEdgeFetch.mockRejectedValue(new Error("version_conflict") as never);
+    const client = new QueryClient({ defaultOptions: { mutations: { retry: 2, retryDelay: 0 } } });
+    const { result } = renderHook(() => useApplyPlanChanges(), { wrapper: makeWrapper(client) });
+    const changes = [{
+      op: "update" as const,
+      event_id: "event-1",
+      version: 0,
+      after: { end_time: "16:10" },
+    }];
+
+    await act(async () => {
+      await expect(result.current.mutateAsync({ reason: "overrun", changes })).rejects.toBeInstanceOf(PlanConflictError);
+    });
+
+    expect(mockedEdgeFetch).toHaveBeenCalledTimes(1);
+  });
+
   it("optimistically toggles completion, rolls back conflicts, and invalidates the query", async () => {
     let rejectRequest!: (error: Error) => void;
     mockedEdgeFetch.mockImplementation(() => new Promise((_resolve, reject) => {
