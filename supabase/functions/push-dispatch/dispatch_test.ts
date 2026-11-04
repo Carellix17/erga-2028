@@ -325,6 +325,69 @@ Deno.test("hide_subject replaces the row copy; missing/non-boolean setting keeps
   assertEquals(hiddenEnglish.state.sends[0].payload.title, "Study starts in 5 minutes");
 });
 
+Deno.test("notify_types disables every mapped push type before delivery", async () => {
+  const disabledRows = [
+    row({ user_id: "notify-user", kind: "slot_start" }),
+    row({ user_id: "notify-user", kind: "evening_summary" }),
+    row({ user_id: "notify-user", kind: "pomodoro_end", focus_session_id: "pomodoro-session", tag: "erga-timer" }),
+    row({ user_id: "notify-user", kind: "break_end", focus_session_id: "break-session", tag: "erga-timer" }),
+    row({ user_id: "notify-user", kind: "overrun", focus_session_id: "overrun-session", tag: "erga-timer" }),
+  ];
+  const current = harness(disabledRows, {
+    loadUserPolicy: async () => ({
+      notifyTypes: { slot_start: false, evening_summary: false, pomodoro: false, overrun: false },
+      sleepRoutines: [],
+      ok: true,
+    }),
+  });
+  const response = await current.handler(request(current.secret, { body: "{}" }));
+  const body = await response.json();
+  assertEquals(response.status, 200);
+  assertEquals(current.state.sends.length, 0);
+  assertEquals(body.skipped.send_error, disabledRows.length);
+  assertEquals(current.state.skipUpdates.map((update) => update.reason), Array(disabledRows.length).fill("send_error"));
+});
+
+Deno.test("missing and non-boolean notify_types remain enabled", async () => {
+  for (const notifyTypes of [{}, { slot_start: "false" }]) {
+    const current = harness([row()], {
+      loadUserPolicy: async () => ({ notifyTypes, sleepRoutines: [], ok: true }),
+    });
+    const response = await current.handler(request(current.secret, { body: "{}" }));
+    const body = await response.json();
+    assertEquals(response.status, 200);
+    assertEquals(current.state.sends.length, 1);
+    assertEquals(body.sent, 1);
+  }
+});
+
+Deno.test("disabled notification types are marked send_error before daily-cap evaluation", async () => {
+  let sentCountQueries = 0;
+  const alreadySent: SentPushRow[] = Array.from({ length: 6 }, (_, index) => ({
+    id: `already-sent-${index}`,
+    focus_session_id: null,
+  }));
+  const current = harness([row({ user_id: "cap-user", kind: "slot_start" })], {
+    loadUserPolicy: async () => ({
+      notifyTypes: { slot_start: false },
+      sleepRoutines: [],
+      ok: true,
+    }),
+    listSentToday: async () => {
+      sentCountQueries += 1;
+      return { rows: alreadySent, ok: true };
+    },
+  });
+  const response = await current.handler(request(current.secret, { body: "{}" }));
+  const body = await response.json();
+  assertEquals(response.status, 200);
+  assertEquals(current.state.sends.length, 0);
+  assertEquals(body.skipped.send_error, 1);
+  assertEquals(body.skipped.daily_cap, 0);
+  assertEquals(current.state.skipUpdates[0].reason, "send_error");
+  assertEquals(sentCountQueries, 0);
+});
+
 Deno.test("invalid payloads are skipped and responses/logs contain no user or notification content", async () => {
   const marker = "PRIVATE_SUBJECT_MARKER";
   const privateUserMarker = "private-user-marker";

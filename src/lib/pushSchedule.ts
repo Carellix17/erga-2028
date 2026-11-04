@@ -43,6 +43,7 @@ export interface ExistingScheduledPush {
 
 export interface PushScheduleStore {
   listManaged: (userId: string) => Promise<readonly ExistingScheduledPush[]>;
+  listSessionReminders: (userId: string, sessionId: string) => Promise<readonly ExistingScheduledPush[]>;
   cancelPending: (userId: string, ids: readonly string[], cancelledAt: string) => Promise<void>;
   cancelForSession: (userId: string, sessionId: string, cancelledAt: string) => Promise<void>;
   insert: (userId: string, rows: readonly ScheduledPushInsert[]) => Promise<void>;
@@ -145,6 +146,13 @@ function formatTime(value: string | null | undefined): string {
 function eventStart(event: StudyEvent): number | null {
   if (!event.event_time) return null;
   return localDateTimeToTimestamp(event.event_date.slice(0, 10), event.event_time);
+}
+
+function isEligibleStudySlot(event: StudyEvent): boolean {
+  return event.event_type === "study"
+    && event.is_completed !== true
+    && event.status !== "done"
+    && event.status !== "skipped";
 }
 
 function lessonRange(event: StudyEvent): { from: number; to: number } {
@@ -262,12 +270,7 @@ export function buildSlotReminderCandidates(
   if (!isNotifyTypeEnabled(notifyTypes, "slot_start")) return [];
   const horizon = now.getTime() + MAX_LOOKAHEAD_MS;
   const candidates = events.flatMap((event) => {
-    if (
-      event.event_type !== "study"
-      || event.is_completed === true
-      || event.status === "done"
-      || event.status === "skipped"
-    ) return [];
+    if (!isEligibleStudySlot(event)) return [];
     const startAt = eventStart(event);
     if (startAt === null || startAt <= now.getTime() || startAt > horizon) return [];
     const sendAt = startAt - REMINDER_LEAD_MS;
@@ -305,8 +308,17 @@ function activeSentSlotCounts(existing: readonly ExistingScheduledPush[]): {
 function applySlotDailyCap(
   candidates: readonly ScheduledPushInsert[],
   existing: readonly ExistingScheduledPush[],
+  retainedExpired: readonly ExistingScheduledPush[] = [],
 ): ScheduledPushInsert[] {
   const { countByDay, sentTagsByDay } = activeSentSlotCounts(existing);
+  for (const row of retainedExpired) {
+    const day = romeDateKey(new Date(row.send_at));
+    const tags = sentTagsByDay.get(day) ?? new Set<string>();
+    if (row.tag && tags.has(row.tag)) continue;
+    countByDay.set(day, (countByDay.get(day) ?? 0) + 1);
+    if (row.tag) tags.add(row.tag);
+    sentTagsByDay.set(day, tags);
+  }
   const used = new Map(countByDay);
   const chosen: ScheduledPushInsert[] = [];
   for (const candidate of candidates) {
@@ -330,9 +342,41 @@ function sameSchedule(existing: ExistingScheduledPush, desired: ScheduledPushIns
     && Date.parse(existing.send_at) === Date.parse(desired.send_at);
 }
 
+function retainedExpiredSlotReminders(
+  existing: readonly ExistingScheduledPush[],
+  events: readonly StudyEvent[],
+  userId: string,
+  notifyTypes: unknown,
+  now: Date,
+  language?: string,
+): ExistingScheduledPush[] {
+  if (!isNotifyTypeEnabled(notifyTypes, "slot_start")) return [];
+  const eventsByTag = new Map(events.map((event) => [`erga-slot-${event.id}`, event]));
+  const retained: ExistingScheduledPush[] = [];
+  for (const scheduled of existing) {
+    if (
+      scheduled.kind !== "slot_start"
+      || scheduled.sent_at !== null
+      || scheduled.cancelled_at !== null
+      || !scheduled.tag
+    ) continue;
+    const event = eventsByTag.get(scheduled.tag);
+    if (!event || event.status !== "planned" || !isEligibleStudySlot(event)) continue;
+    const startAt = eventStart(event);
+    if (startAt === null || startAt <= now.getTime()) continue;
+    const sendAt = startAt - REMINDER_LEAD_MS;
+    if (sendAt > now.getTime()) continue;
+    const expected = makeSlotReminder(event, userId, notifyTypes, language);
+    expected.send_at = new Date(sendAt).toISOString();
+    if (sameSchedule(scheduled, expected)) retained.push(scheduled);
+  }
+  return retained;
+}
+
 function reconciliation(
   existing: readonly ExistingScheduledPush[],
   desired: readonly ScheduledPushInsert[],
+  preserveIds: ReadonlySet<string> = new Set<string>(),
 ): { cancelIds: string[]; insertRows: ScheduledPushInsert[] } {
   const keptIds = new Set<string>();
   const cancelIds = new Set<string>();
@@ -351,7 +395,7 @@ function reconciliation(
 
   const desiredTags = new Set(desired.map((row) => row.tag ?? ""));
   for (const row of existing) {
-    if (row.sent_at !== null) continue;
+    if (row.sent_at !== null || preserveIds.has(row.id)) continue;
     if (!desiredTags.has(row.tag ?? "") || !keptIds.has(row.id)) cancelIds.add(row.id);
   }
   return { cancelIds: [...cancelIds], insertRows };
@@ -388,14 +432,24 @@ async function synchronizeSlotReminders(
     now,
     options.language,
   );
-  const capped = applySlotDailyCap(desired, existing);
+  const retainedExpired = retainedExpiredSlotReminders(
+    existing,
+    events,
+    options.userId,
+    options.notifyTypes,
+    now,
+    options.language,
+  );
+  const capped = applySlotDailyCap(desired, existing, retainedExpired);
   addEveningSummary(capped, events, options.userId, options.notifyTypes, now, options.language);
 
-  const changes = reconciliation(existing, capped);
+  const changes = reconciliation(existing, capped, new Set(retainedExpired.map((row) => row.id)));
   if (changes.cancelIds.length) {
     await store.cancelPending(options.userId, changes.cancelIds, now.toISOString());
   }
-  if (changes.insertRows.length) await store.insert(options.userId, changes.insertRows);
+  const insertNow = options.now ?? new Date();
+  const insertRows = changes.insertRows.filter((row) => Date.parse(row.send_at) > insertNow.getTime());
+  if (insertRows.length) await store.insert(options.userId, insertRows);
 }
 
 const slotSyncQueues = new Map<string, Promise<void>>();
@@ -430,9 +484,16 @@ function timerReminder(
   session: TimerReminderSession,
   userId: string,
   notifyTypes: unknown,
+  now: Date,
   language?: string,
 ): ScheduledPushInsert | null {
-  if (!session.id || session.pausedAt !== null || !isNotifyTypeEnabled(notifyTypes, "pomodoro")) return null;
+  if (
+    !session.id
+    || session.pausedAt !== null
+    || !isNotifyTypeEnabled(notifyTypes, "pomodoro")
+    || !Number.isFinite(session.phaseEndsAt)
+    || session.phaseEndsAt <= now.getTime()
+  ) return null;
   const hidden = hideSubjectEnabled(notifyTypes);
   const subject = session.task.subject?.trim() || translation("focusTimer.defaultSubject", {}, language);
   const kind = session.phase === "focus" ? "pomodoro_end" : "break_end";
@@ -473,15 +534,33 @@ export async function synchronizePhasePushWithStore(
 ): Promise<void> {
   if (!session.id) return;
   const now = options.now ?? new Date();
-  await store.cancelForSession(session.userId, session.id, now.toISOString());
-  const row = timerReminder(session, session.userId, notifyTypes, options.language);
-  if (row) await store.insert(session.userId, [row]);
+  if (session.pausedAt !== null || !isNotifyTypeEnabled(notifyTypes, "pomodoro")) {
+    await store.cancelForSession(session.userId, session.id, now.toISOString());
+    return;
+  }
+  if (!Number.isFinite(session.phaseEndsAt) || session.phaseEndsAt <= now.getTime()) return;
+
+  const row = timerReminder(session, session.userId, notifyTypes, now, options.language);
+  if (!row) return;
+  const existing = await store.listSessionReminders(session.userId, session.id);
+  const duplicate = existing.find((candidate) =>
+    candidate.kind === row.kind && Date.parse(candidate.send_at) === Date.parse(row.send_at),
+  );
+  const obsoletePendingIds = existing
+    .filter((candidate) => candidate.sent_at === null && candidate.id !== duplicate?.id)
+    .map((candidate) => candidate.id);
+  if (obsoletePendingIds.length) {
+    await store.cancelPending(session.userId, obsoletePendingIds, now.toISOString());
+  }
+  if (duplicate) return;
+
+  const insertNow = options.now ?? new Date();
+  if (session.phaseEndsAt <= insertNow.getTime()) return;
+  await store.insert(session.userId, [row]);
 }
 
 export async function syncFocusPhasePush(session: TimerReminderSession, userId: string): Promise<void> {
   if (!session.id) return;
-  const cancelled = await cancelForSession(session.id, userId);
-  if (!cancelled || session.pausedAt !== null) return;
   await enqueuePhaseEnd({ ...session, userId }, userId);
 }
 
@@ -500,11 +579,19 @@ export async function cancelForSession(
 }
 
 export async function enqueuePhaseEnd(session: TimerReminderSession, userId: string): Promise<void> {
-  if (!session.id || session.pausedAt !== null) return;
+  if (!session.id) return;
+  if (session.pausedAt !== null) {
+    await cancelForSession(session.id, userId);
+    return;
+  }
+  if (!Number.isFinite(session.phaseEndsAt) || session.phaseEndsAt <= Date.now()) return;
   try {
     const notifyTypes = await readNotifyTypes(userId);
-    const row = timerReminder({ ...session, userId }, userId, notifyTypes);
-    if (row) await supabasePushScheduleStore.insert(userId, [row]);
+    await synchronizePhasePushWithStore(
+      supabasePushScheduleStore,
+      { ...session, userId },
+      notifyTypes,
+    );
   } catch {
     console.warn("[push] timer reminder enqueue failed");
   }
@@ -517,6 +604,17 @@ export const supabasePushScheduleStore: PushScheduleStore = {
       .select("id, kind, tag, send_at, title, body, url, sent_at, cancelled_at, skip_reason")
       .eq("user_id", userId)
       .in("kind", ["slot_start", "evening_summary"])
+      .is("cancelled_at", null);
+    if (error) throw error;
+    return (data ?? []) as ExistingScheduledPush[];
+  },
+  async listSessionReminders(userId, sessionId) {
+    const { data, error } = await supabase
+      .from("scheduled_pushes")
+      .select("id, kind, tag, send_at, title, body, url, sent_at, cancelled_at, skip_reason")
+      .eq("user_id", userId)
+      .eq("focus_session_id", sessionId)
+      .in("kind", ["pomodoro_end", "break_end", "overrun"])
       .is("cancelled_at", null);
     if (error) throw error;
     return (data ?? []) as ExistingScheduledPush[];

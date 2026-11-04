@@ -240,6 +240,13 @@ function isTimerKind(kind: PushKind): boolean {
   return kind === "pomodoro_end" || kind === "break_end" || kind === "overrun";
 }
 
+function isNotificationTypeEnabled(notifyTypes: unknown, kind: PushKind): boolean {
+  const types = isRecord(notifyTypes) ? notifyTypes : {};
+  const key = kind === "pomodoro_end" || kind === "break_end" ? "pomodoro" : kind;
+  const enabled = types[key];
+  return typeof enabled !== "boolean" || enabled;
+}
+
 export function validateClaimedPush(row: ClaimedPush): row is ClaimedPush & { kind: PushKind } {
   if (!isPushKind(row.kind)) return false;
   if (typeof row.title !== "string" || Array.from(row.title).length > 80) return false;
@@ -459,11 +466,16 @@ export function createPushDispatchHandler(dependencies: DispatchDependencies): (
       let policy: UserPushPolicy | null = null;
       let userSentCounts: UserSentCounts | null = null;
       if (!reason) {
-        [policy, userSentCounts] = await Promise.all([
-          loadPolicy(row.user_id),
-          loadSentCounts(row.user_id),
-        ]);
-        if (!policy?.ok || !userSentCounts || !kind) reason = "send_error";
+        policy = await loadPolicy(row.user_id);
+        if (!policy?.ok || !kind) {
+          reason = "send_error";
+        } else if (!isNotificationTypeEnabled(policy.notifyTypes, kind)) {
+          reason = "send_error";
+        }
+      }
+      if (!reason) {
+        userSentCounts = await loadSentCounts(row.user_id);
+        if (!userSentCounts) reason = "send_error";
       }
 
       if (!reason && policy && kind && !timer && isQuietHours(now, policy.sleepRoutines)) {

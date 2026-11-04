@@ -60,6 +60,28 @@ class MemoryStore implements PushScheduleStore {
     }
   }
 
+  async listSessionReminders(userId: string, sessionId: string): Promise<readonly ExistingScheduledPush[]> {
+    return this.rows
+      .filter(({ row, cancelledAt }) =>
+        row.user_id === userId
+        && row.focus_session_id === sessionId
+        && (row.kind === "pomodoro_end" || row.kind === "break_end" || row.kind === "overrun")
+        && cancelledAt === null,
+      )
+      .map(({ id, row, sentAt, cancelledAt, skipReason }) => ({
+        id,
+        kind: String(row.kind),
+        tag: row.tag ?? null,
+        send_at: String(row.send_at),
+        title: String(row.title),
+        body: String(row.body),
+        url: String(row.url),
+        sent_at: sentAt,
+        cancelled_at: cancelledAt,
+        skip_reason: skipReason,
+      }));
+  }
+
   async cancelForSession(userId: string, sessionId: string, cancelledAt: string): Promise<void> {
     this.cancelledSessions.push(sessionId);
     for (const current of this.rows) {
@@ -167,6 +189,84 @@ describe("pushSchedule", () => {
     expect(store.inserted.filter((row) => row.kind === "slot_start")).toHaveLength(2);
   });
 
+  it("keeps an expired queued reminder while its planned slot has not started, without creating past rows", async () => {
+    const event = studyEvent("near-slot", "15:00");
+    const beforeReminder = new Date("2026-11-04T12:00:00.000Z");
+    const afterReminder = new Date("2026-11-04T13:55:10.000Z");
+    const store = new MemoryStore();
+    const options = {
+      userId: "student-1",
+      notifyTypes: { slot_start: true, evening_summary: false },
+      store,
+      language: "it",
+    };
+
+    await enqueueSlotReminders([event], { ...options, now: beforeReminder });
+    const queued = store.active("slot_start")[0];
+    expect(queued.row.send_at).toBe("2026-11-04T13:55:00.000Z");
+
+    await enqueueSlotReminders([event], { ...options, now: afterReminder });
+    expect(store.cancelledIds).not.toContain(queued.id);
+    expect(store.active("slot_start")).toHaveLength(1);
+    expect(store.inserted).toHaveLength(1);
+
+    const noExistingRowStore = new MemoryStore();
+    await enqueueSlotReminders([event], {
+      ...options,
+      store: noExistingRowStore,
+      now: afterReminder,
+    });
+    expect(noExistingRowStore.inserted).toHaveLength(0);
+  });
+
+  it("cancels an expired queued reminder when its slot moves, completes, or starts", async () => {
+    const beforeReminder = new Date("2026-11-04T12:00:00.000Z");
+    const afterReminder = new Date("2026-11-04T13:55:10.000Z");
+    const original = studyEvent("changed-slot", "15:00");
+    const baseOptions = {
+      userId: "student-1",
+      notifyTypes: { slot_start: true, evening_summary: false },
+      now: beforeReminder,
+      language: "it",
+    };
+
+    const movedStore = new MemoryStore();
+    await enqueueSlotReminders([original], { ...baseOptions, store: movedStore });
+    const movedReminder = movedStore.active("slot_start")[0];
+    await enqueueSlotReminders([{
+      ...original,
+      event_time: "15:30",
+      end_time: "16:30",
+      move_count: 1,
+    }], { ...baseOptions, store: movedStore, now: afterReminder });
+    expect(movedStore.cancelledIds).toContain(movedReminder.id);
+    expect(movedStore.active("slot_start")).toHaveLength(1);
+    expect(movedStore.active("slot_start")[0].row.send_at).toBe("2026-11-04T14:25:00.000Z");
+
+    const completedStore = new MemoryStore();
+    await enqueueSlotReminders([original], { ...baseOptions, store: completedStore });
+    const completedReminder = completedStore.active("slot_start")[0];
+    await enqueueSlotReminders([{
+      ...original,
+      is_completed: true,
+      status: "done",
+    }], { ...baseOptions, store: completedStore, now: afterReminder });
+    expect(completedStore.cancelledIds).toContain(completedReminder.id);
+    expect(completedStore.active("slot_start")).toHaveLength(0);
+
+    const startedStore = new MemoryStore();
+    const nearlyStarted = studyEvent("started-slot", "14:55");
+    await enqueueSlotReminders([nearlyStarted], { ...baseOptions, store: startedStore });
+    const startedReminder = startedStore.active("slot_start")[0];
+    await enqueueSlotReminders([nearlyStarted], {
+      ...baseOptions,
+      store: startedStore,
+      now: afterReminder,
+    });
+    expect(startedStore.cancelledIds).toContain(startedReminder.id);
+    expect(startedStore.active("slot_start")).toHaveLength(0);
+  });
+
   it("includes the subject by default but never includes lesson content; hide_subject removes the subject", async () => {
     const visibleStore = new MemoryStore();
     await enqueueSlotReminders([studyEvent("visible-slot", "13:00")], {
@@ -238,6 +338,58 @@ describe("pushSchedule", () => {
     expect(visibleSummaryStore.active("evening_summary")[0].row.body).toContain("Biologia at 13:00");
   });
 
+  it("does not enqueue an expired timer phase again when the app is reopened", async () => {
+    const store = new MemoryStore();
+    const session: TimerReminderSession = {
+      id: "expired-session",
+      userId: "student-1",
+      phase: "focus",
+      cycle: 0,
+      phaseEndsAt: Date.parse("2026-11-03T12:30:00.000Z"),
+      phaseDurationSeconds: 25 * 60,
+      pausedAt: null,
+      task: { subject: "Biologia", eventId: "slot-1" },
+    };
+
+    await synchronizePhasePushWithStore(store, session, { pomodoro: true }, { now });
+    expect(store.inserted).toHaveLength(1);
+
+    await synchronizePhasePushWithStore(store, session, { pomodoro: true }, {
+      now: new Date("2026-11-03T12:31:00.000Z"),
+    });
+    expect(store.inserted).toHaveLength(1);
+    expect(store.active("pomodoro_end")).toHaveLength(1);
+
+    const emptyStore = new MemoryStore();
+    await synchronizePhasePushWithStore(emptyStore, session, { pomodoro: true }, {
+      now: new Date("2026-11-03T12:30:00.000Z"),
+    });
+    expect(emptyStore.inserted).toHaveLength(0);
+  });
+
+  it("is idempotent per session, kind, and phase expiry, including claimed rows", async () => {
+    const store = new MemoryStore();
+    const session: TimerReminderSession = {
+      id: "idempotent-session",
+      userId: "student-1",
+      phase: "focus",
+      cycle: 0,
+      phaseEndsAt: Date.parse("2026-11-03T12:30:00.000Z"),
+      phaseDurationSeconds: 25 * 60,
+      pausedAt: null,
+      task: { subject: "Biologia", eventId: "slot-1" },
+    };
+
+    await synchronizePhasePushWithStore(store, session, { pomodoro: true }, { now });
+    await synchronizePhasePushWithStore(store, session, { pomodoro: true }, { now });
+    expect(store.inserted).toHaveLength(1);
+
+    store.rows[0].sentAt = "2026-11-03T12:00:01.000Z";
+    await synchronizePhasePushWithStore(store, session, { pomodoro: true }, { now });
+    expect(store.inserted).toHaveLength(1);
+    expect(store.active("pomodoro_end")).toHaveLength(1);
+  });
+
   it("cancels a timer reminder on pause and recreates it on resume", async () => {
     const store = new MemoryStore();
     const session: TimerReminderSession = {
@@ -282,6 +434,6 @@ describe("pushSchedule", () => {
     });
     expect(store.active("pomodoro_end")).toHaveLength(1);
     expect(store.active("pomodoro_end")[0].row.send_at).toBe("2026-11-03T12:45:00.000Z");
-    expect(store.cancelledSessions).toEqual(["session-1", "session-1", "session-1"]);
+    expect(store.cancelledSessions).toEqual(["session-1"]);
   });
 });
