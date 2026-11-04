@@ -14,9 +14,10 @@ import {
   readPushPromptState,
   recordPushPromptNotNow,
   subscribeToAutoReplans,
+  suppressPushPromptFor30Days,
   type PushCapability,
 } from "@/lib/pushSupport";
-import type { EnablePushResult } from "@/hooks/usePushNotifications";
+import type { EnablePushResult, PushSubscriptionStatus } from "@/hooks/usePushNotifications";
 
 interface PushPrePromptProps {
   active: boolean;
@@ -24,6 +25,8 @@ interface PushPrePromptProps {
   sessionKey: string | null;
   capability: PushCapability;
   permission: NotificationPermission;
+  subscriptionStatus: PushSubscriptionStatus;
+  subscribe: () => Promise<boolean>;
   enableFromUserGesture: () => Promise<EnablePushResult>;
 }
 
@@ -56,6 +59,8 @@ export function PushPrePrompt({
   sessionKey,
   capability,
   permission,
+  subscriptionStatus,
+  subscribe,
   enableFromUserGesture,
 }: PushPrePromptProps) {
   const { t } = useTranslation();
@@ -106,7 +111,14 @@ export function PushPrePrompt({
       && !cooldownActive
       && (
         capability === "ios_needs_install"
-        || (capability === "supported" && permission === "default")
+        || (
+          capability === "supported"
+          && (
+            permission === "default"
+            || subscriptionStatus === "subscribing"
+            || subscriptionStatus === "failed"
+          )
+        )
       );
 
     if (!canShow) {
@@ -139,6 +151,7 @@ export function PushPrePrompt({
     promptDue,
     promptState,
     sessionKey,
+    subscriptionStatus,
   ]);
 
   const handleNotNow = () => {
@@ -164,9 +177,12 @@ export function PushPrePrompt({
         reason: "in_app",
       });
     }
+    setPromptState(suppressPushPromptFor30Days());
+    clearPushPromptReplanBaseline();
     setDismissedSessionKey(sessionKey);
     setPromptAttempt(null);
     setHomeSheetOpen(false);
+    setEnableError(false);
   };
 
   const handleEnable = async () => {
@@ -187,9 +203,28 @@ export function PushPrePrompt({
       setPromptAttempt(null);
       return;
     }
-    if (result === "enabled" || result === "dismissed" || result === "unsupported") {
+    if (result === "dismissed") {
+      handleNotNow();
+      return;
+    }
+    if (result === "enabled" || result === "unsupported") {
       setDismissedSessionKey(sessionKey);
       setPromptAttempt(null);
+      setEnableError(false);
+      return;
+    }
+    setEnableError(true);
+  };
+
+  const handleRetry = async () => {
+    if (isEnabling) return;
+    setIsEnabling(true);
+    setEnableError(false);
+    const succeeded = await subscribe();
+    setIsEnabling(false);
+    if (succeeded) {
+      setPromptAttempt(null);
+      setEnableError(false);
       return;
     }
     setEnableError(true);
@@ -247,8 +282,17 @@ export function PushPrePrompt({
         </div>
       ) : (
         <div className="grid gap-2 sm:grid-cols-2">
-          <Button type="button" className="min-h-11 text-base" disabled={isEnabling} onClick={handleEnable}>
-            {isEnabling ? t("pushNotifications.enabling") : t("pushNotifications.enable")}
+          <Button
+            type="button"
+            className="min-h-11 text-base"
+            disabled={isEnabling}
+            onClick={enableError || subscriptionStatus === "failed" ? handleRetry : handleEnable}
+          >
+            {isEnabling
+              ? t("pushNotifications.enabling")
+              : enableError || subscriptionStatus === "failed"
+                ? t("pushNotifications.retry")
+                : t("pushNotifications.enable")}
           </Button>
           <Button type="button" variant="outline" className="min-h-11 text-base" onClick={handleNotNow}>
             {t("pushNotifications.notNow")}
@@ -256,7 +300,7 @@ export function PushPrePrompt({
         </div>
       )}
 
-      {enableError && (
+      {(enableError || subscriptionStatus === "failed") && (
         <p role="alert" className="text-base leading-relaxed text-destructive">
           {t("pushNotifications.enableError")}
         </p>

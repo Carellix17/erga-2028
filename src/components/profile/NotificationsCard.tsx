@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { clearPushPromptReplanBaseline, suppressPushPromptFor30Days } from "@/lib/pushSupport";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -48,7 +49,15 @@ const settingRows: { key: NotifyTypeKey; labelKey: string; descriptionKey?: stri
 export function NotificationsCard() {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
-  const { capability, permission, subscribe, enableFromUserGesture } = usePushNotifications();
+  const {
+    capability,
+    permission,
+    subscriptionStatus,
+    isSubscribed,
+    registrationFailed,
+    subscribe,
+    enableFromUserGesture,
+  } = usePushNotifications();
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -102,6 +111,22 @@ export function NotificationsCard() {
         description: result === "denied" || permission === "denied"
           ? t("pushNotifications.permissionDenied")
           : t("pushNotifications.enableError"),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRetry = async () => {
+    if (busy) return;
+    setBusy(true);
+    const succeeded = await subscribe();
+    setBusy(false);
+    if (succeeded) {
+      toast({ title: t("pushNotifications.enabledTitle"), description: t("pushNotifications.enabledDescription") });
+    } else {
+      toast({
+        title: t("pushNotifications.enableFailedTitle"),
+        description: t("pushNotifications.enableError"),
         variant: "destructive",
       });
     }
@@ -175,10 +200,15 @@ export function NotificationsCard() {
     }
   };
 
-  const granted = capability === "supported" && permission === "granted";
+  const permissionGranted = capability === "supported" && permission === "granted";
+  const granted = permissionGranted && isSubscribed;
   const denied = capability !== "ios_needs_install"
     && (capability === "denied" || permission === "denied");
-  const canEnable = capability === "supported" && !granted && !denied;
+  const canEnable = capability === "supported"
+    && !isSubscribed
+    && !registrationFailed
+    && subscriptionStatus !== "subscribing"
+    && !denied;
 
   return (
     <section className="space-y-5 border border-border bg-surface-primary p-4 sm:p-5">
@@ -201,6 +231,16 @@ export function NotificationsCard() {
           <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
           <span>{t("pushNotifications.activeOnDevice")}</span>
         </div>
+      ) : registrationFailed && capability === "supported" ? (
+        <div className="flex items-start gap-3 border border-destructive/40 bg-destructive/5 p-3 text-base leading-relaxed text-foreground" role="alert">
+          <BellOff className="mt-0.5 h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
+          <p>{t("pushNotifications.enableError")}</p>
+        </div>
+      ) : subscriptionStatus === "subscribing" && capability === "supported" ? (
+        <div className="flex min-h-11 items-center gap-2 text-base text-muted-foreground" role="status">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          {t("pushNotifications.enabling")}
+        </div>
       ) : capability === "ios_needs_install" ? (
         <div className="space-y-3 border border-border p-3">
           <div className="flex items-start gap-3">
@@ -221,6 +261,12 @@ export function NotificationsCard() {
       ) : null}
 
       <div className="flex flex-wrap gap-2">
+        {registrationFailed && capability === "supported" && (
+          <Button type="button" className="min-h-11 text-base" disabled={busy} onClick={handleRetry}>
+            {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+            {busy ? t("pushNotifications.enabling") : t("pushNotifications.retry")}
+          </Button>
+        )}
         {canEnable && (
           <Button type="button" className="min-h-11 text-base" disabled={busy} onClick={handleEnable}>
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
@@ -268,7 +314,7 @@ export function NotificationsCard() {
                 {t(`pushNotifications.${labelKey}`)}
               </span>
               {descriptionKey && (
-                <span className="text-sm leading-relaxed text-muted-foreground">
+                <span className="text-base leading-relaxed text-muted-foreground">
                   {t(`pushNotifications.${descriptionKey}`)}
                 </span>
               )}
@@ -285,7 +331,7 @@ export function NotificationsCard() {
         ))}
       </div>
 
-      <p className="text-sm leading-relaxed text-muted-foreground">
+      <p className="text-base leading-relaxed text-muted-foreground">
         {t("pushNotifications.overrunCaveat")}
       </p>
 
@@ -294,7 +340,11 @@ export function NotificationsCard() {
           open={homeSheetOpen}
           onOpenChange={setHomeSheetOpen}
           source="settings"
-          onUseInAppAlerts={() => toast({ title: t("pushNotifications.inAppAlertsTitle") })}
+          onUseInAppAlerts={() => {
+            suppressPushPromptFor30Days();
+            clearPushPromptReplanBaseline();
+            toast({ title: t("pushNotifications.inAppAlertsTitle") });
+          }}
         />
       )}
     </section>

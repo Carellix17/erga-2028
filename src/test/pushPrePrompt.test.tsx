@@ -32,6 +32,9 @@ const mocks = vi.hoisted(() => ({
   },
   enable: vi.fn<() => Promise<string>>(),
   subscribe: vi.fn<() => Promise<boolean>>(),
+  subscriptionStatus: "not_subscribed" as "not_subscribed" | "subscribing" | "subscribed" | "failed",
+  capability: "unsupported" as "supported" | "unsupported" | "denied" | "ios_needs_install",
+  permission: "default" as NotificationPermission,
   toast: vi.fn(),
 }));
 
@@ -51,9 +54,12 @@ vi.mock("@/contexts/FocusContext", () => ({
 vi.mock("@/hooks/usePushNotifications", () => ({
 
   usePushNotifications: () => ({
-    capability: "unsupported",
-    supported: false,
-    permission: "default",
+    capability: mocks.capability,
+    supported: mocks.capability === "supported",
+    permission: mocks.permission,
+    subscriptionStatus: mocks.subscriptionStatus,
+    isSubscribed: mocks.subscriptionStatus === "subscribed",
+    registrationFailed: mocks.subscriptionStatus === "failed",
     subscribe: mocks.subscribe,
     enableFromUserGesture: mocks.enable,
   }),
@@ -85,14 +91,19 @@ vi.mock("@/integrations/supabase/client", () => {
   };
 });
 
-function renderPrompt(sessionKey = String(Date.now())) {
+function renderPrompt(
+  sessionKey = String(Date.now()),
+  capability: "supported" | "ios_needs_install" = "supported",
+) {
   return render(
     <PushPrePrompt
       active
       isRunning
       sessionKey={sessionKey}
-      capability="supported"
+      capability={capability}
       permission="default"
+      subscriptionStatus={mocks.subscriptionStatus}
+      subscribe={mocks.subscribe}
       enableFromUserGesture={mocks.enable as () => Promise<"enabled" | "denied" | "dismissed" | "unsupported" | "failed">}
     />,
   );
@@ -111,6 +122,9 @@ beforeEach(() => {
   mocks.focus.sessionKey = null;
   mocks.enable.mockReset().mockResolvedValue("enabled");
   mocks.subscribe.mockReset().mockResolvedValue(true);
+  mocks.subscriptionStatus = "not_subscribed";
+  mocks.capability = "unsupported";
+  mocks.permission = "default";
   mocks.toast.mockReset();
   clearPushPromptReplanBaseline();
 });
@@ -153,6 +167,107 @@ describe("PushPrePrompt", () => {
     expect(requestPermission).toHaveBeenCalledTimes(1);
   });
 
+  it("counts a dismissed browser permission prompt as Not now and allows the contextual second attempt", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-04T10:00:00.000Z"));
+    const sessionKey = String(Date.now());
+    mocks.enable.mockResolvedValue("dismissed");
+    renderPrompt(sessionKey);
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Attiva notifiche" }));
+      await Promise.resolve();
+    });
+    expect(screen.queryByTestId("push-preprompt")).not.toBeInTheDocument();
+    expect(readPushPromptState().dismissals).toBe(1);
+
+    act(() => signalAutoReplanApplied());
+    expect(screen.getByTestId("push-preprompt")).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Attiva notifiche" }));
+      await Promise.resolve();
+    });
+    expect(screen.queryByTestId("push-preprompt")).not.toBeInTheDocument();
+
+    const cooldown = readPushPromptState();
+    expect(cooldown.dismissals).toBe(2);
+    expect(cooldown.cooldownUntil).toBe(Date.now() + PUSH_PROMPT_COOLDOWN_MS);
+    expect(mocks.enable).toHaveBeenCalledTimes(2);
+  });
+
+  it("starts the in-app-only cooldown immediately and keeps it across a new session", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-04T10:00:00.000Z"));
+    const view = renderPrompt(String(Date.now()), "ios_needs_install");
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    fireEvent.click(screen.getByRole("button", { name: "Usa gli avvisi nell'app" }));
+
+    const cooldown = readPushPromptState();
+    expect(cooldown.dismissals).toBe(2);
+    expect(cooldown.cooldownUntil).toBe(Date.now() + PUSH_PROMPT_COOLDOWN_MS);
+    expect(screen.queryByTestId("push-preprompt")).not.toBeInTheDocument();
+
+    view.unmount();
+    renderPrompt(String(Date.now()), "ios_needs_install");
+    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    expect(screen.queryByTestId("push-preprompt")).not.toBeInTheDocument();
+  });
+
+  it("clears the error, timer prompt, and fallback note after a successful retry", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-04T10:00:00.000Z"));
+    mocks.capability = "supported";
+    mocks.permission = "granted";
+    mocks.subscriptionStatus = "failed";
+    mocks.focus.sessionKey = String(Date.now());
+    mocks.subscribe.mockResolvedValue(true);
+    const props = { trigger: <button type="button">Timer</button>, open: true, onOpenChange: vi.fn(), mobile: true };
+    const view = render(<TimerPanel {...props} />);
+
+    expect(screen.getByText("Senza avvisi, se blocchi lo schermo non sentirai la fine del pomodoro.")).toBeInTheDocument();
+    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    expect(screen.getByTestId("push-preprompt")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Riprova" }));
+      await Promise.resolve();
+    });
+    expect(mocks.subscribe).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("push-preprompt")).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+
+    mocks.subscriptionStatus = "subscribed";
+    act(() => view.rerender(<TimerPanel {...props} />));
+    expect(screen.queryByText("Senza avvisi, se blocchi lo schermo non sentirai la fine del pomodoro.")).not.toBeInTheDocument();
+  });
+
+  it("shows a registration error and retries without repeating the permission request", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-04T10:00:00.000Z"));
+    mocks.enable.mockResolvedValue("failed");
+    mocks.subscribe.mockResolvedValue(false);
+    renderPrompt(String(Date.now()));
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Attiva notifiche" }));
+      await Promise.resolve();
+    });
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Riprova" })).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Riprova" }));
+      await Promise.resolve();
+    });
+    expect(mocks.subscribe).toHaveBeenCalledTimes(1);
+    expect(mocks.enable).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+  });
+
   it("offers a second attempt after an automatic replan, then hides for 30 days after two Not now choices", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-11-04T10:00:00.000Z"));
@@ -183,6 +298,8 @@ describe("PushPrePrompt", () => {
         sessionKey={String(Date.now())}
         capability="supported"
         permission="default"
+        subscriptionStatus={mocks.subscriptionStatus}
+        subscribe={mocks.subscribe}
         enableFromUserGesture={mocks.enable as () => Promise<"enabled" | "denied" | "dismissed" | "unsupported" | "failed">}
       />,
     );
@@ -208,6 +325,23 @@ describe("TimerPanel in-app fallback", () => {
 });
 
 describe("NotificationsCard settings", () => {
+  it("does not report notifications active after permission until registration succeeds", async () => {
+    mocks.capability = "supported";
+    mocks.permission = "granted";
+    mocks.subscriptionStatus = "failed";
+    mocks.subscribe.mockResolvedValue(false);
+    render(<NotificationsCard />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/Non è stato possibile registrare/);
+    expect(screen.queryByText("Notifiche attive su questo dispositivo")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Riprova" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Riprova" }));
+    await waitFor(() => expect(mocks.subscribe).toHaveBeenCalledTimes(1));
+    expect(mocks.enable).not.toHaveBeenCalled();
+    expect(screen.queryByText("Notifiche attive su questo dispositivo")).not.toBeInTheDocument();
+  });
+
   it("defaults hide_subject to off and saves it without losing other notify_types keys", async () => {
     mocks.notifyTypes = { slot_start: false, keep_existing: true };
     render(<NotificationsCard />);

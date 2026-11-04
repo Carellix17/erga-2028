@@ -11,6 +11,14 @@ export interface PushFeatureEnvironment {
   inPreviewOrIframe: boolean;
 }
 
+export function isPreviewHostname(hostname: string): boolean {
+  const firstLabel = hostname.split(".")[0] ?? "";
+  const isIdPreviewHost = firstLabel.startsWith("id-preview--");
+  const isLovableProjectHost = hostname === "lovableproject.com"
+    || hostname.endsWith(".lovableproject.com");
+  return isIdPreviewHost || isLovableProjectHost || hostname === "localhost";
+}
+
 function isPreviewOrIframe(): boolean {
   if (typeof window === "undefined") return true;
   try {
@@ -19,12 +27,7 @@ function isPreviewOrIframe(): boolean {
     return true;
   }
 
-  const hostname = window.location.hostname;
-  const firstLabel = hostname.split(".")[0] ?? "";
-  const isIdPreviewHost = firstLabel.startsWith("id-preview--");
-  const isLovableProjectHost = hostname === "lovableproject.com"
-    || hostname.endsWith(".lovableproject.com");
-  return isIdPreviewHost || isLovableProjectHost || hostname === "localhost";
+  return isPreviewHostname(window.location.hostname);
 }
 
 export function readPushFeatureEnvironment(): PushFeatureEnvironment {
@@ -138,6 +141,29 @@ export function recordPushPromptNotNow(
   const next = {
     dismissals,
     cooldownUntil: dismissals >= 2 ? now + PUSH_PROMPT_COOLDOWN_MS : 0,
+  };
+  volatilePromptState = next;
+  if (storage) {
+    try {
+      storage.setItem(PUSH_PROMPT_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Keep the cooldown in memory when browser storage is unavailable.
+    }
+  }
+  return next;
+}
+
+/** An explicit in-app-only choice starts the same cooldown as two "Not now" replies. */
+export function suppressPushPromptFor30Days(
+  now = Date.now(),
+  storage: StorageLike | null = localStorageOrNull(),
+): PushPromptState {
+  const current = safeReadState(storage, now);
+  if (current.cooldownUntil > now) return current;
+
+  const next = {
+    dismissals: 2,
+    cooldownUntil: now + PUSH_PROMPT_COOLDOWN_MS,
   };
   volatilePromptState = next;
   if (storage) {

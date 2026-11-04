@@ -58,7 +58,14 @@ function TimerPanelContent() {
     addFiveMinutes,
     endWithReason,
   } = useFocus();
-  const { capability, permission, enableFromUserGesture } = usePushNotifications();
+  const {
+    capability,
+    permission,
+    subscriptionStatus,
+    isSubscribed,
+    subscribe,
+    enableFromUserGesture,
+  } = usePushNotifications();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const lessonRange = task?.lessonFrom != null && task.lessonTo != null
     ? task.lessonFrom === task.lessonTo
@@ -72,16 +79,16 @@ function TimerPanelContent() {
   return (
     <div className="space-y-4">
       <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="text-base font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           {phaseLabel(phase, t)}
         </p>
         <h2 className="mt-1 truncate font-display text-lg font-semibold text-foreground">
           {task?.subject || task?.label || t("focusTimer.defaultSubject")}
         </h2>
         {task?.subject && task.label && task.label !== task.subject && (
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">{task.label}</p>
+          <p className="mt-0.5 truncate text-base text-muted-foreground">{task.label}</p>
         )}
-        {lessonRange && <p className="mt-1 text-sm text-muted-foreground">{lessonRange}</p>}
+        {lessonRange && <p className="mt-1 text-base text-muted-foreground">{lessonRange}</p>}
       </div>
 
       <div className="flex items-center gap-3 rounded-control border border-border bg-surface-container-low px-3 py-3">
@@ -89,7 +96,7 @@ function TimerPanelContent() {
           aria-hidden="true"
           className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-primary/30 text-primary"
         >
-          <span className="text-xs font-semibold tabular-nums">{Math.floor((overrun > 0 ? overrun : remaining) / 60)}</span>
+          <span className="text-base font-semibold tabular-nums">{Math.floor((overrun > 0 ? overrun : remaining) / 60)}</span>
         </div>
         <p className="min-w-0 flex-1 font-display text-2xl font-semibold tabular-nums tracking-tight text-foreground">
           {countdown}
@@ -145,11 +152,13 @@ function TimerPanelContent() {
           sessionKey={sessionKey}
           capability={capability}
           permission={permission}
+          subscriptionStatus={subscriptionStatus}
+          subscribe={subscribe}
           enableFromUserGesture={enableFromUserGesture}
         />
       )}
 
-      {(capability !== "supported" || permission !== "granted") && (
+      {!isSubscribed && (
         <p role="note" className="flex items-start gap-2 text-base leading-relaxed text-muted-foreground">
           <BellOff className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
           <span>{t("focusTimer.noScreenAlerts")}</span>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { detectPushCapability, type PushCapability } from "@/lib/pushSupport";
 
@@ -7,6 +7,7 @@ const VAPID_PUBLIC_KEY =
   "BAXm3i-O54rBBUA5ara0kvEMuzwLl1Rk-ZCdCczyxlJ9Mauni-KkzdXwYUpYnON0v9mrYzU3usm0sazZFMcEv2s";
 
 export type EnablePushResult = "enabled" | "denied" | "dismissed" | "unsupported" | "failed";
+export type PushSubscriptionStatus = "not_subscribed" | "subscribing" | "subscribed" | "failed";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -25,6 +26,8 @@ export function usePushNotifications() {
   const capability: PushCapability = detectPushCapability();
   const supported = capability === "supported";
   const [permission, setPermission] = useState<NotificationPermission>(currentPermission);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<PushSubscriptionStatus>("not_subscribed");
+  const requestId = useRef(0);
 
   useEffect(() => {
     const refreshPermission = () => setPermission(currentPermission());
@@ -39,6 +42,13 @@ export function usePushNotifications() {
 
   const registerSubscription = useCallback(async (): Promise<boolean> => {
     if (detectPushCapability() !== "supported" || currentPermission() !== "granted") return false;
+
+    const currentRequestId = ++requestId.current;
+    const setResult = (status: PushSubscriptionStatus) => {
+      if (requestId.current === currentRequestId) setSubscriptionStatus(status);
+    };
+    setSubscriptionStatus("subscribing");
+
     try {
       const reg = await navigator.serviceWorker.ready;
       let sub = await reg.pushManager.getSubscription();
@@ -51,7 +61,10 @@ export function usePushNotifications() {
 
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-      if (!token) return false;
+      if (!token) {
+        setResult("failed");
+        return false;
+      }
 
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/push-subscribe`,
@@ -64,14 +77,17 @@ export function usePushNotifications() {
           body: JSON.stringify({ subscription: sub.toJSON() }),
         },
       );
-      return res.ok;
+      const succeeded = res.ok;
+      setResult(succeeded ? "subscribed" : "failed");
+      return succeeded;
     } catch (err) {
       console.error("[push] subscribe failed:", err);
+      setResult("failed");
       return false;
     }
   }, []);
 
-  /** Subscribe silently when permission is already granted; never opens a permission prompt. */
+  /** Register silently when permission is already granted; never opens a permission prompt. */
   const subscribe = useCallback(async (): Promise<boolean> => {
     if (capability !== "supported" || currentPermission() !== "granted") return false;
     return registerSubscription();
@@ -100,5 +116,14 @@ export function usePushNotifications() {
     return (await registerSubscription()) ? "enabled" : "failed";
   }, [capability, registerSubscription]);
 
-  return { capability, supported, permission, subscribe, enableFromUserGesture };
+  return {
+    capability,
+    supported,
+    permission,
+    subscriptionStatus,
+    isSubscribed: supported && permission === "granted" && subscriptionStatus === "subscribed",
+    registrationFailed: subscriptionStatus === "failed",
+    subscribe,
+    enableFromUserGesture,
+  };
 }
