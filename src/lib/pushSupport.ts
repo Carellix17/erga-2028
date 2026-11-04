@@ -20,9 +20,11 @@ function isPreviewOrIframe(): boolean {
   }
 
   const hostname = window.location.hostname;
-  return hostname.includes("id-preview--")
-    || hostname.includes("lovableproject.com")
-    || hostname === "localhost";
+  const firstLabel = hostname.split(".")[0] ?? "";
+  const isIdPreviewHost = firstLabel.startsWith("id-preview--");
+  const isLovableProjectHost = hostname === "lovableproject.com"
+    || hostname.endsWith(".lovableproject.com");
+  return isIdPreviewHost || isLovableProjectHost || hostname === "localhost";
 }
 
 export function readPushFeatureEnvironment(): PushFeatureEnvironment {
