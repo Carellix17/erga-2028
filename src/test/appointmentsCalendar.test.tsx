@@ -36,6 +36,7 @@ vi.mock("@/hooks/useUserSubjects", () => ({ useUserSubjects: () => ({ data: [] }
 vi.mock("@/hooks/useUserRoutines", () => ({ useUserRoutines: () => ({ data: [], isLoading: false }) }));
 vi.mock("@/hooks/useFileContexts", () => ({ useFileContextsQuery: () => ({ data: [] }) }));
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast }) }));
+vi.mock("@/hooks/useSlotReminders", () => ({ useSlotReminders: vi.fn() }));
 vi.mock("@/hooks/usePrefersReducedMotion", () => ({ usePrefersReducedMotion: () => false }));
 vi.mock("@/hooks/useDelayedLoading", () => ({ useDelayedLoading: () => false }));
 vi.mock("@/utils/haptics", () => ({ triggerHaptic: vi.fn() }));

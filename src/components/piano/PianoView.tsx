@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { triggerHaptic } from "@/utils/haptics";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { useSlotReminders } from "@/hooks/useSlotReminders";
 import { usePlannerData, plannerDataKeys } from "@/hooks/usePlannerData";
 import { useAutoReplan, type AutoReplanApplyRequest, type AutoReplanApplyResult, type AutoReplanPreview, type ReplanPrompt } from "@/hooks/useAutoReplan";
 import { useDeviationPrompt, type DeviationPlanProposal } from "@/hooks/useDeviationPrompt";
@@ -189,6 +190,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   const updateEvent = useUpdateStudyEvent();
   const applyPlanChanges = useApplyPlanChanges();
   const events = eventsQuery.data ?? [];
+  useSlotReminders(events, !eventsQuery.isLoading && !eventsQuery.isError && !!currentUser);
   const evaluationsQuery = useEvaluations(true);
   const evaluations = evaluationsQuery.data ?? [];
   const addEvaluation = useAddEvaluation();

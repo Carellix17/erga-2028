@@ -17,6 +17,7 @@ import { FocusSetupDialog } from "@/components/focus/FocusSetupDialog";
 import { FocusFullscreen } from "@/components/focus/FocusFullscreen";
 import { triggerHaptic } from "@/utils/haptics";
 import { playFocusSound, unlockFocusSound } from "@/lib/focusSound";
+import { cancelForSession, syncFocusPhasePush, type TimerReminderSession } from "@/lib/pushSchedule";
 import {
   fromStoredPhase,
   nextPhase as advancePhase,
@@ -164,6 +165,33 @@ function milliseconds(value: string | null | undefined): number | null {
   if (!value) return null;
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function reminderSession(session: ActiveFocusSession, settings: FocusSettings = DEFAULT_BREAKS): TimerReminderSession {
+  const nextBlock = session.cycle + 1;
+  const nextBreakMinutes = session.phase !== "focus"
+    ? undefined
+    : nextBlock % 4 === 0
+    ? settings.longBreakMinutes
+    : nextBlock % 2 === 0
+    ? settings.mediumBreakMinutes
+    : settings.shortBreakMinutes;
+  return {
+    id: session.id,
+    userId: session.userId,
+    phase: session.phase,
+    cycle: session.cycle,
+    phaseEndsAt: session.phaseEndsAt,
+    phaseDurationSeconds: session.phaseDurationSeconds,
+    nextBreakMinutes,
+    pausedAt: session.pausedAt,
+    task: {
+      subject: session.task.subject,
+      eventId: session.task.eventId,
+      lessonFrom: session.task.lessonFrom,
+      lessonTo: session.task.lessonTo,
+    },
+  };
 }
 
 function validPhase(value: unknown): value is FocusPhase {
@@ -425,12 +453,15 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     const { row, error } = await fetchActiveRow(uid);
     if (error) return false;
     if (!row) {
+      const local = activeSessionRef.current;
+      if (local?.userId === uid && local.id) void cancelForSession(local.id, uid);
       installSession(null);
       return true;
     }
     const local = activeSessionRef.current;
     const restored = await sessionFromRow(row, uid, preferred ?? local);
     installSession(restored);
+    void syncFocusPhasePush(reminderSession(restored, focusSettingsRef.current), uid);
     setNow(Date.now());
     return true;
   }, [installSession, sessionFromRow]);
@@ -488,6 +519,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
           if (!readError && row) {
             const existing = await sessionFromRow(row, uid);
             installSession(existing);
+            void syncFocusPhasePush(reminderSession(existing, focusSettingsRef.current), uid);
             setFullscreen(true);
             toast.info(t("focusTimer.existingSession"));
             return;
@@ -505,14 +537,16 @@ export function FocusProvider({ children }: { children: ReactNode }) {
         ? activeSessionRef.current
         : current;
       const saved = await sessionFromRow(data as StoredSessionRow, uid, { ...latest, task });
-      installSession({
+      const persisted: ActiveFocusSession = {
         ...saved,
         task,
         focusSeconds: latest.focusSeconds,
         lastAccrualAt: latest.lastAccrualAt,
         focusDurationSeconds: latest.focusDurationSeconds,
         phaseDurationSeconds: latest.phaseDurationSeconds,
-      });
+      };
+      installSession(persisted);
+      void syncFocusPhasePush(reminderSession(persisted, focusSettingsRef.current), uid);
     } catch (error) {
       console.error("Failed to save focus timer:", error);
       const latest = activeSessionRef.current?.userId === uid && activeSessionRef.current.id == null
@@ -641,12 +675,14 @@ export function FocusProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (!row) {
+        if (saved?.userId === userId && saved.id) void cancelForSession(saved.id, userId);
         installSession(null);
         return;
       }
       const restored = await sessionFromRow(row, userId, saved?.userId === userId ? saved : null);
       if (!alive) return;
       installSession(restored);
+      void syncFocusPhasePush(reminderSession(restored, focusSettingsRef.current), userId);
       setNow(Date.now());
     })().catch((error: unknown) => {
       console.error("Failed to restore focus timer:", error);
@@ -719,6 +755,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     const uid = userIdRef.current;
     if (!current || syncingRef.current) return;
     setSyncing(true);
+    void cancelForSession(current.id, uid ?? current.userId);
     const endedAt = Date.now();
     const accrued = accrueFocusTime(endedAt) ?? current;
     const pauses = accrued.pausedAt == null
@@ -828,6 +865,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     setNow(Date.now());
     const uid = userIdRef.current;
     if (!uid) return;
+    if (next.pausedAt !== null) void cancelForSession(previous.id ?? next.id, uid);
     if (!previous.id) {
       await persistNewSession(next, uid);
       return;
@@ -874,6 +912,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
         version: row.version,
       };
       installSession(updated);
+      void syncFocusPhasePush(reminderSession(updated, focusSettingsRef.current), uid);
     } catch (error) {
       console.error("Failed to update focus timer:", error);
       const reconciled = await reconcileFromDatabase(uid, next);

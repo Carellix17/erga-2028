@@ -20,8 +20,8 @@ function ensureConfigured() {
     webpush.setVapidDetails(subject, VAPID_PUBLIC_KEY, privateKey);
     configured = true;
     return true;
-  } catch (err) {
-    console.error("[push] setVapidDetails fallito:", err);
+  } catch {
+    console.error("[push] setVapidDetails fallito");
     return false;
   }
 }
@@ -33,45 +33,99 @@ export interface PushPayload {
   tag?: string;
 }
 
-// supabase deve essere un client service_role per leggere/cancellare tutte le righe.
+export type PushUrgency = "very-low" | "low" | "normal" | "high";
+
+export interface PushSendOptions {
+  urgency?: PushUrgency;
+  ttl?: number;
+}
+
+export interface PushSendResult {
+  sent: number;
+  failed: number;
+  noSubscription: number;
+}
+
+function statusCodeOf(error: unknown): number | null {
+  if (typeof error !== "object" || error === null || !("statusCode" in error)) return null;
+  const status = (error as { statusCode?: unknown }).statusCode;
+  return typeof status === "number" ? status : null;
+}
+
+// `supabase` deve essere un client service_role per leggere/cancellare tutte le righe.
 export async function sendPushToUser(
   supabase: any,
   userId: string,
-  payload: PushPayload
-): Promise<void> {
-  if (!ensureConfigured()) return;
+  payload: PushPayload,
+  options?: PushSendOptions,
+): Promise<PushSendResult> {
+  const result: PushSendResult = { sent: 0, failed: 0, noSubscription: 0 };
+  if (!ensureConfigured()) {
+    result.failed = 1;
+    return result;
+  }
+
   try {
     const { data: subs, error } = await supabase
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth")
       .eq("user_id", userId);
     if (error) {
-      console.error("[push] lettura subscriptions fallita:", error.message);
-      return;
+      console.error("[push] lettura subscriptions fallita");
+      result.failed = 1;
+      return result;
     }
-    if (!subs || subs.length === 0) return;
+    if (!subs || subs.length === 0) {
+      result.noSubscription = 1;
+      return result;
+    }
 
     const body = JSON.stringify(payload);
+    const webPushOptions = options
+      ? {
+          ...(options.ttl !== undefined ? { TTL: options.ttl } : {}),
+          ...(options.urgency ? { urgency: options.urgency } : {}),
+        }
+      : undefined;
+
     await Promise.all(
-      subs.map(async (s: any) => {
+      subs.map(async (subscriptionRow: any) => {
         const subscription = {
-          endpoint: s.endpoint,
-          keys: { p256dh: s.p256dh, auth: s.auth },
+          endpoint: subscriptionRow.endpoint,
+          keys: { p256dh: subscriptionRow.p256dh, auth: subscriptionRow.auth },
         };
         try {
-          await webpush.sendNotification(subscription, body);
-        } catch (err: any) {
-          const status = err?.statusCode;
-          if (status === 404 || status === 410) {
-            // Subscription scaduta: cleanup
-            await supabase.from("push_subscriptions").delete().eq("id", s.id);
+          if (webPushOptions) {
+            await webpush.sendNotification(subscription, body, webPushOptions);
           } else {
-            console.error(`[push] invio fallito (${status}):`, err?.body || err?.message);
+            await webpush.sendNotification(subscription, body);
           }
+          result.sent += 1;
+        } catch (sendError: unknown) {
+          const status = statusCodeOf(sendError);
+          if (status === 404 || status === 410) {
+            // Subscription scaduta: cleanup, vincolato anche all'utente destinatario.
+            try {
+              await supabase
+                .from("push_subscriptions")
+                .delete()
+                .eq("id", subscriptionRow.id)
+                .eq("user_id", userId);
+            } catch {
+              // Il cleanup non deve interrompere l'invio alle altre subscription.
+            }
+          } else {
+            // Non registrare il body dell'errore: può contenere dati del provider.
+            console.error(`[push] invio fallito (${status ?? "unknown"})`);
+          }
+          result.failed += 1;
         }
-      })
+      }),
     );
-  } catch (err) {
-    console.error("[push] errore inatteso:", err);
+  } catch {
+    console.error("[push] errore inatteso durante l'invio");
+    result.failed += 1;
   }
+
+  return result;
 }

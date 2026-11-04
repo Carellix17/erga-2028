@@ -873,6 +873,38 @@
     "logged": "Sessione registrata! Erga sta calibrando il tuo algoritmo.",
     "logError": "Non è stato possibile salvare la sessione."
   },
+  "pushSchedule": {
+    "slotStart": {
+      "title": "Tra 5 minuti: {{subject}}",
+      "titlePrivate": "Tra 5 minuti inizia lo studio",
+      "body": "Minilezioni {{from}}–{{to}} · {{start}}-{{end}}",
+      "bodyPrivate": "Lo studio inizia tra 5 minuti · {{start}}-{{end}}"
+    },
+    "pomodoroEnd": {
+      "title": "Pausa: {{subject}}",
+      "titlePrivate": "Pausa meritata",
+      "body": "Blocco {{block}} finito: {{minutes}} minuti di pausa.",
+      "bodyPrivate": "Il tuo blocco di studio è terminato: {{minutes}} minuti di pausa."
+    },
+    "breakEnd": {
+      "title": "Si riparte: {{subject}}",
+      "titlePrivate": "La pausa è finita",
+      "body": "Riprendi da Minilezione {{lesson}} di {{total}}.",
+      "bodyPrivate": "La pausa è finita. Riprendi dal tuo piano."
+    },
+    "overrun": {
+      "title": "Lo slot è terminato: {{subject}}",
+      "titlePrivate": "Lo slot di studio è terminato",
+      "body": "Il tempo previsto è finito. Vuoi aggiornare il piano?",
+      "bodyPrivate": "Il tempo previsto è finito. Vuoi aggiornare il piano?"
+    },
+    "eveningSummary": {
+      "title": "Il tuo piano di studio è cambiato",
+      "item": "{{subject}} alle {{time}}",
+      "body": "Oggi si sono spostati {{count}} slot: {{items}}.",
+      "bodyPrivate": "Oggi sono cambiati {{count}} slot del tuo piano."
+    }
+  },
   "studio": {
     "materialsAndReading": "Materiali e lettura"
   }
