@@ -98,6 +98,7 @@ vi.mock("@/hooks/usePlanChanges", () => ({
 vi.mock("@/hooks/use-toast", () => ({
   useToast: () => ({ toast: mocks.toast, dismiss: mocks.dismissToast }),
 }));
+vi.mock("@/hooks/useSlotReminders", () => ({ useSlotReminders: vi.fn() }));
 vi.mock("@/hooks/usePrefersReducedMotion", () => ({ usePrefersReducedMotion: () => false }));
 vi.mock("@/hooks/useDelayedLoading", () => ({ useDelayedLoading: () => false }));
 vi.mock("@/utils/haptics", () => ({ triggerHaptic: vi.fn() }));

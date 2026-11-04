@@ -873,6 +873,38 @@
     "logged": "Session recorded! Erga is calibrating your study plan.",
     "logError": "The session could not be saved."
   },
+  "pushSchedule": {
+    "slotStart": {
+      "title": "In 5 minutes: {{subject}}",
+      "titlePrivate": "Study starts in 5 minutes",
+      "body": "Mini-lessons {{from}}–{{to}} · {{start}}-{{end}}",
+      "bodyPrivate": "Your study session starts in 5 minutes · {{start}}-{{end}}"
+    },
+    "pomodoroEnd": {
+      "title": "Break time: {{subject}}",
+      "titlePrivate": "Time for a break",
+      "body": "Block {{block}} is done: {{minutes}} minutes for a break.",
+      "bodyPrivate": "Your study block is finished: {{minutes}} minutes for a break."
+    },
+    "breakEnd": {
+      "title": "Back to it: {{subject}}",
+      "titlePrivate": "Your break is over",
+      "body": "Resume with Mini-lesson {{lesson}} of {{total}}.",
+      "bodyPrivate": "Your break is over. Pick up where you left off."
+    },
+    "overrun": {
+      "title": "Your slot has ended: {{subject}}",
+      "titlePrivate": "Your study slot has ended",
+      "body": "The planned time is up. Would you like to update your plan?",
+      "bodyPrivate": "The planned time is up. Would you like to update your plan?"
+    },
+    "eveningSummary": {
+      "title": "Your study plan has changed",
+      "item": "{{subject}} at {{time}}",
+      "body": "{{count}} slots moved today: {{items}}.",
+      "bodyPrivate": "{{count}} slots in your plan changed today."
+    }
+  },
   "studio": {
     "materialsAndReading": "Materials and reading"
   }

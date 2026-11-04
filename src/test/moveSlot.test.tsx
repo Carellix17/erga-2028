@@ -48,6 +48,7 @@ vi.mock("@/hooks/useAutoReplan", () => ({
 }));
 vi.mock("@/hooks/usePlanChanges", () => ({ planChangesKeys: { all: (userId: string | null) => ["plan-changes", userId] } }));
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast: mocks.toast, dismiss: mocks.dismiss }) }));
+vi.mock("@/hooks/useSlotReminders", () => ({ useSlotReminders: vi.fn() }));
 vi.mock("@/hooks/usePrefersReducedMotion", () => ({ usePrefersReducedMotion: () => false }));
 vi.mock("@/hooks/useDelayedLoading", () => ({ useDelayedLoading: () => false }));
 vi.mock("@/utils/haptics", () => ({ triggerHaptic: vi.fn() }));

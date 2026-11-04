@@ -9,3 +9,6 @@ project_id = "xtcifacgiyekudoispdk"
 
   [functions.send-welcome-email]
     verify_jwt = true
+
+  [functions.push-dispatch]
+    verify_jwt = false
