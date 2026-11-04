@@ -16,6 +16,7 @@ import {
 } from "@/lib/planner/replan";
 import type { PlanChange, PlanChangeReason } from "@/lib/planner/types";
 import type { PlanWarning, ScheduleEvaluation } from "@/lib/planner/schedule";
+import { signalAutoReplanApplied } from "@/lib/pushSupport";
 
 export type ReplanPrompt =
   | {
@@ -376,6 +377,7 @@ export function useAutoReplan({
         applyingChoice.current = true;
         try {
           const result = await current.onApply(request);
+          if (result === "applied") signalAutoReplanApplied();
           if (result === "conflict") {
             ready.forEach(({ candidate }) => conflictedSlotIds.current.add(candidate.slot.id));
           }
