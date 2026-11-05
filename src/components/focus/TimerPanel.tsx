@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from "react";
-import { Check, Pause, Play, Plus, Square } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { BellOff, Check, Pause, Play, Plus, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { formatMMSS, useFocus } from "@/contexts/FocusContext";
+import { PushPrePrompt } from "@/components/focus/PushPrePrompt";
+import { formatMMSS, useFocus, useOptionalFocus } from "@/contexts/FocusContext";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import type { FocusEndReason, FocusPhase } from "@/lib/focusClock";
 
 interface TimerPanelProps {
@@ -48,12 +50,22 @@ function TimerPanelContent() {
     phase,
     remaining,
     overrun,
+    isActive,
     isRunning,
     isSyncing,
+    sessionKey,
     toggleRun,
     addFiveMinutes,
     endWithReason,
   } = useFocus();
+  const {
+    capability,
+    permission,
+    subscriptionStatus,
+    isSubscribed,
+    subscribe,
+    enableFromUserGesture,
+  } = usePushNotifications();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const lessonRange = task?.lessonFrom != null && task.lessonTo != null
     ? task.lessonFrom === task.lessonTo
@@ -67,16 +79,16 @@ function TimerPanelContent() {
   return (
     <div className="space-y-4">
       <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="text-base font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           {phaseLabel(phase, t)}
         </p>
         <h2 className="mt-1 truncate font-display text-lg font-semibold text-foreground">
           {task?.subject || task?.label || t("focusTimer.defaultSubject")}
         </h2>
         {task?.subject && task.label && task.label !== task.subject && (
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">{task.label}</p>
+          <p className="mt-0.5 truncate text-base text-muted-foreground">{task.label}</p>
         )}
-        {lessonRange && <p className="mt-1 text-sm text-muted-foreground">{lessonRange}</p>}
+        {lessonRange && <p className="mt-1 text-base text-muted-foreground">{lessonRange}</p>}
       </div>
 
       <div className="flex items-center gap-3 rounded-control border border-border bg-surface-container-low px-3 py-3">
@@ -84,7 +96,7 @@ function TimerPanelContent() {
           aria-hidden="true"
           className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-primary/30 text-primary"
         >
-          <span className="text-xs font-semibold tabular-nums">{Math.floor((overrun > 0 ? overrun : remaining) / 60)}</span>
+          <span className="text-base font-semibold tabular-nums">{Math.floor((overrun > 0 ? overrun : remaining) / 60)}</span>
         </div>
         <p className="min-w-0 flex-1 font-display text-2xl font-semibold tabular-nums tracking-tight text-foreground">
           {countdown}
@@ -133,6 +145,26 @@ function TimerPanelContent() {
         </Button>
       </div>
 
+      {sessionKey && (
+        <PushPrePrompt
+          active={isActive}
+          isRunning={isRunning}
+          sessionKey={sessionKey}
+          capability={capability}
+          permission={permission}
+          subscriptionStatus={subscriptionStatus}
+          subscribe={subscribe}
+          enableFromUserGesture={enableFromUserGesture}
+        />
+      )}
+
+      {!isSubscribed && (
+        <p role="note" className="flex items-start gap-2 text-base leading-relaxed text-muted-foreground">
+          <BellOff className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+          <span>{t("focusTimer.noScreenAlerts")}</span>
+        </p>
+      )}
+
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent className="z-[70]">
           <AlertDialogHeader>
@@ -153,6 +185,27 @@ function TimerPanelContent() {
 
 export function TimerPanel({ trigger, open, onOpenChange, mobile }: TimerPanelProps) {
   const { t } = useTranslation();
+  const focus = useOptionalFocus();
+  const previousTitle = useRef<string | null>(null);
+  const showPauseTitle = focus?.awaitingChoice === true && focus.phase === "focus";
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (showPauseTitle) {
+      previousTitle.current ??= document.title;
+      document.title = "⏸ Pausa! · Erga";
+    } else if (previousTitle.current !== null) {
+      document.title = previousTitle.current;
+      previousTitle.current = null;
+    }
+  }, [showPauseTitle]);
+
+  useEffect(() => () => {
+    if (typeof document !== "undefined" && previousTitle.current !== null) {
+      document.title = previousTitle.current;
+      previousTitle.current = null;
+    }
+  }, []);
 
   if (mobile) {
     return (

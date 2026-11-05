@@ -1082,7 +1082,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     }
     if (baseline.remaining > 0 && remainingSeconds === 0) {
       publishAnnouncement(t("focusTimer.announcePhaseEnd"));
-      triggerHaptic("success");
+      if (document.visibilityState === "visible") triggerHaptic("success");
       if (allowSoundForClockUpdateRef.current && document.visibilityState === "visible" && focusSettings.soundEnabled) {
         playFocusSound();
       }
