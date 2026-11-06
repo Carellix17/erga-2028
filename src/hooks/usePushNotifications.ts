@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { detectPushCapability, type PushCapability } from "@/lib/pushSupport";
 
@@ -22,47 +22,106 @@ function currentPermission(): NotificationPermission {
   return typeof Notification === "undefined" ? "default" : Notification.permission;
 }
 
-export function usePushNotifications() {
-  const capability: PushCapability = detectPushCapability();
-  const supported = capability === "supported";
-  const [permission, setPermission] = useState<NotificationPermission>(currentPermission);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<PushSubscriptionStatus>("not_subscribed");
-  const requestId = useRef(0);
+interface PushNotificationSnapshot {
+  permission: NotificationPermission;
+  subscriptionStatus: PushSubscriptionStatus;
+}
 
-  useEffect(() => {
-    const refreshPermission = () => setPermission(currentPermission());
-    window.addEventListener("focus", refreshPermission);
-    document.addEventListener("visibilitychange", refreshPermission);
-    refreshPermission();
-    return () => {
-      window.removeEventListener("focus", refreshPermission);
-      document.removeEventListener("visibilitychange", refreshPermission);
-    };
-  }, []);
+const serverSnapshot: PushNotificationSnapshot = {
+  permission: "default",
+  subscriptionStatus: "not_subscribed",
+};
+let pushSnapshot: PushNotificationSnapshot = {
+  ...serverSnapshot,
+  permission: currentPermission(),
+};
+const pushListeners = new Set<() => void>();
+let registrationInFlight: Promise<boolean> | null = null;
+let existingSubscriptionCheck: Promise<boolean> | null = null;
+let existingSubscriptionCheckComplete = false;
+let permissionEpoch = 0;
 
-  const registerSubscription = useCallback(async (): Promise<boolean> => {
-    if (detectPushCapability() !== "supported" || currentPermission() !== "granted") return false;
+function subscribeToPushStore(listener: () => void): () => void {
+  pushListeners.add(listener);
+  return () => pushListeners.delete(listener);
+}
 
-    const currentRequestId = ++requestId.current;
-    const setResult = (status: PushSubscriptionStatus) => {
-      if (requestId.current === currentRequestId) setSubscriptionStatus(status);
-    };
-    setSubscriptionStatus("subscribing");
+function getPushSnapshot(): PushNotificationSnapshot {
+  return pushSnapshot;
+}
 
+function getServerPushSnapshot(): PushNotificationSnapshot {
+  return serverSnapshot;
+}
+
+function publishPushSnapshot(next: PushNotificationSnapshot): void {
+  if (
+    next.permission === pushSnapshot.permission
+    && next.subscriptionStatus === pushSnapshot.subscriptionStatus
+  ) return;
+
+  pushSnapshot = next;
+  pushListeners.forEach((listener) => listener());
+}
+
+function setSubscriptionStatus(subscriptionStatus: PushSubscriptionStatus): void {
+  publishPushSnapshot({ ...pushSnapshot, subscriptionStatus });
+}
+
+function setPermission(permission: NotificationPermission): void {
+  if (permission === pushSnapshot.permission) return;
+
+  const resetRegistration = permission !== "granted";
+  permissionEpoch += 1;
+  existingSubscriptionCheckComplete = false;
+  existingSubscriptionCheck = null;
+  publishPushSnapshot({
+    permission,
+    subscriptionStatus: resetRegistration ? "not_subscribed" : pushSnapshot.subscriptionStatus,
+  });
+}
+
+interface RegisterOptions {
+  allowCreate: boolean;
+  existingSubscription?: PushSubscription;
+}
+
+/** Registers an existing subscription, or creates one only for an explicit activation action. */
+function registerSubscription({
+  allowCreate,
+  existingSubscription,
+}: RegisterOptions): Promise<boolean> {
+  if (registrationInFlight) return registrationInFlight;
+  if (detectPushCapability() !== "supported" || currentPermission() !== "granted") {
+    return Promise.resolve(false);
+  }
+
+  existingSubscriptionCheckComplete = true;
+  setSubscriptionStatus("subscribing");
+
+  const registration = (async (): Promise<boolean> => {
     try {
-      const reg = await navigator.serviceWorker.ready;
-      let sub = await reg.pushManager.getSubscription();
+      let sub = existingSubscription;
       if (!sub) {
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
-        });
+        const reg = await navigator.serviceWorker.ready;
+        sub = await reg.pushManager.getSubscription();
+        if (!sub && allowCreate) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
+          });
+        }
+      }
+
+      if (!sub) {
+        setSubscriptionStatus("not_subscribed");
+        return false;
       }
 
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       if (!token) {
-        setResult("failed");
+        setSubscriptionStatus("failed");
         return false;
       }
 
@@ -78,20 +137,100 @@ export function usePushNotifications() {
         },
       );
       const succeeded = res.ok;
-      setResult(succeeded ? "subscribed" : "failed");
+      setSubscriptionStatus(succeeded ? "subscribed" : "failed");
       return succeeded;
     } catch (err) {
       console.error("[push] subscribe failed:", err);
-      setResult("failed");
+      setSubscriptionStatus("failed");
       return false;
     }
+  })();
+
+  registrationInFlight = registration;
+  void registration.then(() => {
+    if (registrationInFlight === registration) registrationInFlight = null;
+  });
+  return registration;
+}
+
+/** Silently re-registers a browser subscription only when one already exists. */
+function syncExistingSubscription(): Promise<boolean> {
+  if (currentPermission() !== "granted" || detectPushCapability() !== "supported") {
+    return Promise.resolve(false);
+  }
+  if (existingSubscriptionCheck) return existingSubscriptionCheck;
+  if (existingSubscriptionCheckComplete) {
+    return Promise.resolve(pushSnapshot.subscriptionStatus === "subscribed");
+  }
+  if (registrationInFlight) {
+    existingSubscriptionCheckComplete = true;
+    return registrationInFlight;
+  }
+
+  existingSubscriptionCheckComplete = true;
+  const checkEpoch = permissionEpoch;
+  const check = (async (): Promise<boolean> => {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (checkEpoch !== permissionEpoch || currentPermission() !== "granted") return false;
+      if (!sub) {
+        setSubscriptionStatus("not_subscribed");
+        return false;
+      }
+      return await registerSubscription({ allowCreate: false, existingSubscription: sub });
+    } catch (err) {
+      console.error("[push] existing subscription check failed:", err);
+      if (checkEpoch === permissionEpoch && currentPermission() === "granted") {
+        setSubscriptionStatus("failed");
+      }
+      return false;
+    }
+  })();
+
+  existingSubscriptionCheck = check;
+  void check.then(() => {
+    if (existingSubscriptionCheck === check) existingSubscriptionCheck = null;
+  });
+  return check;
+}
+
+export function usePushNotifications() {
+  const capability: PushCapability = detectPushCapability();
+  const supported = capability === "supported";
+  const snapshot = useSyncExternalStore(
+    subscribeToPushStore,
+    getPushSnapshot,
+    getServerPushSnapshot,
+  );
+  const { permission, subscriptionStatus } = snapshot;
+
+  useEffect(() => {
+    const refreshPermission = () => setPermission(currentPermission());
+    window.addEventListener("focus", refreshPermission);
+    document.addEventListener("visibilitychange", refreshPermission);
+    refreshPermission();
+    return () => {
+      window.removeEventListener("focus", refreshPermission);
+      document.removeEventListener("visibilitychange", refreshPermission);
+    };
   }, []);
 
-  /** Register silently when permission is already granted; never opens a permission prompt. */
+  useEffect(() => {
+    if (supported && permission === "granted") void syncExistingSubscription();
+  }, [permission, supported]);
+
   const subscribe = useCallback(async (): Promise<boolean> => {
     if (capability !== "supported" || currentPermission() !== "granted") return false;
-    return registerSubscription();
-  }, [capability, registerSubscription]);
+    setPermission("granted");
+
+    // If a silent startup check is already reading the browser subscription, reuse
+    // its registration. If none exists, this explicit action may create it below.
+    const pendingCheck = existingSubscriptionCheck;
+    if (pendingCheck && await pendingCheck) return true;
+    if (pushSnapshot.subscriptionStatus === "subscribed") return true;
+    return registerSubscription({ allowCreate: true });
+  }, [capability]);
 
   /** Call only from a direct user action such as an enabled button's onClick. */
   const enableFromUserGesture = useCallback(async (): Promise<EnablePushResult> => {
@@ -107,14 +246,14 @@ export function usePushNotifications() {
         console.error("[push] permission request failed:", err);
         return "failed";
       }
-      setPermission(current);
     }
+    setPermission(current);
 
     if (current === "denied") return "denied";
     if (current !== "granted") return "dismissed";
 
-    return (await registerSubscription()) ? "enabled" : "failed";
-  }, [capability, registerSubscription]);
+    return (await subscribe()) ? "enabled" : "failed";
+  }, [capability, subscribe]);
 
   return {
     capability,
