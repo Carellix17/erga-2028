@@ -1,121 +1,277 @@
----
-name: Erga
-description: 'Swiss Cognitive Grid + Tactile Studio — design system v4.1'
-colors:
-  canvas: '#F4F2EC'
-  surface-primary: '#FAF8F3'
-  surface-secondary: '#EAE6DC'
-  paper: '#FFFDF9'
-  sheet: '#FFFDF9'
-  ink: '#11120D'
-  ink-muted: '#4A4942'
-  muted-foreground: '#52514A'
-  steel: '#68665E'
-  line: '#D6D1C4'
-  control-line: '#11120D'
-  accent-decorative: '#E63B11'
-  primary: '#C82F0A'
-  primary-deep: '#AC2607'
-  primary-foreground: '#FFFDF9'
-  cognitive: '#1D4E5F'
-typography:
-  interface: 'Ubuntu Sans, system-ui, sans-serif'
-  body: 'Ubuntu Sans, system-ui, sans-serif'
-  editorial: 'Instrument Serif, Georgia, serif'
-  mono: 'Ubuntu Sans Mono, ui-monospace, monospace'
-rounded:
-  card: '0px'
-  hero: '0px'
-  sheet: '0px'
-  control: '2px'
-  button: '2px'
-  dialog: '4px'
-  full: '9999px'
-spacing:
-  base: '4px'
-  cell: '24px'
-  cell-large: '32px'
----
+## Overview
 
-# Erga — DESIGN SYSTEM v4.1
+xAI is Elon Musk's frontier-AI lab and the website wears that posture with engineered restraint: a near-black canvas `{colors.canvas}` (`#0a0a0a`) edge-to-edge, white outline pills as every interactive element, and a single proprietary geometric sans `Universal Sans` carrying every display headline at weight 400. There is no gradient hero, no atmospheric backdrop, no product screenshot. The brand reads as confidently sparse — a research lab announcing its work rather than a SaaS marketing site.
 
-**Swiss Cognitive Grid + Tactile Studio · 1 novembre 2026**
+Type is the second decisive voice. `Universal Sans` carries every display at weight 400 (regular) with aggressive negative tracking (`-2.4 px` at 96 px, scaling down through the display ladder). For technical labels, eyebrows, and metric counters, the brand pairs `Geist Mono` (uppercase, 1.4 px positive tracking) — every section eyebrow reads as a code comment more than a marketing label.
 
-Questo documento sostituisce il sistema v3 «Squared & Earthy» ed è la fonte visiva per il lavoro successivo. `PRODUCT.md` prevale sulle decisioni di prodotto. I valori eseguibili sono in `src/index.css` e `tailwind.config.ts`; i nomi legacy restano alias di compatibilità. Il sidecar `.impeccable/design.json` è storico e non è stato riallineato in questa revisione.
+Every interactive element is a pill (`{rounded.pill}` 9999 px) with 1 px white-translucent border `rgba(255, 255, 255, 0.25)`. The button shape never varies — the same translucent-white pill carries "Try Grok", "Read announcement", "Custom Voices", "Sign up now", and every "Read" anchor. The pill is the entire shape system.
 
-## Direzione
+**Key Characteristics:**
 
-Una superficie di lavoro scolastica precisa: griglia continua, carta calda, testo leggibile e azioni riconoscibili. La Home mette davanti il percorso reale e il profilo cognitivo; Studio affianca materiali, controlli e lettura. Usare contenuti e progressi reali, stati vuoti espliciti e indicazioni trasparenti sul lavoro AI, secondo `PRODUCT.md`.
+- A single near-black canvas (`{colors.canvas}` `#0a0a0a`) with white outline pills as the entire interactive vocabulary.
+- Universal Sans weight 400 for display, Geist Mono uppercase tracked for labels — the two-face contrast IS the brand voice.
+- Every button is a `{rounded.pill}` outline with translucent-white border. The brand never uses filled CTAs except for one variant (white-filled pill on Sign Up).
+- Cards are tight `{rounded.sm}` 8 px rectangles in a slightly-lighter `{colors.canvas-card}` (`#191919`) fill with hairline border. No shadows.
+- A muted accent palette of sunset-orange / dusk-purple / twilight-violet / breeze-blue lives in the design tokens but appears rarely on the main marketing surface — reserved for product illustrations / icons.
+- Massive negative letter-spacing on display headlines (`-2.4 px` at 96 px) gives the typography a precise, gathered look.
 
-## Colore e superfici
+## Colors
 
-| Ruolo / token CSS | Giorno | Uso |
-|---|---|---|
-| `--canvas` | `#F4F2EC` | Fondo pietra |
-| `--surface-primary` | `#FAF8F3` | Celle e pannelli operativi |
-| `--paper`, `--sheet` | `#FFFDF9` | Foglio di lettura |
-| `--surface-secondary` | `#EAE6DC` | Superfici secondarie e stati |
-| `--ink` | `#11120D` | Testo principale |
-| `--ink-muted`, `--text-secondary` | `#4A4942` | Testo secondario |
-| `--muted-foreground` | `#52514A` | Testo attenuato UI |
-| `--steel` | `#68665E` | Metadati attenuati |
-| `--line` | `#D6D1C4` | Separatori della griglia |
-| `--control-line` | `#11120D` | Confine dei controlli |
-| `--accent-primary` | `#E63B11` | Vermiglio decorativo |
-| `--primary` | `#C82F0A` | CTA con testo carta |
-| `--primary-deep` | `#AC2607` | Hover CTA |
-| `--cognitive` | `#1D4E5F` | Dati cognitivi, progressi ed enfasi didattica |
+### Brand &amp; Accent
 
-Il vermiglio decorativo e la CTA hanno ruoli diversi. `#FFFDF9` su `#C82F0A` dà circa **5,35:1**, sufficiente per testo normale AA; questo calcolo della coppia non certifica l'accessibilità di tutte le schermate. Il bordo di griglia separa contenuti; i controlli usano un bordo più forte. I colori materia e routine esistenti conservano i loro ruoli semantici e non sostituiscono il colore dell'azione principale.
+- **White** (`{colors.primary}` — `#ffffff`): The brand's primary "color" — used as button outline, button-primary fill, all display text. The brand's signature is white-on-near-black.
+- **Sunset Orange** (`{colors.accent-sunset}` — `#ff7a17`): A warm orange used inside product illustrations and accent moments.
+- **Sunset Soft** (`{colors.accent-sunset-soft}` — `#ffc285`): The lighter variant of the sunset accent.
+- **Dusk Purple** (`{colors.accent-dusk}` — `#7c3aed`): Deep purple used inside product illustrations.
+- **Twilight** (`{colors.accent-twilight}` — `#c4b5fd`): Soft violet — illustrative accent.
+- **Breeze Blue** (`{colors.accent-breeze}` — `#a0c3ec`): Soft blue — illustrative accent.
+- **Midnight** (`{colors.accent-midnight}` — `#0d1726`): Deep blue-black for illustrative backgrounds.
 
-Il tema notte conserva gli override `.dark` in CSS: canvas `#0A0A08`, superficie/foglio `#1A1A15`, superficie secondaria `#262623`, testo `#FFFBF4`, secondario e contorno controlli `#D8CFBC`, linea `#3A382E`, cognitivo `#8ABCCC`. CTA e hover rimangono `#C82F0A` e `#AC2607`, con testo `#FFFDF9`. Usare i token semantici per ereditare il tema, evitando colori giorno fissi nelle viste.
+### Warm Neutrals
 
-## Tipografia
+- **Sand** (`{colors.accent-sand}` — `#D8CFBC`): A warm cream — the quiet counterpoint to pure white on the near-black canvas. Used for GeistMono eyebrows, label captions, and metric counters; the warm tone makes the mono read as a code comment rather than marketing copy.
+- **Olive** (`{colors.accent-olive}` — `#565449`): A muted dark olive-gray — the warm nested-surface fill for code mockup backgrounds, data-table headers, and illustration backdrops. Never used as text on the canvas (too low-contrast); it is a surface tone only.
 
-| Ruolo | Famiglia | Applicazione |
-|---|---|---|
-| UI e corpo | Ubuntu Sans | Navigazione, titoli dell'app, corsi, form, spiegazioni |
-| Lettura editoriale | Instrument Serif | Concetto e intestazioni delle parti dentro `.lesson-paper` |
-| Misure | Ubuntu Sans Mono | Punteggi, percentuali, numeri di pagina e metadati numerici; i pulsanti usano Ubuntu Sans |
+### Surface
 
-`font-display` e l'alias legacy `font-serif` risolvono a Ubuntu Sans; per i titoli didattici usare `font-editorial` o le regole della carta lezione. Instrument Serif non si estende indiscriminatamente a tutti i titoli dell'app.
+- **Canvas** (`{colors.canvas}` — `#0a0a0a`): The default near-black page background. The brand's only true surface.
+- **Canvas Soft** (`{colors.canvas-soft}` — `#1a1c20`): A slightly lighter dark fill used for hovered nav items and tooltips.
+- **Canvas Card** (`{colors.canvas-card}` — `#191919`): The charcoal card fill used inside product-feature cards.
+- **Canvas Mid** (`{colors.canvas-mid}` — `#363a3f`): A mid-dark used for nested surfaces and code mockup backgrounds.
+- **Hairline** (`{colors.hairline}` — `#212327`): 1 px solid dividers on dark surfaces.
 
-La scala base usa 16 px per UI e corpo; il corpo lezione usa 17 px con interlinea 1,65. I titoli di sistema mantengono la scala 36/30/26 px; il contenuto adatta dimensioni e a capo allo spazio disponibile. I titoli di concetto e delle parti usano `clamp(1.75rem, 3vw, 2.5rem)` per mantenere la gerarchia dentro il corpo prose. I dati numerici usano cifre tabulari. La scala di spaziatura parte da 4 px; le celle principali hanno padding 24 px, 32 px dove disponibile.
+### Text
 
-## Geometria, bordi e interazione
+- **Ink** (`{colors.ink}` — `#ffffff`): Default text on canvas — pure white.
+- **Ink Hover** (`{colors.ink-hover}` — `#fafaf7`): Slightly off-white used for hover states (filtered out per no-hover policy in component specs).
+- **Body** (`{colors.body}` — `#dadbdf`): Secondary body text — supporting copy in lighter weight.
+- **Body Mid / Mute** (`{colors.body-mid}` — `#7d8187`): Mid-emphasis body and mute text — captions, fine print.
 
-- Celle, card corso, hero e griglia: raggio **0 px**, separatori **1 px**, senza spazi vuoti tra celle contigue.
-- Pulsanti e input: raggio **2 px**. Pannelli e dialoghi: massimo **4 px**. Avatar, radio e indicatori realmente circolari conservano `rounded-full`.
-- Superfici e pulsanti piatti, senza ombre rigide, vetro o spostamenti diagonali alla pressione. Le CTA usano colore e peso tipografico; il bordo primario segue il colore del pulsante. `--shadow-primary-action` resta un alias a `none` per compatibilità. La pressione cambia brevemente opacità o colore.
-- Focus visibile: contorno semantico **2 px**, offset **2 px**. Privilegiare target di almeno **44 px**, nomi accessibili e ordine da tastiera coerente.
-- Nessuna grana su `.paper-grain` e `.table-grain`: gli alias esistenti ora rendono superfici piatte. La vecchia firma a gradiente diventa una linea decorativa vermiglia di 2 px.
+### Semantic
 
-Il movimento deve comunicare stato o continuità. I token condivisi sono 120/180/240/300/360 ms; evitare animazioni decorative continue, rispettare `prefers-reduced-motion` e mantenere disponibili i contenuti senza animazione.
+The brand doesn't surface a separate semantic palette on the marketing site. Validation cues use the white-on-canvas hierarchy.
 
-## Composizione delle viste
+## Typography
 
-**Home.** `HomeView` mantiene la card del percorso autonoma, compatta e con la stessa copertina astratta usata in Studio. Sotto, il radar cognitivo è senza card e senza misure numeriche; a fianco ci sono solo gli accessi «Interrogazione» ed «Esercizi», senza intestazione visibile. «Carica materiale» e «Chat» formano il gruppo successivo; il Piano del giorno chiude la pagina come lista verticale a colonna singola. Non racchiudere queste sezioni in un unico contenitore. `CognitiveTelemetry` legge il profilo autentico; se manca, mostra un messaggio esplicito e non inventa punteggi. Mantenere contenuti e CTA raggiungibili su telefono, tablet e desktop, con spazio riservato al dock mobile.
+### Font Family
 
-**Navigazione.** Su telefono la barra è attaccata al bordo inferiore, a tutta larghezza, con quattro destinazioni persistenti e safe area interna. Un unico indicatore a larghezza fissa scorre in 180 ms, senza misure JavaScript né molle. Su tablet la rail misura 84 px; da `lg` la sidebar misura 224 px. Nessun contenitore flottante o margine esterno.
+Two faces ladder the system:
 
-**Piano.** Il mese è sempre visibile all’ingresso, anche senza materiali. Sopra il calendario, le verifiche e interrogazioni future non completate formano una fascia orizzontale: tre card visibili su telefono, quattro su tablet, cinque/sei o più sugli schermi larghi, con scorrimento nativo e frecce accessibili. Il numero dei giorni è il primo dato; seguono materia, titolo e data. Riutilizzare `CourseCardBackground`, `courseCoverVars` e il nome canonico del corso collegato (oppure il corso della materia o la materia come fallback), per conservare la grafica di Studio. Niente card dimostrative nell’app reale.
+1. **universalSans** — proprietary geometric sans used for every display, body, button, and link role. Weight 400 only on the marketing surface (the brand's restraint is part of the voice). Negative letter-spacing at display sizes is the visual signature.
+2. **GeistMono** — used for uppercase section eyebrows, label captions, and metric counters. Positive tracking (1.2 – 1.4 px) at 12 – 14 px.
 
-Il comando «Sessione giornaliera» apre oggi; ogni data del mese e ogni scadenza aprono la giornata corrispondente, identificata da `planDay` nell’URL. La giornata include verifiche, studio e impegni personali, con una sezione separata per gli eventi senza orario e una griglia delle 24 ore che parte dal primo impegno salvato. Gli eventi simultanei rimangono leggibili senza sovrapporsi. Non inventare durate o un’ora per i dati che non la conservano. Le valutazioni storiche salvate a mezzogiorno seguono la convenzione già presente nel modulo: orario non specificato. Il ritorno al mese ripristina focus e posizione della pagina; aggiungere dalla giornata precompila la data.
+### Hierarchy
 
-«Aggiungi evento» (vermiglio) e «Genera piano di studio» (cognitivo) sono immediatamente sotto il calendario. La proposta AI resta revisionabile; il pulsante dipende da materiali e impegni salvati. Errori di caricamento hanno un messaggio con Riprova.
 
-**Studio.** Da `xl`, `Index` affianca materiali e controlli (**3/10**, minimo 16 rem) e percorso (**7/10**). Sotto `xl`, il comando esplicito «Materiali e lettura» apre la sezione collassabile con `aria-expanded` e `aria-controls`. Il pulsante «Crea nuovo percorso» mantiene il caricamento esistente. La lettura normale del prodotto rimane immersiva a schermo intero, come sul ramo main dopo #103: un portale Radix protegge focus e scroll e permette il ritorno al percorso. La prop `embedded` rimane disponibile come regione nel flusso senza posizione fissa. Avanzamento, esercizi, figure, assistente e ripresa conservano i contratti esistenti.
+| Token                          | Size | Weight | Line Height | Letter Spacing | Use                                    |
+| ------------------------------ | ---- | ------ | ----------- | -------------- | -------------------------------------- |
+| `{typography.display-xl}`      | 96px | 400    | 96px        | -2.4px         | Maximum hero scale.                    |
+| `{typography.display-lg}`      | 72px | 400    | 72px        | -1.8px         | Sub-hero displays.                     |
+| `{typography.display-md}`      | 48px | 400    | 48px        | -1.2px         | Section headlines.                     |
+| `{typography.display-sm}`      | 32px | 400    | 36px        | -0.6px         | Card-cluster headings.                 |
+| `{typography.display-xs}`      | 20px | 400    | 28px        | 0              | Inline displays.                       |
+| `{typography.body-lg}`         | 18px | 400    | 28px        | 0              | Lead paragraphs.                       |
+| `{typography.body-md}`         | 16px | 400    | 24px        | 0              | Default body.                          |
+| `{typography.body-sm}`         | 14px | 400    | 20px        | 0              | Secondary body.                        |
+| `{typography.caption-mono}`    | 14px | 400    | 20px        | 1.4px          | Section eyebrow (GeistMono uppercase). |
+| `{typography.caption-mono-sm}` | 12px | 400    | 16px        | 1.2px          | Small mono labels.                     |
+| `{typography.button-md}`       | 14px | 400    | 20px        | 0              | Button label.                          |
 
-**Movimento e aptica.** La navigazione usa sola traslazione per continuità; il lettore distingue avanti/indietro con 8 px, uscita 120 ms e ingresso 180 ms; l'agenda cambia con una breve entrata di 180 ms solo alla selezione. Nessun riordinamento della lista al movimento del mouse. La preferenza di movimento ridotto del sistema e di Erga vale sia per CSS sia per le animazioni Framer attraverso `MotionPreferences`. Il feedback aptico è condiviso dai controlli, senza raddoppiare i segnali espliciti degli esercizi. Impostazioni → Accessibilità offre Disattivato/Leggero/Standard/Deciso. I livelli modificano durata e ritmo: la Vibration API non controlla l'ampiezza del motore; i browser senza supporto continuano a funzionare senza vibrazione.
 
-**Taglio di lettura.** Calma porta l'interlinea di paragrafi ed elenchi a 1,85; Logica evidenzia grassetti e formule con il colore cognitivo. È uno stato locale di **presentazione**: non riscrive lezioni, non cambia richieste o generazione AI e non costituisce un nuovo profilo cognitivo.
+### Principles
 
-**PDF.** Il selettore rende disponibili pagine numerate con checkbox, azioni Tutte/Nessuna, caricamento ed errore espliciti. Prima dell'upload, un sottoinsieme viene copiato in un nuovo PDF nel browser tramite import dinamico di `pdf-lib` **1.17.1**. La selezione vuota o non valida è respinta; nessuna selezione specifica o tutte le pagine valide conservano il file originale. Il file sul dispositivo non viene modificato. Il flusso esistente riceve il PDF risultante: nessuna modifica backend, migrazione o nuova Edge Function.
+- **Weight 400 for everything.** The brand never bolds. Negative tracking + size hierarchy do the emphasis work.
+- **Tight negative tracking on display sizes.** Reverting to neutral tracking loses the precision feel.
+- **GeistMono uppercase for eyebrows.** Tracked positively (1.4 px) to make the mono read as a code comment.
 
-## Fonti e verifica
+### Note on Font Substitutes
 
-Fonti della specifica: brief approvato per v4, `PRODUCT.md`, `src/index.css`, `tailwind.config.ts`, `HomeView`, `CourseHeroCard`, `CognitiveTelemetry`, `Index`, `StudioView`, `FullscreenLesson`, `UploadSheet`, `PdfPagePicker` e `src/lib/pdfSelection.ts`. Le fonti Google Fonts sono dichiarate nell'HTML dell'app; la disponibilità effettiva dei font richiede una verifica nel browser.
+universalSans is proprietary. Open-source substitutes:
 
-La revisione v4.1 include controlli TypeScript, test di comportamento e build Vite/PWA. Il dettaglio aggiornato e i limiti sono in `docs/interface-refinement-2026-11-01.md`. Non interpretare i test del DOM come verifica visiva o prova dell'aptica fisica.
+- **Display + body** — *Inter* weight 400 with `-0.04em` to `-0.02em` letter-spacing at display sizes comes closest. *Geist* is the second-best option.
+- **Mono** — *Geist Mono* is the documented brand companion; *JetBrains Mono* or *IBM Plex Mono* are alternates.
 
-La versione proposta è stata verificata visivamente con dati dimostrativi in Chromium locale a 375/390/768/1024/1440 px, anche in giorno/notte. La verifica ha corretto Esc del tutor, allineamento del lettore, target da 44 px e attese del menu materiali. Restano tastiera e aptica su dispositivo fisico, audit di contrasto completo e integrazione mobile autenticata sul sito pubblicato. Il backend resta Lovable Cloud; dopo il merge usare **Update** in Lovable prima di dichiarare la modifica online.
+## Layout
+
+### Spacing System
+
+- **Base unit**: 4 px.
+- **Tokens**: `{spacing.xxs}` 2 px · `{spacing.xs}` 4 px · `{spacing.sm}` 8 px · `{spacing.md}` 12 px · `{spacing.lg}` 16 px · `{spacing.xl}` 24 px · `{spacing.2xl}` 32 px · `{spacing.3xl}` 48 px · `{spacing.4xl}` 64 px.
+- **Section padding**: hero / content bands at `{spacing.4xl}` 64 px on desktop.
+- **Card interior padding**: `{spacing.xl}` 24 px.
+
+### Grid &amp; Container
+
+- Marketing content centres at \~1200 px.
+- Product / announcement card grid: 2-up at desktop, 1-up at mobile.
+
+### Responsive Strategy
+
+#### Breakpoints
+
+
+| Name    | Width      | Key Changes                                        |
+| ------- | ---------- | -------------------------------------------------- |
+| Mobile  | &lt; 768px | Hero scales 96 → 48 px; grids 1-up; hamburger nav. |
+| Desktop | ≥ 768px    | Full hero + 2-up grids.                            |
+
+
+#### Touch Targets
+
+Buttons render \~32 – 40 px tall (8 vertical padding + 20 line). Mobile inflates touch area to meet WCAG 44 × 44 px.
+
+#### Image Behavior
+
+The brand uses sparse SVG illustrations for product moments (Grok, Voice, API). No photography on the marketing surface.
+
+## Elevation &amp; Depth
+
+
+| Level              | Treatment                              | Use                                                    |
+| ------------------ | -------------------------------------- | ------------------------------------------------------ |
+| Level 0 — Flat     | No shadow, no border.                  | Default.                                               |
+| Level 1 — Hairline | 1 px solid `{colors.hairline}` border. | Card chrome, button outlines (with translucent white). |
+
+
+The brand uses no shadows. Hairline borders carry all elevation cues.
+
+## Shapes
+
+### Border Radius Scale
+
+
+| Token            | Value  | Use                                                     |
+| ---------------- | ------ | ------------------------------------------------------- |
+| `{rounded.none}` | 0px    | Full-bleed bands.                                       |
+| `{rounded.sm}`   | 8px    | Card chrome (the brand's `--radius` value).             |
+| `{rounded.pill}` | 9999px | Every button — the brand's universal interactive shape. |
+| `{rounded.full}` | 9999px | Circular icon containers.                               |
+
+
+## Components
+
+### Buttons
+
+**`button-primary`** — the rare white-filled pill (used on a single Sign Up CTA).
+
+- Background `{colors.primary}` white, text `{colors.on-primary}` near-black, 1 px solid white border, label `{typography.button-md}`, padding `{spacing.xs} {spacing.md}`, shape `{rounded.pill}` 9999 px.
+
+**`button-outline-on-dark`** — the canonical white-outline pill, used for every non-primary CTA.
+
+- Background `{colors.canvas}` (transparent in practice — `rgba(0,0,0,0)`), text `{colors.ink}` white, 1 px solid `{colors.hairline}` border (translucent white at runtime), same typography / padding scale / shape.
+
+**`button-outline-sm`** — the smaller outline pill used in card-cluster CTAs.
+
+- Same as `button-outline-on-dark` with tighter padding `{spacing.xs} {spacing.md}`.
+
+### Cards &amp; Containers
+
+**`card-content`** — the default content card.
+
+- Background `{colors.canvas-card}` (`#191919`), text `{colors.ink}`, 1 px solid `{colors.hairline}` border, padding `{spacing.xl}`, shape `{rounded.sm}` 8 px.
+
+**`card-feature-product`** — the product-feature card (Grok / Voice / API).
+
+- Same chrome as `card-content`. Hosts an SVG illustration + headline + body + outline pill CTA.
+
+### Inputs &amp; Forms
+
+**`text-input`** — the standard text input on dark.
+
+- Background `{colors.canvas-soft}`, text `{colors.ink}`, 1 px solid `{colors.hairline}`, body in `{typography.body-md}`, padding `{spacing.md} {spacing.lg}`, shape `{rounded.sm}` 8 px.
+
+### Navigation
+
+**`nav-bar`** — the sticky top nav.
+
+- Background `{colors.canvas}`, text `{colors.ink}`, padding `{spacing.md} {spacing.xl}`.
+
+**`nav-link`** — link items inside nav.
+
+- Text `{colors.ink}`, set in `{typography.body-sm}`.
+
+**`footer`** — the footer band.
+
+- Background `{colors.canvas}`, text `{colors.body}`, padding `{spacing.3xl} {spacing.xl}`. Body in `{typography.body-sm}`.
+
+### Signature Components
+
+**`hero-band`** — the dark hero with massive display headline.
+
+- Background `{colors.canvas}`, text `{colors.ink}`, padding `{spacing.4xl} {spacing.xl}`. Headline in `{typography.display-xl}` (96 px weight 400 with `-2.4 px` tracking).
+
+**`content-band`** — the standard content section.
+
+- Background `{colors.canvas}`, text `{colors.ink}`, padding `{spacing.4xl} {spacing.xl}`. Section headline in `{typography.display-md}` preceded by a `{typography.caption-mono}` UPPERCASE GeistMono eyebrow.
+
+**`eyebrow-mono`** — the uppercase tracked GeistMono label above every section headline.
+
+- Text `{colors.accent-sand}`, set in `{typography.caption-mono}`. The brand's signature label style — the warm cream reads as a code comment against the near-black canvas.
+
+**`divider-hairline`** — the 1 px line between section bands.
+
+- 1 px solid `{colors.hairline}`.
+
+### Examples (illustrative)
+
+> Auto-derived kit-mirror demonstration surfaces (`scripts/derive-examples-block.mjs`). Each `ex-*` entry references brand-native primitives so downstream consumers (`/preview-design`, `/generate-kit`) re-skin the same 10 surfaces consistently. `TO_FILL` markers indicate missing primitives — resolve in the LLM judgment pass.
+
+**`ex-pricing-tier`** — Default Pricing tier card. Re-uses feature-card chrome with brand canvas-soft surface.
+
+- Properties: `backgroundColor`, `textColor`, `borderColor`, `rounded`, `padding`
+
+**`ex-pricing-tier-featured`** — Featured/highlighted tier — polarity-flipped surface (dark fill + light text in light mode, light fill + dark text in dark mode).
+
+- Properties: `backgroundColor`, `textColor`, `rounded`, `padding`
+
+**`ex-product-selector`** — What's Included summary card — re-purposed for SaaS / B2B verticals (NOT a literal product gallery).
+
+- Properties: `backgroundColor`, `rounded`, `padding`
+
+**`ex-cart-drawer`** — Subscription summary — re-purposed for SaaS / B2B (line items per add-on, not literal cart).
+
+- Properties: `backgroundColor`, `rounded`, `padding`, `item-divider`
+
+**`ex-app-shell-row`** — Sidebar nav row inside the App Shell example. Active state uses `{colors.accent-olive}` as the row fill with the label set in `{colors.accent-sand}`.
+
+- Properties: `backgroundColor`, `activeIndicator`, `rounded`, `padding`
+
+**`ex-data-table-cell`** — Default data-table th + td chrome. Header uses `{colors.accent-olive}` fill with mono-caps eyebrow typography; body uses body-sm.
+
+- Properties: `headerBackground`, `headerTypography`, `bodyTypography`, `cellPadding`, `rowBorder`
+
+**`ex-auth-form-card`** — Sign-in / sign-up card. Re-uses feature-card chrome with text-input primitives inside.
+
+- Properties: `backgroundColor`, `rounded`, `padding`
+
+**`ex-modal-card`** — Modal dialog surface — same chrome as feature-card with elevated shadow.
+
+- Properties: `backgroundColor`, `rounded`, `padding`
+
+**`ex-empty-state-card`** — Empty-state illustration frame.
+
+- Properties: `backgroundColor`, `rounded`, `padding`, `captionTypography`
+
+**`ex-toast`** — Toast notification surface — feature-card shape + medium shadow.
+
+- Properties: `backgroundColor`, `rounded`, `padding`, `typography`
+
+## Do's and Don'ts
+
+### Do
+
+- Reserve `{colors.canvas}` (`#0a0a0a`) as the only page surface. The brand is dark-canvas only.
+- Set hero headlines in `{typography.display-xl}` Universal Sans weight 400 with `-2.4 px` tracking. The precision IS the voice.
+- Use `{rounded.pill}` 9999 px on every interactive element. The pill is the brand.
+- Pair Universal Sans (sentence-case) with GeistMono UPPERCASE (eyebrows, labels, metric counters).
+- Use white-translucent borders for outline buttons — the brand never uses solid white borders on its outline pill.
+- Warm the monochrome through the GeistMono layer: `{colors.accent-sand}` (`#D8CFBC`) for eyebrows, labels, and metric counters; `{colors.accent-olive}` (`#565449`) for nested surfaces. Every other role stays in the existing white-on-near-black hierarchy.
+
+### Don't
+
+- Don't introduce a light-mode counterpart. xAI is dark-canvas only.
+- Don't bold display headlines. Weight 400 is the entire scale.
+- Don't use filled buttons broadly. The brand uses outline pills almost exclusively; one Sign Up white-filled pill is the rare exception.
+- Don't drop a drop-shadow on cards. Hairline borders carry elevation.
+- Don't substitute Universal Sans with a generic geometric sans without adjusting letter-spacing. The negative tracking is part of the brand.
+- Don't use `{colors.accent-olive}` (`#565449`) as text on the canvas or `{colors.accent-sand}` (`#D8CFBC`) for display headlines — the warm neutrals live only in the mono-label and nested-surface roles.
