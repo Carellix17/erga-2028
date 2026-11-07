@@ -57,10 +57,11 @@ describe("pianoPalette — colori materia (spec)", () => {
     expect(t.border).toBe("1px solid rgba(217 119 6 / 0.42)");
   });
 
-  it("in modalità chiara il testo diventa scuro (leggibile su fondo tinta)", () => {
-    expect(subjectTint("Storia").color).toBe("#11120D");
+  it("sul canvas scuro il testo della tinta è chiaro; il chiaro resta solo se richiesto", () => {
+    expect(subjectTint("Storia").color).toBe("#FFFBF4");
     expect(subjectTint("Storia", false).color).toBe("#11120D");
-    expect(routineTint("school").color).toBe("#11120D");
+    expect(routineTint("school").color).toBe("#FFFBF4");
+    expect(routineTint("school", false).color).toBe("#11120D");
   });
 
   it("colori routine fissi (sonno/scuola/pasti/altro)", () => {

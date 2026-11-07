@@ -124,7 +124,7 @@ export default function ChangePassword() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full" size="lg" disabled={!canSubmit || isSubmitting}>
+              <Button type="submit" variant="filled" className="w-full" size="lg" disabled={!canSubmit || isSubmitting}>
                 {isSubmitting ? "Salvataggio..." : "Salva nuova password"}
               </Button>
             </form>

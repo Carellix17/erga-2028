@@ -209,7 +209,7 @@ export default function Registrati() {
               )}
             </div>
 
-            <Button type="submit" className="w-full h-12 text-base" disabled={!canSubmit || isSubmitting}>
+            <Button type="submit" variant="filled" className="w-full h-12 text-base" disabled={!canSubmit || isSubmitting}>
               {isSubmitting ? t("signup.submitting") : t("signup.submit")}
             </Button>
 

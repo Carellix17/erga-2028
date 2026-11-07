@@ -54,7 +54,7 @@ export function SettingsPlanCard() {
                 );
               }}
               disabled={loading}
-              className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-button bg-primary px-5 text-interface font-semibold text-primary-foreground transition-colors duration-150 ease-m3-emphasized hover:bg-primary-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+              className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-button border border-foreground/40 bg-transparent px-5 text-interface font-normal text-foreground transition-colors duration-150 ease-m3-emphasized hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
             >
               <Crown className="h-4 w-4 shrink-0" strokeWidth={1.9} aria-hidden="true" />
               {t("settings.plan.upgrade")} · 4,99 €/mese

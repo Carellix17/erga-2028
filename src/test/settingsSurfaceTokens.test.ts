@@ -36,7 +36,9 @@ describe("superfici delle Impostazioni — token v3", () => {
     expect(pages.some((content) => content.includes("erga-list-item-icon"))).toBe(true);
 
     expect(read("src/pages/settings/SettingsIndex.tsx")).toContain('className="erga-list-item');
-    expect(read("src/pages/settings/SettingsAppearance.tsx")).toContain('className="erga-list-item flex w-full');
+    expect(read("src/pages/settings/SettingsAppearance.tsx")).toContain("un'unica superficie scura");
+    expect(read("src/pages/settings/SettingsAppearance.tsx")).not.toContain("Chiaro");
+    expect(read("src/pages/settings/SettingsAppearance.tsx")).not.toContain("Automatico");
     expect(read("src/pages/settings/SettingsLanguage.tsx")).toContain('className="erga-list-item flex w-full');
     expect(read("src/pages/settings/SettingsAccessibility.tsx")).toContain("erga-list-item h-12 rounded-button");
     expect(read("src/pages/settings/SettingsAppearance.tsx")).not.toContain("erga-list-item-icon");

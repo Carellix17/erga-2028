@@ -12,63 +12,38 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "light",
+  theme: "dark",
   setTheme: () => {},
-  resolved: "light",
+  resolved: "dark",
   isLoaded: true,
 });
 
-function readStored(): Theme {
-  try {
-    const v = localStorage.getItem(STORAGE_KEY);
-    if (v === "light" || v === "dark" || v === "system") return v;
-  } catch {
-    /* storage non disponibile */
-  }
-  return "light";
-}
-
-function systemPrefersDark() {
-  return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches;
-}
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => readStored());
-  const [resolved, setResolved] = useState<"light" | "dark">(() =>
-    readStored() === "dark" || (readStored() === "system" && systemPrefersDark()) ? "dark" : "light"
-  );
+  const [theme, setThemeState] = useState<Theme>("dark");
+  const [resolved] = useState<"light" | "dark">("dark");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const apply = useCallback((t: Theme) => {
-    const dark = t === "dark" || (t === "system" && systemPrefersDark());
-    document.documentElement.classList.toggle("dark", dark);
-    setResolved(dark ? "dark" : "light");
+  const apply = useCallback(() => {
+    document.documentElement.classList.add("dark");
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", dark ? "#0A0A08" : "#11120D");
+    if (meta) meta.setAttribute("content", "#0a0a0a");
   }, []);
 
   useEffect(() => {
-    apply(theme);
+    apply();
     setIsLoaded(true);
-  }, [theme, apply]);
-
-  // Se il tema è "automatico", seguiamo in tempo reale il sistema operativo.
-  useEffect(() => {
-    if (theme !== "system") return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => apply("system");
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, [theme, apply]);
+  }, [apply]);
 
   const setTheme = useCallback((t: Theme) => {
     try {
-      localStorage.setItem(STORAGE_KEY, t);
+      localStorage.setItem(STORAGE_KEY, "dark");
     } catch {
       /* storage non disponibile */
     }
-    setThemeState(t);
-  }, []);
+    void t;
+    setThemeState("dark");
+    apply();
+  }, [apply]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolved, isLoaded }}>{children}</ThemeContext.Provider>

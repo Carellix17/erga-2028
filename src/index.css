@@ -15,60 +15,64 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════
-   ERGA — DESIGN SYSTEM v4.0 «Swiss Cognitive Grid + Tactile Studio»
-   Token CSS: palette ufficiale, superfici, tipografia, geometria e stati.
-   I nomi semantici legacy sotto restano alias per migrare le viste senza
-   cambiare flussi o logica applicativa.
+   ERGA — DESIGN.md scuro
+   Canvas #0a0a0a, card #191919, pillole, hairline accessibile, peso 400.
+   I nomi semantici legacy restano alias: le viste non cambiano flusso.
    ═══════════════════════════════════════════════════════════════ */
 
 @layer base {
   :root {
-    color-scheme: light;
+    color-scheme: dark;
 
-    /* Palette giorno — Swiss Cognitive Grid */
-    --canvas: 45.0000 26.6667% 94.1176%;             /* canvas / ink: see DESIGN.md */
-    --surface-primary: 42.8571 41.1765% 96.6667%; /* operating surface */
-    --surface-secondary: 42.8571 25.0000% 89.0196%; /* secondary surface */
-    --paper: 40.0000 100.0000% 98.8235%;
-    --ink: 72.0000 16.1290% 6.0784%;                /* #11120D */
-    --ink-muted: 52.5000 5.7143% 27.4510%;      /* #565449 */
-    --steel: 48.0000 5.0505% 38.8235%;             /* tertiary text */
-    --line: 43.3333 18.0000% 80.3922%;          /* #D8CFBC */
-    --control-line: 72.0000 16.1290% 6.0784%;      /* control boundary */
-    --on-ink: 45.0000 26.6667% 94.1176%;           /* paper */
-    --focus: 72.0000 16.1290% 6.0784%;           /* #565449 */
+    /* Unica superficie. Il hairline #212327 non raggiunge 3:1 sul canvas:
+       --line è alzato a #6a6e74 per il contrasto dei controlli (WCAG 1.4.11). */
+    --canvas: 0 0% 3.92%;                      /* #0a0a0a */
+    --surface-primary: 0 0% 9.80%;             /* #191919 card */
+    --surface-secondary: 220 10.34% 11.37%;    /* #1a1c20 canvas-soft */
+    --paper: 0 0% 9.80%;
+    --ink: 0 0% 100%;                          /* #ffffff */
+    --ink-muted: 228 7.25% 86.47%;             /* #dadbdf body */
+    --steel: 216 4% 50.98%;                    /* #7d8187 captions */
+    --line: 220 3.5% 43.5%;                    /* #6a6e74 hairline accessibile */
+    --control-line: 0 0% 100%;
+    --on-ink: 0 0% 3.92%;
+    --focus: 0 0% 100%;
+    --sand: 40.71 26.42% 79.22%;               /* #D8CFBC solo etichette mono */
+    --olive: 50.77 8.18% 31.18%;               /* #565449 solo riempimento attivo */
+    --canvas-mid: 213.33 7.69% 22.94%;         /* #363a3f nested */
 
-    /* Brand */
-    --primary: 11.6842 90.4762% 41.1765%;
-    --primary-deep: 11.2727 92.1788% 35.0980%;      /* #3A382E */
+    /* Il pieno bianco è l'unica azione piena. Il resto è outline. */
+    --primary: 0 0% 100%;
+    --primary-deep: 60 23.08% 97.45%;          /* #fafaf7 */
     --brand: var(--primary);
     --brand-deep: var(--ink);
-    --brand-tint: var(--surface-secondary);
-    --accent-warm: var(--surface-secondary);
-    --accent-light: 40.0000 100.0000% 98.8235%;     /* paper */
+    --brand-tint: var(--olive);
+    --accent-warm: var(--sand);
+    --accent-light: 0 0% 100%;
+    --accent-sunset: 25.60 100% 54.51%;        /* #ff7a17, solo illustrazioni */
 
-    /* Palette materia: identità mantenute, ruoli semantici stabili. */
-    --subject-blue: 221.21 83.19% 53.33%;  /* #2563EB matematica */
-    --subject-red: 0 72.22% 50.59%;        /* #DC2626 storia */
-    --subject-yellow: 45.40 93.39% 47.45%; /* #EAB308 economia */
-    --subject-emerald: 161.38 93.55% 30.39%; /* #059669 letteratura */
-    --subject-amber: 32.13 94.62% 43.73%;  /* #D97706 filosofia */
-    --subject-lime: 84.80 85.23% 34.51%;  /* #65A30D fisica */
-    --subject-cyan: 191.65 91.40% 36.47%; /* #0891B2 informatica */
-    --subject-violet: 262.12 83.26% 57.84%; /* #7C3AED arte */
-    --subject-orange: 20.54 90.24% 48.24%; /* #EA580C diritto */
-    --subject-magenta: 293.41 69.48% 48.82%; /* #C026D3 lingue */
-    --subject-neutral: 215 20.22% 65.10%;  /* #94A3B8 generale */
-    --subject-sleep: 243.40 75.36% 58.63%; /* #4F46E5 scienze/routine */
-    --subject-school: 215.38 16.32% 46.86%; /* #64748B geografia/routine */
+    /* Materie e routine: tinte schiarite per restare leggibili sul nero. */
+    --subject-blue: 221.21 83.19% 67%;
+    --subject-red: 0 72.22% 68%;
+    --subject-yellow: 45.40 70% 66%;
+    --subject-emerald: 161.38 55% 59%;
+    --subject-amber: 32.13 65% 65%;
+    --subject-lime: 84.80 60% 61%;
+    --subject-cyan: 191.65 62% 64%;
+    --subject-violet: 262.12 75% 72%;
+    --subject-orange: 20.54 78% 66%;
+    --subject-magenta: 293.41 62% 70%;
+    --subject-neutral: 215 24% 75%;
+    --subject-sleep: 243.40 70% 73%;
+    --subject-school: 215.38 20% 74%;
 
     --routine-sleep: var(--subject-sleep);
     --routine-school: var(--subject-school);
-    --routine-meal: 0 84.24% 60.20%;       /* #EF4444 */
-    --routine-other: 174.67 83.85% 31.57%; /* #0D9488 */
-    --marketing-red: 356.47 94.85% 45.69%; /* #E30613 */
-    --marketing-rose: 356.07 34.08% 64.90%; /* #C4878B */
-    --marketing-gold: 36.75 40.40% 61.18%; /* #C4A574 */
+    --routine-meal: 0 78% 67%;
+    --routine-other: 174.67 58% 59%;
+    --marketing-red: 356.47 85% 66%;
+    --marketing-rose: 356.07 34.08% 74%;
+    --marketing-gold: 36.75 42% 70%;
 
     /* Pastel compatibili: token storici delle materie mappati alla palette v3. */
     --pastel-terracotta: var(--subject-red);
@@ -93,15 +97,15 @@
     --popover: var(--surface-secondary);
     --popover-foreground: var(--ink);
     --muted: var(--surface-secondary);
-    --muted-foreground: 52.5000 5.1282% 30.5882%;
+    --muted-foreground: var(--steel);
     --secondary: var(--surface-secondary);
     --secondary-foreground: var(--ink);
-    --accent: 195.4545 53.2258% 24.3137%;
-    --accent-foreground: 40.0000 100.0000% 98.8235%;
+    --accent: var(--olive);
+    --accent-foreground: var(--sand);
     --border: var(--line);
-    --input: var(--control-line);
+    --input: var(--line);
     --ring: var(--focus);
-    --primary-foreground: var(--accent-light);
+    --primary-foreground: var(--canvas);
     --primary-container: var(--surface-secondary);
     --on-primary-container: var(--ink);
     --secondary-container: var(--surface-secondary);
@@ -110,21 +114,21 @@
     --tertiary-foreground: var(--ink);
     --tertiary-container: var(--surface-secondary);
     --on-tertiary-container: var(--ink);
-    --destructive: 0.0000 73.7089% 41.7647%;
-    --destructive-foreground: 40.0000 100.0000% 98.8235%;
-    --error-container: 0.0000 93.3333% 94.1176%;
-    --on-error-container: 0.0000 70.0000% 35.2941%;
-    --success: 142.7848 64.2276% 24.1176%;
-    --success-foreground: var(--accent-light);
-    --success-container: 140.6250 84.2105% 92.5490%;
-    --on-success-container: 143.8095 61.1650% 20.1961%;
-    --warning: 31.7647 80.9524% 28.8235%;
-    --warning-foreground: var(--ink);
-    --warning-container: 48.0000 96.4912% 88.8235%;
-    --on-warning-container: 28.4211 72.5191% 25.6863%;
-    --outline: var(--ink) / 0.25;
-    --outline-variant: var(--line) / 0.45;
-    --scrim: 72 16.13% 6.08%;
+    --destructive: 0 72.22% 68%;
+    --destructive-foreground: var(--canvas);
+    --error-container: 0 45% 22%;
+    --on-error-container: var(--ink);
+    --success: 161.38 55% 59%;
+    --success-foreground: var(--canvas);
+    --success-container: 161 42% 18%;
+    --on-success-container: var(--ink);
+    --warning: 36.75 42% 70%;
+    --warning-foreground: var(--canvas);
+    --warning-container: 36 35% 20%;
+    --on-warning-container: var(--ink);
+    --outline: var(--ink) / 0.4;
+    --outline-variant: var(--line);
+    --scrim: 0 0% 0%;
 
     /* Superfici legacy: prediligono la carta o l'Olive Drab del contesto. */
     --surface-dim: var(--canvas);
@@ -137,7 +141,7 @@
     --surface-cream: var(--surface-secondary);
     --surface-cream-foreground: var(--ink);
     --surface-cream-muted: var(--ink-muted);
-    --surface-dark-card: 60 3.85% 14.31%;     /* #262623: supporto superfici notte */
+    --surface-dark-card: var(--canvas-mid);
     --glass-surface-1: hsl(var(--surface-primary));
     --glass-surface-2: hsl(var(--surface-primary));
     --glass-surface-3: hsl(var(--surface-primary));
@@ -145,14 +149,14 @@
     --glass-border: hsl(var(--line));
     --glass-inset: hsl(0 0% 0% / 0);
     --inverse-surface: var(--ink);
-    --inverse-on-surface: var(--accent-light);
+    --inverse-on-surface: var(--canvas);
     --inverse-primary: var(--surface-secondary);
     --sidebar-background: var(--surface-primary);
     --sidebar-foreground: var(--ink);
     --sidebar-primary: var(--ink);
-    --sidebar-primary-foreground: var(--paper);
-    --sidebar-accent: var(--surface-secondary);
-    --sidebar-accent-foreground: var(--ink);
+    --sidebar-primary-foreground: var(--canvas);
+    --sidebar-accent: var(--olive);
+    --sidebar-accent-foreground: var(--sand);
     --sidebar-border: var(--line) / 0.45;
     --sidebar-ring: var(--focus);
     --nav-surface: var(--surface-primary);
@@ -163,27 +167,27 @@
     --cream-hover: 199 196 184;
     --off-white: 255 251 244;
     --subject-accent: #94A3B8;
-    --subject-accent-foreground: #11120D;
-    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, hsl(var(--accent-light)));
+    --subject-accent-foreground: #0a0a0a;
+    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 18%, hsl(var(--canvas)));
     --text-scale: 1;
 
-    /* Geometry: 2px controls, 0px grid cells, at most 4px panels. */
-    --radius-xs: 2px;
-    --radius-sm: 2px;
-    --radius-control: 2px;
-    --radius-md: 2px;
-    --radius-lg: 4px;
-    --radius-xl: 4px;
-    --radius-2xl: 4px;
-    --radius-3xl: 4px;
-    --radius-card: 0px;
+    /* Pillole sui controlli, 8px su card e campi, 0 sulle bande piene. */
+    --radius-xs: 8px;
+    --radius-sm: 8px;
+    --radius-control: 8px;
+    --radius-md: 8px;
+    --radius-lg: 8px;
+    --radius-xl: 8px;
+    --radius-2xl: 8px;
+    --radius-3xl: 8px;
+    --radius-card: 8px;
     --radius-hero: 0px;
     --radius-nav: 0px;
-    --radius-button: 2px;
-    --radius-pill: 2px;
-    --radius-dialog: 4px;
-    --radius-sheet: 0px;
-    --radius-media: 2px;
+    --radius-button: 9999px;
+    --radius-pill: 9999px;
+    --radius-dialog: 8px;
+    --radius-sheet: 8px;
+    --radius-media: 8px;
     --radius-full: 9999px;
     --radius: 2px;
 
@@ -219,160 +223,13 @@
     --grain-paper-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='gp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.03'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23gp)'/%3E%3C/svg%3E");
     --grain-scale: 160px;
     --grain-blend: multiply;
-    --grain-alpha-cover: 0.05;
-    --sheet: 40.0000 100.0000% 98.8235%;
-    --cognitive: 195.4545 53.2258% 24.3137%;
+    --grain-alpha-cover: 0;
+    --sheet: 220 10.34% 11.37%;
+    --cognitive: 191.65 62% 64%;
   }
 
   .dark {
     color-scheme: dark;
-    /* Inversione gerarchica v3: canvas #0A0A08, superfici #1A1A15. */
-    --canvas: 60 11.11% 3.53%;              /* #0A0A08 */
-    --surface-primary: 60 10.64% 9.22%;    /* #1A1A15 */
-    --surface-secondary: 60 3.85% 14.31%;  /* #262623, supporto input */
-    --paper: 60.0000 10.6383% 9.2157%;
-    --ink: 38.18 100% 97.84%;              /* paper */
-    --ink-muted: 40.71 26.42% 79.22%;      /* #D8CFBC */
-    --steel: 48 11.81% 75.10%;             /* control boundary */
-    --line: 50 11.54% 20.39%;              /* #3A382E */
-    --control-line: 40.7143 26.4151% 79.2157%;    /* #565449 */
-    --on-ink: 38.18 100% 97.84%;
-    --focus: 40.0000 100.0000% 98.8235%;
-    --accent-light: 38.18 100% 97.84%;
-    --accent-warm: 40.71 26.42% 79.22%;
-    --primary: 11.6842 90.4762% 41.1765%;
-    --primary-deep: 11.2727 92.1788% 35.0980%;
-    --brand: var(--primary);
-    --brand-deep: var(--ink);
-    --brand-tint: var(--surface-secondary);
-
-    --subject-blue: 221.21 83.19% 67%;
-    --subject-red: 0 72.22% 68%;
-    --subject-yellow: 45.40 70% 66%;
-    --subject-emerald: 161.38 55% 59%;
-    --subject-amber: 32.13 65% 65%;
-    --subject-lime: 84.80 60% 61%;
-    --subject-cyan: 191.65 62% 64%;
-    --subject-violet: 262.12 75% 72%;
-    --subject-orange: 20.54 78% 66%;
-    --subject-magenta: 293.41 62% 70%;
-    --subject-neutral: 215 24% 75%;
-    --subject-sleep: 243.40 70% 73%;
-    --subject-school: 215.38 20% 74%;
-    --routine-sleep: var(--subject-sleep);
-    --routine-school: var(--subject-school);
-    --routine-meal: 0 78% 67%;
-    --routine-other: 174.67 58% 59%;
-    --marketing-red: 356.47 85% 66%;
-    --marketing-rose: 356.07 34.08% 74%;
-    --marketing-gold: 36.75 42% 70%;
-
-    --pastel-terracotta: var(--subject-red);
-    --pastel-polvere: var(--subject-blue);
-    --pastel-ocra: var(--subject-yellow);
-    --pastel-prugna: var(--subject-emerald);
-    --pastel-crepuscolo: var(--subject-amber);
-    --pastel-mare: var(--subject-lime);
-    --pastel-violetto: var(--subject-cyan);
-    --pastel-cipria: var(--subject-violet);
-    --pastel-grafite: var(--subject-orange);
-    --pastel-miele: var(--subject-magenta);
-    --pastel-neutro: var(--subject-neutral);
-    --pastel-bosco: var(--subject-sleep);
-    --pastel-oliva: var(--subject-school);
-
-    --primary-foreground: 40.0000 100.0000% 98.8235%;
-    --primary-container: var(--surface-primary);
-    --on-primary-container: var(--accent-light);
-    --secondary: var(--surface-secondary);
-    --secondary-foreground: var(--ink);
-    --secondary-container: var(--surface-secondary);
-    --on-secondary-container: var(--ink);
-    --tertiary: var(--marketing-gold);
-    --tertiary-foreground: var(--canvas);
-    --tertiary-container: var(--surface-primary);
-    --on-tertiary-container: var(--accent-light);
-    --destructive: 0 72.22% 68%;
-    --destructive-foreground: var(--canvas);
-    --error-container: 0 45% 22%;
-    --on-error-container: var(--accent-light);
-    --success: 161.38 55% 59%;
-    --success-foreground: var(--canvas);
-    --success-container: 161 42% 18%;
-    --on-success-container: var(--accent-light);
-    --warning: 36.75 42% 70%;
-    --warning-foreground: var(--canvas);
-    --warning-container: 36 35% 20%;
-    --on-warning-container: var(--accent-light);
-    --outline: var(--ink) / 0.3;
-    --outline-variant: var(--line) / 0.8;
-    --scrim: 0 0% 0%;
-
-    --background: var(--canvas);
-    --foreground: var(--ink);
-    --card: var(--surface-primary);
-    --card-foreground: var(--accent-light);
-    --popover: var(--surface-secondary);
-    --popover-foreground: var(--ink);
-    --muted: var(--surface-primary);
-    --muted-foreground: var(--ink-muted);
-    --accent: 194.5455 39.2857% 67.0588%;
-    --accent-foreground: 72.0000 16.1290% 6.0784%;
-    --border: var(--line);
-    --input: var(--control-line);
-    --ring: var(--focus);
-    --surface-dim: var(--canvas);
-    --surface-bright: var(--surface-primary);
-    --surface-container-lowest: var(--surface-primary);
-    --surface-container-low: var(--surface-primary);
-    --surface-container: var(--surface-primary);
-    --surface-container-high: var(--surface-primary);
-    --surface-container-highest: var(--surface-secondary);
-    --surface-cream: var(--surface-secondary);
-    --surface-cream-foreground: var(--ink);
-    --surface-cream-muted: var(--ink-muted);
-    --surface-dark-card: var(--surface-primary);
-    --glass-surface-1: hsl(var(--surface-primary));
-    --glass-surface-2: hsl(var(--surface-primary));
-    --glass-surface-3: hsl(var(--surface-primary));
-    --glass-surface-hover: hsl(var(--surface-secondary));
-    --glass-border: hsl(var(--line));
-    --glass-inset: hsl(0 0% 0% / 0);
-    --inverse-surface: var(--ink);
-    --inverse-on-surface: var(--canvas);
-    --inverse-primary: var(--surface-primary);
-    --sidebar-background: var(--surface-primary);
-    --sidebar-foreground: var(--ink);
-    --sidebar-primary: var(--ink);
-    --sidebar-primary-foreground: var(--canvas);
-    --sidebar-accent: var(--surface-secondary);
-    --sidebar-accent-foreground: var(--ink);
-    --sidebar-border: var(--line) / 0.8;
-    --sidebar-ring: var(--focus);
-    --nav-surface: var(--surface-primary);
-    --nav-foreground: var(--ink);
-    --cream: var(--accent-light);
-    --cream-hover: 199 196 184;
-    --off-white: 255 251 244;
-    --subject-accent: #94A3B8;
-    --subject-accent-foreground: #11120D;
-    --subject-accent-light: color-mix(in srgb, var(--subject-accent) 8%, hsl(var(--canvas)));
-
-    --shadow-level-1: none;
-    --shadow-level-2: none;
-    --shadow-level-3: none;
-    --shadow-level-4: none;
-    --shadow-level-5: none;
-    --shadow-tactile: none;
-    --shadow-card-active: none;
-    --shadow-hero-card: none;
-
-    --grain-table-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='nt'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.025'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23nt)'/%3E%3C/svg%3E");
-    --grain-paper-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='np'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.016'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23np)'/%3E%3C/svg%3E");
-    --grain-blend: screen;
-    --grain-alpha-cover: 0.05;
-    --cognitive: 194.5455 39.2857% 67.0588%;
-    --sheet: 60.0000 10.6383% 9.2157%;
   }
 }
 
@@ -382,7 +239,7 @@
   }
 
   html {
-    color-scheme: light;
+    color-scheme: dark;
     scroll-behavior: smooth;
     font-size: calc(16px * var(--text-scale, 1));
     overflow-x: clip;
@@ -396,7 +253,7 @@
     background-color: hsl(var(--background));
     background-image: none;
     background-attachment: fixed;
-    font-family: "Ubuntu Sans", system-ui, sans-serif;
+    font-family: "Geist", system-ui, sans-serif;
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -406,25 +263,25 @@
 
   h1, h2, h3,
   .display-large, .headline-large, .headline-medium {
-    font-family: "Ubuntu Sans", system-ui, sans-serif;
-    letter-spacing: -0.02em;
+    font-family: "Geist", system-ui, sans-serif;
+    letter-spacing: -0.025em;
     color: hsl(var(--foreground));
   }
   h1, .display-large { font-size: 2.25rem; font-weight: 400; line-height: 1.16; }
-  h2, .headline-large { font-size: 1.875rem; font-weight: 500; line-height: 1.2; }
-  h3, .headline-medium { font-size: 1.625rem; font-weight: 500; line-height: 1.25; }
+  h2, .headline-large { font-size: 1.875rem; font-weight: 400; line-height: 1.2; }
+  h3, .headline-medium { font-size: 1.625rem; font-weight: 400; line-height: 1.25; }
 
   .title-large {
-    font-family: "Ubuntu Sans", system-ui, sans-serif;
-    font-weight: 500;
+    font-family: "Geist", system-ui, sans-serif;
+    font-weight: 400;
     font-size: 1.5rem;
     line-height: 1.2;
     letter-spacing: -0.015em;
   }
-  .title-medium { font-family: "Ubuntu Sans", system-ui, sans-serif; font-weight: 600; font-size: 1rem; line-height: 1.45; }
-  .title-small { font-family: "Ubuntu Sans", system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; line-height: 1.45; }
+  .title-medium { font-family: "Geist", system-ui, sans-serif; font-weight: 400; font-size: 1rem; line-height: 1.45; }
+  .title-small { font-family: "Geist", system-ui, sans-serif; font-weight: 400; font-size: 0.875rem; line-height: 1.45; }
   .body-large, .body-medium {
-    font-family: "Ubuntu Sans", system-ui, sans-serif;
+    font-family: "Geist", system-ui, sans-serif;
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
@@ -432,7 +289,7 @@
   }
   .body-large { font-size: 1.125rem; line-height: 1.65; }
   .body-small {
-    font-family: "Ubuntu Sans", system-ui, sans-serif;
+    font-family: "Geist", system-ui, sans-serif;
     font-weight: 400;
     font-size: 0.875rem;
     line-height: 1.5;
@@ -440,13 +297,14 @@
   }
 
   .label-large, .label-medium, .label-small {
-    font-family: "Ubuntu Sans", system-ui, sans-serif;
+    font-family: "Geist Mono", ui-monospace, monospace;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 400;
+    color: hsl(var(--sand));
   }
-  .label-large { font-size: 0.875rem; letter-spacing: 0.08em; }
-  .label-medium { font-size: 0.75rem; letter-spacing: 0.08em; }
-  .label-small { font-size: 0.75rem; letter-spacing: 0.06em; }
+  .label-large { font-size: 0.875rem; letter-spacing: 0.1em; }
+  .label-medium { font-size: 0.75rem; letter-spacing: 0.1em; }
+  .label-small { font-size: 0.75rem; letter-spacing: 0.08em; }
 
   :where(button, a, input, select, textarea, [role="button"], [tabindex]):focus-visible {
     outline: 2px solid hsl(var(--ring));
@@ -485,7 +343,7 @@
      di notte). Il bordo resta disegnato dalle classi border-* del tema.
      Fallback opaco per reduced-transparency e high-contrast. */
   /* Text on glass must stay heavy & high contrast */
-  .on-glass { font-weight: 500; color: hsl(var(--foreground)); }
+  .on-glass { font-weight: 400; color: hsl(var(--foreground)); }
 
   /* ═══════ GRADIENT ACCENTS ═══════ */
   .gradient-primary {
@@ -525,12 +383,12 @@
   }
   .editorial-focus-title {
     /* V2-01: le etichette parlano Inter (ruolo interfaccia). */
-    font-family: 'Ubuntu Sans', system-ui, sans-serif;
+    font-family: 'Geist', system-ui, sans-serif;
     font-size: 0.7rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: hsl(var(--muted-foreground));
-    font-weight: 600;
+    font-weight: 400;
     margin-bottom: 0.5rem;
   }
 
@@ -1133,23 +991,23 @@ html.reduce-motion *::after {
    Tailwind quando devono sostituire un colore hardcoded scorretto.
    ═══════════════════════════════════════════════════════════════ */
 [data-auto-contrast] {
-  --contrast-ink: 255 251 244;
-  --contrast-surface: 17 18 13; /* #11120D */
+  --contrast-ink: 255 255 255;
+  --contrast-surface: 10 10 10; /* #0a0a0a */
   color: rgb(var(--contrast-ink));
 }
 
 /* Testo: pieno, secondario e terziario (sulle superfici ambientate). */
-.text-contrast { color: rgb(var(--contrast-ink, 255 251 244)); }
-.text-contrast-secondary { color: rgb(var(--contrast-ink, 255 251 244) / 0.8); }
-.text-contrast-tertiary { color: rgb(var(--contrast-ink, 255 251 244) / 0.64); }
+.text-contrast { color: rgb(var(--contrast-ink, 255 255 255)); }
+.text-contrast-secondary { color: rgb(var(--contrast-ink, 255 255 255) / 0.8); }
+.text-contrast-tertiary { color: rgb(var(--contrast-ink, 255 255 255) / 0.64); }
 
 /* Superfici "inchiostro": chip e pill che staccano sul fondo rilevato. */
-.bg-contrast { background-color: rgb(var(--contrast-ink, 255 251 244)); }
-.bg-contrast-soft { background-color: rgb(var(--contrast-ink, 255 251 244) / 0.14); }
-.border-contrast { border-color: rgb(var(--contrast-ink, 255 251 244) / 0.28); }
+.bg-contrast { background-color: rgb(var(--contrast-ink, 255 255 255)); }
+.bg-contrast-soft { background-color: rgb(var(--contrast-ink, 255 255 255) / 0.14); }
+.border-contrast { border-color: rgb(var(--contrast-ink, 255 255 255) / 0.28); }
 
 /* Testo che ha per sfondo l'inchiostro stesso (es. chip chiare). */
-.text-contrast-surface { color: rgb(var(--contrast-surface, 17 18 13)); }
+.text-contrast-surface { color: rgb(var(--contrast-surface, 10 10 10)); }
 
 /* ═══════════════════════════════════════════════════════════════
    DESIGN SYSTEM v3 — VELO SATINATO LOCALE
@@ -1169,9 +1027,9 @@ html.reduce-motion *::after {
   background-color: rgb(var(--satin-bg) / 0.9);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  border: 1px solid rgb(17 18 13 / 0.1);
+  border: 1px solid rgb(255 255 255 / 0.28);
   color: hsl(var(--ink));
-  font-weight: 600;
+  font-weight: 400;
   text-align: center;
   cursor: pointer;
   transition:
@@ -1278,14 +1136,9 @@ html.high-contrast .table-grain {
 }
 
 
-/* DESIGN.md v3 guardrail: full-round corners belong to avatars and circles,
-   never to controls or horizontal badges. The width/height geometry of dots,
-   avatars, meters and charts remains circular. */
-:where(button, a, input, select, textarea, [role="button"]).rounded-full {
-  border-radius: var(--radius-button);
-}
-[class~="rounded-full"][class*="px-"]:not([class*="w-"]) {
-  border-radius: var(--radius-xs);
+/* Controlli interattivi: pillola. Campi e card usano --radius-control / --radius-card. */
+:where(button, a, [role="button"]).rounded-full {
+  border-radius: var(--radius-pill);
 }
 
 @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
@@ -1301,41 +1154,35 @@ html.high-contrast .cover-grain { display: none; }
   background-attachment: fixed;
 }
 
-/* Firma visiva orizzontale del Design System v3, posta prima del footer. */
+/* Separatore piatto del guscio. Altezza 4px, colore hairline, senza gradiente. */
 .erga-earthy-stripe {
   display: block;
   flex: 0 0 4px;
   width: 100%;
   height: 4px;
-  background: linear-gradient(
-    to right,
-    hsl(var(--primary-deep)),
-    hsl(var(--primary)),
-    hsl(var(--surface-secondary)),
-    hsl(var(--accent-light))
-  );
+  background: hsl(var(--line));
 }
 
 
-/* Swiss Cognitive Grid — shared materials and reading surface. */
+/* Alias esadecimali allineati al canvas scuro. */
 :root {
-  --bg-canvas: #F4F2EC; --bg-surface: #FAF8F3; --bg-sheet: #FFFDF9;
-  --bg-subtle: #EAE6DC; --bg-inverse: #11120D;
-  --text-primary: #11120D; --text-secondary: #4A4942; --text-tertiary: #68665E;
-  --text-on-inverse: #F4F2EC; --border-grid: #D6D1C4; --border-strong: #11120D;
-  --accent-primary: #E63B11; --accent-cognitive: #1D4E5F;
+  --bg-canvas: #0a0a0a; --bg-surface: #191919; --bg-sheet: #1a1c20;
+  --bg-subtle: #363a3f; --bg-inverse: #ffffff;
+  --text-primary: #ffffff; --text-secondary: #dadbdf; --text-tertiary: #7d8187;
+  --text-on-inverse: #0a0a0a; --border-grid: #6a6e74; --border-strong: #ffffff;
+  --accent-primary: #ffffff; --accent-cognitive: #7ec8ea;
 }
 .dark { color-scheme: dark; }
 ::selection { background: hsl(var(--cognitive)); color: hsl(var(--accent-foreground)); }
 input, textarea { caret-color: currentColor; }
-button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radius: 2px; }
+button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radius: var(--radius-pill); }
 .paper-grain, .table-grain { background-image: none; }
-.erga-earthy-stripe { background: var(--accent-primary); height: 2px; flex-basis: 2px; }
+.erga-earthy-stripe { background: hsl(var(--line)); height: 4px; flex-basis: 4px; }
 .cognitive-grid > section > article, .cognitive-grid > section > section { border: 0; box-shadow: none; }
 .cognitive-grid > section:last-child > section { border-bottom: 1px solid hsl(var(--border)); }
 .lesson-reader { background: hsl(var(--sheet)); }
-.lesson-paper { font-family: 'Ubuntu Sans', system-ui, sans-serif; font-size: 17px; line-height: 1.65; }
-.lesson-paper :where(h1,h2,h3,.text-scene-title,.lesson-scene-title) { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; letter-spacing: -0.02em; line-height: 1.08; }
+.lesson-paper { font-family: 'Geist', system-ui, sans-serif; font-size: 17px; line-height: 1.65; }
+.lesson-paper :where(h1,h2,h3,.text-scene-title,.lesson-scene-title) { font-family: 'Geist', system-ui, sans-serif; font-weight: 400; letter-spacing: -0.02em; line-height: 1.08; }
 .lesson-paper :where(blockquote,pre,.katex-display) { border-left: 1px solid hsl(var(--line)); background: hsl(var(--background)); padding: 16px; }
 .lesson-paper .prose { font-size: 17px; line-height: 1.65; }
 .lesson-paper .lesson-scene-title { font-size: clamp(1.75rem, 3vw, 2.5rem); }
@@ -1418,8 +1265,8 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 }
 .planner-deadline:active { opacity: .8; }
 .planner-deadline:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; color: rgb(var(--contrast-ink)); }
-.planner-countdown { font-size: var(--planner-countdown-size); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
-.planner-deadline-title { overflow-wrap: break-word; hyphens: auto; font-size: 1rem; font-weight: 600; line-height: 1.25; }
+.planner-countdown { font-size: var(--planner-countdown-size); line-height: 1.1; font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+.planner-deadline-title { overflow-wrap: break-word; hyphens: auto; font-size: 1rem; font-weight: 400; line-height: 1.25; }
 .planner-month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .planner-month-grid--calendar { display: flex; flex-direction: column; }
 .planner-month-weekdays, .planner-month-row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
@@ -1463,7 +1310,7 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .planner-day-number { font-size: 1rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
 .planner-day-today .planner-day-number {
   color: hsl(var(--foreground));
-  font-weight: 700;
+  font-weight: 400;
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-decoration-color: currentColor;
@@ -1497,21 +1344,21 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .planner-day-hour-rule { position: absolute; z-index: 0; left: 0; right: 0; height: 1px; border-top: 1px solid hsl(var(--border)); pointer-events: none; }
 .planner-day-slot-list { position: absolute; z-index: 1; inset: 0; margin: 0; padding: 0; list-style: none; overflow: visible; }
 .planner-day-untimed-list { display: grid; gap: .5rem; margin: 0; padding: 0; list-style: none; }
-.planner-free-day { margin: 0 0 1rem; border-left: 4px solid hsl(var(--primary)); background: hsl(var(--surface-secondary)); padding: .75rem 1rem; font-weight: 600; }
+.planner-free-day { margin: 0 0 1rem; border-left: 4px solid hsl(var(--primary)); background: hsl(var(--surface-secondary)); padding: .75rem 1rem; font-weight: 400; }
 .planner-empty-plan { background: hsl(var(--sheet)); }
 .planner-week-panel { min-width: 0; }
 .planner-week-strip { display: grid; grid-template-columns: repeat(7, minmax(3rem, 1fr)); min-width: 0; overflow-x: auto; border: 1px solid hsl(var(--border)); background: hsl(var(--sheet)); scrollbar-width: thin; }
 .planner-week-strip-day { display: flex; min-width: 0; min-height: 4.25rem; flex-direction: column; align-items: center; justify-content: center; gap: .125rem; border-right: 1px solid hsl(var(--border)); padding: .35rem .15rem; text-align: center; }
 .planner-week-strip-day:last-child { border-right: 0; }
 .planner-week-strip-day--selected { background: hsl(var(--secondary)); color: hsl(var(--foreground)); box-shadow: inset 0 -3px hsl(var(--primary)); }
-.planner-week-strip-weekday { overflow: hidden; max-width: 100%; font-size: .7rem; font-weight: 600; text-overflow: ellipsis; text-transform: capitalize; white-space: nowrap; }
+.planner-week-strip-weekday { overflow: hidden; max-width: 100%; font-size: .7rem; font-weight: 400; text-overflow: ellipsis; text-transform: capitalize; white-space: nowrap; }
 .planner-week-strip-number { font-size: 1rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .planner-week-strip-load { font-size: .65rem; font-variant-numeric: tabular-nums; line-height: 1.2; white-space: nowrap; }
 .planner-week-view { margin-top: .75rem; min-width: 0; }
 .planner-week-view-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; }
 .planner-week-column { min-width: 0; border: 1px solid hsl(var(--border)); background: hsl(var(--sheet)); padding: .5rem; }
 .planner-week-column--selected { border-color: hsl(var(--ring)); box-shadow: inset 0 2px hsl(var(--ring)); }
-.planner-week-column-heading { margin: 0 0 .5rem; font-size: .875rem; font-weight: 600; }
+.planner-week-column-heading { margin: 0 0 .5rem; font-size: .875rem; font-weight: 400; }
 .planner-week-column-heading button { display: flex; width: 100%; min-height: 2.75rem; align-items: center; justify-content: space-between; gap: .5rem; text-align: left; }
 .planner-week-column-number { color: hsl(var(--muted-foreground)); font-variant-numeric: tabular-nums; }
 .planner-week-slots { display: grid; gap: .4rem; margin: 0; padding: 0; list-style: none; }
@@ -1519,8 +1366,8 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .planner-week-slot:focus-visible, .planner-week-column-heading button:focus-visible, .planner-week-strip-day:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: -2px; }
 .planner-week-slot-time, .planner-week-slot-type { font-size: .7rem; line-height: 1.25; }
 .planner-week-slot-type { color: hsl(var(--muted-foreground)); }
-.planner-week-slot-subject { font-size: .75rem; font-weight: 600; }
-.planner-week-slot-title { font-size: .8rem; font-weight: 600; line-height: 1.25; }
+.planner-week-slot-subject { font-size: .75rem; font-weight: 400; }
+.planner-week-slot-title { font-size: .8rem; font-weight: 400; line-height: 1.25; }
 .planner-week-empty { margin: 0; min-height: 2.75rem; color: hsl(var(--muted-foreground)); font-size: .8rem; }
 @media (min-width: 640px) { .planner-week-view-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1024px) { .planner-week-view-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
@@ -1554,20 +1401,20 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .planner-slot--done { border-color: hsl(var(--line)); background: hsl(var(--sheet)); color: hsl(var(--muted-foreground)); }
 .planner-slot--exiting { opacity: 0; pointer-events: none; }
 .planner-slot-content { display: flex; width: 100%; min-width: 0; flex-direction: column; gap: .125rem; }
-.planner-slot-heading { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; font-size: .75rem; font-weight: 600; line-height: 1.25; }
+.planner-slot-heading { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; font-size: .75rem; font-weight: 400; line-height: 1.25; }
 .planner-slot-kind { display: inline-flex; min-width: 0; align-items: center; gap: .25rem; white-space: nowrap; }
 .planner-slot-type-icon { width: 1rem; height: 1rem; flex: none; }
-.planner-slot-time, .planner-slot-duration { color: inherit; font-size: .75rem; font-weight: 500; }
+.planner-slot-time, .planner-slot-duration { color: inherit; font-size: .75rem; font-weight: 400; }
 .planner-slot-copy { display: flex; min-width: 0; flex-wrap: wrap; align-items: baseline; gap: 0 .375rem; }
-.planner-slot-subject { font-size: .75rem; font-weight: 600; }
-.planner-slot-title { min-width: 0; overflow-wrap: anywhere; font-size: .875rem; font-weight: 600; line-height: 1.2; }
+.planner-slot-subject { font-size: .75rem; font-weight: 400; }
+.planner-slot-title { min-width: 0; overflow-wrap: anywhere; font-size: .875rem; font-weight: 400; line-height: 1.2; }
 .planner-slot-status, .planner-slot-moved { display: inline-flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: .25rem; font-size: .75rem; line-height: 1.25; }
-.planner-slot-progress { font-weight: 600; }
+.planner-slot-progress { font-weight: 400; }
 .planner-slot-actions { position: relative; z-index: 2; display: flex; flex-wrap: wrap; align-self: flex-end; margin: .125rem -.25rem -.25rem 0; }
 .planner-slot--routine .planner-slot-actions { display: none; }
 .planner-now-line { position: absolute; z-index: 50; left: 0; right: 0; height: 2px; pointer-events: none; }
 .planner-now-line-rule { position: absolute; inset: 0; background: hsl(var(--primary)); }
-.planner-now-line-label { position: absolute; right: .25rem; bottom: .25rem; border: 1px solid hsl(var(--primary)); background: hsl(var(--sheet)); color: hsl(var(--primary)); padding: .125rem .375rem; font-size: .75rem; font-weight: 700; line-height: 1.25; white-space: nowrap; }
+.planner-now-line-label { position: absolute; right: .25rem; bottom: .25rem; border: 1px solid hsl(var(--primary)); background: hsl(var(--sheet)); color: hsl(var(--primary)); padding: .125rem .375rem; font-size: .75rem; font-weight: 400; line-height: 1.25; white-space: nowrap; }
 @media (min-width: 1024px) { .planner-day-timeline { --planner-day-hour-height: 5rem; } }
 @media (prefers-reduced-motion: reduce) {
   .planner-slot, .planner-schedule-event { transition: none; }
@@ -1611,3 +1458,6 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .reduce-motion .lesson-step-enter, .reduce-motion .plan-agenda-enter { animation: none; }
 
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-delay: 0ms !important; }
+
+/* DESIGN.md: peso 400. La gerarchia passa da dimensione, tracking e colore. */
+:where(body, body *) { font-weight: 400; }
