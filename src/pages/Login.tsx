@@ -348,7 +348,7 @@ export default function Login() {
                     </div>
                   </div>
 
-                  <Button type="submit" className="h-12 w-full rounded-full text-base" disabled={isSubmitting}>
+                  <Button type="submit" variant="filled" className="h-12 w-full rounded-full text-base" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
                     {t("login.submit")}
                   </Button>

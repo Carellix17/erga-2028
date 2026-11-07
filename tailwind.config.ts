@@ -1,4 +1,4 @@
-/* Tailwind tokens for DESIGN.md v4.0 — Swiss Cognitive Grid. */
+/* Tailwind tokens for the dark DESIGN.md surface. */
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
 
@@ -170,6 +170,8 @@ export default {
           meal: "hsl(var(--routine-meal))",
           other: "hsl(var(--routine-other))",
         },
+        sand: "hsl(var(--sand) / <alpha-value>)",
+        nest: "hsl(var(--olive) / <alpha-value>)",
         marketing: {
           red: "hsl(var(--marketing-red))",
           rose: "hsl(var(--marketing-rose))",
@@ -221,22 +223,22 @@ export default {
         "primary-action": "var(--shadow-primary-action)",
       },
       fontFamily: {
-        sans: ["Ubuntu Sans", "system-ui", "sans-serif"],
-        interface: ["Ubuntu Sans", "system-ui", "sans-serif"],
-        body: ["Ubuntu Sans", "system-ui", "sans-serif"],
-        reading: ["Ubuntu Sans", "system-ui", "sans-serif"],
-        display: ["Ubuntu Sans", "system-ui", "sans-serif"],
-        serif: ["Ubuntu Sans", "system-ui", "sans-serif"],
-        mono: ["Ubuntu Sans Mono", "ui-monospace", "monospace"],
-        radja: ["Ubuntu Sans", "system-ui", "sans-serif"],
-        editorial: ["Instrument Serif", "Georgia", "serif"],
+        sans: ["Geist", "system-ui", "sans-serif"],
+        interface: ["Geist", "system-ui", "sans-serif"],
+        body: ["Geist", "system-ui", "sans-serif"],
+        reading: ["Geist", "system-ui", "sans-serif"],
+        display: ["Geist", "system-ui", "sans-serif"],
+        serif: ["Geist", "system-ui", "sans-serif"],
+        mono: ["Geist Mono", "ui-monospace", "monospace"],
+        radja: ["Geist", "system-ui", "sans-serif"],
+        editorial: ["Geist", "system-ui", "sans-serif"],
       },
       fontSize: {
-        "display-large": ["2.25rem", { lineHeight: "1.16", letterSpacing: "-0.02em", fontWeight: "400" }],
-        "course-title": ["1.875rem", { lineHeight: "1.2", fontWeight: "500" }],
-        "scene-title": ["2rem", { lineHeight: "1.2", fontWeight: "500" }],
-        "module-title": ["1.625rem", { lineHeight: "1.25", fontWeight: "500" }],
-        subsection: ["1.375rem", { lineHeight: "1.3", fontWeight: "600" }],
+        "display-large": ["2rem", { lineHeight: "1.12", letterSpacing: "-0.019em", fontWeight: "400" }],
+        "course-title": ["1.25rem", { lineHeight: "1.4", letterSpacing: "0", fontWeight: "400" }],
+        "scene-title": ["2rem", { lineHeight: "1.12", letterSpacing: "-0.019em", fontWeight: "400" }],
+        "module-title": ["1.25rem", { lineHeight: "1.4", letterSpacing: "0", fontWeight: "400" }],
+        subsection: ["1.125rem", { lineHeight: "1.4", letterSpacing: "0", fontWeight: "400" }],
         reading: ["1.125rem", { lineHeight: "1.65", fontWeight: "400" }],
         interface: ["1rem", { lineHeight: "1.45", fontWeight: "400" }],
         label: ["0.875rem", { lineHeight: "1.45", fontWeight: "400" }],

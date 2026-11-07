@@ -43,12 +43,12 @@ export interface Rgba {
 }
 
 const WHITE: Rgba = { r: 255, g: 255, b: 255, a: 1 };
-/** Canvas dell'app secondo DESIGN.md v3.0: Smoky Black #11120D. */
-const PAGE_CANVAS: Rgba = { r: 17, g: 18, b: 13, a: 1 };
-/** Inchiostro del sistema v3: Smoky Black #11120D. */
-const INK_DARK: Rgba = { r: 17, g: 18, b: 13, a: 1 };
-/** Inchiostro chiaro del sistema v3: Floral White #FFFBF4. */
-const INK_LIGHT: Rgba = { r: 255, g: 251, b: 244, a: 1 };
+/** Canvas DESIGN.md: #0a0a0a. */
+const PAGE_CANVAS: Rgba = { r: 10, g: 10, b: 10, a: 1 };
+/** Inchiostro scuro sul pieno bianco. */
+const INK_DARK: Rgba = { r: 10, g: 10, b: 10, a: 1 };
+/** Inchiostro chiaro sul canvas. */
+const INK_LIGHT: Rgba = { r: 255, g: 255, b: 255, a: 1 };
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -200,7 +200,7 @@ export function pickContrastInk(background: Rgba): ContrastPick {
   const darkRatio = contrastRatio(INK_DARK, bg);
   const useLight = lightRatio >= darkRatio;
   return {
-    channels: useLight ? "255 251 244" : "17 18 13",
+    channels: useLight ? "255 255 255" : "10 10 10",
     tone: useLight ? "light-text" : "dark-text",
     ratio: Math.round((useLight ? lightRatio : darkRatio) * 100) / 100,
   };

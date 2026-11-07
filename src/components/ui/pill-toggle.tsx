@@ -64,19 +64,19 @@ export function PillToggle<T extends string | number>({
             aria-checked={active}
             onClick={() => onChange(opt.value)}
             className={cn(
-              "rounded-button font-medium transition-all duration-300 ease-m3-emphasized active:scale-95",
-              size === "sm" ? (track ? "h-9 text-sm" : "px-3 h-8 text-[11px]") : "h-10 text-sm",
+              "rounded-button font-normal transition-colors duration-150 active:scale-[0.98] motion-reduce:transform-none",
+              size === "sm" ? (track ? "min-h-11 text-sm" : "px-3 min-h-11 text-sm") : "min-h-11 text-base",
               !track && size === "md" && "px-3",
               grow && "flex-1",
               track
                 ? active
-                  ? "bg-primary text-primary-foreground shadow-level-1"
+                  ? "bg-nest text-sand"
                   : "text-muted-foreground hover:text-foreground"
                 : cn(
                     "border",
                     active
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-card border-border text-muted-foreground hover:border-foreground/40",
+                      ? "bg-nest text-sand border-nest"
+                      : "bg-transparent border-foreground/40 text-muted-foreground hover:border-foreground",
                   ),
             )}
           >

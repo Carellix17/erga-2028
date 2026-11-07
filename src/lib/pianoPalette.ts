@@ -92,10 +92,10 @@ export function tintStyle(hex: string, opts?: { alpha?: number; borderless?: boo
   };
 }
 
-export function subjectTint(subjectName?: string | null, dark?: boolean, customColor?: string | null): TintStyle {
+export function subjectTint(subjectName?: string | null, dark = true, customColor?: string | null): TintStyle {
   return tintStyle(subjectHex(subjectName, customColor), { dark });
 }
 
-export function routineTint(kind: string, dark?: boolean): TintStyle {
+export function routineTint(kind: string, dark = true): TintStyle {
   return tintStyle(ROUTINE_HEX[kind] ?? ROUTINE_HEX.other, { dark });
 }
