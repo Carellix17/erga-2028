@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type RoutineKind = "school" | "sleep" | "meal" | "other";
+export type RoutineKind = "school" | "sleep" | "meal" | "other" | "transport" | "no_study";
 
 export interface UserRoutine {
   id: string;
@@ -24,13 +24,13 @@ export function useUserRoutines() {
     queryFn: async () => {
       const uid = await getUid();
       if (!uid) return [] as UserRoutine[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("user_routines")
         .select("*")
         .eq("user_id", uid)
         .order("start_time");
       if (error) throw error;
-      return (data ?? []) as UserRoutine[];
+      return (data ?? []) as unknown as UserRoutine[];
     },
   });
 }
@@ -41,7 +41,7 @@ export function useAddUserRoutine() {
     mutationFn: async (payload: Omit<UserRoutine, "id" | "user_id">) => {
       const uid = await getUid();
       if (!uid) throw new Error("Not authenticated");
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("user_routines")
         .insert({ ...payload, user_id: uid });
       if (error) throw error;
@@ -55,7 +55,7 @@ export function useUpdateUserRoutine() {
   return useMutation({
     mutationFn: async (payload: { id: string } & Partial<Omit<UserRoutine, "id" | "user_id">>) => {
       const { id, ...rest } = payload;
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("user_routines")
         .update(rest)
         .eq("id", id);
@@ -69,7 +69,7 @@ export function useDeleteUserRoutine() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("user_routines").delete().eq("id", id);
+      const { error } = await supabase.from("user_routines").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["user_routines"] }),

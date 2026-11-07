@@ -10,19 +10,27 @@ export type { RoutineKind, UserRoutine };
 export interface RoutineKindMeta {
   value: RoutineKind;
   label: string;
+  labelKey: string;
 }
 
-// Categorie ammesse dal database (CHECK sul tipo): scuola, sonno, pasti, altro.
-// "Altro" copre sport, hobby e ogni impegno fisso fuori dallo studio.
+// Tipi ammessi dal CHECK già presente sul database.
 export const ROUTINE_KINDS: RoutineKindMeta[] = [
-  { value: "school", label: "Scuola" },
-  { value: "sleep", label: "Sonno" },
-  { value: "meal", label: "Pasti" },
-  { value: "other", label: "Altro" },
+  { value: "school", label: "Scuola", labelKey: "piano.routine_school" },
+  { value: "sleep", label: "Sonno", labelKey: "piano.routine_sleep" },
+  { value: "meal", label: "Pasti", labelKey: "piano.routine_meal" },
+  { value: "other", label: "Altro", labelKey: "piano.routine_other" },
+  { value: "transport", label: "Trasporto", labelKey: "piano.routine_transport" },
+  { value: "no_study", label: "Giorno senza studio", labelKey: "piano.routine_no_study" },
 ];
 
 export const routineKindLabel = (kind: RoutineKind) =>
   ROUTINE_KINDS.find((k) => k.value === kind)?.label ?? kind;
+
+export function routineTimesForSave(kind: RoutineKind, startTime: string, endTime: string) {
+  return kind === "no_study"
+    ? { start_time: "00:00", end_time: "23:59" }
+    : { start_time: startTime, end_time: endTime };
+}
 
 // 1 = Lunedì ... 7 = Domenica (convenzione ISO della tabella user_routines)
 export interface RoutineDayMeta {
@@ -130,13 +138,17 @@ export interface RoutineConflict {
  * (escludendo quella in modifica). Gestisce anche i blocchi overnight.
  */
 export const findRoutineConflict = (
-  candidate: { startTime: string; endTime: string; days: number[] },
+  candidate: { startTime: string; endTime: string; days: number[]; kind?: RoutineKind },
   existing: UserRoutine[],
   excludeId?: string | null,
 ): RoutineConflict | null => {
+  // A no-study marker suppresses planner availability, but does not represent
+  // a conflicting appointment: transport, sleep, and meals can still coexist.
+  if (candidate.kind === "no_study") return null;
+
   const candidateWindows = splitRoutineWindows(candidate.startTime, candidate.endTime, candidate.days);
   const existingWindows = existing
-    .filter((r) => r.id !== excludeId)
+    .filter((r) => r.id !== excludeId && r.kind !== "no_study")
     .flatMap((r) => splitRoutineWindows(r.start_time, r.end_time, r.days_of_week ?? [], r));
   for (const c of candidateWindows) {
     const hit = existingWindows.find((w) => windowsOverlap(c, w));
