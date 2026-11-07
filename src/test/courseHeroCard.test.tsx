@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { CourseHeroCard } from "@/components/home/CourseHeroCard";
 
 describe("CourseHeroCard title contrast", () => {
-  it("uses the cover ink for the active course title", () => {
+  it("uses a white surface and near-black ink for the active lesson", () => {
     const { container } = render(
       <CourseHeroCard
         courseTitle="Evoluzione"
@@ -13,18 +13,23 @@ describe("CourseHeroCard title contrast", () => {
       />,
     );
     const article = container.querySelector("article")!;
+    const title = screen.getByRole("heading", { level: 2, name: "Evoluzione" });
 
-    expect(screen.getByRole("heading", { level: 2, name: "Evoluzione" })).toHaveClass("text-contrast");
-    expect(article.style.getPropertyValue("--contrast-ink")).toBeTruthy();
+    expect(article).toHaveClass("bg-[#ffffff]", "text-[#0a0a0a]", "rounded-[8px]");
+    expect(title).toHaveClass("text-[#0a0a0a]");
+    expect(title).not.toHaveClass("text-contrast");
+    expect(article.style.getPropertyValue("--contrast-ink")).toBe("");
     expect(article).not.toHaveAttribute("data-auto-contrast");
   });
 
-  it("uses a fixed foreground color for the empty-state title", () => {
+  it("uses the same near-black ink for the empty-state title", () => {
     const { container } = render(<CourseHeroCard emptyTitle="Scegli un percorso" />);
     const article = container.querySelector("article")!;
+    const title = screen.getByRole("heading", { level: 2, name: "Scegli un percorso" });
 
-    expect(screen.getByRole("heading", { level: 2, name: "Scegli un percorso" })).toHaveClass("text-foreground");
-    expect(screen.getByRole("heading", { level: 2, name: "Scegli un percorso" })).not.toHaveClass("text-contrast");
+    expect(article).toHaveClass("bg-[#ffffff]", "rounded-[8px]");
+    expect(title).toHaveClass("text-[#0a0a0a]");
+    expect(title).not.toHaveClass("text-contrast");
     expect(article).not.toHaveAttribute("data-auto-contrast");
   });
 });

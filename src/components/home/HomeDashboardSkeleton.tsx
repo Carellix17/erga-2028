@@ -17,7 +17,7 @@ export function HomeDashboardSkeleton() {
 
       <div className="flex min-w-0 flex-col gap-4">
         {/* Percorso da riprendere: titolo, lezione, progressione e CTA. */}
-        <div className="min-w-0 border border-border bg-card p-5 sm:p-6">
+        <div className="min-w-0 rounded-[8px] border border-[#212327] bg-[#ffffff] p-5 sm:p-6">
           <Skeleton className="h-8 w-1/2 max-w-[22ch]" />
           <Skeleton className="mt-3 h-6 w-3/4" />
           <Skeleton className="mt-2 h-4 w-1/2" />

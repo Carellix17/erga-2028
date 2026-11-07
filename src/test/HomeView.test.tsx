@@ -109,7 +109,9 @@ describe("HomeView modulare (V3)", () => {
     expect(courseHeading.className).toContain("text-3xl");
     expect(screen.getByText("Il moto rettilineo")).toBeInTheDocument();
     expect(screen.getByText("Lezione 3 di 10")).toBeInTheDocument();
-    expect(container.querySelector("[data-cover-root]")).toBeInTheDocument();
+    const courseCard = courseHeading.closest("article");
+    expect(courseCard).toHaveClass("bg-[#ffffff]", "text-[#0a0a0a]", "rounded-[8px]");
+    expect(container.querySelector("[data-cover-root]")).toBeNull();
     const progress = screen.getByRole("progressbar", { name: /avanzamento del percorso: 20%/i });
     expect(progress).toHaveAttribute("aria-valuenow", "20");
 
@@ -235,7 +237,8 @@ describe("HomeView modulare (V3)", () => {
     expect(hexagon).toBeInTheDocument();
     expect(hexagon?.querySelector("dl")).toBeNull();
     expect(screen.getByTestId("cognitive-radar")).toHaveAttribute("data-show-labels", "false");
-    expect(container.querySelector("[data-cover-root]")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Fisica" }).closest("article")).toHaveClass("bg-[#ffffff]", "rounded-[8px]");
+    expect(container.querySelector("[data-cover-root]")).toBeNull();
     expect(screen.queryByText(/\/100/)).not.toBeInTheDocument();
     expect(screen.queryByText("71")).not.toBeInTheDocument();
   });

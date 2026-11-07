@@ -67,19 +67,17 @@ describe("Superfici pulite della Home", () => {
     }
   });
 
-  it("la card corso riusa la copertina di Studio senza ombre o grana generalizzata", () => {
+  it("la card dell'ultima lezione è bianca, con testo nero e raggio da 8 px", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
-    const bg = readFileSync(join(__dirname, "..", "components", "studio", "CourseCardBackground.tsx"), "utf8");
-    expect(hero).toContain("CourseCardBackground");
-    expect(hero).toContain("courseCoverVars");
-    expect(hero).toContain("text-contrast");
+    expect(hero).toContain("bg-[#ffffff]");
+    expect(hero).toContain("text-[#0a0a0a]");
+    expect(hero).toContain("rounded-[8px]");
+    expect(hero).toContain("border-[#212327]");
+    expect(hero).not.toContain("CourseCardBackground");
+    expect(hero).not.toContain("courseCoverVars");
+    expect(hero).not.toContain("text-contrast");
     expect(hero).not.toMatch(/shadow-(?:xl|2xl|level-[1-5]|tactile)/);
     expect(hero).not.toContain("paper-grain");
-    // La composizione condivisa resta geometrica, senza blur.
-    expect(bg).toContain("cover-grain");
-    expect(bg).not.toContain("blur-");
-    expect(bg).not.toContain("orb-main");
-    expect(bg).not.toContain("orb-secondary");
   });
 
   it("la CTA 'Riprendi/Continua' resta un Button pieno e facilmente toccabile", () => {

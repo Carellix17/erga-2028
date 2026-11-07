@@ -1,7 +1,5 @@
 import { ArrowRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { courseCoverVars } from "@/lib/courseIdentity";
-import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
 
 interface CourseHeroCardProps {
   /** Titolo del corso attivo. Se manca, la card mostra lo stato vuoto. */
@@ -49,39 +47,32 @@ export function CourseHeroCard({
 }: CourseHeroCardProps) {
   const active = Boolean(courseTitle && lessonTitle && primaryCtaLabel);
   const percent = clampPercent(progressPercent);
-  const { style: coverStyle } = courseCoverVars(courseTitle ?? "");
 
   return (
-    <article
-      className="relative isolate min-w-0 overflow-hidden border border-border bg-card"
-      style={active ? coverStyle : undefined}
-    >
-      {active && <CourseCardBackground courseName={courseTitle ?? ""} />}
-
+    <article className="relative isolate min-w-0 overflow-hidden rounded-[8px] border border-[#212327] bg-[#ffffff] text-[#0a0a0a]">
       {active ? (
-        <div className="relative z-10 p-5 text-contrast sm:p-6">
-          <h2 className="max-w-[22ch] break-words text-3xl font-semibold leading-tight tracking-tight text-contrast sm:text-4xl">
+        <div className="relative p-5 sm:p-6">
+          <h2 className="max-w-[22ch] break-words text-3xl font-semibold leading-tight tracking-tight text-[#0a0a0a] sm:text-4xl">
             {courseTitle}
           </h2>
-          <p className="mt-2 break-words text-lg leading-snug sm:text-xl">{lessonTitle}</p>
+          <p className="mt-2 break-words text-lg leading-snug text-[#0a0a0a] sm:text-xl">{lessonTitle}</p>
           {lessonMetaText && (
-            <p className="mt-1.5 break-words text-sm text-contrast-secondary">{lessonMetaText}</p>
+            <p className="mt-1.5 break-words text-sm text-[#3a3f45]">{lessonMetaText}</p>
           )}
 
           <div className="mt-5">
-            <div className="mb-3 flex items-center gap-3 text-contrast-secondary">
+            <div className="mb-3 flex items-center gap-3">
               <div
                 role="progressbar"
                 aria-label={progressAriaLabel ?? "Avanzamento del percorso"}
                 aria-valuenow={percent}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                className="h-1 min-w-0 flex-1 overflow-hidden"
-                style={{ backgroundColor: "color-mix(in srgb, currentColor 28%, transparent)" }}
+                className="h-1 min-w-0 flex-1 overflow-hidden bg-[#0a0a0a]/25"
               >
-                <div className="h-full bg-current" style={{ width: `${percent}%` }} />
+                <div className="h-full bg-[#0a0a0a]" style={{ width: `${percent}%` }} />
               </div>
-              <span className="shrink-0 font-mono text-sm tabular-nums">{percent}%</span>
+              <span className="shrink-0 font-mono text-sm tabular-nums text-[#0a0a0a]">{percent}%</span>
             </div>
             <Button onClick={onPrimaryCta} className="min-h-12 w-full sm:w-fit">
               {primaryCtaLabel}
@@ -91,12 +82,12 @@ export function CourseHeroCard({
         </div>
       ) : (
         <div className="p-5 sm:p-6">
-          <BookOpen className="mb-4 h-7 w-7 text-cognitive" aria-hidden="true" />
-          <h2 className="max-w-[24ch] break-words text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
+          <BookOpen className="mb-4 h-7 w-7 text-[#0a0a0a]" aria-hidden="true" />
+          <h2 className="max-w-[24ch] break-words text-2xl font-semibold leading-tight text-[#0a0a0a] sm:text-3xl">
             {emptyTitle ?? "Scegli o carica il tuo primo percorso"}
           </h2>
           {emptyDescription && (
-            <p className="mt-3 max-w-[52ch] break-words text-base leading-relaxed text-muted-foreground">
+            <p className="mt-3 max-w-[52ch] break-words text-base leading-relaxed text-[#3a3f45]">
               {emptyDescription}
             </p>
           )}
