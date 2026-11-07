@@ -5,21 +5,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "relative inline-flex min-w-0 touch-manipulation select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-button text-interface font-semibold transition-[background-color,border-color,color,opacity] duration-150 active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transform-none motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "relative inline-flex min-w-0 touch-manipulation select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-button text-interface font-normal transition-[background-color,border-color,color,opacity,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 motion-reduce:transform-none motion-reduce:transition-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "border border-primary bg-primary text-primary-foreground font-sans font-semibold text-[15px] hover:bg-primary-deep",
-        destructive: "bg-destructive text-destructive-foreground shadow-level-0 hover:opacity-90",
-        outline: "border border-input bg-sheet text-foreground hover:bg-secondary",
-        secondary: "border border-line bg-secondary text-secondary-foreground shadow-level-0 hover:bg-secondary/80",
-        ghost: "text-foreground hover:bg-foreground/[0.08]",
+        default: "border border-foreground/40 bg-transparent text-foreground font-sans font-normal text-[15px] hover:bg-foreground/10",
+        filled: "border border-primary bg-primary text-primary-foreground font-sans font-normal text-[15px] hover:bg-primary-deep",
+        destructive: "border border-destructive bg-transparent text-destructive hover:bg-destructive/10",
+        outline: "border border-foreground/40 bg-transparent text-foreground hover:bg-foreground/10",
+        secondary: "border border-foreground/25 bg-secondary text-secondary-foreground hover:bg-foreground/10",
+        ghost: "text-foreground hover:bg-foreground/10",
         link: "h-auto rounded-sm p-0 text-foreground underline-offset-4 hover:underline",
-        tonal: "bg-secondary text-secondary-foreground shadow-level-0 hover:bg-secondary/80",
-        fab: "bg-primary text-primary-foreground shadow-level-1 hover:bg-primary-deep",
-        "fab-secondary": "border border-line bg-secondary text-secondary-foreground shadow-level-1 hover:bg-secondary/80",
-        "fab-tertiary": "bg-tertiary text-tertiary-foreground shadow-level-1 hover:opacity-90",
-        elevated: "border border-line bg-surface-primary text-card-foreground shadow-level-1 hover:brightness-110",
+        tonal: "border border-transparent bg-nest text-sand hover:bg-nest/80",
+        fab: "border border-foreground/40 bg-transparent text-foreground hover:bg-foreground/10",
+        "fab-secondary": "border border-foreground/25 bg-secondary text-secondary-foreground hover:bg-foreground/10",
+        "fab-tertiary": "border border-foreground/25 bg-secondary text-foreground hover:bg-foreground/10",
+        elevated: "border border-foreground/25 bg-surface-primary text-card-foreground hover:bg-foreground/10",
       },
       size: {
         default: "h-11 px-5 py-2.5",

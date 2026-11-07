@@ -43,7 +43,7 @@ Prima di scrivere codice definire:
 - i limiti tecnici;
 - l'elemento distintivo che la rende riconoscibile.
 
-Per Erga la fonte visiva autorevole è `DESIGN.md` v4.1, «Swiss Cognitive Grid + Tactile Studio»: canvas pietra #F4F2EC, celle #FAF8F3 e carta #FFFDF9; Ubuntu Sans per UI e corpo, Instrument Serif solo per titoli di lettura, Ubuntu Sans Mono per misure; griglia continua 1px, controlli 2px e pannelli fino a 4px; pulsanti piatti senza ombre rigide o spostamenti diagonali, navbar attaccata al bordo; tema giorno/notte. Il vermiglio decorativo #E63B11 usa la variante #C82F0A nei pulsanti con testo bianco per rispettare WCAG AA. I riferimenti a versioni precedenti del design system, compresa la v2.1 «Carta contemporanea» e lo stato pilota V2-01 in documenti storici, non prevalgono su `DESIGN.md`. Conservare struttura, funzioni e contenuti reali; evitare interfacce generiche da prodotto AI, decorazioni casual e pattern copiati senza relazione con lo studio.
+Per Erga la fonte visiva autorevole è `DESIGN.md`: canvas quasi nero #0a0a0a, card #191919, testo bianco, corpo #dadbdf; Geist per UI, titoli e corpo, Geist Mono maiuscolo color sabbia #D8CFBC per etichette e misure; pillole 9999px sui controlli, 8px su card, campi, sheet e dialog; niente ombre, bordo hairline; un solo pulsante pieno bianco (azione di account), gli altri sono outline. Il tema è solo scuro. L'oliva #565449 è solo il riempimento delle righe attive. I colori di materia restano un codice dati, schiariti per il nero. I riferimenti allo Swiss Cognitive Grid, alla v2.1 «Carta contemporanea» e al vermiglio non prevalgono su `DESIGN.md`. Conservare struttura, funzioni e contenuti reali.
 
 ### UI/UX Pro Max — ricerca strutturata prima delle modifiche ampie
 

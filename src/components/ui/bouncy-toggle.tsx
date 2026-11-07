@@ -46,7 +46,7 @@ export function PremiumToggle({ defaultChecked = false, onChange, label, "aria-l
         onMouseUp={() => setIsPressed(false)}
         onMouseLeave={() => setIsPressed(false)}
         className={cn(
-          "group relative h-8 w-14 rounded-full p-1 transition-colors duration-300 ease-out",
+          "group relative h-11 w-16 rounded-full p-1 transition-colors duration-150 ease-out",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           isChecked ? "bg-foreground" : "bg-muted-foreground/20",
         )}
@@ -55,7 +55,7 @@ export function PremiumToggle({ defaultChecked = false, onChange, label, "aria-l
         <div
           className={cn(
             "absolute inset-0 rounded-full transition-opacity duration-300",
-            isChecked ? "opacity-100 shadow-[0_0_20px_rgba(0,0,0,0.15)]" : "opacity-0",
+            "opacity-0",
           )}
         />
 
@@ -72,9 +72,9 @@ export function PremiumToggle({ defaultChecked = false, onChange, label, "aria-l
           className={cn(
             /* ⚙️ P48 — la manopola scorre con la curva di casa, senza il
                rimbalzo all'indietro che la faceva "oscillare" a fine corsa. */
-            "relative h-6 w-6 rounded-full shadow-lg transition-transform ease-[cubic-bezier(0.23,1,0.32,1)]",
-            "bg-background",
-            isChecked ? "translate-x-6" : "translate-x-0",
+            "relative h-8 w-8 rounded-full transition-transform ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
+            isChecked ? "bg-background" : "bg-foreground",
+            isChecked ? "translate-x-5" : "translate-x-0",
             isPressed && "scale-90",
           )}
           /* Risposta al tocco immediata (110ms), ritorno morbido (300ms):

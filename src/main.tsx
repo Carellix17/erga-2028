@@ -1,5 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
+import "@fontsource/geist/400.css";
+import "@fontsource/geist-mono/400.css";
 import App from "./App.tsx";
 import "./index.css";
 import "./i18n";

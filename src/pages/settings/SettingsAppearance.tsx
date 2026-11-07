@@ -1,58 +1,31 @@
-import { Sun, Moon, Monitor, Check } from "lucide-react";
+import { Moon } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
-import { useTheme, type Theme } from "@/contexts/ThemeContext";
-import { useHaptics } from "@/hooks/useHaptics";
 import { SeoHead } from "@/components/SeoHead";
 
-const OPTIONS: { value: Theme; label: string; desc: string; icon: typeof Sun; swatch: string }[] = [
-  { value: "light", label: "Chiaro", desc: "Palette giorno: Smoky Black, Olive e Bone", icon: Sun, swatch: "bg-[#565449]" },
-  { value: "dark", label: "Scuro", desc: "Palette notte: Night Canvas e Floral White", icon: Moon, swatch: "bg-[#1A1A15]" },
-  { value: "system", label: "Automatico", desc: "Segue il tema del tuo dispositivo", icon: Monitor, swatch: "bg-gradient-to-r from-[#565449] to-[#1A1A15]" },
-];
-
 export default function SettingsAppearance() {
-  const { theme, setTheme } = useTheme();
-  const { triggerLight } = useHaptics();
-
   return (
     <SettingsPage>
       <SeoHead
         title="Aspetto — Erga"
-        description="Personalizza tema e visualizzazione dell'app Erga."
+        description="Erga usa un'unica interfaccia scura."
         path="/app/impostazioni/aspetto"
         noindex
       />
       <SettingsHeader title="Aspetto" subtitle="Tema e visualizzazione" />
-      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6 animate-fade-up">
-        <section className="erga-settings-panel rounded-card p-5 space-y-3">
+      <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-32 sm:px-6 md:max-w-2xl lg:max-w-4xl">
+        <section className="erga-settings-panel space-y-3 rounded-card p-5">
           <h2 className="title-medium font-display text-foreground">Tema</h2>
-          <p className="body-small text-muted-foreground -mt-2">Scegli come vuoi vedere Erga.</p>
-
-          <div role="radiogroup" aria-label="Tema" className="space-y-2 pt-1">
-            {OPTIONS.map((opt) => {
-              const active = theme === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => {
-                    triggerLight();
-                    setTheme(opt.value);
-                  }}
-                  className="erga-list-item flex w-full items-center gap-4 rounded-button p-3 text-left transition-all duration-300 ease-m3-emphasized"
-                >
-                  <div className={`h-11 w-11 shrink-0 rounded-button border border-line ${opt.swatch}`} aria-hidden="true" />
-                  <div className="min-w-0 flex-1">
-                    <p className="title-medium text-foreground flex items-center gap-2">
-                      <opt.icon className="w-4 h-4" /> {opt.label}
-                    </p>
-                    <p className="body-small text-muted-foreground">{opt.desc}</p>
-                  </div>
-                  {active && <Check className="w-5 h-5 text-brand-deep shrink-0" />}
-                </button>
-              );
-            })}
+          <p className="body-small -mt-2 text-muted-foreground">
+            Erga resta su un'unica superficie scura, così lezioni, piano e pratica hanno lo stesso fondo.
+          </p>
+          <div className="flex min-h-11 items-center gap-4 rounded-card border border-border bg-nest p-3">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-button border border-foreground/40 bg-canvas text-sand" aria-hidden="true">
+              <Moon className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-mono text-xs uppercase tracking-[0.1em] text-sand">Scuro</p>
+              <p className="body-small text-muted-foreground">Canvas nero, testo bianco, controlli a pillola.</p>
+            </div>
           </div>
         </section>
       </main>

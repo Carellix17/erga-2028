@@ -5,8 +5,8 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
-describe("design system v4.1 — app shell", () => {
-  it("espone celle piatte, controlli 2px e pannelli 4px previsti da DESIGN.md", () => {
+describe("design system scuro — app shell", () => {
+  it("usa pillole sui controlli, 8px su card e campi, 0 sulle bande", () => {
     const tailwind = read("tailwind.config.ts");
     const css = read("src/index.css");
 
@@ -15,14 +15,14 @@ describe("design system v4.1 — app shell", () => {
     expect(tailwind).toContain('card: "var(--radius-card)"');
     expect(tailwind).toContain('button: "var(--radius-button)"');
     expect(tailwind).toContain('nav: "var(--radius-nav)"');
-    expect(css).toContain("--radius-xs: 2px");
-    expect(css).toContain("--radius-control: 2px");
-    expect(css).toContain("--radius-card: 0px");
+    expect(css).toContain("--radius-xs: 8px");
+    expect(css).toContain("--radius-control: 8px");
+    expect(css).toContain("--radius-card: 8px");
     expect(css).toContain("--radius-hero: 0px");
-    expect(css).toContain("--radius-button: 2px");
-    expect(css).toContain("--radius-pill: 2px");
+    expect(css).toContain("--radius-button: 9999px");
+    expect(css).toContain("--radius-pill: 9999px");
     expect(css).toContain("--radius-nav: 0px");
-    expect(css).toContain("--radius-dialog: 4px");
+    expect(css).toContain("--radius-dialog: 8px");
     expect(css).toContain("--radius-full: 9999px");
     expect(css).not.toContain("--radius-hero: 32px");
     expect(css).not.toContain("--radius-button: 16px");
@@ -49,32 +49,30 @@ describe("design system v4.1 — app shell", () => {
     const button = read("src/components/ui/button.tsx");
     const input = read("src/components/ui/input.tsx");
 
-    expect(card).toContain("rounded-none");
+    expect(card).toContain("rounded-card");
     expect(card).toContain("bg-card");
     expect(card).toContain("border-border");
     expect(button).toContain("rounded-button");
     expect(button).toContain("bg-primary text-primary-foreground");
     expect(input).toContain("rounded-control");
     expect(input).toContain("bg-sheet");
-    expect(input).toContain("border-input");
+    expect(input).toContain("border-foreground/40");
   });
 
-  it("mantiene CTA vermiglia piatta con testo carta e senza spostamenti diagonali", () => {
+  it("tiene l'outline come azione comune e un solo pieno bianco, senza ombre", () => {
     const button = read("src/components/ui/button.tsx");
     const css = read("src/index.css");
     const tailwind = read("tailwind.config.ts");
 
-    expect(button).toMatch(/default:\s*"[^"\n]*bg-primary text-primary-foreground/);
-    // Flat actions retain the legacy shadow token only as a no-op alias.
+    expect(button).toMatch(/default:\s*"[^"\n]*border-foreground\/40/);
+    expect(button).toMatch(/filled:\s*"[^"\n]*bg-primary text-primary-foreground/);
     expect(tailwind).toContain('"primary-action": "var(--shadow-primary-action)"');
     expect(css).toContain("--shadow-primary-action: none");
     expect(button).not.toContain("shadow-primary-action");
     expect(button).not.toContain("active:translate-x");
     expect(button).not.toContain("active:translate-y");
-    expect(button).not.toMatch(/default:\s*"[^"]*rounded-pill/);
-    expect(css).toContain("--primary: 11.6842 90.4762% 41.1765%");
-    expect(css).toContain("--primary-deep: 11.2727 92.1788% 35.0980%");
-    expect(css).toContain("--primary-foreground: var(--accent-light)");
+    expect(css).toContain("--primary: 0 0% 100%");
+    expect(css).toContain("--primary-foreground: var(--canvas)");
   });
 
   it("nav mobile: barra attaccata da 64px con safe area e quattro destinazioni", () => {
@@ -104,28 +102,30 @@ describe("design system v4.1 — app shell", () => {
     expect(nav).not.toContain("xl:w-64");
   });
 
-  it("definisce le superfici giorno e notte dai token ufficiali", () => {
+  it("definisce l'unica superficie scura dai token di DESIGN.md", () => {
     const css = read("src/index.css");
-    expect(css).toContain("--canvas: 45.0000 26.6667% 94.1176%");
-    expect(css).toContain("--surface-primary: 42.8571 41.1765% 96.6667%");
-    expect(css).toContain("--surface-secondary: 42.8571 25.0000% 89.0196%");
-    expect(css).toContain("--ink: 72.0000 16.1290% 6.0784%");
-    expect(css).toContain("--accent-light: 40.0000 100.0000% 98.8235%");
-    expect(css).toContain("--canvas: 60 11.11% 3.53%");
-    expect(css).toContain("--surface-primary: 60 10.64% 9.22%");
-    expect(css).toContain("--surface-secondary: 60 3.85% 14.31%");
-    expect(css).toContain("--line: 50 11.54% 20.39%");
+    expect(css).toContain("--canvas: 0 0% 3.92%");
+    expect(css).toContain("--surface-primary: 0 0% 9.80%");
+    expect(css).toContain("--surface-secondary: 220 10.34% 11.37%");
+    expect(css).toContain("--ink: 0 0% 100%");
+    expect(css).toContain("--sand: 40.71 26.42% 79.22%");
+    expect(css).toContain("--olive: 50.77 8.18% 31.18%");
+    expect(css).not.toContain("--canvas: 45.0000 26.6667% 94.1176%");
   });
 
-  it("usa Ubuntu Sans per la UI e Instrument Serif solo per la lettura editoriale", () => {
+  it("usa Geist per la UI e Geist Mono per le etichette", () => {
     const tailwind = read("tailwind.config.ts");
     const html = read("index.html");
-    expect(tailwind).toContain('display: ["Ubuntu Sans", "system-ui", "sans-serif"]');
-    expect(tailwind).toContain('sans: ["Ubuntu Sans", "system-ui", "sans-serif"]');
-    expect(tailwind).toContain('reading: ["Ubuntu Sans", "system-ui", "sans-serif"]');
-    expect(tailwind).toContain('editorial: ["Instrument Serif", "Georgia", "serif"]');
-    expect(html).toContain("family=Instrument+Serif");
-    expect(html).toContain("family=Ubuntu+Sans");
+    const main = read("src/main.tsx");
+    expect(tailwind).toContain('display: ["Geist", "system-ui", "sans-serif"]');
+    expect(tailwind).toContain('sans: ["Geist", "system-ui", "sans-serif"]');
+    expect(tailwind).toContain('reading: ["Geist", "system-ui", "sans-serif"]');
+    expect(tailwind).toContain('editorial: ["Geist", "system-ui", "sans-serif"]');
+    expect(tailwind).toContain('mono: ["Geist Mono", "ui-monospace", "monospace"]');
+    expect(main).toContain("@fontsource/geist/400.css");
+    expect(main).toContain("@fontsource/geist-mono/400.css");
+    expect(html).not.toContain("family=Instrument+Serif");
+    expect(html).not.toContain("family=Ubuntu+Sans");
     expect(html).not.toContain("Playfair+Display");
     expect(html).not.toContain("Montserrat");
   });
@@ -136,7 +136,7 @@ describe("design system v4.1 — app shell", () => {
 
     expect(todayRule).toContain("color: hsl(var(--foreground))");
     expect(todayRule).not.toContain("var(--primary)");
-    expect(todayRule).toContain("font-weight: 700");
+    expect(todayRule).toContain("font-weight: 400");
     expect(todayRule).toContain("text-decoration-thickness: 2px");
     expect(todayRule).toContain("text-decoration-color: currentColor");
     expect(css).toContain(".dark .planner-day-outside:not(.planner-day-today)");

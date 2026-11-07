@@ -8,33 +8,26 @@ import tailwindConfig from "../../tailwind.config";
 const fontFamilies = tailwindConfig.theme.extend.fontFamily;
 
 /**
- * Saluto della Home — DESIGN.md v4: Ubuntu Sans per la UI.
+ * Saluto della Home — DESIGN.md scuro: Geist per la UI.
  * Scala compatta: 32px telefono, 40 sm, 48 lg.
- * «Compact, mai gigantesco»: la scala D1 da 43–86px è archiviata.
  */
 
 describe("Font del messaggio di benvenuto", () => {
-  it("carica i tre caratteri di DESIGN.md v4 con display swap", () => {
+  it("self-host Geist e non carica Google Fonts", () => {
     const html = readFileSync(resolve(__dirname, "../../index.html"), "utf8");
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    const link = doc.querySelector<HTMLLinkElement>('link[rel="stylesheet"][href^="https://fonts.googleapis.com/css2"]');
-    expect(link).not.toBeNull();
-
-    const url = new URL(link!.href);
-    expect(url.searchParams.getAll("family").sort()).toEqual([
-      "Instrument Serif:ital@0;1",
-      "Ubuntu Sans Mono:wght@400;500;600;700",
-      "Ubuntu Sans:ital,wght@0,400..700;1,400..700",
-    ]);
-    expect(url.searchParams.get("display")).toBe("swap");
+    const main = readFileSync(resolve(__dirname, "../main.tsx"), "utf8");
+    expect(html).not.toContain("fonts.googleapis.com");
+    expect(main).toContain("@fontsource/geist/400.css");
+    expect(main).toContain("@fontsource/geist-mono/400.css");
   });
 
-  it("riserva Instrument Serif alla lettura editoriale e usa Ubuntu Sans nella UI", () => {
-    expect(fontFamilies.display).toEqual(["Ubuntu Sans", "system-ui", "sans-serif"]);
+  it("usa Geist per UI, titoli e lettura", () => {
+    expect(fontFamilies.display).toEqual(["Geist", "system-ui", "sans-serif"]);
     expect(fontFamilies.serif).toEqual(fontFamilies.display);
     expect(fontFamilies.sans).toEqual(fontFamilies.display);
     expect(fontFamilies.reading).toEqual(fontFamilies.display);
-    expect(fontFamilies.editorial).toEqual(["Instrument Serif", "Georgia", "serif"]);
+    expect(fontFamilies.editorial).toEqual(["Geist", "system-ui", "sans-serif"]);
+    expect(fontFamilies.mono).toEqual(["Geist Mono", "ui-monospace", "monospace"]);
     expect(fontFamilies).not.toHaveProperty("welcome-title");
     expect(fontFamilies).not.toHaveProperty("welcome");
   });

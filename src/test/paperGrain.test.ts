@@ -11,15 +11,16 @@ describe("grana locale e alias piatti — design system v4", () => {
   const tileUris = () =>
     [...css.matchAll(/--grain[a-z-]*tile: url\("([^"]+)"\)/g)].map((match) => match[1]);
 
-  it("usa rumore SVG inline, locale, ripetibile e a scala fissa", () => {
+  it("tiene il rumore SVG locale ma invisibile sul canvas piatto", () => {
     expect(css).toContain("--grain-tile:");
     expect(css).toContain("--grain-table-tile:");
     expect(css).toContain("--grain-paper-tile:");
     expect(css).toContain("--grain-scale: 160px");
     expect(css).toContain("--grain-blend: multiply");
+    expect(css).toContain("--grain-alpha-cover: 0");
 
     const tiles = tileUris();
-    expect(tiles).toHaveLength(5);
+    expect(tiles).toHaveLength(3);
     for (const uri of tiles) {
       expect(uri.startsWith("data:image/svg+xml")).toBe(true);
       expect(uri).toContain("xmlns='http://www.w3.org/2000/svg'");
@@ -27,9 +28,10 @@ describe("grana locale e alias piatti — design system v4", () => {
     }
   });
 
-  it("calibra tavolo, foglio e copertine per tema senza deformare la grana", () => {
-    expect(css).toContain("--grain-alpha-cover: 0.05");
-    expect(css).toMatch(/\.dark \{[\s\S]*?--grain-blend: screen/);
+  it("spegne la grana di tavolo e foglio: una sola superficie, senza seconda pendenza", () => {
+    expect(css).toContain("--grain-alpha-cover: 0");
+    expect(css).toContain(".paper-grain, .table-grain { background-image: none; }");
+    expect(css).not.toMatch(/\.dark \{[\s\S]*?--grain-blend: screen/);
 
     const tableSlopes = [
       ...css.matchAll(/--grain-table-tile: url\("data:[^"]*slope='([\d.]+)'/g),
@@ -38,12 +40,9 @@ describe("grana locale e alias piatti — design system v4", () => {
       ...css.matchAll(/--grain-paper-tile: url\("data:[^"]*slope='([\d.]+)'/g),
     ].map((match) => Number(match[1]));
 
-    expect(tableSlopes).toHaveLength(2);
-    expect(paperSlopes).toHaveLength(2);
+    expect(tableSlopes).toHaveLength(1);
+    expect(paperSlopes).toHaveLength(1);
     expect(tableSlopes[0]).toBeGreaterThan(paperSlopes[0]);
-    expect(tableSlopes[1]).toBeGreaterThan(paperSlopes[1]);
-    expect(tableSlopes[1]).toBeLessThan(tableSlopes[0]);
-    expect(paperSlopes[1]).toBeLessThan(paperSlopes[0]);
   });
 
   it("applica la grana come background, mai come opacity del contenuto", () => {

@@ -25,15 +25,16 @@ describe("ThemeProvider", () => {
     }
   });
 
-  it("aggiorna classe e theme-color in Light e Dark mode", async () => {
+  it("resta sul canvas scuro anche se si chiede il tema chiaro", async () => {
     render(<ThemeProvider><ThemeControls /></ThemeProvider>);
 
     fireEvent.click(screen.getByRole("button", { name: "Dark" }));
     await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
-    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#0A0A08");
+    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#0a0a0a");
 
     fireEvent.click(screen.getByRole("button", { name: "Light" }));
-    await waitFor(() => expect(document.documentElement).not.toHaveClass("dark"));
-    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#11120D");
+    await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
+    expect(screen.getByText("dark")).toBeInTheDocument();
+    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute("content", "#0a0a0a");
   });
 });

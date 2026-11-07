@@ -90,9 +90,9 @@ describe("SettingsPlanCard", () => {
     const css = readFileSync(join(process.cwd(), "src/index.css"), "utf8");
     const card = readFileSync(join(process.cwd(), "src/components/settings/SettingsPlanCard.tsx"), "utf8");
 
-    expect(css).toContain("--surface-primary: 42.8571 41.1765% 96.6667%");
+    expect(css).toContain("--surface-primary: 0 0% 9.80%");
     expect(card).toContain("rounded-card border border-border bg-card");
-    expect(card).toContain("rounded-button bg-primary");
+    expect(card).toContain("rounded-button border border-foreground/40 bg-transparent");
     expect(card).not.toContain("cover-grain");
     expect(card).not.toContain("--cedro");
   });

@@ -100,9 +100,9 @@ describe("Superfici pulite della Home", () => {
 
   it("usa i token earthy e le ombre flat documentate", () => {
     const css = readFileSync(join(__dirname, "..", "..", "src", "index.css"), "utf8");
-    expect(css).toContain("--canvas: 45.0000 26.6667% 94.1176%");
-    expect(css).toContain("--surface-primary: 42.8571 41.1765% 96.6667%");
-    expect(css).toContain("--surface-secondary: 42.8571 25.0000% 89.0196%");
+    expect(css).toContain("--canvas: 0 0% 3.92%");
+    expect(css).toContain("--surface-primary: 0 0% 9.80%");
+    expect(css).toContain("--surface-secondary: 220 10.34% 11.37%");
     expect(css).toContain("--shadow-level-3: none");
     // la copertina non usa gradienti: campo pieno + forme nette
     const bg = readFileSync(join(__dirname, "..", "components", "studio", "CourseCardBackground.tsx"), "utf8");
