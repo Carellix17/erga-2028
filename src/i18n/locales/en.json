@@ -623,6 +623,30 @@
     "timelineReadOnly": "Read only",
     "timelineEstimate": "estimated {{duration}}",
     "timelineDuration": "duration {{duration}}",
+    "pro": {
+      "label": "Pro",
+      "estimate": {
+        "button": "estimate",
+        "infoLabel": "About this estimate",
+        "loading": "Loading estimate details…",
+        "free": "Estimated from lesson length and subject type. With Pro, estimates learn from your real pace.",
+        "pro": "Biology: you usually take 1.2 times the estimate (8 measured lessons)"
+      },
+      "explainer": {
+        "title": "Pro features in Planner",
+        "description": "Tools designed to adapt the plan to your study habits.",
+        "speedTitle": "Estimates that learn your pace",
+        "speedDescription": "Measured lesson times help personalize future estimates, subject by subject.",
+        "pomodoroTitle": "Custom Pomodoro",
+        "pomodoroDescription": "Choose focus and break durations that fit the way you study."
+      },
+      "nudge": {
+        "title": "Your measurements are taking shape",
+        "description": "After five measured lessons, Pro can adapt estimates to your real pace.",
+        "discover": "Discover Pro",
+        "dismiss": "Not interested"
+      }
+    },
     "daysRemaining_one": "1 day to go",
     "daysRemaining_other": "{{count}} days to go",
     "remainingUnit_one": "day",
@@ -918,7 +942,8 @@
     "restoreError": "The session could not be restored from the cloud.",
     "logged": "Session recorded! Erga is calibrating your study plan.",
     "logError": "The session could not be saved.",
-    "noScreenAlerts": "Without notifications, if you lock your screen you won't hear when the Pomodoro ends."
+    "noScreenAlerts": "Without notifications, if you lock your screen you won't hear when the Pomodoro ends.",
+    "customPomodoroPro": "Custom Pomodoro · Pro"
   },
   "pushSchedule": {
     "slotStart": {

@@ -24,6 +24,8 @@ import {
 import { PushPrePrompt } from "@/components/focus/PushPrePrompt";
 import { formatMMSS, useFocus, useOptionalFocus } from "@/contexts/FocusContext";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useSubscription } from "@/hooks/useSubscription";
+import { hasFeature } from "@/lib/features";
 import type { FocusEndReason, FocusPhase } from "@/lib/focusClock";
 
 interface TimerPanelProps {
@@ -45,6 +47,8 @@ function endReason(phaseOverrun: number): FocusEndReason {
 
 function TimerPanelContent() {
   const { t } = useTranslation();
+  const { isPro, loading: subscriptionLoading } = useSubscription();
+  const showCustomPomodoroLabel = !subscriptionLoading && !hasFeature("custom_pomodoro", isPro);
   const {
     task,
     phase,
@@ -162,6 +166,12 @@ function TimerPanelContent() {
         <p role="note" className="flex items-start gap-2 text-base leading-relaxed text-muted-foreground">
           <BellOff className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
           <span>{t("focusTimer.noScreenAlerts")}</span>
+        </p>
+      )}
+
+      {showCustomPomodoroLabel && (
+        <p role="note" className="rounded-lg border border-cognitive/25 bg-cognitive/5 px-3 py-2 text-sm font-medium text-cognitive">
+          {t("focusTimer.customPomodoroPro")}
         </p>
       )}
 

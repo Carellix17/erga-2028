@@ -39,6 +39,10 @@ vi.mock("@/contexts/FocusContext", () => ({
   },
 }));
 
+vi.mock("@/hooks/useSubscription", () => ({
+  useSubscription: () => ({ isPro: false, loading: false }),
+}));
+
 function setViewportWidth(width: number) {
   Object.defineProperty(window, "innerWidth", { configurable: true, writable: true, value: width });
   act(() => fireEvent(window, new Event("resize")));

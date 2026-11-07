@@ -623,6 +623,30 @@
     "timelineReadOnly": "Sola lettura",
     "timelineEstimate": "stima {{duration}}",
     "timelineDuration": "durata {{duration}}",
+    "pro": {
+      "label": "Pro",
+      "estimate": {
+        "button": "stima",
+        "infoLabel": "Informazioni sulla stima",
+        "loading": "Caricamento delle informazioni sulla stima…",
+        "free": "Stima basata su lunghezza della lezione e tipo di materia. Con Pro la stima impara dalla tua velocità reale.",
+        "pro": "Biologia: di solito ci metti 1,2 volte la stima (8 lezioni misurate)"
+      },
+      "explainer": {
+        "title": "Funzioni Pro nel Piano",
+        "description": "Strumenti pensati per adattare il piano alle tue abitudini di studio.",
+        "speedTitle": "Stime che imparano dal tuo ritmo",
+        "speedDescription": "Le misurazioni delle lezioni aiutano a personalizzare le stime future, materia per materia.",
+        "pomodoroTitle": "Pomodoro personalizzato",
+        "pomodoroDescription": "Scegli la durata delle fasi di focus e delle pause in base al tuo modo di studiare."
+      },
+      "nudge": {
+        "title": "Le tue misurazioni stanno prendendo forma",
+        "description": "Con cinque lezioni misurate, Pro può adattare le stime al tuo ritmo reale.",
+        "discover": "Scopri Pro",
+        "dismiss": "Non mi interessa"
+      }
+    },
     "daysRemaining_one": "Manca 1 giorno",
     "daysRemaining_other": "Mancano {{count}} giorni",
     "remainingUnit_one": "giorno",
@@ -918,7 +942,8 @@
     "restoreError": "Non è stato possibile riprendere la sessione dal cloud.",
     "logged": "Sessione registrata! Erga sta calibrando il tuo algoritmo.",
     "logError": "Non è stato possibile salvare la sessione.",
-    "noScreenAlerts": "Senza avvisi, se blocchi lo schermo non sentirai la fine del pomodoro."
+    "noScreenAlerts": "Senza avvisi, se blocchi lo schermo non sentirai la fine del pomodoro.",
+    "customPomodoroPro": "Pomodoro personalizzato · Pro"
   },
   "pushSchedule": {
     "slotStart": {

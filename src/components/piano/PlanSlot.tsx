@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   Coffee,
   GraduationCap,
+  Info,
   Lock,
   Moon,
   Move,
@@ -23,6 +24,12 @@ import { format, isValid, parseISO } from "date-fns";
 import { enUS, it } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ProLabel } from "@/components/piano/ProLabel";
+import { ProNudgeCard } from "@/components/piano/ProNudgeCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription } from "@/hooks/useSubscription";
+import { hasFeature } from "@/lib/features";
 import { cn } from "@/lib/utils";
 import type { StudyEventStatus } from "@/lib/planner/types";
 import type { MoveSlotTarget } from "@/lib/planner/conflicts";
@@ -173,6 +180,47 @@ function dragTimeAt(pointer: PointerStart, clientY: number, pixelsPerHour: numbe
 function moveDayLabel(date: string, language: string) {
   const parsed = parseISO(date.slice(0, 10));
   return isValid(parsed) ? format(parsed, "EEEE d MMMM", { locale: language.startsWith("en") ? enUS : it }) : date;
+}
+
+function EstimateInfoContent() {
+  const { t } = useTranslation();
+  const { currentUser } = useAuth();
+  const { isPro, loading } = useSubscription();
+  const hasPersonalizedEstimate = hasFeature("speed_learning", isPro);
+  const messageKey = loading
+    ? "piano.pro.estimate.loading"
+    : hasPersonalizedEstimate
+      ? "piano.pro.estimate.pro"
+      : "piano.pro.estimate.free";
+
+  return (
+    <PopoverContent side="top" align="end" className="w-80 max-w-[calc(100vw-2rem)] space-y-2 p-3">
+      {hasPersonalizedEstimate && !loading && <ProLabel />}
+      <p className="text-sm leading-relaxed">{t(messageKey)}</p>
+      <ProNudgeCard userId={currentUser} isPro={isPro} subscriptionLoading={loading} />
+    </PopoverContent>
+  );
+}
+
+function EstimateInfoButton() {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={t("piano.pro.estimate.infoLabel")}
+          className="inline-flex min-h-8 items-center gap-1 rounded-sm px-1 text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Info className="h-3.5 w-3.5" aria-hidden="true" />
+          <span>{t("piano.pro.estimate.button")}</span>
+        </button>
+      </PopoverTrigger>
+      {open && <EstimateInfoContent />}
+    </Popover>
+  );
 }
 
 export function PlanSlot({
@@ -470,6 +518,7 @@ export function PlanSlot({
           </span>
           {timeRange && <time className="planner-slot-time font-mono tabular-nums">{timeRange}</time>}
           {duration && <span className="planner-slot-duration">{duration}</span>}
+          {duration && slot.kind === "study" && <EstimateInfoButton />}
         </div>
 
         {(slot.subject || visibleTitle) && (
