@@ -1,10 +1,13 @@
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Bus, CalendarClock, CalendarX, Loader2, Moon, Plus, Save, School, Settings2, Trash2, Utensils } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Trash2, CalendarClock, Loader2, Save } from "lucide-react";
+import { PlannerSettingsSheet } from "@/components/piano/PlannerSettingsSheet";
 import {
   useUserRoutines, useAddUserRoutine, useUpdateUserRoutine, useDeleteUserRoutine,
   type RoutineKind, type UserRoutine,
@@ -16,18 +19,33 @@ import { RoutineSkeleton } from "./RoutineSkeleton";
 import {
   ROUTINE_DAYS, ROUTINE_GRID_HEIGHT, ROUTINE_HOURS, ROUTINE_KINDS, ROUTINE_ROW_H,
   findRoutineConflict, fmtTime, layoutRoutineSegments, minToTime, routineDayLabel,
-  routineKindLabel, routineLayoutByDay, routineSegmentsByDay, toMin,
+  routineLayoutByDay, routineSegmentsByDay, routineTimesForSave, toMin,
 } from "@/lib/routineLayout";
 
 // 🎨 P9c: pastelli soft centralizzati nel kit (index.css .routine-*) — fuori i saturi blue/indigo/amber
-const KIND_STYLES: Record<RoutineKind, { chip: string; dot: string }> = {
-  school: { chip: "routine-school", dot: "routine-school-dot" },
-  sleep: { chip: "routine-sleep", dot: "routine-sleep-dot" },
-  meal: { chip: "routine-meal", dot: "routine-meal-dot" },
-  other: { chip: "routine-other", dot: "routine-other-dot" },
+const KIND_STYLES: Record<RoutineKind, { chip: string }> = {
+  school: { chip: "routine-school" },
+  sleep: { chip: "routine-sleep" },
+  meal: { chip: "routine-meal" },
+  other: { chip: "routine-other" },
+  transport: { chip: "bg-primary/10 text-foreground border-primary/20" },
+  no_study: { chip: "bg-muted text-muted-foreground border-border" },
 };
 
+const KIND_ICONS: Record<RoutineKind, LucideIcon> = {
+  school: School,
+  sleep: Moon,
+  meal: Utensils,
+  other: CalendarClock,
+  transport: Bus,
+  no_study: CalendarX,
+};
+
+const routineKindTranslationKey = (kind: RoutineKind) =>
+  ROUTINE_KINDS.find((routineKind) => routineKind.value === kind)?.labelKey ?? "piano.routine_other";
+
 export function WeeklyRoutineEditor() {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const routines = useUserRoutines();
@@ -37,6 +55,8 @@ export function WeeklyRoutineEditor() {
 
   // Modal state (creazione + modifica)
   const [modalOpen, setModalOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsSheetMounted, setSettingsSheetMounted] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [rKind, setRKind] = useState<RoutineKind>("school");
   const [rLabel, setRLabel] = useState("");
@@ -65,10 +85,21 @@ export function WeeklyRoutineEditor() {
     setEditingId(r.id);
     setRKind(r.kind);
     setRLabel(r.label ?? "");
-    setRStart(fmtTime(r.start_time));
-    setREnd(fmtTime(r.end_time));
+    setRStart(r.kind === "no_study" ? "00:00" : fmtTime(r.start_time));
+    setREnd(r.kind === "no_study" ? "23:59" : fmtTime(r.end_time));
     setRDays([...(r.days_of_week ?? [])].sort());
     setModalOpen(true);
+  };
+
+  const changeRoutineKind = (kind: RoutineKind) => {
+    if (kind === "no_study") {
+      setRStart("00:00");
+      setREnd("23:59");
+    } else if (rKind === "no_study") {
+      setRStart("08:00");
+      setREnd("13:00");
+    }
+    setRKind(kind);
   };
 
   const toggleDay = (n: number) =>
@@ -79,25 +110,25 @@ export function WeeklyRoutineEditor() {
       toast({ title: "Seleziona almeno un giorno", variant: "destructive" });
       return;
     }
-    if (!rStart || !rEnd) {
+    if (rKind !== "no_study" && (!rStart || !rEnd)) {
       toast({ title: "Orario non valido", description: "Inserisci un orario di inizio e fine.", variant: "destructive" });
       return;
     }
-    if (toMin(rStart) === toMin(rEnd)) {
+    if (rKind !== "no_study" && toMin(rStart) === toMin(rEnd)) {
       toast({ title: "Orario non valido", description: "Inizio e fine coincidono.", variant: "destructive" });
       return;
     }
 
-    // Controllo sovrapposizioni (gestisce anche i blocchi che attraversano la mezzanotte)
+    // I giorni senza studio sono un indicatore all-day, non un appuntamento in conflitto.
     const conflict = findRoutineConflict(
-      { startTime: rStart, endTime: rEnd, days: rDays },
+      { kind: rKind, startTime: rStart, endTime: rEnd, days: rDays },
       routines.data ?? [],
       editingId,
     );
     if (conflict) {
       const routineName =
         conflict.existing.routine?.label ??
-        routineKindLabel(conflict.existing.routine?.kind ?? "other");
+        t(routineKindTranslationKey(conflict.existing.routine?.kind ?? "other"));
       toast({
         title: "Routine sovrapposta",
         description: `${routineDayLabel(conflict.candidate.day)}, ${minToTime(conflict.candidate.startMin)}–${minToTime(conflict.candidate.endMin)} si sovrappone a ${routineName} (${minToTime(conflict.existing.startMin)}–${minToTime(conflict.existing.endMin)}).`,
@@ -110,8 +141,7 @@ export function WeeklyRoutineEditor() {
       const payload = {
         kind: rKind,
         label: rLabel.trim() || null,
-        start_time: rStart,
-        end_time: rEnd,
+        ...routineTimesForSave(rKind, rStart, rEnd),
         days_of_week: rDays,
       };
       if (editingId) {
@@ -152,13 +182,27 @@ export function WeeklyRoutineEditor() {
       <CoreCard
         id="routine"
         icon={CalendarClock}
-        title="Settimana"
-        description="I tuoi impegni fissi fuori dallo studio (scuola, sonno, pasti, sport). Il piano di studio li eviterà."
+        title={t("piano.routineWeekTitle")}
+        description={t("piano.routineWeekDescription")}
         action={
-          <Button onClick={() => openCreate()} size="sm" className="h-11 rounded-pill px-4">
-            <Plus className="w-4 h-4 mr-1" aria-hidden="true" />
-            Aggiungi blocco
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSettingsSheetMounted(true);
+                setSettingsOpen(true);
+              }}
+              className="h-11 rounded-pill px-4"
+            >
+              <Settings2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              {t("piano.settings.open")}
+            </Button>
+            <Button type="button" onClick={() => openCreate()} size="sm" className="h-11 rounded-pill px-4">
+              <Plus className="w-4 h-4 mr-1" aria-hidden="true" />
+              {t("piano.routineAddBlock")}
+            </Button>
+          </div>
         }
       >
         {isEmpty ? (
@@ -312,6 +356,10 @@ export function WeeklyRoutineEditor() {
         )}
       </CoreCard>
 
+      {settingsSheetMounted && (
+        <PlannerSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
+      )}
+
       {/* Modale creazione / modifica routine */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="max-w-md">
@@ -328,24 +376,30 @@ export function WeeklyRoutineEditor() {
                 {ROUTINE_KINDS.map((k) => {
                   const active = rKind === k.value;
                   const st = KIND_STYLES[k.value];
+                  const Icon = KIND_ICONS[k.value];
                   return (
                     <button
                       key={k.value}
-                      onClick={() => setRKind(k.value)}
+                      type="button"
+                      onClick={() => changeRoutineKind(k.value)}
                       aria-pressed={active}
                       className={cn(
-                        "px-3 min-h-[40px] rounded-full text-sm border transition-all duration-300",
+                        "inline-flex items-center gap-1.5 px-3 min-h-[40px] rounded-full text-sm border transition-all duration-300",
                         active ? `${st.chip} shadow-sm scale-105` : "bg-card text-foreground border-border hover:bg-muted/50",
                       )}
                     >
-                      <span className={cn("inline-block w-2 h-2 rounded-full mr-1.5 align-middle", st.dot)} aria-hidden="true" />
-                      {k.label}
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                      {t(k.labelKey)}
                     </button>
                   );
                 })}
               </div>
               <p className="text-[11px] text-muted-foreground mt-1.5">
-                Sport, hobby e altri impegni fissi → “Altro”.
+                {rKind === "transport"
+                  ? t("piano.routineTransportHelp")
+                  : rKind === "no_study"
+                    ? t("piano.routineNoStudyHelp")
+                    : "Sport, hobby e altri impegni fissi → “Altro”."}
               </p>
             </div>
 
@@ -362,31 +416,40 @@ export function WeeklyRoutineEditor() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="routine-start" className="label-medium text-muted-foreground">Inizio</Label>
-                <Input
-                  id="routine-start"
-                  type="time"
-                  value={rStart}
-                  onChange={(e) => setRStart(e.target.value)}
-                  className="rounded-button h-11 mt-1.5 border border-border"
-                />
+            {rKind === "no_study" ? (
+              <div className="flex min-h-11 items-center gap-2 rounded-lg bg-muted/50 px-3 text-sm text-muted-foreground" role="status">
+                <CalendarX className="h-4 w-4" aria-hidden="true" />
+                {t("piano.routine_all_day")}
               </div>
-              <div>
-                <Label htmlFor="routine-end" className="label-medium text-muted-foreground">Fine</Label>
-                <Input
-                  id="routine-end"
-                  type="time"
-                  value={rEnd}
-                  onChange={(e) => setREnd(e.target.value)}
-                  className="rounded-button h-11 mt-1.5 border border-border"
-                />
-              </div>
-            </div>
-            <p className="text-[11px] text-muted-foreground -mt-2">
-              Se la fine è prima dell'inizio (es. 22:00 → 06:00), il blocco attraversa la mezzanotte.
-            </p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="routine-start" className="label-medium text-muted-foreground">Inizio</Label>
+                    <Input
+                      id="routine-start"
+                      type="time"
+                      value={rStart}
+                      onChange={(e) => setRStart(e.target.value)}
+                      className="rounded-button h-11 mt-1.5 border border-border"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="routine-end" className="label-medium text-muted-foreground">Fine</Label>
+                    <Input
+                      id="routine-end"
+                      type="time"
+                      value={rEnd}
+                      onChange={(e) => setREnd(e.target.value)}
+                      className="rounded-button h-11 mt-1.5 border border-border"
+                    />
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground -mt-2">
+                  Se la fine è prima dell'inizio (es. 22:00 → 06:00), il blocco attraversa la mezzanotte.
+                </p>
+              </>
+            )}
 
             <div>
               <Label className="label-medium text-muted-foreground">Ripeti nei giorni</Label>
@@ -465,9 +528,15 @@ interface BlockProps {
 
 /** Blocco routine sulla griglia (bottone: apre la modifica). */
 function RoutineBlockButton({ seg, onEdit, mobile }: BlockProps) {
+  const { t } = useTranslation();
   const r = seg.routine;
   const st = KIND_STYLES[r.kind];
+  const Icon = KIND_ICONS[r.kind];
+  const displayName = r.label || t(routineKindTranslationKey(r.kind));
   const laneWidth = 100 / seg.laneCount;
+  const timeLabel = r.kind === "no_study"
+    ? t("piano.routine_all_day")
+    : `${minToTime(seg.startMin)}–${minToTime(seg.endMin)}`;
   return (
     <button
       onClick={(e) => {
@@ -489,13 +558,14 @@ function RoutineBlockButton({ seg, onEdit, mobile }: BlockProps) {
         transition:
           "transform 350ms cubic-bezier(0.2, 0, 0, 1), box-shadow 200ms, height 300ms ease, top 300ms ease",
       }}
-      aria-label={`${r.label || routineKindLabel(r.kind)}, ${routineDayLabel(seg.day)} ${minToTime(seg.startMin)}–${minToTime(seg.endMin)}. Tocca per modificare.`}
+      aria-label={`${displayName}, ${routineDayLabel(seg.day)} ${timeLabel}. ${t("piano.routineTapToEdit")}`}
     >
-      <div className="font-semibold truncate">{r.label || routineKindLabel(r.kind)}</div>
+      <div className="flex min-w-0 items-center gap-1 font-semibold">
+        <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        <span className="truncate">{displayName}</span>
+      </div>
       {seg.renderHeightPx >= 40 && (
-        <div className="opacity-70 tabular-nums text-[11px]">
-          {minToTime(seg.startMin)}–{minToTime(seg.endMin)}
-        </div>
+        <div className="opacity-70 tabular-nums text-[11px]">{timeLabel}</div>
       )}
     </button>
   );
