@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import i18n from "@/i18n";
+import { calculateSpeedFactor, type ReadingSpeedSample } from "@/lib/planner/speed";
 
 const mocks = vi.hoisted(() => {
   const builder: Record<string, ReturnType<typeof vi.fn>> = {};
@@ -12,7 +14,10 @@ const mocks = vi.hoisted(() => {
     isPro: false,
     subscriptionLoading: false,
     userId: "student-1" as string | null,
-    readingLogs: [] as Array<Record<string, unknown>>,
+    readingLogs: [] as ReadingSpeedSample[],
+    readingLogsByUser: {} as Record<string, ReadingSpeedSample[]>,
+    queryError: null as Error | null,
+    queriedUserIds: [] as string[],
     builder,
     from: vi.fn(() => builder),
     focus: {
@@ -80,13 +85,14 @@ import { ProLabel } from "@/components/piano/ProLabel";
 import { ProNudgeCard } from "@/components/piano/ProNudgeCard";
 import { hasFeature } from "@/lib/features";
 
-function measuredLog(index: number) {
+function measuredLog(index: number, overrides: Partial<ReadingSpeedSample> = {}): ReadingSpeedSample {
   return {
     active_seconds: 600,
     base_estimate_min: 10,
     completed_at: `2026-11-${String(index + 1).padStart(2, "0")}T12:00:00.000Z`,
     subject: "Biologia",
     subject_type: "scientifico",
+    ...overrides,
   };
 }
 
@@ -115,23 +121,35 @@ function renderTimerPanel(mobile = true) {
   );
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  await i18n.changeLanguage("it");
   window.localStorage.clear();
   mocks.isPro = false;
   mocks.subscriptionLoading = false;
   mocks.userId = "student-1";
   mocks.readingLogs = [];
+  mocks.readingLogsByUser = {};
+  mocks.queryError = null;
+  mocks.queriedUserIds = [];
   mocks.from.mockClear().mockImplementation(() => mocks.builder);
   mocks.builder.select.mockClear().mockImplementation(() => mocks.builder);
-  mocks.builder.eq.mockReset().mockImplementation(async () => ({ data: mocks.readingLogs, error: null }));
+  mocks.builder.eq.mockReset().mockImplementation(async (_column: string, userId: unknown) => {
+    const key = String(userId);
+    mocks.queriedUserIds.push(key);
+    const data = Object.prototype.hasOwnProperty.call(mocks.readingLogsByUser, key)
+      ? mocks.readingLogsByUser[key]
+      : mocks.readingLogs;
+    return { data, error: mocks.queryError };
+  });
   Object.values(mocks.focus).forEach((value) => {
     if (typeof value === "function" && "mockReset" in value) value.mockReset();
   });
 });
 
-afterEach(() => {
+afterEach(async () => {
   cleanup();
   window.localStorage.clear();
+  await i18n.changeLanguage("it");
 });
 
 describe("struttura Free/Pro del Piano", () => {
@@ -166,19 +184,147 @@ describe("struttura Free/Pro del Piano", () => {
     expect(newComponents).not.toMatch(/openCheckout/i);
   });
 
-  it("mostra la spiegazione della stima per Free e Pro senza nascondere i tempi reali", async () => {
-    const view = render(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+  it("mantiene il testo Free e non inventa misurazioni Pro quando non ce ne sono", async () => {
+    const freeView = render(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
 
     expect(screen.getByText(/1 ora e 38 minuti/i)).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Informazioni sulla stima" }));
     expect(await screen.findByText("Stima basata su lunghezza della lezione e tipo di materia. Con Pro la stima impara dalla tua velocità reale.")).toBeInTheDocument();
 
-    view.unmount();
+    freeView.unmount();
     mocks.isPro = true;
     render(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
     fireEvent.click(screen.getByRole("button", { name: "Informazioni sulla stima" }));
-    expect(await screen.findByText("Biologia: di solito ci metti 1,2 volte la stima (8 lezioni misurate)")).toBeInTheDocument();
+    expect(await screen.findByText("Nessuna misurazione ancora per Biologia.")).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).not.toHaveTextContent(/\d/);
     expect(screen.getByText("Pro")).toBeInTheDocument();
+  });
+
+  it("mantiene il caricamento neutro e il messaggio Free dopo la verifica del tier", async () => {
+    mocks.subscriptionLoading = true;
+    const view = render(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    fireEvent.click(screen.getByRole("button", { name: "Informazioni sulla stima" }));
+
+    expect(await screen.findByText("Caricamento delle informazioni sulla stima…")).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).not.toHaveTextContent(/\d/);
+    mocks.subscriptionLoading = false;
+    view.rerender(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    expect(await screen.findByText("Stima basata su lunghezza della lezione e tipo di materia. Con Pro la stima impara dalla tua velocità reale.")).toBeInTheDocument();
+  });
+
+  it("non usa misurazioni di altre materie per il fattore dello slot", async () => {
+    mocks.isPro = true;
+    mocks.readingLogs = [measuredLog(0, { subject: "Matematica", active_seconds: 1_440 })];
+    render(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    fireEvent.click(screen.getByRole("button", { name: "Informazioni sulla stima" }));
+
+    expect(await screen.findByText("Nessuna misurazione ancora per Biologia.")).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).not.toHaveTextContent(/\d/);
+  });
+
+  it("mostra fattore reale e singolare in italiano", async () => {
+    mocks.isPro = true;
+    const samples = [measuredLog(0, { active_seconds: 1_200 })];
+    mocks.readingLogs = samples;
+    const expected = calculateSpeedFactor("Biologia", "scientifico", samples);
+    render(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    fireEvent.click(screen.getByRole("button", { name: "Informazioni sulla stima" }));
+
+    const factor = new Intl.NumberFormat("it", { maximumFractionDigits: 1 }).format(expected.explanation.factor);
+    expect(await screen.findByText(
+      `Biologia: di solito ci metti ${factor} volte la stima (${expected.n} lezione misurata)`,
+    )).toBeInTheDocument();
+    expect(mocks.builder.eq).toHaveBeenCalledWith("user_id", "student-1");
+  });
+
+  it("mostra fattore reale, numeri inglesi e plurale in inglese", async () => {
+    await i18n.changeLanguage("en");
+    mocks.isPro = true;
+    const samples = [
+      measuredLog(0, { active_seconds: 720, subject: "Biology" }),
+      measuredLog(1, { active_seconds: 1_080, subject: "Biology" }),
+      measuredLog(2, { active_seconds: 1_440, subject: "Mathematics" }),
+    ];
+    mocks.readingLogs = samples;
+    const expected = calculateSpeedFactor("Biology", "scientifico", samples);
+    render(<ol role="list"><PlanSlot slot={studySlot({ subject: "Biology" })} /></ol>);
+    fireEvent.click(screen.getByRole("button", { name: "About this estimate" }));
+
+    const factor = new Intl.NumberFormat("en", { maximumFractionDigits: 1 }).format(expected.explanation.factor);
+    expect(await screen.findByText(
+      `Biology: you usually take ${factor} times the estimate (${expected.n} measured lessons)`,
+    )).toBeInTheDocument();
+  });
+
+  it("gestisce caricamento ed errore senza mostrare fattori fittizi", async () => {
+    mocks.isPro = true;
+    let resolveQuery: ((value: { data: ReadingSpeedSample[]; error: Error | null }) => void) | undefined;
+    mocks.builder.eq.mockImplementationOnce(() => new Promise((resolve) => {
+      resolveQuery = resolve;
+    }));
+    render(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    fireEvent.click(screen.getByRole("button", { name: "Informazioni sulla stima" }));
+
+    expect(await screen.findByText("Caricamento delle tue misurazioni…")).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).not.toHaveTextContent(/\d/);
+    if (!resolveQuery) throw new Error("La query delle misurazioni non è stata avviata");
+    resolveQuery({ data: [measuredLog(0, { active_seconds: 1_200 })], error: null });
+    expect(await screen.findByText(/Biologia: di solito ci metti 1,2 volte la stima/)).toBeInTheDocument();
+
+    cleanup();
+    mocks.queryError = new Error("offline");
+    render(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    fireEvent.click(screen.getByRole("button", { name: "Informazioni sulla stima" }));
+    expect(await screen.findByText("Non è stato possibile caricare le tue misurazioni.")).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).not.toHaveTextContent(/\d/);
+  });
+
+  it("isola i dati quando cambia account e li cancella al logout", async () => {
+    mocks.isPro = true;
+    mocks.userId = "account-a";
+    const resolvers: Record<string, (value: { data: ReadingSpeedSample[]; error: Error | null }) => void> = {};
+    mocks.builder.eq.mockImplementation((_column: string, userId: unknown) => new Promise((resolve) => {
+      resolvers[String(userId)] = resolve;
+    }));
+
+    const view = render(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    fireEvent.click(screen.getByRole("button", { name: "Informazioni sulla stima" }));
+    await waitFor(() => expect(resolvers["account-a"]).toBeDefined());
+
+    mocks.userId = "account-b";
+    mocks.subscriptionLoading = true;
+    view.rerender(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    expect(screen.getByText("Caricamento delle informazioni sulla stima…")).toBeInTheDocument();
+    expect(screen.queryByText(/volte la stima/)).not.toBeInTheDocument();
+
+    await act(async () => {
+      resolvers["account-a"]({ data: [measuredLog(0, { active_seconds: 1_200 })], error: null });
+      await Promise.resolve();
+    });
+    expect(screen.queryByText(/volte la stima/)).not.toBeInTheDocument();
+    mocks.subscriptionLoading = false;
+    view.rerender(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    await waitFor(() => expect(resolvers["account-b"]).toBeDefined());
+    expect(screen.getByText("Caricamento delle tue misurazioni…")).toBeInTheDocument();
+    await act(async () => {
+      resolvers["account-b"]({ data: [measuredLog(0, { active_seconds: 300 })], error: null });
+      await Promise.resolve();
+    });
+    expect(await screen.findByText(/Biologia: di solito ci metti 0,9 volte la stima/)).toBeInTheDocument();
+    expect(mocks.builder.eq).toHaveBeenCalledWith("user_id", "account-a");
+    expect(mocks.builder.eq).toHaveBeenCalledWith("user_id", "account-b");
+
+    mocks.userId = null;
+    mocks.subscriptionLoading = true;
+    view.rerender(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    expect(screen.getByText("Caricamento delle informazioni sulla stima…")).toBeInTheDocument();
+    expect(screen.queryByText(/volte la stima/)).not.toBeInTheDocument();
+
+    mocks.isPro = false;
+    mocks.subscriptionLoading = false;
+    view.rerender(<ol role="list"><PlanSlot slot={studySlot()} /></ol>);
+    expect(await screen.findByText("Stima basata su lunghezza della lezione e tipo di materia. Con Pro la stima impara dalla tua velocità reale.")).toBeInTheDocument();
+    expect(screen.queryByText(/volte la stima/)).not.toBeInTheDocument();
   });
 
   it("mostra nel TimerPanel la riga informativa sul Pomodoro personalizzato Pro solo a Free", () => {

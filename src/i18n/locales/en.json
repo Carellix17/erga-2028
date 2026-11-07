@@ -629,8 +629,13 @@
         "button": "estimate",
         "infoLabel": "About this estimate",
         "loading": "Loading estimate details…",
+        "loadingMeasurements": "Loading your measurements…",
+        "error": "Your measurements could not be loaded.",
         "free": "Estimated from lesson length and subject type. With Pro, estimates learn from your real pace.",
-        "pro": "Biology: you usually take 1.2 times the estimate (8 measured lessons)"
+        "noMeasurements": "No measurements yet.",
+        "noMeasurementsForSubject": "No measurements yet for {{subject}}.",
+        "pro_one": "{{subject}}: you usually take {{factor}} times the estimate ({{measuredCount}} measured lesson)",
+        "pro_other": "{{subject}}: you usually take {{factor}} times the estimate ({{measuredCount}} measured lessons)"
       },
       "explainer": {
         "title": "Pro features in Planner",

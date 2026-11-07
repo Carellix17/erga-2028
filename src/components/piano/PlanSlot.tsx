@@ -30,6 +30,9 @@ import { ProNudgeCard } from "@/components/piano/ProNudgeCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { hasFeature } from "@/lib/features";
+import { supabase } from "@/integrations/supabase/client";
+import { calculateSpeedFactor, type ReadingSpeedSample } from "@/lib/planner/speed";
+import { normalizeSubjectName, subjectType as resolveSubjectType, type SubjectType } from "@/lib/planner/subjectType";
 import { cn } from "@/lib/utils";
 import type { StudyEventStatus } from "@/lib/planner/types";
 import type { MoveSlotTarget } from "@/lib/planner/conflicts";
@@ -182,27 +185,143 @@ function moveDayLabel(date: string, language: string) {
   return isValid(parsed) ? format(parsed, "EEEE d MMMM", { locale: language.startsWith("en") ? enUS : it }) : date;
 }
 
-function EstimateInfoContent() {
-  const { t } = useTranslation();
-  const { currentUser } = useAuth();
-  const { isPro, loading } = useSubscription();
+interface PersonalizedEstimate {
+  factor: number;
+  count: number;
+}
+
+type PersonalizedEstimateState =
+  | { status: "idle" | "loading" | "error" }
+  | { status: "ready"; estimate: PersonalizedEstimate | null };
+
+const SUBJECT_TYPES: readonly SubjectType[] = ["scientifico", "lingue", "umanistico", "generale"];
+
+function isSubjectType(value: string | null): value is SubjectType {
+  return SUBJECT_TYPES.includes(value as SubjectType);
+}
+
+function subjectTypeFromSamples(subject: string, samples: readonly ReadingSpeedSample[]): SubjectType {
+  const normalizedSubject = normalizeSubjectName(subject);
+  const matchingSamples = samples
+    .filter((sample) => normalizeSubjectName(sample.subject ?? "") === normalizedSubject)
+    .sort((left, right) => Date.parse(right.completed_at) - Date.parse(left.completed_at));
+  const loggedType = matchingSamples.map((sample) => sample.subject_type).find(isSubjectType);
+  return loggedType ?? resolveSubjectType(null, subject);
+}
+
+async function loadPersonalizedEstimate(userId: string, subject: string): Promise<PersonalizedEstimate | null> {
+  const { data, error } = await supabase
+    .from("lesson_reading_logs")
+    .select("active_seconds, base_estimate_min, completed_at, subject, subject_type")
+    .eq("user_id", userId);
+
+  if (error) throw error;
+
+  const samples = (data ?? []) as ReadingSpeedSample[];
+  const result = calculateSpeedFactor(subject, subjectTypeFromSamples(subject, samples), samples);
+  if (result.n === 0) return null;
+
+  return { factor: result.explanation.factor, count: result.n };
+}
+
+function formatEstimateNumber(value: number, language: string): string {
+  return new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(value);
+}
+
+interface EstimateInfoForUserProps {
+  userId: string | null;
+  subject: string;
+  isPro: boolean;
+  subscriptionLoading: boolean;
+}
+
+function EstimateInfoForUser({ userId, subject, isPro, subscriptionLoading }: EstimateInfoForUserProps) {
+  const { t, i18n } = useTranslation();
+  const [estimateState, setEstimateState] = useState<PersonalizedEstimateState>({ status: "loading" });
   const hasPersonalizedEstimate = hasFeature("speed_learning", isPro);
-  const messageKey = loading
-    ? "piano.pro.estimate.loading"
-    : hasPersonalizedEstimate
-      ? "piano.pro.estimate.pro"
-      : "piano.pro.estimate.free";
+  const normalizedSubject = normalizeSubjectName(subject);
+
+  useEffect(() => {
+    if (subscriptionLoading || !isPro) {
+      setEstimateState({ status: "idle" });
+      return;
+    }
+
+    if (!userId || !normalizedSubject) {
+      setEstimateState({ status: "ready", estimate: null });
+      return;
+    }
+
+    let active = true;
+    setEstimateState({ status: "loading" });
+    void loadPersonalizedEstimate(userId, subject)
+      .then((estimate) => {
+        if (active) setEstimateState({ status: "ready", estimate });
+      })
+      .catch(() => {
+        if (active) setEstimateState({ status: "error" });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [userId, subject, normalizedSubject, isPro, subscriptionLoading]);
+
+  let message: string;
+  if (subscriptionLoading) {
+    message = t("piano.pro.estimate.loading");
+  } else if (!hasPersonalizedEstimate) {
+    message = t("piano.pro.estimate.free");
+  } else if (estimateState.status !== "ready" && estimateState.status !== "error") {
+    message = t("piano.pro.estimate.loadingMeasurements");
+  } else if (estimateState.status === "error") {
+    message = t("piano.pro.estimate.error");
+  } else if (estimateState.status === "ready" && estimateState.estimate) {
+    const language = i18n.resolvedLanguage ?? i18n.language;
+    message = t("piano.pro.estimate.pro", {
+      subject,
+      factor: formatEstimateNumber(estimateState.estimate.factor, language),
+      count: estimateState.estimate.count,
+      measuredCount: new Intl.NumberFormat(language).format(estimateState.estimate.count),
+    });
+  } else {
+    message = subject
+      ? t("piano.pro.estimate.noMeasurementsForSubject", { subject })
+      : t("piano.pro.estimate.noMeasurements");
+  }
 
   return (
     <PopoverContent side="top" align="end" className="w-80 max-w-[calc(100vw-2rem)] space-y-2 p-3">
-      {hasPersonalizedEstimate && !loading && <ProLabel />}
-      <p className="text-sm leading-relaxed">{t(messageKey)}</p>
-      <ProNudgeCard userId={currentUser} isPro={isPro} subscriptionLoading={loading} />
+      {hasPersonalizedEstimate && !subscriptionLoading && <ProLabel />}
+      <p className="text-sm leading-relaxed">{message}</p>
+      <ProNudgeCard userId={userId} isPro={isPro} subscriptionLoading={subscriptionLoading} />
     </PopoverContent>
   );
 }
 
-function EstimateInfoButton() {
+function EstimateInfoContent({ subject }: { subject: string | null | undefined }) {
+  const { currentUser } = useAuth();
+  const { isPro, loading } = useSubscription();
+  const previousUserId = useRef(currentUser);
+  const accountChanging = previousUserId.current !== currentUser;
+  const normalizedSubject = normalizeSubjectName(subject ?? "");
+
+  useEffect(() => {
+    previousUserId.current = currentUser;
+  }, [currentUser]);
+
+  return (
+    <EstimateInfoForUser
+      key={JSON.stringify([currentUser, normalizedSubject])}
+      userId={currentUser}
+      subject={subject?.trim() ?? ""}
+      isPro={!accountChanging && isPro}
+      subscriptionLoading={loading || accountChanging}
+    />
+  );
+}
+
+function EstimateInfoButton({ subject }: { subject: string | null | undefined }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
@@ -218,7 +337,7 @@ function EstimateInfoButton() {
           <span>{t("piano.pro.estimate.button")}</span>
         </button>
       </PopoverTrigger>
-      {open && <EstimateInfoContent />}
+      {open && <EstimateInfoContent subject={subject} />}
     </Popover>
   );
 }
@@ -518,7 +637,7 @@ export function PlanSlot({
           </span>
           {timeRange && <time className="planner-slot-time font-mono tabular-nums">{timeRange}</time>}
           {duration && <span className="planner-slot-duration">{duration}</span>}
-          {duration && slot.kind === "study" && <EstimateInfoButton />}
+          {duration && slot.kind === "study" && <EstimateInfoButton subject={slot.subject} />}
         </div>
 
         {(slot.subject || visibleTitle) && (

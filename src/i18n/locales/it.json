@@ -629,8 +629,13 @@
         "button": "stima",
         "infoLabel": "Informazioni sulla stima",
         "loading": "Caricamento delle informazioni sulla stima…",
+        "loadingMeasurements": "Caricamento delle tue misurazioni…",
+        "error": "Non è stato possibile caricare le tue misurazioni.",
         "free": "Stima basata su lunghezza della lezione e tipo di materia. Con Pro la stima impara dalla tua velocità reale.",
-        "pro": "Biologia: di solito ci metti 1,2 volte la stima (8 lezioni misurate)"
+        "noMeasurements": "Nessuna misurazione ancora.",
+        "noMeasurementsForSubject": "Nessuna misurazione ancora per {{subject}}.",
+        "pro_one": "{{subject}}: di solito ci metti {{factor}} volte la stima ({{measuredCount}} lezione misurata)",
+        "pro_other": "{{subject}}: di solito ci metti {{factor}} volte la stima ({{measuredCount}} lezioni misurate)"
       },
       "explainer": {
         "title": "Funzioni Pro nel Piano",
