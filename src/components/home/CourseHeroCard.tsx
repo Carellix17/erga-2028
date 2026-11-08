@@ -32,6 +32,12 @@ function clampPercent(value: number | null | undefined) {
     : 0;
 }
 
+/** Sulla card bianca il pill outline (bordo e testo bianchi) non si legge.
+ *  Riempimento: canvas DESIGN.md #0a0a0a. Testo: ink #ffffff.
+ *  Hover: canvas-soft #1a1c20. Focus: anello nero staccato dal bianco della card. */
+const lessonCtaClass =
+  "min-h-12 w-full border-[#0a0a0a] bg-[#0a0a0a] text-[#ffffff] hover:border-[#1a1c20] hover:bg-[#1a1c20] hover:text-[#ffffff] focus-visible:ring-[#0a0a0a] focus-visible:ring-offset-[#ffffff] sm:w-fit";
+
 export function CourseHeroCard({
   courseTitle,
   lessonTitle,
@@ -74,7 +80,7 @@ export function CourseHeroCard({
               </div>
               <span className="shrink-0 font-mono text-sm tabular-nums text-[#0a0a0a]">{percent}%</span>
             </div>
-            <Button onClick={onPrimaryCta} className="min-h-12 w-full sm:w-fit">
+            <Button onClick={onPrimaryCta} className={lessonCtaClass}>
               {primaryCtaLabel}
               <ArrowRight aria-hidden="true" />
             </Button>
@@ -92,7 +98,7 @@ export function CourseHeroCard({
             </p>
           )}
           {emptyCtaLabel && (
-            <Button onClick={onEmptyCta} className="mt-5 min-h-12 w-full sm:w-fit">
+            <Button onClick={onEmptyCta} className={`mt-5 ${lessonCtaClass}`}>
               {emptyCtaLabel}
               <ArrowRight aria-hidden="true" />
             </Button>

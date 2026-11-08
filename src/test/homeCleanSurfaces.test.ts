@@ -80,13 +80,17 @@ describe("Superfici pulite della Home", () => {
     expect(hero).not.toContain("paper-grain");
   });
 
-  it("la CTA 'Riprendi/Continua' resta un Button pieno e facilmente toccabile", () => {
+  it("la CTA 'Riprendi/Continua' è un Button pieno nero su testo bianco", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     expect(hero).toContain("<Button onClick={onPrimaryCta}");
     expect(hero).toContain("min-h-12 w-full");
+    expect(hero).toContain("bg-[#0a0a0a]");
+    expect(hero).toContain("text-[#ffffff]");
+    expect(hero).toContain("border-[#0a0a0a]");
     expect(hero).not.toContain("btn-satin");
     // la vecchia CTA semiopaca color-mix non deve tornare
     expect(hero).not.toContain("color-mix(in srgb, currentColor 12%");
+    expect(hero).not.toContain("bg-transparent");
   });
 
   it("il titolo del corso usa la gerarchia UI e spezza le parole senza uscire", () => {
