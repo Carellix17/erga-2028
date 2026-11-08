@@ -10,7 +10,7 @@ interface BottomNavProps {
   onTabChange: (tab: Tab) => void;
 }
 
-/** Attached app navigation. Equal-width mobile slots need no layout measurement. */
+/** Phone: white pill (Home, Piano, Studio) plus a white Core circle. Tablet rail and desktop sidebar stay attached. */
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const { t } = useTranslation();
   const tabs = [
@@ -19,36 +19,58 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     { id: "studio" as Tab, i18nKey: "nav.studio", icon: BookOpen },
     { id: "core" as Tab, i18nKey: "nav.core", icon: Hexagon },
   ];
-  const activeIndex = tabs.findIndex((tab) => tab.id === activeTab);
+  const pillTabs = tabs.filter((tab) => tab.id !== "core");
+  const coreTab = tabs.find((tab) => tab.id === "core")!;
 
   return (
     <>
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-sheet pb-[env(safe-area-inset-bottom,0px)] md:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden"
         aria-label={t("nav.ariaPrimary")}
       >
-        <div className="relative mx-auto grid h-16 max-w-lg grid-cols-4">
-          <span
-            aria-hidden="true"
-            className="app-nav-indicator pointer-events-none absolute inset-y-0 left-0 w-1/4 border-t-2 border-sand bg-nest"
-            style={{ transform: `translateX(${activeIndex * 100}%)` }}
-          />
-          {tabs.map(({ id, i18nKey, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => activeTab !== id && onTabChange(id)}
-              aria-current={activeTab === id ? "page" : undefined}
-              data-haptic={activeTab === id ? "off" : "medium"}
+        <div className="dock-veil" aria-hidden="true" />
+        <div className="pointer-events-auto relative mx-auto flex max-w-lg items-center gap-2.5">
+          <div className="grid h-16 min-w-0 flex-1 grid-cols-3 overflow-hidden rounded-pill bg-primary p-1 text-primary-foreground">
+            {pillTabs.map(({ id, i18nKey, icon: Icon }) => {
+              const isActive = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => activeTab !== id && onTabChange(id)}
+                  aria-current={isActive ? "page" : undefined}
+                  data-haptic={isActive ? "off" : "medium"}
+                  className={cn(
+                    "flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-pill px-1 text-base font-normal leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none",
+                    isActive ? "bg-nest text-sand" : "text-primary-foreground",
+                  )}
+                >
+                  <Icon className="h-5 w-5" strokeWidth={isActive ? 2 : 1.75} aria-hidden="true" />
+                  <span>{t(i18nKey)}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={() => activeTab !== coreTab.id && onTabChange(coreTab.id)}
+            aria-current={activeTab === coreTab.id ? "page" : undefined}
+            data-haptic={activeTab === coreTab.id ? "off" : "medium"}
+            className={cn(
+              "grid h-16 w-16 shrink-0 place-items-center rounded-pill bg-primary p-1 text-primary-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none",
+              activeTab === coreTab.id ? "text-sand" : "text-primary-foreground",
+            )}
+          >
+            <span
               className={cn(
-                "relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 px-1 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-                activeTab === id ? "font-normal text-sand" : "font-normal text-muted-foreground",
+                "grid h-full w-full place-items-center rounded-pill",
+                activeTab === coreTab.id && "bg-nest",
               )}
             >
-              <Icon className="h-[22px] w-[22px]" strokeWidth={activeTab === id ? 2 : 1.75} aria-hidden="true" />
-              <span>{t(i18nKey)}</span>
-            </button>
-          ))}
+              <coreTab.icon className="h-6 w-6" strokeWidth={activeTab === coreTab.id ? 2 : 1.75} aria-hidden="true" />
+              <span className="sr-only">{t(coreTab.i18nKey)}</span>
+            </span>
+          </button>
         </div>
       </nav>
 

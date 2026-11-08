@@ -1199,8 +1199,27 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 @media (prefers-reduced-motion: reduce) { .study-workspace *, .cognitive-grid * { scroll-behavior:auto; } }
 
 
-/* Attached navigation: a single, interruptible movement; CSS respects both preferences. */
-.app-nav-indicator { transition: transform var(--motion-standard) var(--ease-out); }
+/* Phone dock veil: a short black fade that stops a few pixels above the pill. */
+.dock-veil {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: -8px;
+  pointer-events: none;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0.2) 70%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  -webkit-mask-image: linear-gradient(to top, #000 0%, #000 76%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 0%, #000 76%, transparent 100%);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .dock-veil {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: linear-gradient(to top, rgb(0 0 0 / 0.62), transparent);
+  }
+}
 .safe-area-top { padding-top: max(1rem, env(safe-area-inset-top, 0px)); }
 .safe-area-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); }
 .lesson-paper { overscroll-behavior: contain; }
@@ -1451,10 +1470,10 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .reduce-motion .planner-deadlines { scroll-behavior: auto; }
 @keyframes plan-agenda-enter { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .app-nav-indicator, .lesson-step { transition: none; }
+  .lesson-step { transition: none; }
   .lesson-step-enter, .plan-agenda-enter { animation: none; }
 }
-.reduce-motion .app-nav-indicator, .reduce-motion .lesson-step { transition: none; }
+.reduce-motion .lesson-step { transition: none; }
 .reduce-motion .lesson-step-enter, .reduce-motion .plan-agenda-enter { animation: none; }
 
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-delay: 0ms !important; }

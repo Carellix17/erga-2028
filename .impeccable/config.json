@@ -1,10 +1,36 @@
 {
   "buildPath": "code",
   "detector": {
-    "designSystem": { "enabled": true },
+    "designSystem": {
+      "enabled": true
+    },
     "ignoreFiles": [
       "src/test/**",
       "src/components/landing/**"
+    ],
+    "ignoreRules": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "createdAt": "2026-11-08T15:39:44.847Z",
+        "reason": "DESIGN.md and AGENTS.md: Geist is the required UI face for Erga"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist mono",
+        "createdAt": "2026-11-08T15:39:44.906Z",
+        "reason": "DESIGN.md: Geist Mono is the required label face for Erga"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/index.css"
+        ],
+        "createdAt": "2026-11-08T15:39:44.961Z",
+        "reason": "Existing planner lane markers for free days and study slots, not dock chrome"
+      }
     ]
   }
 }

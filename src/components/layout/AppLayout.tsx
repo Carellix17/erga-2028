@@ -63,8 +63,8 @@ export function AppLayout({
         {!hideChrome && <AppHeader title={headerTitle} integratedHome={isHome} />}
         <main
           className={cn(
-            // Reserve the attached mobile bar plus the device safe area.
-          "mx-auto w-full max-w-lg overflow-visible px-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:px-6 md:max-w-2xl md:pb-6 lg:max-w-7xl",
+            // Clear the floating phone dock (pill, Core circle, and the short veil).
+          "mx-auto w-full max-w-lg overflow-visible px-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:px-6 md:max-w-2xl md:pb-6 lg:max-w-7xl",
             fillViewport && "flex min-h-0 flex-1 flex-col overflow-hidden",
           )}
         >

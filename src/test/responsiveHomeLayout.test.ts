@@ -11,9 +11,9 @@ describe("layout responsive Home e shell", () => {
 
     // Mobile: viewport dinamico, pagina scrollabile e spazio sufficiente al dock.
     expect(layout).toContain("min-h-screen min-h-dvh");
-    expect(layout).toContain("pb-[calc(5rem+env(safe-area-inset-bottom,0px))]");
+    expect(layout).toContain("pb-[calc(6rem+env(safe-area-inset-bottom,0px))]");
     expect(nav).toContain("fixed inset-x-0 bottom-0");
-    expect(nav).toContain("pb-[env(safe-area-inset-bottom,0px)]");
+    expect(nav).toContain("pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]");
     expect(nav).not.toContain("mb-[max(env(safe-area-inset-bottom");
 
     // Tablet/desktop: shell a viewport pieno, contenuto scrollabile, rail/sidebar raggiungibili.

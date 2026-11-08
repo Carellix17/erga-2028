@@ -75,20 +75,25 @@ describe("design system scuro — app shell", () => {
     expect(css).toContain("--primary-foreground: var(--canvas)");
   });
 
-  it("nav mobile: barra attaccata da 64px con safe area e quattro destinazioni", () => {
+  it("nav mobile: pillola bianca, cerchio Core e velo nero sfocato", () => {
     const nav = read("src/components/layout/BottomNav.tsx");
+    const css = read("src/index.css");
 
     expect(nav).not.toContain("from-black");
     expect(nav).not.toContain("bg-gradient-to-t");
     expect(nav).toContain("env(safe-area-inset-bottom");
     expect(nav).toContain("fixed inset-x-0 bottom-0");
-    expect(nav).toContain("border-t border-border bg-sheet");
+    expect(nav).not.toContain("border-t border-border bg-sheet");
     expect(nav).not.toContain("pointer-events-none md:hidden");
     expect(nav).toContain("h-16");
-    expect(nav).toContain("grid-cols-4");
-    expect(nav).toContain("app-nav-indicator");
+    expect(nav).toContain("grid-cols-3");
+    expect(nav).toContain("rounded-pill bg-primary");
+    expect(nav).toContain("text-primary-foreground");
+    expect(nav).toContain("dock-veil");
+    expect(nav).not.toContain("grid-cols-4");
     expect(nav).not.toContain("ResizeObserver");
-    expect(read("src/index.css")).toContain(".app-nav-indicator { transition: transform");
+    expect(css).toContain(".dock-veil");
+    expect(css).toContain("backdrop-filter: blur(14px)");
     expect(nav).toContain('{ id: "core" as Tab, i18nKey: "nav.core"');
     expect(nav).toContain("aria-current");
     expect(nav).not.toContain("layoutId=");
