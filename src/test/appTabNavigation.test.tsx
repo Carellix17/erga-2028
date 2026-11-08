@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -140,6 +140,42 @@ async function expectActiveTab(tab: string, href: string, container: HTMLElement
 }
 
 describe("URL-backed primary tab navigation", () => {
+  it("la bolla viaggia per mezzo secondo e un secondo tap rilancia il tempo", async () => {
+    const { container } = renderTabHarness();
+    await expectActiveTab("home", "/app", container);
+    const track = () => container.querySelector(".dock-track");
+    expect(track()).toHaveAttribute("data-slot", "home");
+    expect(track()).not.toHaveAttribute("data-traveling");
+
+    vi.useFakeTimers();
+    try {
+      clickDockTab(container, "Studio");
+      expect(track()).toHaveAttribute("data-slot", "studio");
+      expect(track()).toHaveAttribute("data-traveling", "true");
+
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+      expect(track()).toHaveAttribute("data-traveling", "true");
+
+      clickDockTab(container, "Home");
+      expect(track()).toHaveAttribute("data-slot", "home");
+      expect(track()).toHaveAttribute("data-traveling", "true");
+
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+      expect(track()).toHaveAttribute("data-traveling", "true");
+
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+      expect(track()).not.toHaveAttribute("data-traveling");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("dock navigation pushes entries: browser Back walks Studio → Core → Piano → Home", async () => {
     const { container } = renderTabHarness();
     await expectActiveTab("home", "/app", container);

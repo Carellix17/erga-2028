@@ -97,6 +97,13 @@ describe("design system scuro — app shell", () => {
     expect(nav).toContain('{ id: "core" as Tab, i18nKey: "nav.core"');
     expect(nav).toContain("aria-current");
     expect(nav).not.toContain("layoutId=");
+    expect(nav).toContain("dock-bubble");
+    expect(nav).toContain("DOCK_TRAVEL_MS = 500");
+    expect(css).toContain("--motion-dock: 500ms");
+    const bubbleRule = css.slice(css.indexOf("shortcut: posizioni legate a p-1, gap-2.5 e w-16"));
+    expect(bubbleRule).toContain(".dock-bubble");
+    expect(bubbleRule).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(bubbleRule).toContain('.dock-track[data-traveling="true"] .dock-bubble');
   });
 
   it("mantiene la rail tablet e la sidebar desktop senza cambiare la navigazione", () => {
