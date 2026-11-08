@@ -209,6 +209,7 @@
     --motion-emphasized: 240ms;
     --motion-entrance: 300ms;
     --motion-path: 360ms;
+    --motion-dock: 500ms;
     --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
     --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
     --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -1218,6 +1219,97 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background: linear-gradient(to top, rgb(0 0 0 / 0.62), transparent);
+  }
+}
+
+/* shortcut: posizioni legate a p-1, gap-2.5 e w-16, da ricalcolare se la dock cambia misura */
+.dock-track {
+  container-type: inline-size;
+  --dock-core: 64px;
+  --dock-pad: 4px;
+  --dock-gap: 0.625rem;
+  --dock-tab: calc((100cqi - var(--dock-core) - var(--dock-gap) - (2 * var(--dock-pad))) / 3);
+  --dock-inner: calc(var(--dock-core) - (2 * var(--dock-pad)));
+}
+
+.dock-bubble {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: var(--dock-tab);
+  height: var(--dock-inner);
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: var(--radius-full);
+  background-color: hsl(var(--olive));
+  outline: 1px solid transparent;
+  outline-offset: 0;
+  transform: translate3d(var(--dock-pad), var(--dock-pad), 0);
+  transition:
+    transform var(--motion-dock) var(--ease-out),
+    width var(--motion-dock) var(--ease-out),
+    background-color var(--motion-entrance) linear,
+    outline-color var(--motion-entrance) linear;
+}
+
+.dock-track[data-slot="piano"] .dock-bubble {
+  transform: translate3d(calc(var(--dock-pad) + var(--dock-tab)), var(--dock-pad), 0);
+}
+
+.dock-track[data-slot="studio"] .dock-bubble {
+  transform: translate3d(calc(var(--dock-pad) + var(--dock-tab) + var(--dock-tab)), var(--dock-pad), 0);
+}
+
+.dock-track[data-slot="core"] .dock-bubble {
+  width: var(--dock-inner);
+  transform: translate3d(calc(100cqi - var(--dock-core) + var(--dock-pad)), var(--dock-pad), 0);
+}
+
+.dock-track[data-traveling="true"] .dock-bubble {
+  background-color: hsl(var(--canvas));
+  outline-color: rgb(255 255 255 / 0.35);
+  transition:
+    transform var(--motion-dock) var(--ease-out),
+    width var(--motion-dock) var(--ease-out),
+    background-color 0s,
+    outline-color 0s;
+}
+
+.dock-bubble-copy {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--dock-gap);
+  width: 100cqi;
+  height: var(--dock-core);
+  color: hsl(var(--sand));
+  transform: translate3d(calc(0px - var(--dock-pad)), calc(0px - var(--dock-pad)), 0);
+  transition: transform var(--motion-dock) var(--ease-out);
+}
+
+.dock-track[data-slot="piano"] .dock-bubble-copy {
+  transform: translate3d(calc(0px - var(--dock-pad) - var(--dock-tab)), calc(0px - var(--dock-pad)), 0);
+}
+
+.dock-track[data-slot="studio"] .dock-bubble-copy {
+  transform: translate3d(calc(0px - var(--dock-pad) - var(--dock-tab) - var(--dock-tab)), calc(0px - var(--dock-pad)), 0);
+}
+
+.dock-track[data-slot="core"] .dock-bubble-copy {
+  transform: translate3d(calc(0px - 100cqi + var(--dock-core) - var(--dock-pad)), calc(0px - var(--dock-pad)), 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-bubble,
+  .dock-bubble-copy,
+  .dock-track[data-traveling="true"] .dock-bubble,
+  .dock-track[data-traveling="true"] .dock-bubble-copy {
+    transition: none;
+    background-color: hsl(var(--olive));
+    outline-color: transparent;
   }
 }
 .safe-area-top { padding-top: max(1rem, env(safe-area-inset-top, 0px)); }

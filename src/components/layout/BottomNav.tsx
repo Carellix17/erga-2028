@@ -1,9 +1,47 @@
-import { BookOpen, CalendarDays, Hexagon, Home as HomeIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, CalendarDays, Hexagon, Home as HomeIcon, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { BrandMark } from "@/components/landing/BrandMark";
 
 export type Tab = "home" | "studio" | "piano" | "core";
+
+/** Keep in sync with --motion-dock in index.css. */
+const DOCK_TRAVEL_MS = 500;
+
+type DockTab = { id: Tab; i18nKey: string; icon: LucideIcon };
+
+function PhoneDockFace({
+  pillTabs,
+  coreTab,
+  label,
+  stroke,
+}: {
+  pillTabs: DockTab[];
+  coreTab: DockTab;
+  label: (key: string) => string;
+  stroke: number;
+}) {
+  const CoreIcon = coreTab.icon;
+  return (
+    <>
+      <div className="grid h-16 min-w-0 flex-1 grid-cols-3 p-1">
+        {pillTabs.map(({ id, i18nKey, icon: Icon }) => (
+          <div
+            key={id}
+            className="flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-base font-normal leading-none"
+          >
+            <Icon className="h-5 w-5" strokeWidth={stroke} aria-hidden="true" />
+            <span>{label(i18nKey)}</span>
+          </div>
+        ))}
+      </div>
+      <div className="grid h-16 w-16 shrink-0 place-items-center p-1">
+        <CoreIcon className="h-6 w-6" strokeWidth={stroke} aria-hidden="true" />
+      </div>
+    </>
+  );
+}
 
 interface BottomNavProps {
   activeTab: Tab;
@@ -21,6 +59,20 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   ];
   const pillTabs = tabs.filter((tab) => tab.id !== "core");
   const coreTab = tabs.find((tab) => tab.id === "core")!;
+  const [trackedTab, setTrackedTab] = useState(activeTab);
+  const [travelTo, setTravelTo] = useState<Tab | null>(null);
+  // Same paint as the new slot, so the bubble turns black as it starts to move.
+  if (activeTab !== trackedTab) {
+    setTrackedTab(activeTab);
+    setTravelTo(activeTab);
+  }
+  const traveling = travelTo !== null;
+
+  useEffect(() => {
+    if (travelTo === null) return;
+    const timeout = window.setTimeout(() => setTravelTo(null), DOCK_TRAVEL_MS);
+    return () => window.clearTimeout(timeout);
+  }, [travelTo]);
 
   return (
     <>
@@ -29,48 +81,49 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
         aria-label={t("nav.ariaPrimary")}
       >
         <div className="dock-veil" aria-hidden="true" />
-        <div className="pointer-events-auto relative mx-auto flex max-w-lg items-center gap-2.5">
-          <div className="grid h-16 min-w-0 flex-1 grid-cols-3 overflow-hidden rounded-pill bg-primary p-1 text-primary-foreground">
-            {pillTabs.map(({ id, i18nKey, icon: Icon }) => {
-              const isActive = activeTab === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => activeTab !== id && onTabChange(id)}
-                  aria-current={isActive ? "page" : undefined}
-                  data-haptic={isActive ? "off" : "medium"}
-                  className={cn(
-                    "flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-pill px-1 text-base font-normal leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none",
-                    isActive ? "bg-nest text-sand" : "text-primary-foreground",
-                  )}
-                >
-                  <Icon className="h-5 w-5" strokeWidth={isActive ? 2 : 1.75} aria-hidden="true" />
-                  <span>{t(i18nKey)}</span>
-                </button>
-              );
-            })}
+        <div
+          className="dock-track pointer-events-auto relative isolate mx-auto flex w-full max-w-lg items-center gap-2.5"
+          data-slot={activeTab}
+          data-traveling={traveling ? "true" : undefined}
+        >
+          <div className="h-16 min-w-0 flex-1 rounded-pill bg-primary" aria-hidden="true" />
+          <div className="h-16 w-16 shrink-0 rounded-pill bg-primary" aria-hidden="true" />
+          <div className="pointer-events-none absolute inset-0 z-[1] flex items-center gap-2.5 text-primary-foreground" aria-hidden="true">
+            <PhoneDockFace pillTabs={pillTabs} coreTab={coreTab} label={t} stroke={1.75} />
           </div>
-          <button
-            type="button"
-            onClick={() => activeTab !== coreTab.id && onTabChange(coreTab.id)}
-            aria-current={activeTab === coreTab.id ? "page" : undefined}
-            data-haptic={activeTab === coreTab.id ? "off" : "medium"}
-            className={cn(
-              "grid h-16 w-16 shrink-0 place-items-center rounded-pill bg-primary p-1 text-primary-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none",
-              activeTab === coreTab.id ? "text-sand" : "text-primary-foreground",
-            )}
-          >
-            <span
-              className={cn(
-                "grid h-full w-full place-items-center rounded-pill",
-                activeTab === coreTab.id && "bg-nest",
-              )}
+          <div className="dock-bubble" aria-hidden="true">
+            <div className="dock-bubble-copy">
+              <PhoneDockFace pillTabs={pillTabs} coreTab={coreTab} label={t} stroke={2} />
+            </div>
+          </div>
+          <div className="absolute inset-0 z-[3] flex items-center gap-2.5">
+            <div className="grid h-16 min-w-0 flex-1 grid-cols-3 p-1">
+              {pillTabs.map(({ id, i18nKey }) => {
+                const isActive = activeTab === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => activeTab !== id && onTabChange(id)}
+                    aria-current={isActive ? "page" : undefined}
+                    data-haptic={isActive ? "off" : "medium"}
+                    className="h-full min-h-11 w-full rounded-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none"
+                  >
+                    <span className="sr-only">{t(i18nKey)}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => activeTab !== coreTab.id && onTabChange(coreTab.id)}
+              aria-current={activeTab === coreTab.id ? "page" : undefined}
+              data-haptic={activeTab === coreTab.id ? "off" : "medium"}
+              className="h-16 w-16 shrink-0 rounded-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none"
             >
-              <coreTab.icon className="h-6 w-6" strokeWidth={activeTab === coreTab.id ? 2 : 1.75} aria-hidden="true" />
               <span className="sr-only">{t(coreTab.i18nKey)}</span>
-            </span>
-          </button>
+            </button>
+          </div>
         </div>
       </nav>
 
