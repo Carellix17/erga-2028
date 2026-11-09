@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export function FocusStatsSkeleton() {
   return (
-    <div className="space-y-6 p-4 pb-28 animate-fade-up" aria-busy="true" aria-label="Caricamento Statistiche Focus">
+    <div className="space-y-6 p-4 pb-28" aria-busy="true" aria-label="Caricamento Statistiche Focus">
       <div className="space-y-2">
         <Skeleton className="h-8 w-40 rounded-button" />
         <Skeleton className="h-4 w-64 rounded-full opacity-70" />

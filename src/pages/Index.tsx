@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Outlet, useLocation } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -22,7 +22,8 @@ import { useDemoHandoff } from "@/hooks/useDemoHandoff";
 import type { StudioTool } from "@/components/studio/StudioPractice";
 import { useTranslation } from "react-i18next";
 import { SeoHead } from "@/components/SeoHead";
-import { getAppScrollTop, saveDepartingAppTabScroll, setAppScrollTop } from "@/lib/appScroll";
+import { setAppScrollTop } from "@/lib/appScroll";
+import { RoomClarify } from "@/components/shared/RoomClarify";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppTab, type AppTab } from "@/hooks/useAppTab";
 import { useOverlayHistory } from "@/hooks/useOverlayHistory";
@@ -91,23 +92,12 @@ const Index = () => {
   const [lessonLaunch, setLessonLaunch] = useState<{ contextId: string; lessonIndex: number; requestId: number } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // 🧭 P24 — memoria di posizione: ogni stanza riapre DOV'ERA (oggetti persistenti).
-  // Su desktop lo scroll vive nella content-card (app shell), su mobile nella
-  // finestra: il helper appScroll sceglie il contenitore giusto.
-  const scrollPositions = useRef<Record<AppTab, number>>({ home: 0, studio: 0, piano: 0, core: 0 });
-  const liveScrollRef = useRef(0);
-  const activeTabRef = useRef(activeTab);
   const changeTab = useCallback(
     (tab: AppTab, { replace = true }: { replace?: boolean } = {}) => {
       if (tab === activeTab) return;
-      const currentScrollTop = getAppScrollTop();
-      scrollPositions.current[activeTab] = currentScrollTop;
-      liveScrollRef.current = currentScrollTop;
-      // Ripristino SINCRONO, prima del re-render: prima viveva in un
-      // useEffect successivo al paint e, con html{scroll-behavior:smooth},
-      // la finestra scorreva in animazione mentre la sotto-pillola scivolava
-      // — da qui i «salti» della pillola segnalati dal proprietario (6/10).
-      setAppScrollTop(scrollPositions.current[tab]);
+      // Prima del paint: html ha scroll-behavior smooth, quindi il salto
+      // in cima deve essere istantaneo, nel gesto, non dopo.
+      setAppScrollTop(0);
       navigateToTab(tab, { replace });
     },
     [activeTab, navigateToTab]
@@ -116,11 +106,6 @@ const Index = () => {
     (tab: AppTab) => changeTab(tab, { replace: false }),
     [changeTab],
   );
-
-  useEffect(() => {
-    activeTabRef.current = activeTab;
-    setAppScrollTop(scrollPositions.current[activeTab]);
-  }, [activeTab]);
 
   // 🤖 P7 — il citofono dell'agente: la chat può chiedere di cambiare scheda
   // ("portami agli esercizi", "apri le lezioni") senza conoscere la app.
@@ -210,48 +195,11 @@ const Index = () => {
   // ── Impostazioni DENTRO l'albero di /app (fix «la pagina si ricarica»):
   // le pagine di /app/impostazioni sono route figlie di questa, quindi
   // Index resta MONTATA mentre l'utente è nelle impostazioni — scheda
-  // attiva, scroll e cache dati sopravvivono all'andata e al ritorno.
+  // attiva e cache dati sopravvivono all'andata e al ritorno.
+  // Lo scroll, invece, riparte dall'alto a ogni ingresso.
   // Prima erano route separate: uscendo, l'intera app si smontava e si
   // rimontava da zero (skeleton + stato perso), sembrava un reload.
   const isSettingsRoute = location.pathname.startsWith("/app/impostazioni");
-
-  // Memoria continua dello scroll: catturata a ogni scorrimento (finestra o
-  // content-card desktop — capture prende entrambi) per poter salvare la
-  // posizione anche un istante prima che la shell venga sostituita. Sulla POP
-  // del browser salviamo la scheda che si sta lasciando prima di ripristinarne
-  // la destinazione; settings e overlay non cambiano scheda e vengono ignorati.
-  useEffect(() => {
-    const onScroll = () => {
-      liveScrollRef.current = getAppScrollTop();
-    };
-    const onPopState = () => {
-      saveDepartingAppTabScroll(
-        window.location.pathname,
-        window.location.search,
-        activeTabRef.current,
-        liveScrollRef.current,
-        scrollPositions.current,
-      );
-    };
-    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
-    window.addEventListener("popstate", onPopState, { capture: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll, { capture: true });
-      window.removeEventListener("popstate", onPopState, { capture: true });
-    };
-  }, []);
-
-  const wasSettingsRef = useRef(false);
-  useEffect(() => {
-    if (isSettingsRoute) {
-      // all'ingresso: congela la posizione della stanza che si sta lasciando
-      if (!wasSettingsRef.current) scrollPositions.current[activeTab] = liveScrollRef.current;
-    } else if (wasSettingsRef.current) {
-      // di ritorno: la stanza riapre DOV'ERA
-      setAppScrollTop(scrollPositions.current[activeTab]);
-    }
-    wasSettingsRef.current = isSettingsRoute;
-  }, [isSettingsRoute, activeTab]);
 
   // Le impostazioni sostituiscono la shell, non l'app: si saltano anche i
   // cancelli di sotto (splash/onboarding), che parlano solo della stanza.
@@ -345,11 +293,11 @@ const Index = () => {
             </p>
           </div>
         )}
-        {/* 🌲 P24 — passaggio tra stanze: dissolvenza di sola luce (200ms) */}
-        <div
-          key={activeTab}
-          data-studio={activeTab === "studio" ? "" : undefined}
-          className={activeTab === "studio" ? "room-fade -mx-4 sm:-mx-6" : "room-fade"}
+        <RoomClarify
+          screenKey={activeTab}
+          disabled={lessonLaunch != null || isFullscreen}
+          studio={activeTab === "studio"}
+          className={activeTab === "studio" ? "-mx-4 sm:-mx-6" : undefined}
         >
         {activeTab === "home" && (
           <HomeView
@@ -441,7 +389,7 @@ const Index = () => {
         {activeTab === "core" && (
           <CoreView onOpenCognitive={() => setShowOnboarding(true)} />
         )}
-        </div>
+        </RoomClarify>
       </AppLayout>
 
 

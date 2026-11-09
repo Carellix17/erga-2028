@@ -4,6 +4,7 @@ import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHead
 import { SettingsPlanCard } from "@/components/settings/SettingsPlanCard";
 import { useHaptics } from "@/hooks/useHaptics";
 import { SeoHead } from "@/components/SeoHead";
+import { RoomClarify } from "@/components/shared/RoomClarify";
 
 const ITEMS = [
   { to: "/app/impostazioni/account", icon: User, title: "Generale", desc: "Dati personali e notifiche" },
@@ -26,7 +27,8 @@ export default function SettingsIndex() {
         noindex
       />
       <SettingsHeader title="Impostazioni" subtitle="Gestisci il tuo account e l'app" />
-      <main className="px-4 sm:px-6 py-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-3 animate-fade-up">
+      <main className="px-4 sm:px-6 py-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-3">
+        <RoomClarify screenKey="impostazioni">
         {/* Il piano in grande, come le card dei corsi (decisione del
             proprietario: niente piano nella barra di stato). */}
         <SettingsPlanCard />
@@ -47,6 +49,7 @@ export default function SettingsIndex() {
             <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
           </Link>
         ))}
+        </RoomClarify>
       </main>
     </SettingsPage>
   );

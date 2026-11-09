@@ -1,6 +1,7 @@
 import { Moon } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
 import { SeoHead } from "@/components/SeoHead";
+import { RoomClarify } from "@/components/shared/RoomClarify";
 
 export default function SettingsAppearance() {
   return (
@@ -13,6 +14,7 @@ export default function SettingsAppearance() {
       />
       <SettingsHeader title="Aspetto" subtitle="Tema e visualizzazione" />
       <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-32 sm:px-6 md:max-w-2xl lg:max-w-4xl">
+        <RoomClarify screenKey="impostazioni-aspetto">
         <section className="erga-settings-panel space-y-3 rounded-card p-5">
           <h2 className="title-medium font-display text-foreground">Tema</h2>
           <p className="body-small -mt-2 text-muted-foreground">
@@ -28,6 +30,7 @@ export default function SettingsAppearance() {
             </div>
           </div>
         </section>
+        </RoomClarify>
       </main>
     </SettingsPage>
   );
