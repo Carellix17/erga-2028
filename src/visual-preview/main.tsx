@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { SaveStatusProvider } from "@/contexts/SaveStatusContext";
 import { HomeView } from "@/components/home/HomeView";
 import { StudioView } from "@/components/studio/StudioView";
 import { UploadSheet } from "@/components/upload/UploadSheet";
@@ -116,16 +117,18 @@ export function VisualPreview() {
             onUpload={openUpload}
           />
         ) : activeTab === "studio" ? (
-          <>
-          <button type="button" aria-expanded={materialsExpanded} aria-controls="study-material-controls" onClick={() => setMaterialsExpanded((open) => !open)} className="flex min-h-12 w-full items-center justify-between border-x border-t border-border bg-sheet px-4 text-base font-semibold xl:hidden">Materiali e lettura<ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform motion-reduce:transition-none ${materialsExpanded ? "rotate-180" : ""}`} /></button>
-          <div className="study-workspace grid min-w-0 grid-cols-12 border border-border bg-sheet text-foreground xl:grid-cols-[minmax(16rem,3fr)_minmax(0,7fr)]">
+          <div data-studio="" className="room-fade bg-[#0a0a0a]">
+          <div className="bg-[#0a0a0a] xl:hidden">
+            <button type="button" aria-expanded={materialsExpanded} aria-controls="study-material-controls" onClick={() => setMaterialsExpanded((open) => !open)} className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">Materiali e lettura<ChevronDown aria-hidden="true" className={`h-4 w-4 shrink-0 transition-transform motion-reduce:transition-none ${materialsExpanded ? "rotate-180" : ""}`} /></button>
+          </div>
+          <div className="study-workspace grid min-w-0 grid-cols-12 bg-[#0a0a0a] text-foreground xl:grid-cols-[minmax(16rem,3fr)_minmax(0,7fr)]">
             <aside
-              className={`col-span-12 min-w-0 border-b border-border bg-background xl:col-span-1 xl:border-b-0 xl:border-r ${materialsExpanded ? "block" : "hidden xl:block"}`}
+              className={`col-span-12 min-w-0 bg-[#0a0a0a] xl:col-span-1 ${materialsExpanded ? "block" : "hidden xl:block"}`}
             >
               <div id="study-material-controls" className={materialsExpanded ? "block" : "hidden xl:block"}>
-                <div className="border-b border-border p-4">
+                <div className="p-4">
                   <label htmlFor="visual-reading-mode" className="block text-sm font-medium">Taglio di lettura</label>
-                  <select id="visual-reading-mode" defaultValue="calma" className="mt-2 min-h-11 w-full border border-input bg-sheet px-3 text-base text-foreground">
+                  <select id="visual-reading-mode" defaultValue="calma" className="mt-2 min-h-11 w-full rounded-control border border-[#ffffff] bg-[#ffffff] px-3 text-base text-[#0a0a0a]">
                     <option value="calma">Calma</option>
                     <option value="logica">Logica</option>
                   </select>
@@ -134,7 +137,7 @@ export function VisualPreview() {
                 <div ref={setMaterialPane} className="scroll-mt-16" />
               </div>
             </aside>
-            <section aria-label="Percorso e minilezioni" className="col-span-12 min-w-0 bg-sheet xl:col-span-1">
+            <section aria-label="Percorso e minilezioni" className="col-span-12 min-w-0 bg-[#0a0a0a] xl:col-span-1">
               <StudioView
                 embeddedReader
                 hasFiles
@@ -148,7 +151,7 @@ export function VisualPreview() {
               />
             </section>
           </div>
-          </>
+          </div>
         ) : activeTab === "piano" ? (
           <AppointmentsCalendar evaluations={[
             { id: "demo-eval-today", title: "Interrogazione sul moto", subject_id: "demo-physics", type: "orale" as const, date: new Date(new Date().setHours(9, 0, 0, 0)).toISOString(), topic_type: "linked" as const, topic_id: "demo-course" },
@@ -199,7 +202,7 @@ export function VisualPreview() {
 void i18n.changeLanguage("it").then(() => {
   createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
-      <MotionPreferences><VisualPreview /></MotionPreferences>
+      <MotionPreferences><SaveStatusProvider><VisualPreview /></SaveStatusProvider></MotionPreferences>
     </QueryClientProvider>,
   );
 });

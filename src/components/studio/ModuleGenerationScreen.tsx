@@ -78,7 +78,7 @@ export function ModuleGenerationScreen({
     // 🌲 P24 — la sala d'attesa NON copre più la lista: è un FOGLIO dal basso.
     // Le lezioni restano visibili dietro (continuità), il velo è opaco e leggero.
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center bg-scrim/40 animate-fade-in"
+      className="fixed inset-0 z-[90] flex items-end justify-center bg-scrim/40 px-4 animate-fade-in sm:px-6"
       onClick={onCancel}
     >
       <div
@@ -89,7 +89,7 @@ export function ModuleGenerationScreen({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Insegna della fabbrica */}
-        <div className="flex items-center gap-4 mb-5">
+        <div className="flex items-center gap-4 mb-6">
           <div className="relative flex-shrink-0">
             <div className="w-14 h-14 rounded-2xl bg-card shadow-level-1 flex items-center justify-center">
               <Factory className="w-7 h-7 text-foreground" strokeWidth={1.5} />
@@ -132,11 +132,11 @@ export function ModuleGenerationScreen({
         </div>
 
         {/* Cartello notifica: puoi anche uscire */}
-        <div className="rounded-card bg-card p-4 mb-5 flex items-start gap-3">
+        <div className="rounded-card bg-card p-4 mb-6 flex items-start gap-3">
           <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
             <Bell className="w-4 h-4 text-foreground" strokeWidth={1.75} />
           </div>
-          <p className="body-small text-foreground leading-relaxed pt-1.5">
+          <p className="body-small text-foreground leading-relaxed pt-2">
             Puoi anche uscire da questo foglio o chiudere l'app: ti arriva una
             <strong> notifica</strong> quando il modulo è pronto.
           </p>

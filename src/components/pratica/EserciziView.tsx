@@ -518,7 +518,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
   if (showLessonPicker && selectedCourse) {
     return (
       <div className="flex flex-col h-full">
-        <motion.div layoutScroll className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-5">
+        <motion.div layoutScroll className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-6">
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
@@ -603,7 +603,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                     step={1}
                     onValueChange={(v) => setExerciseCount(v[0])}
                   />
-                  <div className="flex justify-between mt-1.5">
+                  <div className="flex justify-between mt-2">
                     <span className="body-small text-muted-foreground">min {min}</span>
                     <span className="body-small text-muted-foreground">max {max}</span>
                   </div>
@@ -647,7 +647,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                   setView("generate");
                 }
               }}
-              className="group relative overflow-hidden text-left p-5 rounded-2xl bg-primary text-primary-foreground shadow-level-2 transition-all duration-200 ease-m3-emphasized active:scale-[0.98]"
+              className="group relative overflow-hidden text-left p-6 rounded-2xl bg-primary text-primary-foreground shadow-level-2 transition-all duration-200 ease-m3-emphasized active:scale-[0.98]"
             >
               <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary-foreground/10 blur-2xl" />
               <div className="relative space-y-3">
@@ -666,7 +666,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
 
             <button
               onClick={() => setView("history")}
-              className="group relative overflow-hidden text-left p-5 rounded-2xl bg-tertiary-container text-foreground shadow-level-1 transition-all duration-200 ease-m3-emphasized active:scale-[0.98] border border-outline-variant/60"
+              className="group relative overflow-hidden text-left p-6 rounded-2xl bg-tertiary-container text-foreground shadow-level-1 transition-all duration-200 ease-m3-emphasized active:scale-[0.98] border border-outline-variant/60"
             >
               <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-tertiary/10 blur-2xl" />
               <div className="relative space-y-3">
@@ -696,7 +696,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
     // === GENERA ESERCIZI: lista corsi ===
     if (view === "generate" && !isLoading) {
       return (
-        <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
+        <div className="flex flex-col h-full px-4 py-4 space-y-6 overflow-y-auto">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setView("menu")}
@@ -737,7 +737,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
     // === I TUOI ESERCIZI: cronologia ===
     if (view === "history" && !isLoading) {
       return (
-        <div className="flex flex-col h-full px-4 py-4 space-y-5 overflow-y-auto">
+        <div className="flex flex-col h-full px-4 py-4 space-y-6 overflow-y-auto">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setView("menu")}
@@ -767,7 +767,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                     <div key={r.id} className="rounded-2xl bg-surface-container-high border border-outline-variant/30 shadow-level-1 overflow-hidden">
                       <button
                         onClick={() => setExpandedResultId(expanded ? null : r.id)}
-                        className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-foreground/[0.03] transition-colors"
+                        className="w-full flex items-center gap-3 p-4 text-left hover:bg-foreground/[0.03] transition-colors"
                       >
                         <div className={cn(
                           "w-11 h-11 rounded-xl flex flex-shrink-0 flex-col items-center justify-center font-display text-sm font-semibold",
@@ -789,12 +789,12 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                         <ChevronRight className={cn("w-4 h-4 text-muted-foreground transition-transform duration-200", expanded && "rotate-90")} />
                       </button>
                       {expanded && (
-                        <div className="px-3.5 pb-3 space-y-2 animate-fade-up">
+                        <div className="px-4 pb-3 space-y-2 animate-fade-up">
                           {wrong.length === 0 ? (
                             <p className="body-small text-success">Nessun errore: perfetto</p>
                           ) : (
                             wrong.map((d, i) => (
-                              <div key={i} className="space-y-1 rounded-xl border border-destructive bg-destructive/10 p-2.5">
+                              <div key={i} className="space-y-1 rounded-xl border border-destructive bg-destructive/10 p-3">
                                 <p className="flex items-start gap-2 body-small font-medium text-foreground">
                                   <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
                                   {d.q}
@@ -887,7 +887,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
     const grade = Math.round((correctCount / results.length) * 10 * 10) / 10;
     const pct = Math.round((correctCount / results.length) * 100);
     return (
-      <div className="no-halo fixed inset-0 z-50 bg-background flex flex-col h-full px-4 py-6 items-center justify-center space-y-6 pt-safe pb-safe">
+      <div className="no-halo fixed inset-0 z-50 bg-background flex flex-col h-full px-4 py-6 items-center justify-center space-y-6 pt-safe pb-safe sm:px-6">
         <div className={cn(
           "flex h-28 w-28 flex-col items-center justify-center rounded-full",
           grade >= 7 ? "bg-success/10" : grade >= 5 ? "bg-warning/10" : "bg-destructive/10"
@@ -923,7 +923,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
               Da ripassare ({results.filter((r) => !r.isCorrect).length}):
             </p>
             {results.filter((r) => !r.isCorrect).map((r, i) => (
-              <div key={i} className="space-y-1.5 rounded-2xl border border-destructive bg-destructive/10 p-3 text-left">
+              <div key={i} className="space-y-2 rounded-2xl border border-destructive bg-destructive/10 p-3 text-left">
                 <p className="flex items-start gap-2 body-small font-medium text-foreground">
                   <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
                   {r.exercise.question}
@@ -958,7 +958,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
   return (
     <div className="no-halo fixed inset-0 z-50 bg-background flex flex-col h-full pt-safe pb-safe">
       {/* Header with X button */}
-      <div className="shrink-0 px-4 pt-3 pb-2">
+      <div className="shrink-0 px-4 pt-3 pb-2 sm:px-6">
         <div className="flex items-center justify-between mb-2">
           <button onClick={exitExercises} className="w-11 h-11 rounded-full flex items-center justify-center hover:bg-foreground/[0.08] transition-colors">
             <X className="w-5 h-5 text-foreground" />
@@ -979,7 +979,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
       </div>
 
       {/* Exercise content — slide between exercises */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 sm:px-6">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
             key={currentIndex}
@@ -1148,7 +1148,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
       </div>
 
       {/* Action button */}
-      <div className="shrink-0 px-4 pb-4 pt-2">
+      <div className="shrink-0 px-4 pb-4 pt-2 sm:px-6">
         {showResult ? (
           <Button onClick={nextExercise} className="w-full h-12 rounded-full bg-primary text-primary-foreground">
             {currentIndex + 1 < exercises.length ? "Prossimo esercizio" : "Vedi risultati"}
@@ -1226,7 +1226,7 @@ function ExerciseGenerationProgress({ stage, progress, courseName }: { stage: Ge
         )}
       </div>
 
-      <div className="w-full max-w-xs space-y-1.5 mb-8">
+      <div className="w-full max-w-xs space-y-2 mb-8">
         {STAGE_STEPS.map((step, index) => {
           const Icon = step.icon;
           const isActive = index === currentIdx;

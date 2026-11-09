@@ -212,7 +212,7 @@ export function ModulePath({
       {/* ── Intestazione: torna ai moduli + titolo modulo INTERO ── */}
       <div className="pt-4">
         {!hideHeader && (
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon-sm"
@@ -239,7 +239,7 @@ export function ModulePath({
               </p>
               <p className="font-mono text-sm tabular-nums text-foreground">{pct}%</p>
             </div>
-            <div className="mt-1.5 h-1.5 overflow-hidden rounded-sm bg-white/15">
+            <div className="mt-2 h-1.5 overflow-hidden rounded-sm bg-white/15">
               <div
                 className="h-full rounded-sm bg-foreground transition-[width] duration-200"
                 style={{ width: `${pct}%` }}
@@ -251,7 +251,7 @@ export function ModulePath({
 
       {/* ── Banner "in generazione" ── */}
       {isModuleGenerating && (
-        <div className="mt-4 rounded-card bg-card border border-border p-4 flex items-center gap-3.5 animate-fade-up">
+        <div className="mt-4 rounded-card bg-card border border-border p-4 flex items-center gap-4 animate-fade-up">
           <span className="w-10 h-10 rounded-button bg-surface-container-high flex items-center justify-center flex-shrink-0">
             <Loader2 className="w-5 h-5 text-tertiary animate-spin" />
           </span>
@@ -275,7 +275,7 @@ export function ModulePath({
         </div>
       )}
 
-      <div data-path-layout="list" className="mt-5 flex flex-col gap-3">
+      <div data-path-layout="list" className="mt-6 flex flex-col gap-3">
         {modLessons.map(({ lesson, globalIndex }) => {
           const state: NodeState = isModuleGenerating ? "gen" : stateOf(globalIndex, lesson);
           const clickable = !isModuleGenerating && (state === "av" || state === "cur" || state === "done");
@@ -408,8 +408,8 @@ export function ModulePath({
       <Drawer open={!!menuLesson} onOpenChange={(open) => { if (!open) closeMenu(); }}>
         <DrawerContent data-studio="" className="studio-surface pb-6">
           {menuLesson && (
-            <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-2 animate-fade-in">
-              <div className="flex flex-col items-center text-center mb-5">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-2 animate-fade-in">
+              <div className="flex flex-col items-center text-center mb-6">
                 <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-3">
                   <span className="text-foreground font-display font-semibold">{menuLesson.index + 1}</span>
                 </div>

@@ -1036,7 +1036,7 @@ export function StudioView({
     return (
       <StudioFrame>
       <CourseSelector courses={allContexts} activeContextId={effectiveContextId} onSelectCourse={handleSelectCourse} />
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 p-6 text-center animate-fade-up">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 p-6 text-center animate-fade-up">
         <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
           isPdfFailed ? "bg-error-container" : "bg-card shadow-level-1"
         }`}>
@@ -1064,7 +1064,7 @@ export function StudioView({
              "L'AI analizzerà i tuoi materiali e creerà un percorso di mini-lezioni personalizzato."}
           </p>
           {contextFileName && (
-            <p className="text-xs text-foreground font-medium mt-3 bg-secondary inline-block px-3 py-1.5 rounded-sm">{contextFileName}</p>
+            <p className="text-xs text-foreground font-medium mt-3 bg-secondary inline-block px-3 py-2 rounded-sm">{contextFileName}</p>
           )}
         </div>
         
@@ -1179,7 +1179,7 @@ export function StudioView({
         {courseViewState === "branch" ? (
           <motion.div
             key="module-head"
-            className={`sticky ${embeddedReader ? "top-16" : "top-0"} z-20 bg-background pb-2.5 pt-3`}
+            className={`sticky ${embeddedReader ? "top-16" : "top-0"} z-20 bg-background pb-3 pt-3`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}

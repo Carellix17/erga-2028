@@ -34,7 +34,7 @@ export function LessonFigureGallery({
             <p className="body-small text-muted-foreground truncate">{subtitle}</p>
           )}
         </div>
-        <span className="label-small px-2.5 py-1 rounded-full bg-surface-container-highest text-muted-foreground">
+        <span className="label-small px-3 py-1 rounded-full bg-surface-container-highest text-muted-foreground">
           {figures.length}
         </span>
       </div>
@@ -47,7 +47,7 @@ export function LessonFigureGallery({
         }
       >
         {figures.map((fig) => (
-          <div key={fig.id} className="space-y-1.5">
+          <div key={fig.id} className="space-y-2">
             <PdfCrop url={fig.url} bbox={fig.bbox} description={fig.description} />
             {fig.description && (
               <p className="body-small text-muted-foreground line-clamp-2 px-1">

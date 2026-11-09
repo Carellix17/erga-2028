@@ -554,7 +554,7 @@ export function ChatView({ hasFiles, onUploadClick, contextId, seedMessage, onSe
           <button
             onClick={() => setShowHistory(!showHistory)}
             className={cn(
-              "flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-200",
+              "flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
               showHistory
                 ? "bg-primary text-primary-foreground shadow-level-1"
                 : "hover:bg-surface-container-high text-muted-foreground hover:text-foreground"
@@ -567,7 +567,7 @@ export function ChatView({ hasFiles, onUploadClick, contextId, seedMessage, onSe
           <button
             onClick={() => handleSelectTopic(null)}
             className={cn(
-              "flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200",
+              "flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200",
               activeTopicId === null
                 ? "bg-primary text-primary-foreground shadow-level-1"
                 : "hover:bg-surface-container-high text-muted-foreground hover:text-foreground"
@@ -582,7 +582,7 @@ export function ChatView({ hasFiles, onUploadClick, contextId, seedMessage, onSe
               onClick={() => handleSelectTopic(tp.id)}
               title={tp.file_name}
               className={cn(
-                "flex-shrink-0 max-w-[160px] truncate flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200",
+                "flex-shrink-0 max-w-[160px] truncate flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200",
                 activeTopicId === tp.id
                   ? "bg-primary text-primary-foreground shadow-level-1"
                   : "hover:bg-surface-container-high text-muted-foreground hover:text-foreground"
@@ -609,7 +609,7 @@ export function ChatView({ hasFiles, onUploadClick, contextId, seedMessage, onSe
                 <Brain className="w-4 h-4" />
               </div>
               <div className="bg-surface-container-high rounded-2xl rounded-bl-md px-4 py-3 shadow-level-1">
-                <div className="flex gap-1.5">
+                <div className="flex gap-2">
                   <div className="w-2 h-2 bg-foreground/80 rounded-full animate-typing-dot" style={{ animationDelay: "0ms" }} />
                   <div className="w-2 h-2 bg-foreground/50 rounded-full animate-typing-dot" style={{ animationDelay: "-400ms" }} />
                   <div className="w-2 h-2 bg-foreground/30 rounded-full animate-typing-dot" style={{ animationDelay: "-800ms" }} />

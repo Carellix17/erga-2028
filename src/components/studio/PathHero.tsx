@@ -357,7 +357,7 @@ export function PathHero({
           <Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
           Percorso
         </p>
-        <h3 className="mt-1.5 break-words font-sans text-base font-normal leading-snug text-foreground sm:text-lg">
+        <h3 className="mt-2 break-words font-sans text-base font-normal leading-snug text-foreground sm:text-lg">
           {courseDisplayName(course.file_name)}
         </h3>
         {meta && <p className="mt-1 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">{meta}</p>}
@@ -405,7 +405,7 @@ export function PathHero({
               )}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent data-studio="" align="end" className="studio-surface w-64 rounded-dialog bg-popover text-popover-foreground shadow-level-3 border border-border p-1.5">
+          <DropdownMenuContent data-studio="" align="end" className="studio-surface w-64 rounded-dialog bg-popover text-popover-foreground shadow-level-3 border border-border p-2">
             {hasNewMaterial && (
               <DropdownMenuLabel className="text-xs font-medium text-warning px-3 py-2 leading-snug">
                 Nuovo materiale: rigenera il percorso per includerlo
@@ -508,7 +508,7 @@ export function PathHero({
               layout
               exit={{ opacity: 0, scale: 0.97 }}
               transition={{ duration: 0.18 }}
-              className="mt-5 flex items-stretch gap-2"
+              className="mt-6 flex items-stretch gap-2"
             >
               {variant === "resume" ? (
                 /* 🧭 P38 — vista moduli: UN solo pulsante primario, ben visibile. */
@@ -518,7 +518,7 @@ export function PathHero({
                   onClick={() => { triggerLight(); onResume?.(); }}
                   disabled={!canResume}
                   aria-label="Riprendi lezione"
-                  className="studio-action inline-flex h-12 w-full items-center justify-center gap-2 rounded-button px-5 font-sans text-sm font-normal transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45 motion-reduce:transform-none"
+                  className="studio-action inline-flex h-12 w-full items-center justify-center gap-2 rounded-button px-6 font-sans text-sm font-normal transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45 motion-reduce:transform-none"
                 >
                   <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Riprendi lezione
@@ -530,7 +530,7 @@ export function PathHero({
                   asChild
                   type="button"
                   onClick={() => { triggerLight(); onResume(); }}
-                  className="studio-action min-w-0 flex-1 gap-1 px-1.5 sm:gap-2 sm:px-4"
+                  className="studio-action min-w-0 flex-1 gap-1 px-2 sm:gap-2 sm:px-4"
                 >
                   <motion.button layout>
                     <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
@@ -543,7 +543,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={openPicker}
-                  className="studio-action inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-button px-1.5 text-xs font-normal transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:gap-1.5 sm:px-3 sm:text-sm"
+                  className="studio-action inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-button px-2 text-xs font-normal transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:gap-2 sm:px-3 sm:text-sm"
                 >
                   <ArrowLeftRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Cambia corso
@@ -559,14 +559,14 @@ export function PathHero({
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.18 }}
-              className="mt-5 flex items-stretch gap-2"
+              className="mt-6 flex items-stretch gap-2"
             >
               {canResume && onResume ? (
                 <Button
                   asChild
                   type="button"
                   onClick={() => { triggerLight(); closePicker(); onResume?.(); }}
-                  className="studio-action min-w-0 flex-1 gap-1 px-1.5 sm:gap-2 sm:px-4"
+                  className="studio-action min-w-0 flex-1 gap-1 px-2 sm:gap-2 sm:px-4"
                 >
                   <motion.button layout>
                     <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
@@ -580,7 +580,7 @@ export function PathHero({
                 layout
                 type="button"
                 onClick={() => { triggerLight(); closePicker(); }}
-                className="studio-action inline-flex h-11 min-w-0 items-center justify-center gap-1 rounded-button px-1.5 text-xs font-normal transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:gap-1.5 sm:px-4 sm:text-sm"
+                className="studio-action inline-flex h-11 min-w-0 items-center justify-center gap-1 rounded-button px-2 text-xs font-normal transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:gap-2 sm:px-4 sm:text-sm"
               >
                 <X className="w-4 h-4 shrink-0" strokeWidth={2} />
                 Annulla
@@ -599,7 +599,7 @@ export function PathHero({
         layout
         layoutId={transitioningId ? `course-card-${transitioningId}` : isSelectingCourse ? undefined : `course-card-${active?.id}`}
         transition={effectiveLayoutTransition}
-        className={`relative overflow-hidden rounded-card border border-border bg-card p-5 text-foreground sm:p-6 ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
+        className={`relative overflow-hidden rounded-card border border-border bg-card p-6 text-foreground sm:p-6 ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
       >
           {heroInner(false)}
         </motion.div>
@@ -621,7 +621,7 @@ export function PathHero({
                 if (e.target === e.currentTarget) closePicker();
               }}
             >
-              <div className="flex-1 min-h-0 w-full flex flex-col py-6">
+              <div className="flex min-h-0 w-full flex-1 flex-col px-4 py-6 sm:px-6">
                 <motion.div ref={listRef as React.Ref<HTMLDivElement>} layoutScroll className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
                   <div className="flex flex-col">
                     {/* Card sopra */}
@@ -643,7 +643,7 @@ export function PathHero({
                       ref={heroRef}
                       layoutId={`course-card-${active?.id}`}
                       transition={effectiveLayoutTransition}
-                      className="relative overflow-hidden rounded-card border border-border bg-card p-5 text-foreground sm:p-6"
+                      className="relative overflow-hidden rounded-card border border-border bg-card p-6 text-foreground sm:p-6"
                       layoutScroll
                     >
                       {heroInner(true)}

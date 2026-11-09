@@ -97,7 +97,7 @@ export function GenerationProgress({
   // ─────────────────────────── PANNELLO COMPATTO (P24) ───────────────────────────
   if (compact) {
     return (
-      <div className="mt-4 rounded-card bg-card border border-border p-5 animate-fade-up">
+      <div className="mt-4 rounded-card bg-card border border-border p-6 animate-fade-up">
         <div className="flex items-center gap-3 mb-4">
           <span className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
             <Sparkles className="w-5 h-5" strokeWidth={1.75} />
@@ -123,7 +123,7 @@ export function GenerationProgress({
         </div>
 
         {/* Fasi in fila */}
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-4 gap-2">
           {steps.map((step, index) => {
             const Icon = step.icon;
             const isActive = step.id === currentStep;
@@ -192,13 +192,13 @@ export function GenerationProgress({
       </div>
 
       {fileName && (
-        <p className="text-xs text-foreground font-medium mb-6 bg-secondary px-3 py-1.5 rounded-full max-w-[85vw] truncate">
+        <p className="text-xs text-foreground font-medium mb-6 bg-secondary px-3 py-2 rounded-full max-w-[85vw] truncate">
           {fileName}
         </p>
       )}
 
       {/* Passi */}
-      <div className="w-full max-w-xs space-y-1.5 mb-8">
+      <div className="w-full max-w-xs space-y-2 mb-8">
         {steps.map((step, index) => {
           const Icon = step.icon;
           const isActive = step.id === currentStep;

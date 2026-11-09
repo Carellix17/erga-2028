@@ -165,6 +165,8 @@ describe("P38 — navigazione progressiva del corso", () => {
     expect(backdrop.className).toMatch(/backdrop-blur-sm/);
     expect(backdrop.className).not.toMatch(/bg-black\/50/);
     const sheet = dialog.children[1] as HTMLElement;
+    expect(sheet.className).toMatch(/inset-x-4/);
+    expect(sheet.className).toMatch(/sm:inset-x-6/);
     expect(sheet.className).toMatch(/h-\[100dvh\]/); // foglio alto quanto il viewport
     expect(sheet.className).toMatch(/rounded-t-/); // bordi superiori stondati
     expect(sheet.getAttribute("data-step")).toBe("select");

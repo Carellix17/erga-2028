@@ -475,13 +475,13 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  ) : (
  <div className="space-y-3">
  <p className="label-large font-semibold tracking-tight text-foreground">Scegli il corso:</p>
- <div className="space-y-2.5">
+ <div className="space-y-3">
  {courses.map(course => (
  <button
  key={course.id}
  onClick={() => setSelectedCourse(course.id)}
  className={cn(
-"w-full flex items-center gap-3 p-5 rounded-2xl border transition-all duration-200 ease-m3-emphasized shadow-level-1 active:scale-[0.98]",
+"w-full flex items-center gap-3 p-6 rounded-2xl border transition-all duration-200 ease-m3-emphasized shadow-level-1 active:scale-[0.98]",
  selectedCourse === course.id
  ?"bg-primary/5 border-primary/60"
  :"bg-card border-outline-variant/60 hover:bg-surface-container-high"
@@ -547,7 +547,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-6 space-y-6">
  <button
  onClick={resetInterrogazione}
- className="self-start inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors duration-200"
+ className="self-start inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
  >
  <ArrowLeft className="w-4 h-4" />
  <span className="label-medium">Indietro</span>
@@ -565,7 +565,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  )}
  </div>
 
- <div className="p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-5">
+ <div className="p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-6">
  <div className="flex items-baseline justify-between">
  <span className="label-large font-semibold tracking-tight text-foreground">Numero di domande</span>
  <span className="font-display text-4xl font-semibold text-brand-deep tabular-nums">{maxQuestions}</span>
@@ -604,7 +604,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  const avgBg = avg >= 7 ? "bg-success/10" : avg >= 5 ? "bg-warning/10" : "bg-destructive/10";
  return (
  <div className="flex flex-col h-full">
- <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-6 space-y-5">
+ <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-6 space-y-6">
  <div className="text-center space-y-3">
  <div className="w-16 h-16 mx-auto rounded-full bg-primary text-primary-foreground shadow-level-2 flex items-center justify-center animate-settle-in">
  <CheckCircle2 className="w-8 h-8" />
@@ -625,7 +625,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  <p className="label-small text-muted-foreground">media su {finalReport.scores.length} domande</p>
  </div>
 
- <div className="p-5 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-3">
+ <div className="p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-3">
  <p className="label-large font-semibold tracking-tight text-foreground">Voti per domanda</p>
  <ul className="space-y-2">
           {finalReport.scores.map((s) => {
@@ -646,12 +646,12 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  </ul>
  </div>
 
- <div className="p-5 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-3">
+ <div className="p-6 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 space-y-3">
  <div className="flex items-center gap-2">
  <Brain className="w-5 h-5 text-foreground" />
  <p className="label-large font-semibold tracking-tight text-foreground">Considerazioni finali del Tutor</p>
  </div>
- <div className="body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold text-foreground">
+ <div className="body-medium prose prose-sm max-w-none prose-p:my-2 prose-strong:font-semibold text-foreground">
  <ReactMarkdown>{finalReport.considerations}</ReactMarkdown>
  </div>
  </div>
@@ -674,14 +674,14 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  return (
  <div className="flex flex-col h-full">
  {/* Header */}
- <div className="shrink-0 flex items-center justify-between px-5 py-3.5 bg-background border-b border-outline-variant/60">
+ <div className="shrink-0 flex items-center justify-between px-6 py-4 bg-background border-b border-outline-variant/60">
  <div className="flex items-center gap-2">
  <span className="label-large font-semibold tracking-tight text-foreground">
  {mode ==="structured" ? `Domanda ${questionCount} di ${maxQuestions}` :"Esposizione libera"}
  </span>
  {score !== null && (
             <span className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 label-small",
+              "inline-flex items-center gap-1 rounded-full px-3 py-0.5 label-small",
               score >= 7 ? "bg-success/10 text-success" :
               score >= 5 ? "bg-warning/10 text-warning" :
               "bg-destructive/10 text-destructive"
@@ -713,14 +713,14 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  <div
  key={i}
  className={cn(
-"rounded-2xl px-5 py-4 border shadow-level-1 transition-all duration-300 ease-m3-emphasized animate-fade-up",
+"rounded-2xl px-6 py-4 border shadow-level-1 transition-all duration-300 ease-m3-emphasized animate-fade-up",
  item.type ==="question" &&"bg-surface-container-high text-foreground border-outline-variant/60",
  item.type ==="answer" &&"bg-primary text-primary-foreground ml-8 border-primary",
  item.type ==="feedback" &&"bg-card text-foreground border-outline-variant/60"
  )}
  >
  <div className={cn("label-small mb-1", item.type === "answer" ? "text-primary-foreground/70" : "text-muted-foreground")}>
- <span className="inline-flex items-center gap-1.5">
+ <span className="inline-flex items-center gap-2">
  {item.type ==="question" ?"Tutor" : item.type ==="answer" ?"Tu" :"Valutazione"}
  {item.type !=="answer" && i === exchanges.length - 1 && (isLoadingVoice || isSpeaking) && (
  isLoadingVoice
@@ -729,20 +729,20 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  )}
  </span>
  </div>
- <div className={cn("body-medium prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold prose-strong:text-inherit prose-em:italic prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5", item.type === "answer" && "text-primary-foreground")}>
+ <div className={cn("body-medium prose prose-sm max-w-none prose-p:my-2 prose-strong:font-semibold prose-strong:text-inherit prose-em:italic prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5", item.type === "answer" && "text-primary-foreground")}>
  <ReactMarkdown
  components={{
- p: ({ children }) => <p className="my-1.5 whitespace-pre-wrap">{children}</p>,
+ p: ({ children }) => <p className="my-2 whitespace-pre-wrap">{children}</p>,
  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
  em: ({ children }) => <em className="italic">{children}</em>,
- ul: ({ children }) => <ul className="list-disc pl-4 my-1.5 space-y-0.5">{children}</ul>,
- ol: ({ children }) => <ol className="list-decimal pl-4 my-1.5 space-y-0.5">{children}</ol>,
+ ul: ({ children }) => <ul className="list-disc pl-4 my-2 space-y-0.5">{children}</ul>,
+ ol: ({ children }) => <ol className="list-decimal pl-4 my-2 space-y-0.5">{children}</ol>,
  li: ({ children }) => <li className="my-0.5">{children}</li>,
  h1: ({ children }) => <h3 className="font-display font-medium text-base mt-2 mb-1">{children}</h3>,
  h2: ({ children }) => <h4 className="font-display font-medium text-base mt-2 mb-1">{children}</h4>,
  h3: ({ children }) => <h5 className="font-display font-medium mt-2 mb-1">{children}</h5>,
  code: ({ children }) => (
- <code className="bg-surface-container-highest px-1.5 py-0.5 rounded-lg text-xs font-mono">{children}</code>
+ <code className="bg-surface-container-highest px-2 py-0.5 rounded-lg text-xs font-mono">{children}</code>
  ),
  }}
  >
@@ -754,7 +754,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
 
  {phase ==="evaluating" && (
  <div className="flex justify-center py-4">
-    <div className="flex gap-1.5">
+    <div className="flex gap-2">
       <div className="w-2 h-2 bg-foreground/80 rounded-full animate-typing-dot" style={{ animationDelay: "0ms" }} />
       <div className="w-2 h-2 bg-foreground/50 rounded-full animate-typing-dot" style={{ animationDelay: "-400ms" }} />
       <div className="w-2 h-2 bg-foreground/30 rounded-full animate-typing-dot" style={{ animationDelay: "-800ms" }} />
@@ -767,7 +767,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
 
  {/* Voice input */}
  {phase ==="question" && (
- <div className="shrink-0 px-5 pb-5 pt-3 space-y-3 bg-background border-t border-outline-variant/60">
+ <div className="shrink-0 px-6 pb-6 pt-3 space-y-3 bg-background border-t border-outline-variant/60">
  {transcript && (
  <div className="p-4 rounded-xl bg-surface-container-high border border-outline-variant/60 text-foreground body-small max-h-24 overflow-y-auto">
  {transcript}

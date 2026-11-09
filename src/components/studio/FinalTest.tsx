@@ -87,8 +87,9 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
       aria-label={t("finalTest.title")}
       tabIndex={-1}
       data-studio=""
-      className="studio-surface fixed inset-0 z-50 flex flex-col bg-[#ffffff] text-[#0a0a0a] animate-fade-in focus:outline-none"
+      className="fixed inset-0 z-50 bg-[#0a0a0a] px-4 focus:outline-none sm:px-6"
     >
+      <div className="studio-surface flex h-full min-h-0 flex-col bg-[#ffffff] text-[#0a0a0a] animate-fade-in">
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
         <div className="flex items-center gap-3 mb-3">
@@ -128,7 +129,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
             {showResults ? (
               <ResultsView score={score} correctCount={correctCount} total={total} great={great} />
             ) : (
-              <div className="space-y-5">
+              <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-full bg-tertiary flex items-center justify-center">
@@ -144,7 +145,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
                     </div>
                   </div>
                 </div>
-                <div className="p-5 rounded-xl bg-surface-container-high">
+                <div className="p-6 rounded-xl bg-surface-container-high">
                   <ExerciseRenderer
                     exercise={prepared[currentIndex]}
                     onComplete={handleAnswer}
@@ -171,6 +172,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
           {showResults ? t("finalTest.closeButton") : currentIndex === total - 1 ? t("finalTest.seeResults") : t("lesson.continue")}
           <ChevronRight className="w-5 h-5 ml-1" />
         </Button>
+      </div>
       </div>
     </div>
   );

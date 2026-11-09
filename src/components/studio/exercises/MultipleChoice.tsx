@@ -40,10 +40,10 @@ export function MultipleChoice({
   const isCorrect = selectedIndex === correctIndex;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <p className="title-medium text-foreground"><MathText text={question} /></p>
       
-      <div className="space-y-2.5">
+      <div className="space-y-3">
         {options.map((option, index) => {
           const isSelected = selectedIndex === index;
           const isCorrectOption = index === correctIndex;
