@@ -46,7 +46,7 @@ export function ModulePathSkeleton() {
               />
               {/* Scheda del titolo accanto al nodo */}
               <div
-                className="absolute top-1/2 -translate-y-1/2 space-y-2 rounded-xl border border-border bg-card px-3.5 py-2.5"
+                className="absolute top-1/2 -translate-y-1/2 space-y-2 rounded-xl border border-border bg-card px-4 py-3"
                 style={{
                   ...(side === "right" ? { left: `calc(${col}% + ${offset}px)` } : { right: `calc(${100 - col}% + ${offset}px)` }),
                   width: col === COL_B ? "min(34%, 150px)" : "min(48%, 168px)",

@@ -2,17 +2,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * CourseCardSkeleton — replica di CourseCard
- * - rounded-card border p-4 sm:p-5 h-auto con background layer
+ * - rounded-card border p-4 sm:p-6 h-auto con background layer
  * - children placeholder + bottone h-10 w-full rounded-pill
  */
 export function CourseCardSkeleton() {
   return (
-    <div className="relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 p-4 sm:p-5 bg-card shadow-level-2 animate-pulse" aria-hidden="true">
+    <div className="relative w-full overflow-hidden rounded-card border border-inverse-on-surface/15 p-4 sm:p-6 bg-card shadow-level-2 animate-pulse" aria-hidden="true">
       <div className="relative z-10 space-y-3">
         <Skeleton className="h-4 w-24 rounded-pill" />
         <Skeleton className="h-6 w-3/4 rounded-button" />
         <Skeleton className="h-3 w-1/2 rounded-sm opacity-70" />
-        <Skeleton className="mt-3.5 h-10 w-full rounded-pill" />
+        <Skeleton className="mt-4 h-10 w-full rounded-pill" />
       </div>
     </div>
   );

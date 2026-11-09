@@ -100,7 +100,7 @@ function ReaderSurface({ embedded, onClose, children }: { embedded?: boolean; on
   return (
     <DialogPrimitive.Root open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-sheet" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[#0a0a0a]" />
         <DialogPrimitive.Content asChild aria-describedby={undefined}
           onCloseAutoFocus={(event) => { event.preventDefault(); if (restoreFocus.current?.isConnected) restoreFocus.current.focus(); }}>
           {children}
@@ -344,8 +344,9 @@ export function FullscreenLesson({
       aria-label={`${t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })}: ${lesson.title}`}
       tabIndex={-1}
       data-studio=""
-      className={cn("lesson-reader studio-surface no-halo flex min-w-0 flex-col bg-[#ffffff] text-[#0a0a0a] focus:outline-none", embedded ? "relative min-h-[32rem] lg:h-[calc(100dvh-8rem)]" : "fixed inset-0 z-50 h-dvh animate-lesson-sheet-in")}
+      className={cn("no-halo flex min-w-0 flex-col focus:outline-none", embedded ? "relative min-h-[32rem] lg:h-[calc(100dvh-8rem)]" : "fixed inset-y-0 left-4 right-4 z-50 h-dvh animate-lesson-sheet-in sm:left-6 sm:right-6")}
     >
+      <div className="lesson-reader studio-surface flex h-full min-h-0 min-w-0 flex-col bg-[#ffffff] text-[#0a0a0a]">
       {!embedded && <DialogPrimitive.Title className="sr-only">{t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })}: {lesson.title}</DialogPrimitive.Title>}
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
@@ -416,7 +417,7 @@ export function FullscreenLesson({
           {showResumeNotice && (
             <div
               role="status"
-              className="mb-4 flex items-center gap-2 rounded-control border border-border bg-card px-3.5 py-2.5"
+              className="mb-4 flex items-center gap-2 rounded-control border border-border bg-card px-4 py-3"
             >
               <RotateCcw className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.75} />
               <p className="body-small text-muted-foreground flex-1">
@@ -489,6 +490,7 @@ export function FullscreenLesson({
           </Button>
         </div>
       </div>
+      </div>
     </div>
     </ReaderSurface>
   );
@@ -501,8 +503,8 @@ function ConceptStep({ concept }: { concept: string }) {
   return (
     // V2-01 (DESIGN.md 2.1 §5): il concetto è il TITOLO DI SCENA della
     // lezione — Lora 500, allineato a sinistra, misura da titolo.
-    <div className="space-y-5 text-left">
-      <div className="inline-flex items-center gap-1.5 rounded-pill bg-secondary px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+    <div className="space-y-6 text-left">
+      <div className="inline-flex items-center gap-2 rounded-pill bg-secondary px-3 py-2 text-xs font-semibold text-muted-foreground">
         {t("lesson.keyConcept")}
       </div>
       <div className="lesson-scene-title font-editorial text-[1.625rem] font-medium leading-[1.3] tracking-[-0.01em] text-foreground sm:text-3xl prose prose-sm max-w-none p-0 prose-p:font-medium prose-p:leading-[1.3] prose-p:my-0 prose-table:rounded-card prose-table:overflow-hidden prose-th:bg-secondary prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
@@ -537,7 +539,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
   }, [part.content, figures, figuresLoading]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="flex items-center gap-3 mb-2">
         <div className={cn(
           "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0",
@@ -549,7 +551,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
         </div>
         <div className="flex-1">
           <span className="lesson-scene-title block text-2xl text-foreground">{part.part_title}</span>
-          <div className="flex items-center gap-1 mt-1.5">
+          <div className="flex items-center gap-1 mt-2">
             {Array.from({ length: totalParts }).map((_, i) => (
               <div key={i} className={cn("h-1 rounded-sm flex-1 transition-all duration-300",
                 i < partNumber ? "bg-primary" : "bg-surface-container-highest")} />
@@ -560,7 +562,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
       {/* V2-01: la spiegazione vive su CARTA NITIDA (mai vetro): bordo
           filetto pieno, ombra foglio; l'esempio porta l'accento materia. */}
       <div className={cn(
-        "space-y-4 py-5",
+        "space-y-4 py-6",
         isExample
           ? "rounded-card border border-border bg-card"
           : "bg-transparent"
@@ -601,7 +603,7 @@ function ExampleStep({ example }: { example: string }) {
       </div>
       {/* V2-01: l'esempio porta l'ACCENTO MATERIA (tinta leggera del colore
           del corso, bordo al 30%): stesso trattamento dei callout della lettura. */}
-      <div className="space-y-4 rounded-card border border-border bg-card p-5 sm:p-6">
+      <div className="space-y-4 rounded-card border border-border bg-card p-6 sm:p-6">
         <div className="font-reading text-[1.125rem] font-normal text-foreground/90 leading-[1.65] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.65] prose-strong:font-semibold prose-table:rounded-card prose-table:overflow-hidden prose-th:bg-secondary/70 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
           <LessonMarkdown>{example}</LessonMarkdown>
         </div>
@@ -618,7 +620,7 @@ function ExerciseStep({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-full bg-secondary flex items-center justify-center">
@@ -629,7 +631,7 @@ function ExerciseStep({
             <p className="body-small text-muted-foreground">{t("lesson.exerciseOf", { number: exerciseNumber, total: totalExercises })}</p>
           </div>
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           {Array.from({ length: totalExercises }).map((_, i) => (
             <div
               key={i}
@@ -641,7 +643,7 @@ function ExerciseStep({
           ))}
         </div>
       </div>
-      <div className="rounded-card border border-border bg-card p-5 shadow-tactile">
+      <div className="rounded-card border border-border bg-card p-6 shadow-tactile">
         <ExerciseRenderer exercise={exercise} onComplete={onComplete} isCompleted={isCompleted} />
       </div>
     </div>
@@ -860,7 +862,7 @@ function SlideAIAssistant({
       {/* 🎨 P9a — sfondo avorio e angoli ora li mette il foglio stesso */}
       <SheetContent
         side="bottom"
-        className="pb-safe max-h-[92dvh] h-[85dvh] p-0 flex flex-col gap-0"
+        className="inset-x-4 pb-safe max-h-[92dvh] h-[85dvh] p-0 flex flex-col gap-0 sm:inset-x-6"
         style={{ bottom: keyboard.inset, ...(keyboard.inset > 0 && keyboard.viewportHeight ? { maxHeight: keyboard.viewportHeight } : {}) }}
       >
         {/* Header */}
@@ -898,7 +900,7 @@ function SlideAIAssistant({
               </div>
               <div
                 className={cn(
-                  "max-w-[82%] px-3.5 py-2.5 rounded-control text-base leading-relaxed",
+                  "max-w-[82%] px-4 py-3 rounded-control text-base leading-relaxed",
                   msg.role === "assistant"
                     ? "bg-surface-container-high text-foreground rounded-bl-md prose prose-base max-w-none prose-p:my-2"
                     : "bg-primary text-primary-foreground rounded-br-md whitespace-pre-wrap"
@@ -917,7 +919,7 @@ function SlideAIAssistant({
               <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center">
                 <Bot className="w-3.5 h-3.5 text-foreground" strokeWidth={1.75} />
               </div>
-              <div className="bg-surface-container-high rounded-2xl rounded-bl-md px-3 py-2.5">
+              <div className="bg-surface-container-high rounded-2xl rounded-bl-md px-3 py-3">
                 <div className="flex gap-1">
                   {[0, 150, 300].map((d) => (
                     <div
@@ -951,7 +953,7 @@ function SlideAIAssistant({
               rows={1}
               disabled={isLoading}
               className={cn(
-                "min-w-0 flex-1 resize-none rounded-control px-3 py-2.5 text-base",
+                "min-w-0 flex-1 resize-none rounded-control px-3 py-3 text-base",
                 "bg-surface-container-high border border-outline-variant/60",
                 "focus:outline-none focus:ring-2 focus:ring-primary/30",
                 "placeholder:text-muted-foreground max-h-28 overflow-y-auto",
@@ -995,7 +997,8 @@ export function FullscreenLessonGate({
 
   if (!full) {
     return (
-      <div role={failed ? "alert" : "status"} aria-busy={!failed} data-studio="" className="studio-surface no-halo fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[#ffffff] p-4 text-[#0a0a0a]">
+      <div role={failed ? "alert" : "status"} aria-busy={!failed} data-studio="" className="no-halo fixed inset-0 z-50 flex bg-[#0a0a0a] px-4 sm:px-6">
+        <div className="studio-surface flex min-h-0 w-full flex-col items-center justify-center gap-4 bg-[#ffffff] p-4 text-[#0a0a0a]">
         {!failed && <div className="w-16 h-16 rounded-full bg-card shadow-level-1 flex items-center justify-center">
           <Loader2 className="w-7 h-7 text-foreground animate-spin" />
         </div>}
@@ -1012,6 +1015,7 @@ export function FullscreenLessonGate({
         >
           {t("lesson.closeLink")}
         </Button>
+        </div>
       </div>
     );
   }

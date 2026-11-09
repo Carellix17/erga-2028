@@ -349,7 +349,7 @@ const Index = () => {
         <div
           key={activeTab}
           data-studio={activeTab === "studio" ? "" : undefined}
-          className={activeTab === "studio" ? "room-fade -mx-4 sm:-mx-6" : "room-fade"}
+          className={activeTab === "studio" ? "room-fade bg-[#0a0a0a]" : "room-fade"}
         >
         {activeTab === "home" && (
           <HomeView
@@ -386,15 +386,15 @@ const Index = () => {
         )}
         {activeTab === "studio" && (
           <>
-          <div className="border-x border-t border-border bg-sheet xl:hidden">
+          <div className="bg-[#0a0a0a] xl:hidden">
             <button type="button" aria-expanded={materialsExpanded} aria-controls="study-material-controls" onClick={() => setMaterialsExpanded((open) => !open)} className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
               <span>{t("studio.materialsAndReading")}</span><ChevronDown aria-hidden="true" className={`h-4 w-4 shrink-0 transition-transform motion-reduce:transition-none ${materialsExpanded ? "rotate-180" : ""}`} />
             </button>
           </div>
-          <div className="study-workspace grid min-w-0 grid-cols-12 border border-border bg-sheet text-foreground xl:grid-cols-[minmax(16rem,3fr)_minmax(0,7fr)]">
-          <aside className={`col-span-12 min-w-0 border-b border-border bg-background xl:col-span-1 xl:border-b-0 xl:border-r ${materialsExpanded ? "block" : "hidden xl:block"}`}>
+          <div className="study-workspace grid min-w-0 grid-cols-12 bg-[#0a0a0a] text-foreground xl:grid-cols-[minmax(16rem,3fr)_minmax(0,7fr)]">
+          <aside className={`col-span-12 min-w-0 bg-[#0a0a0a] xl:col-span-1 ${materialsExpanded ? "block" : "hidden xl:block"}`}>
             <div id="study-material-controls" className={materialsExpanded ? "block" : "hidden xl:block"}>
-            <div className="border-b border-border p-4">
+            <div className="p-4">
               <label htmlFor="reading-mode" className="block text-sm font-medium">Taglio di lettura</label>
               <select id="reading-mode" value={readingMode} onChange={event => setReadingMode(event.target.value as "calma" | "logica")} className="mt-2 min-h-11 w-full rounded-control border border-[#ffffff] bg-[#ffffff] px-3 text-base text-[#0a0a0a]">
                 <option value="calma">Calma</option><option value="logica">Logica</option>
@@ -404,7 +404,7 @@ const Index = () => {
             <div ref={setMaterialPane} className="scroll-mt-16" />
             </div>
           </aside>
-          <section aria-label="Percorso e minilezioni" className="col-span-12 min-w-0 bg-sheet xl:col-span-1">
+          <section aria-label="Percorso e minilezioni" className="col-span-12 min-w-0 bg-[#0a0a0a] xl:col-span-1">
           <StudioView
             embeddedReader
             readingMode={readingMode}

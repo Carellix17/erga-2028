@@ -38,7 +38,7 @@ export function TrueFalse({
   const isCorrect = selected === correct;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <p className="title-medium text-foreground leading-relaxed"><MathText text={statement} /></p>
       
       <div className="grid grid-cols-2 gap-3">
@@ -52,7 +52,7 @@ export function TrueFalse({
               onClick={() => handleSelect(value)}
               disabled={showResult}
               className={cn(
-                "flex flex-col items-center gap-2 rounded-card border-2 p-5 font-normal transition-[transform,border-color,background-color] duration-150",
+                "flex flex-col items-center gap-2 rounded-card border-2 p-6 font-normal transition-[transform,border-color,background-color] duration-150",
                 !showResult && !isSelected && "border-outline-variant bg-surface-container-lowest text-foreground hover:border-primary/50 active:scale-[0.95]",
                 !showResult && isSelected && "border-foreground bg-white/10 text-foreground",
                 showResult && isCorrectOption && "border-success bg-success/10 animate-feedback-correct",

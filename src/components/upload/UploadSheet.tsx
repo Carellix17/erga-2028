@@ -868,7 +868,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
     {embedded ? <section aria-label="Materiali di studio" className="material-panel flex min-h-[600px] min-w-0 flex-col p-4">{panel}</section> : <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-xl pb-safe max-h-[85dvh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden"
+        className="inset-x-4 rounded-t-xl pb-safe max-h-[85dvh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden sm:inset-x-6"
         style={{
           bottom: keyboard.inset,
           ...(keyboard.inset > 0 && keyboard.viewportHeight ? { maxHeight: keyboard.viewportHeight } : {}),

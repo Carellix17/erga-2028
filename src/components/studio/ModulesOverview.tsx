@@ -232,7 +232,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute left-1/2 top-full z-30 mt-2 inline-flex h-11 -translate-x-1/2 items-center gap-1.5 rounded-button border border-white/25 bg-card px-3.5 font-mono text-xs uppercase tracking-[0.08em] text-foreground"
+            className="absolute left-1/2 top-full z-30 mt-2 inline-flex h-11 -translate-x-1/2 items-center gap-2 rounded-button border border-white/25 bg-card px-4 font-mono text-xs uppercase tracking-[0.08em] text-foreground"
           >
             <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.6} />
             {completedBefore === 1 ? "1 modulo completato" : `${completedBefore} moduli completati`}
@@ -243,7 +243,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
   );
 
   return (
-    <div className="pt-5 pb-6 animate-fade-up">
+    <div className="pt-6 pb-6 animate-fade-up">
       {layer ? createPortal(overlay, layer) : null}
       <div ref={listRef} className="flex flex-col gap-3">
         {modules.map((m) => {
@@ -298,7 +298,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
               data-module-row={m.index}
               data-module-state={m.state}
               className={cn(
-                "flex items-center gap-3.5 rounded-card border px-4 py-4 text-left font-normal transition-[transform,background-color,border-color] duration-150",
+                "flex items-center gap-4 rounded-card border px-4 py-4 text-left font-normal transition-[transform,background-color,border-color] duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none",
                 isCur && "studio-current border-white bg-[#0a0a0a] text-white",
                 !isCur && "border-border bg-card text-foreground",
@@ -335,7 +335,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                   {subtitle}
                 </span>
                 {(isCur || isGen) && (
-                  <span className={cn("mt-2.5 block h-1.5 overflow-hidden rounded-sm", isCur ? "bg-white/25" : "bg-[#0a0a0a]/15")}>
+                  <span className={cn("mt-3 block h-1.5 overflow-hidden rounded-sm", isCur ? "bg-white/25" : "bg-[#0a0a0a]/15")}>
                     <span
                       className={cn("block h-full rounded-sm transition-[width] duration-200", isCur ? "bg-white" : "bg-[#0a0a0a]")}
                       style={{ width: `${isGen ? (m.genPercent ?? 0) : pct}%` }}
