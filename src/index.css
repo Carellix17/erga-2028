@@ -492,14 +492,6 @@
   }
   .interactive-card:active { transform: scale(0.99); }
 
-  @keyframes studio-section-enter {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .studio-section-enter {
-    animation: studio-section-enter 240ms ease-out both;
-  }
-
   /* ═══════ M3 STATE LAYERS ═══════ */
   .state-layer {
     position: relative;
@@ -663,15 +655,6 @@
     }
   }
 
-  /*  P24 — passaggio tra stanze: dissolvenza di SOLA LUCE (mai transform:
-     rispetta la REGOLA DEL PALCO, le finestre a schermo intero restano attaccate) */
-  .room-fade {
-    animation: room-fade 200ms ease-out both;
-  }
-  @keyframes room-fade {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
   /*  P24 — la lezione sale dal basso come un foglio (dalla foto):
      ingresso a foglio arrotondato che si apre a schermo pieno. Animiamo la
      FINESTRA stessa (la foglia), mai il contenitore: REGOLA DEL PALCO intonsa. */

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { SupportedLanguage } from "@/i18n";
 import { useHaptics } from "@/hooks/useHaptics";
 import { SeoHead } from "@/components/SeoHead";
+import { RoomClarify } from "@/components/shared/RoomClarify";
 
 const OPTIONS: { value: SupportedLanguage; labelKey: string }[] = [
   { value: "it", labelKey: "common.italian" },
@@ -24,7 +25,8 @@ export default function SettingsLanguage() {
         noindex
       />
       <SettingsHeader title={t("common.language")} subtitle={t("settings.languageSubtitle")} />
-      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6 animate-fade-up">
+      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6">
+        <RoomClarify screenKey="impostazioni-lingua">
         <section className="erga-settings-panel rounded-card p-5 space-y-3">
           <div className="mb-1 flex items-center gap-2">
             <Languages className="h-5 w-5 text-foreground" />
@@ -56,6 +58,7 @@ export default function SettingsLanguage() {
             })}
           </div>
         </section>
+        </RoomClarify>
       </main>
     </SettingsPage>
   );

@@ -1,21 +1,17 @@
-import { describe, expect, it } from "vitest";
-import { saveDepartingAppTabScroll, type AppScrollPositions } from "@/lib/appScroll";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { setAppScrollTop } from "@/lib/appScroll";
 
-describe("browser history scroll memory", () => {
-  it("saves the current tab before Back or Forward switches to another app tab", () => {
-    const positions: AppScrollPositions = { home: 40, piano: 20, studio: 30, core: 10 };
-
-    saveDepartingAppTabScroll("/app", "?tab=home", "studio", 715, positions);
-
-    expect(positions.studio).toBe(715);
+describe("app scroll", () => {
+  afterEach(() => {
+    document.getElementById("app-scroll-view")?.remove();
+    vi.restoreAllMocks();
   });
 
-  it("does not replace a tab position when Back stays in the same tab or leaves settings", () => {
-    const positions: AppScrollPositions = { home: 40, piano: 20, studio: 30, core: 10 };
+  it("puts the page at the top in one step, without a smooth scroll", () => {
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
 
-    saveDepartingAppTabScroll("/app", "?tab=studio", "studio", 800, positions);
-    saveDepartingAppTabScroll("/app/impostazioni", "?tab=home", "studio", 900, positions);
+    setAppScrollTop(0);
 
-    expect(positions.studio).toBe(30);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "instant" });
   });
 });

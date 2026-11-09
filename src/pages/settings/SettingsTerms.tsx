@@ -1,6 +1,7 @@
 import { Info } from "lucide-react";
 import { SettingsHeader, SettingsPage } from "@/components/settings/SettingsHeader";
 import { SeoHead } from "@/components/SeoHead";
+import { RoomClarify } from "@/components/shared/RoomClarify";
 
 const SECTIONS = [
   "1. Oggetto del servizio",
@@ -19,7 +20,8 @@ export default function SettingsTerms() {
         path="/app/impostazioni/termini"
       />
       <SettingsHeader title="Termini e condizioni" subtitle="Termini di servizio e privacy" />
-      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-5 animate-fade-up">
+      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-5">
+        <RoomClarify screenKey="impostazioni-termini">
         <div className="rounded-card border border-warning/40 bg-warning/10 p-4 flex items-start gap-3">
           <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
           <p className="body-medium text-foreground">
@@ -39,6 +41,7 @@ export default function SettingsTerms() {
             </section>
           ))}
         </div>
+        </RoomClarify>
       </main>
     </SettingsPage>
   );

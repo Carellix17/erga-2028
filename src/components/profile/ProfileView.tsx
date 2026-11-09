@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { SubscriptionSheet } from "@/components/subscription/SubscriptionSheet";
 import { useLocation, useNavigate } from "react-router-dom";
+import { RoomClarify } from "@/components/shared/RoomClarify";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,7 +76,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
 
   if (isLoading) {
     return (
-      <div className="px-4 pt-4 pb-12 space-y-6 max-w-lg mx-auto animate-fade-up">
+      <div className="px-4 pt-4 pb-12 space-y-6 max-w-lg mx-auto">
         <div className="flex items-center justify-between">
           <Skeleton className="h-11 w-11 rounded-pill" />
           <div className="flex items-center gap-1">
@@ -94,7 +95,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
   }
 
   return (
-    <div className="px-4 pt-4 pb-12 space-y-6 max-w-lg mx-auto animate-fade-up">
+    <div className="px-4 pt-4 pb-12 space-y-6 max-w-lg mx-auto">
       {loadError && (
         <div role="alert" className="rounded-card border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
           <p className="font-semibold">Profilo non disponibile</p>
@@ -137,6 +138,7 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
         </div>
       </div>
 
+      <RoomClarify screenKey="profilo">
       {/* Avatar & Name Header + piccolo badge abbonamento sotto il nome */}
       <div className="flex flex-col items-center gap-4 pt-2 pb-4">
         <div className="relative">
@@ -214,6 +216,8 @@ export function ProfileView({ onOpenCognitive }: ProfileViewProps = {}) {
           {cognitive ? "Ricalcola il tuo Esagono Cognitivo" : "Calcola il tuo Esagono Cognitivo"}
         </Button>
       </div>
+
+      </RoomClarify>
 
       <SubscriptionSheet open={showSubscription} onOpenChange={setShowSubscription} currentTier={tier} />
 

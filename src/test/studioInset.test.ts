@@ -11,7 +11,7 @@ describe("inset di Studio — stesso margine della Home", () => {
     const layout = read("src/components/layout/AppLayout.tsx");
 
     expect(layout).toContain("px-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:px-6");
-    expect(index).toContain('activeTab === "studio" ? "room-fade bg-[#0a0a0a]" : "room-fade"');
+    expect(index).toContain('activeTab === "studio" ? "bg-[#0a0a0a]" : undefined');
     expect(index).not.toContain("-mx-4");
     expect(index).not.toContain("sm:-mx-6");
 

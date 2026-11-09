@@ -1156,7 +1156,7 @@ export function StudioView({
       {/* La creazione è il primo accesso della panoramica e apre il flusso
           dedicato, senza riusare il pannello materiali incorporato. */}
       {courseViewState === "overview" && !isCoursePickerOpen && (
-        <div className="studio-section-enter min-w-0 overflow-x-clip pb-2 pt-3">
+        <div className="min-w-0 overflow-x-clip pb-2 pt-3">
           <Button
             type="button"
             size="lg"
@@ -1200,8 +1200,8 @@ export function StudioView({
             animate={{ opacity: 1, transition: { delay: 0.1, duration: 0.18 } }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
             className={courseViewState === "modules"
-              ? `studio-section-enter min-w-0 overflow-x-clip sticky ${embeddedReader ? "top-16" : "top-0"} z-20 bg-background`
-              : "studio-section-enter min-w-0 overflow-x-clip"}
+              ? `min-w-0 overflow-x-clip sticky ${embeddedReader ? "top-16" : "top-0"} z-20 bg-background`
+              : "min-w-0 overflow-x-clip"}
           >
       <PathHero
         variant={courseViewState === "modules" ? "resume" : "full"}

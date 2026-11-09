@@ -17,6 +17,7 @@ import { useProfileData, INSTITUTES, SCHOOLS } from "@/hooks/useProfileData";
 import { NotificationsCard } from "@/components/profile/NotificationsCard";
 import { AccountAccessCard } from "@/components/settings/AccountAccessCard";
 import { SeoHead } from "@/components/SeoHead";
+import { RoomClarify } from "@/components/shared/RoomClarify";
 
 export default function SettingsAccount() {
   const { toast } = useToast();
@@ -68,7 +69,8 @@ export default function SettingsAccount() {
         noindex
       />
       <SettingsHeader title="Generale" subtitle="I tuoi dati personali e preferenze" />
-      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6 animate-fade-up">
+      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6">
+        <RoomClarify screenKey="impostazioni-account">
         {isLoading ? (
           <div className="space-y-6">
             <Skeleton className="h-24 w-24 rounded-card mx-auto" />
@@ -190,6 +192,7 @@ export default function SettingsAccount() {
             </section>
           </>
         )}
+        </RoomClarify>
       </main>
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>

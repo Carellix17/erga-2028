@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { FocusStatsDashboard } from "@/components/focus/FocusStatsDashboard";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SeoHead } from "@/components/SeoHead";
+import { RoomClarify } from "@/components/shared/RoomClarify";
 
 /**
  * THESIS: il ritmo di studio si legge come un registro personale, non come un gioco.
@@ -22,7 +23,9 @@ export default function FocusStats() {
         noindex
       />
       <AppHeader title={t("focusStats.title")} subtitle={t("focusStats.subtitle")} showBack />
-      <FocusStatsDashboard />
+      <RoomClarify screenKey="ritmo">
+        <FocusStatsDashboard />
+      </RoomClarify>
     </div>
   );
 }

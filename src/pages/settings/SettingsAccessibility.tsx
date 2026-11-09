@@ -8,6 +8,7 @@ import { useAccessibility, type TextScale } from "@/contexts/AccessibilityContex
 import { cn } from "@/lib/utils";
 import { useHaptics } from "@/hooks/useHaptics";
 import { SeoHead } from "@/components/SeoHead";
+import { RoomClarify } from "@/components/shared/RoomClarify";
 
 const SCALES: { value: TextScale; label: string }[] = [
   { value: "normal", label: "Normale" },
@@ -49,7 +50,8 @@ export default function SettingsAccessibility() {
         noindex
       />
       <SettingsHeader title="Accessibilità" subtitle="Testo, contrasto e movimento" />
-      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-4 animate-fade-up">
+      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-4">
+        <RoomClarify screenKey="impostazioni-accessibilita">
         <Row icon={Type} title="Dimensione testo" desc="Ingrandisci il testo di tutta l'app se fai fatica a leggere.">
           <div className="grid grid-cols-3 gap-2">
             {SCALES.map((s) => (
@@ -125,6 +127,7 @@ export default function SettingsAccessibility() {
             />
           </div>
         </Row>
+        </RoomClarify>
       </main>
     </SettingsPage>
   );
