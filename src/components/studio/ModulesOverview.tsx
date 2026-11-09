@@ -232,7 +232,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute left-1/2 top-full z-30 mt-2 inline-flex h-9 -translate-x-1/2 items-center gap-1.5 rounded-button border border-border bg-card px-3.5 text-xs font-semibold text-foreground shadow-level-2"
+            className="absolute left-1/2 top-full z-30 mt-2 inline-flex h-11 -translate-x-1/2 items-center gap-1.5 rounded-button border border-white/25 bg-card px-3.5 font-mono text-xs uppercase tracking-[0.08em] text-foreground"
           >
             <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.6} />
             {completedBefore === 1 ? "1 modulo completato" : `${completedBefore} moduli completati`}
@@ -256,26 +256,26 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
           let badge: React.ReactNode;
           if (isDone) {
             badge = (
-              <span className="badge-chip bg-primary text-primary-foreground">Completato</span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Completato</span>
             );
           } else if (isCur) {
             badge = (
-              <span className="badge-chip bg-subject-accent text-subject-accent-foreground">
+              <span className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.08em]">
                 <Play className="w-3 h-3" fill="currentColor" strokeWidth={0} />
                 Riprendi
               </span>
             );
           } else if (isGen) {
             badge = (
-              <span className="badge-chip bg-surface-container-high text-muted-foreground">
+              <span className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
                 <RefreshCw className="w-3 h-3 animate-spin" />
                 In generazione
               </span>
             );
           } else if (isLocked) {
-            badge = <span className="badge-chip bg-surface-container-high text-ink-muted">Da sbloccare</span>;
+            badge = <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-muted">Da sbloccare</span>;
           } else {
-            badge = <span className="badge-chip bg-surface-container-high text-foreground">Apri</span>;
+            badge = <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-foreground">Apri</span>;
           }
 
           const subtitle = isDone
@@ -298,21 +298,20 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
               data-module-row={m.index}
               data-module-state={m.state}
               className={cn(
-                "interactive-card flex items-center gap-3.5 rounded-card bg-card border border-border px-4 py-4 text-left shadow-level-1",
-                !isLocked && "hover:border-primary/30 hover:bg-surface-container-low",
-                isCur && "border-subject-accent ring-2 ring-subject-accent",
-                isLocked && "cursor-default",
+                "flex items-center gap-3.5 rounded-card border px-4 py-4 text-left font-normal transition-[transform,background-color,border-color] duration-150",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none",
+                isCur && "border-primary bg-primary text-primary-foreground",
+                !isCur && "border-border bg-card text-foreground",
+                !isLocked && !isCur && "hover:bg-white/5",
+                !isLocked && "active:scale-[0.98]",
+                isLocked && "cursor-default text-muted-foreground",
               )}
             >
-              {/* Targa numero */}
               <span
                 className={cn(
-                  "flex-shrink-0 w-12 h-12 rounded-button flex items-center justify-center font-display font-semibold text-base transition-colors duration-200",
-                  isDone && "bg-subject-accent text-subject-accent-foreground",
-                  isCur && "bg-subject-accent text-subject-accent-foreground",
-                  isGen && "bg-surface-container-high text-muted-foreground",
-                  isLocked && "bg-surface-container-high text-ink-muted",
-                  !isDone && !isCur && !isGen && !isLocked && "bg-primary text-primary-foreground",
+                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border font-mono text-sm font-normal tabular-nums",
+                  isCur ? "border-primary-foreground/30" : "border-border",
+                  isLocked && "text-muted-foreground",
                 )}
               >
                 {isDone ? (
@@ -326,22 +325,19 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
 
               {/* Testo */}
               <span className="flex-1 min-w-0">
-                <span className="block text-base font-semibold leading-snug text-foreground">
+                <span className="block break-words text-base font-normal leading-snug">
                   {m.title}
                 </span>
                 <span className={cn(
-                  "mt-1 block text-sm font-medium",
-                  isLocked ? "text-ink-muted" : "text-muted-foreground",
+                  "mt-1 block text-sm font-normal",
+                  isCur ? "text-primary-foreground/70" : isLocked ? "text-ink-muted" : "text-muted-foreground",
                 )}>
                   {subtitle}
                 </span>
                 {(isCur || isGen) && (
-                  <span className="block mt-2.5 h-1.5 rounded-sm bg-surface-container-high overflow-hidden">
+                  <span className={cn("mt-2.5 block h-1.5 overflow-hidden rounded-sm", isCur ? "bg-primary-foreground/15" : "bg-white/15")}>
                     <span
-                      className={cn(
-                        "block h-full rounded-sm transition-all duration-500",
-                        isGen ? "bg-subject-accent" : "bg-subject-accent",
-                      )}
+                      className={cn("block h-full rounded-sm transition-[width] duration-200", isCur ? "bg-primary-foreground" : "bg-foreground")}
                       style={{ width: `${isGen ? (m.genPercent ?? 0) : pct}%` }}
                     />
                   </span>

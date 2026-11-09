@@ -1,9 +1,8 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { CourseCard } from "@/components/studio/CourseCard";
 import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
 import { cleanCourseName } from "@/lib/courseName";
-import { contrastRatio, resolveCourseCover } from "@/lib/courseIdentity";
+import { contrastRatio, courseCoverVars, resolveCourseCover } from "@/lib/courseIdentity";
 import { SUBJECT_PALETTE } from "@/lib/subjectColors";
 
 /**
@@ -118,16 +117,14 @@ describe("CourseCardBackground — composizione astratta della copertina", () =>
 
     for (const title of titles) {
       const fileName = `🌐 ${title}.pdf`;
-      const { container, unmount } = render(
-        <CourseCard
-          course={{ id: fileName, file_name: fileName }}
-          actionLabel="Scegli corso"
-          onSelect={() => {}}
-        />,
-      );
-      const card = container.querySelector<HTMLElement>("button")!;
       const canonicalName = cleanCourseName(fileName);
       const expectedCover = resolveCourseCover(canonicalName);
+      const { container, unmount } = render(
+        <div data-cover-host style={courseCoverVars(canonicalName).style}>
+          <CourseCardBackground courseName={canonicalName} />
+        </div>,
+      );
+      const card = container.querySelector<HTMLElement>("[data-cover-host]")!;
       const ink = rgbChannelsToHex(card.style.getPropertyValue("--contrast-ink"));
       const samples = renderedCoverSamples(container);
 

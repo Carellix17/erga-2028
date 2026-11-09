@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   ArrowLeftRight,
   BookOpen,
-  Check,
   FileText,
   FolderOpen,
   Globe,
@@ -17,14 +16,9 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useHaptics } from "@/hooks/useHaptics";
-import { cleanCourseName } from "@/lib/courseName";
 import { getCourseProgress } from "@/lib/courseProgress";
-import { getAccentForeground } from "@/lib/subjectColors";
-import { courseCoverVars } from "@/lib/courseIdentity";
 import { CourseCard, courseDisplayName } from "./CourseCard";
-import { CourseCardBackground } from "./CourseCardBackground";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -359,14 +353,14 @@ export function PathHero({
         {...(!isTransitioning && !prefersReducedMotion ? cardMotion : {})}
         style={isTransitioning ? { zIndex: 20 } : undefined}
       >
-        <p className="label-small tracking-[0.14em] flex items-center gap-2 text-contrast-secondary">
-          <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+        <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
+          <Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
           Percorso
         </p>
-        <h3 className="mt-1.5 font-display font-semibold text-base sm:text-lg leading-snug break-words text-contrast">
+        <h3 className="mt-1.5 break-words font-sans text-base font-normal leading-snug text-foreground sm:text-lg">
           {courseDisplayName(course.file_name)}
         </h3>
-        {meta && <p className="text-xs mt-1 text-contrast-secondary">{meta}</p>}
+        {meta && <p className="mt-1 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">{meta}</p>}
       </CourseCard>
     );
   };
@@ -378,10 +372,10 @@ export function PathHero({
   // della pagina — prima, sulle copertine profonde in chiaro, barra e
   // pulsanti risultavano inchiostro su inchiostro, invisibili.
   const heroInner = (inPicker: boolean) => (
-    <div className="relative text-contrast">
+    <div className="relative text-foreground">
       {/* Riga alta: etichetta + menù ⋯ */}
       <div className="flex items-center justify-between gap-3">
-        <p className="label-small tracking-[0.16em] text-contrast-secondary">
+        <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
           {inPicker ? "Seleziona un percorso" : "Percorso attuale"}
         </p>
         {!inPicker && onCloseModules ? (
@@ -390,10 +384,7 @@ export function PathHero({
             type="button"
             onClick={() => { triggerLight(); onCloseModules(); }}
             aria-label="Chiudi moduli"
-            className="relative w-10 h-10 rounded-full transition-opacity duration-200 flex items-center justify-center shrink-0 hover:opacity-80 active:scale-[0.95] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            style={{
-              backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)",
-            }}
+            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/25 transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
           >
             <X className="w-5 h-5 text-current" strokeWidth={2} />
           </button>
@@ -403,10 +394,7 @@ export function PathHero({
             <button
               type="button"
               aria-label="Azioni corso"
-              className="relative w-11 h-11 rounded-full transition-opacity duration-200 flex items-center justify-center shrink-0 hover:opacity-80 active:scale-[0.95]"
-              style={{
-                backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)",
-              }}
+              className="relative flex w-11 h-11 shrink-0 items-center justify-center rounded-full border border-white/25 transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
             >
               <MoreHorizontal className="w-5 h-5 text-current" strokeWidth={2} />
               {hasNewMaterial && (
@@ -477,20 +465,17 @@ export function PathHero({
       </div>
 
       {/* Titolo: nome intero — usa text-contrast per garantire visibilità su card scura in light mode */}
-      <h2 className="mt-2 font-display font-semibold text-xl sm:text-2xl leading-snug break-words pr-1 text-contrast">
+      <h2 className="mt-2 break-words pr-1 font-sans text-xl font-normal leading-snug text-foreground sm:text-2xl">
         {title ?? "Il tuo percorso"}
       </h2>
 
       {/* Avanzamento */}
       {isGenerating ? (
         <>
-          <p className="mt-4 text-xs text-contrast-secondary">Erga sta trasformando il tuo materiale…</p>
-          <div
-            className="mt-2 h-2 rounded-sm overflow-hidden"
-            style={{ backgroundColor: "color-mix(in srgb, currentColor 38%, transparent)" }}
-          >
+          <p className="mt-4 text-xs text-muted-foreground">Erga sta trasformando il tuo materiale…</p>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-sm bg-white/15">
             <div
-              className="h-full rounded-full bg-current transition-all duration-300"
+              className="h-full rounded-sm bg-foreground transition-[width] duration-200"
               style={{ width: `${barPct}%` }}
             />
           </div>
@@ -499,18 +484,15 @@ export function PathHero({
         <>
           <div className="mt-4 flex items-baseline justify-between gap-3">
             {progress.totalLessons > 0 && (
-              <p className="text-sm text-contrast-secondary">
+              <p className="text-sm text-muted-foreground">
                 {t("lesson.lessonOf", { number: progress.lessonNumber, total: progress.totalLessons })}
               </p>
             )}
-            <p className="text-sm font-semibold tabular-nums text-contrast">{pct}%</p>
+            <p className="font-mono text-sm tabular-nums text-foreground">{pct}%</p>
           </div>
-          <div
-            className="mt-2 h-2 rounded-full overflow-hidden"
-            style={{ backgroundColor: "color-mix(in srgb, currentColor 38%, transparent)" }}
-          >
+          <div className="mt-2 h-1.5 overflow-hidden rounded-sm bg-white/15">
             <div
-              className="h-full rounded-full bg-current transition-all duration-700 ease-m3-emphasized"
+              className="h-full rounded-sm bg-foreground transition-[width] duration-200"
               style={{ width: `${barPct}%` }}
             />
           </div>
@@ -536,7 +518,7 @@ export function PathHero({
                   onClick={() => { triggerLight(); onResume?.(); }}
                   disabled={!canResume}
                   aria-label="Riprendi lezione"
-                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-button border border-input bg-primary px-5 font-sans text-sm font-semibold text-primary-foreground  transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-button border border-white/25 bg-transparent px-5 font-sans text-sm font-normal text-foreground transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45 motion-reduce:transform-none"
                 >
                   <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Riprendi lezione
@@ -561,11 +543,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={openPicker}
-                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-button border px-1.5 text-xs font-semibold whitespace-nowrap transition-opacity duration-200 hover:opacity-80 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:gap-1.5 sm:px-3 sm:text-sm"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                    borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                  }}
+                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-button border border-white/25 bg-transparent px-1.5 text-xs font-normal text-foreground transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:gap-1.5 sm:px-3 sm:text-sm"
                 >
                   <ArrowLeftRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Cambia corso
@@ -602,11 +580,7 @@ export function PathHero({
                 layout
                 type="button"
                 onClick={() => { triggerLight(); closePicker(); }}
-                className="inline-flex h-11 min-w-0 items-center justify-center gap-1 rounded-button border px-1.5 text-xs font-semibold transition-opacity duration-200 hover:opacity-80 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:gap-1.5 sm:px-4 sm:text-sm"
-                style={{
-                  backgroundColor: "color-mix(in srgb, currentColor 8%, transparent)",
-                  borderColor: "color-mix(in srgb, currentColor 20%, transparent)",
-                }}
+                className="inline-flex h-11 min-w-0 items-center justify-center gap-1 rounded-button border border-white/25 bg-transparent px-1.5 text-xs font-normal text-foreground transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:gap-1.5 sm:px-4 sm:text-sm"
               >
                 <X className="w-4 h-4 shrink-0" strokeWidth={2} />
                 Annulla
@@ -618,15 +592,6 @@ export function PathHero({
     </div>
   );
 
-  // V2-01: la copertina arriva dal resolver condiviso (courseIdentity):
-  // campo materia + composizione astratta + grana; l'inchiostro del testo
-  // è quello della famiglia (light→inchiostro, deep→carta), garantito
-  // ≥ 4,5:1 dal resolver e dai test. Niente più orb sfocati né auto-contrast.
-  // Il nome passa PULITO (cleanCourseName): la Home risolve già il nome
-  // senza estensione e la variante di composizione (hash del nome) deve
-  // essere la STESSA nelle due viste — stesso corso, stessa copertina.
-  const { style: heroStyle } = courseCoverVars(cleanCourseName(active?.file_name ?? ""));
-
   return (
     <section className="px-4 pt-4">
       {/* HERO inline — course-specific layoutId for seamless transition from any scroll depth */}
@@ -634,11 +599,8 @@ export function PathHero({
         layout
         layoutId={transitioningId ? `course-card-${transitioningId}` : isSelectingCourse ? undefined : `course-card-${active?.id}`}
         transition={effectiveLayoutTransition}
-        className={`relative overflow-hidden rounded-hero border border-border bg-card shadow-level-2 p-5 sm:p-6 ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
-       
-        style={heroStyle}
+        className={`relative overflow-hidden rounded-card border border-border bg-card p-5 text-foreground sm:p-6 ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
       >
-          <CourseCardBackground courseName={cleanCourseName(active?.file_name ?? "")} />
           {heroInner(false)}
         </motion.div>
 
@@ -680,12 +642,9 @@ export function PathHero({
                       ref={heroRef}
                       layoutId={`course-card-${active?.id}`}
                       transition={effectiveLayoutTransition}
-                      className="relative overflow-hidden rounded-hero border border-border bg-card shadow-level-2 p-5 sm:p-6"
-                     
-                      style={heroStyle}
+                      className="relative overflow-hidden rounded-card border border-border bg-card p-5 text-foreground sm:p-6"
                       layoutScroll
                     >
-                      <CourseCardBackground courseName={cleanCourseName(active?.file_name ?? "")} />
                       {heroInner(true)}
                     </motion.div>
 
@@ -712,7 +671,7 @@ export function PathHero({
 
       {/* ── Rinomina corso ── */}
       <Drawer open={renameOpen} onOpenChange={(o) => !o && setRenameOpen(false)}>
-        <DrawerContent className="rounded-t-[32px]">
+        <DrawerContent className="rounded-t-sheet">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center gap-2 font-display text-2xl">
               <Pencil className="w-5 h-5 text-foreground" strokeWidth={1.75} />
@@ -765,7 +724,7 @@ export function PathHero({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="border border-destructive bg-transparent text-destructive hover:bg-destructive/10">
               {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Elimina"}
             </AlertDialogAction>
           </AlertDialogFooter>

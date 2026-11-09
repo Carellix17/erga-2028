@@ -219,7 +219,7 @@ export function CourseSelector({
             onPointerCancel={clearLongPress}
             onContextMenu={(e) => e.preventDefault()}
             className={cn(
-              "flex-1 min-w-0 flex items-center gap-3.5 bg-card rounded-card px-4 py-3.5 text-left select-none touch-none",
+              "flex min-w-0 flex-1 items-center gap-3.5 rounded-card border border-border bg-card px-4 py-3.5 text-left select-none touch-none",
               "transition-colors duration-200",
               multi && "hover:bg-surface-container-high active:bg-surface-container-highest",
             )}
@@ -228,7 +228,7 @@ export function CourseSelector({
               <ActiveIcon className="w-5 h-5 text-foreground" strokeWidth={1.75} />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block truncate font-display font-semibold text-[17px] text-foreground">
+              <span className="block truncate font-sans text-[17px] font-normal text-foreground">
                 {cleanName(active.file_name)}
               </span>
               <span className="block text-xs text-muted-foreground mt-0.5">
@@ -251,7 +251,7 @@ export function CourseSelector({
               type="button"
               aria-label="Azioni corso"
               onClick={() => { triggerLight(); setMenuOpen((v) => !v); }}
-              className="w-[52px] rounded-card bg-card hover:bg-surface-container-high active:bg-surface-container-highest transition-colors duration-200 flex items-center justify-center flex-shrink-0"
+              className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-card border border-border bg-card transition-[background-color,transform] duration-150 hover:bg-white/5 active:scale-[0.98]"
             >
               <MoreHorizontal className="w-5 h-5 text-foreground" />
             </button>
@@ -315,7 +315,7 @@ export function CourseSelector({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="border border-destructive bg-transparent text-destructive hover:bg-destructive/10">
               {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Elimina"}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -325,7 +325,7 @@ export function CourseSelector({
       {/* ── Selettore dei percorsi ── */}
       {open && (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-scrim/60 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-scrim/60 p-4"
           onClick={() => setOpen(false)}
         >
           <div
@@ -334,12 +334,12 @@ export function CourseSelector({
             aria-label="Seleziona un percorso"
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              "w-full max-w-sm bg-popover rounded-dialog shadow-level-3 p-5",
+              "w-full max-w-sm rounded-card border border-border bg-card p-5",
               "animate-in fade-in-0 zoom-in-95 duration-300 ease-m3-emphasized-decel",
             )}
           >
             <div className="mb-4 px-1">
-              <h3 className="font-display text-xl font-semibold text-foreground">I tuoi percorsi</h3>
+              <h3 className="font-sans text-xl font-normal text-foreground">I tuoi percorsi</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 Scegli su quale vuoi lavorare
               </p>
@@ -358,14 +358,14 @@ export function CourseSelector({
                     type="button"
                     onClick={() => handleSelect(course)}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-3 rounded-2xl w-full text-left transition-colors duration-150",
-                      isActive ? "bg-accent" : "hover:bg-secondary active:bg-secondary",
+                      "flex w-full items-center gap-3 rounded-card px-3 py-3 text-left transition-[background-color,transform] duration-150",
+                      isActive ? "bg-primary text-primary-foreground" : "hover:bg-white/5 active:scale-[0.98]",
                     )}
                   >
                     <span
                       className={cn(
                         "w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0",
-                        isActive ? "bg-tertiary/20 text-tertiary" : "bg-secondary text-foreground",
+                        isActive ? "border border-primary-foreground/30" : "border border-border text-foreground",
                       )}
                     >
                       <Icon className="w-4 h-4" strokeWidth={1.75} />
@@ -373,8 +373,8 @@ export function CourseSelector({
                     <span className="flex-1 min-w-0">
                       <span
                         className={cn(
-                          "block truncate text-[15px] font-semibold",
-                          isActive ? "text-accent-foreground" : "text-foreground",
+                          "block truncate text-[15px] font-normal",
+                          isActive ? "text-primary-foreground" : "text-foreground",
                         )}
                       >
                         {cleanName(course.file_name)}
@@ -383,7 +383,7 @@ export function CourseSelector({
                         <span className="block text-xs text-muted-foreground mt-0.5">{meta}</span>
                       )}
                     </span>
-                    {isActive && <Check className="w-4 h-4 text-tertiary flex-shrink-0" strokeWidth={2.5} />}
+                    {isActive && <Check className="h-4 w-4 shrink-0 text-primary-foreground" strokeWidth={1.75} />}
                   </button>
                 );
               })}

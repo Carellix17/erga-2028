@@ -51,24 +51,17 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     expect(screen.getByText("matematica")).toBeTruthy();
   });
 
-  it("P28: marca le card corso per l'inchiostro a contrasto automatico", async () => {
+  it("le card corso sono monocrome, senza copertina della materia", async () => {
     render(<PathHero {...base} onSelectCourse={() => {}} />);
-    // Il colore del testo NON è più un token fisso (text-inverse-on-surface
-    // diventava nero su fondo scuro nel tema scuro): lo script P28 misura il
-    // fondo reale del blocco marcato data-auto-contrast e imposta
-    // --contrast-ink; titoli e testi lo ereditano.
     const heroHeading = screen.getByRole("heading", { name: "Storia" });
-    expect(heroHeading).not.toHaveClass("text-white");
-    // V2-01: l'inchiostro della copertina arriva dal resolver condiviso
-    // (courseCoverVars imposta --contrast-ink in base alla famiglia).
-    const coverHost = heroHeading.closest<HTMLElement>("[style*='--contrast-ink']");
-    expect(coverHost).not.toBeNull();
-    expect(coverHost!.getAttribute("style")).toMatch(/--contrast-ink:\s*\d+ \d+ \d+/);
+    expect(heroHeading.closest("[style*='--contrast-ink']")).toBeNull();
+    expect(document.querySelector("[data-cover-root]")).toBeNull();
+    expect(heroHeading.className).toMatch(/text-foreground/);
 
     fireEvent.click(screen.getByText("Cambia corso"));
     const otherCourseTitle = await screen.findByRole("heading", { name: "matematica" });
-    expect(otherCourseTitle).not.toHaveClass("text-white");
-    expect(otherCourseTitle.closest<HTMLElement>("[style*='--contrast-ink']")).not.toBeNull();
+    expect(otherCourseTitle.closest("[style*='--contrast-ink']")).toBeNull();
+    expect(otherCourseTitle.className).toMatch(/text-foreground/);
   });
 
   it("notifica al genitore l'apertura/chiusura del selettore", () => {

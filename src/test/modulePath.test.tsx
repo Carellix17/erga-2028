@@ -222,7 +222,7 @@ describe("P46 — lista moduli: atterraggio, sfumatura e pillola", () => {
 // ═══════════════════════════════════════════════════════════════════════
 // 🌀 P46 — FEATURE 2: il percorso serpentina (nodi tondi, titoli fuori)
 // ═══════════════════════════════════════════════════════════════════════
-describe("P46 — percorso serpentina", () => {
+describe("P46 — elenco lezioni", () => {
   const lessons = [
     { id: "l1", title: "L'Europa prima della Rivoluzione", is_generated: true, lesson_order: 0 },
     { id: "l2", title: "Macchine a vapore", is_generated: true, lesson_order: 1 },
@@ -253,19 +253,16 @@ describe("P46 — percorso serpentina", () => {
       />,
     );
 
-  it("i nodi sono TONDI e il titolo sta nella scheda accanto, mai dentro il nodo", () => {
+  it("ogni lezione è una card con stato, spunta e titolo", () => {
     renderPath();
     const node0 = document.querySelector('[data-lesson-node="0"]');
-    expect(node0?.className).toContain("rounded-full");
-    // lezione fatta: dentro il cerchio c'è solo la spunta, nessun titolo
+    expect(node0?.className).toContain("rounded-card");
     expect(node0?.querySelector("svg")).toBeTruthy();
-    // lezione in corso: dentro il cerchio c'è solo il numero
     const node1 = document.querySelector('[data-lesson-node="1"]');
-    expect(node1?.textContent).toContain("2");
+    expect(node1?.className).toContain("bg-primary");
 
     const label0 = document.querySelector('[data-lesson-label="0"]');
     expect(label0).toBeTruthy();
-    expect(label0?.closest("[data-lesson-node]")).toBeNull(); // fuori dal nodo
     expect(label0?.textContent).toContain("Lezione 1");
     expect(label0?.textContent).toContain("L'Europa prima della Rivoluzione");
   });
@@ -278,22 +275,16 @@ describe("P46 — percorso serpentina", () => {
     expect(screen.getByText("Riprendi")).toBeTruthy(); // il nodo in corso ha la sua etichetta
   });
 
-  it("la linea è una curva morbida: piena dove è fatto, tratteggiata nel futuro", () => {
+  it("non disegna più la curva tra i nodi", () => {
     renderPath(1);
-    const paths = Array.from(document.querySelectorAll("g.segs path"));
-    expect(paths.length).toBe(4); // 3 tratti fra le lezioni + 1 verso il test finale
-    expect(paths.every((p) => (p.getAttribute("d") || "").includes("C"))).toBe(true); // Bézier
-    expect(document.querySelectorAll("g.segs path.seg-on").length).toBe(1); // primo tratto, fatto
-    expect(document.querySelectorAll("g.segs path.seg-base[stroke-dasharray]").length).toBe(3);
+    expect(document.querySelectorAll("g.segs path").length).toBe(0);
   });
 
-  it("i titoli lunghi restano nella loro scheda, che non tocca il nodo", () => {
+  it("i titoli lunghi restano interi nella card", () => {
     renderPath();
     const label2 = document.querySelector('[data-lesson-label="2"]');
     expect(label2?.textContent).toContain("raccontato bene");
-    const node2 = document.querySelector('[data-lesson-node="2"]');
-    // scheda e nodo sono due elementi separati: il testo non entra mai nel cerchio
-    expect(node2?.textContent).not.toContain("fabbriche");
+    expect(label2?.textContent).toContain("fabbriche");
   });
 
   it("il tocco su un nodo continua ad aprire la lezione giusta", () => {
@@ -319,7 +310,7 @@ describe("P46 — percorso serpentina", () => {
 
   it("mantiene il percorso compatto e rende le azioni della lezione accessibili da tastiera", async () => {
     const { container } = renderPath();
-    expect(container.querySelector("[data-path-layout=compact]")).toBeTruthy();
+    expect(container.querySelector("[data-path-layout=list]")).toBeTruthy();
 
     const lesson = screen.getByRole("button", {
       name: "Lezione 2: Macchine a vapore, in corso",

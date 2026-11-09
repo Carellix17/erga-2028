@@ -52,9 +52,9 @@ export function TrueFalse({
               onClick={() => handleSelect(value)}
               disabled={showResult}
               className={cn(
-                "p-5 rounded-2xl border-2 font-semibold transition-all duration-300 ease-m3-emphasized flex flex-col items-center gap-2",
+                "flex flex-col items-center gap-2 rounded-card border-2 p-5 font-normal transition-[transform,border-color,background-color] duration-150",
                 !showResult && !isSelected && "border-outline-variant bg-surface-container-lowest text-foreground hover:border-primary/50 active:scale-[0.95]",
-                !showResult && isSelected && "border-primary bg-primary/10 text-foreground scale-[1.03] shadow-level-1",
+                !showResult && isSelected && "border-foreground bg-white/10 text-foreground",
                 showResult && isCorrectOption && "border-success bg-success/10 animate-feedback-correct",
                 showResult && isSelected && !isCorrectOption && "border-destructive bg-destructive/10 animate-feedback-wrong",
                 showResult && !isSelected && !isCorrectOption && "opacity-50",

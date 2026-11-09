@@ -39,7 +39,7 @@ function CalloutBlockquote({ children }: { children?: React.ReactNode }) {
   return (
     <div
       className={cn(
-        "subject-callout body-medium my-3 rounded-card px-4 py-3 leading-relaxed [&>p]:m-0 [&_strong]:font-semibold"
+        "my-3 rounded-card border border-border bg-card px-4 py-3 leading-relaxed text-foreground [&>p]:m-0 [&_strong]:font-normal"
       )}
     >
       {children}
@@ -399,13 +399,13 @@ export function FullscreenLesson({
           {focusActive ? (
             <TimerChip />
           ) : (
-            <span className="text-xs font-semibold text-muted-foreground tabular-nums">
+            <span className="font-mono text-xs font-normal tabular-nums text-muted-foreground">
               {currentStep + 1}/{steps.length}
             </span>
           )}
         </div>
         <p className="break-words text-sm text-muted-foreground text-center">
-          {t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })} · <span className="text-foreground font-semibold">{lesson.title}</span>
+          {t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })} · <span className="font-normal text-foreground">{lesson.title}</span>
         </p>
       </div>
 
@@ -561,7 +561,7 @@ function ExplanationPartStep({ part, partNumber, totalParts, figures, figuresLoa
       <div className={cn(
         "space-y-4 py-5",
         isExample
-          ? "subject-callout"
+          ? "rounded-card border border-border bg-card"
           : "bg-transparent"
       )}>
         {segments.map((seg, i) => {
@@ -600,7 +600,7 @@ function ExampleStep({ example }: { example: string }) {
       </div>
       {/* V2-01: l'esempio porta l'ACCENTO MATERIA (tinta leggera del colore
           del corso, bordo al 30%): stesso trattamento dei callout della lettura. */}
-      <div className="subject-callout space-y-4 rounded-card p-5 shadow-tactile sm:p-6">
+      <div className="space-y-4 rounded-card border border-border bg-card p-5 sm:p-6">
         <div className="font-reading text-[1.125rem] font-normal text-foreground/90 leading-[1.65] prose prose-sm max-w-none prose-p:font-normal prose-p:leading-[1.65] prose-strong:font-semibold prose-table:rounded-card prose-table:overflow-hidden prose-th:bg-secondary/70 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-td:border-t prose-td:border-outline-variant/60">
           <LessonMarkdown>{example}</LessonMarkdown>
         </div>

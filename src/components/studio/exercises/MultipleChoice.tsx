@@ -54,11 +54,11 @@ export function MultipleChoice({
               onClick={() => handleSelect(index)}
               disabled={showResult}
               className={cn(
-                "w-full p-4 text-left rounded-2xl border-2 transition-all duration-300 ease-m3-emphasized animate-option-pop",
+                "w-full rounded-card border-2 p-4 text-left font-normal transition-[transform,border-color,background-color] duration-150",
                 // Default
                 !showResult && !isSelected && "border-outline-variant bg-surface-container-lowest text-foreground hover:border-primary/50 hover:bg-primary/5 active:scale-[0.97]",
                 // Selected pre-submit
-                !showResult && isSelected && "border-primary bg-primary/10 text-foreground scale-[1.02] shadow-level-1",
+                !showResult && isSelected && "border-foreground bg-white/10 text-foreground",
                 // Correct answer revealed — success
                 showResult && isCorrectOption && "border-success bg-success/10 animate-feedback-correct",
                 // Wrong answer selected — destructive

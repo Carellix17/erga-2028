@@ -75,9 +75,10 @@ describe("StudioPractice (P37) — accessi dedicati e ritorno", () => {
     fireEvent.click(chat);
     expect(onChat).toHaveBeenCalledTimes(1);
 
-    // ereditano l'accento cromatico del corso attivo (--subject-accent)
-    expect(esercizi.className).toMatch(/border-subject-accent/);
-    expect(interrogazione.className).toMatch(/border-subject-accent/);
+    expect(esercizi.className).toMatch(/border-border/);
+    expect(esercizi.className).toMatch(/bg-card/);
+    expect(interrogazione.className).toMatch(/border-border/);
+    expect(interrogazione.className).not.toMatch(/subject-accent/);
 
     fireEvent.click(esercizi);
     expect(onEsercizi).toHaveBeenCalledTimes(1);
@@ -126,24 +127,19 @@ describe("P38 — navigazione progressiva del corso", () => {
       />,
     );
     const card = container.firstElementChild as HTMLElement;
-    // stessa superficie della hero: layoutId per il morph, stesso bordo
-    // inchiostro dichiarato dalla copertina (come CourseCard/PathHero), non misurato
     expect(card.hasAttribute("data-auto-contrast")).toBe(false);
-    expect(card.getAttribute("style")).toContain("--contrast-ink");
+    expect(card.getAttribute("style") ?? "").not.toContain("--contrast-ink");
     expect(card.className).toMatch(/rounded-card/);
-    expect(card.className).toMatch(/border-inverse-on-surface\/15/);
-    // il colore materia arriva come variabile (stessa usata dalla hero)
-    expect(card.getAttribute("style")).toContain("--ambient-block-ink");
-    expect(card.getAttribute("style")).toContain("#7c9a7e");
-    // titolo del modulo GRANDE, senza troncamento (break-words, mai truncate)
+    expect(card.className).toMatch(/border-border/);
+    expect(card.className).toMatch(/bg-card/);
+    expect(card.className).not.toMatch(/subject-accent/);
     const title = screen.getByText("Introduzione e Contesto Storico dal 1337 al 1449");
     expect(title.className).toMatch(/text-lg/);
     expect(title.className).toMatch(/break-words/);
     expect(title.className).not.toMatch(/truncate/);
-    // nome del percorso piccolo, in tono secondario
     const course = screen.getByText("La guerra dei cent'anni");
     expect(course.className).toMatch(/text-xs/);
-    expect(course.className).toMatch(/text-contrast-secondary/);
+    expect(course.className).toMatch(/text-muted-foreground/);
     // etichetta MODULO 1 (uppercase via classe)
     expect(screen.getByText("Modulo 1").className).toMatch(/uppercase/);
     // X con target tattile ≥ 44px che riporta ai moduli

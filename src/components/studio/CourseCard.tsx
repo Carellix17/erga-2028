@@ -2,8 +2,6 @@ import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
-import { courseCoverVars } from "@/lib/courseIdentity";
-import { CourseCardBackground } from "./CourseCardBackground";
 
 export interface CourseCardData {
   id: string;
@@ -23,17 +21,12 @@ interface CourseCardProps {
   style?: CSSProperties;
 }
 
-// Prop di framer-motion inoltrate al motion.button interno - manteniamo style separato per merge
 type CourseCardMotionProps = Omit<
   React.ComponentPropsWithoutRef<typeof motion.button>,
   "children" | "className" | "onClick" | "style"
 >;
 
-/**
- * 🖼️ P24 — Card corso con cover immagine contestuale
- * Fix: merge style prop con --ambient-block-ink per permettere zIndex e viewport-relative positioning
- * durante la transizione shared element. Aggiunto layoutScroll awareness per scroll container.
- */
+/** Card corso del selettore Studio: superficie #191919, bordo hairline, 8 px. */
 export function CourseCard({
   course,
   active = false,
@@ -41,36 +34,29 @@ export function CourseCard({
   actionLabel,
   children,
   className,
-  noImage = false,
+  noImage: _noImage = false,
   style,
   ...motionProps
 }: CourseCardProps & CourseCardMotionProps) {
-  // V2-01: identità del corso dal resolver condiviso (stessa pelle in
-  // Home, Studio, selettore e modulo); niente foto Wikipedia sfocate.
-  // Il nome passa PULITO (cleanCourseName): la variante di composizione
-  // nasce dall'hash del nome, così la copertina è identica a quella della
-  // Home, che riceve già il nome senza estensione.
-  // Il campo e l'inchiostro devono risolvere lo stesso nome canonico: i corsi
-  // non riconosciuti usano un hash stabile, che cambia se resta l'estensione.
-  const displayName = cleanCourseName(course.file_name);
-  const { style: coverStyle } = courseCoverVars(displayName);
-
   return (
     <motion.button
       {...motionProps}
       type="button"
       onClick={() => onSelect(course)}
-      style={{ ...coverStyle, ...style } as CSSProperties}
+      style={style}
       className={cn(
-        "relative w-full overflow-hidden rounded-hero border border-border bg-card p-4 text-left shadow-level-2 sm:p-5",
+        "relative w-full rounded-card border border-border bg-card p-4 text-left text-foreground sm:p-5",
+        "transition-[transform,background-color] duration-150 active:scale-[0.98] motion-reduce:transform-none",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        active && "border-primary bg-primary text-primary-foreground",
         className,
       )}
     >
-      <CourseCardBackground courseName={displayName} />
-      <div className="relative z-10">
+      <div className="relative">
         {children}
-        {/* «Scegli» sulla copertina: velo satinato a pillola (2.1 §4). */}
-        <span className="btn-satin mt-3.5 h-10 w-full text-sm">{actionLabel}</span>
+        <span className="mt-3.5 flex h-11 w-full items-center justify-center rounded-button border border-current/30 text-sm font-normal">
+          {actionLabel}
+        </span>
       </div>
     </motion.button>
   );

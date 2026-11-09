@@ -1,15 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useMemo, useRef, useState } from "react";
 import { useHaptics } from "@/hooks/useHaptics";
 import {
   Check,
   ChevronLeft,
-  ChevronRight,
   Loader2,
   Lock,
   Pencil,
-  Play,
   RefreshCw,
   Trash2,
   Trophy,
@@ -20,7 +16,6 @@ import { moduleRange, type ModuleLessonLike } from "@/lib/lessonModules";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Exercise } from "./exercises/ExerciseRenderer";
 
 interface LessonLike extends ModuleLessonLike {
   id: string;
@@ -58,32 +53,6 @@ interface ModulePathProps {
   onRenameLesson?: (lessonId: string, newTitle: string) => Promise<void> | void;
 }
 
-// 🌀 P46 — SCHERMATA 2: il PERCORSO SERPENTINA del modulo.
-// Nodi TONDI che si muovono su tre colonne (centro-sinistra → centro →
-// centro-destra → centro → …) e si snodano su una curva morbida (Bézier)
-// disegnata in SVG: i tratti già fatti sono pieni nell'accento materia, quelli
-// futuri sono grigi e tratteggiati. In fondo, il nodo speciale del test finale.
-// Il titolo NON sta mai dentro il nodo: è in una scheda accanto, con buon
-// contrasto. Il modulo in generazione mostra banner + nodi tratteggiati che
-// girano (l'animazione del "respiro" resta solo sul nodo corrente).
-
-const NODE = 48; // bersaglio comodo e più proporzionato alle etichette
-const STEP = 112; // passo compatto; l'etichetta è limitata a tre righe
-const TROPHY = 56; // diametro del nodo del test finale
-const COMPACT_A = 22; // % — mobile: due corsie per dare più spazio ai titoli
-const COMPACT_B = 78;
-const COL_A = 24; // % — tablet/desktop: tre corsie
-const COL_B = 50;
-const COL_C = 76;
-const MID = 50; // % — il test finale sta in mezzo
-const SERPENTINE = [COL_A, COL_B, COL_C, COL_B];
-const COMPACT_SERPENTINE = [COMPACT_A, COMPACT_B];
-const COMPACT_WIDTH = 520;
-const CURVE = 0.42; // quanto la curva "tira" dritta prima di piegare (frazione di STEP)
-const TROPHY_DROP = 24; // quanto il trofeo scende sotto l'ultimo nodo
-const GAP_LABEL = 12; // px fra il bordo del nodo e la scheda del titolo
-const FALLBACK_W = 360; // larghezza di ripiego quando la misura non c'è (jsdom)
-
 type NodeState = "done" | "cur" | "av" | "lock" | "gen";
 
 export function ModulePath({
@@ -109,8 +78,6 @@ export function ModulePath({
   onRenameLesson,
 }: ModulePathProps) {
   const { triggerLight, triggerSuccess } = useHaptics();
-  // P46 — rispetta "riduci movimento": niente cascata, niente nodi che respirano.
-  const prefersReduced = usePrefersReducedMotion();
 
   // ── Long-press menu (stessa logica della vecchia lista) ──
   const [menuLesson, setMenuLesson] = useState<{ lesson: LessonLike; index: number } | null>(null);
@@ -240,77 +207,6 @@ export function ModulePath({
   const doneCount = modLessons.filter(({ lesson, globalIndex }) => isLessonDone(globalIndex, lesson)).length;
   const pct = modLessons.length > 0 ? Math.round((doneCount / modLessons.length) * 100) : 0;
 
-  const n = Math.max(modLessons.length, 1);
-  const height = n * STEP + TROPHY + 70;
-
-  // ── Misura della larghezza: così l'SVG disegna in PIXEL VERI (curve tonde,
-  //    tratteggio uniforme) e non serve nessuna scala stirata. ──
-  const boxRef = useRef<HTMLDivElement | null>(null);
-  const [boxW, setBoxW] = useState(0);
-  useEffect(() => {
-    const el = boxRef.current;
-    if (!el) return;
-    const update = () => setBoxW(el.clientWidth || 0);
-    update();
-    if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", update);
-      return () => window.removeEventListener("resize", update);
-    }
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-  const W = boxW > 0 ? boxW : FALLBACK_W;
-  const compactPath = W < COMPACT_WIDTH;
-  const xAt = (pctX: number) => (pctX / 100) * W; // % → px dentro l'SVG
-  const colOf = (i: number) => compactPath
-    ? COMPACT_SERPENTINE[i % COMPACT_SERPENTINE.length]
-    : SERPENTINE[i % SERPENTINE.length];
-  const rowY = (i: number) => i * STEP + NODE / 2; // centro del nodo i
-  const trophyY = n * STEP + TROPHY_DROP; // centro del nodo "test finale"
-
-  // ── 🌀 La serpentina: una Bézier morbida fra un nodo e il successivo ──
-  const segs = useMemo(() => {
-    const parts: string[] = [];
-    const states = modLessons.map(({ lesson, globalIndex }) => stateOf(globalIndex, lesson));
-    const link = (x1: number, y1: number, x2: number, y2: number, lit: boolean) => {
-      const c = STEP * CURVE;
-      const d = `M ${xAt(x1)} ${y1} C ${xAt(x1)} ${y1 + c} ${xAt(x2)} ${y2 - c} ${xAt(x2)} ${y2}`;
-      return `<path d="${d}" class="${lit ? "seg-on" : "seg-base"}"${lit ? "" : ' stroke-dasharray="9 11"'} fill="none"/>`;
-    };
-    modLessons.forEach((_, i) => {
-      if (i === 0) return;
-      const lit =
-        states[i - 1] !== "lock" && states[i - 1] !== "gen" &&
-        states[i] !== "lock" && states[i] !== "gen";
-      parts.push(link(colOf(i - 1), rowY(i - 1), colOf(i), rowY(i), lit));
-    });
-    // ultimo tratto: dall'ultima lezione al nodo del test finale
-    parts.push(link(colOf(n - 1), rowY(n - 1), MID, trophyY, allDone));
-    return parts.join("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modLessons, n, allDone, W]);
-
-  /**
-   * Le etichette alternano ai lati del nodo. Sui contenitori stretti usiamo
-   * due corsie e una scheda più larga; sui desktop manteniamo la serpentina a
-   * tre corsie. Il testo è limitato visivamente a tre righe, ma il nome
-   * completo resta nel nome accessibile del pulsante.
-   */
-  const labelLayout = (i: number, colPct: number) => {
-    const offset = `calc(${NODE / 2 + GAP_LABEL}px)`;
-    if (compactPath) {
-      const width = "min(60%, 240px)";
-      return colPct === COMPACT_A
-        ? { pos: { left: `calc(${colPct}% + ${offset})` }, width }
-        : { pos: { right: `calc(${100 - colPct}% + ${offset})` }, width };
-    }
-    if (colPct === COL_A) return { pos: { left: `calc(${colPct}% + ${offset})` }, width: "min(42%, 220px)" };
-    if (colPct === COL_C) return { pos: { right: `calc(${100 - colPct}% + ${offset})` }, width: "min(42%, 220px)" };
-    if (i % 4 === 1) return { pos: { right: `calc(${100 - colPct}% + ${offset})` }, width: "min(34%, 220px)" };
-    return { pos: { left: `calc(${colPct}% + ${offset})` }, width: "min(34%, 220px)" };
-  };
-
   return (
     <div className="pb-6 animate-fade-in">
       {/* ── Intestazione: torna ai moduli + titolo modulo INTERO ── */}
@@ -327,8 +223,8 @@ export function ModulePath({
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div className="min-w-0">
-              <p className="label-small text-muted-foreground">Modulo {moduleIndex + 1}</p>
-              <h2 className="font-display font-semibold text-lg leading-snug text-foreground break-words">
+              <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">Modulo {moduleIndex + 1}</p>
+              <h2 className="break-words font-sans text-lg font-normal leading-snug text-foreground">
                 {moduleTitle}
               </h2>
             </div>
@@ -338,14 +234,14 @@ export function ModulePath({
         {!isModuleGenerating && (
           <>
             <div className="flex items-baseline justify-between gap-3 px-1 mt-3">
-              <p className="text-xs text-muted-foreground font-medium">
+              <p className="text-xs font-normal text-muted-foreground">
                 {doneCount} di {modLessons.length} lezioni completate
               </p>
-              <p className="text-sm font-semibold text-subject-accent tabular-nums">{pct}%</p>
+              <p className="font-mono text-sm tabular-nums text-foreground">{pct}%</p>
             </div>
-            <div className="h-1.5 bg-secondary rounded-sm overflow-hidden mt-1.5">
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-sm bg-white/15">
               <div
-                className="h-full rounded-sm bg-subject-accent transition-all duration-700 ease-m3-emphasized"
+                className="h-full rounded-sm bg-foreground transition-[width] duration-200"
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -360,12 +256,12 @@ export function ModulePath({
             <Loader2 className="w-5 h-5 text-tertiary animate-spin" />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">Sto generando le lezioni…</p>
+            <p className="text-sm font-normal text-foreground">Sto generando le lezioni…</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               Le nuove lezioni entreranno qui appena pronte
             </p>
           </div>
-          <span className="text-lg font-semibold tabular-nums text-tertiary flex-shrink-0">
+          <span className="shrink-0 font-mono text-lg tabular-nums text-foreground">
             {genTotal > 0 ? Math.min(100, Math.round((genCount / genTotal) * 100)) : 8}%
           </span>
         </div>
@@ -373,46 +269,17 @@ export function ModulePath({
       {isModuleGenerating && genTotal > 0 && (
         <div className="mx-4 mt-3 h-1.5 rounded-sm bg-secondary overflow-hidden">
           <div
-            className="h-full rounded-sm bg-subject-accent transition-all duration-500"
+            className="h-full rounded-sm bg-foreground transition-[width] duration-200"
             style={{ width: `${Math.max(4, Math.min(100, (genCount / genTotal) * 100))}%` }}
           />
         </div>
       )}
 
-      {/* ── 🌀 Il percorso serpentina — ingressi a cascata ── */}
-      <motion.div
-        ref={boxRef}
-        data-path-layout={compactPath ? "compact" : "wide"}
-        className="relative mx-2 mt-5"
-        style={{ height }}
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: prefersReduced ? 0 : 0.06, delayChildren: prefersReduced ? 0 : 0.12 } },
-        }}
-      >
-        <svg
-          className="pointer-events-none absolute inset-0 h-full w-full"
-          viewBox={`0 0 ${W} ${height}`}
-          preserveAspectRatio="none"
-          aria-hidden
-        >
-          <g
-            className="segs"
-            dangerouslySetInnerHTML={{ __html: segs }}
-            style={{ strokeWidth: 4.5, strokeLinecap: "round", strokeLinejoin: "round", fill: "none" }}
-          />
-        </svg>
-
-        {/* Nodi tondi + schede del titolo (la scheda sta FUORI dal nodo) */}
-        {modLessons.map(({ lesson, globalIndex }, i) => {
-          const colPct = colOf(i);
-          const y = rowY(i);
+      <div data-path-layout="list" className="mx-4 mt-5 flex flex-col gap-3">
+        {modLessons.map(({ lesson, globalIndex }) => {
           const state: NodeState = isModuleGenerating ? "gen" : stateOf(globalIndex, lesson);
           const clickable = !isModuleGenerating && (state === "av" || state === "cur" || state === "done");
           const stateLabel = ({ done: "completata", cur: "in corso", av: "disponibile", lock: "bloccata", gen: "in generazione" } as const)[state];
-          const lab = labelLayout(i, colPct);
           const openActions = () => {
             if (isGeneratingLesson) return;
             setMenuLesson({ lesson, index: globalIndex });
@@ -421,26 +288,24 @@ export function ModulePath({
           };
 
           return (
-            <motion.button
+            <button
               key={lesson.id}
               type="button"
               aria-label={`Lezione ${globalIndex + 1}: ${lesson.title}, ${stateLabel}`}
               aria-disabled={!clickable}
               aria-current={state === "cur" ? "step" : undefined}
-              data-lesson-row={globalIndex}
-              variants={{
-                hidden: { opacity: 0, y: prefersReduced ? 0 : 14 },
-                visible: {
-                  opacity: 1,
-                  y: 0,
-                  transition: { type: "spring", stiffness: 380, damping: 30, bounce: 0.12, duration: 0.42 },
-                },
-              }}
+              data-lesson-node={globalIndex}
+              data-node-state={state}
               className={cn(
-                "group absolute inset-x-0 bg-transparent p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                clickable ? "cursor-pointer" : "cursor-default",
+                "flex w-full items-start gap-3 rounded-card border px-4 py-4 text-left font-normal transition-[transform,background-color,border-color] duration-150",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none",
+                state === "cur" && "border-primary bg-primary text-primary-foreground",
+                state === "done" && "border-border bg-card text-muted-foreground",
+                state === "av" && "border-border bg-card text-foreground",
+                (state === "lock" || state === "gen") && "cursor-default border-border bg-card text-muted-foreground",
+                state === "gen" && "border-dashed",
+                clickable && "active:scale-[0.98]",
               )}
-              style={{ top: y - STEP / 2, height: STEP, touchAction: "manipulation" }}
               onClick={() => {
                 if (longPressTriggeredRef.current) {
                   longPressTriggeredRef.current = false;
@@ -464,123 +329,67 @@ export function ModulePath({
               }}
               onDoubleClick={openActions}
             >
-              {/* ── Il nodo: sempre TONDO, mai con il titolo dentro ── */}
-              <span
-                aria-hidden="true"
-                data-lesson-node={globalIndex}
-                data-node-state={state}
-                className={cn(
-                  "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full",
-                  "font-display font-semibold text-lg tabular-nums select-none transition-transform duration-200",
-                  state === "done" && "bg-subject-accent text-subject-accent-foreground shadow-level-2",
-                  state === "cur" && "bg-subject-accent text-subject-accent-foreground shadow-level-3 ring-2 ring-background",
-                  state === "cur" && !prefersReduced && "animate-breathe-ring",
-                  state === "av" && "bg-card border-2 border-border text-foreground",
-                  state === "lock" && "bg-surface-container-high border-2 border-border text-muted-foreground",
-                  state === "gen" && "bg-card border-[2.5px] border-dashed border-tertiary text-tertiary",
-                  clickable && "group-hover:scale-[1.04] group-active:scale-[0.96]",
-                )}
-                style={{
-                  left: `calc(${colPct}% - ${NODE / 2}px)`,
-                  width: NODE,
-                  height: NODE,
-                  userSelect: "none",
-                }}
-              >
+              <span aria-hidden="true" className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center">
                 {state === "done" ? (
-                  <Check className="h-6 w-6" strokeWidth={2.5} />
+                  <Check className="h-5 w-5" strokeWidth={1.75} />
                 ) : state === "lock" ? (
-                  <Lock className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                  <Lock className="h-4 w-4" strokeWidth={1.75} />
                 ) : state === "gen" ? (
-                  <Loader2 className="h-[18px] w-[18px] animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  globalIndex + 1
-                )}
-
-                {/* Etichetta del nodo corrente: "Riprendi" */}
-                {state === "cur" && !isGeneratingLesson && (
-                  <span className="absolute -top-9 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 rounded-pill bg-subject-accent px-2.5 py-1 text-[10.5px] font-semibold text-subject-accent-foreground shadow-level-2">
-                      <Play className="h-2.5 w-2.5" fill="currentColor" strokeWidth={0} />
-                      Riprendi
-                    </span>
-                  </span>
+                  <span className="font-mono text-xs tabular-nums">{globalIndex + 1}</span>
                 )}
               </span>
-
-              {/* ── Scheda accanto al nodo: massimo tre righe, nome completo accessibile ── */}
-              <span
-                aria-hidden="true"
-                data-lesson-label={globalIndex}
-                className={cn(
-                  "absolute top-1/2 -translate-y-1/2 rounded-card border bg-card px-3 py-2",
-                  state === "cur" ? "border-subject-accent/50" : "border-border",
-                  (state === "lock" || state === "gen") && "opacity-80",
+              <span data-lesson-label={globalIndex} className="min-w-0 flex-1">
+                <span className={cn("font-mono text-[12px] uppercase tracking-[0.08em]", state === "cur" ? "text-primary-foreground/70" : "text-muted-foreground")}>
+                  Lezione {globalIndex + 1}
+                </span>
+                {state === "cur" && !isGeneratingLesson && (
+                  <span className="ml-2 font-mono text-[12px] uppercase tracking-[0.08em]">Riprendi</span>
                 )}
-                style={{ ...lab.pos, width: lab.width, maxWidth: lab.width }}
-              >
-                <span className="label-small block text-muted-foreground">Lezione {globalIndex + 1}</span>
-                <span className="mt-0.5 block line-clamp-3 text-base font-semibold leading-snug text-foreground break-words">
+                <span className="mt-1 block break-words text-base font-normal leading-snug">
                   {lesson.title}
                 </span>
               </span>
-            </motion.button>
+            </button>
           );
         })}
 
-        {/* ── Nodo speciale: il test finale ── */}
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, y: prefersReduced ? 0 : 14 },
-            visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 360, damping: 30, bounce: 0.1, duration: 0.42 } },
+        <button
+          type="button"
+          data-final-test-node
+          disabled={!allDone || !showFinalTest || !onStartFinalTest || !!isLoadingFinalTest}
+          aria-label={typeof finalTestScore === "number" ? `Test finale, ultimo esito ${finalTestScore}%` : "Test finale"}
+          className={cn(
+            "flex w-full items-center gap-3 rounded-card border px-4 py-4 text-left font-normal",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+            allDone && showFinalTest && onStartFinalTest
+              ? "border-border bg-card text-foreground"
+              : "cursor-default border-border bg-card text-muted-foreground",
+          )}
+          onClick={() => {
+            if (allDone && showFinalTest && onStartFinalTest && !isLoadingFinalTest) {
+              triggerLight();
+              onStartFinalTest();
+            }
           }}
-          className="absolute inset-x-0"
-          style={{ top: trophyY - STEP / 2, height: STEP }}
         >
-          <button
-            type="button"
-            data-final-test-node
-            disabled={!allDone || !showFinalTest || !onStartFinalTest || !!isLoadingFinalTest}
-            aria-label={typeof finalTestScore === "number" ? `Test finale, ultimo esito ${finalTestScore}%` : "Test finale"}
-            className={cn(
-              "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full font-display select-none transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-              allDone && showFinalTest && onStartFinalTest
-                ? "bg-subject-accent text-subject-accent-foreground  cursor-pointer hover:scale-[1.04] active:opacity-80"
-                : "bg-surface-container-high border-2 border-border text-muted-foreground disabled:cursor-default",
-            )}
-            style={{
-              left: `calc(${MID}% - ${TROPHY / 2}px)`,
-              width: TROPHY,
-              height: TROPHY,
-              borderRadius: "9999px",
-            }}
-            onClick={() => {
-              if (allDone && showFinalTest && onStartFinalTest && !isLoadingFinalTest) {
-                triggerLight();
-                onStartFinalTest();
-              }
-            }}
-          >
-            {isLoadingFinalTest ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Trophy className="h-7 w-7" strokeWidth={1.8} />
-            )}
-            <span aria-hidden="true" className="absolute left-1/2 top-[calc(100%+10px)] z-10 -translate-x-1/2 whitespace-nowrap">
-              <span className="block rounded-card border border-border bg-card px-3 py-2 text-center">
-                <span className="label-small block text-muted-foreground">Ultimo passo</span>
-                <span className="block text-base font-semibold text-foreground">Test finale</span>
-                {/* 🅐 FONDAMENTA — l'esito dell'ultimo test fatto resta visibile */}
-                {typeof finalTestScore === "number" && (
-                  <span className="block text-sm font-semibold text-muted-foreground">
-                    Ultimo esito: {finalTestScore}%
-                  </span>
-                )}
+          {isLoadingFinalTest ? (
+            <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
+          ) : (
+            <Trophy className="h-5 w-5 shrink-0" strokeWidth={1.75} />
+          )}
+          <span>
+            <span className="block font-mono text-[12px] uppercase tracking-[0.08em] text-muted-foreground">Ultimo passo</span>
+            <span className="mt-1 block text-base font-normal">Test finale</span>
+            {typeof finalTestScore === "number" && (
+              <span className="mt-1 block font-mono text-sm tabular-nums text-muted-foreground">
+                Ultimo esito: {finalTestScore}%
               </span>
-            </span>
-          </button>
-        </motion.div>
-      </motion.div>
+            )}
+          </span>
+        </button>
+      </div>
 
       {/* Bottone modulo completato */}
       {allDone && (
@@ -588,7 +397,7 @@ export function ModulePath({
           <button
             type="button"
             onClick={() => { triggerSuccess(); onModuleCompleted(); }}
-            className="flex h-12 w-full items-center justify-center rounded-button border border-input bg-primary px-4 text-center font-sans text-sm font-semibold leading-tight text-primary-foreground  transition-[transform,background-color,box-shadow] duration-200 hover:bg-primary-deep active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-12 w-full items-center justify-center rounded-button border border-white/25 bg-transparent px-4 text-center font-sans text-sm font-normal leading-tight text-foreground transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
           >
             ✓ Modulo completato — Torna ai moduli
           </button>

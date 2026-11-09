@@ -1,9 +1,7 @@
 import { AudioLines, ChevronLeft, FlaskConical, MessageCircle, PencilLine, X } from "lucide-react";
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { CourseCardBackground } from "./CourseCardBackground";
-import { courseCoverVars } from "@/lib/courseIdentity";
 
 /**
  * StudioPractice — accessi rapidi alla pratica dalla Home Studio.
@@ -56,14 +54,12 @@ function LauncherCard({
       type="button"
       onClick={onClick}
       aria-label={`Apri ${label}`}
-      className="interactive-card flex min-h-[92px] flex-col items-start gap-2 rounded-card border border-subject-accent/25 bg-card p-3.5 text-left transition-all duration-200 ease-m3-standard hover:border-subject-accent/50 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="flex min-h-[92px] flex-col items-start gap-2 rounded-card border border-border bg-card p-3.5 text-left text-foreground transition-[transform,background-color] duration-150 hover:bg-white/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
     >
-      <span className="grid h-9 w-9 place-items-center rounded-full bg-subject-accent text-subject-accent-foreground shadow-level-1">
-        <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} aria-hidden="true" />
-      </span>
+      <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
       <span className="w-full min-w-0">
-        <span className="block break-words text-base font-semibold leading-tight text-foreground">{label}</span>
-        <span className="mt-0.5 block line-clamp-2 break-words text-sm font-medium text-muted-foreground">{subtitle}</span>
+        <span className="block break-words text-base font-normal leading-tight text-foreground">{label}</span>
+        <span className="mt-0.5 block line-clamp-2 break-words text-sm font-normal text-muted-foreground">{subtitle}</span>
       </span>
     </button>
   );
@@ -137,39 +133,33 @@ export interface ModuleHeaderCardProps {
  * a capo, mai troncato), nome del percorso piccolo sotto, X 44px in alto a
  * destra per tornare alla lista dei moduli.
  */
-export function ModuleHeaderCard({ courseTitle, moduleIndex, moduleTitle, subjectColor, layoutId, onClose }: ModuleHeaderCardProps) {
+export function ModuleHeaderCard({ courseTitle, moduleIndex, moduleTitle, layoutId, onClose }: ModuleHeaderCardProps) {
   return (
     <motion.div
       layout
       layoutId={layoutId}
-      transition={{ layout: { type: "spring", stiffness: 300, damping: 25 } }}
-      style={{ "--ambient-block-ink": subjectColor, ...courseCoverVars(courseTitle || moduleTitle).style } as CSSProperties}
-      className="relative overflow-hidden rounded-card border border-inverse-on-surface/15 shadow-level-2"
+      transition={{ layout: { duration: 0.2, ease: [0.22, 1, 0.36, 1] } }}
+      className="relative overflow-hidden rounded-card border border-border bg-card text-foreground"
     >
-      {/* Stessi orbs di scena della hero: luci libere sul colore materia */}
-      <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-current opacity-[0.07]" aria-hidden />
-      <div className="absolute -right-2 -bottom-20 w-36 h-36 rounded-full bg-current opacity-[0.05]" aria-hidden />
-      <CourseCardBackground courseName={courseTitle || moduleTitle} />
       <div className="relative p-4">
         <div className="pr-14">
-          <p className="label-small uppercase tracking-[0.16em] text-contrast-secondary">
+          <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
             Modulo {moduleIndex + 1}
           </p>
-          <h2 className="mt-0.5 break-words font-display text-lg font-semibold leading-snug text-contrast">
+          <h2 className="mt-0.5 break-words font-sans text-lg font-normal leading-snug text-foreground">
             {moduleTitle}
           </h2>
           {courseTitle && (
-            <p className="mt-1 break-words text-xs text-contrast-secondary">{courseTitle}</p>
+            <p className="mt-1 break-words text-xs text-muted-foreground">{courseTitle}</p>
           )}
         </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Chiudi modulo"
-          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full transition-all duration-200 hover:opacity-80 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
+          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-foreground transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
         >
-          <X className="h-5 w-5 text-current" strokeWidth={2} aria-hidden="true" />
+          <X className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
         </button>
       </div>
     </motion.div>
