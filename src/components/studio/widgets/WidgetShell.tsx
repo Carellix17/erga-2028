@@ -47,7 +47,7 @@ export function WidgetShell({ title, caption, readouts, onReset, children }: Wid
           {readouts.map((r) => (
             <span
               key={r.label}
-              className="inline-flex items-baseline gap-1.5 rounded-xl bg-surface-container px-2.5 py-1"
+              className="inline-flex items-baseline gap-2 rounded-xl bg-surface-container px-3 py-1"
             >
               <span className="text-xs text-muted-foreground">{r.label}</span>
               <span className="font-mono text-sm font-medium text-foreground">{r.value}</span>
@@ -73,7 +73,7 @@ interface WidgetSliderProps {
 export function WidgetSlider({ label, value, min, max, step, unit, onChange }: WidgetSliderProps) {
   const decimals = step < 1 ? (step < 0.1 ? 2 : 1) : 0;
   return (
-    <div className="py-1.5">
+    <div className="py-2">
       <div className="flex items-baseline justify-between gap-2 mb-1">
         <span className="text-sm text-foreground">{label}</span>
         <span className={cn("font-mono text-xs font-medium text-muted-foreground")}>

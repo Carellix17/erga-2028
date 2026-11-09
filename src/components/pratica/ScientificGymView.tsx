@@ -227,11 +227,11 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
   }
 
   return (
-    <div className="h-full overflow-y-auto px-4 py-5 pb-[env(safe-area-inset-bottom)] sm:px-6">
-      <div className="mx-auto max-w-2xl space-y-5">
+    <div className="h-full overflow-y-auto px-4 py-6 pb-[env(safe-area-inset-bottom)] sm:px-6">
+      <div className="mx-auto max-w-2xl space-y-6">
         {/* Intestazione */}
         <div className="flex items-start gap-3">
-          <div className="rounded-2xl bg-primary/10 p-2.5 text-brand-deep">
+          <div className="rounded-2xl bg-primary/10 p-3 text-brand-deep">
             <Dumbbell className="w-5 h-5" />
           </div>
           <div>
@@ -250,7 +250,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
                 <button
                   onClick={() => setModuleIndex(null)}
                   className={cn(
-                    "rounded-full border px-3.5 py-1.5 text-sm transition-colors",
+                    "rounded-full border px-4 py-2 text-sm transition-colors",
                     moduleIndex === null
                       ? "border-primary bg-primary/10 text-brand-deep"
                       : "border-outline-variant text-muted-foreground hover:bg-surface-container",
@@ -263,7 +263,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
                     key={i}
                     onClick={() => setModuleIndex(i)}
                     className={cn(
-                      "rounded-full border px-3.5 py-1.5 text-sm transition-colors",
+                      "rounded-full border px-4 py-2 text-sm transition-colors",
                       moduleIndex === i
                         ? "border-primary bg-primary/10 text-brand-deep"
                         : "border-outline-variant text-muted-foreground hover:bg-surface-container",
@@ -308,9 +308,9 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
               </span>
             </div>
 
-            <div className="rounded-2xl border-2 border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
+            <div className="rounded-2xl border-2 border-outline-variant bg-surface-container-lowest p-4 sm:p-6">
               <div className="mb-3 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-surface-container px-2.5 py-0.5 font-mono text-xs uppercase tracking-wide text-muted-foreground">
+                <span className="rounded-full bg-surface-container px-3 py-0.5 font-mono text-xs uppercase tracking-wide text-muted-foreground">
                   {ex.kind === "problem" ? t("gym.problem") : t("gym.drill")}
                 </span>
                 <span className="text-xs text-muted-foreground">{ex.topic}</span>
@@ -333,10 +333,10 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
               {/* Soluzione */}
               {solutionShown && (
                 <div className="mt-4 rounded-2xl border-2 border-outline-variant bg-surface-container p-4">
-                  <p className="mb-2 flex items-center gap-1.5 title-small text-foreground">
+                  <p className="mb-2 flex items-center gap-2 title-small text-foreground">
                     <Eye className="w-4 h-4" /> {t("gym.solution")}
                   </p>
-                  <ol className="list-decimal space-y-1.5 pl-5 text-sm text-foreground">
+                  <ol className="list-decimal space-y-2 pl-6 text-sm text-foreground">
                     {ex.steps.map((step, i) => (
                       <li key={i}><LessonMarkdown components={{ p: "span" }}>{step}</LessonMarkdown></li>
                     ))}
@@ -370,12 +370,12 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
             )}
 
             {feedback === "correct" && (
-              <p className="flex items-center gap-2 rounded-2xl bg-emerald-500/15 p-3.5 text-foreground">
+              <p className="flex items-center gap-2 rounded-2xl bg-emerald-500/15 p-4 text-foreground">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" /> {t("gym.correct")}
               </p>
             )}
             {feedback === "wrong" && (
-              <p className="flex items-center gap-2 rounded-2xl bg-rose-500/10 p-3.5 text-foreground">
+              <p className="flex items-center gap-2 rounded-2xl bg-rose-500/10 p-4 text-foreground">
                 <XCircle className="w-5 h-5 text-rose-500" /> {t("gym.wrong")}
               </p>
             )}
@@ -384,7 +384,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
             <div className="flex flex-wrap gap-2">
               {feedback !== "correct" && !solutionShown && ex.hints.length > 0 && hintsShown < ex.hints.length && (
                 <Button variant="outline" onClick={showHint} className="rounded-xl">
-                  <Lightbulb className="w-4 h-4 mr-1.5" /> {t("gym.hint")}
+                  <Lightbulb className="w-4 h-4 mr-2" /> {t("gym.hint")}
                 </Button>
               )}
               {feedback !== "correct" && !solutionShown && (
@@ -393,12 +393,12 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
                   onClick={() => { setChatOpen(true); if (turns.length === 0) setTurns([{ role: "assistant", content: t("gym.tutorIntro") }]); }}
                   className="rounded-xl"
                 >
-                  <MessageCircle className="w-4 h-4 mr-1.5" /> {t("gym.askTutor")}
+                  <MessageCircle className="w-4 h-4 mr-2" /> {t("gym.askTutor")}
                 </Button>
               )}
               {!solutionShown && feedback !== "correct" && (
                 <Button variant="ghost" onClick={showSolution} className="rounded-xl text-muted-foreground">
-                  <Eye className="w-4 h-4 mr-1.5" /> {t("gym.showSolution")}
+                  <Eye className="w-4 h-4 mr-2" /> {t("gym.showSolution")}
                 </Button>
               )}
             </div>

@@ -34,7 +34,7 @@ export function ShortAnswer({
   const isGood = matchRatio >= 0.5;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <p className="title-medium text-foreground"><MathText text={question} /></p>
       
       <Textarea
@@ -72,7 +72,7 @@ export function ShortAnswer({
                 <span
                   key={index}
                   className={cn(
-                    "px-3 py-1.5 rounded-full label-medium transition-all animate-option-pop",
+                    "px-3 py-2 rounded-full label-medium transition-all animate-option-pop",
                     matchedKeywords.includes(keyword)
                       ? "bg-success-container text-success"
                       : "bg-surface-container-highest text-muted-foreground"

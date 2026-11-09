@@ -199,7 +199,7 @@ export function CourseSelector({
   return (
     <>
       {/* ── Scheda del percorso attivo ── */}
-      <div className="pt-5 animate-fade-up">
+      <div className="pt-6 animate-fade-up">
         <div className="flex items-stretch gap-2">
           <button
             type="button"
@@ -219,7 +219,7 @@ export function CourseSelector({
             onPointerCancel={clearLongPress}
             onContextMenu={(e) => e.preventDefault()}
             className={cn(
-              "flex min-w-0 flex-1 items-center gap-3.5 rounded-card border border-border bg-card px-4 py-3.5 text-left select-none touch-none",
+              "flex min-w-0 flex-1 items-center gap-4 rounded-card border border-border bg-card px-4 py-4 text-left select-none touch-none",
               "transition-colors duration-200",
               multi && "hover:bg-surface-container-high active:bg-surface-container-highest",
             )}
@@ -268,7 +268,7 @@ export function CourseSelector({
             style={{ top: menuPos.top, right: menuPos.right }}
             data-studio=""
             className={cn(
-              "studio-surface fixed z-[86] min-w-[200px] rounded-md bg-popover shadow-level-3 border border-outline-variant/60 p-1.5",
+              "studio-surface fixed z-[86] min-w-[200px] rounded-md bg-popover shadow-level-3 border border-outline-variant/60 p-2",
               "animate-in fade-in-0 zoom-in-95 duration-200 ease-m3-emphasized-decel origin-top-right",
             )}
           >
@@ -285,7 +285,7 @@ export function CourseSelector({
                     a.onClick();
                   }}
                   className={cn(
-                    "studio-action w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors duration-150",
+                    "studio-action w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-colors duration-150",
                   )}
                 >
                   {a.loading ? (
@@ -322,7 +322,7 @@ export function CourseSelector({
       {/* ── Selettore dei percorsi ── */}
       {open && (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-scrim/60 p-4"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-scrim/60 px-4 py-4 sm:px-6"
           onClick={() => setOpen(false)}
         >
           <div
@@ -331,7 +331,7 @@ export function CourseSelector({
             aria-label="Seleziona un percorso"
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              "w-full max-w-sm rounded-card border border-border bg-card p-5",
+              "w-full max-w-sm rounded-card border border-border bg-card p-6",
               "animate-in fade-in-0 zoom-in-95 duration-300 ease-m3-emphasized-decel",
             )}
           >
@@ -341,7 +341,7 @@ export function CourseSelector({
                 Scegli su quale vuoi lavorare
               </p>
             </div>
-            <div className="flex flex-col gap-1.5 max-h-[60vh] overflow-y-auto">
+            <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
               {courses.map((course) => {
                 const Icon = getIcon(course.file_name);
                 const isActive = course.id === active.id;

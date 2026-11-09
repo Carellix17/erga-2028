@@ -13,6 +13,10 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   return children;
 }
 
+export function useOptionalFocus() {
+  return null;
+}
+
 export function useFocus() {
   return {
     isActive: false,

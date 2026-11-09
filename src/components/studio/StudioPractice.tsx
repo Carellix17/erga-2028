@@ -54,7 +54,7 @@ function LauncherCard({
       type="button"
       onClick={onClick}
       aria-label={`Apri ${label}`}
-      className="flex min-h-[92px] flex-col items-start gap-2 rounded-card border border-border bg-card p-3.5 text-left text-foreground transition-[transform,background-color] duration-150 hover:bg-white/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
+      className="flex min-h-[92px] flex-col items-start gap-2 rounded-card border border-border bg-card p-4 text-left text-foreground transition-[transform,background-color] duration-150 hover:bg-white/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
     >
       <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
       <span className="w-full min-w-0">
@@ -97,7 +97,7 @@ export function SubViewHeader({ title, onBack, courseTitle, backLabel = "Torna a
         type="button"
         onClick={onBack}
         aria-label={backLabel}
-        className="flex h-11 items-center gap-1.5 rounded-button px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-surface-container-high hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex h-11 items-center gap-2 rounded-button px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-surface-container-high hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         {backLabel}
@@ -209,7 +209,7 @@ export function SheetDrawer({ title, step, onClose, children }: SheetDrawerProps
       />
       <motion.div
         data-step={step}
-        className="absolute inset-x-0 bottom-0 flex h-[100dvh] flex-col rounded-t-dialog border border-border bg-popover text-foreground shadow-level-4"
+        className="absolute inset-x-4 bottom-0 flex h-[100dvh] flex-col rounded-t-dialog border border-border bg-popover text-foreground shadow-level-4 sm:inset-x-6"
         initial={{ y: "100%" }}
         animate={{ y: step === "active" ? "0%" : "12%" }}
         exit={{ y: "100%" }}

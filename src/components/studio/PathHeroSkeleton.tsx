@@ -3,11 +3,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 /**
  * PathHeroSkeleton — replica di PathHero
  * - Banner completo con progress bar, titolo, bottoni Riprendi + Cambia corso
- * - h-auto con padding p-5 sm:p-6, rounded-card
+ * - h-auto con padding p-6 sm:p-6, rounded-card
  */
 export function PathHeroSkeleton() {
   return (
-    <div className="rounded-card border border-border bg-card p-5 sm:p-6 space-y-4 animate-pulse" aria-busy="true" aria-label="Caricamento Percorso">
+    <div className="rounded-card border border-border bg-card p-6 sm:p-6 space-y-4 animate-pulse" aria-busy="true" aria-label="Caricamento Percorso">
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-20 rounded-pill" />
         <Skeleton className="h-4 w-12 rounded-full" />

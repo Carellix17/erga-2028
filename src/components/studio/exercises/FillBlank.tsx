@@ -30,7 +30,7 @@ export function FillBlank({
   const parts = sentenceWithBlank.split("___");
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="title-medium text-foreground leading-relaxed p-4 rounded-2xl bg-surface-container">
         {parts.map((part, index) => (
           <span key={index}>
