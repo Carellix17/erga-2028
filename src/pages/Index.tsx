@@ -346,7 +346,11 @@ const Index = () => {
           </div>
         )}
         {/* 🌲 P24 — passaggio tra stanze: dissolvenza di sola luce (200ms) */}
-        <div key={activeTab} className="room-fade">
+        <div
+          key={activeTab}
+          data-studio={activeTab === "studio" ? "" : undefined}
+          className={activeTab === "studio" ? "room-fade -mx-4 sm:-mx-6" : "room-fade"}
+        >
         {activeTab === "home" && (
           <HomeView
             cognitiveProfile={cognitive}
@@ -392,7 +396,7 @@ const Index = () => {
             <div id="study-material-controls" className={materialsExpanded ? "block" : "hidden xl:block"}>
             <div className="border-b border-border p-4">
               <label htmlFor="reading-mode" className="block text-sm font-medium">Taglio di lettura</label>
-              <select id="reading-mode" value={readingMode} onChange={event => setReadingMode(event.target.value as "calma" | "logica")} className="mt-2 min-h-11 w-full border border-input bg-sheet px-3 text-base text-foreground">
+              <select id="reading-mode" value={readingMode} onChange={event => setReadingMode(event.target.value as "calma" | "logica")} className="mt-2 min-h-11 w-full rounded-control border border-[#ffffff] bg-[#ffffff] px-3 text-base text-[#0a0a0a]">
                 <option value="calma">Calma</option><option value="logica">Logica</option>
               </select>
               <p className="mt-2 text-sm text-muted-foreground">{readingMode === "calma" ? "Testo più arioso per leggere con calma." : "Formule e passaggi chiave in evidenza."}</p>

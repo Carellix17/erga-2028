@@ -210,7 +210,7 @@ export function ModulePath({
   return (
     <div className="pb-6 animate-fade-in">
       {/* ── Intestazione: torna ai moduli + titolo modulo INTERO ── */}
-      <div className="px-4 pt-4">
+      <div className="pt-4">
         {!hideHeader && (
           <div className="flex items-center gap-2.5">
             <Button
@@ -251,7 +251,7 @@ export function ModulePath({
 
       {/* ── Banner "in generazione" ── */}
       {isModuleGenerating && (
-        <div className="mx-4 mt-4 rounded-card bg-card border border-border p-4 flex items-center gap-3.5 animate-fade-up">
+        <div className="mt-4 rounded-card bg-card border border-border p-4 flex items-center gap-3.5 animate-fade-up">
           <span className="w-10 h-10 rounded-button bg-surface-container-high flex items-center justify-center flex-shrink-0">
             <Loader2 className="w-5 h-5 text-tertiary animate-spin" />
           </span>
@@ -267,7 +267,7 @@ export function ModulePath({
         </div>
       )}
       {isModuleGenerating && genTotal > 0 && (
-        <div className="mx-4 mt-3 h-1.5 rounded-sm bg-secondary overflow-hidden">
+        <div className="mt-3 h-1.5 rounded-sm bg-secondary overflow-hidden">
           <div
             className="h-full rounded-sm bg-foreground transition-[width] duration-200"
             style={{ width: `${Math.max(4, Math.min(100, (genCount / genTotal) * 100))}%` }}
@@ -275,7 +275,7 @@ export function ModulePath({
         </div>
       )}
 
-      <div data-path-layout="list" className="mx-4 mt-5 flex flex-col gap-3">
+      <div data-path-layout="list" className="mt-5 flex flex-col gap-3">
         {modLessons.map(({ lesson, globalIndex }) => {
           const state: NodeState = isModuleGenerating ? "gen" : stateOf(globalIndex, lesson);
           const clickable = !isModuleGenerating && (state === "av" || state === "cur" || state === "done");
@@ -299,7 +299,7 @@ export function ModulePath({
               className={cn(
                 "flex w-full items-start gap-3 rounded-card border px-4 py-4 text-left font-normal transition-[transform,background-color,border-color] duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none",
-                state === "cur" && "border-primary bg-primary text-primary-foreground",
+                state === "cur" && "studio-current border-white bg-[#0a0a0a] text-white",
                 state === "done" && "border-border bg-card text-muted-foreground",
                 state === "av" && "border-border bg-card text-foreground",
                 (state === "lock" || state === "gen") && "cursor-default border-border bg-card text-muted-foreground",
@@ -341,7 +341,7 @@ export function ModulePath({
                 )}
               </span>
               <span data-lesson-label={globalIndex} className="min-w-0 flex-1">
-                <span className={cn("font-mono text-[12px] uppercase tracking-[0.08em]", state === "cur" ? "text-primary-foreground/70" : "text-muted-foreground")}>
+                <span className={cn("font-mono text-[12px] uppercase tracking-[0.08em]", state === "cur" ? "text-white/70" : "text-muted-foreground")}>
                   Lezione {globalIndex + 1}
                 </span>
                 {state === "cur" && !isGeneratingLesson && (
@@ -393,11 +393,11 @@ export function ModulePath({
 
       {/* Bottone modulo completato */}
       {allDone && (
-        <div className="px-4 mt-6">
+        <div className="mt-6">
           <button
             type="button"
             onClick={() => { triggerSuccess(); onModuleCompleted(); }}
-            className="flex h-12 w-full items-center justify-center rounded-button border border-white/25 bg-transparent px-4 text-center font-sans text-sm font-normal leading-tight text-foreground transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
+            className="studio-action-on-dark flex h-12 w-full items-center justify-center rounded-button px-4 text-center font-sans text-sm font-normal leading-tight transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
           >
             ✓ Modulo completato — Torna ai moduli
           </button>
@@ -406,7 +406,7 @@ export function ModulePath({
 
       {/* ── Long-press action drawer ── */}
       <Drawer open={!!menuLesson} onOpenChange={(open) => { if (!open) closeMenu(); }}>
-        <DrawerContent className="pb-6">
+        <DrawerContent data-studio="" className="studio-surface pb-6">
           {menuLesson && (
             <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-2 animate-fade-in">
               <div className="flex flex-col items-center text-center mb-5">
@@ -434,10 +434,10 @@ export function ModulePath({
                       className="h-11 rounded-2xl"
                       maxLength={120}
                     />
-                    <Button size="icon" onClick={handleRename} disabled={actionLoading === "rename" || !renameValue.trim()} className="h-11 w-11 rounded-full flex-shrink-0" aria-label="Conferma">
+                    <Button size="icon" onClick={handleRename} disabled={actionLoading === "rename" || !renameValue.trim()} className="studio-action h-11 w-11 rounded-full flex-shrink-0" aria-label="Conferma">
                       {actionLoading === "rename" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                     </Button>
-                    <Button size="icon" variant="outline" onClick={() => setIsRenaming(false)} className="h-11 w-11 rounded-full flex-shrink-0" aria-label="Annulla">
+                    <Button size="icon" variant="outline" onClick={() => setIsRenaming(false)} className="studio-action h-11 w-11 rounded-full flex-shrink-0" aria-label="Annulla">
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
@@ -449,7 +449,7 @@ export function ModulePath({
                   <button
                     onClick={handleRegenerate}
                     disabled={actionLoading !== null || !onRegenerateLesson}
-                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-card bg-card hover:bg-surface-container-high transition-colors duration-200 disabled:opacity-50"
+                    className="studio-action flex flex-col items-center justify-center gap-2 py-4 rounded-card transition-colors duration-200 disabled:opacity-50"
                   >
                     <span className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
                       {actionLoading === "regen" ? (
@@ -463,7 +463,7 @@ export function ModulePath({
                   <button
                     onClick={() => { setRenameValue(menuLesson.lesson.title); setIsRenaming(true); }}
                     disabled={actionLoading !== null || !onRenameLesson}
-                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-card bg-card hover:bg-surface-container-high transition-colors duration-200 disabled:opacity-50"
+                    className="studio-action flex flex-col items-center justify-center gap-2 py-4 rounded-card transition-colors duration-200 disabled:opacity-50"
                   >
                     <span className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
                       <Pencil className="w-5 h-5 text-foreground" strokeWidth={1.75} />
@@ -473,7 +473,7 @@ export function ModulePath({
                   <button
                     onClick={handleDelete}
                     disabled={actionLoading !== null || !onDeleteLesson}
-                    className="flex flex-col items-center justify-center gap-2 py-4 rounded-card bg-card hover:bg-error-container/40 transition-colors duration-200 disabled:opacity-50"
+                    className="studio-action flex flex-col items-center justify-center gap-2 py-4 rounded-card transition-colors duration-200 disabled:opacity-50"
                   >
                     <span className="w-10 h-10 rounded-full bg-error-container flex items-center justify-center">
                       {actionLoading === "delete" ? (

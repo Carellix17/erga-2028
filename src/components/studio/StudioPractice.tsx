@@ -67,7 +67,7 @@ function LauncherCard({
 
 export function PracticeLaunchers({ onOpenChat, onOpenEsercizi, onOpenInterrogazione, onOpenPalestra, className }: PracticeLaunchersProps) {
   return (
-    <div className={cn("grid w-full grid-cols-2 gap-3 px-4 pt-3 animate-fade-up", className)}>
+    <div className={cn("grid w-full grid-cols-2 gap-3 pt-3 animate-fade-up", className)}>
       <LauncherCard label="Chat" subtitle="Chiedi a Erga" icon={MessageCircle} onClick={onOpenChat} />
       <LauncherCard label="Esercizi" subtitle="Quiz e flashcard" icon={PencilLine} onClick={onOpenEsercizi} />
       <LauncherCard label="Interrogazione" subtitle="Simulazione orale" icon={AudioLines} onClick={onOpenInterrogazione} />
@@ -90,7 +90,7 @@ export function SubViewHeader({ title, onBack, courseTitle, backLabel = "Torna a
     <div
       className={cn(
         "flex shrink-0 items-center justify-between gap-3 border-b border-border/40",
-        "px-4 py-2",
+        "py-2",
       )}
     >
       <button
@@ -157,7 +157,7 @@ export function ModuleHeaderCard({ courseTitle, moduleIndex, moduleTitle, layout
           type="button"
           onClick={onClose}
           aria-label="Chiudi modulo"
-          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-foreground transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
+          className="studio-action absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
         >
           <X className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
         </button>

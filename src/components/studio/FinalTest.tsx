@@ -86,7 +86,8 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
       aria-modal="true"
       aria-label={t("finalTest.title")}
       tabIndex={-1}
-      className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in focus:outline-none"
+      data-studio=""
+      className="studio-surface fixed inset-0 z-50 flex flex-col bg-[#ffffff] text-[#0a0a0a] animate-fade-in focus:outline-none"
     >
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
@@ -162,7 +163,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
           onClick={handleContinue}
           disabled={!showResults && !answered}
           className={cn(
-            "w-full h-14 transition-all duration-300 ease-m3-emphasized",
+            "studio-action w-full h-14 transition-all duration-300 ease-m3-emphasized",
             !(showResults || answered) && "bg-surface-container-highest text-muted-foreground shadow-level-0"
           )}
           size="lg"

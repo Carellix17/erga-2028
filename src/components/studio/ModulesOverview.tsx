@@ -243,7 +243,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
   );
 
   return (
-    <div className="px-4 pt-5 pb-6 animate-fade-up">
+    <div className="pt-5 pb-6 animate-fade-up">
       {layer ? createPortal(overlay, layer) : null}
       <div ref={listRef} className="flex flex-col gap-3">
         {modules.map((m) => {
@@ -300,7 +300,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
               className={cn(
                 "flex items-center gap-3.5 rounded-card border px-4 py-4 text-left font-normal transition-[transform,background-color,border-color] duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none",
-                isCur && "border-primary bg-primary text-primary-foreground",
+                isCur && "studio-current border-white bg-[#0a0a0a] text-white",
                 !isCur && "border-border bg-card text-foreground",
                 !isLocked && !isCur && "hover:bg-white/5",
                 !isLocked && "active:scale-[0.98]",
@@ -310,7 +310,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
               <span
                 className={cn(
                   "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border font-mono text-sm font-normal tabular-nums",
-                  isCur ? "border-primary-foreground/30" : "border-border",
+                  isCur ? "border-white/40" : "border-[#0a0a0a]",
                   isLocked && "text-muted-foreground",
                 )}
               >
@@ -330,14 +330,14 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                 </span>
                 <span className={cn(
                   "mt-1 block text-sm font-normal",
-                  isCur ? "text-primary-foreground/70" : isLocked ? "text-ink-muted" : "text-muted-foreground",
+                  isCur ? "text-white/70" : isLocked ? "text-ink-muted" : "text-muted-foreground",
                 )}>
                   {subtitle}
                 </span>
                 {(isCur || isGen) && (
-                  <span className={cn("mt-2.5 block h-1.5 overflow-hidden rounded-sm", isCur ? "bg-primary-foreground/15" : "bg-white/15")}>
+                  <span className={cn("mt-2.5 block h-1.5 overflow-hidden rounded-sm", isCur ? "bg-white/25" : "bg-[#0a0a0a]/15")}>
                     <span
-                      className={cn("block h-full rounded-sm transition-[width] duration-200", isCur ? "bg-primary-foreground" : "bg-foreground")}
+                      className={cn("block h-full rounded-sm transition-[width] duration-200", isCur ? "bg-white" : "bg-[#0a0a0a]")}
                       style={{ width: `${isGen ? (m.genPercent ?? 0) : pct}%` }}
                     />
                   </span>

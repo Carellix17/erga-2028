@@ -384,7 +384,7 @@ export function PathHero({
             type="button"
             onClick={() => { triggerLight(); onCloseModules(); }}
             aria-label="Chiudi moduli"
-            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/25 transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
+            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#0a0a0a] transition-[transform,background-color] duration-150 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
           >
             <X className="w-5 h-5 text-current" strokeWidth={2} />
           </button>
@@ -394,7 +394,7 @@ export function PathHero({
             <button
               type="button"
               aria-label="Azioni corso"
-              className="relative flex w-11 h-11 shrink-0 items-center justify-center rounded-full border border-white/25 transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
+              className="relative flex w-11 h-11 shrink-0 items-center justify-center rounded-full border border-[#0a0a0a] transition-[transform,background-color] duration-150 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
             >
               <MoreHorizontal className="w-5 h-5 text-current" strokeWidth={2} />
               {hasNewMaterial && (
@@ -405,7 +405,7 @@ export function PathHero({
               )}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64 rounded-dialog bg-popover text-popover-foreground shadow-level-3 border border-border p-1.5">
+          <DropdownMenuContent data-studio="" align="end" className="studio-surface w-64 rounded-dialog bg-popover text-popover-foreground shadow-level-3 border border-border p-1.5">
             {hasNewMaterial && (
               <DropdownMenuLabel className="text-xs font-medium text-warning px-3 py-2 leading-snug">
                 Nuovo materiale: rigenera il percorso per includerlo
@@ -518,7 +518,7 @@ export function PathHero({
                   onClick={() => { triggerLight(); onResume?.(); }}
                   disabled={!canResume}
                   aria-label="Riprendi lezione"
-                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-button border border-white/25 bg-transparent px-5 font-sans text-sm font-normal text-foreground transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45 motion-reduce:transform-none"
+                  className="studio-action inline-flex h-12 w-full items-center justify-center gap-2 rounded-button px-5 font-sans text-sm font-normal transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45 motion-reduce:transform-none"
                 >
                   <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Riprendi lezione
@@ -530,7 +530,7 @@ export function PathHero({
                   asChild
                   type="button"
                   onClick={() => { triggerLight(); onResume(); }}
-                  className="min-w-0 flex-1 gap-1 px-1.5 sm:gap-2 sm:px-4"
+                  className="studio-action min-w-0 flex-1 gap-1 px-1.5 sm:gap-2 sm:px-4"
                 >
                   <motion.button layout>
                     <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
@@ -543,7 +543,7 @@ export function PathHero({
                   layout
                   type="button"
                   onClick={openPicker}
-                  className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-button border border-white/25 bg-transparent px-1.5 text-xs font-normal text-foreground transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:gap-1.5 sm:px-3 sm:text-sm"
+                  className="studio-action inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-button px-1.5 text-xs font-normal transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:gap-1.5 sm:px-3 sm:text-sm"
                 >
                   <ArrowLeftRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
                   Cambia corso
@@ -566,7 +566,7 @@ export function PathHero({
                   asChild
                   type="button"
                   onClick={() => { triggerLight(); closePicker(); onResume?.(); }}
-                  className="min-w-0 flex-1 gap-1 px-1.5 sm:gap-2 sm:px-4"
+                  className="studio-action min-w-0 flex-1 gap-1 px-1.5 sm:gap-2 sm:px-4"
                 >
                   <motion.button layout>
                     <BookOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" strokeWidth={1.9} />
@@ -580,7 +580,7 @@ export function PathHero({
                 layout
                 type="button"
                 onClick={() => { triggerLight(); closePicker(); }}
-                className="inline-flex h-11 min-w-0 items-center justify-center gap-1 rounded-button border border-white/25 bg-transparent px-1.5 text-xs font-normal text-foreground transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:gap-1.5 sm:px-4 sm:text-sm"
+                className="studio-action inline-flex h-11 min-w-0 items-center justify-center gap-1 rounded-button px-1.5 text-xs font-normal transition-[transform,background-color] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:gap-1.5 sm:px-4 sm:text-sm"
               >
                 <X className="w-4 h-4 shrink-0" strokeWidth={2} />
                 Annulla
@@ -593,7 +593,7 @@ export function PathHero({
   );
 
   return (
-    <section className="px-4 pt-4">
+    <section className="pt-4">
       {/* HERO inline — course-specific layoutId for seamless transition from any scroll depth */}
       <motion.div
         layout
@@ -614,13 +614,14 @@ export function PathHero({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
+              data-studio=""
               className="fixed inset-0 z-[80] flex flex-col bg-background"
               onClick={(e) => {
                 // tap sullo sfondo (non sulle card) → chiudi
                 if (e.target === e.currentTarget) closePicker();
               }}
             >
-              <div className="flex-1 min-h-0 w-full max-w-lg mx-auto flex flex-col px-4 py-6">
+              <div className="flex-1 min-h-0 w-full flex flex-col py-6">
                 <motion.div ref={listRef as React.Ref<HTMLDivElement>} layoutScroll className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
                   <div className="flex flex-col">
                     {/* Card sopra */}
@@ -671,7 +672,7 @@ export function PathHero({
 
       {/* ── Rinomina corso ── */}
       <Drawer open={renameOpen} onOpenChange={(o) => !o && setRenameOpen(false)}>
-        <DrawerContent className="rounded-t-sheet">
+        <DrawerContent data-studio="" className="studio-surface rounded-t-sheet">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center gap-2 font-display text-2xl">
               <Pencil className="w-5 h-5 text-foreground" strokeWidth={1.75} />
@@ -696,14 +697,14 @@ export function PathHero({
           <DrawerFooter className="flex-row gap-3">
             <Button
               variant="outline"
-              className="flex-1 h-12 rounded-button"
+              className="studio-action flex-1 h-12 rounded-button"
               onClick={() => setRenameOpen(false)}
               disabled={isSavingRename}
             >
               Annulla
             </Button>
             <Button
-              className="flex-1 h-12 rounded-button"
+              className="studio-action flex-1 h-12 rounded-button"
               onClick={handleSaveRename}
               disabled={isSavingRename || !renameValue.trim()}
             >
@@ -715,7 +716,7 @@ export function PathHero({
 
       {/* ── Elimina corso ── */}
       <AlertDialog open={confirmDelete} onOpenChange={(o) => !isDeleting && setConfirmDelete(o)}>
-        <AlertDialogContent>
+        <AlertDialogContent data-studio="" className="studio-surface">
           <AlertDialogHeader>
             <AlertDialogTitle>Eliminare "{title ?? "questo corso"}"?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -723,8 +724,8 @@ export function PathHero({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="border border-destructive bg-transparent text-destructive hover:bg-destructive/10">
+            <AlertDialogCancel disabled={isDeleting} className="studio-action">Annulla</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="studio-action">
               {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Elimina"}
             </AlertDialogAction>
           </AlertDialogFooter>

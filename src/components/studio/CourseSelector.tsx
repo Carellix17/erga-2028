@@ -199,7 +199,7 @@ export function CourseSelector({
   return (
     <>
       {/* ── Scheda del percorso attivo ── */}
-      <div className="px-4 pt-5 animate-fade-up">
+      <div className="pt-5 animate-fade-up">
         <div className="flex items-stretch gap-2">
           <button
             type="button"
@@ -266,14 +266,14 @@ export function CourseSelector({
           <div
             role="menu"
             style={{ top: menuPos.top, right: menuPos.right }}
+            data-studio=""
             className={cn(
-              "fixed z-[86] min-w-[200px] rounded-md bg-popover shadow-level-3 border border-outline-variant/60 p-1.5",
+              "studio-surface fixed z-[86] min-w-[200px] rounded-md bg-popover shadow-level-3 border border-outline-variant/60 p-1.5",
               "animate-in fade-in-0 zoom-in-95 duration-200 ease-m3-emphasized-decel origin-top-right",
             )}
           >
             {actions.map((a) => {
               const Icon = a.icon;
-              const danger = a.danger;
               return (
                 <button
                   key={a.key}
@@ -285,16 +285,13 @@ export function CourseSelector({
                     a.onClick();
                   }}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors duration-150",
-                    danger
-                      ? "text-destructive hover:bg-error-container/40"
-                      : "text-foreground hover:bg-secondary",
+                    "studio-action w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors duration-150",
                   )}
                 >
                   {a.loading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Icon className={cn("w-4 h-4", danger ? "text-destructive" : "text-foreground/80")} strokeWidth={1.75} />
+                    <Icon className="w-4 h-4" strokeWidth={1.75} />
                   )}
                   <span className="text-sm font-medium">{a.label}</span>
                 </button>
@@ -306,7 +303,7 @@ export function CourseSelector({
       )}
 
       <AlertDialog open={confirmDelete} onOpenChange={(o) => !isDeleting && setConfirmDelete(o)}>
-        <AlertDialogContent>
+        <AlertDialogContent data-studio="" className="studio-surface">
           <AlertDialogHeader>
             <AlertDialogTitle>Eliminare "{cleanName(active.file_name)}"?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -314,8 +311,8 @@ export function CourseSelector({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="border border-destructive bg-transparent text-destructive hover:bg-destructive/10">
+            <AlertDialogCancel disabled={isDeleting} className="studio-action">Annulla</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="studio-action">
               {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Elimina"}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -393,7 +390,7 @@ export function CourseSelector({
       )}
 
       <Drawer open={!!renameCourse} onOpenChange={(o) => !o && setRenameCourse(null)}>
-        <DrawerContent className="rounded-t-dialog">
+        <DrawerContent data-studio="" className="studio-surface rounded-t-dialog">
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center gap-2 font-display text-2xl">
               <Pencil className="w-5 h-5 text-foreground" strokeWidth={1.75} />
@@ -418,14 +415,14 @@ export function CourseSelector({
           <DrawerFooter className="flex-row gap-3">
             <Button
               variant="outline"
-              className="flex-1 h-12 rounded-button"
+              className="studio-action flex-1 h-12 rounded-button"
               onClick={() => setRenameCourse(null)}
               disabled={isSaving}
             >
               Annulla
             </Button>
             <Button
-              className="flex-1 h-12 rounded-button"
+              className="studio-action flex-1 h-12 rounded-button"
               onClick={handleSaveRename}
               disabled={isSaving || !renameValue.trim()}
             >

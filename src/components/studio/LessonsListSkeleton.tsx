@@ -22,7 +22,7 @@ export function LessonsListSkeleton({ count }: { count?: number }) {
   const moduleCount = total > 0 ? Math.ceil(total / MODULE_SIZE) : 2;
 
   return (
-    <div className="px-4 pt-6 pb-32 animate-fade-up" aria-hidden>
+    <div className="pt-6 pb-32 animate-fade-up" aria-hidden>
       {/* Barra del progresso */}
       <div className="flex items-center justify-between mb-2.5 px-1">
         <Skeleton className="h-4 w-40 rounded-md" />

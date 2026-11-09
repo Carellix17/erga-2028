@@ -1570,5 +1570,155 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-delay: 0ms !important; }
 
+/* Studio: pagina #0a0a0a, card bianche, azioni nere solo dentro le card, raggio 24px.
+   I cerchi (rounded-full) e la pillola esplicita restano. Piano e Home non ereditano. */
+[data-studio] {
+  background-color: #0a0a0a;
+  color: #dadbdf;
+  --background: 0 0% 3.92%;
+  --foreground: 0 0% 100%;
+  --muted-foreground: 216 4% 50.98%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 3.92%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.92%;
+  --border: 0 0% 100%;
+  --input: 0 0% 100%;
+  --ring: 0 0% 100%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 3.92%;
+  --primary-deep: 60 23% 97%;
+  --secondary: 0 0% 100%;
+  --secondary-foreground: 0 0% 3.92%;
+  --destructive: 0 0% 100%;
+  --destructive-foreground: 0 0% 3.92%;
+  --success: 0 0% 100%;
+  --success-foreground: 0 0% 3.92%;
+  --warning: 0 0% 100%;
+  --warning-foreground: 0 0% 3.92%;
+  --error-container: 0 0% 100%;
+  --on-error-container: 0 0% 3.92%;
+  --success-container: 0 0% 100%;
+  --on-success-container: 0 0% 3.92%;
+  --warning-container: 0 0% 100%;
+  --on-warning-container: 0 0% 3.92%;
+  --tertiary: 0 0% 100%;
+  --tertiary-foreground: 0 0% 3.92%;
+  --accent: 0 0% 100%;
+  --accent-foreground: 0 0% 3.92%;
+  --subject-accent: #ffffff;
+  --subject-accent-foreground: #0a0a0a;
+  --subject-accent-light: #ffffff;
+  --sheet: 0 0% 3.92%;
+  --radius-xs: 24px;
+  --radius-sm: 24px;
+  --radius-md: 24px;
+  --radius-lg: 24px;
+  --radius-xl: 24px;
+  --radius-2xl: 24px;
+  --radius-3xl: 24px;
+  --radius-card: 24px;
+  --radius-control: 24px;
+  --radius-button: 24px;
+  --radius-dialog: 24px;
+  --radius-sheet: 24px;
+  --radius-media: 24px;
+}
+
+[data-studio] :is(.bg-card, .bg-popover, .studio-surface, .lesson-paper, .lesson-footer) {
+  background-color: #ffffff;
+  color: #0a0a0a;
+  border-color: #ffffff;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.92%;
+  --muted-foreground: 210 9% 25%;
+  --card-foreground: 0 0% 3.92%;
+  --popover-foreground: 0 0% 3.92%;
+  --ink: 0 0% 3.92%;
+  --brand-deep: 0 0% 3.92%;
+  --primary: 0 0% 3.92%;
+  --primary-foreground: 0 0% 100%;
+  --primary-deep: 220 10% 11%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 3.92%;
+  --border: 0 0% 3.92%;
+  --input: 0 0% 3.92%;
+  --ring: 0 0% 3.92%;
+  --line: 0 0% 3.92%;
+  --outline-variant: 0 0% 3.92%;
+  --destructive: 0 0% 3.92%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 0 0% 3.92%;
+  --success-foreground: 0 0% 100%;
+  --warning: 0 0% 3.92%;
+  --warning-foreground: 0 0% 100%;
+  --error-container: 0 0% 3.92%;
+  --on-error-container: 0 0% 100%;
+  --success-container: 0 0% 96%;
+  --on-success-container: 0 0% 3.92%;
+  --warning-container: 0 0% 96%;
+  --on-warning-container: 0 0% 3.92%;
+  --tertiary: 0 0% 3.92%;
+  --tertiary-foreground: 0 0% 100%;
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 3.92%;
+  --subject-accent: #0a0a0a;
+  --subject-accent-foreground: #ffffff;
+  --subject-accent-light: #ffffff;
+  --surface-container: 0 0% 100%;
+  --surface-container-low: 0 0% 96%;
+  --surface-container-lowest: 0 0% 100%;
+  --surface-container-high: 0 0% 96%;
+  --surface-container-highest: 0 0% 96%;
+}
+
+[data-studio] .studio-current {
+  background-color: #0a0a0a;
+  color: #ffffff;
+  border-color: #ffffff;
+  --background: 0 0% 3.92%;
+  --foreground: 0 0% 100%;
+  --muted-foreground: 228 7% 86%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 3.92%;
+}
+
+[data-studio] .studio-action {
+  background-color: #0a0a0a;
+  color: #ffffff;
+  border-color: #0a0a0a;
+  border-radius: 24px;
+}
+[data-studio] .studio-action:hover {
+  background-color: #1a1c20;
+  color: #ffffff;
+}
+[data-studio] .studio-action :is(svg, span) {
+  color: #ffffff;
+}
+[data-studio] .studio-action-on-dark {
+  background-color: #ffffff;
+  color: #0a0a0a;
+  border-color: #ffffff;
+  border-radius: 24px;
+}
+[data-studio] .studio-action-on-dark:hover {
+  background-color: #f4f4f5;
+  color: #0a0a0a;
+}
+[data-studio] .studio-action-on-dark :is(svg, span) {
+  color: #0a0a0a;
+}
+[data-studio] .bg-card .text-ink-muted {
+  color: #3a3f45;
+}
+[data-studio] .bg-card .bg-white\/15 {
+  background-color: rgb(10 10 10 / 0.15);
+}
+[data-studio] :is(.bg-card, .studio-surface) .hover\:bg-white\/5:hover,
+[data-studio] :is(.bg-card, .studio-surface) .hover\:bg-white\/10:hover {
+  background-color: rgb(10 10 10 / 0.06);
+}
+
 /* DESIGN.md: peso 400. La gerarchia passa da dimensione, tracking e colore. */
 :where(body, body *) { font-weight: 400; }

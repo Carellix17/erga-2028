@@ -48,7 +48,7 @@ export function CourseCard({
         "relative w-full rounded-card border border-border bg-card p-4 text-left text-foreground sm:p-5",
         "transition-[transform,background-color] duration-150 active:scale-[0.98] motion-reduce:transform-none",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        active && "border-primary bg-primary text-primary-foreground",
+        active && "studio-current border-white bg-[#0a0a0a] text-white",
         className,
       )}
     >

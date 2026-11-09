@@ -259,7 +259,7 @@ describe("P46 — elenco lezioni", () => {
     expect(node0?.className).toContain("rounded-card");
     expect(node0?.querySelector("svg")).toBeTruthy();
     const node1 = document.querySelector('[data-lesson-node="1"]');
-    expect(node1?.className).toContain("bg-primary");
+    expect(node1?.className).toContain("studio-current");
 
     const label0 = document.querySelector('[data-lesson-label="0"]');
     expect(label0).toBeTruthy();

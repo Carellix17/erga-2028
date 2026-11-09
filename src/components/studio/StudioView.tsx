@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, type ReactNode } from "react";
 import { FullscreenLessonGate } from "./FullscreenLesson";
 import { FinalTest } from "./FinalTest";
 import { GenerationProgress } from "./GenerationProgress";
@@ -58,6 +58,14 @@ import {
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useDeleteFileContext } from "@/hooks/useFileContexts";
 import { useSlotProgress } from "@/hooks/useSlotProgress";
+
+function StudioFrame({ children }: { children: ReactNode }) {
+  return (
+    <div data-studio className="min-w-0 bg-[#0a0a0a] text-[#dadbdf]">
+      {children}
+    </div>
+  );
+}
 
 interface StudioViewProps {
   hasFiles: boolean;
@@ -956,7 +964,7 @@ export function StudioView({
     }
   };
 
-  if (!hasFiles) return <EmptyState onUploadClick={createPath} />;
+  if (!hasFiles) return <StudioFrame><EmptyState onUploadClick={createPath} /></StudioFrame>;
 
   // 🌲 P24 — la generazione NON sostituisce più la schermata: vive nello spazio.
   // Nome del percorso senza estensione né prefissi emoji (per l'eroe).
@@ -965,7 +973,7 @@ export function StudioView({
   // Prima generazione (nessuna lezione ancora): eroe-fabbrica + pannello fasi.
   if (isGenerating && lessons.length === 0) {
     return (
-      <>
+      <StudioFrame>
         <PathHero
           title={heroTitle}
           currentLessonIndex={0}
@@ -994,10 +1002,10 @@ export function StudioView({
           generatedCount={generationLessonCount}
           fileName={contextFileName || undefined}
         />
-        <p className="mx-4 mt-4 text-center text-xs text-muted-foreground leading-relaxed px-4 py-3 rounded-card bg-card">
+        <p className="mt-4 text-center text-xs text-muted-foreground leading-relaxed px-4 py-3 rounded-card bg-card">
           Puoi anche uscire dall'app: ti avvisiamo con una notifica appena è pronto.
         </p>
-      </>
+      </StudioFrame>
     );
   }
 
@@ -1005,17 +1013,17 @@ export function StudioView({
   // lista "all" — era il flash di mezzo secondo dell'ultimo corso GENERATO.
   // Al suo posto: lo scheletro del sentiero, poi si apre quello giusto.
   if (hasFiles && !selectedContextId && !lastViewedLoaded && allContexts.length > 0) {
-    return <LessonsListSkeleton />;
+    return <StudioFrame><LessonsListSkeleton /></StudioFrame>;
   }
 
   // 🦴 P10a: l'orbe è SOLO per la generazione vera. L'attesa di un percorso già
   // esistente mostra lo scheletro del sentiero, come fanno Piano e Profilo.
   if (postCompleteSettling && lessons.length === 0) {
-    return <LessonsListSkeleton />;
+    return <StudioFrame><LessonsListSkeleton /></StudioFrame>;
   }
 
   if (showLessonsSkeleton) {
-    return <LessonsListSkeleton count={activeContext?.lesson_count} />;
+    return <StudioFrame><LessonsListSkeleton count={activeContext?.lesson_count} /></StudioFrame>;
   }
   if (isLoading) {
     return null;
@@ -1026,7 +1034,7 @@ export function StudioView({
     const isPdfFailed = contextStatus === "failed";
 
     return (
-      <>
+      <StudioFrame>
       <CourseSelector courses={allContexts} activeContextId={effectiveContextId} onSelectCourse={handleSelectCourse} />
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 p-6 text-center animate-fade-up">
         <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
@@ -1061,14 +1069,14 @@ export function StudioView({
         </div>
         
         {materialRejected || isPdfFailed ? (
-          <Button onClick={onUploadClick} size="lg">Carica altri materiali</Button>
+          <Button onClick={onUploadClick} size="lg" className="studio-action-on-dark">Carica altri materiali</Button>
         ) : isPdfProcessing ? (
-          <Button onClick={refetchLessons} variant="outline" size="lg">
+          <Button onClick={refetchLessons} variant="outline" size="lg" className="studio-action-on-dark">
             <RefreshCw className="w-4 h-4 mr-2" />
             Aggiorna stato
           </Button>
         ) : (
-          <Button onClick={handleGenerateLessons} disabled={isGenerating || generationBlocked} size="lg">
+          <Button onClick={handleGenerateLessons} disabled={isGenerating || generationBlocked} size="lg" className="studio-action-on-dark">
             {isGenerating ? (
               <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Analisi in corso...</>
             ) : (
@@ -1077,12 +1085,12 @@ export function StudioView({
           </Button>
         )}
         {generationBlocked && !isPdfProcessing && (
-          <p className="text-sm text-destructive max-w-sm bg-error-container/40 px-4 py-3 rounded-card">
+          <p className="text-sm text-destructive max-w-sm bg-card px-4 py-3 rounded-card">
             {FREE_LIMIT_MESSAGE}
           </p>
         )}
       </div>
-      </>
+      </StudioFrame>
     );
   }
 
@@ -1095,12 +1103,12 @@ export function StudioView({
     : null;
 
   return (
-    <>
+    <StudioFrame>
       {materialRejected && (
         <div role="alert" className="border-b border-border p-6 text-base">
           <p className="font-semibold">Generazione impossibile</p>
           <p>{UNSUITABLE_MATERIAL_MESSAGE} Le lezioni precedenti sono ancora disponibili.</p>
-          <Button onClick={onUploadClick} variant="outline" className="mt-3">Carica altri materiali</Button>
+          <Button onClick={onUploadClick} variant="outline" className="studio-action-on-dark mt-3">Carica altri materiali</Button>
         </div>
       )}
       {!showLessonReader && (<>
@@ -1148,14 +1156,14 @@ export function StudioView({
       {/* La creazione è il primo accesso della panoramica e apre il flusso
           dedicato, senza riusare il pannello materiali incorporato. */}
       {courseViewState === "overview" && !isCoursePickerOpen && (
-        <div className="studio-section-enter min-w-0 overflow-x-clip px-4 pb-2 pt-3">
+        <div className="studio-section-enter min-w-0 overflow-x-clip pb-2 pt-3">
           <Button
             type="button"
             size="lg"
             variant="outline"
             onClick={() => { triggerLight(); createPath(); }}
             aria-label="Crea un nuovo percorso di studio"
-            className="h-auto min-h-12 w-full justify-center whitespace-normal px-2 py-2 text-sm sm:px-6 sm:text-base"
+            className="studio-action-on-dark h-auto min-h-12 w-full justify-center whitespace-normal px-2 py-2 text-sm sm:px-6 sm:text-base"
           >
             <Plus className="h-4 w-4" strokeWidth={2.5} />
             Crea nuovo percorso
@@ -1171,7 +1179,7 @@ export function StudioView({
         {courseViewState === "branch" ? (
           <motion.div
             key="module-head"
-            className={`sticky ${embeddedReader ? "top-16" : "top-0"} z-20 bg-background px-4 pb-2.5 pt-3`}
+            className={`sticky ${embeddedReader ? "top-16" : "top-0"} z-20 bg-background pb-2.5 pt-3`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
@@ -1392,6 +1400,6 @@ export function StudioView({
             toast({ title: "Complimenti!", description: `Hai completato il percorso e il test finale con ${result.score}%!` }); }}
         />
       )}
-    </>
+    </StudioFrame>
   );
 }

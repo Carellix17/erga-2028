@@ -17,7 +17,7 @@ const SERPENTINE = [COL_A, COL_B, COL_C, COL_B];
 
 export function ModulePathSkeleton() {
   return (
-    <div className="px-4 pt-6 pb-32 space-y-8 animate-fade-up" aria-busy="true" aria-label="Caricamento Modulo">
+    <div className="pt-6 pb-32 space-y-8 animate-fade-up" aria-busy="true" aria-label="Caricamento Modulo">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Skeleton className="h-9 w-9 rounded-full" />

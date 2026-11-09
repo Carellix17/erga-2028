@@ -343,7 +343,8 @@ export function FullscreenLesson({
       aria-modal={embedded ? undefined : true}
       aria-label={`${t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })}: ${lesson.title}`}
       tabIndex={-1}
-      className={cn("lesson-reader no-halo flex min-w-0 flex-col focus:outline-none", embedded ? "relative min-h-[32rem] lg:h-[calc(100dvh-8rem)]" : "fixed inset-0 z-50 h-dvh animate-lesson-sheet-in")}
+      data-studio=""
+      className={cn("lesson-reader studio-surface no-halo flex min-w-0 flex-col bg-[#ffffff] text-[#0a0a0a] focus:outline-none", embedded ? "relative min-h-[32rem] lg:h-[calc(100dvh-8rem)]" : "fixed inset-0 z-50 h-dvh animate-lesson-sheet-in")}
     >
       {!embedded && <DialogPrimitive.Title className="sr-only">{t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })}: {lesson.title}</DialogPrimitive.Title>}
       {/* Top bar */}
@@ -354,7 +355,7 @@ export function FullscreenLesson({
               variant="ghost"
               size="icon-sm"
               onClick={handleBack}
-              className="rounded-full -ml-1 text-muted-foreground hover:text-foreground transition-colors"
+              className="studio-action rounded-full -ml-1"
               aria-label={t("lesson.back")}
             >
               <ChevronLeft className="w-5 h-5" />
@@ -364,7 +365,7 @@ export function FullscreenLesson({
               variant="ghost"
               size="icon-sm"
               onClick={() => { triggerLight(); onClose(); }}
-              className="rounded-full -ml-1 text-muted-foreground hover:text-foreground transition-colors"
+              className="studio-action rounded-full -ml-1"
               aria-label={t("lesson.close")}
             >
               <X className="w-5 h-5" />
@@ -375,7 +376,7 @@ export function FullscreenLesson({
               variant="ghost"
               size="icon-sm"
               onClick={() => { triggerLight(); onClose(); }}
-              className="rounded-full text-muted-foreground/70 hover:text-foreground transition-colors"
+              className="studio-action rounded-full"
               aria-label={t("lesson.close")}
             >
               <X className="w-4 h-4" />
@@ -476,7 +477,7 @@ export function FullscreenLesson({
           <Button
             onClick={handleContinue}
             disabled={!canContinue || isAnimating}
-            className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-sm tracking-normal bg-primary text-primary-foreground hover:bg-primary-deep"
+            className="studio-action h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-sm tracking-normal"
             size="lg"
           >
             {currentStep === steps.length - 1
@@ -994,7 +995,7 @@ export function FullscreenLessonGate({
 
   if (!full) {
     return (
-      <div role={failed ? "alert" : "status"} aria-busy={!failed} className="no-halo fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-sheet p-4">
+      <div role={failed ? "alert" : "status"} aria-busy={!failed} data-studio="" className="studio-surface no-halo fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[#ffffff] p-4 text-[#0a0a0a]">
         {!failed && <div className="w-16 h-16 rounded-full bg-card shadow-level-1 flex items-center justify-center">
           <Loader2 className="w-7 h-7 text-foreground animate-spin" />
         </div>}
@@ -1002,7 +1003,7 @@ export function FullscreenLessonGate({
           {meta.title}
         </p>
         <p className="text-sm text-muted-foreground text-center">{failed ? "Non riusciamo ad aprire questa lezione. Riprova oppure torna al percorso." : t("lesson.openingLesson")}</p>
-        {failed && <Button type="button" disabled={lessonQuery.isFetching} onClick={() => void lessonQuery.refetch()}>Riprova</Button>}
+        {failed && <Button type="button" disabled={lessonQuery.isFetching} className="studio-action" onClick={() => void lessonQuery.refetch()}>Riprova</Button>}
         <Button
           type="button"
           variant="ghost"
