@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { BottomNav, type Tab } from "@/components/layout/BottomNav";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { ScrollEdges } from "@/components/layout/ScrollEdges";
 import { cn } from "@/lib/utils";
 
 interface AppLayoutProps {
@@ -61,15 +62,17 @@ export function AppLayout({
         )}
       >
         {!hideChrome && <AppHeader title={headerTitle} integratedHome={isHome} />}
-        <main
+        <ScrollEdges
+          enabled={!fillViewport}
+          bare={hideChrome}
           className={cn(
             // Clear the floating phone dock (pill, Core circle, and the short veil).
-          "mx-auto w-full max-w-lg overflow-visible px-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:px-6 md:max-w-2xl md:pb-6 lg:max-w-7xl",
+            "mx-auto w-full max-w-lg overflow-visible px-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:px-6 md:max-w-2xl md:pb-6 lg:max-w-7xl",
             fillViewport && "flex min-h-0 flex-1 flex-col overflow-hidden",
           )}
         >
           {children}
-        </main>
+        </ScrollEdges>
         <div className="erga-earthy-stripe" aria-hidden="true" />
       </div>
     </div>
