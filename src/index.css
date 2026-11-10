@@ -1183,25 +1183,25 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 @media (prefers-reduced-motion: reduce) { .study-workspace *, .cognitive-grid * { scroll-behavior:auto; } }
 
 
-/* Phone dock veil: a short black fade that stops a few pixels above the pill. */
+/* Phone dock veil: solid through the pill, soft 20px fade only above it. */
 .dock-veil {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  top: -8px;
+  top: -20px;
   pointer-events: none;
-  background: linear-gradient(to top, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0.2) 70%, transparent);
+  background: linear-gradient(to top, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0.2) calc(100% - 20px), transparent);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
-  -webkit-mask-image: linear-gradient(to top, #000 0%, #000 76%, transparent 100%);
-  mask-image: linear-gradient(to top, #000 0%, #000 76%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, #000 0%, #000 calc(100% - 20px), transparent 100%);
+  mask-image: linear-gradient(to top, #000 0%, #000 calc(100% - 20px), transparent 100%);
 }
 @media (prefers-reduced-transparency: reduce) {
   .dock-veil {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    background: linear-gradient(to top, rgb(0 0 0 / 0.62), transparent);
+    background: linear-gradient(to top, rgb(0 0 0 / 0.62), rgb(0 0 0 / 0.62) calc(100% - 20px), transparent);
   }
 }
 
