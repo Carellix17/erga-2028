@@ -16,46 +16,15 @@ export function StudyPlanSkeleton() {
         <div className="h-11 w-40 animate-pulse bg-secondary/30" />
       </div>
 
-      <section className="mb-5 min-w-0" aria-hidden="true">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <div className="h-6 w-48 animate-pulse bg-secondary/30" />
-          <div className="flex gap-1">
-            <div className="h-11 w-11 animate-pulse bg-secondary/30" />
-            <div className="h-11 w-11 animate-pulse bg-secondary/30" />
-          </div>
-        </div>
-        <ul className="planner-deadlines">
-          {Array.from({ length: 6 }, (_, index) => (
-            <li key={index} className="min-w-0 h-44">
-              <div className="planner-deadline bg-secondary/30 p-4">
-                <div className="mb-3 h-8 w-8 animate-pulse bg-secondary/50" />
-                <div className="h-3 w-20 animate-pulse bg-secondary/50" />
-                <div className="mt-4 h-4 w-full animate-pulse bg-secondary/50" />
-                <div className="mt-2 h-4 w-3/4 animate-pulse bg-secondary/50" />
-                <div className="mt-4 h-3 w-16 animate-pulse bg-secondary/50" />
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="border border-border bg-sheet" aria-hidden="true">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2 sm:px-5">
-          <div className="h-7 w-40 animate-pulse bg-secondary/30" />
-          <div className="flex items-center gap-1">
-            <div className="h-11 w-16 animate-pulse bg-secondary/30" />
-            <div className="h-11 w-11 animate-pulse bg-secondary/30" />
-            <div className="h-11 w-11 animate-pulse bg-secondary/30" />
-          </div>
-        </div>
-        <div className="grid grid-cols-7 border-b border-border">
+      <section className="min-w-0" aria-hidden="true">
+        <div className="mb-2 grid grid-cols-7 gap-2">
           {Array.from({ length: 7 }, (_, index) => (
-            <div key={index} className="h-10 animate-pulse border-r border-border bg-secondary/20 last:border-r-0" />
+            <div key={index} className="h-4 animate-pulse rounded-full bg-secondary/20" />
           ))}
         </div>
-        <div className="planner-month-grid">
+        <div className="planner-month-grid grid grid-cols-7 gap-2">
           {Array.from({ length: 42 }, (_, index) => (
-            <div key={index} className="aspect-square min-w-0 rounded-none border border-border bg-secondary/30 animate-pulse" />
+            <div key={index} className="h-16 min-w-0 animate-pulse rounded-[24px] border border-[#212327] bg-[#191919]" />
           ))}
         </div>
       </section>

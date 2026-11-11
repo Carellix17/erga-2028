@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArrowLeft, CalendarClock, ChevronLeft, ChevronRight, History, Loader2, MoreHorizontal, Plus, Upload } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CalendarClock, ChevronLeft, ChevronRight, Columns3, Grid, Loader2, PencilLine, Plus, Trash2, Check } from "lucide-react";
 import {
-  addDays, addMonths, differenceInCalendarDays, endOfWeek, format, isSameMonth,
-  isToday, isValid, parseISO, startOfMonth, startOfToday, startOfWeek,
+  addDays, addMonths, endOfWeek, format, isSameMonth,
+  isToday, isValid, parseISO, startOfMonth, startOfWeek,
 } from "date-fns";
 import { it, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
@@ -14,23 +15,14 @@ import { useUserRoutines, type UserRoutine } from "@/hooks/useUserRoutines";
 import { dayKey, getWeekDays } from "@/lib/weekPlanner";
 import { plannerDateKey } from "@/lib/planner/freeTime";
 import { comparePlannerEntries, plannerEntries, type PlannerEntry } from "@/lib/plannerEntries";
-import { courseCoverVars } from "@/lib/courseIdentity";
+import { subjectHex, subjectTint } from "@/lib/pianoPalette";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { PillToggle } from "@/components/ui/pill-toggle";
-import { CourseCardBackground } from "@/components/studio/CourseCardBackground";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { DayTimeline } from "./DayTimeline";
 import { MoveSlotSheet, type MoveSlotRequest } from "./MoveSlotSheet";
 import type { MoveSlotSaveTarget, MoveSlotTarget } from "@/lib/planner/conflicts";
-import { WeekStrip } from "./WeekStrip";
-import { WeekView } from "./WeekView";
 
 interface AppointmentsCalendarProps {
   evaluations: Evaluation[];
@@ -51,6 +43,7 @@ interface AppointmentsCalendarProps {
   isMoving?: boolean;
   onMoveSheetOpenChange?: (open: boolean) => void;
   onMoveInteractionChange?: (active: boolean) => void;
+  onToggleComplete?: (entry: PlannerEntry) => void;
 }
 
 type CalendarView = "day" | "week" | "month";
@@ -74,26 +67,25 @@ function dayCounts(entries: readonly PlannerEntry[]) {
 
 export function AppointmentsCalendar({
   evaluations, events, subjects, courses, exitingIds, onAddEvent, showGeneratePlan,
-  onPreparePlan, isPreparingPlan, onOpenHistory, onEditEvaluation, onEditStudyEvent,
+  onPreparePlan, isPreparingPlan, onEditEvaluation, onEditStudyEvent,
   onDeleteEvaluation, onDeleteStudyEvent, onMoveSlot, isMoving = false,
-  onMoveSheetOpenChange, onMoveInteractionChange,
+  onMoveSheetOpenChange, onMoveInteractionChange, onToggleComplete,
 }: AppointmentsCalendarProps) {
   const { t, i18n } = useTranslation();
+  const reducedMotion = usePrefersReducedMotion();
   const { data: routineData, isLoading: routinesLoading } = useUserRoutines();
   const routines = routineData ?? EMPTY_ROUTINES;
   const locale = i18n.language.startsWith("en") ? enUS : it;
   const [params, setParams] = useSearchParams();
   const rawView = params.get("view");
   const rawDay = params.get("planDay");
-  const view: CalendarView = isCalendarView(rawView) ? rawView : "day";
+  const parsedView: CalendarView = isCalendarView(rawView) ? rawView : "month";
+  const view: CalendarView = parsedView === "week" ? "month" : parsedView;
   const todayKey = dayKey(new Date());
   const selectedKey = isDateKey(rawDay) ? rawDay : todayKey;
   const selectedDate = parseISO(selectedKey);
-  const slotId = params.get("slot");
-  const [direction, setDirection] = useState(1);
-  const [viewChanged, setViewChanged] = useState(false);
-  const [monthChanged, setMonthChanged] = useState(false);
   const [keyboardMotion, setKeyboardMotion] = useState(false);
+  const [listOpen, setListOpen] = useState(true);
   const screenRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const monthGridRef = useRef<HTMLDivElement>(null);
@@ -103,8 +95,6 @@ export function AppointmentsCalendar({
   const pendingMonthFocus = useRef<string | null>(null);
   const overviewScroll = useRef(0);
   const scrollOwnerRef = useRef<HTMLElement | null>(null);
-  const deadlinesRef = useRef<HTMLUListElement>(null);
-  const [deadlineEdges, setDeadlineEdges] = useState({ start: true, end: true });
   const entries = useMemo(() => plannerEntries(evaluations, events, subjects, courses), [evaluations, events, subjects, courses]);
   const entriesByKey = useMemo(() => {
     const map = new Map<string, PlannerEntry[]>();
@@ -115,9 +105,6 @@ export function AppointmentsCalendar({
     for (const list of map.values()) list.sort(comparePlannerEntries);
     return map;
   }, [entries]);
-  const deadlines = useMemo(() => entries.filter((entry) => entry.important && !entry.completed && entry.date >= startOfToday())
-    .sort((a, b) => a.date.getTime() - b.date.getTime() || comparePlannerEntries(a, b)), [entries]);
-  const selectedSlot = entries.find((entry) => entry.id === slotId) ?? null;
   const [moveRequest, setMoveRequest] = useState<MoveSlotRequest | null>(null);
   const monthStart = startOfMonth(selectedDate);
   const monthGridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -134,17 +121,6 @@ export function AppointmentsCalendar({
       return next;
     }, { replace: true });
   }, [rawDay, rawView, selectedKey, setParams, view]);
-
-  useEffect(() => {
-    const list = deadlinesRef.current;
-    if (!list) return;
-    const update = () => setDeadlineEdges({ start: list.scrollLeft < 2, end: list.scrollLeft + list.clientWidth >= list.scrollWidth - 2 });
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(list);
-    list.addEventListener("scroll", update, { passive: true });
-    return () => { observer.disconnect(); list.removeEventListener("scroll", update); };
-  }, [deadlines.length]);
 
   useEffect(() => {
     const priorView = previousView.current;
@@ -178,8 +154,6 @@ export function AppointmentsCalendar({
   };
 
   const replaceCalendarState = (nextView: CalendarView, nextDay: string) => {
-    setViewChanged(true);
-    setDirection(nextDay < selectedKey ? -1 : 1);
     setParams((current) => {
       const next = new URLSearchParams(current);
       next.set("view", nextView);
@@ -187,15 +161,6 @@ export function AppointmentsCalendar({
       next.delete("slot");
       return next;
     }, { replace: true });
-  };
-
-  const changeView = (nextView: CalendarView) => {
-    if (nextView === view) return;
-    if (view === "month" && nextView === "day") {
-      monthOpenerKey.current = selectedKey;
-      captureMonthPosition();
-    }
-    replaceCalendarState(nextView, selectedKey);
   };
 
   const openDay = (key: string) => {
@@ -206,31 +171,12 @@ export function AppointmentsCalendar({
     replaceCalendarState("day", key);
   };
 
-  const changeDay = (key: string) => replaceCalendarState(view, key);
-  const goToday = () => replaceCalendarState(view, todayKey);
-  const changeWeek = (offset: number) => replaceCalendarState("week", dayKey(addDays(selectedDate, offset * 7)));
+  const changeDay = (key: string) => replaceCalendarState(view === "day" ? "day" : "month", key);
+  const goToday = () => replaceCalendarState(view === "day" ? "day" : "month", todayKey);
   const changeMonth = (offset: number) => {
     const nextKey = dayKey(addMonths(monthStart, offset));
     pendingMonthFocus.current = nextKey;
-    setMonthChanged(true);
     replaceCalendarState("month", nextKey);
-  };
-
-  const closeSlot = () => {
-    setParams((current) => {
-      const next = new URLSearchParams(current);
-      next.delete("slot");
-      return next;
-    }, { replace: true });
-  };
-  const openSlot = (entry: PlannerEntry) => {
-    setParams((current) => {
-      const next = new URLSearchParams(current);
-      next.set("view", view);
-      next.set("planDay", selectedKey);
-      next.set("slot", entry.id);
-      return next;
-    });
   };
 
   const handleMonthKeyDown = (event: KeyboardEvent<HTMLButtonElement>, date: Date) => {
@@ -252,8 +198,13 @@ export function AppointmentsCalendar({
     replaceCalendarState("month", nextKey);
   };
 
-  const scrollDeadlines = (sign: number) => deadlinesRef.current?.scrollBy({ left: sign * deadlinesRef.current.clientWidth, behavior: "auto" });
   const selectedDayEntries = entriesByKey.get(selectedKey) ?? [];
+  const monthGroups = monthDays.flatMap((date) => {
+    if (!isSameMonth(date, monthStart)) return [];
+    const key = dayKey(date);
+    const dayEntries = entriesByKey.get(key) ?? [];
+    return dayEntries.length > 0 ? [{ key, date, entries: dayEntries }] : [];
+  });
   const requestMove = (entry: PlannerEntry, target?: MoveSlotTarget) => {
     if (
       !onMoveSlot
@@ -280,182 +231,220 @@ export function AppointmentsCalendar({
     setMoveRequest(null);
     onMoveSheetOpenChange?.(false);
   };
-  const viewOptions = [
-    { value: "day" as const, label: t("piano.day") },
-    { value: "week" as const, label: t("piano.week") },
-    { value: "month" as const, label: t("piano.month") },
-  ];
-
   return (
     <div ref={screenRef} className={cn("planner-workspace min-w-0 scroll-mt-20 py-5", keyboardMotion && "planner-no-motion")} onClickCapture={(event) => setKeyboardMotion(event.detail === 0)}>
-      <header className="planner-calendar-toolbar mb-5">
-        <div className="planner-calendar-title">
-          {view === "day" ? <h2 className="text-3xl font-semibold tracking-tight">{t("piano.workspaceTitle")}</h2>
-            : <h2 id="planner-calendar-heading" className="text-3xl font-semibold tracking-tight">{t("piano.workspaceTitle")}</h2>}
-          <p className="mt-1 text-sm text-muted-foreground">{t("piano.workspaceSubtitle")}</p>
-        </div>
-        <div className="planner-calendar-controls">
-          <PillToggle
-            options={viewOptions}
-            value={view}
-            onChange={changeView}
-            variant="track"
-            size="sm"
-            aria-label={t("piano.viewSelector")}
-            className="planner-view-toggle"
+      <header className="mb-4 flex items-center gap-2">
+        <h2 id="planner-calendar-heading" className="min-w-0 flex-1 truncate text-2xl font-normal tracking-tight text-white sm:text-3xl">
+          {capitalizeFirstLetter(format(monthStart, "MMMM yyyy", { locale }))}
+        </h2>
+        <button
+          type="button"
+          aria-pressed={listOpen}
+          aria-controls="planner-month-events"
+          aria-label={t(listOpen ? "piano.hideCommitments" : "piano.showCommitments")}
+          onClick={() => setListOpen((open) => !open)}
+          className="relative flex h-11 w-[4.75rem] shrink-0 items-center justify-between rounded-full border border-[#212327] bg-[#191919] px-2.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          <span
+            aria-hidden="true"
+            className="absolute left-1 top-1 h-9 w-9 rounded-full bg-white transition-transform duration-300 motion-reduce:transition-none"
+            style={{ transform: listOpen ? "translateX(1.6rem)" : "translateX(0)" }}
           />
-          <Button onClick={() => onAddEvent(selectedKey)} aria-label={t("piano.addEventFull")} data-haptic="medium" className="h-11 min-w-11 gap-2">
-            <Plus aria-hidden="true" /><span>{t("piano.addShort")}</span>
-          </Button>
-          <Button variant="outline" className="planner-generate h-11 whitespace-normal" onClick={onPreparePlan} disabled={!showGeneratePlan || isPreparingPlan} data-haptic="medium" aria-describedby="planner-generate-hint">
-            {isPreparingPlan ? <Loader2 className="animate-spin" aria-hidden="true" /> : <CalendarClock aria-hidden="true" />}
-            {t(isPreparingPlan ? "piano.preparingPlan" : "piano.preparePlan")}
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0" aria-label={t("piano.planMenu")}>
-                <MoreHorizontal aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={onOpenHistory} className="min-h-11">
-                <History className="mr-2 h-4 w-4" aria-hidden="true" />
-                {t("piano.planHistory.title")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          <Grid aria-hidden="true" className={cn("relative z-[1] h-4 w-4", listOpen ? "text-[#dadbdf]" : "text-[#0a0a0a]")} />
+          <Columns3 aria-hidden="true" className={cn("relative z-[1] h-4 w-4", listOpen ? "text-[#0a0a0a]" : "text-[#dadbdf]")} />
+        </button>
+        <button
+          type="button"
+          aria-label={t("piano.addEventFull")}
+          data-haptic="medium"
+          onClick={() => onAddEvent(selectedKey)}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[24px] bg-white text-[#0a0a0a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98]"
+        >
+          <Plus aria-hidden="true" />
+        </button>
       </header>
 
-      <section className="planner-upcoming-section mb-5 min-w-0" aria-labelledby="planner-deadlines-heading">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <h3 id="planner-deadlines-heading" className="text-base font-semibold">{t("piano.importantDeadlines")}</h3>
-          {deadlines.length > 0 && <div className="flex gap-1">
-            <Button variant="ghost" size="icon" aria-label={t("piano.previousDeadlines")} aria-controls="planner-deadlines" disabled={deadlineEdges.start} onClick={() => scrollDeadlines(-1)}><ChevronLeft aria-hidden="true" /></Button>
-            <Button variant="ghost" size="icon" aria-label={t("piano.nextDeadlines")} aria-controls="planner-deadlines" disabled={deadlineEdges.end} onClick={() => scrollDeadlines(1)}><ChevronRight aria-hidden="true" /></Button>
-          </div>}
+      <section className="min-w-0" aria-label={t("piano.calendar")}>
+        <div className="planner-month-weekdays mb-2 grid grid-cols-7 gap-2" role="row">
+          {weekDays.map((date) => (
+            <span key={format(date, "EEE", { locale })} role="columnheader" className="py-1 text-center font-mono text-[11px] uppercase tracking-[0.08em] text-[#D8CFBC]">
+              <span className="sm:hidden">{format(date, "EEEEE", { locale })}</span>
+              <span className="hidden sm:inline">{format(date, "EEE", { locale })}</span>
+            </span>
+          ))}
         </div>
-        {deadlines.length === 0 ? <div className="planner-empty-plan border border-border bg-sheet p-4">
-          <p className="text-base font-medium">{t("piano.noDeadlinesPlan")}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button onClick={() => onAddEvent()} data-haptic="medium"><Plus aria-hidden="true" />{t("piano.addEvaluationEmpty")}</Button>
-            <Button variant="outline" onClick={() => window.dispatchEvent(new CustomEvent("erga:goto-tab", { detail: "studio" }))} data-haptic="medium"><Upload aria-hidden="true" />{t("piano.uploadMaterialEmpty")}</Button>
-          </div>
-        </div> : (
-          <ul ref={deadlinesRef} id="planner-deadlines" className="planner-deadlines">
-            {deadlines.map((entry) => {
-              const remaining = differenceInCalendarDays(entry.date, startOfToday());
-              const label = remaining === 0 ? t("piano.today") : t("piano.daysRemaining", { count: remaining });
-              return <li key={`${entry.original.kind}-${entry.id}`} className="min-w-0">
-                <button type="button" className="planner-deadline" lang={i18n.language} style={courseCoverVars(entry.coverName, entry.customColor).style}
-                  onClick={() => openDay(dayKey(entry.date))} data-plan-opener={`deadline-${entry.original.kind}-${entry.id}`} data-haptic="medium"
-                  aria-label={`${entry.title}, ${label}, ${format(entry.date, "d MMMM", { locale })}`}>
-                  <CourseCardBackground courseName={entry.coverName} customKey={entry.customColor} />
-                  <span className="relative z-10 flex h-full min-w-0 flex-col text-contrast">
-                    <span className="planner-countdown">{remaining === 0 ? t("piano.today") : remaining}</span>
-                    <span className="mb-4 text-sm">{remaining === 0 ? t("piano.inCalendar") : t("piano.remainingUnit", { count: remaining })}</span>
-                    <span className="mb-1 break-words text-sm">{entry.subject ?? t("piano.evaluation")}</span>
-                    <span className="planner-deadline-title">{entry.title}</span>
-                    <time dateTime={dayKey(entry.date)} className="mt-auto pt-3 text-sm">{format(entry.date, "d MMM", { locale })}</time>
-                  </span>
-                </button>
-              </li>;
-            })}
-          </ul>
-        )}
+        <div className="grid grid-cols-7 gap-2" role="grid" aria-label={t("piano.monthGridLabel")} ref={monthGridRef}>
+          {monthWeeks.map((week, weekIndex) => (
+            <div key={`week-${weekIndex}`} className="contents" role="row">
+              {week.map((date) => {
+                const key = dayKey(date);
+                const dayEntries = entriesByKey.get(key) ?? [];
+                const { verifications, study, commitments } = dayCounts(dayEntries);
+                const inMonth = isSameMonth(date, monthStart);
+                const today = isToday(date);
+                const selected = key === selectedKey;
+                const paint = dayPaint(dayEntries, today, inMonth, selected);
+                const accessibleDay = format(date, "EEEE d MMMM yyyy", { locale });
+                return (
+                  <div key={key} role="gridcell" aria-selected={selected} className="min-w-0">
+                    <button
+                      type="button"
+                      aria-current={today ? "date" : undefined}
+                      aria-label={t("piano.calendarDayCounts", { day: accessibleDay, verifications, study, commitments })}
+                      aria-pressed={selected}
+                      tabIndex={selected ? 0 : -1}
+                      data-day-key={key}
+                      data-plan-opener={`day-${key}`}
+                      onKeyDown={(event) => handleMonthKeyDown(event, date)}
+                      onClick={() => openDay(key)}
+                      data-haptic="medium"
+                      className="relative flex h-16 w-full items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98]"
+                      style={paint.style}
+                    >
+                      <span className={cn("text-sm tabular-nums", today && "underline decoration-2 underline-offset-4")}>{format(date, "d")}</span>
+                      {paint.hexes.length > 1 && (
+                        <span className="absolute bottom-1.5 left-1.5 flex gap-0.5" aria-hidden="true">
+                          {paint.hexes.slice(0, 3).map((hex) => (
+                            <span key={hex} className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: hex }} />
+                          ))}
+                        </span>
+                      )}
+                      {dayEntries.length > 0 && (
+                        <span className="absolute bottom-1 right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0a0a0a] px-1 font-mono text-[10px] font-medium tabular-nums text-[#D8CFBC]" aria-hidden="true">
+                          {dayEntries.length}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </section>
 
-      <div key={`${view}-${selectedKey}`} className={cn(viewChanged && "planner-view-enter", view === "month" && monthChanged && "planner-month-enter", direction < 0 && "planner-motion-back")}>
-        {view === "day" && (
-          <section className="planner-day-view" aria-labelledby="planner-calendar-heading">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 id="planner-calendar-heading" ref={headingRef} tabIndex={-1} className="text-2xl font-semibold tracking-tight outline-none sm:text-3xl">{capitalizeFirstLetter(format(selectedDate, "EEEE d MMMM", { locale }))}</h3>
-                <p className="mt-1 text-base text-muted-foreground">{t("piano.dailySubtitle")}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button variant="ghost" onClick={() => changeView("month")} className="-ml-4"><ArrowLeft aria-hidden="true" />{t("piano.backToCalendar")}</Button>
-                <Button variant="outline" onClick={goToday}>{t("piano.today")}</Button>
-                <Button variant="ghost" size="icon" aria-label={t("piano.previousDay")} onClick={() => changeDay(dayKey(addDays(selectedDate, -1)))}><ChevronLeft aria-hidden="true" /></Button>
-                <Button variant="ghost" size="icon" aria-label={t("piano.nextDay")} onClick={() => changeDay(dayKey(addDays(selectedDate, 1)))}><ChevronRight aria-hidden="true" /></Button>
-              </div>
-            </div>
-            <DayTimeline dateKey={selectedKey} entries={selectedDayEntries} exitingIds={exitingIds}
-              routines={routines} routinesLoading={routinesLoading}
-              onEdit={(entry) => entry.original.kind === "evaluation" ? onEditEvaluation(entry.original.data) : onEditStudyEvent(entry.original.data)}
-              onDelete={(entry) => entry.original.kind === "evaluation" ? onDeleteEvaluation(entry.original.data) : onDeleteStudyEvent(entry.original.data)}
-              onMove={onMoveSlot ? requestMove : undefined}
-              onMoveInteractionChange={onMoveInteractionChange} />
-          </section>
-        )}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <Button type="button" variant="ghost" size="icon" className="h-11 w-11" aria-label={t("piano.previousMonth")} onClick={() => changeMonth(-1)}>
+          <ChevronLeft aria-hidden="true" />
+        </Button>
+        <Button type="button" variant="outline" className="h-11 rounded-full" onClick={() => replaceCalendarState("month", todayKey)}>{t("piano.today")}</Button>
+        <Button type="button" variant="ghost" size="icon" className="h-11 w-11" aria-label={t("piano.nextMonth")} onClick={() => changeMonth(1)}>
+          <ChevronRight aria-hidden="true" />
+        </Button>
+        <Button type="button" variant="outline" className="h-11 rounded-full" onClick={onPreparePlan} disabled={!showGeneratePlan || isPreparingPlan} data-haptic="medium" aria-describedby="planner-generate-hint">
+          {isPreparingPlan ? <Loader2 className="animate-spin" aria-hidden="true" /> : <CalendarClock aria-hidden="true" />}
+          {t(isPreparingPlan ? "piano.preparingPlan" : "piano.preparePlan")}
+        </Button>
+      </div>
+      <p id="planner-generate-hint" className="mt-3 max-w-prose text-sm leading-relaxed text-[#dadbdf]">{t(showGeneratePlan ? "piano.generateHint" : "piano.generateUnavailable")}</p>
 
-        {view === "week" && (
-          <section className="planner-week-panel" aria-labelledby="planner-week-heading">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <h3 id="planner-week-heading" className="text-xl font-semibold" aria-live="polite">{format(weekDays[0], "d MMM", { locale })} – {format(weekDays[6], "d MMM yyyy", { locale })}</h3>
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" aria-label={t("piano.previousWeek")} onClick={() => changeWeek(-1)}><ChevronLeft aria-hidden="true" /></Button>
-                <Button variant="outline" onClick={goToday}>{t("piano.today")}</Button>
-                <Button variant="ghost" size="icon" aria-label={t("piano.nextWeek")} onClick={() => changeWeek(1)}><ChevronRight aria-hidden="true" /></Button>
-              </div>
-            </div>
-            <WeekStrip selectedKey={selectedKey} selectedDate={selectedDate} entriesByKey={entriesByKey} onSelectDay={changeDay} />
-            <WeekView selectedKey={selectedKey} selectedDate={selectedDate} entriesByKey={entriesByKey} onSelectDay={changeDay} onOpenSlot={openSlot} />
-          </section>
-        )}
-
-        {view === "month" && (
-          <section className="border border-border bg-sheet" aria-label={t("piano.calendar")}>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2 sm:px-5">
-              <h3 className="text-xl font-semibold" aria-live="polite">{capitalizeFirstLetter(format(monthStart, "MMMM yyyy", { locale }))}</h3>
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="sm" onClick={goToday}>{t("piano.today")}</Button>
-                <Button variant="ghost" size="icon" aria-label={t("piano.previousMonth")} onClick={() => changeMonth(-1)}><ChevronLeft aria-hidden="true" /></Button>
-                <Button variant="ghost" size="icon" aria-label={t("piano.nextMonth")} onClick={() => changeMonth(1)}><ChevronRight aria-hidden="true" /></Button>
-              </div>
-            </div>
-            <div className="planner-month-grid planner-month-grid--calendar" role="grid" aria-label={t("piano.monthGridLabel")} ref={monthGridRef}>
-              <div className="planner-month-weekdays" role="row">
-                {weekDays.map((date) => (
-                  <span key={format(date, "EEE", { locale })} role="columnheader" className="py-2 text-center text-sm font-medium text-muted-foreground">
-                    <span className="sm:hidden">{format(date, "EEEEE", { locale })}</span>
-                    <span className="hidden sm:inline">{format(date, "EEE", { locale })}</span>
-                  </span>
+      <AnimatePresence initial={false}>
+        {listOpen && (
+          <motion.section
+            key="month-events"
+            id="planner-month-events"
+            aria-label={t("piano.monthCommitments")}
+            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 8 }}
+            transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-6"
+          >
+            {monthGroups.length === 0 ? (
+              <p className="text-base text-[#dadbdf]">{t("piano.monthEmpty")}</p>
+            ) : (
+              <div className="space-y-5">
+                {monthGroups.map((group) => (
+                  <section key={group.key}>
+                    <h3 className="mb-2 font-mono text-xs uppercase tracking-[0.08em] text-[#D8CFBC]">
+                      <time dateTime={group.key}>{capitalizeFirstLetter(format(group.date, "EEEE d MMMM", { locale }))}</time>
+                    </h3>
+                    <ul className="space-y-2">
+                      {group.entries.map((entry) => {
+                        const tint = subjectTint(entry.subject, true, entry.customColor);
+                        return (
+                          <li key={`${entry.original.kind}-${entry.id}`}>
+                            <article className="flex items-center gap-3 rounded-[24px] px-4 py-3" style={{ backgroundColor: tint.backgroundColor, border: tint.border }}>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-mono text-[11px] uppercase tracking-[0.08em]" style={{ color: tint.dot }}>{entry.subject ?? t("piano.evaluation")}</p>
+                                <p className={cn("mt-1 text-base text-white", entry.completed && "line-through")}>{entry.title}</p>
+                                {entry.time && <p className="mt-1 text-sm text-[#dadbdf]">{entry.endTime ? `${entry.time.slice(0, 5)}-${entry.endTime.slice(0, 5)}` : entry.time.slice(0, 5)}</p>}
+                              </div>
+                              <button
+                                type="button"
+                                aria-pressed={entry.completed}
+                                aria-label={`${t(entry.completed ? "piano.slotUndo" : "piano.slotMarkDone")} ${entry.title}`}
+                                onClick={() => onToggleComplete?.(entry)}
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                              >
+                                <Check aria-hidden="true" className={cn("h-4 w-4", !entry.completed && "opacity-40")} />
+                              </button>
+                              <button
+                                type="button"
+                                aria-label={t("piano.editEntry", { title: entry.title })}
+                                onClick={() => entry.original.kind === "evaluation" ? onEditEvaluation(entry.original.data) : onEditStudyEvent(entry.original.data)}
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                              >
+                                <PencilLine aria-hidden="true" className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                aria-label={t("piano.deleteEntry", { title: entry.title })}
+                                onClick={() => entry.original.kind === "evaluation" ? onDeleteEvaluation(entry.original.data) : onDeleteStudyEvent(entry.original.data)}
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                              >
+                                <Trash2 aria-hidden="true" className="h-4 w-4" />
+                              </button>
+                            </article>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
                 ))}
               </div>
-              {monthWeeks.map((week, weekIndex) => (
-                <div key={`week-${weekIndex}`} className="planner-month-row" role="row">
-                  {week.map((date) => {
-                    const key = dayKey(date);
-                    const dayEntries = entriesByKey.get(key) ?? [];
-                    const { verifications, study, commitments } = dayCounts(dayEntries);
-                    const accessibleDay = format(date, "EEEE d MMMM yyyy", { locale });
-                    return <div key={key} role="gridcell" aria-selected={key === selectedKey} className="planner-month-cell">
-                      <button type="button" aria-current={isToday(date) ? "date" : undefined} aria-label={t("piano.calendarDayCounts", { day: accessibleDay, verifications, study, commitments })}
-                        aria-pressed={key === selectedKey} tabIndex={key === selectedKey ? 0 : -1} data-day-key={key} data-plan-opener={`day-${key}`}
-                        onKeyDown={(event) => handleMonthKeyDown(event, date)} onClick={() => openDay(key)} data-haptic="medium"
-                        className={cn("planner-day", key === selectedKey && "planner-day-selected", !isSameMonth(date, monthStart) && "planner-day-outside", isToday(date) && "planner-day-today")}>
-                        <span className="planner-day-number">{format(date, "d")}</span>
-                        {dayEntries.length > 0 && <>
-                          <span className="planner-day-markers" aria-hidden="true">
-                            {verifications > 0 && <span className="planner-day-mark planner-day-mark--evaluation" data-marker-kind="evaluation" />}
-                            {study > 0 && <span className="planner-day-mark planner-day-mark--study" data-marker-kind="study" />}
-                            {commitments > 0 && <span className="planner-day-mark planner-day-mark--commitment" data-marker-kind="commitment" />}
-                          </span>
-                          <span className="planner-day-titles" aria-hidden="true">{dayEntries.slice(0, 2).map((entry) => <span key={`${entry.original.kind}-${entry.id}`} className={cn("truncate", entry.completed && "line-through")}>{entry.time && `${entry.time} `}{entry.title}</span>)}{dayEntries.length > 2 && <span>+{dayEntries.length - 2}</span>}</span>
-                        </>}
-                      </button>
-                    </div>;
-                  })}
-                </div>
-              ))}
-            </div>
-          </section>
+            )}
+          </motion.section>
         )}
-      </div>
+      </AnimatePresence>
 
-      <p id="planner-generate-hint" className="mt-3 max-w-prose text-sm leading-relaxed text-muted-foreground">{t(showGeneratePlan ? "piano.generateHint" : "piano.generateUnavailable")}</p>
-      <div className="planner-bottom-safe-space" aria-hidden="true" />
+      <Sheet
+        open={view === "day"}
+        onOpenChange={(open) => { if (!open) replaceCalendarState("month", selectedKey); }}
+      >
+        <SheetContent
+          side="bottom"
+          className="max-h-[92vh] overflow-y-auto border-[#212327] bg-[#191919] pb-safe"
+          style={{ borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            headingRef.current?.focus();
+          }}
+        >
+          <SheetHeader className="mb-4 text-left">
+            <SheetTitle ref={headingRef} tabIndex={-1} className="text-left text-2xl font-normal tracking-tight text-white outline-none sm:text-3xl">
+              {capitalizeFirstLetter(format(selectedDate, "EEEE d MMMM", { locale }))}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <Button type="button" variant="ghost" onClick={() => replaceCalendarState("month", selectedKey)}>{t("piano.backToCalendar")}</Button>
+            <Button type="button" variant="outline" className="rounded-full" onClick={() => goToday()}>{t("piano.today")}</Button>
+            <Button type="button" variant="ghost" size="icon" aria-label={t("piano.previousDay")} onClick={() => changeDay(dayKey(addDays(selectedDate, -1)))}><ChevronLeft aria-hidden="true" /></Button>
+            <Button type="button" variant="ghost" size="icon" aria-label={t("piano.nextDay")} onClick={() => changeDay(dayKey(addDays(selectedDate, 1)))}><ChevronRight aria-hidden="true" /></Button>
+          </div>
+          <DayTimeline
+            dateKey={selectedKey}
+            entries={selectedDayEntries}
+            exitingIds={exitingIds}
+            routines={routines}
+            routinesLoading={routinesLoading}
+            onEdit={(entry) => entry.original.kind === "evaluation" ? onEditEvaluation(entry.original.data) : onEditStudyEvent(entry.original.data)}
+            onDelete={(entry) => entry.original.kind === "evaluation" ? onDeleteEvaluation(entry.original.data) : onDeleteStudyEvent(entry.original.data)}
+            onMove={onMoveSlot ? requestMove : undefined}
+            onMoveInteractionChange={onMoveInteractionChange}
+          />
+        </SheetContent>
+      </Sheet>
 
       {onMoveSlot && (
         <MoveSlotSheet
@@ -471,25 +460,21 @@ export function AppointmentsCalendar({
           onSave={onMoveSlot}
         />
       )}
-
-      <Dialog open={!!slotId} onOpenChange={(open) => { if (!open) closeSlot(); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedSlot?.title ?? t("piano.slotUnavailable")}</DialogTitle>
-            {selectedSlot && <DialogDescription>
-              {[
-                selectedSlot.subject,
-                selectedSlot.kind === "study" ? t("piano.type_study")
-                  : selectedSlot.kind === "evaluation" ? t("piano.type_test")
-                    : selectedSlot.kind === "personal" ? t("piano.timelineBusy") : t("piano.type_assignment"),
-                format(selectedSlot.date, "EEEE d MMMM yyyy", { locale }),
-                selectedSlot.time,
-                selectedSlot.endTime,
-              ].filter(Boolean).join(" · ")}
-            </DialogDescription>}
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
+      <div className="planner-bottom-safe-space" aria-hidden="true" />
     </div>
   );
+}
+
+function dayPaint(entries: readonly PlannerEntry[], today: boolean, inMonth: boolean, selected: boolean) {
+  const hexes = [...new Set(entries.map((entry) => subjectHex(entry.subject, entry.customColor)))];
+  const tint = hexes.length === 1 ? subjectTint(entries[0]?.subject, true, entries[0]?.customColor) : null;
+  return {
+    hexes,
+    style: {
+      backgroundColor: tint?.backgroundColor ?? (today ? "#565449" : inMonth ? "#191919" : "#0a0a0a"),
+      border: selected ? "1px solid #ffffff" : (tint?.border ?? "1px solid #212327"),
+      borderRadius: 24,
+      color: inMonth || today ? "#ffffff" : "#7d8187",
+    },
+  };
 }

@@ -21,7 +21,7 @@ import { NoSpaceDialog } from "./NoSpaceDialog";
 import { AddEventSheet, type EvalFormInput } from "./AddEventSheet";
 import { EditStudyEventSheet } from "./EditStudyEventSheet";
 import {
-  useEvaluations, useAddEvaluation, useUpdateEvaluation, useDeleteEvaluation,
+  useEvaluations, useAddEvaluation, useUpdateEvaluation, useDeleteEvaluation, useToggleEvaluationCompleted,
   type Evaluation,
 } from "@/hooks/useEvaluations";
 import { useUserSubjects } from "@/hooks/useUserSubjects";
@@ -42,6 +42,7 @@ import {
 import { planChangesKeys } from "@/hooks/usePlanChanges";
 import { buildPlan, type PlanWarning, type ScheduleEvaluation } from "@/lib/planner/schedule";
 import { plannerDateKey } from "@/lib/planner/freeTime";
+import type { PlannerEntry } from "@/lib/plannerEntries";
 import type { MoveSlotSaveTarget } from "@/lib/planner/conflicts";
 import type { PlanChange, PlanChangeEventValues, PlanChangeReason, PlanChangeSnapshot } from "@/lib/planner/types";
 import { createInversePlanChanges, UndoCompletedSlotError, UndoTargetUnavailableError } from "./planChangeUndo";
@@ -196,6 +197,23 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   const addEvaluation = useAddEvaluation();
   const updateEvaluation = useUpdateEvaluation();
   const deleteEvaluation = useDeleteEvaluation();
+  const toggleEvaluationCompleted = useToggleEvaluationCompleted();
+  const toggleEntryComplete = (entry: PlannerEntry) => {
+    const next = !entry.completed;
+    if (entry.original.kind === "evaluation") {
+      void toggleEvaluationCompleted.mutateAsync({ id: entry.id, next }).catch((error) => {
+        reportOperationError("edit", error, "[Piano] toggle evaluation");
+      });
+      return;
+    }
+    void updateEvent.mutateAsync({
+      id: entry.id,
+      version: entry.original.data.version ?? 0,
+      completed: next,
+    }).catch((error) => {
+      reportOperationError("edit", error, "[Piano] toggle study event");
+    });
+  };
   const { data: userSubjects = [] } = useUserSubjects();
   const { data: courses = [] } = useFileContextsQuery();
   const isLoading = eventsQuery.isLoading || evaluationsQuery.isLoading;
@@ -697,6 +715,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
           isMoving={applyPlanChanges.isPending}
           onMoveSheetOpenChange={setMoveSheetOpen}
           onMoveInteractionChange={setMoveInteractionActive}
+          onToggleComplete={toggleEntryComplete}
         />
       </section>
 
