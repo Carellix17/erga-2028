@@ -465,7 +465,8 @@ export function AddEventSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
-        className={cn("pb-safe max-h-[92vh] overflow-y-auto", !isMobile && "w-full sm:max-w-md")}
+        className={cn("max-h-[92vh] overflow-y-auto border-[#212327] bg-[#191919] pb-safe", !isMobile && "w-full sm:max-w-md")}
+        style={{ borderRadius: 24 }}
       >
         <SheetHeader className="mb-4">
           <SheetTitle className="title-large font-display">

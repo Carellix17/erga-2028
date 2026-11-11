@@ -98,6 +98,7 @@ vi.mock("@/hooks/useEvaluations", () => ({
   useAddEvaluation: () => ({ mutateAsync: mocks.addEvaluation }),
   useUpdateEvaluation: () => ({ mutateAsync: mocks.updateEvaluation }),
   useDeleteEvaluation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useToggleEvaluationCompleted: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock("@/components/piano/AddEventSheet", async () => {
   const React = await vi.importActual<typeof import("react")>("react");
@@ -205,9 +206,9 @@ describe("PianoView plan proposals", () => {
     const cells = container.querySelectorAll(".planner-month-grid > div");
 
     expect(status).toHaveAttribute("aria-busy", "true");
-    expect(container.querySelectorAll(".planner-deadlines > li")).toHaveLength(6);
+    expect(container.querySelector(".planner-deadlines")).toBeNull();
     expect(cells).toHaveLength(42);
-    expect(cells[0]).toHaveClass("aspect-square", "rounded-none", "border", "border-border");
+    expect(cells[0]).toHaveClass("h-16", "rounded-[24px]", "border", "border-[#212327]");
     expect(container.querySelectorAll(".planner-actions > div")).toHaveLength(2);
     expect(container.querySelector(".max-w-lg")).toBeNull();
   });

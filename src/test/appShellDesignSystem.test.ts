@@ -163,6 +163,6 @@ describe("design system scuro — app shell", () => {
     const pianoView = read("src/components/piano/PianoView.tsx");
 
     expect(pianoView).toContain('<section className="min-w-0" aria-labelledby="planner-calendar-heading">');
-    expect((calendar.match(/id="planner-calendar-heading"/g) ?? [])).toHaveLength(2);
+    expect((calendar.match(/id="planner-calendar-heading"/g) ?? [])).toHaveLength(1);
   });
 });

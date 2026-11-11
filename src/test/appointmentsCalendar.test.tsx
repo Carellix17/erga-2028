@@ -27,6 +27,7 @@ vi.mock("@/hooks/useEvaluations", () => ({
   useAddEvaluation: () => ({ mutateAsync: vi.fn() }),
   useUpdateEvaluation: () => ({ mutateAsync: vi.fn() }),
   useDeleteEvaluation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useToggleEvaluationCompleted: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ currentUser: null }) }));
 vi.mock("@/hooks/usePlannerData", () => ({
@@ -77,19 +78,21 @@ describe("calendar and daily schedule", () => {
   it("capitalizes only the first letter of a selected day and its month", () => {
     mount({}, "/app?tab=piano&planDay=2026-11-01");
 
+    expect(screen.getByRole("heading", { name: "Novembre 2026" })).toBeVisible();
+    fireEvent.click(document.querySelector('button[data-day-key="2026-11-01"]')!);
     expect(screen.getByRole("heading", { name: "Domenica 1 novembre" })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Torna al calendario" }));
     expect(screen.getByRole("heading", { name: "Novembre 2026" })).toBeVisible();
   });
 
-  it("shows one named deadline heading and leaves the list without a duplicate label", () => {
+  it("lists the month under the calendar and can hide that list", async () => {
     mount();
-    const title = "Prossime verifiche";
 
-    expect(screen.getAllByRole("heading", { name: title })).toHaveLength(1);
-    const region = screen.getByRole("region", { name: title });
-    expect(within(region).getByRole("heading", { name: title })).toHaveAttribute("id", "planner-deadlines-heading");
-    expect(within(region).getByRole("list")).not.toHaveAccessibleName(title);
+    expect(screen.queryByRole("heading", { name: "Prossime verifiche" })).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Impegni del mese" })).toBeVisible();
+    expect(screen.getByText("Verifica di italiano")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Nascondi gli impegni" }));
+    await waitFor(() => expect(screen.queryByRole("region", { name: "Impegni del mese" })).not.toBeInTheDocument());
   });
 
   it("keeps localized narrow and abbreviated weekday labels in the month grid header", () => {
@@ -103,32 +106,29 @@ describe("calendar and daily schedule", () => {
     expect(cells.map((cell) => cell.children[1]?.textContent)).toEqual(["lun", "mar", "mer", "gio", "ven", "sab", "dom"]);
   });
 
-  it("keeps the add and plan actions in the shared header above the month", () => {
+  it("keeps the add and plan actions with the month", () => {
     mount();
     const calendar = screen.getByRole("region", { name: "Calendario" });
     expect(within(calendar).getAllByRole("button").length).toBeGreaterThan(30);
-    expect(screen.getByRole("button", { name: /Verifica di italiano, Manca 1 giorno/ })).toBeVisible();
     expect(screen.getByRole("button", { name: "Prepara il piano" })).toBeEnabled();
     const add = screen.getByRole("button", { name: "Aggiungi evento" });
     expect(add.compareDocumentPosition(calendar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
-  it("opens the change history from the accessible planner menu", async () => {
+  it("does not offer the change history from the planner", () => {
     mount();
-    fireEvent.pointerDown(screen.getByRole("button", { name: "Altre azioni del piano" }), {
-      button: 0,
-      pointerType: "mouse",
-    });
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Cronologia modifiche" }));
-    expect(props.onOpenHistory).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: "Altre azioni del piano" })).not.toBeInTheDocument();
   });
 
   it("opens today's full schedule, with other events and a separate untimed section", () => {
     mount();
-    fireEvent.click(screen.getByRole("radio", { name: "Giorno" }));
-    expect(screen.getByText("Ripasso di fisica")).toBeVisible();
-    expect(screen.getByText("Allenamento")).toBeVisible();
-    expect(within(screen.getByRole("region", { name: "Senza orario" })).getByText("Consegna ricerca")).toBeVisible();
-    expect(screen.getByText("15:30")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Aggiungi evento" }));
+    expect(props.onAddEvent).toHaveBeenCalledWith(key);
+    fireEvent.click(document.querySelector('button[aria-current="date"]')!);
+    const day = screen.getByRole("dialog");
+    expect(within(day).getByText("Ripasso di fisica")).toBeVisible();
+    expect(within(day).getByText("Allenamento")).toBeVisible();
+    expect(within(day).getByText("Consegna ricerca")).toBeVisible();
+    expect(within(day).getByText("15:30")).toBeVisible();
     expect(document.querySelectorAll("[data-hour]")).toHaveLength(17);
     const romeHour = Number(new Intl.DateTimeFormat("en", {
       hour: "2-digit",
@@ -141,31 +141,27 @@ describe("calendar and daily schedule", () => {
       expect(screen.queryByTestId("now-line")).not.toBeInTheDocument();
     }
     expect(screen.getByTestId("location")).toHaveTextContent(`tab=piano&view=day&planDay=${key}`);
-    fireEvent.click(screen.getByRole("button", { name: "Aggiungi evento" }));
-    expect(props.onAddEvent).toHaveBeenCalledWith(key);
   });
   it("opens an explicitly selected date, navigates days and returns to the same month", () => {
     mount();
     const day = document.querySelector<HTMLButtonElement>('button[aria-current="date"]')!;
     day.focus();
-    fireEvent.mouseEnter(day);
-    expect(screen.queryByRole("heading", { name: "Ora per ora" })).not.toBeInTheDocument();
     fireEvent.click(day);
     expect(screen.getByRole("heading", { name: capitalizeFirstLetter(format(today, "EEEE d MMMM", { locale: italianLocale })) })).toHaveFocus();
     fireEvent.click(screen.getByRole("button", { name: "Giorno successivo" }));
-    expect(screen.queryByText("Allenamento")).not.toBeInTheDocument();
-    expect(screen.getAllByText("Verifica di italiano")).toHaveLength(2);
+    const nextDay = screen.getByRole("dialog");
+    expect(within(nextDay).queryByText("Allenamento")).not.toBeInTheDocument();
+    expect(within(nextDay).getByText("Verifica di italiano")).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Torna al calendario" }));
     expect(document.querySelector('button[aria-current="date"]')).toHaveFocus();
     expect(screen.getByRole("region", { name: "Calendario" })).toBeVisible();
   });
-  it("opens a deadline's date and preserves edit/delete callbacks", () => {
+  it("edits and deletes a commitment from the month list", () => {
     mount();
-    fireEvent.click(screen.getByRole("button", { name: /Verifica di italiano, Manca 1 giorno/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Modifica Verifica di italiano" }));
-    expect(props.onEditStudyEvent).toHaveBeenCalledWith(events[3]);
-    fireEvent.click(screen.getByRole("button", { name: "Elimina Verifica di italiano" }));
-    expect(props.onDeleteStudyEvent).toHaveBeenCalledWith(events[3]);
+    fireEvent.click(screen.getByRole("button", { name: "Modifica Ripasso di fisica" }));
+    expect(props.onEditStudyEvent).toHaveBeenCalledWith(events[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Elimina Ripasso di fisica" }));
+    expect(props.onDeleteStudyEvent).toHaveBeenCalledWith(events[0]);
   });
   it("saves Altro notes and end time, rejects an end time at or before the start, and avoids duplicate optional labels", async () => {
     addStudyEventsMutateAsync.mockResolvedValue({});
@@ -214,24 +210,19 @@ describe("calendar and daily schedule", () => {
   });
 
   it("supports empty calendars, free days and direct daily URLs", () => {
-    mount({ events: [], showGeneratePlan: false }, `/app?tab=piano&planDay=${key}`);
+    mount({ events: [], showGeneratePlan: false }, `/app?tab=piano&view=day&planDay=${key}`);
     expect(screen.getByText("Giorno libero")).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Torna al calendario" }));
     expect(screen.getByRole("button", { name: "Prepara il piano" })).toBeDisabled();
     expect(document.querySelector('button[aria-current="date"]')).toBeVisible();
+    expect(screen.getByText("Nessun impegno in questo mese. Tocca + per aggiungerne uno.")).toBeVisible();
   });
 
-  it("offers test and material actions when no deadline is upcoming", () => {
+  it("invites adding an event when the month is empty", () => {
     mount({ events: [], evaluations: [] });
-    expect(screen.getByText("Il tuo piano parte dalle verifiche…")).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "Aggiungi una verifica" }));
-    expect(props.onAddEvent).toHaveBeenCalledWith();
-
-    const navigate = vi.fn();
-    window.addEventListener("erga:goto-tab", navigate);
-    fireEvent.click(screen.getByRole("button", { name: "Carica materiale" }));
-    expect(navigate).toHaveBeenCalledWith(expect.objectContaining({ detail: "studio" }));
-    window.removeEventListener("erga:goto-tab", navigate);
+    expect(screen.getByText("Nessun impegno in questo mese. Tocca + per aggiungerne uno.")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Aggiungi evento" }));
+    expect(props.onAddEvent).toHaveBeenCalled();
   });
   it("ignores malformed date links and supports month navigation", () => {
     mount({}, "/app?tab=piano&view=month&planDay=invalid");
