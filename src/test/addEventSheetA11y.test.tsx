@@ -42,18 +42,13 @@ describe("AddEventSheet — accessibilità dei controlli", () => {
     expect(screen.getByRole("combobox", { name: /Argomento/ })).toBeInTheDocument();
   });
 
-  it("nomina la modalità corrente e espone le opzioni come radio con lo stato attivo", async () => {
+  it("espone le modalità come radio sempre visibili, con Scritta attiva", () => {
     renderOpenSheet();
 
-    fireEvent.pointerDown(screen.getByRole("button", { name: /Modalità:\s*Scritta/ }), {
-      button: 0,
-      ctrlKey: false,
-      pointerType: "mouse",
-    });
-
-    const oralTest = await screen.findByRole("menuitemradio", { name: "Interrogazione" });
-    expect(oralTest).toHaveAttribute("aria-checked", "false");
-    expect(screen.getByRole("menuitemradio", { name: "Scritta" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: "Scritta" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: "Interrogazione" })).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByRole("radio", { name: "Orale" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Pratica" })).toBeInTheDocument();
   });
 
   it("collega l'etichetta Obiettivo di voto allo slider solo dopo aver impostato un obiettivo", () => {

@@ -9,14 +9,9 @@ import { Slider } from "@/components/ui/slider";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
 import { useUserSubjects } from "@/hooks/useUserSubjects";
 import { useFileContextsQuery } from "@/hooks/useFileContexts";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { PillToggle } from "@/components/ui/pill-toggle";
 import { addOneHour } from "@/lib/plannerEntries";
 import { resolveSubjectColor } from "@/lib/subjectColors";
 import type { Evaluation, EvaluationType } from "@/hooks/useEvaluations";
@@ -33,9 +28,8 @@ import { cn } from "@/lib/utils";
 type Category = "verifica" | "compito" | "altro";
 type VerificaMode = Exclude<EvaluationType, "compito">;
 
-/** Ordine delle modalità di verifica mostrate nella tendina della barra Titolo. */
-const VERIFICA_MODES: VerificaMode[] = ["orale", "scritta", "pratica", "interrogazione"];
-/** Chiave i18n dell'etichetta per ogni modalità (pill e voci di tendina). */
+/** Scritta per prima: è il valore iniziale e la scelta più comune. */
+const VERIFICA_MODES: VerificaMode[] = ["scritta", "orale", "pratica", "interrogazione"];
 const VERIFICA_MODE_LABEL: Record<VerificaMode, string> = {
   orale: "piano.sheet.modeOrale",
   scritta: "piano.sheet.modeScritta",
@@ -44,6 +38,54 @@ const VERIFICA_MODE_LABEL: Record<VerificaMode, string> = {
 };
 
 const NONE = "__none__";
+
+const labelClass = "font-mono text-[11px] uppercase tracking-[0.08em] text-[#D8CFBC]";
+const controlClass = "rounded-[24px] border-[#212327] bg-[#0a0a0a] text-base text-white [color-scheme:dark] placeholder:text-[#dadbdf] focus:ring-0 focus-visible:border-[#212327] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white focus-visible:ring-0 focus-visible:ring-offset-0";
+const quietButtonClass = "h-auto min-h-11 justify-start rounded-[24px] border border-[#212327] bg-transparent px-4 text-base font-normal text-white hover:bg-white/5 hover:text-white active:scale-[0.98] motion-reduce:transform-none";
+
+function ChoiceRow<T extends string>({
+  label,
+  labelledBy,
+  value,
+  options,
+  onChange,
+}: {
+  label?: string;
+  labelledBy?: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (value: T) => void;
+}) {
+  const columns = options.length === 3 ? "grid-cols-3" : "grid-cols-2";
+  return (
+    <div
+      role="radiogroup"
+      aria-label={labelledBy ? undefined : label}
+      aria-labelledby={labelledBy}
+      className={cn("grid gap-2", columns)}
+    >
+      {options.map((option) => {
+        const selected = option.value === value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            onClick={() => onChange(option.value)}
+            className={cn(
+              "min-h-11 whitespace-nowrap rounded-[24px] border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98] motion-reduce:transform-none sm:text-base",
+              selected ? "border-white bg-white text-[#0a0a0a]" : "border-[#212327] bg-transparent text-white",
+            )}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 type FormField = "title" | "date" | "description" | "endTime";
 type FormFieldErrors = Partial<Record<FormField, string>>;
 
@@ -106,7 +148,6 @@ export function AddEventSheet({
   const formId = useId();
   const ids = {
     title: `${formId}-title`,
-    modeButton: `${formId}-mode-button`,
     subjectLabel: `${formId}-subject-label`,
     subject: `${formId}-subject`,
     date: `${formId}-date`,
@@ -339,7 +380,7 @@ export function AddEventSheet({
     field === "endTime" ? !!endError : !!fieldErrors[field]
   );
   const requiredSuffix = (
-    <span className="ml-1 text-xs font-normal text-muted-foreground">{" "}({t("piano.sheet.required")})</span>
+    <span className="ml-1 font-sans text-[11px] font-normal normal-case tracking-normal text-[#dadbdf]"> ({t("piano.sheet.required")})</span>
   );
   const renderFieldError = (field: FormField, id: string, message: string | null | undefined, className = "text-xs font-medium text-destructive") => {
     if (!message) return null;
@@ -350,14 +391,14 @@ export function AddEventSheet({
 
   const subjectSelect = (
     <div className="min-w-0 space-y-2">
-      <Label id={ids.subjectLabel} htmlFor={ids.subject} className="label-large">
+      <Label id={ids.subjectLabel} htmlFor={ids.subject} className={labelClass}>
         {t("piano.sheet.subject")}
       </Label>
       <Select value={subjectId} onValueChange={setSubjectId}>
         <SelectTrigger
           id={ids.subject}
           aria-labelledby={`${ids.subjectLabel} ${ids.subject}`}
-          className="w-full h-11 rounded-control border border-input bg-sheet px-4 py-2.5 text-base text-foreground"
+          className={cn("h-11 w-full px-4", controlClass)}
         >
           <SelectValue placeholder={t("piano.sheet.none")} />
         </SelectTrigger>
@@ -381,7 +422,7 @@ export function AddEventSheet({
 
   const dateField = (
     <div className="min-w-0 space-y-2">
-      <Label htmlFor={ids.date} className="label-large">
+      <Label htmlFor={ids.date} className={labelClass}>
         {t("piano.sheet.date")}{requiredSuffix}
       </Label>
       <Input
@@ -394,6 +435,7 @@ export function AddEventSheet({
         aria-required="true"
         aria-invalid={!!fieldErrors.date}
         aria-describedby={fieldErrors.date ? ids.dateError : undefined}
+        className={cn("h-11", controlClass)}
       />
       {renderFieldError("date", ids.dateError, fieldErrors.date)}
     </div>
@@ -411,7 +453,7 @@ export function AddEventSheet({
     return (
       <div className="grid grid-cols-2 gap-3">
         <div className="min-w-0 space-y-2">
-          <Label htmlFor={ids.startTime} className="label-large">{t("piano.sheet.startTime")}</Label>
+          <Label htmlFor={ids.startTime} className={labelClass}>{t("piano.sheet.startTime")}</Label>
           <Input
             id={ids.startTime}
             type="time"
@@ -424,15 +466,16 @@ export function AddEventSheet({
               }
               setEndError(null);
             }}
+            className={cn("h-11", controlClass)}
           />
         </div>
         <div className="min-w-0 space-y-2">
-          <Label htmlFor={ids.endTime} className="label-large">
+          <Label htmlFor={ids.endTime} className={labelClass}>
             {t("piano.sheet.endTime")}
             {endIsRequired
               ? requiredSuffix
               : (
-                <span className="text-muted-foreground font-normal">
+                <span className="font-sans text-[11px] font-normal normal-case tracking-normal text-[#dadbdf]">
                   {" "}({t("piano.sheet.optional").replace(/[()]/g, "")})
                 </span>
               )}
@@ -450,9 +493,10 @@ export function AddEventSheet({
             aria-required={endIsRequired}
             aria-invalid={!!endError}
             aria-describedby={endTimeDescribedBy}
+            className={cn("h-11", controlClass)}
           />
           {showDefaultHint && (
-            <p id={ids.endTimeDefaultHint} className="text-xs text-muted-foreground">
+            <p id={ids.endTimeDefaultHint} className="text-sm leading-relaxed text-[#dadbdf]">
               {t("piano.sheet.endTimeDefaultHint")}
             </p>
           )}
@@ -465,124 +509,96 @@ export function AddEventSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
-        className={cn("max-h-[92vh] overflow-y-auto border-[#212327] bg-[#191919] pb-safe", !isMobile && "w-full sm:max-w-md")}
+        className={cn(
+          "max-h-[92vh] overflow-y-auto border-[#212327] bg-[#191919] pb-safe shadow-none",
+          !isMobile && "w-full sm:max-w-md",
+        )}
         style={{ borderRadius: 24 }}
       >
-        <SheetHeader className="mb-4">
-          <SheetTitle className="title-large font-display">
+        <SheetHeader className="mb-6 pr-12 text-left">
+          <SheetTitle className="text-2xl font-normal tracking-tight text-white">
             {editingId ? t("piano.sheet.editTitle") : t("piano.sheet.addTitle")}
           </SheetTitle>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <p className="text-xs text-muted-foreground">{t("piano.sheet.requiredFieldsHint")}</p>
-          {/* 🎛️ P46 — TRE tab primari, iniziale maiuscola */}
-          <PillToggle<Category>
-            aria-label={t("piano.sheet.type")}
+          <p className="text-base leading-relaxed text-[#dadbdf]">{t("piano.sheet.requiredFieldsHint")}</p>
+          <ChoiceRow<Category>
+            label={t("piano.sheet.type")}
+            value={category}
             options={[
               { value: "verifica", label: t("piano.sheet.verifica") },
               { value: "compito", label: t("piano.sheet.compito") },
               { value: "altro", label: t("piano.sheet.altro") },
             ]}
-            value={category}
             onChange={(nextCategory) => {
               if (nextCategory === "altro" && category === "verifica" && !endTouched) setEndTime("");
               setCategory(nextCategory);
               setFieldErrors({});
               setEndError(null);
             }}
-            variant="track"
           />
 
           {category === "verifica" && (
             <>
-              {/* P47 — Barra unica Titolo + Modalità: un solo blocco visivo.
-                  L'input del titolo si espande a sinistra; a destra il pill
-                  compatto apre la tendina delle modalità. Nessuna riga "Modalità" separata. */}
+              {subjectSelect}
+              {dateField}
+              {timeRange(true)}
+              {renderFieldError("endTime", ids.endTimeError, endError, "text-sm font-medium text-destructive")}
+
               <div className="space-y-2">
-                <Label htmlFor={ids.title} className="label-large">
+                <Label htmlFor={ids.title} className={labelClass}>
                   {t("piano.sheet.title")}{requiredSuffix}
                 </Label>
-                <div className="flex h-11 items-center rounded-control border border-input bg-sheet px-3 transition-colors focus-within:border-control-line">
-                  <input
-                    id={ids.title}
-                    ref={titleRef}
-                    type="text"
-                    value={title}
-                    onChange={(e) => { setTitle(e.target.value); clearFieldError("title"); }}
-                    placeholder={t("piano.sheet.titlePlaceholder")}
-                    aria-label={t("piano.sheet.title")}
-                    aria-required="true"
-                    aria-invalid={!!fieldErrors.title}
-                    aria-describedby={fieldErrors.title ? ids.titleError : undefined}
-                    className="h-10 min-w-0 flex-1 bg-transparent px-1 text-base text-foreground outline-none placeholder:text-muted-foreground md:text-sm"
-                  />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        id={ids.modeButton}
-                        type="button"
-                        className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-secondary px-3 text-xs font-semibold text-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-                      >
-                        <span className="sr-only">{t("piano.sheet.mode")}:</span>
-                        {t(VERIFICA_MODE_LABEL[mode])}
-                        <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 opacity-70" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="min-w-[10rem]">
-                      <DropdownMenuRadioGroup
-                        value={mode}
-                        onValueChange={(value) => setMode(value as VerificaMode)}
-                      >
-                        {VERIFICA_MODES.map((value) => (
-                          <DropdownMenuRadioItem key={value} value={value}>
-                            {t(VERIFICA_MODE_LABEL[value])}
-                          </DropdownMenuRadioItem>
-                        ))}
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <Input
+                  id={ids.title}
+                  ref={titleRef}
+                  type="text"
+                  value={title}
+                  onChange={(e) => { setTitle(e.target.value); clearFieldError("title"); }}
+                  placeholder={t("piano.sheet.titlePlaceholder")}
+                  aria-label={t("piano.sheet.title")}
+                  aria-required="true"
+                  aria-invalid={!!fieldErrors.title}
+                  aria-describedby={fieldErrors.title ? ids.titleError : undefined}
+                  className={cn("h-11", controlClass)}
+                />
                 {renderFieldError("title", ids.titleError, fieldErrors.title)}
               </div>
 
-              {/* P47 — Data + Materia affiancate (griglia fissa a 2 colonne anche su mobile) */}
-              <div className="grid grid-cols-2 gap-3">
-                {dateField}
-                {subjectSelect}
+              <div className="space-y-2">
+                <Label id={`${formId}-mode-label`} className={labelClass}>{t("piano.sheet.mode")}</Label>
+                <ChoiceRow<VerificaMode>
+                  labelledBy={`${formId}-mode-label`}
+                  value={mode}
+                  onChange={setMode}
+                  options={VERIFICA_MODES.map((value) => ({ value, label: t(VERIFICA_MODE_LABEL[value]) }))}
+                />
               </div>
 
-              {/* Riga 3 — Intervallo orario: per la verifica l'ora di fine è obbligatoria */}
-              {timeRange(true)}
-              {renderFieldError("endTime", ids.endTimeError, endError, "-mt-2 text-xs font-medium text-destructive")}
-
-              {/* Riga 4 — Argomento: Da corso | Libero */}
               <div className="space-y-2">
                 <Label
                   id={ids.topicLabel}
                   htmlFor={topicMode === "free" ? ids.freeTopic : undefined}
-                  className="label-large"
+                  className={labelClass}
                 >
                   {t("piano.sheet.topic")}
                 </Label>
-                <PillToggle<"linked" | "free">
-                  aria-label={t("piano.sheet.topic")}
+                <ChoiceRow<"linked" | "free">
+                  labelledBy={ids.topicLabel}
+                  value={topicMode}
+                  onChange={setTopicMode}
                   options={[
                     { value: "linked", label: t("piano.sheet.topicLinked") },
                     { value: "free", label: t("piano.sheet.topicFree") },
                   ]}
-                  value={topicMode}
-                  onChange={setTopicMode}
-                  size="md"
-                  grow
-                  className="[&>button]:h-11 [&>button]:text-sm [&>button[aria-checked=true]]:!border-input [&>button[aria-checked=true]]:!bg-secondary [&>button[aria-checked=true]]:!text-foreground [&>button[aria-checked=true]]:!shadow-none"
                 />
                 {topicMode === "linked" ? (
                   <Select value={courseId} onValueChange={setCourseId}>
                     <SelectTrigger
                       id={ids.course}
                       aria-labelledby={`${ids.topicLabel} ${ids.course}`}
-                      className="w-full h-11 rounded-control border border-input bg-sheet px-4 py-2.5 text-base text-foreground"
+                      className={cn("h-11 w-full px-4", controlClass)}
                     >
                       <SelectValue placeholder={t("piano.sheet.coursePlaceholder")} />
                     </SelectTrigger>
@@ -599,17 +615,17 @@ export function AddEventSheet({
                     placeholder={t("piano.sheet.topicPlaceholder")}
                     value={freeTopic}
                     onChange={(e) => setFreeTopic(e.target.value)}
+                    className={cn("h-11", controlClass)}
                   />
                 )}
               </div>
 
-              {/* Riga 5 — Note & Obiettivo voto (richimabili a richiesta) */}
               <div className="space-y-3">
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   onClick={() => setShowNotes(!showNotes)}
-                  className="min-h-11 h-auto justify-start px-3 text-sm font-semibold text-brand-deep hover:underline"
+                  className={cn("w-full", quietButtonClass)}
                 >
                   {showNotes ? t("piano.sheet.hideNotes") : t("piano.sheet.addNotes")}
                 </Button>
@@ -618,13 +634,20 @@ export function AddEventSheet({
                     <Label htmlFor={ids.notes} className="sr-only" id={ids.notesLabel}>
                       {t("piano.sheet.notes")}
                     </Label>
-                    <Textarea id={ids.notes} rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("piano.sheet.notesPlaceholder")} />
-                    <div className="space-y-2 rounded-2xl border border-outline-variant/60 p-4">
+                    <Textarea
+                      id={ids.notes}
+                      rows={2}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder={t("piano.sheet.notesPlaceholder")}
+                      className={controlClass}
+                    />
+                    <div className="space-y-2 rounded-[24px] border border-[#212327] p-4">
                       {goal == null ? (
                         <Button
                           type="button"
-                          variant="ghost"
-                          className="min-h-11 h-auto justify-start px-3 text-sm"
+                          variant="outline"
+                          className={cn("w-full", quietButtonClass)}
                           onClick={() => setGoal(6)}
                         >
                           {t("piano.sheet.goalSet")}
@@ -632,10 +655,9 @@ export function AddEventSheet({
                       ) : (
                         <>
                           <div className="flex items-center justify-between">
-                            <Label id={ids.goalLabel} className="label-large">{t("piano.sheet.goalLabel")}</Label>
-                            <span className="label-large font-semibold text-brand-deep">{goal.toFixed(goal % 1 ? 1 : 0)}</span>
+                            <Label id={ids.goalLabel} className={labelClass}>{t("piano.sheet.goalLabel")}</Label>
+                            <span className="font-mono text-base tabular-nums text-white">{goal.toFixed(goal % 1 ? 1 : 0)}</span>
                           </div>
-                          {/* Il DB salva goal come smallint: step intero 6-10 */}
                           <Slider
                             id={ids.goalSlider}
                             value={[goal]}
@@ -648,8 +670,8 @@ export function AddEventSheet({
                           />
                           <Button
                             type="button"
-                            variant="ghost"
-                            className="min-h-11 h-auto justify-start px-3 text-sm text-muted-foreground hover:text-foreground"
+                            variant="outline"
+                            className={cn("w-full", quietButtonClass)}
                             onClick={() => setGoal(null)}
                           >
                             {t("piano.sheet.goalClear")}
@@ -665,14 +687,10 @@ export function AddEventSheet({
 
           {category === "compito" && (
             <>
-              {/* P47 — Materia + Data affiancate (speculare al tab Verifica) */}
-              <div className="grid grid-cols-2 gap-3">
-                {subjectSelect}
-                {dateField}
-              </div>
-              {/* Riga 2 — Descrizione ampia (il titolo si ricava da qui) */}
+              {subjectSelect}
+              {dateField}
               <div className="space-y-2">
-                <Label htmlFor={ids.compito} className="label-large">
+                <Label htmlFor={ids.compito} className={labelClass}>
                   {t("piano.sheet.compitoLabel")}{!(editingId && title.trim()) && requiredSuffix}
                 </Label>
                 <Textarea
@@ -686,6 +704,7 @@ export function AddEventSheet({
                   aria-required={!(editingId && !!title.trim())}
                   aria-invalid={!!fieldErrors.description}
                   aria-describedby={fieldErrors.description ? ids.descriptionError : undefined}
+                  className={controlClass}
                 />
                 {renderFieldError("description", ids.descriptionError, fieldErrors.description)}
               </div>
@@ -694,11 +713,11 @@ export function AddEventSheet({
 
           {category === "altro" && (
             <>
-              <p className="body-small text-muted-foreground leading-relaxed">
+              <p className="text-base leading-relaxed text-[#dadbdf]">
                 {t("piano.sheet.altroHint")}
               </p>
               <div className="space-y-2">
-                <Label htmlFor={ids.altroTitle} className="label-large">
+                <Label htmlFor={ids.altroTitle} className={labelClass}>
                   {t("piano.sheet.title")}{requiredSuffix}
                 </Label>
                 <Input
@@ -711,22 +730,35 @@ export function AddEventSheet({
                   aria-required="true"
                   aria-invalid={!!fieldErrors.title}
                   aria-describedby={fieldErrors.title ? ids.titleError : undefined}
+                  className={cn("h-11", controlClass)}
                 />
                 {renderFieldError("title", ids.titleError, fieldErrors.title)}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor={ids.altroNotes} className="label-large">
-                  {t("piano.sheet.notes")}
-                </Label>
-                <Textarea id={ids.altroNotes} rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("piano.sheet.notesPlaceholder")} />
-              </div>
               {dateField}
               {timeRange(false)}
-              {renderFieldError("endTime", ids.endTimeError, endError, "-mt-2 text-xs font-medium text-destructive")}
+              {renderFieldError("endTime", ids.endTimeError, endError, "text-sm font-medium text-destructive")}
+              <div className="space-y-2">
+                <Label htmlFor={ids.altroNotes} className={labelClass}>
+                  {t("piano.sheet.notes")}
+                </Label>
+                <Textarea
+                  id={ids.altroNotes}
+                  rows={2}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder={t("piano.sheet.notesPlaceholder")}
+                  className={controlClass}
+                />
+              </div>
             </>
           )}
 
-          <Button type="submit" className="w-full" size="lg" disabled={submitting}>
+          <Button
+            type="submit"
+            className="h-12 w-full rounded-[24px] border border-white bg-white text-base text-[#0a0a0a] hover:bg-white hover:text-[#0a0a0a] active:scale-[0.98] motion-reduce:transform-none"
+            size="lg"
+            disabled={submitting}
+          >
             {submitting
               ? t("piano.sheet.saving")
               : category === "compito"

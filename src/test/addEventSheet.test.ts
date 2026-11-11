@@ -3,13 +3,9 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 /**
- * 🛡️ P47 — Guardia strutturale del foglio "Aggiungi evento" (Piano).
- * Verifica (leggendo il sorgente) che restino in piedi le decisioni di
- * layout/densità del P47: barra unica Titolo+Modalità con tendina a
- * DropdownMenu, Data+Materia affiancate a 2 colonne in Verifica e Compito,
- * ora di fine OBBLIGATORIA per la verifica nuova, e messaggi i18n presenti
- * in entrambe le lingue. Non rende i componenti (servono Radix/Dialog):
- * controlla la struttura come gli altri test di guardia della repo.
+ * Guardia strutturale del foglio "Aggiungi evento" (Piano).
+ * Le modalità sono radio sempre visibili. Materia e data stanno una sotto
+ * l'altra. L'ora di fine resta obbligatoria per una verifica nuova.
  */
 
 const SHEET = readFileSync(join(__dirname, "..", "components", "piano", "AddEventSheet.tsx"), "utf8");
@@ -17,42 +13,49 @@ const IT = readFileSync(join(__dirname, "..", "..", "src", "i18n", "locales", "i
 const EN = readFileSync(join(__dirname, "..", "..", "src", "i18n", "locales", "en.json"), "utf8");
 
 describe("AddEventSheet — densità P47", () => {
-  it("fonde Titolo e Modalità in un'unica barra con DropdownMenu (niente riga 'Modalità' separata)", () => {
-    // importa e usa il DropdownMenu (pill a destra nella stessa barra)
-    expect(SHEET).toContain("DropdownMenu");
-    expect(SHEET).toContain("DropdownMenuTrigger");
-    expect(SHEET).toContain("DropdownMenuContent");
+  it("mostra le modalità come radio visibili, non in una tendina nel titolo", () => {
+    expect(SHEET).not.toContain("DropdownMenu");
     expect(SHEET).toContain("VERIFICA_MODES.map");
-    // La modalità è annunciata insieme al valore visibile, senza aria-label generici.
-    expect(SHEET).toContain('<span className="sr-only">{t("piano.sheet.mode")}:</span>');
-    expect(SHEET).not.toMatch(/aria-label=\{t\("piano\.sheet\.mode"\)\}/);
-    expect(SHEET).toContain("DropdownMenuRadioGroup");
-    expect(SHEET).toContain("DropdownMenuRadioItem");
+    expect(SHEET).toContain('role="radiogroup"');
+    expect(SHEET).toContain('role="radio"');
+    expect(SHEET).toContain("rounded-[24px]");
   });
 
-  it("elenco modalità invariato: Orale, Scritta, Pratica, Interrogazione", () => {
-    expect(SHEET).toContain('"orale", "scritta", "pratica", "interrogazione"');
+  it("elenco modalità invariato, con Scritta per prima", () => {
+    expect(SHEET).toContain('"scritta", "orale", "pratica", "interrogazione"');
     expect(SHEET).toContain("piano.sheet.modeOrale");
     expect(SHEET).toContain("piano.sheet.modeScritta");
     expect(SHEET).toContain("piano.sheet.modePratica");
     expect(SHEET).toContain("piano.sheet.modePresentazione");
   });
 
-  it("Data e Materia sono affiancate a 2 colonne sia in Verifica che in Compito", () => {
+  it("in Verifica mette Materia, Data e orario prima del titolo", () => {
     const verificaBlock = SHEET.slice(
       SHEET.indexOf("{category === \"verifica\" && ("),
       SHEET.indexOf("{category === \"compito\" && (")
     );
+    const subjectAt = verificaBlock.indexOf("{subjectSelect}");
+    const dateAt = verificaBlock.indexOf("{dateField}");
+    const timeAt = verificaBlock.indexOf("{timeRange(true)}");
+    const titleAt = verificaBlock.indexOf("piano.sheet.title");
+    expect(subjectAt).toBeGreaterThan(-1);
+    expect(subjectAt).toBeLessThan(dateAt);
+    expect(dateAt).toBeLessThan(timeAt);
+    expect(timeAt).toBeLessThan(titleAt);
+    expect(verificaBlock).not.toContain("grid grid-cols-2");
+  });
+
+  it("in Compito mette Materia e Data una sotto l'altra, prima della descrizione", () => {
     const compitoBlock = SHEET.slice(
       SHEET.indexOf("{category === \"compito\" && ("),
       SHEET.indexOf("{category === \"altro\" && (")
     );
-    expect(verificaBlock).toContain("grid grid-cols-2 gap-3");
-    expect(verificaBlock).toContain("{dateField}");
-    expect(verificaBlock).toContain("{subjectSelect}");
-    expect(compitoBlock).toContain("grid grid-cols-2 gap-3");
-    expect(compitoBlock).toContain("{dateField}");
-    expect(compitoBlock).toContain("{subjectSelect}");
+    const subjectAt = compitoBlock.indexOf("{subjectSelect}");
+    const dateAt = compitoBlock.indexOf("{dateField}");
+    expect(subjectAt).toBeGreaterThan(-1);
+    expect(subjectAt).toBeLessThan(dateAt);
+    expect(dateAt).toBeLessThan(compitoBlock.indexOf("piano.sheet.compitoLabel"));
+    expect(compitoBlock).not.toContain("grid grid-cols-2");
   });
 
   it("per la verifica l'ora di fine è obbligatoria: timeRange(true), niente '(opzionale)'", () => {
