@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cleanCourseName } from "@/lib/courseName";
 import { getCompletedLessonOrders, isLastLessonCompleted } from "@/lib/courseProgress";
 import { addDays, computeStudyStreak, daysUntil, formatEventTime, selectHomeResumeLesson, toLocalDayKey } from "@/lib/homeDashboard";
+import { writeLastStudioContext } from "@/lib/lastStudioContext";
 
 export interface HomeResumeLesson {
   contextId: string;
@@ -175,6 +176,8 @@ export function useHomeDashboard() {
       assertNoError(sessionsRes.error, "Impossibile caricare le sessioni");
 
       const profile = profileRes.data as ProfileRow | null;
+      // Studio legge questo valore in locale, senza una seconda attesa di rete.
+      writeLastStudioContext(currentUser, profile?.last_studio_context_id ?? null);
       const contexts = (contextsRes.data ?? []) as ContextRow[];
       const events = (eventsRes.data ?? []) as EventRow[];
       const evaluations = (evaluationsRes.data ?? []) as EvaluationRow[];

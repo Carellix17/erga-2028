@@ -34,6 +34,12 @@ import { Exercise } from "./exercises/ExerciseRenderer";
 import { supabase } from "@/integrations/supabase/client";
 import { edgeFetch } from "@/lib/edgeFetch";
 import { appScrollToTop } from "@/lib/appScroll";
+import {
+  isStudioBookmarkReady,
+  readLastStudioContext,
+  resolveStudioContextId,
+  writeLastStudioContext,
+} from "@/lib/lastStudioContext";
 import { MODULE_SIZE, moduleIndexOf, moduleRange, moduleCount, moduleTitleFor, lessonsInModule, isModuleFullyMissing, isFirstOfModule, isInGatedModule, isGateLesson } from "@/lib/lessonModules";
 import { currentLanguage } from "@/i18n";
 import {
@@ -189,14 +195,26 @@ export function StudioView({
     setActiveLessonIndex(null);
   }, [lessonHistoryBackRequest]);
   const [activeContextId, setActiveContextId] = useState<string | null>(null);
-  // 🔖 P10a: segnalibro nel cloud — l'app ricorda l'ultimo percorso VISTO
-  // (non solo l'ultimo generato), condiviso fra tutti i dispositivi.
-  const [lastViewedStored, setLastViewedStored] = useState<string | null>(null);
-  const [lastViewedLoaded, setLastViewedLoaded] = useState(false);
+  // Scelta fatta in questa visita (selettore o apertura da un'altra sezione).
+  // Il segnalibro aggiornato dal cloud non deve strappare quel corso.
+  const [courseChosen, setCourseChosen] = useState(false);
   const [showFinalTest, setShowFinalTest] = useState(false);
   const [finalTestExercises, setFinalTestExercises] = useState<Exercise[]>([]);
   const [isLoadingFinalTest, setIsLoadingFinalTest] = useState(false);
   const { currentUser } = useAuth();
+  // 🔖 Segnalibro: sul dispositivo è già noto, quindi Studio non aspetta il cloud.
+  const cachedBookmark = readLastStudioContext(currentUser);
+  const [bookmarkOwner, setBookmarkOwner] = useState<string | null>(currentUser);
+  const [lastViewedStored, setLastViewedStored] = useState<string | null>(cachedBookmark.id);
+  const [lastViewedLoaded, setLastViewedLoaded] = useState(cachedBookmark.known);
+  if (currentUser !== bookmarkOwner) {
+    const nextBookmark = readLastStudioContext(currentUser);
+    setBookmarkOwner(currentUser);
+    setLastViewedStored(nextBookmark.id);
+    setLastViewedLoaded(nextBookmark.known);
+    setCourseChosen(false);
+    setActiveContextId(null);
+  }
   const { toast } = useToast();
   const push = usePushNotifications();
   const deleteContextMutation = useDeleteFileContext();
@@ -232,39 +250,42 @@ export function StudioView({
       .maybeSingle()
       .then(({ data, error }) => {
         if (!alive) return;
-        if (error) console.error("[P10a] lettura segnalibro fallita:", error);
-        setLastViewedStored((data?.last_studio_context_id as string | null) ?? null);
+        if (error) {
+          console.error("[P10a] lettura segnalibro fallita:", error);
+          setLastViewedLoaded(true);
+          return;
+        }
+        const id = (data?.last_studio_context_id as string | null) ?? null;
+        writeLastStudioContext(currentUser, id);
+        setLastViewedStored(id);
         setLastViewedLoaded(true);
       });
     return () => { alive = false; };
   }, [currentUser]);
 
+  const bookmarkReady = isStudioBookmarkReady(lastViewedLoaded, allContexts.length);
+  const courseIds = useMemo(() => allContexts.map((c) => c.id), [contextsQuery.data]);
+  const effectiveContextId = resolveStudioContextId({
+    selectedId: selectedContextId,
+    chosenId: courseChosen ? activeContextId : null,
+    rememberedId: lastViewedStored,
+    bookmarkReady,
+    courseIds,
+  });
+
   useEffect(() => {
-    if (allContexts.length === 0) return;
-    // 🔖 P11a CORSIA DEL SEGNALIBRO: l'elenco dei percorsi arriva dalla cache
-    // (istantaneo) ma il segnalibro dal cloud arriva dopo. Scegliere il default
-    // ORA farebbe vincere sempre "il primo della lista" = l'ultimo GENERATO
-    // (è il bug che hai visto): aspettiamo che il segnalibro sia arrivato.
-    if (!lastViewedLoaded) return;
-    const availableIds = new Set(allContexts.map((c) => c.id));
+    if (allContexts.length === 0 || !bookmarkReady) return;
+    const availableIds = new Set(courseIds);
     if (selectedContextId && !availableIds.has(selectedContextId)) {
       onClearContext?.();
     }
-    if (!selectedContextId && (!activeContextId || !availableIds.has(activeContextId))) {
-      // 🔖 P10a: riparti dall'ultimo percorso VISTO (se esiste ancora), non dal più recente
-      const remembered = lastViewedLoaded && lastViewedStored && availableIds.has(lastViewedStored)
-        ? lastViewedStored
-        : null;
-      setActiveContextId(remembered ?? allContexts[0].id);
-    }
-  }, [allContexts, selectedContextId, activeContextId, onClearContext, lastViewedLoaded, lastViewedStored]);
-
-  const effectiveContextId =
-    (selectedContextId && allContexts.some((c) => c.id === selectedContextId) && selectedContextId) ||
-    (activeContextId && allContexts.some((c) => c.id === activeContextId) && activeContextId) ||
-    // 🔖 P11a: niente ripiego "ultimo generato" prima che il segnalibro sia arrivato
-    (lastViewedLoaded ? allContexts[0]?.id : null) ||
-    null;
+    if (selectedContextId && availableIds.has(selectedContextId)) return;
+    if (courseChosen && activeContextId && availableIds.has(activeContextId)) return;
+    // Senza una scelta in questa visita, segui il segnalibro (anche se il cloud
+    // lo corregge un attimo dopo). Mai l'ultimo generato finché non è noto.
+    const next = effectiveContextId;
+    if (next && activeContextId !== next) setActiveContextId(next);
+  }, [allContexts.length, courseIds, selectedContextId, activeContextId, onClearContext, bookmarkReady, courseChosen, effectiveContextId]);
 
   useEffect(() => {
     let alive = true;
@@ -293,6 +314,7 @@ export function StudioView({
     if (!currentUser || !lastViewedLoaded || !effectiveContextId) return;
     if (effectiveContextId === lastViewedStored) return;
     setLastViewedStored(effectiveContextId);
+    writeLastStudioContext(currentUser, effectiveContextId);
     supabase
       .from("user_profiles")
       .update({ last_studio_context_id: effectiveContextId })
@@ -503,7 +525,7 @@ export function StudioView({
       toast({ title: "Limite raggiunto", description: FREE_LIMIT_MESSAGE, variant: "destructive" });
       return null;
     }
-    const contextId = selectedContextId || activeContextId;
+    const contextId = effectiveContextId;
     const key = `${contextId ?? "null"}::${lessonIndex}`;
     // 🛑 LIMITE DI CONCORRENZA: una sola richiesta di generazione in volo nell'intera app.
     if (inflightLessonsRef.current.size > 0) {
@@ -575,7 +597,7 @@ export function StudioView({
       if (push.supported) push.subscribe().catch(() => {});
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const contextId = selectedContextId || activeContextId;
+      const contextId = effectiveContextId;
       if (!contextId) return false;
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
@@ -644,7 +666,7 @@ export function StudioView({
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const contextId = selectedContextId || activeContextId;
+      const contextId = effectiveContextId;
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lessons`,
         { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
           body: JSON.stringify({ userId: currentUser, action: "generateFinalTest", ...(contextId ? { contextId } : {}), language: currentLanguage() }) });
@@ -683,6 +705,7 @@ export function StudioView({
     // toccare un altro corso a mano lo stacca SUBITO (era il bug del comando ignorato).
     onClearContext?.();
     closeLessonReader();
+    setCourseChosen(true);
     setActiveContextId(contextId);
     setCurrentLessonIndex(0);
     // ⚡ P16: il furgoncino parte SUBITO, prima ancora di ridisegnare:
@@ -1009,10 +1032,9 @@ export function StudioView({
     );
   }
 
-  // 🔖 P14: finché il segnalibro non è arrivato dal cloud NON si mostra la
-  // lista "all" — era il flash di mezzo secondo dell'ultimo corso GENERATO.
-  // Al suo posto: lo scheletro del sentiero, poi si apre quello giusto.
-  if (hasFiles && !selectedContextId && !lastViewedLoaded && allContexts.length > 0) {
+  // Scheletro solo se ci sono più percorsi e non sappiamo ancora quale riaprire.
+  // Se il segnalibro è già sul dispositivo, il corso compare subito.
+  if (hasFiles && !selectedContextId && !bookmarkReady && allContexts.length > 0) {
     return <StudioFrame><LessonsListSkeleton /></StudioFrame>;
   }
 
