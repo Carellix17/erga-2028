@@ -98,7 +98,7 @@ function TimerPanelContent() {
       <div className="flex items-center gap-3 rounded-control border border-border bg-surface-container-low px-3 py-3">
         <div
           aria-hidden="true"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-primary/30 text-primary"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-white/30 text-foreground"
         >
           <span className="text-base font-semibold tabular-nums">{Math.floor((overrun > 0 ? overrun : remaining) / 60)}</span>
         </div>

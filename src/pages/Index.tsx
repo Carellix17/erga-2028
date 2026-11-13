@@ -344,7 +344,7 @@ const Index = () => {
             <div id="study-material-controls" className={materialsExpanded ? "block" : "hidden xl:block"}>
             <div className="p-4">
               <label htmlFor="reading-mode" className="block text-sm font-medium">Taglio di lettura</label>
-              <select id="reading-mode" value={readingMode} onChange={event => setReadingMode(event.target.value as "calma" | "logica")} className="mt-2 min-h-11 w-full rounded-control border border-[#ffffff] bg-[#ffffff] px-3 text-base text-[#0a0a0a]">
+              <select id="reading-mode" value={readingMode} onChange={event => setReadingMode(event.target.value as "calma" | "logica")} className="mt-2 min-h-11 w-full rounded-control border border-[#FFFBF4] bg-[#FFFBF4] px-3 text-base text-[#0a0a0a]">
                 <option value="calma">Calma</option><option value="logica">Logica</option>
               </select>
               <p className="mt-2 text-sm text-muted-foreground">{readingMode === "calma" ? "Testo più arioso per leggere con calma." : "Formule e passaggi chiave in evidenza."}</p>

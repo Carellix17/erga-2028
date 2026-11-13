@@ -89,7 +89,7 @@ export function FinalTest({ exercises, onClose, onComplete }: FinalTestProps) {
       data-studio=""
       className="fixed inset-0 z-50 bg-[#0a0a0a] px-4 focus:outline-none sm:px-6"
     >
-      <div className="studio-surface flex h-full min-h-0 flex-col bg-[#ffffff] text-[#0a0a0a] animate-fade-in">
+      <div className="studio-surface flex h-full min-h-0 flex-col bg-[#FFFBF4] text-[#0a0a0a] animate-fade-in">
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
         <div className="flex items-center gap-3 mb-3">

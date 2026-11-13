@@ -231,7 +231,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
       <div className="mx-auto max-w-2xl space-y-6">
         {/* Intestazione */}
         <div className="flex items-start gap-3">
-          <div className="rounded-2xl bg-primary/10 p-3 text-brand-deep">
+          <div className="rounded-2xl bg-white/10 p-3 text-brand-deep">
             <Dumbbell className="w-5 h-5" />
           </div>
           <div>
@@ -252,7 +252,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
                   className={cn(
                     "rounded-full border px-4 py-2 text-sm transition-colors",
                     moduleIndex === null
-                      ? "border-primary bg-primary/10 text-brand-deep"
+                      ? "border-primary bg-white/10 text-brand-deep"
                       : "border-outline-variant text-muted-foreground hover:bg-surface-container",
                   )}
                 >
@@ -265,7 +265,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
                     className={cn(
                       "rounded-full border px-4 py-2 text-sm transition-colors",
                       moduleIndex === i
-                        ? "border-primary bg-primary/10 text-brand-deep"
+                        ? "border-primary bg-white/10 text-brand-deep"
                         : "border-outline-variant text-muted-foreground hover:bg-surface-container",
                     )}
                   >

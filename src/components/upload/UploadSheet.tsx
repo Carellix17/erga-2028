@@ -637,7 +637,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                   <div
                     className={cn(
                       "relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200",
-                      dragActive ? "border-primary bg-primary-container scale-[1.02] shadow-level-2" : "border-outline-variant hover:border-primary/40 hover:bg-surface-container-low",
+                      dragActive ? "border-primary bg-primary-container scale-[1.02] shadow-level-2" : "border-outline-variant hover:border-white/40 hover:bg-surface-container-low",
                       isUploading && "pointer-events-none opacity-50"
                     )}
                     onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
@@ -725,7 +725,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Torna a Caricamento
                 </Button>
-                <div className="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 border-outline-variant hover:border-primary/40 hover:bg-surface-container-low">
+                <div className="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 border-outline-variant hover:border-white/40 hover:bg-surface-container-low">
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -769,7 +769,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                         </div>
                       ))}
                       {selectedImages.length < MAX_IMAGES && (
-                        <label className="relative rounded-xl border-2 border-dashed border-outline-variant aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-primary/40 transition-colors">
+                        <label className="relative rounded-xl border-2 border-dashed border-outline-variant aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-white/40 transition-colors">
                           <input
                             type="file"
                             accept="image/jpeg,image/png,image/webp"

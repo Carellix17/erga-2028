@@ -262,7 +262,7 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setOpenContextId(context.id); }}
               className={cn(
                 "w-full flex items-center gap-3 p-3 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1",
-                "cursor-pointer hover:border-primary/40 active:scale-[0.99]",
+                "cursor-pointer hover:border-white/40 active:scale-[0.99]",
                 "transition-all duration-300 animate-fade-up",
               )}
               style={{ animationDelay: `${i * 60}ms` }}

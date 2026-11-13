@@ -104,7 +104,7 @@ export function TimerChip() {
       title={fullLabel}
       disabled={isSyncing}
       className={cn(
-        "inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-pill border border-primary/25 bg-card px-2.5 text-foreground shadow-level-1 transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60",
+        "inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-pill border border-white/25 bg-card px-2.5 text-foreground shadow-level-1 transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60",
         desktop && "max-w-[240px] justify-start gap-2.5 px-3",
         narrow && "w-[5.5rem] px-2",
         mobilePause && "h-11 w-[4.25rem] justify-start gap-1 px-1",

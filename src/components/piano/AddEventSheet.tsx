@@ -40,7 +40,7 @@ const VERIFICA_MODE_LABEL: Record<VerificaMode, string> = {
 const NONE = "__none__";
 
 const labelClass = "font-mono text-[11px] uppercase tracking-[0.08em] text-[#D8CFBC]";
-const controlClass = "rounded-[24px] border-[#212327] bg-[#0a0a0a] text-base text-white [color-scheme:dark] placeholder:text-[#dadbdf] focus:ring-0 focus-visible:border-[#212327] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white focus-visible:ring-0 focus-visible:ring-offset-0";
+const controlClass = "rounded-[24px] border-[#212327] bg-[#0a0a0a] text-base text-white [color-scheme:dark] placeholder:text-[#dadbdf] focus:ring-0 focus-visible:border-[#212327] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4] focus-visible:ring-0 focus-visible:ring-offset-0";
 const quietButtonClass = "h-auto min-h-11 justify-start rounded-[24px] border border-[#212327] bg-transparent px-4 text-base font-normal text-white hover:bg-white/5 hover:text-white active:scale-[0.98] motion-reduce:transform-none";
 
 function ChoiceRow<T extends string>({
@@ -74,8 +74,8 @@ function ChoiceRow<T extends string>({
             aria-checked={selected}
             onClick={() => onChange(option.value)}
             className={cn(
-              "min-h-11 whitespace-nowrap rounded-[24px] border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98] motion-reduce:transform-none sm:text-base",
-              selected ? "border-white bg-white text-[#0a0a0a]" : "border-[#212327] bg-transparent text-white",
+              "min-h-11 whitespace-nowrap rounded-[24px] border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4] active:scale-[0.98] motion-reduce:transform-none sm:text-base",
+              selected ? "border-[#FFFBF4] bg-[#FFFBF4] text-[#0a0a0a]" : "border-[#212327] bg-transparent text-white",
             )}
           >
             {option.label}
@@ -755,7 +755,7 @@ export function AddEventSheet({
 
           <Button
             type="submit"
-            className="h-12 w-full rounded-[24px] border border-white bg-white text-base text-[#0a0a0a] hover:bg-white hover:text-[#0a0a0a] active:scale-[0.98] motion-reduce:transform-none"
+            className="h-12 w-full rounded-[24px] border border-[#FFFBF4] bg-[#FFFBF4] text-base text-[#0a0a0a] hover:bg-[#FFFBF4] hover:text-[#0a0a0a] active:scale-[0.98] motion-reduce:transform-none"
             size="lg"
             disabled={submitting}
           >

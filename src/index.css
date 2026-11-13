@@ -34,15 +34,15 @@
     --ink-muted: 228 7.25% 86.47%;             /* #dadbdf body */
     --steel: 216 4% 50.98%;                    /* #7d8187 captions */
     --line: 220 3.5% 43.5%;                    /* #6a6e74 hairline accessibile */
-    --control-line: 0 0% 100%;
+    --control-line: 38.18 100% 97.84%;   /* #FFFBF4 bordi pieni */
     --on-ink: 0 0% 3.92%;
-    --focus: 0 0% 100%;
+    --focus: 38.18 100% 97.84%;         /* #FFFBF4 anello di focus */
     --sand: 40.71 26.42% 79.22%;               /* #D8CFBC solo etichette mono */
     --olive: 50.77 8.18% 31.18%;               /* #565449 solo riempimento attivo */
     --canvas-mid: 213.33 7.69% 22.94%;         /* #363a3f nested */
 
-    /* Il pieno bianco è l'unica azione piena. Il resto è outline. */
-    --primary: 0 0% 100%;
+    /* Il pieno #FFFBF4 è l'unica azione piena. Il testo resta --ink. */
+    --primary: 38.18 100% 97.84%;      /* #FFFBF4 */
     --primary-deep: 60 23.08% 97.45%;          /* #fafaf7 */
     --brand: var(--primary);
     --brand-deep: var(--ink);
@@ -1151,10 +1151,10 @@ html.high-contrast .cover-grain { display: none; }
 /* Alias esadecimali allineati al canvas scuro. */
 :root {
   --bg-canvas: #0a0a0a; --bg-surface: #191919; --bg-sheet: #1a1c20;
-  --bg-subtle: #363a3f; --bg-inverse: #ffffff;
+  --bg-subtle: #363a3f; --bg-inverse: #FFFBF4;
   --text-primary: #ffffff; --text-secondary: #dadbdf; --text-tertiary: #7d8187;
-  --text-on-inverse: #0a0a0a; --border-grid: #6a6e74; --border-strong: #ffffff;
-  --accent-primary: #ffffff; --accent-cognitive: #7ec8ea;
+  --text-on-inverse: #0a0a0a; --border-grid: #6a6e74; --border-strong: #FFFBF4;
+  --accent-primary: #FFFBF4; --accent-cognitive: #7ec8ea;
 }
 .dark { color-scheme: dark; }
 ::selection { background: hsl(var(--cognitive)); color: hsl(var(--accent-foreground)); }
@@ -1508,7 +1508,7 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .planner-slot--routine .planner-slot-actions { display: none; }
 .planner-now-line { position: absolute; z-index: 50; left: 0; right: 0; height: 2px; pointer-events: none; }
 .planner-now-line-rule { position: absolute; inset: 0; background: hsl(var(--primary)); }
-.planner-now-line-label { position: absolute; right: .25rem; bottom: .25rem; border: 1px solid hsl(var(--primary)); background: hsl(var(--sheet)); color: hsl(var(--primary)); padding: .125rem .375rem; font-size: .75rem; font-weight: 400; line-height: 1.25; white-space: nowrap; }
+.planner-now-line-label { position: absolute; right: .25rem; bottom: .25rem; border: 1px solid hsl(var(--primary)); background: hsl(var(--sheet)); color: hsl(var(--ink)); padding: .125rem .375rem; font-size: .75rem; font-weight: 400; line-height: 1.25; white-space: nowrap; }
 @media (min-width: 1024px) { .planner-day-timeline { --planner-day-hour-height: 5rem; } }
 @media (prefers-reduced-motion: reduce) {
   .planner-slot, .planner-schedule-event { transition: none; }
@@ -1553,7 +1553,7 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-delay: 0ms !important; }
 
-/* Studio: pagina #0a0a0a, card bianche, azioni nere solo dentro le card, raggio 24px.
+/* Studio: pagina #0a0a0a, card #FFFBF4, azioni nere solo dentro le card, raggio 24px.
    I cerchi (rounded-full) e la pillola esplicita restano. Piano e Home non ereditano. */
 [data-studio] {
   background-color: #0a0a0a;
@@ -1561,37 +1561,37 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
   --background: 0 0% 3.92%;
   --foreground: 0 0% 100%;
   --muted-foreground: 216 4% 50.98%;
-  --card: 0 0% 100%;
+  --card: 38.18 100% 97.84%;
   --card-foreground: 0 0% 3.92%;
-  --popover: 0 0% 100%;
+  --popover: 38.18 100% 97.84%;
   --popover-foreground: 0 0% 3.92%;
-  --border: 0 0% 100%;
-  --input: 0 0% 100%;
-  --ring: 0 0% 100%;
-  --primary: 0 0% 100%;
+  --border: 38.18 100% 97.84%;
+  --input: 38.18 100% 97.84%;
+  --ring: 38.18 100% 97.84%;
+  --primary: 38.18 100% 97.84%;
   --primary-foreground: 0 0% 3.92%;
   --primary-deep: 60 23% 97%;
-  --secondary: 0 0% 100%;
+  --secondary: 38.18 100% 97.84%;
   --secondary-foreground: 0 0% 3.92%;
-  --destructive: 0 0% 100%;
+  --destructive: 38.18 100% 97.84%;
   --destructive-foreground: 0 0% 3.92%;
-  --success: 0 0% 100%;
+  --success: 38.18 100% 97.84%;
   --success-foreground: 0 0% 3.92%;
-  --warning: 0 0% 100%;
+  --warning: 38.18 100% 97.84%;
   --warning-foreground: 0 0% 3.92%;
-  --error-container: 0 0% 100%;
+  --error-container: 38.18 100% 97.84%;
   --on-error-container: 0 0% 3.92%;
-  --success-container: 0 0% 100%;
+  --success-container: 38.18 100% 97.84%;
   --on-success-container: 0 0% 3.92%;
-  --warning-container: 0 0% 100%;
+  --warning-container: 38.18 100% 97.84%;
   --on-warning-container: 0 0% 3.92%;
-  --tertiary: 0 0% 100%;
+  --tertiary: 38.18 100% 97.84%;
   --tertiary-foreground: 0 0% 3.92%;
-  --accent: 0 0% 100%;
+  --accent: 38.18 100% 97.84%;
   --accent-foreground: 0 0% 3.92%;
-  --subject-accent: #ffffff;
+  --subject-accent: #FFFBF4;
   --subject-accent-foreground: #0a0a0a;
-  --subject-accent-light: #ffffff;
+  --subject-accent-light: #FFFBF4;
   --sheet: 0 0% 3.92%;
   --radius-xs: 24px;
   --radius-sm: 24px;
@@ -1609,10 +1609,10 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 }
 
 [data-studio] :is(.bg-card, .bg-popover, .studio-surface, .lesson-paper, .lesson-footer) {
-  background-color: #ffffff;
+  background-color: #FFFBF4;
   color: #0a0a0a;
-  border-color: #ffffff;
-  --background: 0 0% 100%;
+  border-color: #FFFBF4;
+  --background: 38.18 100% 97.84%;
   --foreground: 0 0% 3.92%;
   --muted-foreground: 210 9% 25%;
   --card-foreground: 0 0% 3.92%;
@@ -1647,10 +1647,10 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
   --accent-foreground: 0 0% 3.92%;
   --subject-accent: #0a0a0a;
   --subject-accent-foreground: #ffffff;
-  --subject-accent-light: #ffffff;
-  --surface-container: 0 0% 100%;
+  --subject-accent-light: #FFFBF4;
+  --surface-container: 38.18 100% 97.84%;
   --surface-container-low: 0 0% 96%;
-  --surface-container-lowest: 0 0% 100%;
+  --surface-container-lowest: 38.18 100% 97.84%;
   --surface-container-high: 0 0% 96%;
   --surface-container-highest: 0 0% 96%;
 }
@@ -1658,11 +1658,11 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 [data-studio] .studio-current {
   background-color: #0a0a0a;
   color: #ffffff;
-  border-color: #ffffff;
+  border-color: #FFFBF4;
   --background: 0 0% 3.92%;
   --foreground: 0 0% 100%;
   --muted-foreground: 228 7% 86%;
-  --primary: 0 0% 100%;
+  --primary: 38.18 100% 97.84%;
   --primary-foreground: 0 0% 3.92%;
 }
 
@@ -1676,13 +1676,16 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
   background-color: #1a1c20;
   color: #ffffff;
 }
-[data-studio] .studio-action :is(svg, span) {
+[data-studio] .studio-action span {
   color: #ffffff;
 }
+[data-studio] .studio-action svg {
+  color: #FFFBF4;
+}
 [data-studio] .studio-action-on-dark {
-  background-color: #ffffff;
+  background-color: #FFFBF4;
   color: #0a0a0a;
-  border-color: #ffffff;
+  border-color: #FFFBF4;
   border-radius: 24px;
 }
 [data-studio] .studio-action-on-dark:hover {
@@ -1701,6 +1704,38 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 [data-studio] :is(.bg-card, .studio-surface) .hover\:bg-white\/5:hover,
 [data-studio] :is(.bg-card, .studio-surface) .hover\:bg-white\/10:hover {
   background-color: rgb(10 10 10 / 0.06);
+}
+
+/* Icone che erano bianche. Il testo resta #ffffff.
+   Sui pieni chiari e sui colori già propri l'icona eredita. */
+@layer utilities {
+  svg.lucide:not([class*="text-"]),
+  svg.lucide:is(.text-white, .text-foreground) {
+    color: #FFFBF4;
+  }
+  :is(
+    .text-primary-foreground,
+    .text-muted-foreground,
+    .text-ink-muted,
+    .text-card-foreground,
+    .text-destructive,
+    .text-success,
+    .text-warning,
+    .text-sand,
+    .text-brand-deep,
+    [class*="text-[#0a0a0a]"],
+    [class*="text-[#dadbdf]"],
+    [class*="text-[#7d8187]"],
+    [class*="text-[#D8CFBC]"]
+  ) svg.lucide {
+    color: inherit;
+  }
+}
+[data-studio] :is(.bg-card, .bg-popover, .studio-surface, .lesson-paper, .lesson-footer) svg {
+  color: inherit;
+}
+[data-studio] :is(.studio-action, .studio-current) svg {
+  color: #FFFBF4;
 }
 
 /* DESIGN.md: peso 400. La gerarchia passa da dimensione, tracking e colore. */

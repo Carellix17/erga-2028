@@ -243,11 +243,11 @@ export function AppointmentsCalendar({
           aria-controls="planner-month-events"
           aria-label={t(listOpen ? "piano.hideCommitments" : "piano.showCommitments")}
           onClick={() => setListOpen((open) => !open)}
-          className="relative flex h-11 w-[4.75rem] shrink-0 items-center justify-between rounded-full border border-[#212327] bg-[#191919] px-2.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="relative flex h-11 w-[4.75rem] shrink-0 items-center justify-between rounded-full border border-[#212327] bg-[#191919] px-2.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4]"
         >
           <span
             aria-hidden="true"
-            className="absolute left-1 top-1 h-9 w-9 rounded-full bg-white transition-transform duration-300 motion-reduce:transition-none"
+            className="absolute left-1 top-1 h-9 w-9 rounded-full bg-[#FFFBF4] transition-transform duration-300 motion-reduce:transition-none"
             style={{ transform: listOpen ? "translateX(1.6rem)" : "translateX(0)" }}
           />
           <Grid aria-hidden="true" className={cn("relative z-[1] h-4 w-4", listOpen ? "text-[#dadbdf]" : "text-[#0a0a0a]")} />
@@ -258,7 +258,7 @@ export function AppointmentsCalendar({
           aria-label={t("piano.addEventFull")}
           data-haptic="medium"
           onClick={() => onAddEvent(selectedKey)}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[24px] bg-white text-[#0a0a0a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98]"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[24px] bg-[#FFFBF4] text-[#0a0a0a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4] active:scale-[0.98]"
         >
           <Plus aria-hidden="true" />
         </button>
@@ -298,7 +298,7 @@ export function AppointmentsCalendar({
                       onKeyDown={(event) => handleMonthKeyDown(event, date)}
                       onClick={() => openDay(key)}
                       data-haptic="medium"
-                      className="relative flex h-16 w-full items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98]"
+                      className="relative flex h-16 w-full items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4] active:scale-[0.98]"
                       style={paint.style}
                     >
                       <span className={cn("text-sm tabular-nums", today && "underline decoration-2 underline-offset-4")}>{format(date, "d")}</span>
@@ -375,7 +375,7 @@ export function AppointmentsCalendar({
                                 aria-pressed={entry.completed}
                                 aria-label={`${t(entry.completed ? "piano.slotUndo" : "piano.slotMarkDone")} ${entry.title}`}
                                 onClick={() => onToggleComplete?.(entry)}
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4]"
                               >
                                 <Check aria-hidden="true" className={cn("h-4 w-4", !entry.completed && "opacity-40")} />
                               </button>
@@ -383,7 +383,7 @@ export function AppointmentsCalendar({
                                 type="button"
                                 aria-label={t("piano.editEntry", { title: entry.title })}
                                 onClick={() => entry.original.kind === "evaluation" ? onEditEvaluation(entry.original.data) : onEditStudyEvent(entry.original.data)}
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4]"
                               >
                                 <PencilLine aria-hidden="true" className="h-4 w-4" />
                               </button>
@@ -391,7 +391,7 @@ export function AppointmentsCalendar({
                                 type="button"
                                 aria-label={t("piano.deleteEntry", { title: entry.title })}
                                 onClick={() => entry.original.kind === "evaluation" ? onDeleteEvaluation(entry.original.data) : onDeleteStudyEvent(entry.original.data)}
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4]"
                               >
                                 <Trash2 aria-hidden="true" className="h-4 w-4" />
                               </button>
@@ -472,7 +472,7 @@ function dayPaint(entries: readonly PlannerEntry[], today: boolean, inMonth: boo
     hexes,
     style: {
       backgroundColor: tint?.backgroundColor ?? (today ? "#565449" : inMonth ? "#191919" : "#0a0a0a"),
-      border: selected ? "1px solid #ffffff" : (tint?.border ?? "1px solid #212327"),
+      border: selected ? "1px solid #FFFBF4" : (tint?.border ?? "1px solid #212327"),
       borderRadius: 24,
       color: inMonth || today ? "#ffffff" : "#7d8187",
     },

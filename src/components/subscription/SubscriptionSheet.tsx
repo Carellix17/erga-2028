@@ -44,7 +44,7 @@ const plans = [
     icon: Brain,
     gradient: "from-primary via-secondary to-tertiary",
     badgeText: "Attivo",
-    badgeClass: "bg-primary/10 text-brand-deep border-primary/20",
+    badgeClass: "bg-white/10 text-brand-deep border-white/20",
     features: betaFeatures,
     isCurrent: true,
   },

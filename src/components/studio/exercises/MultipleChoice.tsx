@@ -56,7 +56,7 @@ export function MultipleChoice({
               className={cn(
                 "w-full rounded-card border-2 p-4 text-left font-normal transition-[transform,border-color,background-color] duration-150",
                 // Default
-                !showResult && !isSelected && "border-outline-variant bg-surface-container-lowest text-foreground hover:border-primary/50 hover:bg-primary/5 active:scale-[0.97]",
+                !showResult && !isSelected && "border-outline-variant bg-surface-container-lowest text-foreground hover:border-white/50 hover:bg-white/5 active:scale-[0.97]",
                 // Selected pre-submit
                 !showResult && isSelected && "border-foreground bg-white/10 text-foreground",
                 // Correct answer revealed — success

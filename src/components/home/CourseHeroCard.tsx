@@ -37,7 +37,7 @@ function clampPercent(value: number | null | undefined) {
  *  Hover: canvas-soft #1a1c20. Focus: anello nero staccato dal bianco della card.
  *  Angoli: 24px, la curva visibile dei pulsanti Home alti 48px (token pillola 9999px). */
 const lessonCtaClass =
-  "min-h-12 w-full border-[#0a0a0a] bg-[#0a0a0a] text-[#ffffff] hover:border-[#1a1c20] hover:bg-[#1a1c20] hover:text-[#ffffff] focus-visible:ring-[#0a0a0a] focus-visible:ring-offset-[#ffffff] sm:w-fit";
+  "min-h-12 w-full border-[#0a0a0a] bg-[#0a0a0a] text-[#ffffff] hover:border-[#1a1c20] hover:bg-[#1a1c20] hover:text-[#ffffff] focus-visible:ring-[#0a0a0a] focus-visible:ring-offset-[#FFFBF4] sm:w-fit";
 
 export function CourseHeroCard({
   courseTitle,
@@ -56,7 +56,7 @@ export function CourseHeroCard({
   const percent = clampPercent(progressPercent);
 
   return (
-    <article className="relative isolate min-w-0 overflow-hidden rounded-[24px] border border-[#212327] bg-[#ffffff] text-[#0a0a0a]">
+    <article className="relative isolate min-w-0 overflow-hidden rounded-[24px] border border-[#212327] bg-[#FFFBF4] text-[#0a0a0a]">
       {active ? (
         <div className="relative p-5 sm:p-6">
           <h2 className="max-w-[22ch] break-words text-3xl font-semibold leading-tight tracking-tight text-[#0a0a0a] sm:text-4xl">

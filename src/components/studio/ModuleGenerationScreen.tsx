@@ -85,7 +85,7 @@ export function ModuleGenerationScreen({
         role="dialog"
         aria-label={`Preparazione modulo ${moduleIndex + 1}`}
         data-studio=""
-        className="studio-surface w-full max-w-lg rounded-t-sheet border-t border-[#ffffff] bg-[#ffffff] p-6 pb-8 text-[#0a0a0a] max-h-[85vh] overflow-y-auto animate-sheet-up"
+        className="studio-surface w-full max-w-lg rounded-t-sheet border-t border-[#FFFBF4] bg-[#FFFBF4] p-6 pb-8 text-[#0a0a0a] max-h-[85vh] overflow-y-auto animate-sheet-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Insegna della fabbrica */}

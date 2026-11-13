@@ -99,7 +99,7 @@ describe("grana locale e alias piatti — design system v4", () => {
     expect(hero).not.toContain("cover-grain");
     expect(hero).not.toContain("CourseCardBackground");
     expect(hero).not.toContain("courseCoverVars");
-    expect(hero).toContain("bg-[#ffffff]");
+    expect(hero).toContain("bg-[#FFFBF4]");
     expect(css).toMatch(/\.paper-grain, \.table-grain \{ background-image: none; \}/);
     expect(background).toContain("cover-grain");
     expect(background).not.toContain("paper-grain");

@@ -564,7 +564,7 @@ export function EserciziView({ onFullscreenChange, contextId, contextName, onSes
                     className={cn(
                       "w-full flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98]",
                       selectedLessonIds.includes(lesson.id)
-                        ? "bg-primary-container border-primary/30 shadow-level-1"
+                        ? "bg-primary-container border-white/30 shadow-level-1"
                         : "bg-surface-container border-outline-variant/30 hover:bg-surface-container-high"
                     )}
                   >

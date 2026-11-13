@@ -46,7 +46,7 @@ export function ReplanBanner({ prompt, notice, isBuilding, onShown, onReorganize
       role="status"
       aria-live={prompt && wasDeviationPromptSignalShown(prompt.signalId) ? "off" : "polite"}
       aria-atomic="true"
-      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4"
+      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/30 bg-white/5 p-4"
       data-testid="replan-banner"
     >
       <p className="min-w-0 flex-1 text-base font-medium">

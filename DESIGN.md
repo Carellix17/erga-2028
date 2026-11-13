@@ -10,7 +10,7 @@ Every interactive element is a pill (`{rounded.pill}` 9999 px) with 1 px white-t
 
 - A single near-black canvas (`{colors.canvas}` `#0a0a0a`) with white outline pills as the entire interactive vocabulary.
 - Universal Sans weight 400 for display, Geist Mono uppercase tracked for labels — the two-face contrast IS the brand voice.
-- Every button is a `{rounded.pill}` outline with translucent-white border. The brand never uses filled CTAs except for one variant (white-filled pill on Sign Up).
+- Every button is a `{rounded.pill}` outline with translucent-white border. The brand never uses filled CTAs except for one variant (ivory-filled pill on Sign Up, `#FFFBF4`).
 - Cards are tight `{rounded.sm}` 8 px rectangles in a slightly-lighter `{colors.canvas-card}` (`#191919`) fill with hairline border. No shadows.
 - A muted accent palette of sunset-orange / dusk-purple / twilight-violet / breeze-blue lives in the design tokens but appears rarely on the main marketing surface — reserved for product illustrations / icons.
 - Massive negative letter-spacing on display headlines (`-2.4 px` at 96 px) gives the typography a precise, gathered look.
@@ -19,7 +19,7 @@ Every interactive element is a pill (`{rounded.pill}` 9999 px) with 1 px white-t
 
 ### Brand &amp; Accent
 
-- **White** (`{colors.primary}` — `#ffffff`): The brand's primary "color" — used as button outline, button-primary fill, all display text. The brand's signature is white-on-near-black.
+- **Ivory** (`{colors.primary}` — `#FFFBF4`): Filled buttons, light cards, sheets, opaque borders and focus rings. Display text stays Ink `#ffffff`. Translucent borders stay white.
 - **Sunset Orange** (`{colors.accent-sunset}` — `#ff7a17`): A warm orange used inside product illustrations and accent moments.
 - **Sunset Soft** (`{colors.accent-sunset-soft}` — `#ffc285`): The lighter variant of the sunset accent.
 - **Dusk Purple** (`{colors.accent-dusk}` — `#7c3aed`): Deep purple used inside product illustrations.
@@ -152,9 +152,9 @@ The brand uses no shadows. Hairline borders carry all elevation cues.
 
 ### Buttons
 
-**`button-primary`** — the rare white-filled pill (used on a single Sign Up CTA).
+**`button-primary`** — the rare ivory-filled pill (used on a single Sign Up CTA).
 
-- Background `{colors.primary}` white, text `{colors.on-primary}` near-black, 1 px solid white border, label `{typography.button-md}`, padding `{spacing.xs} {spacing.md}`, shape `{rounded.pill}` 9999 px.
+- Background `{colors.primary}` `#FFFBF4`, text `{colors.on-primary}` near-black, 1 px solid `#FFFBF4` border, label `{typography.button-md}`, padding `{spacing.xs} {spacing.md}`, shape `{rounded.pill}` 9999 px.
 
 **`button-outline-on-dark`** — the canonical white-outline pill, used for every non-primary CTA.
 
@@ -271,7 +271,7 @@ The brand uses no shadows. Hairline borders carry all elevation cues.
 
 - Don't introduce a light-mode counterpart. xAI is dark-canvas only.
 - Don't bold display headlines. Weight 400 is the entire scale.
-- Don't use filled buttons broadly. The brand uses outline pills almost exclusively; one Sign Up white-filled pill is the rare exception.
+- Don't use filled buttons broadly. The brand uses outline pills almost exclusively; one Sign Up ivory-filled pill (`#FFFBF4`) is the rare exception.
 - Don't drop a drop-shadow on cards. Hairline borders carry elevation.
 - Don't substitute Universal Sans with a generic geometric sans without adjusting letter-spacing. The negative tracking is part of the brand.
 - Don't use `{colors.accent-olive}` (`#565449`) as text on the canvas or `{colors.accent-sand}` (`#D8CFBC`) for display headlines — the warm neutrals live only in the mono-label and nested-surface roles.

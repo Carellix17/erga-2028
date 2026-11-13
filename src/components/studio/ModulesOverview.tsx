@@ -300,7 +300,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
               className={cn(
                 "flex items-center gap-4 rounded-card border px-4 py-4 text-left font-normal transition-[transform,background-color,border-color] duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none",
-                isCur && "studio-current border-white bg-[#0a0a0a] text-white",
+                isCur && "studio-current border-[#FFFBF4] bg-[#0a0a0a] text-white",
                 !isCur && "border-border bg-card text-foreground",
                 !isLocked && !isCur && "hover:bg-white/5",
                 !isLocked && "active:scale-[0.98]",
@@ -337,7 +337,7 @@ export function ModulesOverview({ modules, onOpenModule }: ModulesOverviewProps)
                 {(isCur || isGen) && (
                   <span className={cn("mt-3 block h-1.5 overflow-hidden rounded-sm", isCur ? "bg-white/25" : "bg-[#0a0a0a]/15")}>
                     <span
-                      className={cn("block h-full rounded-sm transition-[width] duration-200", isCur ? "bg-white" : "bg-[#0a0a0a]")}
+                      className={cn("block h-full rounded-sm transition-[width] duration-200", isCur ? "bg-[#FFFBF4]" : "bg-[#0a0a0a]")}
                       style={{ width: `${isGen ? (m.genPercent ?? 0) : pct}%` }}
                     />
                   </span>

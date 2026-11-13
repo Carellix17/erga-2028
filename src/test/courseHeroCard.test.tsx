@@ -15,7 +15,7 @@ describe("CourseHeroCard title contrast", () => {
     const article = container.querySelector("article")!;
     const title = screen.getByRole("heading", { level: 2, name: "Evoluzione" });
 
-    expect(article).toHaveClass("bg-[#ffffff]", "text-[#0a0a0a]", "rounded-[24px]");
+    expect(article).toHaveClass("bg-[#FFFBF4]", "text-[#0a0a0a]", "rounded-[24px]");
     expect(title).toHaveClass("text-[#0a0a0a]");
     const cta = screen.getByRole("button", { name: "Riprendi" });
     expect(cta).toHaveClass(
@@ -25,7 +25,7 @@ describe("CourseHeroCard title contrast", () => {
       "hover:bg-[#1a1c20]",
       "hover:text-[#ffffff]",
       "focus-visible:ring-[#0a0a0a]",
-      "focus-visible:ring-offset-[#ffffff]",
+      "focus-visible:ring-offset-[#FFFBF4]",
     );
     expect(cta.className).not.toMatch(/bg-transparent|text-foreground|border-foreground/);
     expect(title).not.toHaveClass("text-contrast");
@@ -41,7 +41,7 @@ describe("CourseHeroCard title contrast", () => {
     const title = screen.getByRole("heading", { level: 2, name: "Scegli un percorso" });
     const cta = screen.getByRole("button", { name: /aggiungi materiale/i });
 
-    expect(article).toHaveClass("bg-[#ffffff]", "rounded-[24px]");
+    expect(article).toHaveClass("bg-[#FFFBF4]", "rounded-[24px]");
     expect(title).toHaveClass("text-[#0a0a0a]");
     expect(title).not.toHaveClass("text-contrast");
     expect(article).not.toHaveAttribute("data-auto-contrast");

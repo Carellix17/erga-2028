@@ -666,7 +666,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   return (
     <div className="min-w-0 space-y-6">
       {automaticBanner && (
-        <aside role="status" aria-live="polite" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+        <aside role="status" aria-live="polite" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/30 bg-white/5 p-4">
           <p className="min-w-0 flex-1 text-sm font-medium">
             {t("piano.autoPlan.banner", { subject: automaticBanner.subject, date: automaticDate })}
           </p>

@@ -39,7 +39,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** 💠 Campo "vetro": il contenitore porta bordo e focus, l'input è trasparente. */
 function GlassField({ icon: Icon, children }: { icon: typeof Mail; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border bg-foreground/5 backdrop-blur-sm transition-colors focus-within:border-primary/70 focus-within:bg-primary/5">
+    <div className="rounded-2xl border border-border bg-foreground/5 backdrop-blur-sm transition-colors focus-within:border-white/70 focus-within:bg-white/5">
       <div className="relative">
         <Icon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         {children}
@@ -229,7 +229,7 @@ export default function Login() {
                 {forgotSent ? (
                   <div
                     role="status"
-                    className="mt-6 flex items-start gap-2.5 rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-foreground"
+                    className="mt-6 flex items-start gap-2.5 rounded-2xl border border-white/30 bg-white/10 px-4 py-3 text-sm text-foreground"
                   >
                     <Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand-deep" aria-hidden="true" />
                     <span>{t("login.forgotSent")}</span>

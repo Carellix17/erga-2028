@@ -483,7 +483,7 @@ export function InterrogazioneView({ contextId, contextName, onSessionStart }: I
  className={cn(
 "w-full flex items-center gap-3 p-6 rounded-2xl border transition-all duration-200 ease-m3-emphasized shadow-level-1 active:scale-[0.98]",
  selectedCourse === course.id
- ?"bg-primary/5 border-primary/60"
+ ?"bg-white/5 border-white/60"
  :"bg-card border-outline-variant/60 hover:bg-surface-container-high"
  )}
  >

@@ -206,7 +206,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                           className={cn(
                             "w-full text-left px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-300 ease-in-out flex items-center justify-between gap-2 border-[0.5px]",
                             active
-                              ? "bg-primary/15 border-primary/40 text-foreground"
+                              ? "bg-white/15 border-white/40 text-foreground"
                               : "bg-foreground/[0.03] border-transparent hover:bg-foreground/[0.06]"
                           )}
                         >
@@ -248,7 +248,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                           className={cn(
                             "w-full text-left px-4 py-4 rounded-2xl text-sm font-medium transition-all duration-300 ease-in-out border-[0.5px] flex items-start gap-3",
                             active
-                              ? "bg-primary/15 border-primary/40 text-foreground scale-[1.01]"
+                              ? "bg-white/15 border-white/40 text-foreground scale-[1.01]"
                               : "bg-foreground/[0.03] border-transparent hover:bg-foreground/[0.06] hover:scale-[1.005]"
                           )}
                         >

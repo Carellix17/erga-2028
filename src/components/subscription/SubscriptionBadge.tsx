@@ -14,14 +14,14 @@ const tierConfig = {
     label: "Free",
     solid: "bg-primary",
     iconColor: "text-primary-foreground",
-    ring: "ring-primary/30",
+    ring: "ring-white/30",
   },
   beta: {
     icon: Brain,
     label: "Beta",
     solid: "bg-primary",
     iconColor: "text-primary-foreground",
-    ring: "ring-primary/30",
+    ring: "ring-white/30",
   },
   pro: {
     icon: Crown,

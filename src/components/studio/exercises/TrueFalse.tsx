@@ -53,7 +53,7 @@ export function TrueFalse({
               disabled={showResult}
               className={cn(
                 "flex flex-col items-center gap-2 rounded-card border-2 p-6 font-normal transition-[transform,border-color,background-color] duration-150",
-                !showResult && !isSelected && "border-outline-variant bg-surface-container-lowest text-foreground hover:border-primary/50 active:scale-[0.95]",
+                !showResult && !isSelected && "border-outline-variant bg-surface-container-lowest text-foreground hover:border-white/50 active:scale-[0.95]",
                 !showResult && isSelected && "border-foreground bg-white/10 text-foreground",
                 showResult && isCorrectOption && "border-success bg-success/10 animate-feedback-correct",
                 showResult && isSelected && !isCorrectOption && "border-destructive bg-destructive/10 animate-feedback-wrong",

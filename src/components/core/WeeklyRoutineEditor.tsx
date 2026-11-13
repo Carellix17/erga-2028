@@ -28,7 +28,7 @@ const KIND_STYLES: Record<RoutineKind, { chip: string }> = {
   sleep: { chip: "routine-sleep" },
   meal: { chip: "routine-meal" },
   other: { chip: "routine-other" },
-  transport: { chip: "bg-primary/10 text-foreground border-primary/20" },
+  transport: { chip: "bg-white/10 text-foreground border-white/20" },
   no_study: { chip: "bg-muted text-muted-foreground border-border" },
 };
 

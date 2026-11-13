@@ -55,7 +55,7 @@ export function FillBlank({
                   <Input
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
-                    className="inline-block w-36 h-9 mx-1 rounded-xl border-2 border-primary/30 focus:border-primary text-center font-semibold"
+                    className="inline-block w-36 h-9 mx-1 rounded-xl border-2 border-white/30 focus:border-primary text-center font-semibold"
                     placeholder="..."
                     onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                     autoFocus

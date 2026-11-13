@@ -69,7 +69,7 @@ describe("Superfici pulite della Home", () => {
 
   it("la card dell'ultima lezione è bianca, con testo nero e lo stesso raggio visibile dei pulsanti Home", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
-    expect(hero).toContain("bg-[#ffffff]");
+    expect(hero).toContain("bg-[#FFFBF4]");
     expect(hero).toContain("text-[#0a0a0a]");
     // Pulsanti Home: min-h-12 (48px) con --radius-button 9999px → curva da 24px.
     expect(hero).toContain("rounded-[24px]");

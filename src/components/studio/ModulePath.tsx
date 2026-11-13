@@ -299,7 +299,7 @@ export function ModulePath({
               className={cn(
                 "flex w-full items-start gap-3 rounded-card border px-4 py-4 text-left font-normal transition-[transform,background-color,border-color] duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none",
-                state === "cur" && "studio-current border-white bg-[#0a0a0a] text-white",
+                state === "cur" && "studio-current border-[#FFFBF4] bg-[#0a0a0a] text-white",
                 state === "done" && "border-border bg-card text-muted-foreground",
                 state === "av" && "border-border bg-card text-foreground",
                 (state === "lock" || state === "gen") && "cursor-default border-border bg-card text-muted-foreground",

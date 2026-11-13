@@ -346,7 +346,7 @@ export function FullscreenLesson({
       data-studio=""
       className={cn("no-halo flex min-w-0 flex-col focus:outline-none", embedded ? "relative min-h-[32rem] lg:h-[calc(100dvh-8rem)]" : "fixed inset-y-0 left-4 right-4 z-50 h-dvh animate-lesson-sheet-in sm:left-6 sm:right-6")}
     >
-      <div className="lesson-reader studio-surface flex h-full min-h-0 min-w-0 flex-col bg-[#ffffff] text-[#0a0a0a]">
+      <div className="lesson-reader studio-surface flex h-full min-h-0 min-w-0 flex-col bg-[#FFFBF4] text-[#0a0a0a]">
       {!embedded && <DialogPrimitive.Title className="sr-only">{t("lesson.lessonOf", { number: lessonNumber, total: totalLessons })}: {lesson.title}</DialogPrimitive.Title>}
       {/* Top bar */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 safe-area-top">
@@ -955,7 +955,7 @@ function SlideAIAssistant({
               className={cn(
                 "min-w-0 flex-1 resize-none rounded-control px-3 py-3 text-base",
                 "bg-surface-container-high border border-outline-variant/60",
-                "focus:outline-none focus:ring-2 focus:ring-primary/30",
+                "focus:outline-none focus:ring-2 focus:ring-white/30",
                 "placeholder:text-muted-foreground max-h-28 overflow-y-auto",
                 "disabled:opacity-50"
               )}
@@ -998,7 +998,7 @@ export function FullscreenLessonGate({
   if (!full) {
     return (
       <div role={failed ? "alert" : "status"} aria-busy={!failed} data-studio="" className="no-halo fixed inset-0 z-50 flex bg-[#0a0a0a] px-4 sm:px-6">
-        <div className="studio-surface flex min-h-0 w-full flex-col items-center justify-center gap-4 bg-[#ffffff] p-4 text-[#0a0a0a]">
+        <div className="studio-surface flex min-h-0 w-full flex-col items-center justify-center gap-4 bg-[#FFFBF4] p-4 text-[#0a0a0a]">
         {!failed && <div className="w-16 h-16 rounded-full bg-card shadow-level-1 flex items-center justify-center">
           <Loader2 className="w-7 h-7 text-foreground animate-spin" />
         </div>}

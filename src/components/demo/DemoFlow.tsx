@@ -193,7 +193,7 @@ function InputStep({
         onDrop={onDrop}
         className={cn(
           "rounded-card border-[1.5px] border-dashed transition-colors duration-300 p-6 sm:p-8 bg-card shadow-level-1",
-          isDragging ? "border-primary/60 bg-primary/5" : "border-border",
+          isDragging ? "border-white/60 bg-white/5" : "border-border",
         )}
       >
         <div className="flex flex-col items-center text-center gap-4 py-2">

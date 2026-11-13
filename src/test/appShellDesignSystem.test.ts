@@ -71,7 +71,7 @@ describe("design system scuro — app shell", () => {
     expect(button).not.toContain("shadow-primary-action");
     expect(button).not.toContain("active:translate-x");
     expect(button).not.toContain("active:translate-y");
-    expect(css).toContain("--primary: 0 0% 100%");
+    expect(css).toContain("--primary: 38.18 100% 97.84%");
     expect(css).toContain("--primary-foreground: var(--canvas)");
   });
 

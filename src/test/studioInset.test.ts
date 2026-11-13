@@ -40,11 +40,11 @@ describe("inset di Studio — stesso margine della Home", () => {
       'embedded ? "relative min-h-[32rem] lg:h-[calc(100dvh-8rem)]" : "fixed inset-y-0 left-4 right-4 z-50 h-dvh animate-lesson-sheet-in sm:left-6 sm:right-6"',
     );
     expect(lesson).toContain(
-      'className="lesson-reader studio-surface flex h-full min-h-0 min-w-0 flex-col bg-[#ffffff] text-[#0a0a0a]"',
+      'className="lesson-reader studio-surface flex h-full min-h-0 min-w-0 flex-col bg-[#FFFBF4] text-[#0a0a0a]"',
     );
     expect(lesson).toContain('className="no-halo fixed inset-0 z-50 flex bg-[#0a0a0a] px-4 sm:px-6"');
     expect(test).toContain('className="fixed inset-0 z-50 bg-[#0a0a0a] px-4 focus:outline-none sm:px-6"');
-    expect(test).toContain("bg-[#ffffff]");
+    expect(test).toContain("bg-[#FFFBF4]");
 
     expect(practice).toContain("absolute inset-0 bg-scrim/40 backdrop-blur-sm");
     expect(practice).toContain(

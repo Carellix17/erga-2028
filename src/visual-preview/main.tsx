@@ -128,7 +128,7 @@ export function VisualPreview() {
               <div id="study-material-controls" className={materialsExpanded ? "block" : "hidden xl:block"}>
                 <div className="p-4">
                   <label htmlFor="visual-reading-mode" className="block text-sm font-medium">Taglio di lettura</label>
-                  <select id="visual-reading-mode" defaultValue="calma" className="mt-2 min-h-11 w-full rounded-control border border-[#ffffff] bg-[#ffffff] px-3 text-base text-[#0a0a0a]">
+                  <select id="visual-reading-mode" defaultValue="calma" className="mt-2 min-h-11 w-full rounded-control border border-[#FFFBF4] bg-[#FFFBF4] px-3 text-base text-[#0a0a0a]">
                     <option value="calma">Calma</option>
                     <option value="logica">Logica</option>
                   </select>
