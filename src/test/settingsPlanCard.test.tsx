@@ -91,8 +91,9 @@ describe("SettingsPlanCard", () => {
     const card = readFileSync(join(process.cwd(), "src/components/settings/SettingsPlanCard.tsx"), "utf8");
 
     expect(css).toContain("--surface-primary: 0 0% 9.80%");
-    expect(card).toContain("rounded-card border border-border bg-card");
-    expect(card).toContain("rounded-button border border-foreground/40 bg-transparent");
+    expect(card).toContain("erga-settings-panel");
+    expect(card).toContain("rounded-[24px]");
+    expect(card).toContain("settings-ink");
     expect(card).not.toContain("cover-grain");
     expect(card).not.toContain("--cedro");
   });

@@ -27,8 +27,8 @@ export default function SettingsIndex() {
         noindex
       />
       <SettingsHeader title="Impostazioni" subtitle="Gestisci il tuo account e l'app" />
-      <main className="px-4 sm:px-6 py-6 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-3">
-        <RoomClarify screenKey="impostazioni">
+      <main className="mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-6 pb-32 sm:px-6 md:max-w-2xl lg:max-w-4xl">
+        <RoomClarify screenKey="impostazioni" className="flex flex-col gap-6">
         {/* Il piano in grande, come le card dei corsi (decisione del
             proprietario: niente piano nella barra di stato). */}
         <SettingsPlanCard />
@@ -37,7 +37,7 @@ export default function SettingsIndex() {
             key={to}
             to={{ pathname: to, search: location.search }}
             onClick={() => triggerLight()}
-            className="erga-list-item flex items-center gap-4 rounded-card p-4 text-left transition-all duration-200 ease-m3-emphasized active:scale-[0.99]"
+            className="erga-list-item flex min-h-14 items-center gap-4 rounded-[24px] p-5 text-left active:scale-[0.98] motion-reduce:transform-none"
           >
             <div className="erga-list-item-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-button">
               <Icon className="h-5 w-5 text-foreground" />

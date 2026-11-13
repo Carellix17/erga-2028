@@ -6,19 +6,18 @@ const ROOT = join(__dirname, "..", "..");
 const read = (relativePath: string) => readFileSync(join(ROOT, relativePath), "utf-8");
 
 describe("superfici delle Impostazioni — token v3", () => {
-  it("definisce pannelli e righe opachi con bordi e ombre del sistema", () => {
+  it("definisce pannelli avorio a 24px, senza ombra e senza vetro", () => {
     const css = read("src/index.css");
 
     expect(css).toContain(".erga-settings-panel");
     expect(css).toContain(".erga-list-item");
     expect(css).toContain(".erga-list-item-icon");
-    expect(css).toContain("border: 1px solid hsl(var(--border))");
-    expect(css).toContain("background-color: hsl(var(--card))");
-    expect(css).toContain("box-shadow: var(--shadow-level-1)");
-    expect(css).toContain("background-color: hsl(var(--surface-secondary))");
-    expect(css).not.toContain("background-color: hsl(var(--card) / 0.92)");
     const surfaces = css.slice(css.indexOf(".erga-settings-panel"), css.indexOf("/* ═══════ M3 SURFACE CONTAINERS"));
+    expect(surfaces).toContain("background-color: #FFFBF4");
+    expect(surfaces).toContain("border-radius: 24px");
+    expect(surfaces).toContain("box-shadow: none");
     expect(surfaces).not.toContain("backdrop-filter");
+    expect(surfaces).not.toContain("box-shadow: var(--shadow-level-1)");
   });
 
   it("riusa le superfici e i controlli condivisi nelle pagine Impostazioni", () => {
@@ -40,7 +39,7 @@ describe("superfici delle Impostazioni — token v3", () => {
     expect(read("src/pages/settings/SettingsAppearance.tsx")).not.toContain("Chiaro");
     expect(read("src/pages/settings/SettingsAppearance.tsx")).not.toContain("Automatico");
     expect(read("src/pages/settings/SettingsLanguage.tsx")).toContain('className="erga-list-item flex w-full');
-    expect(read("src/pages/settings/SettingsAccessibility.tsx")).toContain("erga-list-item h-12 rounded-button");
+    expect(read("src/pages/settings/SettingsAccessibility.tsx")).toContain("erga-list-item h-12 rounded-[24px]");
     expect(read("src/pages/settings/SettingsAppearance.tsx")).not.toContain("erga-list-item-icon");
   });
 });

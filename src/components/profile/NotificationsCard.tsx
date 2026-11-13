@@ -211,7 +211,7 @@ export function NotificationsCard() {
     && !denied;
 
   return (
-    <section className="space-y-5 border border-border bg-surface-primary p-4 sm:p-5">
+    <section className="erga-settings-panel space-y-5 rounded-[24px] p-6">
       <header className="flex items-center gap-3">
         <Bell className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
         <h2 className="text-lg font-semibold text-foreground">{t("pushNotifications.title")}</h2>
@@ -222,17 +222,17 @@ export function NotificationsCard() {
       </p>
 
       {denied ? (
-        <div className="flex items-start gap-3 border border-destructive/40 bg-destructive/5 p-3 text-base leading-relaxed text-foreground" role="status">
+        <div className="flex items-start gap-3 text-base leading-relaxed text-foreground" role="status">
           <BellOff className="mt-0.5 h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
           <p>{t("pushNotifications.permissionDenied")}</p>
         </div>
       ) : granted ? (
-        <div className="flex min-h-11 items-center gap-3 border border-border px-3 py-2 text-base text-foreground" role="status">
+        <div className="flex min-h-11 items-center gap-3 text-base text-foreground" role="status">
           <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
           <span>{t("pushNotifications.activeOnDevice")}</span>
         </div>
       ) : registrationFailed && capability === "supported" ? (
-        <div className="flex items-start gap-3 border border-destructive/40 bg-destructive/5 p-3 text-base leading-relaxed text-foreground" role="alert">
+        <div className="flex items-start gap-3 text-base leading-relaxed text-foreground" role="alert">
           <BellOff className="mt-0.5 h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
           <p>{t("pushNotifications.enableError")}</p>
         </div>
@@ -242,19 +242,19 @@ export function NotificationsCard() {
           {t("pushNotifications.enabling")}
         </div>
       ) : capability === "ios_needs_install" ? (
-        <div className="space-y-3 border border-border p-3">
+        <div className="space-y-3">
           <div className="flex items-start gap-3">
             <Smartphone className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
             <p className="text-base leading-relaxed text-foreground">
               {t("pushNotifications.iosSettingsDescription")}
             </p>
           </div>
-          <Button type="button" variant="outline" className="min-h-11 w-full text-base" onClick={() => setHomeSheetOpen(true)}>
+          <Button type="button" variant="outline" className="min-h-12 w-full rounded-[24px] text-base" onClick={() => setHomeSheetOpen(true)}>
             {t("pushNotifications.openInstallGuide")}
           </Button>
         </div>
       ) : capability === "unsupported" ? (
-        <div className="flex items-start gap-3 border border-border p-3 text-base leading-relaxed text-foreground" role="status">
+        <div className="flex items-start gap-3 text-base leading-relaxed text-foreground" role="status">
           <BellOff className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
           <p>{t("pushNotifications.unsupportedDescription")}</p>
         </div>
@@ -262,13 +262,13 @@ export function NotificationsCard() {
 
       <div className="flex flex-wrap gap-2">
         {registrationFailed && capability === "supported" && (
-          <Button type="button" className="min-h-11 text-base" disabled={busy} onClick={handleRetry}>
+          <Button type="button" className="settings-ink min-h-12 rounded-[24px] text-base" disabled={busy} onClick={handleRetry}>
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
             {busy ? t("pushNotifications.enabling") : t("pushNotifications.retry")}
           </Button>
         )}
         {canEnable && (
-          <Button type="button" className="min-h-11 text-base" disabled={busy} onClick={handleEnable}>
+          <Button type="button" className="settings-ink min-h-12 rounded-[24px] text-base" disabled={busy} onClick={handleEnable}>
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
             {busy ? t("pushNotifications.enabling") : t("pushNotifications.enable")}
           </Button>
@@ -277,7 +277,7 @@ export function NotificationsCard() {
           <Button
             type="button"
             variant="outline"
-            className="min-h-11 text-base"
+            className="min-h-12 rounded-[24px] text-base"
             disabled={testing || !granted}
             onClick={handleTest}
           >
@@ -306,7 +306,7 @@ export function NotificationsCard() {
         </p>
       )}
 
-      <div className="divide-y divide-border border-y border-border">
+      <div className="flex flex-col gap-2">
         {settingRows.map(({ key, labelKey, descriptionKey }) => (
           <div key={key} className="flex min-h-[4.25rem] items-center justify-between gap-4 py-3">
             <label htmlFor={`notify-${key}`} className="flex min-h-11 min-w-0 flex-1 cursor-pointer flex-col justify-center gap-0.5">

@@ -70,7 +70,7 @@ export default function SettingsAccount() {
       />
       <SettingsHeader title="Generale" subtitle="I tuoi dati personali e preferenze" />
       <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6">
-        <RoomClarify screenKey="impostazioni-account">
+        <RoomClarify screenKey="impostazioni-account" className="flex flex-col gap-6">
         {isLoading ? (
           <div className="space-y-6">
             <Skeleton className="h-24 w-24 rounded-card mx-auto" />
@@ -86,7 +86,7 @@ export default function SettingsAccount() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingAvatar}
                 aria-label="Cambia foto profilo"
-                className="w-24 h-24 rounded-card overflow-hidden bg-primary-container flex items-center justify-center shadow-level-2 transition-all duration-200 ease-m3-emphasized active:scale-95 relative group"
+                className="group relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-[24px] border border-[#212327] bg-[#191919] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4] active:scale-[0.98] motion-reduce:transform-none"
               >
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Foto profilo utente" className="w-full h-full object-cover" />
@@ -103,7 +103,7 @@ export default function SettingsAccount() {
             </div>
 
             {/* Dati personali */}
-            <section className="erga-settings-panel rounded-card p-5 space-y-4">
+            <section className="erga-settings-panel space-y-4 rounded-[24px] p-6">
               <div className="flex items-center gap-2 mb-1">
                 <User className="w-5 h-5 text-foreground" />
                 <h2 className="title-medium font-display text-foreground">Dati personali</h2>
@@ -124,30 +124,30 @@ export default function SettingsAccount() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Nome</Label>
-                  <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="rounded-button h-12 border border-outline-variant/60" />
+                  <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setDirty(true); }} placeholder="Mario" className="h-12" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Cognome</Label>
-                  <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="rounded-button h-12 border border-outline-variant/60" />
+                  <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setDirty(true); }} placeholder="Rossi" className="h-12" />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label className="label-medium text-muted-foreground">Nickname <span className="text-brand-deep">(usato dal chatbot)</span></Label>
-                <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="rounded-button h-12 border border-outline-variant/60" />
+                <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="h-12" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Età</Label>
-                  <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="rounded-button h-12 border border-outline-variant/60" />
+                  <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="h-12" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Scuola</Label>
-                  <div className="h-12 rounded-card bg-card border border-outline-variant/60 flex items-center px-3">
+                  <div className="flex h-12 items-center">
                     <select
                       value={school}
                       onChange={(e) => { setSchool(e.target.value); setDirty(true); }}
                       aria-label="Scuola"
-                      className="bg-transparent w-full body-medium text-foreground outline-none"
+                      className="h-12 w-full rounded-[24px] border border-[#212327] bg-transparent px-3 text-base text-[#0a0a0a] outline-none"
                     >
                       {SCHOOLS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
@@ -158,14 +158,14 @@ export default function SettingsAccount() {
             </section>
 
             {/* Tipo di istituto */}
-            <section className="erga-settings-panel rounded-card p-5 space-y-4">
+            <section className="erga-settings-panel space-y-4 rounded-[24px] p-6">
               <div className="flex items-center gap-2 mb-1">
                 <GraduationCap className="w-5 h-5 text-foreground" />
                 <h2 className="title-medium font-display text-foreground">Tipo di istituto</h2>
               </div>
               <RadioGroup value={institute} onValueChange={(v) => { setInstitute(v); setDirty(true); }} className="space-y-1">
                 {INSTITUTES.map((inst) => (
-                  <label key={inst.value} className="erga-list-item flex items-center gap-3 rounded-button p-3 cursor-pointer transition-all duration-300 ease-m3-emphasized">
+                  <label key={inst.value} className="erga-list-item flex min-h-12 cursor-pointer items-center gap-3 rounded-[24px] px-3">
                     <RadioGroupItem value={inst.value} />
                     <span className="body-large text-foreground">{inst.label}</span>
                   </label>
@@ -180,12 +180,12 @@ export default function SettingsAccount() {
             <NotificationsCard />
 
             {/* Zona pericolosa */}
-            <section className="rounded-card border border-destructive/30 bg-error-container/40 p-5 space-y-3">
+            <section className="erga-settings-panel space-y-3 rounded-[24px] p-6">
               <h2 className="title-medium font-display text-foreground">Elimina account</h2>
               <p className="body-small text-muted-foreground">
                 L'eliminazione rimuove definitivamente i tuoi dati, i percorsi e le lezioni. L'azione non può essere annullata.
               </p>
-              <Button variant="ghost" onClick={() => setConfirmDelete(true)} className="w-full h-12 rounded-button text-destructive hover:bg-destructive/10">
+              <Button variant="ghost" onClick={() => setConfirmDelete(true)} className="settings-danger h-12 w-full rounded-[24px]">
                 <Trash2 className="w-4 h-4 mr-2" />
                 Elimina il mio account
               </Button>

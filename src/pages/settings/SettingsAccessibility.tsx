@@ -20,7 +20,7 @@ function Row({
   icon: Icon, title, desc, children,
 }: { icon: typeof Type; title: string; desc: string; children: React.ReactNode }) {
   return (
-    <section className="erga-settings-panel rounded-card p-5 space-y-3">
+    <section className="erga-settings-panel space-y-4 rounded-[24px] p-6">
       <div className="flex items-start gap-3">
         <div className="erga-list-item-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-button">
           <Icon className="h-5 w-5 text-foreground" />
@@ -50,8 +50,8 @@ export default function SettingsAccessibility() {
         noindex
       />
       <SettingsHeader title="Accessibilità" subtitle="Testo, contrasto e movimento" />
-      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-4">
-        <RoomClarify screenKey="impostazioni-accessibilita">
+      <main className="mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-6 pb-32 sm:px-6 md:max-w-2xl lg:max-w-4xl">
+        <RoomClarify screenKey="impostazioni-accessibilita" className="flex flex-col gap-6">
         <Row icon={Type} title="Dimensione testo" desc="Ingrandisci il testo di tutta l'app se fai fatica a leggere.">
           <div className="grid grid-cols-3 gap-2">
             {SCALES.map((s) => (
@@ -63,7 +63,7 @@ export default function SettingsAccessibility() {
                 }}
                 aria-pressed={settings.textScale === s.value}
                 className={cn(
-                  "erga-list-item h-12 rounded-button transition-all duration-300 ease-m3-emphasized body-medium",
+                  "erga-list-item h-12 rounded-[24px] body-medium",
                   settings.textScale === s.value ? "text-foreground" : "text-muted-foreground"
                 )}
               >
@@ -108,7 +108,7 @@ export default function SettingsAccessibility() {
             setHapticPreference(value);
             setHaptics(value);
             triggerHaptic("medium");
-          }} className="min-h-12 w-full rounded-control border border-input bg-sheet px-3 text-base text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          }} className="min-h-12 w-full px-3 text-base">
             {(["off", "subtle", "standard", "strong"] as const).map((value) => <option key={value} value={value}>{t(`feedback.${value}`)}</option>)}
           </select>
           <p className="mt-2 text-sm text-muted-foreground">{t("feedback.deviceNote")}</p>

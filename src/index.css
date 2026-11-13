@@ -393,42 +393,87 @@
     margin-bottom: 0.5rem;
   }
 
-  /* Superfici riusabili delle Impostazioni: opache, tokenizzate e flat. */
-  .erga-settings-panel {
-    border: 1px solid hsl(var(--border));
-    background-color: hsl(var(--card));
-    box-shadow: var(--shadow-level-1);
-    transition: border-color 180ms ease, box-shadow 180ms ease;
-  }
-
+  /* Impostazioni: card avorio #FFFBF4, raggio 24px, bordo hairline, niente ombra.
+     Le righe dentro un pannello non sono una seconda card. */
+  .erga-settings-panel,
   .erga-list-item {
-    border: 1px solid hsl(var(--border));
-    background-color: hsl(var(--card));
-    box-shadow: var(--shadow-level-0);
-    transition:
-      background-color 180ms ease,
-      border-color 180ms ease,
-      box-shadow 180ms ease,
-      transform 180ms ease;
+    border: 1px solid #212327;
+    background-color: #FFFBF4;
+    color: #0a0a0a;
+    border-radius: 24px;
+    box-shadow: none;
+    color-scheme: light;
   }
 
-  .erga-list-item:hover,
-  .erga-list-item[aria-checked="true"],
-  .erga-list-item[aria-pressed="true"],
-  .erga-list-item[data-state="active"],
-  .erga-list-item[data-active="true"] {
-    border-color: hsl(var(--line));
-    box-shadow: var(--shadow-level-1);
+  .erga-settings-panel :is(.text-foreground, .text-card-foreground, .text-brand-deep),
+  .erga-list-item :is(.text-foreground, .text-card-foreground, .text-brand-deep) {
+    color: #0a0a0a;
+  }
+
+  .erga-settings-panel :is(.text-muted-foreground, .text-steel),
+  .erga-list-item :is(.text-muted-foreground, .text-steel) {
+    color: #3a3f45;
+  }
+
+  .erga-settings-panel :is(input, select, textarea) {
+    border-radius: 24px;
+    border-color: #212327;
+    background-color: transparent;
+    color: #0a0a0a;
+  }
+
+  .erga-settings-panel :is(input, textarea)::placeholder {
+    color: #3a3f45;
+  }
+
+  .erga-settings-panel button:not([role="switch"]):not([role="radio"]):not(.erga-list-item) {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #212327;
+    color: #0a0a0a;
+  }
+
+  .erga-list-item:hover {
+    border-color: #212327;
+    background-color: #f4f0e6;
+    box-shadow: none;
   }
 
   .erga-list-item:active {
-    transform: scale(0.995);
+    transform: scale(0.98);
+  }
+
+  .erga-settings-panel .erga-list-item {
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  .erga-settings-panel .erga-list-item:hover {
+    border-color: transparent;
+    background-color: rgb(10 10 10 / 0.06);
+    box-shadow: none;
+  }
+
+  .erga-settings-panel .erga-list-item[aria-checked="true"],
+  .erga-settings-panel .erga-list-item[aria-pressed="true"],
+  .erga-settings-panel .erga-list-item[aria-checked="true"]:hover,
+  .erga-settings-panel .erga-list-item[aria-pressed="true"]:hover {
+    border-color: #0a0a0a;
+    background-color: #0a0a0a;
+    color: #ffffff;
+    box-shadow: none;
+  }
+
+  .erga-settings-panel .erga-list-item[aria-checked="true"] :is(.text-foreground, .text-muted-foreground, .text-brand-deep),
+  .erga-settings-panel .erga-list-item[aria-pressed="true"] :is(.text-foreground, .text-muted-foreground, .text-brand-deep) {
+    color: #ffffff;
   }
 
   .erga-list-item-icon {
-    border: 1px solid hsl(var(--line));
-    background-color: hsl(var(--surface-secondary));
-    transition: background-color 180ms ease, border-color 180ms ease;
+    border: 0;
+    background-color: transparent;
+    color: #0a0a0a;
   }
 
   /* ═══════ M3 SURFACE CONTAINERS ═══════ */
@@ -1740,3 +1785,90 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 
 /* DESIGN.md: peso 400. La gerarchia passa da dimensione, tracking e colore. */
 :where(body, body *) { font-weight: 400; }
+
+/* Icone e focus delle Impostazioni: fuori dal layer, così battono il lucide avorio globale. */
+.erga-settings-panel svg.lucide,
+.erga-list-item svg.lucide {
+  color: #0a0a0a;
+}
+.erga-settings-panel .text-destructive,
+.erga-settings-panel .text-destructive svg.lucide,
+.erga-settings-panel .settings-danger,
+.erga-settings-panel .settings-danger svg.lucide {
+  color: #9b1c1c;
+}
+.erga-settings-panel .text-success,
+.erga-settings-panel .text-success svg.lucide {
+  color: #0b6e45;
+}
+.erga-settings-panel button.settings-ink,
+.erga-settings-panel button.settings-ink:hover {
+  background-color: #0a0a0a;
+  color: #ffffff;
+  border-color: #0a0a0a;
+}
+.erga-settings-panel button.settings-ink:hover {
+  background-color: #1a1c20;
+}
+.erga-settings-panel button.settings-ink svg.lucide {
+  color: #ffffff;
+}
+.erga-settings-panel button.settings-danger {
+  background-color: transparent;
+  border-color: #9b1c1c;
+}
+.erga-settings-panel .erga-list-item[aria-checked="true"] svg.lucide,
+.erga-settings-panel .erga-list-item[aria-pressed="true"] svg.lucide {
+  color: #ffffff;
+}
+.erga-settings-panel button[role="radio"] {
+  border-color: #0a0a0a;
+  background-color: transparent;
+  color: #0a0a0a;
+}
+.erga-settings-panel button[role="radio"][data-state="checked"] {
+  background-color: #0a0a0a;
+  color: #FFFBF4;
+}
+.erga-settings-panel button[role="radio"] svg.lucide,
+.erga-settings-panel button[role="radio"][data-state="checked"] svg.lucide {
+  color: #FFFBF4;
+}
+.erga-settings-panel button[role="switch"] {
+  border-color: #0a0a0a;
+  background-color: rgb(10 10 10 / 0.14);
+  color: #0a0a0a;
+}
+.erga-settings-panel button[role="switch"][aria-checked="true"],
+.erga-settings-panel button[role="switch"][data-state="checked"] {
+  background-color: #0a0a0a;
+  border-color: #0a0a0a;
+}
+.erga-settings-panel button[role="switch"] > div.absolute {
+  display: none;
+}
+.erga-settings-panel button[role="switch"] > div.relative,
+.erga-settings-panel button[role="switch"] > span {
+  background-color: #0a0a0a;
+  background-image: none;
+}
+.erga-settings-panel button[role="switch"][aria-checked="true"] > div.relative,
+.erga-settings-panel button[role="switch"][data-state="checked"] > span {
+  background-color: #FFFBF4;
+}
+.erga-list-item:focus-visible {
+  outline: 2px solid #FFFBF4;
+  outline-offset: 2px;
+}
+.erga-settings-panel :focus-visible {
+  outline: 2px solid #0a0a0a;
+  outline-offset: 2px;
+  --tw-ring-shadow: 0 0 #0000;
+}
+.erga-settings-panel ::selection {
+  background: #0a0a0a;
+  color: #FFFBF4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .erga-list-item:active { transform: none; }
+}

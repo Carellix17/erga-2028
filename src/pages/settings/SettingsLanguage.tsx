@@ -25,9 +25,9 @@ export default function SettingsLanguage() {
         noindex
       />
       <SettingsHeader title={t("common.language")} subtitle={t("settings.languageSubtitle")} />
-      <main className="px-4 sm:px-6 py-6 pb-32 max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto space-y-6">
-        <RoomClarify screenKey="impostazioni-lingua">
-        <section className="erga-settings-panel rounded-card p-5 space-y-3">
+      <main className="mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-6 pb-32 sm:px-6 md:max-w-2xl lg:max-w-4xl">
+        <RoomClarify screenKey="impostazioni-lingua" className="flex flex-col gap-6">
+        <section className="erga-settings-panel space-y-4 rounded-[24px] p-6">
           <div className="mb-1 flex items-center gap-2">
             <Languages className="h-5 w-5 text-foreground" />
             <h2 className="title-medium font-display text-foreground">{t("common.language")}</h2>
@@ -46,7 +46,7 @@ export default function SettingsLanguage() {
                     triggerLight();
                     void i18n.changeLanguage(opt.value);
                   }}
-                  className="erga-list-item flex w-full items-center gap-4 rounded-button p-3 text-left transition-all duration-300 ease-m3-emphasized"
+                  className="erga-list-item flex w-full min-h-14 items-center gap-4 rounded-[24px] px-3 text-left"
                 >
                   <span className="erga-list-item-icon label-large flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-semibold uppercase tracking-wider text-foreground">
                     {opt.value}

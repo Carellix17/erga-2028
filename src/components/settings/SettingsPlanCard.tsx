@@ -10,8 +10,7 @@ import { toast } from "sonner";
 /**
  * SettingsPlanCard — carta informativa del piano nelle Impostazioni.
  *
- * Usa la superficie standard del sistema v3 (Olive Drab/Bone e varianti
- * giorno-notte). Le azioni e il flusso di pagamento restano invariati.
+ * Card avorio, come Home. Le azioni e il flusso di pagamento restano invariati.
  */
 export function SettingsPlanCard() {
   const { t } = useTranslation();
@@ -32,15 +31,14 @@ export function SettingsPlanCard() {
 
   return (
     <section aria-label={t("settings.plan.eyebrow")}>
-      <article className="w-full rounded-card border border-border bg-card text-card-foreground shadow-level-1">
-        <div className="p-5 text-left sm:p-6">
-          <p className="text-[13px] font-medium leading-none tracking-[0.08em] text-muted-foreground">
+      <article className="erga-settings-panel w-full rounded-[24px] p-6 text-left">
+          <p className="text-sm leading-none text-[#3a3f45]">
             {t("settings.plan.eyebrow")}
           </p>
-          <h2 className="mt-1.5 break-words font-display text-[1.75rem] font-medium leading-[1.12] tracking-[-0.01em] text-foreground sm:text-3xl">
+          <h2 className="mt-2 break-words font-display text-[1.75rem] leading-[1.12] tracking-[-0.02em] text-[#0a0a0a] sm:text-3xl">
             {planName}
           </h2>
-          <p className="mt-1 text-sm leading-snug text-muted-foreground">
+          <p className="mt-2 text-base leading-snug text-[#3a3f45]">
             {t(noteKey)}
           </p>
 
@@ -54,10 +52,10 @@ export function SettingsPlanCard() {
                 );
               }}
               disabled={loading}
-              className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-button border border-foreground/40 bg-transparent px-5 text-interface font-normal text-foreground transition-colors duration-150 ease-m3-emphasized hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+              className="settings-ink mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-[24px] px-5 text-base active:scale-[0.98] motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-50"
             >
               <Crown className="h-4 w-4 shrink-0" strokeWidth={1.9} aria-hidden="true" />
-              {t("settings.plan.upgrade")} · 4,99 €/mese
+              {t("settings.plan.upgrade")}, 4,99 €/mese
             </button>
           )}
 
@@ -75,12 +73,11 @@ export function SettingsPlanCard() {
                   setPortalLoading(false);
                 }
               }}
-              className="mt-5 flex h-11 w-full items-center justify-center rounded-button border border-border bg-secondary px-5 text-interface font-semibold text-secondary-foreground transition-colors duration-150 hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+              className="mt-6 flex h-12 w-full items-center justify-center rounded-[24px] px-5 text-base active:scale-[0.98] motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-50"
             >
               Gestisci abbonamento
             </button>
           )}
-        </div>
       </article>
 
     </section>
