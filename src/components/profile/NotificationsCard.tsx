@@ -3,7 +3,7 @@ import { Bell, BellOff, CheckCircle2, Loader2, Send, Smartphone } from "lucide-r
 import { useTranslation } from "react-i18next";
 import { AddToHomeSheet } from "@/components/notifications/AddToHomeSheet";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { LiquidToggle } from "@/components/ui/liquid-toggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
@@ -319,12 +319,11 @@ export function NotificationsCard() {
                 </span>
               )}
             </label>
-            <Switch
+            <LiquidToggle
               id={`notify-${key}`}
               aria-label={t(`pushNotifications.${labelKey}`)}
               checked={notifyTypes[key] === true}
               disabled={!currentUser || !settingsLoaded || !!savingKey}
-              className="h-11 w-12"
               onCheckedChange={(checked) => { void updateNotifyType(key, checked); }}
             />
           </div>
