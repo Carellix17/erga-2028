@@ -19,6 +19,8 @@ import {
 import { useHaptics } from "@/hooks/useHaptics";
 import { getCourseProgress } from "@/lib/courseProgress";
 import { CourseCard, courseDisplayName } from "./CourseCard";
+import { courseNameMatches } from "@/lib/courseName";
+import { Search } from "@/components/ui/Search";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -121,6 +123,43 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
+function CourseSearchDock({ onValueChange }: { onValueChange: (value: string) => void }) {
+  const [keyboardInset, setKeyboardInset] = useState(0);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const read = () => {
+      const overlap = window.innerHeight - viewport.height - viewport.offsetTop;
+      setKeyboardInset(overlap > 0 ? overlap : 0);
+    };
+    read();
+    viewport.addEventListener("resize", read);
+    viewport.addEventListener("scroll", read);
+    return () => {
+      viewport.removeEventListener("resize", read);
+      viewport.removeEventListener("scroll", read);
+    };
+  }, []);
+
+  // shortcut: 20px is half the empty frame under the 48px circle, update if --shut or --frameh changes
+  return (
+    <div
+      className="pointer-events-none fixed inset-x-0 z-30 flex justify-center"
+      style={{ bottom: `calc(12px + env(safe-area-inset-bottom, 0px) - 20px + ${keyboardInset}px)` }}
+    >
+      <div className="pointer-events-auto">
+        <Search
+          width={240}
+          placeholder="Cerca"
+          label="Cerca un percorso"
+          onValueChange={onValueChange}
+        />
+      </div>
+    </div>
+  );
+}
+
 // Card esterne: compaiono con DELAY 0.25 (dopo il volo della hero), escono rapide.
 const cardMotion = {
   initial: { opacity: 0, y: 15, scale: 0.96 },
@@ -187,6 +226,8 @@ export function PathHero({
   const [isSavingRename, setIsSavingRename] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [courseQuery, setCourseQuery] = useState("");
+  const queryResetRef = useRef(0);
 
   const active = courses.find((c) => c.id === activeCourseId) ?? courses[0];
   // 🖼️ P24 — immagine della HERO (corso attivo): centralizzata, resta nei cambi stato
@@ -202,6 +243,10 @@ export function PathHero({
   const activeIdx = Math.max(0, courses.findIndex((c) => c.id === active?.id));
   const before = courses.slice(0, activeIdx);
   const after = courses.slice(activeIdx + 1);
+  const filtering = courseQuery.trim().length > 0;
+  const matchedCourses = filtering
+    ? courses.filter((course) => courseNameMatches(course.file_name, courseQuery))
+    : [];
 
   // OPZIONE B — all'apertura la lista parte col corso attuale al CENTRO
   // dell'area visibile: scroll iniziale del CONTENITORE interno (mai la
@@ -247,6 +292,7 @@ export function PathHero({
   // e restituisce lo scroll al documento.
   useEffect(() => {
     return () => {
+      window.clearTimeout(queryResetRef.current);
       transitionTimersRef.current.forEach((t) => window.clearTimeout(t));
       transitionTimersRef.current = [];
       document.body.style.overflow = "";
@@ -254,6 +300,8 @@ export function PathHero({
   }, []);
 
   const openPicker = useCallback(() => {
+    window.clearTimeout(queryResetRef.current);
+    setCourseQuery("");
     triggerLight();
     setIsSelectingCourse(true);
     onSelectingChange?.(true);
@@ -262,6 +310,8 @@ export function PathHero({
   const closePicker = useCallback(() => {
     setIsSelectingCourse(false);
     onSelectingChange?.(false);
+    window.clearTimeout(queryResetRef.current);
+    queryResetRef.current = window.setTimeout(() => setCourseQuery(""), 220);
   }, [onSelectingChange]);
 
   const handleSelectCourse = useCallback((course: CourseOption) => {
@@ -623,7 +673,17 @@ export function PathHero({
             >
               <div className="flex min-h-0 w-full flex-1 flex-col px-4 py-6 sm:px-6">
                 <motion.div ref={listRef as React.Ref<HTMLDivElement>} layoutScroll className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
-                  <div className="flex flex-col">
+                  <div className="flex flex-col pb-[calc(4.75rem+env(safe-area-inset-bottom,0px))]">
+                    {filtering ? (
+                      matchedCourses.length > 0 ? (
+                        <div className="space-y-3">{matchedCourses.map(renderCourseCard)}</div>
+                      ) : (
+                        <p className="py-8 text-center font-sans text-base leading-relaxed text-[#dadbdf]">
+                          Nessun percorso con questo nome.
+                        </p>
+                      )
+                    ) : (
+                      <>
                     {/* Card sopra */}
                     {before.length > 0 && (
                       <motion.div
@@ -661,9 +721,12 @@ export function PathHero({
                         {after.map(renderCourseCard)}
                       </motion.div>
                     )}
+                      </>
+                    )}
                   </div>
                 </motion.div>
               </div>
+              <CourseSearchDock onValueChange={setCourseQuery} />
             </motion.div>
           )}
         </AnimatePresence>,
