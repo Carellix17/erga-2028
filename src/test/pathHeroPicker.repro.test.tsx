@@ -84,6 +84,29 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     await waitFor(() => expect(screen.getByText("Cambia corso")).toBeTruthy(), { timeout: 2000 });
   });
 
+  it("filtra i percorsi dal nome, anche il corso attuale", () => {
+    render(
+      <PathHero
+        {...base}
+        courses={[
+          { id: "1", file_name: "storia.pdf", lesson_count: 5 },
+          { id: "2", file_name: "matematica.pdf", lesson_count: 8 },
+          { id: "3", file_name: "Città.pdf", lesson_count: 3 },
+        ]}
+        onSelectCourse={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByText("Cambia corso"));
+    fireEvent.click(screen.getByRole("button", { name: "Cerca un percorso" }));
+    const field = screen.getByRole("textbox", { name: "Cerca un percorso" });
+    fireEvent.change(field, { target: { value: "citta" } });
+    expect(screen.queryByText("matematica")).toBeNull();
+    expect(screen.getByText("Città")).toBeTruthy();
+    fireEvent.change(field, { target: { value: "zzzz" } });
+    expect(screen.getByText("Nessun percorso con questo nome.")).toBeTruthy();
+    expect(screen.queryByText("Città")).toBeNull();
+  });
+
   it("Annulla chiude il selettore senza selezionare", () => {
     const onSelect = vi.fn();
     render(<PathHero {...base} onSelectCourse={onSelect} />);
