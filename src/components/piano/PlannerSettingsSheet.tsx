@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
+import { LiquidToggle } from "@/components/ui/liquid-toggle";
 import { useToast } from "@/hooks/use-toast";
 import { usePlannerSettings, type PlannerSettings, type PlannerSettingsPatch } from "@/hooks/usePlannerSettings";
 import { useUserSubjects } from "@/hooks/useUserSubjects";
@@ -199,7 +199,7 @@ export function PlannerSettingsSheet({
                 <Label htmlFor="planner-ask-before-move" className="leading-relaxed">
                   {t("piano.settings.askBeforeMove")}
                 </Label>
-                <Switch
+                <LiquidToggle
                   id="planner-ask-before-move"
                   checked={draft.ask_before_move}
                   onCheckedChange={(checked) => updateDraft("ask_before_move", checked)}
@@ -209,7 +209,7 @@ export function PlannerSettingsSheet({
                 <Label htmlFor="planner-sound-enabled" className="leading-relaxed">
                   {t("piano.settings.soundEnabled")}
                 </Label>
-                <Switch
+                <LiquidToggle
                   id="planner-sound-enabled"
                   checked={draft.sound_enabled}
                   onCheckedChange={(checked) => updateDraft("sound_enabled", checked)}

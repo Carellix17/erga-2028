@@ -176,13 +176,12 @@ describe("Impostazioni → Generale: accesso e sicurezza", () => {
 });
 
 /**
- * Gli interruttori di Accessibilità sono passati da <Switch /> (Radix) a
- * <PremiumToggle />. Il nuovo componente è non controllato (defaultChecked),
- * quindi questi test fissano tre cose che prima garantiva Radix:
- * nome accessibile, stato iniziale letto dal profilo salvato, scrittura del
- * profilo al tocco.
+ * Gli interruttori di Accessibilità sono LiquidToggle, controllati dal
+ * profilo. Questi test fissano nome accessibile, stato iniziale letto dal
+ * profilo salvato, e scrittura del profilo al tocco. Un dito vero manda
+ * pointerup e poi click: deve contare come un solo scatto.
  */
-describe("Accessibilità — interruttori PremiumToggle", () => {
+describe("Accessibilità — interruttori LiquidToggle", () => {
   beforeEach(() => {
     localStorage.removeItem("erga-a11y");
     document.documentElement.classList.remove("high-contrast", "reduce-motion");
@@ -207,6 +206,18 @@ describe("Accessibilità — interruttori PremiumToggle", () => {
     expect(highContrast).toHaveAttribute("aria-checked", "true");
     expect(document.documentElement).toHaveClass("high-contrast");
     expect(JSON.parse(localStorage.getItem("erga-a11y") ?? "{}").highContrast).toBe(true);
+  });
+
+  it("un rilascio del dito e il click che segue contano come un solo scatto", () => {
+    renderSettingsPage(<SettingsAccessibility />, "/app/impostazioni/accessibilita");
+
+    const highContrast = screen.getByRole("switch", { name: "Alto contrasto" });
+    fireEvent.pointerDown(highContrast, { pointerId: 1, clientX: 8 });
+    fireEvent.pointerUp(highContrast, { pointerId: 1, clientX: 8 });
+    fireEvent.click(highContrast);
+
+    expect(highContrast).toHaveAttribute("aria-checked", "true");
+    expect(document.documentElement).toHaveClass("high-contrast");
   });
 
   it("al tocco successivo spegne di nuovo l'interruttore", () => {

@@ -764,17 +764,6 @@
     0% { opacity: 0; transform: scale(0.92); }
     100% { opacity: 1; transform: scale(1); }
   }
-  /* ⚙️ P48 — il lampo dell'interruttore PremiumToggle: era animate-ping
-     (un impulso INFINITO che continuava a pulsare a interruttore acceso).
-     Ora è un solo impulso, che parte quando cambi stato. */
-  .animate-ripple-once {
-    animation: erga-ripple 460ms var(--ease-out) 1 both;
-    will-change: transform, opacity;
-  }
-  @keyframes erga-ripple {
-    0% { opacity: 0.35; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1.9); }
-  }
   @keyframes erga-pulse-soft {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.85; transform: scale(1.04); }
@@ -1834,28 +1823,6 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 .erga-settings-panel button[role="radio"][data-state="checked"] svg.lucide {
   color: #FFFBF4;
 }
-.erga-settings-panel button[role="switch"] {
-  border-color: #0a0a0a;
-  background-color: rgb(10 10 10 / 0.14);
-  color: #0a0a0a;
-}
-.erga-settings-panel button[role="switch"][aria-checked="true"],
-.erga-settings-panel button[role="switch"][data-state="checked"] {
-  background-color: #0a0a0a;
-  border-color: #0a0a0a;
-}
-.erga-settings-panel button[role="switch"] > div.absolute {
-  display: none;
-}
-.erga-settings-panel button[role="switch"] > div.relative,
-.erga-settings-panel button[role="switch"] > span {
-  background-color: #0a0a0a;
-  background-image: none;
-}
-.erga-settings-panel button[role="switch"][aria-checked="true"] > div.relative,
-.erga-settings-panel button[role="switch"][data-state="checked"] > span {
-  background-color: #FFFBF4;
-}
 .erga-list-item:focus-visible {
   outline: 2px solid #FFFBF4;
   outline-offset: 2px;
@@ -2184,4 +2151,157 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
   .sek-field {
     transition: none;
   }
+}
+
+/* ════ liquid ═══════════════════════════════════════════════
+   Three studies in one filter. Prefix liq-.
+
+   Every one of these is two layers in register: opaque shapes
+   on a layer carrying url(#liq-goo), and anything that needs
+   a crisp edge — text, a hit area — riding above on a layer
+   that carries no filter at all. The goo eats translucency
+   and mangles glyphs, so nothing else can share the layer.
+
+   This project only ships the toggle. The filter is not mounted:
+   the droplet is one circle now, and the filter has nothing left
+   to merge. */
+
+/* ── 1 · liquid toggle ───────────────────────────────────── */
+.liq-well {
+  /* The catalog frame was 240×130, a stage around the switch.
+     In a settings row that stage is empty space, so the frame
+     is the track itself. flex-shrink keeps a long label from
+     squeezing the 92px travel the thumb maths assume. */
+  width: 92px; height: 46px;
+  flex-shrink: 0;
+  display: grid; place-items: center;}
+
+/* ── BLACK AND WHITE, AND NO EDGE OF ITS OWN ────────────────
+   The on state was a green wash with a green ring, which made
+   this the only block on the bench asserting a colour nothing
+   else uses — and a switch does not need a hue to say it is
+   on. It inverts instead: a light track with a dark thumb
+   becomes a dark track with a light one, which is the strongest
+   thing two colours can say and the only thing this component
+   has to say.
+
+   `--fill-on` / `--fill-slab` rather than --ink / --board, so
+   the pair follows the Fill control the entry declares instead
+   of naming a colour twice.
+
+   And no inset ring. It carried one unconditionally, which is
+   an edge the Stroke switch cannot take away — the same bug
+   the sleep pill, the command bar and the Notify pill all had.
+   Stroke's own rule is a few hundred lines up.
+
+   The custom properties are Bencho's names. Erga does not have
+   them globally, so they live on this control: ink and ground
+   are the near-black #0a0a0a, the slab is the ivory card
+   #FFFBF4. Nothing here leaks onto :root. */
+.liq-sw {
+  --board: #0a0a0a;
+  --card: #FFFBF4;
+  --ink: #0a0a0a;
+  --fill-on: #0a0a0a;
+  --fill-slab: #FFFBF4;
+  --pane-edge: #212327;
+  position: relative;
+  width: 92px; height: 46px;
+  padding: 0; border: 0;
+  /* ── ALWAYS A PILL ────────────────────────────────────────
+     It took a Corner knob for a while and does not any more.
+     A switch is a pill: that is the shape the gesture is named
+     after, and squaring it turns a thing you slide into a
+     thing you click. The droplet inside followed the knob too,
+     concentrically, and the same argument applies twice over —
+     one number that could only ever make the component less
+     like itself. */
+  border-radius: 999px;
+  /* ── OFF IS THE SLAB, NOT A GREY ─────────────────────────
+     The two states are the two ends of the fill's own ramp,
+     and OFF is the light end of it: the track is the slab —
+     white on a light fill, near-black on a dark one — and the
+     dot is a grey mixed toward it. ON is the inversion, ink
+     track and slab dot, which is what it always was.
+
+     Read across the pair, the TRACK carries the state and the
+     dot is along for the ride. It was the other way round:
+     the off track was a 12% wash and the dot was full ink, so
+     the loud half of the switch was the part that only moves.
+
+     It reads because the card behind is not white — the stage
+     is the board's own grey, so a white pill on it is an
+     object. Stroke's hairline is there for anywhere it is
+     not. */
+  background: var(--fill-slab, var(--card));
+  cursor: pointer;
+  /* it is a rail you can push along, not only a button */
+  touch-action: none;
+  transition: background 420ms ease;}
+
+.liq-sw[data-on="true"] { background: var(--fill-on, var(--ink)); }
+
+.liq-sw:focus-visible {
+  outline: 2px solid #FFFBF4;
+  outline-offset: 2px;
+}
+.erga-settings-panel .liq-sw:focus-visible {
+  outline-color: #0a0a0a;
+}
+.liq-sw:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.liq-sw-blobs {
+  position: absolute; inset: 0;}
+
+/* opaque on purpose: a goo filter over a translucent fill
+   thresholds the alpha away and the shape disappears */
+/* left: 0 is not optional. These are inline elements, so with
+   left: auto the static position is wherever the line box put
+   them — and the button they sit in centres its text, which
+   pushed both blobs to the middle of the track and the thumb
+   clean off the end of it. */
+/* ── the droplet, and it is the ONLY body ───────────────────
+   There was a second, smaller blob running behind it on a
+   lagging spring; the goo between them necked into a thread,
+   which is what a trail is and what it looks like. It is one
+   body that stretches now — see the note in Liquid.tsx, and
+   the dragging ball's, which lost the same thing first.
+
+   `left: 0` is not optional. It is an inline element, so with
+   `left: auto` the static position is wherever the line box
+   put it — and the button it sits in centres its text, which
+   pushed the thumb to the middle of the track.
+
+   OPAQUE on purpose: a goo filter over a translucent fill
+   thresholds the alpha away and the shape disappears. Which
+   is why the grey is a `color-mix` and not an alpha — see the
+   note where the off colour is chosen. */
+.liq-thumb {
+  position: absolute;
+  left: 0; top: 50%;
+  /* the size comes from Liquid.tsx, which also needs it for the
+     travel — one number, so the circle and the distance it
+     crosses cannot disagree */
+  width: var(--liq-thumb, 36px); height: var(--liq-thumb, 36px);
+  margin-top: calc(var(--liq-thumb, 36px) / -2);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fill-on, var(--ink)) 19%, var(--fill-slab, var(--card)));
+  /* transform is Framer's — a CSS transition on the same
+     property re-interpolates every frame the spring writes,
+     and what you see is the easing, not the spring. The colour
+     is the only thing here that eases, and it is the only one
+     that can: everything else about this element is written
+     into one transform by Framer. */
+  transition: background 420ms ease;}
+
+/* ON inverts the pair: ink track, slab droplet. The two states
+   are the two ends of the fill's ramp and never two values of
+   the same one. */
+.liq-sw[data-on="true"] .liq-thumb { background: var(--fill-slab, var(--board)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .liq-thumb, .liq-pill, .liq-bead { transition-duration: 160ms; }
 }
