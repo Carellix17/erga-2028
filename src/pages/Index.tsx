@@ -17,14 +17,13 @@ import { CognitiveOnboarding } from "@/components/onboarding/CognitiveOnboarding
 import { resolveOnboardingGate } from "@/lib/onboardingGate";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Brain, AlertTriangle, ChevronDown } from "lucide-react";
+import { Brain, AlertTriangle } from "lucide-react";
 import { useDemoHandoff } from "@/hooks/useDemoHandoff";
 import type { StudioTool } from "@/components/studio/StudioPractice";
 import { useTranslation } from "react-i18next";
 import { SeoHead } from "@/components/SeoHead";
 import { setAppScrollTop } from "@/lib/appScroll";
 import { RoomClarify } from "@/components/shared/RoomClarify";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppTab, type AppTab } from "@/hooks/useAppTab";
 import { useOverlayHistory } from "@/hooks/useOverlayHistory";
 
@@ -42,7 +41,6 @@ const Index = () => {
   // calcolato in locale sul suo nuovo profilo cognitivo.
   useDemoHandoff();
   const { t } = useTranslation();
-  const isMobile = useIsMobile();
   const location = useLocation();
   const { activeTab, navigateToTab } = useAppTab();
   const [lessonHistoryBackRequest, setLessonHistoryBackRequest] = useState(0);
@@ -55,35 +53,19 @@ const Index = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [materialRequest, setMaterialRequest] = useState<{ tab: "loading" | "manage" } | null>(null);
   const [uploaderHost] = useState(() => document.createElement("div"));
-  const [materialPane, setMaterialPane] = useState<HTMLDivElement | null>(null);
-  const [materialsExpanded, setMaterialsExpanded] = useState(false);
-  const [readingMode, setReadingMode] = useState<"calma" | "logica">("calma");
   useEffect(() => {
-    (activeTab === "studio" && materialPane ? materialPane : document.body).appendChild(uploaderHost);
-  }, [activeTab, materialPane, uploaderHost]);
-  useEffect(() => () => uploaderHost.remove(), [uploaderHost]);
+    document.body.appendChild(uploaderHost);
+    return () => uploaderHost.remove();
+  }, [uploaderHost]);
   const [manageFocusContextId, setManageFocusContextId] = useState<string | null>(null);
   const [selectedContextId, setSelectedContextId] = useState<string | null>(null);
   const openUpload = () => {
     setManageFocusContextId(null);
     setMaterialRequest({ tab: "loading" });
-    if (activeTab === "studio") {
-      setMaterialsExpanded(true);
-      requestAnimationFrame(() => materialPane?.scrollIntoView({ block: "start" }));
-    } else {
-      setShowUpload(true);
-    }
+    setShowUpload(true);
   };
-  // La creazione di un nuovo percorso usa il foglio dal basso su smartphone;
-  // le altre richieste di materiali continuano ad aprire il pannello Studio.
+  // Stesso foglio di «Carica altri materiali»: non c'è più un pannello fisso.
   const openCreatePath = () => {
-    if (activeTab === "studio" && isMobile) {
-      setManageFocusContextId(null);
-      setMaterialRequest({ tab: "loading" });
-      setMaterialsExpanded(false);
-      setShowUpload(true);
-      return;
-    }
     openUpload();
   };
   // 🧭 Percorsi 2.0 — strumento di Studio da aprire al prossimo ingresso
@@ -333,52 +315,29 @@ const Index = () => {
           </button>
         )}
         {activeTab === "studio" && (
-          <>
-          <div className="bg-[#0a0a0a] xl:hidden">
-            <button type="button" aria-expanded={materialsExpanded} aria-controls="study-material-controls" onClick={() => setMaterialsExpanded((open) => !open)} className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
-              <span>{t("studio.materialsAndReading")}</span><ChevronDown aria-hidden="true" className={`h-4 w-4 shrink-0 transition-transform motion-reduce:transition-none ${materialsExpanded ? "rotate-180" : ""}`} />
-            </button>
-          </div>
-          <div className="study-workspace grid min-w-0 grid-cols-12 bg-[#0a0a0a] text-foreground xl:grid-cols-[minmax(16rem,3fr)_minmax(0,7fr)]">
-          <aside className={`col-span-12 min-w-0 bg-[#0a0a0a] xl:col-span-1 ${materialsExpanded ? "block" : "hidden xl:block"}`}>
-            <div id="study-material-controls" className={materialsExpanded ? "block" : "hidden xl:block"}>
-            <div className="p-4">
-              <label htmlFor="reading-mode" className="block text-sm font-medium">Taglio di lettura</label>
-              <select id="reading-mode" value={readingMode} onChange={event => setReadingMode(event.target.value as "calma" | "logica")} className="mt-2 min-h-11 w-full rounded-control border border-[#FFFBF4] bg-[#FFFBF4] px-3 text-base text-[#0a0a0a]">
-                <option value="calma">Calma</option><option value="logica">Logica</option>
-              </select>
-              <p className="mt-2 text-sm text-muted-foreground">{readingMode === "calma" ? "Testo più arioso per leggere con calma." : "Formule e passaggi chiave in evidenza."}</p>
-            </div>
-            <div ref={setMaterialPane} className="scroll-mt-16" />
-            </div>
-          </aside>
-          <section aria-label="Percorso e minilezioni" className="col-span-12 min-w-0 bg-[#0a0a0a] xl:col-span-1">
-          <StudioView
-            embeddedReader
-            readingMode={readingMode}
-            hasFiles={hasFiles}
-            onUploadClick={openUpload}
-            onCreatePathClick={openCreatePath}
-            selectedContextId={selectedContextId}
-            lessonLaunch={lessonLaunch}
-            onLessonLaunchHandled={() => setLessonLaunch(null)}
-            lessonHistoryBackRequest={lessonHistoryBackRequest}
-            onLessonHistoryOpen={pushLessonHistoryEntry}
-            onLessonHistoryClose={closeLessonHistoryEntry}
-            toolLaunch={toolLaunch}
-            onToolLaunchHandled={() => setToolLaunch(null)}
-            onClearContext={() => setSelectedContextId(null)}
-            onOpenCourseMaterials={(contextId) => {
-              setManageFocusContextId(contextId);
-              setMaterialRequest({ tab: "manage" });
-              setMaterialsExpanded(true);
-              requestAnimationFrame(() => materialPane?.scrollIntoView({ block: "start" }));
-            }}
-            onFullscreenChange={setIsFullscreen}
-          />
+          <section aria-label="Percorso e minilezioni" className="study-workspace min-w-0 bg-[#0a0a0a] text-foreground">
+            <StudioView
+              embeddedReader
+              hasFiles={hasFiles}
+              onUploadClick={openUpload}
+              onCreatePathClick={openCreatePath}
+              selectedContextId={selectedContextId}
+              lessonLaunch={lessonLaunch}
+              onLessonLaunchHandled={() => setLessonLaunch(null)}
+              lessonHistoryBackRequest={lessonHistoryBackRequest}
+              onLessonHistoryOpen={pushLessonHistoryEntry}
+              onLessonHistoryClose={closeLessonHistoryEntry}
+              toolLaunch={toolLaunch}
+              onToolLaunchHandled={() => setToolLaunch(null)}
+              onClearContext={() => setSelectedContextId(null)}
+              onOpenCourseMaterials={(contextId) => {
+                setManageFocusContextId(contextId);
+                setMaterialRequest({ tab: "manage" });
+                setShowUpload(true);
+              }}
+              onFullscreenChange={setIsFullscreen}
+            />
           </section>
-          </div>
-          </>
         )}
         {activeTab === "piano" && (
           <PianoView
@@ -396,15 +355,11 @@ const Index = () => {
 
       {createPortal(
       <UploadSheet
-        embedded={activeTab === "studio" && !showUpload}
         panelRequest={materialRequest}
-        open={activeTab === "studio" || showUpload}
+        open={showUpload}
         onOpenChange={(o) => {
           setShowUpload(o);
-          if (!o) {
-            setManageFocusContextId(null);
-            setMaterialsExpanded(false);
-          }
+          if (!o) setManageFocusContextId(null);
         }}
         onUpload={handleUpload}
         uploadedFiles={displayFiles}

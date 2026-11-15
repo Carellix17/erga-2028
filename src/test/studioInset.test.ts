@@ -19,12 +19,9 @@ describe("inset di Studio — stesso margine della Home", () => {
     expect(workspace).toContain("bg-[#0a0a0a]");
     expect(workspace).not.toContain("border");
     expect(workspace).not.toContain("bg-sheet");
-
-    const aside = index.slice(index.indexOf("<aside"), index.indexOf("</aside>"));
-    expect(aside).toContain("bg-[#0a0a0a]");
-    expect(aside).not.toContain("border-b");
-    expect(aside).not.toContain("xl:border-r");
-    expect(aside).toContain('className="p-4"');
+    expect(workspace).not.toContain("grid-cols");
+    expect(index).not.toContain("<aside");
+    expect(index).not.toContain("Materiali e lettura");
   });
 
   it("lettore, verifica e fogli a tutto schermo tengono 16/24 px di canvas ai lati", () => {

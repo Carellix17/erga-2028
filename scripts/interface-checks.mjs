@@ -145,36 +145,30 @@ export async function inspectInterface({ browser, baseUrl, outputDir, report, fo
     await open("studio");
     await page.waitForSelector('button[aria-label="Crea un nuovo percorso di studio"]', { visible: true });
     await capture("studio");
-    if (viewport.width < 1280) {
-      const materials = await page.$('button[aria-controls="study-material-controls"]');
-      await materials.click();
-      await pause(80);
-      const expanded = await page.$eval("#study-material-controls", (node) => node.getBoundingClientRect().height > 0);
-      verify(expanded, "Materials disclosure fails to open", { view: "studio", width: viewport.width });
-      const menuComplete = await page.evaluate(() => ["Carica PDF", "Carica foto", "Ricerca web"].every((label) => [...document.querySelectorAll("#study-material-controls button")].some((node) => node.textContent.includes(label) && Number(getComputedStyle(node).opacity) > 0.98)));
-      verify(menuComplete, "Some upload options are hidden", { view: "studio-materials", width: viewport.width });
-      await capture("studio-materials");
-      await materials.click();
-    }
+    const materialsMenu = await page.evaluate(() => ({
+      disclosure: !!document.querySelector('button[aria-controls="study-material-controls"]'),
+      panel: !!document.querySelector("#study-material-controls, .material-panel"),
+      reading: !!document.querySelector("#reading-mode, #visual-reading-mode"),
+      label: document.body.textContent.includes("Materiali e lettura") || document.body.textContent.includes("Taglio di lettura"),
+    }));
+    verify(!materialsMenu.disclosure && !materialsMenu.panel && !materialsMenu.reading && !materialsMenu.label, "Materials menu is still on the Studio page", { view: "studio", width: viewport.width });
     const create = await byLabel(page, "Crea un nuovo percorso di studio");
     await create.click();
     await pause(120);
     const dialog = await page.$('[role="dialog"][data-state="open"]');
-    if (viewport.isMobile) {
-      verify(!!dialog, "Create path should open the mobile upload sheet", { view: "upload", width: viewport.width });
-      if (dialog) {
-        const optionsFit = await dialog.evaluate((node) => {
-          const frame = node.getBoundingClientRect();
-          return ["Carica PDF", "Carica foto", "Ricerca web"].every((label) => [...node.querySelectorAll("button")].some((button) => {
-            const bounds = button.getBoundingClientRect();
-            return button.textContent.includes(label) && Number(getComputedStyle(button).opacity) > 0.98 && bounds.top >= frame.top && bounds.bottom <= frame.bottom + 1;
-          }));
-        });
-        verify(optionsFit, "Mobile upload options do not all fit in the sheet", { view: "upload", width: viewport.width });
-        await capture("studio-upload");
-        await page.keyboard.press("Escape");
-      }
-    } else verify(!dialog, "Tablet/desktop upload unexpectedly opens a modal", { view: "upload", width: viewport.width });
+    verify(!!dialog, "Create path should open the upload sheet", { view: "upload", width: viewport.width });
+    if (dialog) {
+      const optionsFit = await dialog.evaluate((node) => {
+        const frame = node.getBoundingClientRect();
+        return ["Carica PDF", "Carica foto", "Ricerca web"].every((label) => [...node.querySelectorAll("button")].some((button) => {
+          const bounds = button.getBoundingClientRect();
+          return button.textContent.includes(label) && Number(getComputedStyle(button).opacity) > 0.98 && bounds.top >= frame.top && bounds.bottom <= frame.bottom + 1;
+        }));
+      });
+      verify(optionsFit, "Upload options do not all fit in the sheet", { view: "upload", width: viewport.width });
+      await capture("studio-upload");
+      await page.keyboard.press("Escape");
+    }
 
     await open("lesson");
     await page.waitForSelector('[role="dialog"][aria-label*="Velocità"]', { visible: true });

@@ -1,4 +1,3 @@
-import { ChevronDown } from "lucide-react";
 import { MotionPreferences } from "@/components/shared/MotionPreferences";
 import { AppointmentsCalendar } from "@/components/piano/AppointmentsCalendar";
 import { InteractionFeedback } from "@/components/shared/InteractionFeedback";
@@ -14,7 +13,6 @@ import { HomeView } from "@/components/home/HomeView";
 import { StudioView } from "@/components/studio/StudioView";
 import { UploadSheet } from "@/components/upload/UploadSheet";
 import { LessonReaderPreview } from "./LessonReaderPreview";
-import { useIsMobile } from "@/hooks/use-mobile";
 import type { StudioTool } from "@/components/studio/StudioPractice";
 import i18n from "@/i18n";
 import "@/index.css";
@@ -37,17 +35,14 @@ export function VisualPreview() {
     requestedView === "piano" ? "piano" : requestedView === "studio" || isLessonPreview ? "studio" : "home",
   );
   const [showUpload, setShowUpload] = useState(false);
-  const [materialsExpanded, setMaterialsExpanded] = useState(false);
   const [materialRequest, setMaterialRequest] = useState<MaterialRequest>(null);
-  const [materialPane, setMaterialPane] = useState<HTMLDivElement | null>(null);
   const [uploaderHost] = useState(() => document.createElement("div"));
-  const isMobile = useIsMobile();
 
   // Mirror Index's portal target without mounting Index or its cloud queries.
   useEffect(() => {
-    (activeTab === "studio" && materialPane ? materialPane : document.body).appendChild(uploaderHost);
-  }, [activeTab, materialPane, uploaderHost]);
-  useEffect(() => () => uploaderHost.remove(), [uploaderHost]);
+    document.body.appendChild(uploaderHost);
+    return () => uploaderHost.remove();
+  }, [uploaderHost]);
 
   useEffect(() => {
     document.documentElement.dataset.visualReady = "true";
@@ -55,32 +50,18 @@ export function VisualPreview() {
 
   const openUpload = () => {
     setMaterialRequest({ tab: "loading" });
-    if (activeTab === "studio") {
-      setMaterialsExpanded(true);
-      requestAnimationFrame(() => materialPane?.scrollIntoView({ block: "start" }));
-    } else {
-      setShowUpload(true);
-    }
+    setShowUpload(true);
   };
 
-  // Same mobile/desktop split as Index.openCreatePath; the rest of Index is
-  // intentionally absent so this fixture cannot trigger product mutations.
+  // Same sheet as Index.openCreatePath; the rest of Index is intentionally
+  // absent so this fixture cannot trigger product mutations.
   const openCreatePath = () => {
-    if (activeTab === "studio" && isMobile) {
-      setMaterialRequest({ tab: "loading" });
-      setMaterialsExpanded(false);
-      setShowUpload(true);
-      return;
-    }
     openUpload();
   };
 
   const handleOpenChange = (open: boolean) => {
     setShowUpload(open);
-    if (!open) {
-      setMaterialsExpanded(false);
-      setMaterialRequest(null);
-    }
+    if (!open) setMaterialRequest(null);
   };
 
   const handleStudioTool = (_tool: StudioTool) => setActiveTab("studio");
@@ -117,41 +98,19 @@ export function VisualPreview() {
             onUpload={openUpload}
           />
         ) : activeTab === "studio" ? (
-          <div data-studio="" className="room-fade bg-[#0a0a0a]">
-          <div className="bg-[#0a0a0a] xl:hidden">
-            <button type="button" aria-expanded={materialsExpanded} aria-controls="study-material-controls" onClick={() => setMaterialsExpanded((open) => !open)} className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">Materiali e lettura<ChevronDown aria-hidden="true" className={`h-4 w-4 shrink-0 transition-transform motion-reduce:transition-none ${materialsExpanded ? "rotate-180" : ""}`} /></button>
-          </div>
-          <div className="study-workspace grid min-w-0 grid-cols-12 bg-[#0a0a0a] text-foreground xl:grid-cols-[minmax(16rem,3fr)_minmax(0,7fr)]">
-            <aside
-              className={`col-span-12 min-w-0 bg-[#0a0a0a] xl:col-span-1 ${materialsExpanded ? "block" : "hidden xl:block"}`}
-            >
-              <div id="study-material-controls" className={materialsExpanded ? "block" : "hidden xl:block"}>
-                <div className="p-4">
-                  <label htmlFor="visual-reading-mode" className="block text-sm font-medium">Taglio di lettura</label>
-                  <select id="visual-reading-mode" defaultValue="calma" className="mt-2 min-h-11 w-full rounded-control border border-[#FFFBF4] bg-[#FFFBF4] px-3 text-base text-[#0a0a0a]">
-                    <option value="calma">Calma</option>
-                    <option value="logica">Logica</option>
-                  </select>
-                  <p className="mt-2 text-sm text-muted-foreground">Testo più arioso per leggere con calma.</p>
-                </div>
-                <div ref={setMaterialPane} className="scroll-mt-16" />
-              </div>
-            </aside>
-            <section aria-label="Percorso e minilezioni" className="col-span-12 min-w-0 bg-[#0a0a0a] xl:col-span-1">
-              <StudioView
-                embeddedReader
-                hasFiles
-                onUploadClick={openUpload}
-                onCreatePathClick={openCreatePath}
-                onClearContext={() => {}}
-                onOpenCourseMaterials={() => {
-                  setMaterialRequest({ tab: "manage" });
-                  setMaterialsExpanded(true);
-                }}
-              />
-            </section>
-          </div>
-          </div>
+          <section aria-label="Percorso e minilezioni" data-studio="" className="study-workspace room-fade min-w-0 bg-[#0a0a0a] text-foreground">
+            <StudioView
+              embeddedReader
+              hasFiles
+              onUploadClick={openUpload}
+              onCreatePathClick={openCreatePath}
+              onClearContext={() => {}}
+              onOpenCourseMaterials={() => {
+                setMaterialRequest({ tab: "manage" });
+                setShowUpload(true);
+              }}
+            />
+          </section>
         ) : activeTab === "piano" ? (
           <AppointmentsCalendar evaluations={[
             { id: "demo-eval-today", title: "Interrogazione sul moto", subject_id: "demo-physics", type: "orale" as const, date: new Date(new Date().setHours(9, 0, 0, 0)).toISOString(), topic_type: "linked" as const, topic_id: "demo-course" },
@@ -185,9 +144,8 @@ export function VisualPreview() {
 
       {createPortal(
         <UploadSheet
-          embedded={activeTab === "studio" && !showUpload && !isLessonPreview}
           panelRequest={materialRequest}
-          open={(activeTab === "studio" && !isLessonPreview) || showUpload}
+          open={showUpload}
           onOpenChange={handleOpenChange}
           onUpload={() => {}}
           uploadedFiles={[]}

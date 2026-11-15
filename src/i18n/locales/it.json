@@ -910,9 +910,6 @@
       "bodyPrivate": "Oggi sono cambiati {{count}} slot del tuo piano."
     }
   },
-  "studio": {
-    "materialsAndReading": "Materiali e lettura"
-  },
   "pushNotifications": {
     "title": "Notifiche push",
     "description": "Scegli quali avvisi ricevere e come proteggere la materia mostrata nei banner.",

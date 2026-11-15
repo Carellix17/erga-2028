@@ -15,17 +15,19 @@ describe("creazione di un nuovo percorso in Studio", () => {
     expect(studio).toContain("h-auto min-h-12 w-full justify-center whitespace-normal");
   });
 
-  it("su telefono apre lo sheet dal basso e lascia separato il pannello materiali", () => {
+  it("apre il foglio dal basso su ogni larghezza, senza pannello incorporato", () => {
     const index = read("src/pages/Index.tsx");
     const studio = read("src/components/studio/StudioView.tsx");
     const uploadSheet = read("src/components/upload/UploadSheet.tsx");
 
-    expect(index).toContain('if (activeTab === "studio" && isMobile)');
     expect(index).toContain("setShowUpload(true)");
-    expect(index).toContain('embedded={activeTab === "studio" && !showUpload}');
+    expect(index).toContain("open={showUpload}");
+    expect(index).not.toContain("embedded=");
+    expect(index).not.toContain("materialsAndReading");
+    expect(index).not.toContain("setMaterialPane");
     expect(index).toContain("onCreatePathClick={openCreatePath}");
-    expect(index).toContain('ref={setMaterialPane} className="scroll-mt-16"');
     expect(studio).toContain("onUploadClick={createPath}");
+    expect(studio).toContain("pb-2 pt-4");
     expect(uploadSheet).toContain('side="bottom"');
   });
 });
