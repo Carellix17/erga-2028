@@ -179,16 +179,19 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
    The stylesheet reads this through --shut rather than
    repeating it: the skin's height and the closed width are the
    same number by definition, and two places holding it is two
-   places to get it wrong. */
-const SHUT = 48;
+   places to get it wrong.
+
+   56 on 2026-11-15: eight pixels over 48, in Studio only.
+   Same circle, same pill. */
+const SHUT = 56;
 /* the lens, and its inset. See the note above — this number
    is doing two jobs and they agree by construction.
 
-   20, measured against the rest of the bench rather than
+   24, measured against the rest of the bench rather than
    picked. Every round icon button here sits between 0.44 and
    0.50 of its button — .gdock-item 20/44, .bar-tool 17/38,
    .gnav-item 17/38, the nav's own 18/36 — and this button is
-   48 across, so 20 puts it at 0.42, in with the others (and
+   56 across, so 24 puts it at 0.43, in with the others (and
    on the 20 step icons snap to). 18 on a 64 was 0.28 and read
    as a small mark in a large circle.
 
@@ -199,12 +202,12 @@ const SHUT = 48;
    the same 0.111. `stroke-width: 2` therefore matches the
    bench at any LENS, and resizing the icon does not disturb
    it. */
-const LENS = 20;
+const LENS = 24;
 const INSET = (SHUT - LENS) / 2;
 
-/* the field's corner. 24 is half of its 48px height, which is
+/* the field's corner. 28 is half of its 56px height, which is
    the circle it is when shut and the pill it is when open. */
-const CORNER = 24;
+const CORNER = 28;
 
 /* the resting field, wide screen and narrow. See the note on
    the `width` prop for why there are two.

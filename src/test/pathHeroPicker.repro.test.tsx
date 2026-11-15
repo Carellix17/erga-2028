@@ -97,6 +97,12 @@ describe("PathHero — selettore percorsi (morphing)", () => {
       />,
     );
     fireEvent.click(screen.getByText("Cambia corso"));
+    const search = screen.getByRole("button", { name: "Cerca un percorso" }).closest(".sek");
+    expect(search?.style.getPropertyValue("--shut")).toBe("56px");
+    expect(search?.style.getPropertyValue("--lens")).toBe("24px");
+    expect(search?.style.getPropertyValue("--sek-r")).toBe("28px");
+    expect(search?.style.getPropertyValue("--frame")).toBe("274px");
+    expect(search?.style.getPropertyValue("--frameh")).toBe("96px");
     fireEvent.click(screen.getByRole("button", { name: "Cerca un percorso" }));
     const field = screen.getByRole("textbox", { name: "Cerca un percorso" });
     fireEvent.change(field, { target: { value: "citta" } });

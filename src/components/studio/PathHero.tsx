@@ -142,7 +142,7 @@ function CourseSearchDock({ onValueChange }: { onValueChange: (value: string) =>
     };
   }, []);
 
-  // shortcut: 20px is half the empty frame under the 48px circle, update if --shut or --frameh changes
+  // shortcut: 20px is half the empty frame under the 56px circle, update if --shut or --frameh changes
   return (
     <div
       className="pointer-events-none fixed inset-x-0 z-30 flex justify-center"
@@ -150,7 +150,7 @@ function CourseSearchDock({ onValueChange }: { onValueChange: (value: string) =>
     >
       <div className="pointer-events-auto">
         <Search
-          width={240}
+          width={248}
           placeholder="Cerca"
           label="Cerca un percorso"
           onValueChange={onValueChange}
