@@ -43,6 +43,13 @@
       "when": 1793568228856,
       "tag": "0005_piano_v2_fondamenta",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794764526431,
+      "tag": "0006_ai_usage_scope_insert",
+      "breakpoints": true
     }
   ]
 }

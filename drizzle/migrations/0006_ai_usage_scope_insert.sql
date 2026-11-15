@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "ai_usage_insert_authenticated" ON public.ai_usage;
+CREATE POLICY "ai_usage_insert_authenticated" ON public.ai_usage FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
