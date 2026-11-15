@@ -266,29 +266,39 @@ async function inspectStudio(viewport) {
   const widthsBefore = await assertNoHorizontalOverflow(page, `${viewport.name} Studio prima dell'apertura`);
   await page.screenshot({ path: path.join(outputDir, `studio-${viewport.name}.png`), fullPage: true });
 
+  const removedMenu = await page.evaluate(() => ({
+    disclosure: !!document.querySelector('button[aria-controls="study-material-controls"]'),
+    panel: !!document.querySelector("#study-material-controls, .material-panel"),
+    reading: !!document.querySelector("#reading-mode, #visual-reading-mode"),
+    label: !!(document.body.textContent?.includes("Materiali e lettura") || document.body.textContent?.includes("Taglio di lettura")),
+  }));
+  assert.equal(removedMenu.disclosure, false, `${viewport.name}: la tendina Materiali e lettura è ancora in pagina`);
+  assert.equal(removedMenu.panel, false, `${viewport.name}: il pannello materiali è ancora incorporato`);
+  assert.equal(removedMenu.reading, false, `${viewport.name}: il taglio di lettura è ancora in pagina`);
+  assert.equal(removedMenu.label, false, `${viewport.name}: resta il testo della tendina o del taglio di lettura`);
+
   await page.click(createButton);
-  if (viewport.isMobile) {
-    await page.waitForSelector('[role="dialog"]', { visible: true, timeout: 10_000 });
-    await page.waitForFunction(() => {
-      const dialog = document.querySelector('[role="dialog"]');
-      if (!dialog) return false;
-      const rect = dialog.getBoundingClientRect();
-      return rect.height > 0 && Math.abs(rect.bottom - window.innerHeight) < 8;
-    }, { timeout: 10_000 });
+  await page.waitForSelector('[role="dialog"]', { visible: true, timeout: 10_000 });
+  await page.waitForFunction(() => {
+    const dialog = document.querySelector('[role="dialog"]');
+    if (!dialog) return false;
+    const rect = dialog.getBoundingClientRect();
+    return rect.height > 0 && Math.abs(rect.bottom - window.innerHeight) < 8;
+  }, { timeout: 10_000 });
 
-    await page.waitForFunction(() => {
-      const dialog = document.querySelector('[role="dialog"]');
-      if (!dialog) return false;
-      return ["Carica PDF", "Carica foto", "Ricerca web"].every((label) => {
-        const button = [...dialog.querySelectorAll("button")].find((candidate) => candidate.textContent?.includes(label));
-        if (!button) return false;
-        const style = getComputedStyle(button);
-        const rect = button.getBoundingClientRect();
-        return style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) >= 0.98 && rect.width > 0;
-      });
-    }, { timeout: 5_000 });
+  await page.waitForFunction(() => {
+    const dialog = document.querySelector('[role="dialog"]');
+    if (!dialog) return false;
+    return ["Carica PDF", "Carica foto", "Ricerca web"].every((label) => {
+      const button = [...dialog.querySelectorAll("button")].find((candidate) => candidate.textContent?.includes(label));
+      if (!button) return false;
+      const style = getComputedStyle(button);
+      const rect = button.getBoundingClientRect();
+      return style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) >= 0.98 && rect.width > 0;
+    });
+  }, { timeout: 5_000 });
 
-    const sheet = await page.$eval('[role="dialog"]', (dialog) => {
+  const sheet = await page.$eval('[role="dialog"]', (dialog) => {
       const rect = dialog.getBoundingClientRect();
       const options = ["Carica PDF", "Carica foto", "Ricerca web"].map((label) => {
         const button = [...dialog.querySelectorAll("button")].find((candidate) => candidate.textContent?.includes(label));
@@ -326,59 +336,12 @@ async function inspectStudio(viewport) {
       assert.ok(option.top >= sheet.top && option.bottom <= sheet.bottom,
         `${viewport.name}: opzione «${label}» esce dal bottom sheet (${JSON.stringify(option)})`);
     }
-    const embeddedPanelVisible = await page.$eval("#study-material-controls", (element) => {
-      const style = getComputedStyle(element);
-      return style.display !== "none" && element.getBoundingClientRect().height > 0;
-    });
-    assert.equal(embeddedPanelVisible, false, "Su smartphone il menu deve aprirsi dal basso, non nel pannello materiali incorporato.");
-    const widthsAfter = await assertNoHorizontalOverflow(page, `${viewport.name} Studio con bottom sheet`);
-    await page.screenshot({ path: path.join(outputDir, `studio-${viewport.name}-bottom-sheet.png`), fullPage: true });
-    await page.close();
-    return { view: "studio", viewport: viewport.name, width: viewport.width, height: viewport.height, ...widthsBefore, sheet, widthsAfter };
-  }
-
-  await page.waitForFunction(() => {
-    const panel = document.querySelector(".material-panel");
-    if (!panel) return false;
-    const rect = panel.getBoundingClientRect();
-    return rect.width > 0 && rect.height > 0;
-  }, { timeout: 10_000 });
-  await page.waitForFunction(() => {
-    const panel = document.querySelector(".material-panel");
-    if (!panel) return false;
-    return ["Carica PDF", "Carica foto", "Ricerca web"].every((label) =>
-      [...panel.querySelectorAll("button")].some((button) => button.textContent?.includes(label) && Number(getComputedStyle(button).opacity) >= 0.98),
-    );
-  }, { timeout: 5_000 });
-  const embeddedPanel = await page.$eval(".material-panel", (panel) => {
-    const title = [...panel.querySelectorAll("h2")].find((heading) => heading.textContent?.trim() === "I tuoi materiali");
-    const titleRect = title?.getBoundingClientRect();
-    const appHeader = document.querySelector("#app-scroll-view > header");
-    const headerRect = appHeader?.getBoundingClientRect();
-    return {
-      titleFound: !!titleRect,
-      titleTop: titleRect?.top ?? null,
-      titleBottom: titleRect?.bottom ?? null,
-      headerBottom: headerRect?.bottom ?? null,
-      appScrollTop: document.querySelector("#app-scroll-view")?.scrollTop ?? null,
-      options: ["Carica PDF", "Carica foto", "Ricerca web"].map((label) => {
-        const button = [...panel.querySelectorAll("button")].find((candidate) => candidate.textContent?.includes(label));
-        const rect = button?.getBoundingClientRect();
-        return { label, top: rect?.top ?? null, bottom: rect?.bottom ?? null };
-      }),
-    };
-  });
-  assert.ok(embeddedPanel.titleFound, `${viewport.name}: intestazione materiali non trovata`);
-  assert.ok(
-    embeddedPanel.titleTop >= embeddedPanel.headerBottom - 1,
-    `${viewport.name}: intestazione del pannello materiali nascosta sotto l'header sticky (${JSON.stringify(embeddedPanel)})`,
-  );
-  const sheetCount = await page.$$eval('[role="dialog"]', (dialogs) => dialogs.length);
-  assert.equal(sheetCount, 0, `${viewport.name}: il flusso desktop/tablet non deve aprire un bottom sheet`);
-  const widthsAfter = await assertNoHorizontalOverflow(page, `${viewport.name} Studio con pannello materiali`);
-  await page.screenshot({ path: path.join(outputDir, `studio-${viewport.name}-materials.png`), fullPage: true });
+  const stillEmbedded = await page.$("#study-material-controls, .material-panel");
+  assert.equal(stillEmbedded, null, `${viewport.name}: il foglio non deve lasciare il pannello materiali in pagina`);
+  const widthsAfter = await assertNoHorizontalOverflow(page, `${viewport.name} Studio con bottom sheet`);
+  await page.screenshot({ path: path.join(outputDir, `studio-${viewport.name}-bottom-sheet.png`), fullPage: true });
   await page.close();
-  return { view: "studio", viewport: viewport.name, width: viewport.width, height: viewport.height, ...widthsBefore, widthsAfter, embeddedPanel };
+  return { view: "studio", viewport: viewport.name, width: viewport.width, height: viewport.height, ...widthsBefore, sheet, widthsAfter };
 }
 
 async function inspectPrompt7(viewport) {

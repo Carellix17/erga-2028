@@ -1175,10 +1175,8 @@ export function StudioView({
         </AnimatePresence>
       ) : (
         <>
-      {/* La creazione è il primo accesso della panoramica e apre il flusso
-          dedicato, senza riusare il pannello materiali incorporato. */}
       {courseViewState === "overview" && !isCoursePickerOpen && (
-        <div className="min-w-0 overflow-x-clip pb-2 pt-3">
+        <div className="min-w-0 overflow-x-clip pb-2 pt-4">
           <Button
             type="button"
             size="lg"

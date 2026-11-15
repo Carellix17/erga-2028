@@ -910,9 +910,6 @@
       "bodyPrivate": "{{count}} slots in your plan changed today."
     }
   },
-  "studio": {
-    "materialsAndReading": "Materials and reading"
-  },
   "pushNotifications": {
     "title": "Push notifications",
     "description": "Choose which alerts to receive and whether to hide the subject from banners.",
