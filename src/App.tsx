@@ -23,6 +23,7 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import Landing from "./pages/Landing";
 import { SplashScreen } from "@/components/shared/SplashScreen";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
+import { shouldPersistLessonQuery } from "@/lib/lessonQueryPersistence";
 
 // La landing resta nel primo caricamento; le aree dell'app vengono scaricate
 // solo quando servono. In questo modo chi visita la pagina pubblica non deve
@@ -123,7 +124,7 @@ const App = () => (
       dehydrateOptions: {
         // Solo il dominio "lessons" (liste, contesti, singole lezioni, scorte):
         // le chiavi contengono già l'id utente → niente mescolamenti tra persone.
-        shouldDehydrateQuery: (q) => q.queryKey[0] === "lessons",
+        shouldDehydrateQuery: shouldPersistLessonQuery,
       },
     }}
   >

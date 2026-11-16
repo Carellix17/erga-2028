@@ -1,8 +1,9 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { dehydrate, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FullscreenLessonGate } from "@/components/studio/FullscreenLesson";
-import { fetchLessonFull, retryLessonQuery } from "@/hooks/useLessons";
+import { fetchLessonFull, isFreeLessonLimit, retryLessonQuery } from "@/hooks/useLessons";
+import { shouldPersistLessonQuery } from "@/lib/lessonQueryPersistence";
 import { EdgeFetchError } from "@/lib/edgeFetch";
 import i18n from "@/i18n";
 
@@ -59,6 +60,27 @@ describe("lesson access limit recovery", () => {
     expect(retryLessonQuery(0, new EdgeFetchError("Not authorized", 403))).toBe(false);
     expect(retryLessonQuery(0, new Error("offline"))).toBe(true);
     expect(retryLessonQuery(1, new Error("offline"))).toBe(false);
+    expect(retryLessonQuery(0, new Error(denied))).toBe(false);
+    expect(isFreeLessonLimit(new Error(denied))).toBe(true);
+  });
+
+  it("never serializes an in-flight or failed lesson request", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    clients.push(client);
+    const savedKey = ["lessons", "student-1", "list", "course-1"];
+    const pendingKey = ["lessons", "student-1", "one", "course-1", 5];
+    client.setQueryData(savedKey, { lessons: [], currentIndex: 0 });
+    client.setQueryData(["unrelated"], "not persisted");
+    let reject: ((error: Error) => void) | undefined;
+    const request = client.fetchQuery({ queryKey: pendingKey, queryFn: () => new Promise((_resolve, fail) => { reject = fail; }) }).catch(() => undefined);
+    const before = dehydrate(client, { shouldDehydrateQuery: shouldPersistLessonQuery });
+    expect(before.queries.map(query => query.queryKey)).toEqual([savedKey]);
+    if (!reject) throw new Error("Request did not start");
+    reject(new EdgeFetchError(denied, 402));
+    await request;
+    const after = dehydrate(client, { shouldDehydrateQuery: shouldPersistLessonQuery });
+    expect(after.queries.map(query => query.queryKey)).toEqual([savedKey]);
+    expect(client.getQueryState(pendingKey)?.status).toBe("error");
   });
 
   it("keeps a manual retry available for other loading failures", async () => {

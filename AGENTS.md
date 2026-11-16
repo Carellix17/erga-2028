@@ -135,4 +135,5 @@ Per una modifica frontend, quando possibile:
 ## Lesson access errors
 
 - Preserve HTTP status in `EdgeFetchError`; lesson reads and prefetches must not retry client access errors or throw them into the page boundary, so server-enforced plan limits stay recoverable in the reader.
+- Persist only successful lesson-domain queries using `shouldPersistLessonQuery`; pending promises and failed access checks must never be dehydrated into the saved query cache.
 

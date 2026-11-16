@@ -95,10 +95,13 @@ export const lessonsKeys = {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function isFreeLessonLimit(error: unknown): boolean {
-  return error instanceof EdgeFetchError && error.status === 402 && error.message.startsWith("FREE_LESSON_LIMIT:");
+  // A query already in memory before an update can still hold the old Error.
+  return error instanceof Error && error.message.startsWith("FREE_LESSON_LIMIT:")
+    && (!(error instanceof EdgeFetchError) || error.status === 402);
 }
 
 export function retryLessonQuery(failureCount: number, error: Error): boolean {
+  if (isFreeLessonLimit(error)) return false;
   if (error instanceof EdgeFetchError && error.status >= 400 && error.status < 500) return false;
   return failureCount < 1;
 }

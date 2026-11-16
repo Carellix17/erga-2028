@@ -1,0 +1,3 @@
+- [x] Read all lesson-opening paths, shared queries, prefetch, cache persistence, agent tools and server plan checks.
+- [x] Keep Free-limit responses recoverable, including legacy in-memory errors; exclude pending/failed queries from persistence.
+- [x] Run regression tests and signed-in browser recovery checks.
