@@ -361,21 +361,21 @@ export function AppointmentsCalendar({
                     </h3>
                     <ul className="space-y-2">
                       {group.entries.map((entry) => {
-                        const tint = subjectTint(entry.subject, true, entry.customColor);
+                        const actionClass = "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#212327] text-[#0a0a0a] hover:bg-[#0a0a0a]/6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a0a0a] active:scale-[0.98] motion-reduce:transform-none";
                         return (
                           <li key={`${entry.original.kind}-${entry.id}`}>
-                            <article className="flex items-center gap-3 rounded-[24px] px-4 py-3" style={{ backgroundColor: tint.backgroundColor, border: tint.border }}>
+                            <article className="flex items-center gap-3 rounded-[24px] border border-[#212327] bg-[#FFFBF4] p-6 text-[#0a0a0a] shadow-none selection:bg-[#0a0a0a] selection:text-[#FFFBF4] [color-scheme:light]">
                               <div className="min-w-0 flex-1">
-                                <p className="font-mono text-[11px] uppercase tracking-[0.08em]" style={{ color: tint.dot }}>{entry.subject ?? t("piano.evaluation")}</p>
-                                <p className={cn("mt-1 text-base text-white", entry.completed && "line-through")}>{entry.title}</p>
-                                {entry.time && <p className="mt-1 text-sm text-[#dadbdf]">{entry.endTime ? `${entry.time.slice(0, 5)}-${entry.endTime.slice(0, 5)}` : entry.time.slice(0, 5)}</p>}
+                                <p className="break-words font-mono text-xs uppercase leading-4 tracking-[1.2px] text-[#565449]">{entry.subject ?? t("piano.evaluation")}</p>
+                                <p className={cn("mt-1 break-words text-base font-normal leading-6 text-[#0a0a0a]", entry.completed && "line-through")}>{entry.title}</p>
+                                {entry.time && <p className="mt-1 text-sm leading-5 text-[#363a3f]">{entry.endTime ? `${entry.time.slice(0, 5)}-${entry.endTime.slice(0, 5)}` : entry.time.slice(0, 5)}</p>}
                               </div>
                               <button
                                 type="button"
                                 aria-pressed={entry.completed}
                                 aria-label={`${t(entry.completed ? "piano.slotUndo" : "piano.slotMarkDone")} ${entry.title}`}
                                 onClick={() => onToggleComplete?.(entry)}
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4]"
+                                className={actionClass}
                               >
                                 <Check aria-hidden="true" className={cn("h-4 w-4", !entry.completed && "opacity-40")} />
                               </button>
@@ -383,7 +383,7 @@ export function AppointmentsCalendar({
                                 type="button"
                                 aria-label={t("piano.editEntry", { title: entry.title })}
                                 onClick={() => entry.original.kind === "evaluation" ? onEditEvaluation(entry.original.data) : onEditStudyEvent(entry.original.data)}
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4]"
+                                className={actionClass}
                               >
                                 <PencilLine aria-hidden="true" className="h-4 w-4" />
                               </button>
@@ -391,7 +391,7 @@ export function AppointmentsCalendar({
                                 type="button"
                                 aria-label={t("piano.deleteEntry", { title: entry.title })}
                                 onClick={() => entry.original.kind === "evaluation" ? onDeleteEvaluation(entry.original.data) : onDeleteStudyEvent(entry.original.data)}
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFFBF4]"
+                                className={actionClass}
                               >
                                 <Trash2 aria-hidden="true" className="h-4 w-4" />
                               </button>

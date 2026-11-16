@@ -156,6 +156,16 @@ describe("calendar and daily schedule", () => {
     expect(document.querySelector('button[aria-current="date"]')).toHaveFocus();
     expect(screen.getByRole("region", { name: "Calendario" })).toBeVisible();
   });
+  it("paints the month list cards in ivory with the dark text scale", () => {
+    mount();
+    const card = screen.getByText("Ripasso di fisica").closest("article");
+    expect(card).toHaveClass("bg-[#FFFBF4]", "text-[#0a0a0a]", "rounded-[24px]", "border-[#212327]", "p-6", "shadow-none");
+    expect(card).not.toHaveAttribute("style");
+    expect(within(card as HTMLElement).getByText("Fisica")).toHaveClass("text-[#565449]");
+    expect(within(card as HTMLElement).getByText("15:30")).toHaveClass("text-[#363a3f]");
+    expect(within(card as HTMLElement).getByRole("button", { name: "Modifica Ripasso di fisica" })).toHaveClass("rounded-full", "border-[#212327]", "text-[#0a0a0a]");
+  });
+
   it("edits and deletes a commitment from the month list", () => {
     mount();
     fireEvent.click(screen.getByRole("button", { name: "Modifica Ripasso di fisica" }));
