@@ -51,6 +51,7 @@ import {
   useSaveFinalTestResult,
   fetchLessonsList,
   fetchLessonFull,
+  retryLessonQuery,
   lessonsKeys,
   type Lesson,
   type LessonMeta,
@@ -692,6 +693,7 @@ export function StudioView({
       void queryClient.prefetchQuery({
         queryKey: lessonsKeys.lesson(currentUser, effectiveContextId, index),
         queryFn: () => fetchLessonFull(currentUser as string, effectiveContextId, index),
+        retry: retryLessonQuery,
       });
     }
     setCurrentLessonIndex(index);

@@ -132,3 +132,7 @@ Per una modifica frontend, quando possibile:
 6. controllare accessibilità automatica e navigazione da tastiera;
 7. spiegare in modo semplice modifiche, motivazioni, limiti e azioni richieste all'utente.
 
+## Lesson access errors
+
+- Preserve HTTP status in `EdgeFetchError`; lesson reads and prefetches must not retry client access errors or throw them into the page boundary, so server-enforced plan limits stay recoverable in the reader.
+

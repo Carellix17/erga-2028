@@ -3,13 +3,13 @@ import { useActiveTime } from "@/hooks/useActiveTime";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, CheckCircle2, Loader2, Sparkles, Send, Bot, User as UserIcon, RotateCcw } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, CheckCircle2, Loader2, Sparkles, Send, Bot, User as UserIcon, RotateCcw, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { currentLanguage } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
-import { useLessonQuery, type LessonMeta } from "@/hooks/useLessons";
+import { useLessonQuery, isFreeLessonLimit, type LessonMeta } from "@/hooks/useLessons";
 import { cn } from "@/lib/utils";
 import { LessonMarkdown } from "./LessonMarkdown";
 import { PdfCrop } from "./PdfCrop";
@@ -993,30 +993,37 @@ export function FullscreenLessonGate({
   const { t } = useTranslation();
   const lessonQuery = useLessonQuery(contextId, meta.lesson_order);
   const full = lessonQuery.data;
+  const proRequired = isFreeLessonLimit(lessonQuery.error);
   const failed = lessonQuery.isError || (lessonQuery.isSuccess && !full);
 
   if (!full) {
     return (
-      <div role={failed ? "alert" : "status"} aria-busy={!failed} data-studio="" className="no-halo fixed inset-0 z-50 flex bg-[#0a0a0a] px-4 sm:px-6">
-        <div className="studio-surface flex min-h-0 w-full flex-col items-center justify-center gap-4 bg-[#FFFBF4] p-4 text-[#0a0a0a]">
-        {!failed && <div className="w-16 h-16 rounded-full bg-card shadow-level-1 flex items-center justify-center">
+      <ReaderSurface embedded={props.embedded} onClose={props.onClose}>
+      <div role={props.embedded ? "region" : "dialog"} aria-label={meta.title} aria-modal={props.embedded ? undefined : true} aria-busy={!failed} data-studio="" className="no-halo fixed inset-0 z-50 flex overflow-y-auto bg-background px-4 text-foreground sm:px-6">
+        <div className="flex min-h-0 w-full flex-col items-center justify-center gap-4 py-8">
+        {!failed && <div className="w-16 h-16 rounded-full bg-card flex items-center justify-center">
           <Loader2 className="w-7 h-7 text-foreground animate-spin" />
         </div>}
-        <p className="break-words font-display font-semibold text-lg text-foreground text-center px-8 max-w-sm">
-          {meta.title}
-        </p>
-        <p className="text-sm text-muted-foreground text-center">{failed ? "Non riusciamo ad aprire questa lezione. Riprova oppure torna al percorso." : t("lesson.openingLesson")}</p>
-        {failed && <Button type="button" disabled={lessonQuery.isFetching} className="studio-action" onClick={() => void lessonQuery.refetch()}>Riprova</Button>}
+        {proRequired && <Lock className="h-8 w-8 text-foreground" aria-hidden="true" />}
+        {props.embedded ? (
+          <h2 className="break-words font-display font-semibold text-lg text-foreground text-center px-8 max-w-sm">{meta.title}</h2>
+        ) : (
+          <DialogPrimitive.Title className="break-words font-display font-semibold text-lg text-foreground text-center px-8 max-w-sm">{meta.title}</DialogPrimitive.Title>
+        )}
+        <p role={failed ? "alert" : "status"} className="max-w-sm text-base text-muted-foreground text-center">{proRequired ? t("lesson.freeLimit") : failed ? t("lesson.loadError") : t("lesson.openingLesson")}</p>
+        {proRequired && <Button asChild variant="outline" className="min-h-11 rounded-full"><a href="/app/impostazioni/account">{t("lesson.viewPlan")}</a></Button>}
+        {failed && !proRequired && <Button type="button" variant="outline" disabled={lessonQuery.isFetching} className="min-h-11 rounded-full" onClick={() => void lessonQuery.refetch()}>{t("lesson.retry")}</Button>}
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           onClick={props.onClose}
-          className="text-sm text-muted-foreground underline underline-offset-2 mt-2"
+          className="min-h-11 rounded-full"
         >
-          {t("lesson.closeLink")}
+          {t("lesson.backToPath")}
         </Button>
         </div>
       </div>
+      </ReaderSurface>
     );
   }
 

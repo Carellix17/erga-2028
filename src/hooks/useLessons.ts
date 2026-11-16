@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { edgeFetch } from "@/lib/edgeFetch";
+import { edgeFetch, EdgeFetchError } from "@/lib/edgeFetch";
 import { useTrackedMutation } from "./useTrackedMutation";
 import type { Exercise } from "@/components/studio/exercises/ExerciseRenderer";
 
@@ -94,6 +94,15 @@ export const lessonsKeys = {
 // La dispensa tiene i pacchi un giorno intero (abbraccia la persistenza P16).
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+export function isFreeLessonLimit(error: unknown): boolean {
+  return error instanceof EdgeFetchError && error.status === 402 && error.message.startsWith("FREE_LESSON_LIMIT:");
+}
+
+export function retryLessonQuery(failureCount: number, error: Error): boolean {
+  if (error instanceof EdgeFetchError && error.status >= 400 && error.status < 500) return false;
+  return failureCount < 1;
+}
+
 // ⚡ P16: il fattorino della lista — ora porta solo il plico LEGGERO.
 // 🅐 FONDAMENTA — porta anche le spunte (lezioni completate) e l'esito
 // dell'ultimo test finale; se il server non li manda ancora, valori neutri.
@@ -140,6 +149,8 @@ export function useLessonQuery(contextId: string | null | undefined, lessonIndex
     queryKey: lessonsKeys.lesson(currentUser, contextId, lessonIndex),
     queryFn: () => fetchLessonFull(currentUser as string, contextId as string, lessonIndex),
     enabled: !!currentUser && !!contextId && enabled,
+    retry: retryLessonQuery,
+    throwOnError: false,
     gcTime: DAY_MS,
   });
 }

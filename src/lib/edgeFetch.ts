@@ -3,6 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 const TRANSIENT_STATUSES = new Set([429, 502, 503, 504]);
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
+/** Preserve HTTP status so expected access limits are not treated as outages. */
+export class EdgeFetchError extends Error {
+  constructor(message: string, public readonly status: number) {
+    super(message);
+    this.name = "EdgeFetchError";
+  }
+}
+
 export async function edgeFetch<T = unknown>(
   fnName: string,
   body: Record<string, unknown>
@@ -69,7 +77,7 @@ export async function edgeFetch<T = unknown>(
         const msg = (parsed && typeof parsed === "object" && "error" in parsed && typeof (parsed as { error?: unknown }).error === "string")
           ? (parsed as { error: string }).error
           : `Errore ${res.status}`;
-        throw new Error(msg);
+        throw new EdgeFetchError(msg, res.status);
       }
 
       return parsed as T;
