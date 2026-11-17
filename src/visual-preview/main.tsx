@@ -13,7 +13,6 @@ import { HomeView } from "@/components/home/HomeView";
 import { StudioView } from "@/components/studio/StudioView";
 import { UploadSheet } from "@/components/upload/UploadSheet";
 import { LessonReaderPreview } from "./LessonReaderPreview";
-import type { StudioTool } from "@/components/studio/StudioPractice";
 import i18n from "@/i18n";
 import "@/index.css";
 import "@/App.css";
@@ -64,8 +63,6 @@ export function VisualPreview() {
     if (!open) setMaterialRequest(null);
   };
 
-  const handleStudioTool = (_tool: StudioTool) => setActiveTab("studio");
-
   return (
     <MemoryRouter initialEntries={["/app"]}>
       <InteractionFeedback />
@@ -80,21 +77,9 @@ export function VisualPreview() {
           <section className="min-h-[50vh] p-6" aria-label="Anteprima lettore lezione" />
         ) : activeTab === "home" ? (
           <HomeView
-            cognitiveProfile={{
-              nome: "Arianna",
-              eta: 16,
-              istituto: "Liceo",
-              log_score: 71,
-              mem_score: 62,
-              foc_score: 79,
-              voc_score: 54,
-              ans_score: 68,
-              app_score: 73,
-            }}
             onOpenStudio={() => setActiveTab("studio")}
             onResumeLesson={() => setActiveTab("studio")}
             onOpenPlan={() => setActiveTab("piano")}
-            onOpenStudioTool={handleStudioTool}
             onUpload={openUpload}
           />
         ) : activeTab === "studio" ? (

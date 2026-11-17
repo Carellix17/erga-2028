@@ -4,8 +4,6 @@ import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HomeView } from "@/components/home/HomeView";
 import { useHomeDashboard, type HomeDashboardData } from "@/hooks/useHomeDashboard";
-import type { CognitiveProfile } from "@/hooks/useCognitiveProfile";
-
 const startSession = vi.fn();
 const openSetup = vi.fn();
 
@@ -20,12 +18,6 @@ vi.mock("@/contexts/FocusContext", () => ({
 
 vi.mock("@/hooks/useCourseImage", () => ({
   useCourseImage: () => null,
-}));
-
-vi.mock("@/components/core/CognitiveRadar", () => ({
-  CognitiveRadar: ({ showLabels }: { showLabels?: boolean }) => (
-    <svg data-testid="cognitive-radar" data-show-labels={String(showLabels)} />
-  ),
 }));
 
 const dashboardData: HomeDashboardData = {
@@ -74,7 +66,6 @@ const callbacks = {
   onOpenStudio: vi.fn(),
   onResumeLesson: vi.fn(),
   onOpenPlan: vi.fn(),
-  onOpenStudioTool: vi.fn(),
   onUpload: vi.fn(),
 };
 
@@ -98,12 +89,10 @@ describe("HomeView modulare (V3)", () => {
     mockDashboard();
   });
 
-  it("separa la card del percorso, affianca esagono e pratica, poi mostra materiale/chat e piano", () => {
+  it("mostra il percorso e, sotto, solo il piano del giorno", () => {
     const { container } = render(<HomeView {...callbacks} />);
-    // HomeHeader: saluto con nome reale
     const heading = screen.getByRole("heading", { level: 1 });
     expect(heading.textContent).toContain("Vale");
-    // CourseHeroCard (il corso "Fisica" appare anche come materia nel piano)
     expect(screen.getAllByText("Fisica").length).toBeGreaterThan(0);
     const courseHeading = screen.getByRole("heading", { name: "Fisica" });
     expect(courseHeading.className).toContain("text-3xl");
@@ -115,31 +104,21 @@ describe("HomeView modulare (V3)", () => {
     const progress = screen.getByRole("progressbar", { name: /avanzamento del percorso: 20%/i });
     expect(progress).toHaveAttribute("aria-valuenow", "20");
 
-    const hexagon = screen.getByRole("heading", { name: "Il tuo esagono" });
-    const interrogation = screen.getByRole("button", { name: "Interrogazione" });
-    const exercises = screen.getByRole("button", { name: "Esercizi" });
-    const upload = screen.getByRole("button", { name: "Carica materiale" });
-    const chat = screen.getByRole("button", { name: "Chat" });
     const timeline = screen.getByRole("heading", { name: "Piano del giorno" });
-    expect(interrogation).toBeInTheDocument();
-    expect(exercises).toBeInTheDocument();
-    expect(upload).toBeInTheDocument();
-    expect(chat).toBeInTheDocument();
-    for (const action of [interrogation, exercises, upload, chat]) {
-      expect(action).toHaveClass("h-auto", "min-h-12", "whitespace-normal");
-    }
+    expect(courseHeading.compareDocumentPosition(timeline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByText("Ripasso cinematica")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Il tuo esagono" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Interrogazione" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Esercizi" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Carica materiale" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Chat" })).not.toBeInTheDocument();
     expect(screen.queryByText(/azioni consigliate/i)).not.toBeInTheDocument();
-
-    // Le due azioni di pratica sono nella stessa riga, subito accanto all'esagono.
-    const practiceRow = hexagon.closest("section")?.parentElement;
-    expect(practiceRow).toContainElement(interrogation);
-    expect(practiceRow).toContainElement(exercises);
-    expect(hexagon.compareDocumentPosition(interrogation) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    // Materiali/chat seguono la riga di pratica; le attività sono sotto entrambi.
-    expect(interrogation.compareDocumentPosition(upload) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(upload.compareDocumentPosition(timeline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(container.querySelector(".cognitive-grid")).toBeNull();
+
+    const dayCard = timeline.closest("section");
+    expect(dayCard).toHaveClass("bg-[#FFFBF4]", "text-[#0a0a0a]", "rounded-[24px]");
+    const openPlan = screen.getByRole("button", { name: "Vedi Piano" });
+    expect(openPlan).toHaveClass("rounded-[24px]", "bg-[#0a0a0a]", "text-[#FFFBF4]");
   });
 
   it("il saluto e il nome stanno su due righe: due span a blocco nello stesso h1", () => {
@@ -204,63 +183,29 @@ describe("HomeView modulare (V3)", () => {
     expect(callbacks.onOpenStudio).toHaveBeenCalledTimes(1);
   });
 
-  it("gli accessi Home restano collegati alle stesse azioni locali di Studio", () => {
+  it("senza attività la card del giorno è avorio e il pulsante nero apre il Piano", () => {
+    mockDashboard({ ...dashboardData, todayTasks: [] });
     render(<HomeView {...callbacks} />);
-    fireEvent.click(screen.getByRole("button", { name: "Carica materiale" }));
-    expect(callbacks.onUpload).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole("button", { name: "Chat" }));
-    expect(callbacks.onOpenStudioTool).toHaveBeenCalledWith("chat");
-    fireEvent.click(screen.getByRole("button", { name: "Esercizi" }));
-    expect(callbacks.onOpenStudioTool).toHaveBeenCalledWith("esercizi");
-    fireEvent.click(screen.getByRole("button", { name: "Interrogazione" }));
-    expect(callbacks.onOpenStudioTool).toHaveBeenCalledWith("interrogazione");
+    const title = screen.getByRole("heading", { name: "Nessuna attività prevista" });
+    const card = title.closest("section");
+    expect(card).toHaveClass("bg-[#FFFBF4]", "text-[#0a0a0a]", "rounded-[24px]");
+    expect(title).toHaveClass("text-[#0a0a0a]");
+    expect(screen.getByText("Puoi lasciare libero il pomeriggio oppure organizzare una sessione.")).toHaveClass("text-[#3a3a3a]");
+    const organize = screen.getByRole("button", { name: "Organizza la settimana" });
+    expect(organize).toHaveClass("rounded-[24px]", "bg-[#0a0a0a]", "text-[#FFFBF4]");
+    fireEvent.click(organize);
+    expect(callbacks.onOpenPlan).toHaveBeenCalledTimes(1);
   });
 
-  it("mostra esplicitamente quando il profilo cognitivo non è disponibile", () => {
+  it("i pulsanti della Home hanno angoli da 24px e l'etichetta intera", () => {
     render(<HomeView {...callbacks} />);
-    expect(screen.getByRole("heading", { name: "Il tuo esagono" })).toBeInTheDocument();
-    expect(screen.getByText("Il profilo cognitivo non è disponibile in questo momento.")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /profilo cognitivo/i })).not.toBeInTheDocument();
-  });
-
-  it("nella Home mostra l'esagono ma non i punteggi tecnici", () => {
-    const profile = {
-      log_score: 71,
-      mem_score: 62,
-      foc_score: 53,
-      voc_score: 44,
-      ans_score: 35,
-      app_score: 26,
-    } as unknown as CognitiveProfile;
-    const { container } = render(<HomeView {...callbacks} cognitiveProfile={profile} />);
-    const hexagon = screen.getByRole("heading", { name: "Il tuo esagono" }).closest("section");
-    expect(hexagon).toBeInTheDocument();
-    expect(hexagon?.querySelector("dl")).toBeNull();
-    expect(screen.getByTestId("cognitive-radar")).toHaveAttribute("data-show-labels", "false");
-    expect(screen.getByRole("heading", { name: "Fisica" }).closest("article")).toHaveClass("bg-[#FFFBF4]", "rounded-[24px]");
-    expect(container.querySelector("[data-cover-root]")).toBeNull();
-    expect(screen.queryByText(/\/100/)).not.toBeInTheDocument();
-    expect(screen.queryByText("71")).not.toBeInTheDocument();
-  });
-
-  it("il piano del giorno viene dopo esagono, pratica, materiali e chat", () => {
-    render(<HomeView {...callbacks} />);
-    const upload = screen.getByRole("button", { name: "Carica materiale" });
-    const chat = screen.getByRole("button", { name: "Chat" });
-    const timeline = screen.getByRole("heading", { name: /piano del giorno/i });
-    expect(upload.compareDocumentPosition(chat) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(chat.compareDocumentPosition(timeline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
-
-  it("i controlli Home rispettano la geometria squadrata e non troncano le etichette", () => {
-    render(<HomeView {...callbacks} />);
-    ["Carica materiale", "Chat", "Esercizi", "Interrogazione"].forEach((label) => {
+    for (const label of ["Riprendi lezione", "Vedi Piano"]) {
       const button = screen.getByRole("button", { name: label });
-      // DESIGN.md v4: controlli squadrati, con etichetta sempre disponibile.
+      expect(button.className).toContain("rounded-[24px]");
       expect(button.className).not.toContain("rounded-full");
       expect(button.className).not.toContain("rounded-[999");
       expect(button.textContent).toContain(label);
-    });
+    }
     expect(screen.getByText("20%")).toBeInTheDocument();
   });
 
@@ -274,7 +219,7 @@ describe("HomeView modulare (V3)", () => {
 
   it("rispetta i target touch minimi (44px) sui controlli principali", () => {
     render(<HomeView {...callbacks} />);
-    const mainLabels = ["Carica materiale", "Chat", "Esercizi", "Interrogazione", "Riprendi lezione"];
+    const mainLabels = ["Riprendi lezione", "Vedi Piano"];
     mainLabels.forEach((label) => {
       const btn = screen.getByText(label).closest("button");
       expect(btn).toBeTruthy();

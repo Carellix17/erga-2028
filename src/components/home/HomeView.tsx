@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AudioLines, MessageSquare, PencilLine, RefreshCw, Upload } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -13,18 +13,12 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { HomeHeader } from "./HomeHeader";
 import { CourseHeroCard } from "./CourseHeroCard";
 import { DailyTimeline } from "./DailyTimeline";
-import { CognitiveTelemetry } from "./CognitiveTelemetry";
-import type { CognitiveProfile } from "@/hooks/useCognitiveProfile";
-import type { StudioTool } from "@/components/studio/StudioPractice";
 
 interface HomeViewProps {
   onOpenStudio: () => void;
   onResumeLesson: (contextId: string, lessonIndex: number) => void;
   onOpenPlan: () => void;
-  /** Apre la scheda Pratica, eventualmente sulla sotto-sezione richiesta. */
-  onOpenStudioTool?: (tool: StudioTool) => void;
   onUpload: () => void;
-  cognitiveProfile?: CognitiveProfile | null;
 }
 
 const VISIBLE_TASKS = 3;
@@ -33,9 +27,7 @@ export function HomeView({
   onOpenStudio,
   onResumeLesson,
   onOpenPlan,
-  onOpenStudioTool,
   onUpload,
-  cognitiveProfile,
 }: HomeViewProps) {
   const { t } = useTranslation();
   const dashboard = useHomeDashboard();
@@ -60,11 +52,11 @@ export function HomeView({
   if (dashboard.isError || !data) {
     return (
       <div className="pb-10 pt-16">
-        <Card className="mx-auto max-w-xl rounded-card border border-border bg-card p-6 text-center">
+        <Card className="mx-auto max-w-xl rounded-[24px] border border-border bg-card p-6 text-center">
           <RefreshCw className="mx-auto h-8 w-8 text-destructive" aria-hidden="true" />
           <h1 className="mt-4 text-xl font-semibold">{t("home.error.title")}</h1>
           <p className="mt-2 text-base text-muted-foreground">{t("home.error.description")}</p>
-          <Button className="mt-5 min-h-12" onClick={() => dashboard.refetch()}>
+          <Button className="mt-5 min-h-12 rounded-[24px]" onClick={() => dashboard.refetch()}>
             {t("home.error.retry")}
           </Button>
         </Card>
@@ -100,26 +92,6 @@ export function HomeView({
       sourceType: "planned",
     });
   };
-
-  const openStudioTool = (tool: StudioTool) => {
-    triggerLight();
-    onOpenStudioTool?.(tool);
-  };
-
-  const practiceActions = [
-    {
-      id: "interrogation",
-      label: t("home.tools.interrogation"),
-      icon: AudioLines,
-      tool: "interrogazione" as const,
-    },
-    {
-      id: "exercises",
-      label: t("home.tools.exercises"),
-      icon: PencilLine,
-      tool: "esercizi" as const,
-    },
-  ];
 
   return (
     <div className="min-w-0 pt-16 pb-4">
@@ -195,63 +167,7 @@ export function HomeView({
           }
         />
 
-        {/* Esagono senza card; a fianco, solo gli accessi alla pratica. */}
-        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-center gap-3 sm:gap-4 lg:max-w-xl">
-          <CognitiveTelemetry profile={cognitiveProfile ?? null} />
-          <div
-            role="group"
-            aria-label={t("home.tools.practiceGroupAria")}
-            className="flex min-w-0 flex-col gap-2"
-          >
-            {practiceActions.map(({ id, label, icon: Icon, tool }) => (
-              <Button
-                key={id}
-                type="button"
-                variant="outline"
-                onClick={() => openStudioTool(tool)}
-                className="h-auto min-h-12 w-full whitespace-normal justify-start px-2.5 text-left sm:px-3"
-              >
-                <Icon className="shrink-0" aria-hidden="true" />
-                <span className="min-w-0 break-words">{label}</span>
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Materiali e chat sono il gruppo successivo, distinto dalla pratica. */}
-        <div
-          role="group"
-          aria-label={t("home.tools.materialChatGroupAria")}
-          className={`grid min-w-0 gap-2 ${data.hasContexts ? "grid-cols-2" : "grid-cols-1"}`}
-        >
-          {data.hasContexts && (
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              onClick={() => {
-                triggerLight();
-                onUpload();
-              }}
-              className="h-auto min-h-12 w-full whitespace-normal px-2"
-            >
-              <Upload aria-hidden="true" />
-              <span className="min-w-0 break-words">{t("home.tools.upload")}</span>
-            </Button>
-          )}
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            onClick={() => openStudioTool("chat")}
-            className="h-auto min-h-12 w-full whitespace-normal px-2"
-          >
-            <MessageSquare aria-hidden="true" />
-            <span className="min-w-0 break-words">{t("home.tools.chat")}</span>
-          </Button>
-        </div>
-
-        {/* Le attività del giorno rimangono una lista verticale, fuori dai gruppi azione. */}
+        {/* Sotto il percorso resta solo il piano del giorno. */}
         <DailyTimeline
           title={t("home.today.title")}
           seeAllLabel={t("home.today.openPlan")}

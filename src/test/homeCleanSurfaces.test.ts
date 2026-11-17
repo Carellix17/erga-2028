@@ -36,13 +36,14 @@ describe("Superfici pulite della Home", () => {
     expect(css).not.toContain("P27 — AURA ANIMATA");
   });
 
-  it("separa la pratica dagli accessi a materiali e chat senza griglia di card", () => {
+  it("la Home non ospita esagono, pratica, materiali o chat", () => {
     const view = readFileSync(join(HOME_DIR, "HomeView.tsx"), "utf8");
-    expect(view).toContain("practiceActions");
-    expect(view).toContain('home.tools.practiceGroupAria');
-    expect(view).toContain('home.tools.materialChatGroupAria');
-    expect(view).toContain('home.tools.upload');
-    expect(view).toContain('home.tools.chat');
+    expect(view).not.toContain("practiceActions");
+    expect(view).not.toContain("CognitiveTelemetry");
+    expect(view).not.toContain("home.tools.practiceGroupAria");
+    expect(view).not.toContain("home.tools.materialChatGroupAria");
+    expect(view).not.toContain("home.tools.upload");
+    expect(view).not.toContain("home.tools.chat");
     expect(view).not.toContain("QuickToolsGrid");
     expect(view).not.toContain("Azioni consigliate");
     expect(view).not.toContain("cognitive-grid");
@@ -71,7 +72,6 @@ describe("Superfici pulite della Home", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     expect(hero).toContain("bg-[#FFFBF4]");
     expect(hero).toContain("text-[#0a0a0a]");
-    // Pulsanti Home: min-h-12 (48px) con --radius-button 9999px → curva da 24px.
     expect(hero).toContain("rounded-[24px]");
     expect(hero).toContain("border-[#212327]");
     expect(hero).not.toContain("CourseCardBackground");

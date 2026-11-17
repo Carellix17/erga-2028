@@ -283,7 +283,6 @@ const Index = () => {
         >
         {activeTab === "home" && (
           <HomeView
-            cognitiveProfile={cognitive}
             onOpenStudio={() => changeTab("studio", { replace: false })}
             onResumeLesson={(contextId, lessonIndex) => {
               setSelectedContextId(contextId);
@@ -294,10 +293,6 @@ const Index = () => {
               changeTab("studio", { replace: false });
             }}
             onOpenPlan={() => changeTab("piano", { replace: false })}
-            onOpenStudioTool={(tool) => {
-              setToolLaunch({ tool, requestId: Date.now() });
-              changeTab("studio", { replace: false });
-            }}
             onUpload={openUpload}
           />
         )}

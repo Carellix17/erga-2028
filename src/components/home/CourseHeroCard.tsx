@@ -32,12 +32,9 @@ function clampPercent(value: number | null | undefined) {
     : 0;
 }
 
-/** Sulla card bianca il pill outline (bordo e testo bianchi) non si legge.
- *  Riempimento: canvas DESIGN.md #0a0a0a. Testo: ink #ffffff.
- *  Hover: canvas-soft #1a1c20. Focus: anello nero staccato dal bianco della card.
- *  Angoli: 24px, la curva visibile dei pulsanti Home alti 48px (token pillola 9999px). */
+/** Sulla card avorio il pulsante è nero, con etichetta bianca e angoli a 24px. */
 const lessonCtaClass =
-  "min-h-12 w-full border-[#0a0a0a] bg-[#0a0a0a] text-[#ffffff] hover:border-[#1a1c20] hover:bg-[#1a1c20] hover:text-[#ffffff] focus-visible:ring-[#0a0a0a] focus-visible:ring-offset-[#FFFBF4] sm:w-fit";
+  "min-h-12 w-full rounded-[24px] border-[#0a0a0a] bg-[#0a0a0a] text-[#ffffff] hover:border-[#1a1c20] hover:bg-[#1a1c20] hover:text-[#ffffff] focus-visible:ring-[#0a0a0a] focus-visible:ring-offset-[#FFFBF4] sm:w-fit";
 
 export function CourseHeroCard({
   courseTitle,

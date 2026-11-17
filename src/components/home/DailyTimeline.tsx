@@ -4,9 +4,8 @@ import { cn } from "@/lib/utils";
 /**
  * DailyTimeline — lista verticale del piano del giorno sulla Home.
  *
- * Una superficie carta con bordo di griglia, senza ombre o grana. Le attività
- * completate si spengono (testo attenuato, barrato, spunta); quelle da fare
- * mantengono un target ampio e un'etichetta che può andare a capo.
+ * Card avorio, testo nero, pulsante nero a 24px. Le attività completate
+ * si spengono (testo attenuato, barrato, spunta).
  */
 
 export interface TimelineTask {
@@ -35,6 +34,12 @@ function taskIcon(kind: TimelineTask["kind"]): LucideIcon {
   return CalendarDays;
 }
 
+const dayCardClass =
+  "rounded-[24px] border border-[#212327] bg-[#FFFBF4] text-[#0a0a0a] shadow-none selection:bg-[#0a0a0a] selection:text-[#FFFBF4]";
+
+const dayButtonClass =
+  "flex min-h-12 w-full items-center justify-center rounded-[24px] border border-[#0a0a0a] bg-[#0a0a0a] px-4 text-base font-semibold text-[#FFFBF4] transition-colors hover:border-[#1a1c20] hover:bg-[#1a1c20] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0a0a0a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFBF4] active:scale-[0.98] motion-reduce:transform-none";
+
 export function DailyTimeline({
   tasks = [],
   title = "Oggi",
@@ -46,19 +51,14 @@ export function DailyTimeline({
   onSeeAll,
 }: DailyTimelineProps) {
   if (tasks.length === 0) {
-    // Stato senza impegni: breve e utile (2.1 §9), non un pannello vuoto.
     return (
-      <section className="rounded-card border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold text-foreground">{emptyTitle}</h2>
+      <section className={`${dayCardClass} p-5 sm:p-6`}>
+        <h2 className="text-lg font-semibold text-[#0a0a0a]">{emptyTitle}</h2>
         {emptyDescription && (
-          <p className="mt-1 text-sm leading-snug text-muted-foreground">{emptyDescription}</p>
+          <p className="mt-1 text-base leading-snug text-[#3a3a3a]">{emptyDescription}</p>
         )}
         {emptyCtaLabel && onSeeAll && (
-          <button
-            type="button"
-            onClick={onSeeAll}
-            className="mt-4 flex h-11 w-full items-center justify-center rounded-control border border-border bg-secondary text-base font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
+          <button type="button" onClick={onSeeAll} className={`mt-4 ${dayButtonClass}`}>
             {emptyCtaLabel}
           </button>
         )}
@@ -67,36 +67,27 @@ export function DailyTimeline({
   }
 
   return (
-    <section className="overflow-hidden rounded-card border border-border bg-card">
-      <div className="flex items-center justify-between gap-3 p-4 pb-2 sm:p-5 sm:pb-2.5">
-        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-        {onSeeAll && (
-          <button
-            type="button"
-            onClick={onSeeAll}
-            className="flex min-h-11 items-center rounded-control px-3.5 text-sm font-medium text-card-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            {seeAllLabel}
-          </button>
-        )}
+    <section className={dayCardClass}>
+      <div className="p-5 pb-2 sm:p-6 sm:pb-2">
+        <h2 className="text-lg font-semibold text-[#0a0a0a]">{title}</h2>
       </div>
 
-      <ul className="px-2 pb-2 sm:px-2.5">
+      <ul className="px-2 sm:px-3">
         {tasks.map((task) => {
           const Icon = taskIcon(task.kind);
           return (
-            <li key={task.id} className="border-t border-border first:border-t-0">
+            <li key={task.id} className="border-t border-[#0a0a0a]/10 first:border-t-0">
               <button
                 type="button"
                 onClick={() => onTaskClick?.(task.id)}
-                className="flex min-h-[60px] w-full items-center gap-3 rounded-card px-3 py-2.5 text-left transition-colors hover:bg-secondary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="flex min-h-[60px] w-full items-center gap-3 rounded-[24px] px-3 py-2.5 text-left transition-colors hover:bg-[#0a0a0a]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0a0a0a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFBF4]"
               >
                 <span
                   className={cn(
-                    "grid h-11 w-11 shrink-0 place-items-center rounded-control",
+                    "grid h-11 w-11 shrink-0 place-items-center rounded-[24px]",
                     task.isCompleted
-                      ? "bg-secondary text-ink-muted"
-                      : "bg-secondary text-secondary-foreground",
+                      ? "border border-[#0a0a0a]/20 text-[#3a3a3a]"
+                      : "bg-[#0a0a0a] text-[#FFFBF4]",
                   )}
                 >
                   {task.isCompleted ? (
@@ -109,16 +100,16 @@ export function DailyTimeline({
                   <span
                     className={cn(
                       "block break-words text-base font-medium leading-snug",
-                      task.isCompleted ? "text-muted-foreground line-through" : "text-foreground",
+                      task.isCompleted ? "text-[#3a3a3a] line-through" : "text-[#0a0a0a]",
                     )}
                   >
                     {task.title}
                   </span>
                   {(task.subject || task.time) && (
-                    <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-muted-foreground">
+                    <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-base text-[#3a3a3a]">
                       {task.subject && <span className="break-words">{task.subject}</span>}
                       {task.subject && task.time && (
-                        <span aria-hidden="true" className="text-muted-foreground/60">·</span>
+                        <span aria-hidden="true" className="text-[#3a3a3a]">·</span>
                       )}
                       {task.time && (
                         <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
@@ -134,6 +125,14 @@ export function DailyTimeline({
           );
         })}
       </ul>
+
+      {onSeeAll && (
+        <div className="p-5 pt-3 sm:p-6 sm:pt-3">
+          <button type="button" onClick={onSeeAll} className={dayButtonClass}>
+            {seeAllLabel}
+          </button>
+        </div>
+      )}
     </section>
   );
 }

@@ -77,7 +77,6 @@ describe("grana locale e alias piatti — design system v4", () => {
       "src/components/home/DailyTimeline.tsx",
       "src/components/home/HomeDashboardSkeleton.tsx",
       "src/components/home/HomeView.tsx",
-      "src/components/home/CognitiveTelemetry.tsx",
     ]) {
       expect(read(file), file).not.toContain("paper-grain");
     }

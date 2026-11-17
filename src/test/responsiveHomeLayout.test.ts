@@ -32,7 +32,7 @@ describe("layout responsive Home e shell", () => {
     expect(home).toContain("min-w-0");
     expect(home).toContain("pt-16");
     expect(read("src/components/home/HomeDashboardSkeleton.tsx")).toContain("pt-16");
-    expect(home).toContain("grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]");
+    expect(home).not.toContain("grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]");
     expect(home).not.toContain("cognitive-grid");
     expect(course).toContain("break-words");
     expect(timeline).toContain("break-words");
