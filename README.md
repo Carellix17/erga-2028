@@ -35,7 +35,7 @@ Disponibile su **iOS**, **Android** e **Web**.
 
 ---
 
-## 📄 Licenza
+## Licenza
 
 Questo progetto è proprietario. Tutti i diritti riservati © 2026 Erga. Non è consentita la copia, la distribuzione o la modifica del codice senza esplicita autorizzazione scritta degli autori.
 
