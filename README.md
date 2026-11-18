@@ -3,7 +3,7 @@
 # Erga
 ### La piattaforma educativa che si adatta a come pensi
 
-**Erga** combina intelligenza artificiale, gamification e analisi cognitiva per offrire un'esperienza di apprendimento personalizzata — sul tuo telefono, sul tuo tablet, ovunque tu sia.
+**Erga** combina intelligenza artificiale, pianificazione dello studio e analisi cognitiva per offrire un'esperienza di apprendimento personalizzata — sul tuo telefono, sul tuo tablet, ovunque tu sia.
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
