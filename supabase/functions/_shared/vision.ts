@@ -2,7 +2,7 @@
  * Shared VISION caller with 3-tier fallback chain.
  *
  * Solo i provider che sanno "vedere" le immagini:
- *  1. ERGA_GEMINI_KEY_APRIL  → Google Gemini 2.5 Flash (endpoint OpenAI-compatibile)
+ *  1. ERGA_GEMINI_KEY_APRIL  → Google Gemini diretto (default gemini-3.5-flash-lite)
  *  2. ERGA_OPENAI_KEY_APRIL  → OpenAI gpt-4o-mini (supporta image_url)
  *  3. LOVABLE_API_KEY         → Lovable AI Gateway (google/gemini-2.5-flash)
  *
@@ -15,6 +15,13 @@
  */
 
 import { logAiUsage } from "./aiUsage.ts";
+import { extractUsageTokens } from "./usage.ts";
+import {
+  GEMINI_LOVABLE_GATEWAY_MODEL,
+  GEMINI_MODEL_DEFAULT,
+  geminiChatSampling,
+  resolveGeminiModel,
+} from "./gemini.ts";
 
 interface VisionCallOptions {
   messages: { role: string; content: unknown }[];
@@ -36,7 +43,8 @@ const VISION_PROVIDERS: VisionProvider[] = [
     label: "gemini",
     url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
     keyEnv: "ERGA_GEMINI_KEY_APRIL",
-    model: "gemini-2.5-flash",
+    // Sostituito a ogni chiamata da GEMINI_MODEL (default sotto).
+    model: GEMINI_MODEL_DEFAULT,
   },
   {
     label: "openai",
@@ -48,7 +56,7 @@ const VISION_PROVIDERS: VisionProvider[] = [
     label: "lovable-gateway",
     url: "https://ai.gateway.lovable.dev/v1/chat/completions",
     keyEnv: "LOVABLE_API_KEY",
-    model: "google/gemini-2.5-flash",
+    model: GEMINI_LOVABLE_GATEWAY_MODEL,
   },
 ];
 
@@ -63,6 +71,8 @@ function isTransient(status: number): boolean {
  */
 export async function callVisionJson(opts: VisionCallOptions, tag?: string): Promise<unknown> {
   const errors: string[] = [];
+  const thinkingOverrides = Deno.env.get("GEMINI_THINKING_OVERRIDES") ?? undefined;
+  const geminiModel = resolveGeminiModel(Deno.env.get("GEMINI_MODEL"));
 
   for (const provider of VISION_PROVIDERS) {
     const apiKey = Deno.env.get(provider.keyEnv);
@@ -70,6 +80,15 @@ export async function callVisionJson(opts: VisionCallOptions, tag?: string): Pro
       console.log(`[vision] no key for ${provider.label}, skipping`);
       continue;
     }
+
+    const model = provider.label === "gemini" ? geminiModel : provider.model;
+    const sampling = geminiChatSampling(
+      provider.label,
+      model,
+      opts.temperature ?? 0,
+      tag,
+      thinkingOverrides,
+    );
 
     const maxRetries = 1;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -81,26 +100,44 @@ export async function callVisionJson(opts: VisionCallOptions, tag?: string): Pro
             Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: provider.model,
+            model,
             messages: opts.messages,
             max_tokens: opts.max_tokens ?? 4000,
-            temperature: opts.temperature ?? 0,
+            ...sampling,
           }),
-        });
-
-        logAiUsage({
-          fn: tag,
-          provider: provider.label,
-          model: provider.model,
-          ok: resp.ok,
-          status: resp.status,
-          userId: opts.userId,
         });
 
         if (resp.ok) {
           console.log(`[vision] using ${provider.label.toUpperCase()} (attempt ${attempt + 1})`);
-          return await resp.json();
+          const data = await resp.json();
+          const tokens = extractUsageTokens(data);
+          logAiUsage({
+            fn: tag,
+            provider: provider.label,
+            model,
+            ok: true,
+            status: resp.status,
+            userId: opts.userId,
+            promptTokens: tokens.promptTokens,
+            completionTokens: tokens.completionTokens,
+            totalTokens: tokens.totalTokens,
+          });
+          if (tokens.reasoningTokens !== null || tokens.cachedTokens !== null) {
+            console.log(
+              `[vision] ${provider.label} tokens in=${tokens.promptTokens} out=${tokens.completionTokens} thinking=${tokens.reasoningTokens} cached=${tokens.cachedTokens} total=${tokens.totalTokens}`,
+            );
+          }
+          return data;
         }
+
+        logAiUsage({
+          fn: tag,
+          provider: provider.label,
+          model,
+          ok: false,
+          status: resp.status,
+          userId: opts.userId,
+        });
 
         const errBody = await resp.text();
         console.warn(`[vision] ${provider.label} error ${resp.status}: ${errBody.substring(0, 300)}`);
@@ -115,7 +152,7 @@ export async function callVisionJson(opts: VisionCallOptions, tag?: string): Pro
         logAiUsage({
           fn: tag,
           provider: provider.label,
-          model: provider.model,
+          model,
           ok: false,
           status: null,
           userId: opts.userId,

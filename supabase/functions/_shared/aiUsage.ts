@@ -53,6 +53,8 @@ export function logAiUsage(row: AiUsageRow): void {
         completion_tokens: row.completionTokens ?? null,
         total_tokens: row.totalTokens ?? null,
         duration_ms: row.durationMs ?? null,
+        // reasoning/cached non si scrivono: la tabella non ha quelle colonne
+        // e un campo sconosciuto farebbe rifiutare l'intera riga.
       }),
     })
       .then(() => {})
