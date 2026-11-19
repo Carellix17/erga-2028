@@ -16,10 +16,11 @@ interface LegalDocumentProps {
   updated: string;
   sections: LegalSection[];
   otherLink: { to: string; label: string };
+  brief?: { title: string; body: ReactNode };
 }
 
 /** Pagina pubblica di testo legale: leggibile, semantica, senza animazioni. */
-export function LegalDocument({ title, intro, path, description, updated, sections, otherLink }: LegalDocumentProps) {
+export function LegalDocument({ title, intro, path, description, updated, sections, otherLink, brief }: LegalDocumentProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SeoHead title={`${title} — Erga`} description={description} path={path} />
@@ -33,6 +34,12 @@ export function LegalDocument({ title, intro, path, description, updated, sectio
         <h1 className="mt-6 font-display text-3xl sm:text-4xl leading-tight">{title}</h1>
         <p className="mt-2 text-sm text-muted-foreground">Ultimo aggiornamento: {updated}</p>
         <p className="mt-6 text-base leading-relaxed">{intro}</p>
+        {brief && (
+          <aside className="mt-8 rounded-lg border border-border bg-card p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{brief.title}</h2>
+            <p className="mt-3 text-base leading-relaxed">{brief.body}</p>
+          </aside>
+        )}
 
         <nav aria-label="Indice" className="mt-8 rounded-lg border border-border bg-card p-5">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Indice</h2>
