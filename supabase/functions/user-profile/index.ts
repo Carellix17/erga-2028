@@ -3,6 +3,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse, normalizeEmail, emailLikePattern } from "../_shared/auth.ts";
 import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
+function omitAge(row: Record<string, unknown>) {
+  const copy = { ...row };
+  delete copy.age;
+  return copy;
+}
+
 serve(withCors(async (req) => {
   try {
     const body = await req.json();
@@ -35,15 +41,17 @@ serve(withCors(async (req) => {
           .maybeSingle();
         if (legacyProfile) {
           console.warn("user-profile: legacy row found by email for", logRef(userId));
-          return successResponse({ profile: legacyProfile });
+          return successResponse({ profile: omitAge(legacyProfile) });
         }
       }
 
-      return successResponse({ profile: profile || null });
+      return successResponse({ profile: profile ? omitAge(profile) : null });
     }
 
     if (action === "save") {
-      const { institute_type, subject_levels, subject_goals, first_name, last_name, nickname, age, school, avatar_url } = body;
+      // `age` non si legge e non si scrive più. La colonna resta nel database
+      // finché il CEO non autorizza un DROP, che è irreversibile.
+      const { institute_type, subject_levels, subject_goals, first_name, last_name, nickname, school, avatar_url } = body;
 
       const validInstitutes = ["liceo_scientifico", "liceo_classico", "liceo_linguistico", "istituto_tecnico"];
       if (institute_type && !validInstitutes.includes(institute_type)) {
@@ -80,7 +88,6 @@ serve(withCors(async (req) => {
       if (first_name !== undefined) updateData.first_name = String(first_name).slice(0, 50);
       if (last_name !== undefined) updateData.last_name = String(last_name).slice(0, 50);
       if (nickname !== undefined) updateData.nickname = String(nickname).slice(0, 30);
-      if (age !== undefined) updateData.age = typeof age === "number" ? age : null;
       if (school !== undefined) updateData.school = String(school).slice(0, 100);
       if (avatar_url !== undefined) updateData.avatar_url = String(avatar_url).slice(0, 500);
 

@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { withCors, errorResponse, successResponse } from "../_shared/auth.ts";
+import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
+import { assertAiAgeAllowed } from "../_shared/ageAccess.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 
 /**
@@ -96,6 +97,16 @@ serve(withCors(async (req) => {
 
     if (!topic && !text) {
       return errorResponse("Argomento o testo mancante", 400);
+    }
+
+    // La demo anonima resta aperta. Se invece c'è una sessione, vale lo stesso
+    // controllo dei 14 anni delle altre chiamate all'IA.
+    try {
+      const auth = await validateAuth(req);
+      const ageDenied = await assertAiAgeAllowed(auth.supabase, auth.userId, auth.userEmail);
+      if (ageDenied) return ageDenied;
+    } catch {
+      // Nessun account: il visitatore anonimo può ancora vedere la demo.
     }
 
     // ANTI-ABUSO: prima di spendere crediti AI, verifica il limite giornaliero.

@@ -40,8 +40,13 @@ const sections: LegalSection[] = [
     title: "Intelligenza artificiale",
     body: (
       <>
-        <p>Per generare lezioni e risposte, parti dei tuoi materiali e delle tue domande vengono inviate a fornitori di intelligenza artificiale (come Google, OpenAI, Groq e OpenRouter), che le elaborano per nostro conto.</p>
-        <p>L'intelligenza artificiale può sbagliare: controlla sempre le informazioni importanti con il libro o con l'insegnante. Non caricare dati personali di altre persone o informazioni sensibili che non servono allo studio.</p>
+        <p>Erga usa servizi di intelligenza artificiale (IA) per spiegarti gli argomenti, creare riassunti e quiz e leggere i documenti che carichi.</p>
+        <p>Il fornitore principale è <strong>Mistral AI</strong> (Mistral AI SAS, Parigi, Francia). Le richieste vengono elaborate su <strong>server nell'Unione europea</strong>.</p>
+        <p>A Mistral inviamo solo il testo necessario a risponderti (la tua domanda, i materiali che carichi). <strong>Non inviamo il tuo nome, la tua email né altri dati che ti identificano</strong>, e chiediamo di non scriverne nelle domande.</p>
+        <p>Abbiamo <strong>disattivato l'uso dei tuoi dati per addestrare i modelli</strong> di Mistral.</p>
+        <p>Mistral tratta questi dati per nostro conto, in base a un accordo sul trattamento dei dati (DPA) come previsto dall'art. 28 del GDPR.</p>
+        <p>Per alcune funzioni usiamo anche: Google (Gemini), OpenAI, Groq, OpenRouter, il gateway Lovable e Microsoft Azure per la sintesi vocale.</p>
+        <p>Le risposte dell'IA possono contenere errori: controllale sempre con il libro o con l'insegnante.</p>
       </>
     ),
   },
@@ -91,8 +96,15 @@ const sections: LegalSection[] = [
     ),
   },
   {
-    title: "Studenti minorenni",
-    body: <p>Erga è pensata per studenti, anche delle scuole superiori. Se hai meno dell'età minima prevista per iscriverti da solo, serve il consenso di un genitore o di chi ne fa le veci. I genitori possono contattarci per avere informazioni o chiedere la cancellazione dei dati del figlio.</p>,
+    title: "Età minima e studenti minorenni",
+    body: (
+      <>
+        <p>Per usare Erga devi avere <strong>almeno 14 anni</strong>. Chi ha meno di 14 anni non può iscriversi: se scopriamo che è successo, cancelliamo l'account e i dati.</p>
+        <p>In Italia dai 14 anni puoi acconsentire da solo al trattamento dei tuoi dati per i servizi online (art. 2-quinquies del Codice privacy) e all'uso dell'IA (art. 4 della legge 132/2025). Se hai tra 14 e 17 anni ti chiediamo comunque di confermare che i tuoi genitori sono d'accordo.</p>
+        <p>All'iscrizione chiediamo la data di nascita solo per controllare l'età: <strong>non la conserviamo</strong>. Salviamo solo se hai almeno 14 anni, se hai meno di 18 anni e la data del controllo.</p>
+        <p>I piani a pagamento devono essere acquistati da un genitore o da un altro adulto.</p>
+      </>
+    ),
   },
   {
     title: "I tuoi diritti",
@@ -123,7 +135,12 @@ export default function Privacy() {
       sections={sections}
       brief={{
         title: "In breve",
-        body: "Le tue chat con il tutor restano finché non le cancelli. Per cancellare tutto l'account scrivici: lo facciamo entro 30 giorni.",
+        body: (
+          <>
+            <p>Erga usa l'IA di Mistral, con server in Europa. Non le diciamo chi sei e non la usiamo per addestrare i modelli. Serve avere almeno 14 anni.</p>
+            <p>Le tue chat con il tutor restano finché non le cancelli. Per cancellare tutto l'account scrivici: lo facciamo entro 30 giorni.</p>
+          </>
+        ),
       }}
       otherLink={{ to: "/termini", label: "Termini di servizio" }}
     />

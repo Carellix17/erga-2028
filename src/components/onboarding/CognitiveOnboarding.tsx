@@ -88,7 +88,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
   const canProceed = (() => {
     switch (currentSlide) {
       case "nome": return nome.trim().length >= 1;
-      case "eta": return !!eta && parseInt(eta, 10) >= 8 && parseInt(eta, 10) <= 99;
+      case "eta": return !!eta && parseInt(eta, 10) >= 14 && parseInt(eta, 10) <= 99;
       case "istituto":
         if (!istituto) return false;
         if (istituto === 'Altro (Inserisci manualmente)') return istitutoCustom.trim().length >= 2;
@@ -174,7 +174,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                   className="w-full h-14 rounded-2xl bg-foreground/[0.04] border-0 text-base px-4 outline-none"
                 >
                   <option value="">Seleziona la tua età</option>
-                  {Array.from({ length: 28 }, (_, i) => i + 13).map((n) => (
+                  {Array.from({ length: 27 }, (_, i) => i + 14).map((n) => (
                     <option key={n} value={n}>{n} anni</option>
                   ))}
                 </select>

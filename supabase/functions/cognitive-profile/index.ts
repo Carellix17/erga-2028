@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse, normalizeEmail, emailLikePattern } from "../_shared/auth.ts";
+import { acceptOnboardingEta } from "../_shared/ageCheck.ts";
 import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
@@ -77,10 +78,14 @@ serve(withCors(async (req) => {
         if (!Number.isFinite(x)) return 50;
         return Math.max(0, Math.min(100, x));
       };
+      const acceptedEta = acceptOnboardingEta(eta);
+      if (acceptedEta === null) {
+        return errorResponse("Per usare Erga serve avere almeno 14 anni.", 400);
+      }
       const row = {
         user_id: userId,
         nome: typeof nome === "string" ? nome.slice(0, 60) : null,
-        eta: typeof eta === "number" && Number.isInteger(eta) && eta >= 8 && eta <= 99 ? eta : null,
+        eta: acceptedEta,
         istituto: typeof istituto === "string" ? istituto.slice(0, 200) : null,
         log_score: clamp(log_score),
         mem_score: clamp(mem_score),

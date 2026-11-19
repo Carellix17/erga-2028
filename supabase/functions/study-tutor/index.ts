@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
+import { assertAiAgeAllowed } from "../_shared/ageAccess.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 import { logErrorDiag } from "../_shared/logRef.ts";
@@ -91,6 +92,8 @@ serve(withCors(async (req) => {
     const language = normalizeLanguage(body.language);
     const auth = await validateAuth(req, body);
     const { userId, supabase } = auth;
+    const ageDenied = await assertAiAgeAllowed(supabase, userId, auth.userEmail);
+    if (ageDenied) return ageDenied;
 
     // Ottieni il testo: priorità a inputText diretto, fallback al context da DB
     let studyText = "";
