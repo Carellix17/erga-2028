@@ -4,6 +4,7 @@ import { callAIStream, callAIText } from "../_shared/ai.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 import { parsePages, sampleAcrossPages } from "../_shared/pagemap.ts";
 import { detectActionIntent, parseForcedAction } from "../_shared/agentintent.ts";
+import { logRef } from "../_shared/logRef.ts";
 
 /*
  * 💬 LA MACCHINA DELLA CHAT — edizione P7.
@@ -147,7 +148,7 @@ serve(withCors(async (req) => {
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
 
-    console.log(`Chat request for user: ${userId} (authenticated: ${auth.isAuthenticated}, topic: ${topicContextId ?? "generale"}) [${FN_VERSION}]`);
+    console.log(`Chat request for user ${logRef(userId)} (authenticated: ${auth.isAuthenticated}, topic: ${topicContextId ?? "generale"}) [${FN_VERSION}]`);
 
     const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
 

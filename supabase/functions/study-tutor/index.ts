@@ -130,7 +130,7 @@ serve(withCors(async (req) => {
     try {
       parsed = safeParseJson(raw);
     } catch (e) {
-      console.error("[study-tutor] JSON parse failed. Raw (first 500):", raw.slice(0, 500));
+      console.error("[study-tutor] JSON parse failed. Lunghezza risposta:", raw.length);
       return errorResponse("Risposta AI non valida. Riprova.", 502);
     }
 

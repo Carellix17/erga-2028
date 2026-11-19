@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse, normalizeEmail, emailLikePattern } from "../_shared/auth.ts";
+import { logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -45,7 +46,7 @@ serve(withCors(async (req) => {
           .ilike("user_id", emailLikePattern(email))
           .maybeSingle();
         if (legacyCognitive) {
-          console.warn("cognitive-profile: legacy row found by email for", userId);
+          console.warn("cognitive-profile: legacy row found by email for", logRef(userId));
           cognitive = legacyCognitive;
         }
       }

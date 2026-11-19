@@ -272,7 +272,7 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
         try {
           exercises = extractJsonArray(content);
         } catch (parseErr) {
-          console.error(`[generate-exercises] parse failed. Raw AI response (first 2000 chars):`, content.slice(0, 2000));
+          console.error("[generate-exercises] parse failed. Lunghezza risposta:", content.length);
           throw parseErr;
         }
         if (!Array.isArray(exercises) || exercises.length === 0) throw new Error("Risposta AI non valida");

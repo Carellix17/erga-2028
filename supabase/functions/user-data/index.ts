@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse, normalizeEmail, emailLikePattern } from "../_shared/auth.ts";
+import { logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -37,7 +38,7 @@ serve(withCors(async (req) => {
         if (legacyError) {
           console.error("user-data legacy lookup error:", legacyError.message);
         } else if (legacy) {
-          console.warn("user-data: legacy row found by email for", userId, key);
+          console.warn("user-data: legacy row found by email for", logRef(userId));
           return successResponse({ value: legacy.value ?? null });
         }
       }

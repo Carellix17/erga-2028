@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { logRef } from "../_shared/logRef.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 import { buildModulePush, buildPathPush } from "../_shared/modulePush.ts";
@@ -131,7 +132,7 @@ serve(withCors(async (req) => {
 
     const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
 
-    console.log(`Generate lessons for user: ${userId} (legacy: ${legacyUserId}) (authenticated: ${auth.isAuthenticated})`);
+    console.log(`Generate lessons for user ${logRef(userId)} (authenticated: ${auth.isAuthenticated})`);
 
     // 🧭 PERCORSI 2.0 — IL CENTRALINO DELLA LEZIONE: le materie scientifiche
     // passano da DeepSeek (OpenRouter, con gradino gratuito e gradino a
@@ -428,7 +429,7 @@ ${studyContent}`;
         scientific,
       );
 
-      console.log("AI lesson response (first 300 chars):", content.substring(0, 300));
+      console.log("AI lesson response length:", content.length);
       const lessonData = extractJsonRobust(content);
 
       // 🕳️ P1 — LA CERNIERA: la risposta deve contenere una lezione VERA.
@@ -909,7 +910,7 @@ ${studyContent}`;
         { role: "user", content: finalTestPrompt }
       ], 0.2);
 
-      console.log("AI final test response (first 300 chars):", raw.substring(0, 300));
+      console.log("AI final test response length:", raw.length);
       const exercises = extractJsonRobust(raw);
       if (!Array.isArray(exercises)) throw new Error("Formato test finale non valido");
       return successResponse({ success: true, exercises });
@@ -1107,7 +1108,7 @@ ${documentSection}`;
           { role: "user", content: titlesPrompt }
         ], 0.1, 16000);
 
-        console.log("AI titles response (first 300 chars):", content.substring(0, 300));
+        console.log("AI titles response length:", content.length);
         const parsedTitles = extractJsonRobust(content);
         if (!Array.isArray(parsedTitles)) throw new Error("Formato titoli non valido");
         if (parsedTitles.length === 0) throw new Error(UNSUITABLE_MATERIAL_ERROR);

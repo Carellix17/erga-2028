@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { logRef } from "../_shared/logRef.ts";
 import { callVisionText } from "../_shared/vision.ts";
 import { UNSUITABLE_MATERIAL_CODE, UNSUITABLE_MATERIAL_ERROR, rejectedGenerationState } from "../_shared/studyMaterial.ts";
 
@@ -57,7 +58,7 @@ serve(withCors(async (req) => {
       const auth = await validateAuth(req, body);
       userId = auth.userId;
       supabase = auth.supabase;
-      console.log(`Extract PDF for user: ${userId}`);
+      console.log(`Extract PDF for user ${logRef(userId)}`);
     }
 
     // Action: process-images (extract text from photos using AI vision)
@@ -109,7 +110,7 @@ serve(withCors(async (req) => {
               .download(imgPath.trim());
 
             if (downloadError || !fileData) {
-              console.error(`Error downloading image ${imgPath}:`, downloadError);
+              console.error("Error downloading image:", downloadError);
               throw new Error("FILE_DOWNLOAD_ERROR");
             }
 
@@ -389,7 +390,7 @@ serve(withCors(async (req) => {
       return errorResponse("Dati mancanti", 400);
     }
 
-    console.log(`Registering PDF upload: ${fileName} for user: ${userId}`);
+    console.log(`Registering PDF upload for user ${logRef(userId)}`);
 
     // Validate file path ownership to prevent path traversal across users.
     // The background processor runs with service-role and would otherwise
@@ -592,8 +593,8 @@ REGOLE OBBLIGATORIE:
         data = await resp.json();
         break;
       }
-      const errBody = await resp.text();
-      console.error(`Gemini PDF vision error (${model}, attempt ${attempt + 1}):`, resp.status, errBody);
+      await resp.text();
+      console.error(`Gemini PDF vision error (${model}, attempt ${attempt + 1}):`, resp.status);
       if (![429, 500, 502, 503, 504].includes(resp.status)) break;
       await new Promise((resolve) => setTimeout(resolve, 1200 * (attempt + 1)));
     }

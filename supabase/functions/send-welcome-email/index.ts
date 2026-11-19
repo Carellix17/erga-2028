@@ -124,12 +124,11 @@ Deno.serve(async (req) => {
       console.error('Failed to log sent welcome email', { code: logError.code })
     }
 
-    console.log('Welcome email sent', { recipient_redacted: redactEmail(recipient) })
+    console.log('Welcome email sent')
     return jsonResponse({ success: true })
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
     console.error('Welcome email send failed', {
-      recipient_redacted: redactEmail(recipient),
       code: errorCode(error),
     })
 

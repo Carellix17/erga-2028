@@ -98,7 +98,8 @@ Deno.serve(withCors(async (req) => {
     });
 
     if (!aiRes.ok) {
-      console.error('Lovable AI TTS error', aiRes.status, await aiRes.text().catch(() => ''));
+      await aiRes.text().catch(() => "");
+      console.error("Lovable AI TTS error", aiRes.status);
       return new Response(JSON.stringify({ error: 'TTS service error' }), {
         status: aiRes.status === 429 ? 429 : 502,
         headers: { 'Content-Type': 'application/json' },

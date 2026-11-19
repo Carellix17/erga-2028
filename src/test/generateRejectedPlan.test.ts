@@ -3,6 +3,7 @@ import ts from "typescript";
 import { describe, expect, it, vi } from "vitest";
 import * as material from "../../supabase/functions/_shared/studyMaterial";
 import { extractJsonRobust } from "../../supabase/functions/_shared/lessonPayload";
+import { logRef } from "../../supabase/functions/_shared/logRef";
 
 function generationHandler(aiResponse: string | Error, overrides: Record<string, unknown> = {}) {
   const updates: Record<string, unknown>[] = [];
@@ -32,7 +33,7 @@ function generationHandler(aiResponse: string | Error, overrides: Record<string,
     normalizeLanguage: () => "it", languageDirective: () => "Italiano",
     detectSubject: async () => ({ family: "umanistiche", subject: "altro", confidence: 50, source: "test" }),
     maxPageNumber: () => 0, isLongDocument: () => false, buildPlanFamilyGuidance: () => "",
-    callAIText, extractJsonRobust, ...material,
+    callAIText, extractJsonRobust, logRef, ...material,
     EdgeRuntime: { waitUntil: (job: Promise<unknown>) => jobs.push(job) },
   };
   new Function(...Object.keys(deps), js)(...Object.values(deps));

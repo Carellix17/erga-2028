@@ -141,7 +141,7 @@ serve(withCors(async (req) => {
 
       let exercises = parseExerciseSet(raw, count);
       if (exercises.length === 0) {
-        console.warn("[gym] serie illeggibile, riprovo una volta. Inizio risposta:", String(raw).slice(0, 300));
+        console.warn("[gym] serie illeggibile, riprovo una volta. Lunghezza risposta:", raw ? String(raw).length : 0);
         const retry = await callAIText(messages, 0.3, 6000, "scientific-gym");
         exercises = parseExerciseSet(retry, count);
       }

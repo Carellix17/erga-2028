@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -18,7 +19,7 @@ serve(withCors(async (req) => {
 
     const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
 
-    console.log(`Delete context for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
+    console.log(`Delete context for user ${logRef(userId)} (authenticated: ${auth.isAuthenticated})`);
 
     // List all contexts for user
     if (action === "list") {
@@ -71,7 +72,7 @@ serve(withCors(async (req) => {
 
     // Delete a specific context
     if (action === "delete" && contextId) {
-      console.log(`Deleting context ${contextId} for user ${userId}`);
+      console.log(`Deleting context ${contextId} for user ${logRef(userId)}`);
 
       // First delete related lessons
       const { error: lessonsError } = await supabase

@@ -30,7 +30,6 @@ async function record(
   if (suppressError) {
     console.error('Failed to upsert suppressed email', {
       code: suppressError.code,
-      message: suppressError.message,
       event_id: eventId,
     })
     throw new Error('Failed to write suppression')
@@ -48,7 +47,6 @@ async function record(
   if (logError) {
     console.error('Failed to insert email_send_log', {
       code: logError.code,
-      message: logError.message,
       event_id: eventId,
     })
     throw new Error('Failed to write send log')

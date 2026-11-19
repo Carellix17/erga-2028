@@ -257,7 +257,7 @@ Rispondi SOLO con JSON valido, senza markdown:
     console.error("Vision AI error (tutti i provider):", visionErr);
     return [];
   }
-  console.log("Vision response (first 600):", content.substring(0, 600));
+  console.log("Vision response length:", content.length);
 
   try {
     const match = content.match(/\[[\s\S]*\]/);
@@ -331,7 +331,7 @@ async function figuresFromSourceImages(
 
     const { data: fileData, error: dlErr } = await supabase.storage.from("study-pdfs").download(src);
     if (dlErr || !fileData) {
-      console.warn(`[figuresFromSourceImages] download failed for ${src}:`, dlErr);
+      console.warn("[figuresFromSourceImages] download failed:", dlErr);
       break;
     }
     const bytes = new Uint8Array(await fileData.arrayBuffer());

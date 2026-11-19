@@ -6,6 +6,7 @@ import {
   isPlanChangeReason,
   validatePlanChanges,
 } from "./validate.ts";
+import { logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -22,7 +23,7 @@ serve(withCors(async (req) => {
     }
     const { userId, supabase } = auth;
 
-    console.log(`Save event for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
+    console.log(`Save event for user ${logRef(userId)} (authenticated: ${auth.isAuthenticated})`);
 
     if (action === "applyChanges") {
       if (!isPlanChangeReason(body.reason)) return errorResponse("reason_invalid", 400);

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
+import { logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -8,7 +9,7 @@ serve(withCors(async (req) => {
     const auth = await validateAuth(req, body);
     const { userId, supabase } = auth;
 
-    console.log(`Generating study plan for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
+    console.log(`Generating study plan for user ${logRef(userId)} (authenticated: ${auth.isAuthenticated})`);
 
     const { data: contexts } = await supabase.from("study_contexts").select("content, file_name").eq("user_id", userId);
     const { data: events } = await supabase.from("study_events").select("*").eq("user_id", userId).order("event_date", { ascending: true });
@@ -171,7 +172,7 @@ ${contextSummary}`;
     const responseContent = await callAIText([{ role: "user", content: prompt }], 0.7, 4096, "generate-plan");
     if (!responseContent) throw new Error("Risposta AI vuota");
 
-    console.log("AI response:", responseContent.substring(0, 500));
+    console.log("AI response length:", responseContent.length);
 
     let plan;
     try {
@@ -184,7 +185,7 @@ ${contextSummary}`;
         plan = JSON.parse(jsonMatch[0]);
       }
     } catch (e) {
-      console.error("Parse error, raw response:", responseContent);
+      console.error("Parse error");
       throw new Error("Errore nel parsing del piano generato");
     }
 
