@@ -6,7 +6,7 @@ import {
   isPlanChangeReason,
   validatePlanChanges,
 } from "./validate.ts";
-import { logRef } from "../_shared/logRef.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -160,7 +160,7 @@ serve(withCors(async (req) => {
 
     return errorResponse("Invalid action", 400);
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     return errorResponse("Errore nel salvataggio degli eventi. Riprova.");
   }
 }));

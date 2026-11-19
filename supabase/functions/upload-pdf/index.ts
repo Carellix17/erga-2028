@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, errorResponse, successResponse } from "../_shared/auth.ts";
-import { logRef } from "../_shared/logRef.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 import { mammothHtmlToMarkdown } from "../_shared/docxMarkdown.ts";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
@@ -212,7 +212,7 @@ serve(withCors(async (req) => {
           });
 
         if (uploadError) {
-          console.error("Storage upload error for image:", uploadError);
+          console.error("Storage upload error for image", logErrorDiag(uploadError));
           // Cleanup already uploaded
           if (uploadedPaths.length > 0) {
             await supabase.storage.from("study-pdfs").remove(uploadedPaths);
@@ -247,7 +247,7 @@ serve(withCors(async (req) => {
       const processUrl = `${supabaseUrl}/functions/v1/extract-pdf`;
       void triggerBackgroundProcessing(processUrl, supabaseServiceKey, { action: "process-images", contextId: context.id });
 
-      console.log(`Context created: ${context.id}, image processing started`);
+      console.log(`Context created: ${logRef(context.id)}, image processing started`);
 
       return successResponse({
         success: true,
@@ -320,7 +320,7 @@ serve(withCors(async (req) => {
         .storage.from("study-pdfs")
         .upload(filePath, file, { contentType: contentTypes[kind], upsert: false });
       if (attachUploadError) {
-        console.error("errore storage allegato:", attachUploadError);
+        console.error("errore storage allegato", logErrorDiag(attachUploadError));
         return errorResponse("Errore durante il caricamento del file");
       }
 
@@ -341,7 +341,7 @@ serve(withCors(async (req) => {
         // ReferenceError mascherato dal generico "Errore durante il caricamento").
         return updErr.message?.includes("FREE_COURSE_LIMIT") ? errorResponse("FREE_COURSE_LIMIT: Con il piano Free puoi creare al massimo 10 corsi a settimana. Passa a Pro per corsi illimitati.", 402) : errorResponse("Errore nel salvataggio");
       }
-      console.log(`File allegato al percorso ${attachId} (+${newText.length} caratteri)`);
+      console.log(`File allegato al percorso ${logRef(attachId)} (+${newText.length} caratteri)`);
       return successResponse({ success: true, contextId: attachId, attached: true, fileName: file.name });
     }
 
@@ -361,7 +361,7 @@ serve(withCors(async (req) => {
         .storage.from("study-pdfs")
         .upload(filePath, file, { contentType: contentTypes[kind], upsert: false });
       if (textUploadError) {
-        console.error("errore storage documento:", textUploadError);
+        console.error("errore storage documento", logErrorDiag(textUploadError));
         return errorResponse("Errore durante il caricamento del file");
       }
 
@@ -380,7 +380,7 @@ serve(withCors(async (req) => {
         await supabase.storage.from("study-pdfs").remove([filePath]);
         return dbError.message?.includes("FREE_COURSE_LIMIT") ? errorResponse("FREE_COURSE_LIMIT: Con il piano Free puoi creare al massimo 10 corsi a settimana. Passa a Pro per corsi illimitati.", 402) : errorResponse("Errore nel salvataggio");
       }
-      console.log(`Percorso testuale creato: ${context.id} (${text.length} caratteri, tipo ${kind})`);
+      console.log(`Percorso testuale creato: ${logRef(context.id)} (${text.length} caratteri, tipo ${kind})`);
       return successResponse({
         success: true,
         contextId: context.id,
@@ -399,7 +399,7 @@ serve(withCors(async (req) => {
       });
 
     if (uploadError) {
-      console.error("Storage upload error:", uploadError);
+      console.error("Storage upload error", logErrorDiag(uploadError));
       return errorResponse("Errore durante il caricamento del file");
     }
 
@@ -427,7 +427,7 @@ serve(withCors(async (req) => {
     // 🩺 P7: con ritento interno — un blip di rete non lascia più il materiale appeso.
     void triggerBackgroundProcessing(processUrl, supabaseServiceKey, { action: "process", contextId: context.id });
 
-    console.log(`Context created: ${context.id}, processing started`);
+    console.log(`Context created: ${logRef(context.id)}, processing started`);
 
     return successResponse({ 
       success: true, 
@@ -438,7 +438,7 @@ serve(withCors(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     return errorResponse("Errore durante il caricamento");
   }
 }));

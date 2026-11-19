@@ -4,7 +4,7 @@ import { withCors, validateAuth, errorResponse, successResponse } from "../_shar
 import { callAIText } from "../_shared/ai.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 import { originalUrlFromThumb, shortImageLabel } from "../_shared/wikimediaThumb.ts";
-import { logRef } from "../_shared/logRef.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
 /**
  * RICERCA WEB VERA (P5, rifatta P11b e P13).
@@ -363,7 +363,7 @@ serve(withCors(async (req) => {
           .from("study-pdfs")
           .upload(path, got.bytes, { contentType: got.mime, upsert: false });
         if (upErr) {
-          console.warn("image storage upload failed:", upErr);
+          console.warn("image storage upload failed", logErrorDiag(upErr));
           recordSkip(img.url, `il caveau rifiuta il salvataggio (${(upErr.message ?? "?").slice(0, 60)})`);
           continue;
         }
@@ -394,7 +394,7 @@ serve(withCors(async (req) => {
       throw new Error("Errore nel salvataggio del contenuto.");
     }
 
-    console.log(`Web search content saved as context ${context.id} (source: ${source})`);
+    console.log(`Web search content saved as context ${logRef(context.id)} (source: ${source})`);
 
     return successResponse({
       success: true,
@@ -409,7 +409,7 @@ serve(withCors(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     return errorResponse("Errore nella ricerca. Riprova.");
   }
 }));

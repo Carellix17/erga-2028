@@ -9,8 +9,12 @@ import { logRef } from "../../supabase/functions/_shared/logRef";
  * `user_id` / `legacyUserId` usati per intero.
  *
  * `logRef(userId)` è ammesso: emette solo i primi 8 caratteri di un UUID
- * e "n/a" per un'email. Il testo dentro le stringhe ("welcome email")
- * non è un identificatore e non fa fallire il test.
+ * e "n/a" per un'email. La stessa forma vale per contextId, topicContextId
+ * e attachId. Il testo dentro le stringhe ("welcome email") non è un
+ * identificatore e non fa fallire il test.
+ *
+ * Falliscono anche fileName, filePath, file.name, recipient, errBody
+ * e `.slice(` / `.substring(` sul contenuto.
  */
 
 const FUNCTIONS = join(__dirname, "..", "..", "supabase", "functions");
@@ -24,10 +28,17 @@ const FORBIDDEN = [
   { name: "userId", re: /\buserId\b/ },
   { name: "user_id", re: /\buser_id\b/ },
   { name: "legacyUserId", re: /\blegacyUserId\b/ },
+  { name: "fileName", re: /\bfileName\b/ },
+  { name: "filePath", re: /\bfilePath\b/ },
+  { name: "file.name", re: /\bfile\.name\b/ },
+  { name: "recipient", re: /\brecipient\b/ },
+  { name: "errBody", re: /\berrBody\b/ },
+  { name: ".slice", re: /\.slice\s*\(/ },
+  { name: ".substring", re: /\.substring\s*\(/ },
 ] as const;
 
 const SAFE_LOG_REF_ARG =
-  /^\s*(?:userId|user_id|legacyUserId|(?:[A-Za-z_$][\w$]*\.)+id)\s*$/;
+  /^\s*(?:userId|user_id|legacyUserId|contextId|topicContextId|attachId|lessonId|(?:[A-Za-z_$][\w$]*\.)+(?:id|context_id))\s*$/;
 
 function walk(dir: string): string[] {
   const out: string[] = [];
@@ -309,6 +320,29 @@ describe("log delle edge function senza dati personali", () => {
     expect(personalDataInLog("user_id")).toBe("user_id");
     expect(personalDataInLog("logRef(user.email)")).toBe(".email");
     expect(personalDataInLog("userId.slice(0, 8)")).toBe("userId");
+  });
+
+  it("segna file, destinatario, corpo errore e lo slice del contenuto", () => {
+    expect(personalDataInLog("fileName")).toBe("fileName");
+    expect(personalDataInLog("`Registering PDF upload: ${fileName}`")).toBe("fileName");
+    expect(personalDataInLog("filePath")).toBe("filePath");
+    expect(personalDataInLog("`uploaded: ${filePath}`")).toBe("filePath");
+    expect(personalDataInLog("recipient")).toBe("recipient");
+    expect(personalDataInLog("redactEmail(recipient)")).toBe("recipient");
+    expect(personalDataInLog("errBody")).toBe("errBody");
+    expect(personalDataInLog("errBody.substring(0, 200)")).toBe("errBody");
+    expect(personalDataInLog("file.name")).toBe("file.name");
+    expect(personalDataInLog("`Uploading ${file.name}`")).toBe("file.name");
+    expect(personalDataInLog("content.slice(0, 500)")).toBe(".slice");
+    expect(personalDataInLog("raw.slice(0, 400)")).toBe(".slice");
+    expect(personalDataInLog("content.substring(0, 300)")).toBe(".substring");
+  });
+
+  it("accetta logRef(userId) e la stringa welcome email", () => {
+    expect(personalDataInLog("`Generate lessons for user ${logRef(userId)}`")).toBeNull();
+    expect(personalDataInLog("'Failed to check sent welcome email', { code: errorCode(lookupError) }")).toBeNull();
+    expect(personalDataInLog("`context ${logRef(contextId)} topic ${logRef(topicContextId)} file ${logRef(attachId)}`")).toBeNull();
+    expect(personalDataInLog('"AI lesson response length:", content.length')).toBeNull();
   });
 
   it("nessun console.log/error/warn/info/debug in supabase/functions scrive quegli identificatori", () => {

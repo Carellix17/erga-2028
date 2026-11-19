@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import ts from "typescript";
 import { describe, expect, it, vi } from "vitest";
 import * as material from "../../supabase/functions/_shared/studyMaterial";
-import { logRef } from "../../supabase/functions/_shared/logRef";
+import { logRef, logErrorDiag } from "../../supabase/functions/_shared/logRef";
 
 // Execute the real Deno handler with local dependencies, without network or a live DB.
 function imageHandler(visionResult: string | Error, imageCount = 1) {
@@ -29,6 +29,7 @@ function imageHandler(visionResult: string | Error, imageCount = 1) {
     Deno: { env: { get: () => "test" } },
     callVisionText,
     logRef,
+    logErrorDiag,
     ...material,
   };
   new Function(...Object.keys(dependencies), js)(...Object.values(dependencies));

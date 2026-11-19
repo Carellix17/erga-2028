@@ -69,7 +69,7 @@ async function tryConsumeDemoGeneration(req: Request): Promise<boolean> {
     }
     const count = typeof data === "number" ? data : 1;
     if (count > DEMO_RATE_LIMIT) {
-      console.warn(`rate-limit demo: limite superato (${count}/${DEMO_RATE_LIMIT}) per hash ${ipHash.slice(0, 12)}…`);
+      console.warn("rate-limit: limite superato");
       return false;
     }
     return true;

@@ -3,6 +3,7 @@ import { withCors, validateAuth, errorResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
+import { logErrorDiag } from "../_shared/logRef.ts";
 
 function extractJsonArray(raw: string): unknown[] {
   let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
@@ -315,7 +316,7 @@ Rispondi SOLO con un array JSON valido. Ogni esercizio ha questa struttura:
       { status: 202, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     return errorResponse("Errore nella generazione degli esercizi. Riprova.");
   }
 }));
