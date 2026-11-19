@@ -3,6 +3,7 @@ import { withCors, validateAuth, errorResponse, successResponse } from "../_shar
 import { callAIText } from "../_shared/ai.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
+import { logErrorDiag } from "../_shared/logRef.ts";
 
 const SYSTEM_PROMPT = `Sei Erga Tutor, un assistente didattico specializzato nella trasformazione di materiale grezzo (appunti, dispense, trascrizioni) in materiale di studio attivo. Il tuo metodo si ispira alla Tecnica di Feynman: capire un argomento significa saperlo spiegare in modo semplice, con parole proprie, senza gergo inutile.
 
@@ -130,13 +131,13 @@ serve(withCors(async (req) => {
     try {
       parsed = safeParseJson(raw);
     } catch (e) {
-      console.error("[study-tutor] JSON parse failed. Raw (first 500):", raw.slice(0, 500));
+      console.error("[study-tutor] JSON parse failed. Lunghezza risposta:", raw.length);
       return errorResponse("Risposta AI non valida. Riprova.", 502);
     }
 
     return successResponse({ material: parsed });
   } catch (error) {
-    console.error("[study-tutor] Error:", error);
+    console.error("[study-tutor] Error", logErrorDiag(error));
     return errorResponse("Errore nella generazione del materiale di studio. Riprova.");
   }
 }));

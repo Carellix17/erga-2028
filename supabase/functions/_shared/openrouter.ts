@@ -112,7 +112,7 @@ export async function tryOpenRouterText(
         continue;
       }
 
-      const errBody = await resp.text();
+      await resp.text();
       logAiUsage({
         fn: opts.tag ?? null,
         provider: "openrouter",
@@ -122,9 +122,7 @@ export async function tryOpenRouterText(
         userId: opts.userId,
         durationMs,
       });
-      console.warn(
-        `[2.0] ${model} errore ${resp.status}: ${errBody.substring(0, 200)} → provo il gradino dopo`,
-      );
+      console.warn(`[2.0] ${model} errore ${resp.status}: provo il gradino dopo`);
     } catch (err) {
       logAiUsage({
         fn: opts.tag ?? null,

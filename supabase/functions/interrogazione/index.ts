@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
+import { logErrorDiag } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -251,7 +252,7 @@ Scrivi una breve analisi finale (4-6 frasi) in italiano: punti di forza emersi, 
 
     return errorResponse("Azione non valida", 400);
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     return errorResponse("Errore nel servizio interrogazione. Riprova.");
   }
 }));

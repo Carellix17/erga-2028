@@ -4,6 +4,7 @@ import { withCors, validateAuth, errorResponse, successResponse } from "../_shar
 import { callAIText } from "../_shared/ai.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 import { originalUrlFromThumb, shortImageLabel } from "../_shared/wikimediaThumb.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
 /**
  * RICERCA WEB VERA (P5, rifatta P11b e P13).
@@ -241,7 +242,7 @@ serve(withCors(async (req) => {
       } catch (e) {
         console.error("candidates search failed:", e);
       }
-      console.log(`Web search (candidates) for user: ${userId}, topic: "${topic}" → ${candidates.length} voci`);
+      console.log(`Web search (candidates) for user ${logRef(userId)} → ${candidates.length} voci`);
       return successResponse({ success: true, candidates });
     }
 
@@ -252,7 +253,7 @@ serve(withCors(async (req) => {
     }
     const topicLabel = (topic || title || "").trim();
 
-    console.log(`Web search (create) for user: ${userId}, topic: "${topicLabel}" title: "${title ?? "-"}" forceAI: ${!!forceAI} (lang: ${language})`);
+    console.log(`Web search (create) for user ${logRef(userId)} forceAI: ${!!forceAI} (lang: ${language})`);
 
     // ── 1. Wikipedia (a meno che l'utente non abbia chiesto il manuale AI) ──
     let wiki: WikiResult | null = null;
@@ -278,7 +279,7 @@ serve(withCors(async (req) => {
         `FONTE: Wikipedia (${language}.wikipedia.org), voce «${wiki.title}», ultima revisione: ${revDate}. ` +
         `Contenuto riadattato per lo studio.\n\n${wiki.extract}\n\n` +
         `(Contenuto tratto da Wikipedia, licenza CC BY-SA.)`;
-      console.log(`Wikipedia hit: "${wiki.title}" (${wiki.extract.length} chars, ${wiki.images.length} images)`);
+      console.log(`Wikipedia hit (${wiki.extract.length} chars, ${wiki.images.length} images)`);
     } else {
       // ── 2. Fallback ONESTO: manuale dalla conoscenza del modello ──
       const searchPrompt = `${languageDirective(language)}\nFornisci una spiegazione completa e dettagliata sull'argomento: "${topicLabel}".
@@ -362,7 +363,7 @@ serve(withCors(async (req) => {
           .from("study-pdfs")
           .upload(path, got.bytes, { contentType: got.mime, upsert: false });
         if (upErr) {
-          console.warn("image storage upload failed:", upErr);
+          console.warn("image storage upload failed", logErrorDiag(upErr));
           recordSkip(img.url, `il caveau rifiuta il salvataggio (${(upErr.message ?? "?").slice(0, 60)})`);
           continue;
         }
@@ -393,7 +394,7 @@ serve(withCors(async (req) => {
       throw new Error("Errore nel salvataggio del contenuto.");
     }
 
-    console.log(`Web search content saved as context ${context.id} (source: ${source})`);
+    console.log(`Web search content saved as context ${logRef(context.id)} (source: ${source})`);
 
     return successResponse({
       success: true,
@@ -408,7 +409,7 @@ serve(withCors(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     return errorResponse("Errore nella ricerca. Riprova.");
   }
 }));

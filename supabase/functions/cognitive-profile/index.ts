@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse, normalizeEmail, emailLikePattern } from "../_shared/auth.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -31,7 +32,7 @@ serve(withCors(async (req) => {
       let prof = profRow;
 
       if (cogError || profError) {
-        console.error("cognitive-profile get error:", cogError?.message, profError?.message);
+        console.error("cognitive-profile get error", logErrorDiag(cogError), logErrorDiag(profError));
         return errorResponse("Errore nel servizio profilo cognitivo. Riprova.");
       }
 
@@ -45,7 +46,7 @@ serve(withCors(async (req) => {
           .ilike("user_id", emailLikePattern(email))
           .maybeSingle();
         if (legacyCognitive) {
-          console.warn("cognitive-profile: legacy row found by email for", userId);
+          console.warn("cognitive-profile: legacy row found by email for", logRef(userId));
           cognitive = legacyCognitive;
         }
       }
@@ -173,7 +174,7 @@ serve(withCors(async (req) => {
 
     return errorResponse("Azione non valida", 400);
   } catch (error) {
-    console.error("cognitive-profile error:", error);
+    console.error("cognitive-profile error", logErrorDiag(error));
     return errorResponse("Errore nel servizio profilo cognitivo. Riprova.");
   }
 }));
@@ -210,9 +211,9 @@ async function linkLegacyRow(
       .update({ user_id: userId })
       .eq("id", legacy.id);
     if (error) {
-      console.warn(`linkLegacyRow(${table}) skipped:`, error.message);
+      console.warn(`linkLegacyRow(${table}) skipped`, logErrorDiag(error));
     }
   } catch (e) {
-    console.warn(`linkLegacyRow(${table}) failed:`, (e as Error).message);
+    console.warn(`linkLegacyRow(${table}) failed`, logErrorDiag(e));
   }
 }

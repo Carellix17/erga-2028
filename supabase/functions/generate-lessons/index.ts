@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 import { buildModulePush, buildPathPush } from "../_shared/modulePush.ts";
@@ -131,7 +132,7 @@ serve(withCors(async (req) => {
 
     const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
 
-    console.log(`Generate lessons for user: ${userId} (legacy: ${legacyUserId}) (authenticated: ${auth.isAuthenticated})`);
+    console.log(`Generate lessons for user ${logRef(userId)} (authenticated: ${auth.isAuthenticated})`);
 
     // 🧭 PERCORSI 2.0 — IL CENTRALINO DELLA LEZIONE: le materie scientifiche
     // passano da DeepSeek (OpenRouter, con gradino gratuito e gradino a
@@ -428,7 +429,7 @@ ${studyContent}`;
         scientific,
       );
 
-      console.log("AI lesson response (first 300 chars):", content.substring(0, 300));
+      console.log("AI lesson response length:", content.length);
       const lessonData = extractJsonRobust(content);
 
       // 🕳️ P1 — LA CERNIERA: la risposta deve contenere una lezione VERA.
@@ -634,7 +635,7 @@ ${studyContent}`;
         if (mg && typeof mg.moduleIndex === "number" && Math.floor(lessonIndex / MODULE_SIZE) === mg.moduleIndex) {
           if (isStaleGeneration(mg.startedAt)) {
             // ⏱️ P4: fabbrica morta che teneva il modulo chiuso per sempre: si toglie il lucchetto.
-            console.warn(`[P4] lucchetto modulo stantio su ${lessons.context_id}: lo rimuovo e genero la lezione`);
+            console.warn(`[P4] lucchetto modulo stantio su ${logRef(lessons.context_id)}: lo rimuovo e genero la lezione`);
             const gpStale = { ...(((ctxJob as any)?.generation_progress ?? {}) as Record<string, unknown>) };
             delete gpStale.moduleGeneration;
             await supabase.from("study_contexts").update({ generation_progress: gpStale }).eq("id", lessons.context_id);
@@ -673,7 +674,7 @@ ${studyContent}`;
         return errorResponse("Il percorso è ancora in costruzione. Ti avvisiamo noi quando è pronto! ⏳", 409);
       }
       if (ctx.generation_status === "generating") {
-        console.warn(`[P4] percorso ${contextId} "generating" stantio: considero il lavoro morto e riparto`);
+        console.warn(`[P4] percorso ${logRef(contextId)} "generating" stantio: considero il lavoro morto e riparto`);
         // ⚠️ Il lavoro morto lasciava lo stato "generating" appeso: la
         // fabbrica, dentro il ciclo, lo leggerebbe come "è partita una
         // rigenera" e si FERMEREBBE dopo la prima lezione. Si azzera QUI,
@@ -693,7 +694,7 @@ ${studyContent}`;
         return successResponse({ success: true, alreadyRunning: true, moduleGeneration: gp.moduleGeneration });
       }
       if (gpJob) {
-        console.warn(`[P4] lucchetto modulo stantio su ${contextId}: lo sovrascrivo con il nuovo lavoro`);
+        console.warn(`[P4] lucchetto modulo stantio su ${logRef(contextId)}: lo sovrascrivo con il nuovo lavoro`);
       }
 
       // Le lezioni mancanti del modulo (quelle già pronte non si ritoccano).
@@ -792,7 +793,7 @@ ${studyContent}`;
             }).eq("id", contextId);
           }
           await finish();
-          console.log(`[P10b] modulo ${moduleIndex} per contesto ${contextId}: ${done}/${missing.length} lezioni generate`);
+          console.log(`[P10b] modulo ${moduleIndex} per contesto ${logRef(contextId)}: ${done}/${missing.length} lezioni generate`);
           try {
             const { sendPushToUser } = await import("../_shared/push.ts");
             // 🔔 Pacchetto 1: la notifica dice COSA è successo davvero.
@@ -909,7 +910,7 @@ ${studyContent}`;
         { role: "user", content: finalTestPrompt }
       ], 0.2);
 
-      console.log("AI final test response (first 300 chars):", raw.substring(0, 300));
+      console.log("AI final test response length:", raw.length);
       const exercises = extractJsonRobust(raw);
       if (!Array.isArray(exercises)) throw new Error("Formato test finale non valido");
       return successResponse({ success: true, exercises });
@@ -956,7 +957,7 @@ ${studyContent}`;
       );
     }
     if (ctxPre.generation_status === "generating") {
-      console.warn(`[P4] percorso ${contextId} "generating" da troppo tempo: considero il lavoro morto e riparto da zero`);
+      console.warn(`[P4] percorso ${logRef(contextId)} "generating" da troppo tempo: considero il lavoro morto e riparto da zero`);
     }
 
     // 🛡️ P10b: se la fabbrica sta tornendo un modulo, non resettare il sentiero
@@ -967,7 +968,7 @@ ${studyContent}`;
       return errorResponse("Un modulo è in preparazione. Attendi la notifica, poi potrai rigenerare il percorso. ⏳", 409);
     }
     if (preModuleJob) {
-      console.warn(`[P4] percorso ${contextId}: lucchetto modulo stantio, la rigenerazione procede`);
+      console.warn(`[P4] percorso ${logRef(contextId)}: lucchetto modulo stantio, la rigenerazione procede`);
     }
 
     // Segna subito lo stato come "generating" prima di rispondere
@@ -1107,7 +1108,7 @@ ${documentSection}`;
           { role: "user", content: titlesPrompt }
         ], 0.1, 16000);
 
-        console.log("AI titles response (first 300 chars):", content.substring(0, 300));
+        console.log("AI titles response length:", content.length);
         const parsedTitles = extractJsonRobust(content);
         if (!Array.isArray(parsedTitles)) throw new Error("Formato titoli non valido");
         if (parsedTitles.length === 0) throw new Error(UNSUITABLE_MATERIAL_ERROR);
@@ -1234,7 +1235,7 @@ ${documentSection}`;
               generation_progress: { step: "generating-lessons", generatedCount: warmDone, totalLessons: warmCount },
             }).eq("id", contextId);
           }
-          console.log(`[P10b] primo modulo caldo: ${warmDone}/${warmCount} lezioni pronte per contesto ${contextId}`);
+          console.log(`[P10b] primo modulo caldo: ${warmDone}/${warmCount} lezioni pronte per contesto ${logRef(contextId)}`);
         }
 
         await supabase.from("study_contexts").update({
@@ -1244,7 +1245,7 @@ ${documentSection}`;
           module_titles: moduleTitles,
         }).eq("id", contextId);
 
-        console.log(`✅ Background generation complete for context ${contextId}: ${titles.length} lessons (${warmDone}/${warmCount} già calde)`);
+        console.log(`✅ Background generation complete for context ${logRef(contextId)}: ${titles.length} lessons (${warmDone}/${warmCount} già calde)`);
         try {
           const { sendPushToUser } = await import("../_shared/push.ts");
           await sendPushToUser(supabase, userId, {
@@ -1256,7 +1257,7 @@ ${documentSection}`;
         } catch (e) { console.error("[push] notify lessons failed:", e); }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Errore nella generazione delle lezioni";
-        console.error(`❌ Background generation failed for context ${contextId}:`, msg);
+        console.error(`❌ Background generation failed for context ${logRef(contextId)}`);
         await supabase.from("study_contexts").update({
           generation_status: "failed",
           generation_error: msg,
@@ -1281,7 +1282,7 @@ ${documentSection}`;
     );
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     const safeMessages = [
       "Lezione non trovata",
       LIMIT_REACHED_MESSAGE,

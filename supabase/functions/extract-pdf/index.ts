@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 import { callVisionText } from "../_shared/vision.ts";
 import { logAiUsage } from "../_shared/aiUsage.ts";
 import { extractUsageTokens } from "../_shared/usage.ts";
@@ -60,12 +61,12 @@ serve(withCors(async (req) => {
       const auth = await validateAuth(req, body);
       userId = auth.userId;
       supabase = auth.supabase;
-      console.log(`Extract PDF for user: ${userId}`);
+      console.log(`Extract PDF for user ${logRef(userId)}`);
     }
 
     // Action: process-images (extract text from photos using AI vision)
     if (action === "process-images" && contextId) {
-      console.log(`Processing images for context: ${contextId}`);
+      console.log(`Processing images for context: ${logRef(contextId)}`);
       
       const { data: context, error: fetchError } = await supabase
         .from("study_contexts")
@@ -112,7 +113,7 @@ serve(withCors(async (req) => {
               .download(imgPath.trim());
 
             if (downloadError || !fileData) {
-              console.error(`Error downloading image ${imgPath}:`, downloadError);
+              console.error("Error downloading image", logErrorDiag(downloadError));
               throw new Error("FILE_DOWNLOAD_ERROR");
             }
 
@@ -234,7 +235,7 @@ serve(withCors(async (req) => {
           .download(context.file_path);
 
         if (downloadError || !fileData) {
-          console.error("File download error:", downloadError);
+          console.error("File download error", logErrorDiag(downloadError));
           throw new Error("FILE_DOWNLOAD_ERROR");
         }
 
@@ -322,7 +323,7 @@ serve(withCors(async (req) => {
 
     // Action: process (chiamata interna da upload-pdf, chiave di servizio)
     if (action === "process" && contextId) {
-      console.log(`Processing PDF for context: ${contextId}`);
+      console.log(`Processing PDF for context: ${logRef(contextId)}`);
 
       const { data: context, error: fetchError } = await supabase
         .from("study_contexts")
@@ -336,7 +337,7 @@ serve(withCors(async (req) => {
       }
 
       if (context.user_id !== userId) {
-        console.error(`Unauthorized access attempt for context ${contextId}`);
+        console.error(`Unauthorized access attempt for context ${logRef(contextId)}`);
         return errorResponse("Non autorizzato", 403);
       }
 
@@ -365,7 +366,7 @@ serve(withCors(async (req) => {
       if (context.processing_status === "completed") {
         return successResponse({ success: true, alreadyCompleted: true, contextId });
       }
-      console.log(`[P7] reprocess richiesto dall'utente per ${contextId} (status precedente: ${String(context.processing_status)})`);
+      console.log(`[P7] reprocess richiesto dall'utente per ${logRef(contextId)} (status precedente: ${String(context.processing_status)})`);
       // 📷 Le foto NON passano dal motore PDF: file_path è una lista di
       // immagini. Se il lavoro foto è in corso (anche solo lento) non lo si
       // tocca; se non è mai partito, si rilancia il ramo "process-images".
@@ -392,7 +393,7 @@ serve(withCors(async (req) => {
       return errorResponse("Dati mancanti", 400);
     }
 
-    console.log(`Registering PDF upload: ${fileName} for user: ${userId}`);
+    console.log(`Registering PDF upload for user ${logRef(userId)}`);
 
     // Validate file path ownership to prevent path traversal across users.
     // The background processor runs with service-role and would otherwise
@@ -436,7 +437,7 @@ serve(withCors(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     return errorResponse("Errore durante l'elaborazione");
   }
 }));
@@ -621,12 +622,8 @@ REGOLE OBBLIGATORIE:
         );
         break;
       }
-      const errBody = await resp.text();
-      console.error(
-        `Gemini PDF vision error (${model}, attempt ${attempt + 1}):`,
-        resp.status,
-        errBody.split(apiKey).join("[redacted]"),
-      );
+      await resp.text();
+      console.error(`Gemini PDF vision error (${model}, attempt ${attempt + 1}):`, resp.status);
       if (![429, 500, 502, 503, 504].includes(resp.status)) break;
       await new Promise((resolve) => setTimeout(resolve, 1200 * (attempt + 1)));
     }

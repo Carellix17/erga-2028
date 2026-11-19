@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 import { callVisionText } from "../_shared/vision.ts";
 
 /**
@@ -257,7 +258,7 @@ Rispondi SOLO con JSON valido, senza markdown:
     console.error("Vision AI error (tutti i provider):", visionErr);
     return [];
   }
-  console.log("Vision response (first 600):", content.substring(0, 600));
+  console.log("Vision response length:", content.length);
 
   try {
     const match = content.match(/\[[\s\S]*\]/);
@@ -331,7 +332,7 @@ async function figuresFromSourceImages(
 
     const { data: fileData, error: dlErr } = await supabase.storage.from("study-pdfs").download(src);
     if (dlErr || !fileData) {
-      console.warn(`[figuresFromSourceImages] download failed for ${src}:`, dlErr);
+      console.warn("[figuresFromSourceImages] download failed", logErrorDiag(dlErr));
       break;
     }
     const bytes = new Uint8Array(await fileData.arrayBuffer());
@@ -343,7 +344,7 @@ async function figuresFromSourceImages(
       .from("study-images")
       .upload(dst, bytes, { contentType, upsert: true });
     if (upErr) {
-      console.warn("[figuresFromSourceImages] copy failed:", upErr);
+      console.warn("[figuresFromSourceImages] copy failed", logErrorDiag(upErr));
       break;
     }
 
@@ -425,7 +426,7 @@ serve(withCors(async (req) => {
           .from("study-images")
           .upload(storagePath, bytes, { contentType: "image/jpeg", upsert: true });
         if (upErr) {
-          console.error(`Upload crop failed for ${storagePath}:`, upErr);
+          console.error(`Upload crop failed for lesson ${logRef(lessonId)}`, logErrorDiag(upErr));
           return null;
         }
 
@@ -567,7 +568,7 @@ serve(withCors(async (req) => {
       phase: "detection",
     });
   } catch (error) {
-    console.error("extract-lesson-figures error:", error);
+    console.error("extract-lesson-figures error", logErrorDiag(error));
     return errorResponse("Si è verificato un errore. Riprova.", 500);
   }
 }));

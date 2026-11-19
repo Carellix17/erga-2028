@@ -69,7 +69,7 @@ async function tryConsumeDemoGeneration(req: Request): Promise<boolean> {
     }
     const count = typeof data === "number" ? data : 1;
     if (count > DEMO_RATE_LIMIT) {
-      console.warn(`rate-limit demo: limite superato (${count}/${DEMO_RATE_LIMIT}) per hash ${ipHash.slice(0, 12)}…`);
+      console.warn("rate-limit: limite superato");
       return false;
     }
     return true;
@@ -187,7 +187,7 @@ REGOLE TASSATIVE:
 
     const valid = lessons.length === 4 && lessons.every((l) => l.slides.length >= 3 && l.quiz.length >= 3);
     if (!valid) {
-      console.error("demo course malformed", { lessons: lessons.length, raw: raw.slice(0, 400) });
+      console.error("demo course malformed", { lessons: lessons.length });
       return errorResponse("Generazione non valida. Riprova.", 502);
     }
 

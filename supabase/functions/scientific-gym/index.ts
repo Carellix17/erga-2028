@@ -11,6 +11,7 @@ import {
 } from "../_shared/scientificGym.ts";
 import { buildSocraticMessages } from "../_shared/socraticTutor.ts";
 import { sliceByPageRange, maxPageNumber } from "../_shared/pagemap.ts";
+import { logErrorDiag } from "../_shared/logRef.ts";
 
 /**
  * 🏋️ PERCORSI 2.0 — LA PALESTRA SCIENTIFICA (edge function).
@@ -141,7 +142,7 @@ serve(withCors(async (req) => {
 
       let exercises = parseExerciseSet(raw, count);
       if (exercises.length === 0) {
-        console.warn("[gym] serie illeggibile, riprovo una volta. Inizio risposta:", String(raw).slice(0, 300));
+        console.warn("[gym] serie illeggibile, riprovo una volta. Lunghezza risposta:", raw ? String(raw).length : 0);
         const retry = await callAIText(messages, 0.3, 6000, "scientific-gym");
         exercises = parseExerciseSet(retry, count);
       }
@@ -206,7 +207,7 @@ serve(withCors(async (req) => {
 
     return errorResponse("Azione non riconosciuta", 400);
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     const msg = error instanceof Error && [
       "Contesto non trovato",
       "La palestra è disponibile solo per i percorsi di matematica, fisica e chimica.",

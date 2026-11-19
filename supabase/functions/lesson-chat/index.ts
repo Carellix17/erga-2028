@@ -3,6 +3,7 @@ import { withCors, validateAuth, errorResponse } from "../_shared/auth.ts";
 import { callAIText } from "../_shared/ai.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
+import { logErrorDiag } from "../_shared/logRef.ts";
 
 const LESSON_TUTOR_SYSTEM = `Sei un tutor personale esperto che aiuta lo studente a comprendere in profondità UNA specifica lezione. Hai accesso ESCLUSIVO al contenuto di quella lezione — non inventare mai nulla che non sia presente in essa.
 
@@ -95,7 +96,7 @@ Rispondi SEMPRE in ${languageName(language)}.`;
       headers: { "Content-Type": "text/event-stream" },
     });
   } catch (error) {
-    console.error("[lesson-chat] Error:", error);
+    console.error("[lesson-chat] Error", logErrorDiag(error));
     return errorResponse("Errore nella chat della lezione. Riprova.");
   }
 }));

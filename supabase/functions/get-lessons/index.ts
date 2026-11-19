@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { toLessonMeta } from "./lessonMeta.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -11,7 +12,7 @@ serve(withCors(async (req) => {
     const auth = await validateAuth(req, body);
     const { userId, supabase } = auth;
 
-    console.log(`Get lessons for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
+    console.log(`Get lessons for user ${logRef(userId)} (authenticated: ${auth.isAuthenticated})`);
 
     if (action === "get") {
       // Get all lessons, optionally filtered by context.
@@ -333,7 +334,7 @@ serve(withCors(async (req) => {
     return errorResponse("Invalid action", 400);
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     const msg = error instanceof Error ? error.message : String(error);
     if (msg.includes("Missing authentication")) {
       return errorResponse("Sessione scaduta. Effettua di nuovo l'accesso.", 401);

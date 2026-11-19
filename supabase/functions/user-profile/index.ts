@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse, normalizeEmail, emailLikePattern } from "../_shared/auth.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -20,7 +21,7 @@ serve(withCors(async (req) => {
         .maybeSingle();
 
       if (error) {
-        console.error("user-profile get error:", error.message);
+        console.error("user-profile get error", logErrorDiag(error));
         return errorResponse("Errore nel servizio profilo. Riprova.");
       }
 
@@ -33,7 +34,7 @@ serve(withCors(async (req) => {
           .ilike("user_id", emailLikePattern(email))
           .maybeSingle();
         if (legacyProfile) {
-          console.warn("user-profile: legacy row found by email for", userId);
+          console.warn("user-profile: legacy row found by email for", logRef(userId));
           return successResponse({ profile: legacyProfile });
         }
       }
@@ -137,7 +138,7 @@ serve(withCors(async (req) => {
 
     return errorResponse("Azione non valida", 400);
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     return errorResponse("Errore nel servizio profilo. Riprova.");
   }
 }));

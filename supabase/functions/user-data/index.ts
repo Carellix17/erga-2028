@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse, normalizeEmail, emailLikePattern } from "../_shared/auth.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -22,7 +23,7 @@ serve(withCors(async (req) => {
         .maybeSingle();
 
       if (error) {
-        console.error("user-data get error:", error.message);
+        console.error("user-data get error", logErrorDiag(error));
         return errorResponse("Errore nel servizio dati. Riprova.");
       }
 
@@ -35,9 +36,9 @@ serve(withCors(async (req) => {
           .eq("key", key)
           .maybeSingle();
         if (legacyError) {
-          console.error("user-data legacy lookup error:", legacyError.message);
+          console.error("user-data legacy lookup error", logErrorDiag(legacyError));
         } else if (legacy) {
-          console.warn("user-data: legacy row found by email for", userId, key);
+          console.warn("user-data: legacy row found by email for", logRef(userId));
           return successResponse({ value: legacy.value ?? null });
         }
       }
@@ -72,7 +73,7 @@ serve(withCors(async (req) => {
 
     return errorResponse("Invalid action", 400);
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     const msg = error instanceof Error ? error.message : String(error);
     if (msg.includes("Missing authentication")) {
       return errorResponse("Sessione scaduta. Effettua di nuovo l'accesso.", 401);

@@ -6,6 +6,7 @@ import {
   isPlanChangeReason,
   validatePlanChanges,
 } from "./validate.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -22,7 +23,7 @@ serve(withCors(async (req) => {
     }
     const { userId, supabase } = auth;
 
-    console.log(`Save event for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
+    console.log(`Save event for user ${logRef(userId)} (authenticated: ${auth.isAuthenticated})`);
 
     if (action === "applyChanges") {
       if (!isPlanChangeReason(body.reason)) return errorResponse("reason_invalid", 400);
@@ -159,7 +160,7 @@ serve(withCors(async (req) => {
 
     return errorResponse("Invalid action", 400);
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     return errorResponse("Errore nel salvataggio degli eventi. Riprova.");
   }
 }));

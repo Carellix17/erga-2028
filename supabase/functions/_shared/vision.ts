@@ -139,8 +139,8 @@ export async function callVisionJson(opts: VisionCallOptions, tag?: string): Pro
           userId: opts.userId,
         });
 
-        const errBody = await resp.text();
-        console.warn(`[vision] ${provider.label} error ${resp.status}: ${errBody.substring(0, 300)}`);
+        await resp.text();
+        console.warn(`[vision] ${provider.label} error ${resp.status}`);
 
         if (isTransient(resp.status) && attempt < maxRetries) {
           await new Promise((r) => setTimeout(r, 1200));

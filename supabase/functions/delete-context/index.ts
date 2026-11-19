@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
+import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 
 serve(withCors(async (req) => {
   try {
@@ -18,7 +19,7 @@ serve(withCors(async (req) => {
 
     const legacyUserId = userEmail && userEmail !== userId ? userEmail : null;
 
-    console.log(`Delete context for user: ${userId} (authenticated: ${auth.isAuthenticated})`);
+    console.log(`Delete context for user ${logRef(userId)} (authenticated: ${auth.isAuthenticated})`);
 
     // List all contexts for user
     if (action === "list") {
@@ -71,7 +72,7 @@ serve(withCors(async (req) => {
 
     // Delete a specific context
     if (action === "delete" && contextId) {
-      console.log(`Deleting context ${contextId} for user ${userId}`);
+      console.log(`Deleting context ${logRef(contextId)} for user ${logRef(userId)}`);
 
       // First delete related lessons
       const { error: lessonsError } = await supabase
@@ -96,7 +97,7 @@ serve(withCors(async (req) => {
         return errorResponse("Errore nell'eliminazione del file");
       }
 
-      console.log(`Successfully deleted context ${contextId}`);
+      console.log(`Successfully deleted context ${logRef(contextId)}`);
 
       return successResponse({ success: true });
     }
@@ -128,7 +129,7 @@ serve(withCors(async (req) => {
         await supabase.from("study_contexts").delete()
           .eq("id", contextId)
           .in("user_id", legacyUserId ? [userId, legacyUserId] : [userId]);
-        console.log(`Ultimo file tolto: percorso ${contextId} eliminato con le sue lezioni`);
+        console.log(`Ultimo file tolto: percorso ${logRef(contextId)} eliminato con le sue lezioni`);
         return successResponse({ success: true, removed: true, contextDeleted: true });
       }
 
@@ -136,14 +137,14 @@ serve(withCors(async (req) => {
         file_path: remaining.join(","),
         new_material_pending: true, // il testo estratto e' rimasto vecchio: avvisa di rigenerare
       }).eq("id", contextId);
-      console.log(`File tolto dal percorso ${contextId}: restano ${remaining.length} file`);
+      console.log(`File tolto dal percorso ${logRef(contextId)}: restano ${remaining.length} file`);
       return successResponse({ success: true, removed: true, contextDeleted: false });
     }
 
     return errorResponse("Invalid action", 400);
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error", logErrorDiag(error));
     return errorResponse("Errore nell'operazione. Riprova.");
   }
 }));
