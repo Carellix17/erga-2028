@@ -14,6 +14,11 @@
  * Su Gemini 3.x la temperatura non parte (verrebbe ignorata e poi rifiutata)
  * e al suo posto viaggia `reasoning_effort`, per funzione. OpenAI, Groq e
  * Lovable non cambiano. Vedi `_shared/gemini.ts`.
+ *
+ * Mistral (`_shared/mistral.ts`) è un gradino in più, spento di default.
+ * Parte solo con `ERGA_AI_PROVIDER=mistral` e `MISTRAL_API_KEY`. Senza
+ * flag o senza chiave questo file si comporta come prima e non chiama
+ * `api.eu.mistral.ai`. Non accendere il flag senza OK esplicito del CEO.
  */
 
 import { logAiUsage } from "./aiUsage.ts";
@@ -23,6 +28,14 @@ import {
   geminiChatSampling,
   resolveGeminiModel,
 } from "./gemini.ts";
+import {
+  MISTRAL_API_KEY_ENV,
+  MISTRAL_MODEL_ENV,
+  MISTRAL_PROVIDER_ENV,
+  dispatchMistral,
+  mistralUsageInsert,
+  planMistralCall,
+} from "./mistral.ts";
 
 interface ProviderConfig {
   label: string;
@@ -118,6 +131,138 @@ async function tryFetch(
   return resp;
 }
 
+function logMistralSuccess(
+  resp: Response,
+  model: "mistral-small-2603" | "ministral-8b-2512",
+  tag: string | undefined,
+  opts: AiCallOptions,
+  durationMs: number,
+): void {
+  if (opts.stream) {
+    logAiUsage({
+      fn: tag, provider: "mistral", model, ok: true,
+      status: resp.status, userId: opts.userId, durationMs,
+    });
+    return;
+  }
+  try {
+    const cloned = resp.clone();
+    void (async () => {
+      try {
+        const data = await cloned.json();
+        const row = mistralUsageInsert(model, data);
+        const tokens = extractUsageTokens(data);
+        logAiUsage({
+          fn: tag, provider: row.provider, model: row.model, ok: true,
+          status: resp.status, userId: opts.userId, durationMs,
+          promptTokens: row.prompt_tokens,
+          completionTokens: row.completion_tokens,
+          totalTokens: row.total_tokens,
+        });
+        if (tokens.reasoningTokens !== null || tokens.cachedTokens !== null) {
+          console.log(
+            `[AI:mistral] tokens in=${tokens.promptTokens} out=${tokens.completionTokens} thinking=${tokens.reasoningTokens} cached=${tokens.cachedTokens} total=${tokens.totalTokens}`,
+          );
+        }
+      } catch {
+        logAiUsage({
+          fn: tag, provider: "mistral", model, ok: true,
+          status: resp.status, userId: opts.userId, durationMs,
+        });
+      }
+    })();
+  } catch {
+    logAiUsage({
+      fn: tag, provider: "mistral", model, ok: true,
+      status: resp.status, userId: opts.userId, durationMs,
+    });
+  }
+}
+
+/**
+ * Gradino Mistral, solo se il flag è acceso e la chiave c'è.
+ * Altrimenti restituisce null senza toccare la rete: il ciclo sotto
+ * resta identico a oggi. Se Mistral risponde male, si torna alla catena
+ * attuale. Il corpo dell'errore non finisce nei log.
+ */
+async function callMistralWhenEnabled(
+  opts: AiCallOptions,
+  tag?: string,
+): Promise<Response | null> {
+  const apiKey = Deno.env.get(MISTRAL_API_KEY_ENV) ?? "";
+  const plan = planMistralCall({
+    providerEnv: Deno.env.get(MISTRAL_PROVIDER_ENV),
+    apiKey,
+    modelEnv: Deno.env.get(MISTRAL_MODEL_ENV),
+    fn: tag,
+    messages: opts.messages,
+    temperature: opts.temperature,
+    maxTokens: opts.max_tokens,
+    stream: opts.stream,
+  });
+  if (!plan.call || !plan.model) {
+    if (plan.reason === "no-key") console.log("[AI] No key for mistral, skipping");
+    if (plan.rejection) console.warn(`[AI] modello Mistral rifiutato (${plan.rejection}), nessun invio`);
+    return null;
+  }
+
+  const maxRetries = 2;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const startedAt = Date.now();
+      const resp = await dispatchMistral(plan, apiKey, (url, init) => fetch(url, init));
+      const durationMs = Date.now() - startedAt;
+      if (!resp) return null;
+
+      console.log(`[AI:mistral] status=${resp.status}`);
+      if (resp.ok) {
+        console.log(`[AI] Using MISTRAL (attempt ${attempt + 1})`);
+        logMistralSuccess(resp, plan.model, tag, opts, durationMs);
+        return resp;
+      }
+
+      logAiUsage({
+        fn: tag,
+        provider: "mistral",
+        model: plan.model,
+        ok: false,
+        status: resp.status,
+        userId: opts.userId,
+        durationMs,
+      });
+      const detail = await resp.text();
+      if (isQuotaError(resp.status, detail) || !isTransientError(resp.status) || attempt >= maxRetries) {
+        console.warn(`[AI] mistral error (${resp.status}), next provider`);
+        return null;
+      }
+      const delay = 1000 * (attempt + 1);
+      console.warn(`[AI] mistral transient error (${resp.status}), retry ${attempt + 1}/${maxRetries} in ${delay}ms`);
+      await new Promise((r) => setTimeout(r, delay));
+    } catch (err) {
+      if (err instanceof Error && err.message === "mistral-request-refused") {
+        console.warn("[AI] richiesta Mistral rifiutata, nessun invio");
+        throw new Error("Tutti i provider AI non disponibili");
+      }
+      logAiUsage({
+        fn: tag,
+        provider: "mistral",
+        model: plan.model,
+        ok: false,
+        status: null,
+        userId: opts.userId,
+      });
+      if (attempt >= maxRetries) {
+        console.warn("[AI] mistral network error after retries, next provider");
+        return null;
+      }
+      const delay = 1000 * (attempt + 1);
+      console.warn(`[AI] mistral network error, retry ${attempt + 1}/${maxRetries} in ${delay}ms`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  return null;
+}
+
 /**
  * Call AI with automatic 4-tier fallback.
  * Returns the raw Response so callers can handle streaming or JSON.
@@ -126,6 +271,9 @@ export async function callAIWithFallback(
   opts: AiCallOptions,
   tag?: string,
 ): Promise<Response> {
+  const mistral = await callMistralWhenEnabled(opts, tag);
+  if (mistral) return mistral;
+
   const baseModel = opts.model?.trim() || resolveGeminiModel(Deno.env.get("GEMINI_MODEL"));
   const thinkingOverrides = Deno.env.get("GEMINI_THINKING_OVERRIDES") ?? undefined;
 
