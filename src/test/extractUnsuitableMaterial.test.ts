@@ -28,7 +28,6 @@ function imageHandler(visionResult: string | Error, imageCount = 1) {
     errorResponse: (error: string, status = 400) => Response.json({ error }, { status }),
     Deno: { env: { get: () => "test" } },
     callVisionText,
-    assertAiAgeAllowed: async () => null,
     logRef,
     logErrorDiag,
     ...material,

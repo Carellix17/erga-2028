@@ -96,15 +96,8 @@ const sections: LegalSection[] = [
     ),
   },
   {
-    title: "Età minima e studenti minorenni",
-    body: (
-      <>
-        <p>Per usare Erga devi avere <strong>almeno 14 anni</strong>. Chi ha meno di 14 anni non può iscriversi: se scopriamo che è successo, cancelliamo l'account e i dati.</p>
-        <p>In Italia dai 14 anni puoi acconsentire da solo al trattamento dei tuoi dati per i servizi online (art. 2-quinquies del Codice privacy) e all'uso dell'IA (art. 4 della legge 132/2025). Se hai tra 14 e 17 anni ti chiediamo comunque di confermare che i tuoi genitori sono d'accordo.</p>
-        <p>All'iscrizione chiediamo la data di nascita solo per controllare l'età: <strong>non la conserviamo</strong>. Salviamo solo se hai almeno 14 anni, se hai meno di 18 anni e la data del controllo.</p>
-        <p>I piani a pagamento devono essere acquistati da un genitore o da un altro adulto.</p>
-      </>
-    ),
+    title: "Acquisto dei piani a pagamento",
+    body: <p>I piani a pagamento devono essere acquistati da un genitore o da un altro adulto.</p>,
   },
   {
     title: "I tuoi diritti",
@@ -137,7 +130,7 @@ export default function Privacy() {
         title: "In breve",
         body: (
           <>
-            <p>Erga usa l'IA di Mistral, con server in Europa. Non le diciamo chi sei e non la usiamo per addestrare i modelli. Serve avere almeno 14 anni.</p>
+            <p>Erga usa l'IA di Mistral, con server in Europa. Non le diciamo chi sei e non la usiamo per addestrare i modelli.</p>
             <p>Le tue chat con il tutor restano finché non le cancelli. Per cancellare tutto l'account scrivici: lo facciamo entro 30 giorni.</p>
           </>
         ),

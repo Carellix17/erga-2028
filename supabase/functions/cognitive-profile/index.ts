@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse, normalizeEmail, emailLikePattern } from "../_shared/auth.ts";
-import { acceptOnboardingEta } from "../_shared/ageCheck.ts";
 import { logErrorDiag, logRef } from "../_shared/logRef.ts";
+
+const PROFILE_FIELDS = "nome, istituto, log_score, mem_score, foc_score, voc_score, ans_score, app_score";
 
 serve(withCors(async (req) => {
   try {
@@ -21,7 +22,7 @@ serve(withCors(async (req) => {
       // 1) Lettura primaria: per ID utente Supabase (auth.uid()).
       const { data: cognitiveRow, error: cogError } = await supabase
         .from("cognitive_profiles")
-        .select("*")
+        .select(PROFILE_FIELDS)
         .eq("user_id", userId)
         .maybeSingle();
       const { data: profRow, error: profError } = await supabase
@@ -43,7 +44,7 @@ serve(withCors(async (req) => {
       if (!cognitive && email) {
         const { data: legacyCognitive } = await supabase
           .from("cognitive_profiles")
-          .select("*")
+          .select(PROFILE_FIELDS)
           .ilike("user_id", emailLikePattern(email))
           .maybeSingle();
         if (legacyCognitive) {
@@ -72,20 +73,15 @@ serve(withCors(async (req) => {
     }
 
     if (action === "save") {
-      const { nome, eta, istituto, log_score, mem_score, foc_score, voc_score, ans_score, app_score } = body;
+      const { nome, istituto, log_score, mem_score, foc_score, voc_score, ans_score, app_score } = body;
       const clamp = (n: unknown) => {
         const x = Math.round(Number(n));
         if (!Number.isFinite(x)) return 50;
         return Math.max(0, Math.min(100, x));
       };
-      const acceptedEta = acceptOnboardingEta(eta);
-      if (acceptedEta === null) {
-        return errorResponse("Per usare Erga serve avere almeno 14 anni.", 400);
-      }
       const row = {
         user_id: userId,
         nome: typeof nome === "string" ? nome.slice(0, 60) : null,
-        eta: acceptedEta,
         istituto: typeof istituto === "string" ? istituto.slice(0, 200) : null,
         log_score: clamp(log_score),
         mem_score: clamp(mem_score),

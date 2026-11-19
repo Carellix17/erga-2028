@@ -3,7 +3,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 import { callVisionText } from "../_shared/vision.ts";
-import { assertAiAgeAllowed } from "../_shared/ageAccess.ts";
 import { logAiUsage } from "../_shared/aiUsage.ts";
 import { extractUsageTokens } from "../_shared/usage.ts";
 import { GEMINI_PDF_FALLBACK_MODEL, geminiNativeGenerationConfig, resolveGeminiModel } from "../_shared/gemini.ts";
@@ -37,7 +36,6 @@ serve(withCors(async (req) => {
     const isInternalServiceCall = authHeader === `Bearer ${supabaseServiceKey}`;
 
     let userId: string;
-    let verifiedEmail: string | undefined = undefined;
     let supabase;
 
     if (isInternalServiceCall) {
@@ -62,13 +60,9 @@ serve(withCors(async (req) => {
     } else {
       const auth = await validateAuth(req, body);
       userId = auth.userId;
-      verifiedEmail = auth.userEmail;
       supabase = auth.supabase;
       console.log(`Extract PDF for user ${logRef(userId)}`);
     }
-
-    const ageDenied = await assertAiAgeAllowed(supabase, userId, verifiedEmail);
-    if (ageDenied) return ageDenied;
 
     // Action: process-images (extract text from photos using AI vision)
     if (action === "process-images" && contextId) {

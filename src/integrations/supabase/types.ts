@@ -287,7 +287,6 @@ export type Database = {
           ans_score: number
           app_score: number
           created_at: string
-          eta: number | null
           foc_score: number
           id: string
           istituto: string | null
@@ -302,7 +301,6 @@ export type Database = {
           ans_score?: number
           app_score?: number
           created_at?: string
-          eta?: number | null
           foc_score?: number
           id?: string
           istituto?: string | null
@@ -317,7 +315,6 @@ export type Database = {
           ans_score?: number
           app_score?: number
           created_at?: string
-          eta?: number | null
           foc_score?: number
           id?: string
           istituto?: string | null
@@ -1373,42 +1370,6 @@ export type Database = {
           updated_at?: string
           user_id?: string
           value?: Json
-        }
-        Relationships: []
-      }
-      user_age_checks: {
-        Row: {
-          age_checked_on: string
-          created_at: string
-          is_14_plus: boolean
-          is_under_18: boolean
-          parent_ack: boolean | null
-          parent_ack_at: string | null
-          parent_ack_text_version: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          age_checked_on: string
-          created_at?: string
-          is_14_plus: boolean
-          is_under_18: boolean
-          parent_ack?: boolean | null
-          parent_ack_at?: string | null
-          parent_ack_text_version?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          age_checked_on?: string
-          created_at?: string
-          is_14_plus?: boolean
-          is_under_18?: boolean
-          parent_ack?: boolean | null
-          parent_ack_at?: string | null
-          parent_ack_text_version?: string | null
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }

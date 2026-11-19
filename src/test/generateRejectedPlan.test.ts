@@ -33,7 +33,7 @@ function generationHandler(aiResponse: string | Error, overrides: Record<string,
     normalizeLanguage: () => "it", languageDirective: () => "Italiano",
     detectSubject: async () => ({ family: "umanistiche", subject: "altro", confidence: 50, source: "test" }),
     maxPageNumber: () => 0, isLongDocument: () => false, buildPlanFamilyGuidance: () => "",
-    callAIText, assertAiAgeAllowed: async () => null, extractJsonRobust, logRef, logErrorDiag, ...material,
+    callAIText, extractJsonRobust, logRef, logErrorDiag, ...material,
     EdgeRuntime: { waitUntil: (job: Promise<unknown>) => jobs.push(job) },
   };
   new Function(...Object.keys(deps), js)(...Object.values(deps));

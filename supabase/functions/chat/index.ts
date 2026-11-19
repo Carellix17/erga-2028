@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { callAIStream, callAIText } from "../_shared/ai.ts";
-import { assertAiAgeAllowed } from "../_shared/ageAccess.ts";
 import { normalizeLanguage, languageDirective, languageName } from "../_shared/language.ts";
 import { parsePages, sampleAcrossPages } from "../_shared/pagemap.ts";
 import { detectActionIntent, parseForcedAction } from "../_shared/agentintent.ts";
@@ -148,8 +147,6 @@ serve(withCors(async (req) => {
 
     const auth = await validateAuth(req, body);
     const { userId, userEmail, supabase } = auth;
-    const ageDenied = await assertAiAgeAllowed(supabase, userId, userEmail);
-    if (ageDenied) return ageDenied;
 
     console.log(`Chat request for user ${logRef(userId)} (authenticated: ${auth.isAuthenticated}, topic: ${topicContextId ? logRef(topicContextId) : "generale"}) [${FN_VERSION}]`);
 

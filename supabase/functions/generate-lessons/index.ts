@@ -53,7 +53,6 @@ function isStaleGeneration(ts: unknown): boolean {
 // riparatore LaTeX-aware, estrazione bilanciata e unit-testato — P1/P3)
 
 import { callAIText } from "../_shared/ai.ts";
-import { assertAiAgeAllowed } from "../_shared/ageAccess.ts";
 import {
   parsePages,
   buildPageOutline,
@@ -104,8 +103,6 @@ serve(withCors(async (req) => {
 
     const auth = await validateAuth(req, body);
     const { userId, supabase, userEmail } = auth;
-    const ageDenied = await assertAiAgeAllowed(supabase, userId, userEmail);
-    if (ageDenied) return ageDenied;
 
     // Fetch user profile for personalization
     const { data: userProfile } = await supabase

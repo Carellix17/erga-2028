@@ -3,7 +3,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 import { callVisionText } from "../_shared/vision.ts";
-import { assertAiAgeAllowed } from "../_shared/ageAccess.ts";
 
 /**
  * Extract figure crops for a single lesson on-demand — STRATEGY A.
@@ -399,8 +398,6 @@ serve(withCors(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const ageDenied = await assertAiAgeAllowed(supabase, userId, auth.userEmail);
-    if (ageDenied) return ageDenied;
 
     // 1. Load lesson (ownership check)
     const { data: lesson, error: lessonErr } = await supabase

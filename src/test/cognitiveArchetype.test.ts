@@ -9,7 +9,6 @@ import type { CognitiveProfile } from "@/hooks/useCognitiveProfile";
 function profile(overrides: Partial<CognitiveProfile>): CognitiveProfile {
   return {
     nome: null,
-    eta: null,
     istituto: null,
     log_score: 50,
     mem_score: 50,

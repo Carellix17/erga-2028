@@ -1,4 +1,4 @@
-// 18 cognitive questions (3 per area) + 3 anagraphic prompts.
+// 18 cognitive questions (3 per area).
 // Each cognitive answer assigns 0-10 points to its area.
 // Final per-area score (0-100) = average of the 3 answers * 10.
 

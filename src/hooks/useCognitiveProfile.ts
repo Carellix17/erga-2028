@@ -5,7 +5,6 @@ import { profileReadError, type OnboardingInput } from "@/lib/onboardingGate";
 
 export interface CognitiveProfile {
   nome: string | null;
-  eta: number | null;
   istituto: string | null;
   log_score: number;
   mem_score: number;

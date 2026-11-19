@@ -14,7 +14,7 @@ interface Props {
   onClose?: () => void;
 }
 
-type SlideKind = "intro" | "nome" | "eta" | "istituto" | "question" | "saving" | "done";
+type SlideKind = "intro" | "nome" | "istituto" | "question" | "saving" | "done";
 
 export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props) {
   const { save } = useCognitiveProfile();
@@ -22,7 +22,6 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
 
   const [step, setStep] = useState(0);
   const [nome, setNome] = useState("");
-  const [eta, setEta] = useState<string>("");
   const [istituto, setIstituto] = useState<string>("");
   const [istitutoCustom, setIstitutoCustom] = useState("");
   const [istitutoSearch, setIstitutoSearch] = useState("");
@@ -33,7 +32,6 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
     return [
       "intro",
       "nome",
-      "eta",
       "istituto",
       ...COGNITIVE_QUESTIONS.map(() => "question" as const),
       "saving",
@@ -42,7 +40,7 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
   }, []);
 
   const totalQuestions = COGNITIVE_QUESTIONS.length;
-  const questionIndex = step - 4; // first question starts at step 4
+  const questionIndex = step - slides.indexOf("question");
   const progress = Math.min(100, Math.round(((step) / (slides.length - 2)) * 100));
 
   const goNext = () => setStep((s) => Math.min(slides.length - 1, s + 1));
@@ -55,7 +53,6 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
       istituto === 'Altro (Inserisci manualmente)' ? istitutoCustom.trim() : istituto;
     const ok = await save({
       nome: nome.trim() || null,
-      eta: eta ? parseInt(eta, 10) : null,
       istituto: istitutoFinal || null,
       log_score: scores.LOG,
       mem_score: scores.MEM,
@@ -88,7 +85,6 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
   const canProceed = (() => {
     switch (currentSlide) {
       case "nome": return nome.trim().length >= 1;
-      case "eta": return !!eta && parseInt(eta, 10) >= 14 && parseInt(eta, 10) <= 99;
       case "istituto":
         if (!istituto) return false;
         if (istituto === 'Altro (Inserisci manualmente)') return istitutoCustom.trim().length >= 2;
@@ -163,21 +159,6 @@ export function CognitiveOnboarding({ onCompleted, allowClose, onClose }: Props)
                   className="h-14 rounded-2xl bg-foreground/[0.04] border-0 text-base"
                   maxLength={40}
                 />
-              </SlideShell>
-            )}
-
-            {currentSlide === "eta" && (
-              <SlideShell title="Quanti anni hai?" subtitle="Ci aiuta a calibrare il tono e gli esempi.">
-                <select
-                  value={eta}
-                  onChange={(e) => setEta(e.target.value)}
-                  className="w-full h-14 rounded-2xl bg-foreground/[0.04] border-0 text-base px-4 outline-none"
-                >
-                  <option value="">Seleziona la tua età</option>
-                  {Array.from({ length: 27 }, (_, i) => i + 14).map((n) => (
-                    <option key={n} value={n}>{n} anni</option>
-                  ))}
-                </select>
               </SlideShell>
             )}
 

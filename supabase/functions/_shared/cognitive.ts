@@ -16,8 +16,6 @@ export interface CognitiveScores {
 // deno-lint-ignore no-explicit-any
 export async function fetchCognitiveProfile(supabase: any, userId: string): Promise<CognitiveScores | null> {
   try {
-    // `eta` resta in tabella per il tono dell'app, ma non si carica qui:
-    // il prompt non deve portarla all'IA insieme all'id utente.
     const { data } = await supabase
       .from("cognitive_profiles")
       .select("nome, istituto, log_score, mem_score, foc_score, voc_score, ans_score, app_score")

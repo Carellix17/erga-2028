@@ -23,7 +23,6 @@ const updateInterests = vi.fn();
 // Profilo stabile: stesso riferimento a ogni render, come l'hook reale.
 const cognitiveProfile = {
   nome: "Vale",
-  eta: 16,
   istituto: null,
   log_score: 70,
   mem_score: 60,

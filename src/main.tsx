@@ -7,6 +7,12 @@ import "./index.css";
 import "./i18n";
 import { initAutoContrast } from "@/lib/autoContrast";
 
+try {
+  localStorage.removeItem("erga.ageGate.blockedUntil");
+} catch {
+  // Il browser può disabilitare la memoria locale.
+}
+
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
     <App />

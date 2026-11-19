@@ -3,7 +3,6 @@ import { withCors, validateAuth, errorResponse, successResponse } from "../_shar
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { callAIText } from "../_shared/ai.ts";
-import { assertAiAgeAllowed } from "../_shared/ageAccess.ts";
 import { tryOpenRouterText } from "../_shared/openrouter.ts";
 import {
   buildGymPrompt,
@@ -42,8 +41,6 @@ serve(withCors(async (req) => {
 
     const auth = await validateAuth(req, body);
     const { userId, supabase } = auth;
-    const ageDenied = await assertAiAgeAllowed(supabase, userId, auth.userEmail);
-    if (ageDenied) return ageDenied;
 
     // Il percorso deve essere dello studente E di materia scientifica.
     const { data: ctx } = await supabase
