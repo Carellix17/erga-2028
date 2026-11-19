@@ -684,6 +684,9 @@ DECLARE
   v_cut timestamptz;
 BEGIN
   PERFORM pg_catalog.pg_advisory_xact_lock(hashtext('purge-ai-cost-rows-90d'));
+  -- Evita che una riga vecchia scritta tra l'INSERT nell'archivio e il DELETE
+  -- venga cancellata senza essere archiviata.
+  LOCK TABLE public.ai_usage IN SHARE ROW EXCLUSIVE MODE;
 
   v_cut := (
     date_trunc(
