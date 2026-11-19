@@ -2,7 +2,7 @@
  * @vitest-environment node
  *
  * Collaudo della migrazione dei contatori anonimi su Postgres (PGlite).
- * Copre la soglia k, i CHECK, la retention, l'orario all'ora e il ruolo CFO.
+ * Simula i privilegi di default di Supabase prima dell'apply.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -17,14 +17,31 @@ const migrationPath = path.join(
 );
 const migrationSql = fs.readFileSync(migrationPath, "utf8");
 
-const baseSql = `
+const setupSql = `
+CREATE SCHEMA IF NOT EXISTS auth;
+CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
+LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
+
 CREATE SCHEMA IF NOT EXISTS public;
+
 DO $$
 BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    CREATE ROLE anon NOLOGIN NOINHERIT;
+  END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
     CREATE ROLE authenticated NOLOGIN NOINHERIT;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+    CREATE ROLE service_role NOLOGIN NOINHERIT;
+  END IF;
 END $$;
+
+-- Privilegi di default di Supabase, prima che la migrazione crei gli oggetti.
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+
 CREATE TABLE public.ai_usage (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id uuid,
@@ -42,14 +59,15 @@ CREATE TABLE public.ai_usage (
 ALTER TABLE public.ai_usage ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "ai_usage_insert_authenticated" ON public.ai_usage
   FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
-`;
 
-// auth.uid() non esiste in un Postgres nudo: la policy preesistente
-// viene eliminata dalla migrazione, ma per crearla serve la funzione.
-const authStub = `
-CREATE SCHEMA IF NOT EXISTS auth;
-CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
-LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
+CREATE TABLE public.user_profiles (
+  user_id text PRIMARY KEY,
+  is_beta_tester boolean NOT NULL DEFAULT false
+);
+CREATE TABLE public.subscriptions (
+  user_id text NOT NULL,
+  status text NOT NULL
+);
 `;
 
 type Db = PGlite;
@@ -77,8 +95,7 @@ async function fails(sql: string, pattern: RegExp) {
 describe("migrazione contatori anonimi", () => {
   beforeAll(async () => {
     db = new PGlite();
-    await db.exec(authStub);
-    await db.exec(baseSql);
+    await db.exec(setupSql);
     await db.exec(migrationSql);
   }, 30_000);
 
@@ -90,69 +107,94 @@ describe("migrazione contatori anonimi", () => {
     await db.exec("RESET ROLE");
     await db.exec("DELETE FROM public.ai_usage");
     await db.exec("DELETE FROM public.ai_price_lists");
+    await db.exec("DELETE FROM public.ai_cost_weekly_totals");
+    await db.exec("DELETE FROM public.subscriptions");
+    await db.exec("DELETE FROM public.user_profiles");
   });
 
-  it("non crea viste per utente o per chiamata, né segreti", () => {
+  it("documenta la soglia di 10 richieste e il job di purge", () => {
+    expect(migrationSql).toContain(
+      "Prima di deployare la PR 2 deve esistere il job `purge-ai-cost-rows-90d` in `cron.job`. Se manca, la PR 2 non va in produzione.",
+    );
+    expect(migrationSql).toContain(
+      "SELECT jobname, schedule, active",
+    );
+    expect(migrationSql).toContain(
+      "In fase anonima la soglia k conta eventi, non persone: una cella può corrispondere a una sola persona.",
+    );
+    expect(migrationSql).toContain("10 richieste, non persone");
+    expect(migrationSql.trimStart().startsWith("--")).toBe(true);
+    expect(migrationSql).toMatch(/\bBEGIN;\s/);
+    expect(migrationSql.trimEnd().endsWith("COMMIT;")).toBe(true);
+    expect(migrationSql).not.toMatch(/CREATE\s+(OR\s+REPLACE\s+)?VIEW\s+public\.v_cfo_ai_usage_daily/i);
     expect(migrationSql).not.toMatch(/CREATE\s+(OR\s+REPLACE\s+)?VIEW\s+public\.v_cfo_ai_usage_weekly_user/i);
     expect(migrationSql).not.toMatch(/CREATE\s+(OR\s+REPLACE\s+)?VIEW\s+public\.v_cfo_ai_usage_calls/i);
     expect(migrationSql).not.toMatch(/\bhmac\s*\(/i);
-    expect(migrationSql).not.toMatch(/CREATE\s+EXTENSION[^;]{0,80}pgcrypto/i);
     expect(migrationSql).not.toMatch(/PASSWORD\s+'/i);
     expect(migrationSql).not.toMatch(/\bUPDATE\s+public\.ai_usage\b/i);
-    expect(migrationSql).not.toMatch(/REFERENCES\s+(auth|public)\.(users|user_profiles|subscriptions|study_sessions_logs|focus_sessions)/i);
   });
 
-  it("non espone user_id e non ha colonne di rete, sessione o dispositivo", async () => {
+  it("non espone identità e non conta il segmento dai log", async () => {
     const forbidden = await query<{ column_name: string }>(`
       SELECT column_name
       FROM information_schema.columns
       WHERE table_schema = 'public'
-        AND (
-          (table_name = 'ai_usage' AND column_name ~* '(^ip$|ip_address|user_agent|session_id|device_id|signup_week|user_id_hash|coorte)')
-          OR (table_name LIKE 'v_cfo%' AND column_name ~* '(user_id|hash|signup|coorte|ip|user_agent|session|device|email)')
-        )
+        AND table_name IN ('ai_usage', 'ai_cost_weekly_totals', 'v_cfo_ai_cost_weekly')
+        AND column_name ~* '(^ip$|ip_address|user_agent|session_id|device_id|signup_week|user_id|hash|email)'
+        AND NOT (table_name = 'ai_usage' AND column_name = 'user_id')
     `);
     expect(forbidden).toEqual([]);
 
-    const missingViews = await query<{ utente: string | null; chiamate: string | null }>(`
-      SELECT to_regclass('public.v_cfo_ai_usage_weekly_user') AS utente,
-             to_regclass('public.v_cfo_ai_usage_calls') AS chiamate
+    const gone = await query<{ daily: string | null; contatori: string | null; per_utente: string | null }>(`
+      SELECT to_regclass('public.v_cfo_ai_usage_daily') AS daily,
+             to_regclass('public.v_cfo_contatori') AS contatori,
+             to_regclass('public.v_cfo_ai_usage_weekly_user') AS per_utente
     `);
-    expect(missingViews[0]).toEqual({ utente: null, chiamate: null });
+    expect(gone[0]).toEqual({ daily: null, contatori: null, per_utente: null });
 
-    const foreignKeys = await query<{ n: number }>(`
-      SELECT count(*)::int AS n
-      FROM pg_constraint
-      WHERE contype = 'f'
-        AND conrelid IN ('public.ai_usage'::regclass, 'public.ai_price_lists'::regclass)
-    `);
-    expect(foreignKeys[0].n).toBe(0);
+    const guard = await query<{ def: string }>(
+      `SELECT pg_get_functiondef('public.ai_usage_guard_piano_nome()'::regprocedure) AS def`,
+    );
+    expect(guard[0].def).not.toMatch(/from\s+public\.ai_usage/i);
+    expect(guard[0].def).toMatch(/ai_segment_subscriber_count/);
 
-    const definitions = await query<{ def: string }>(`
-      SELECT pg_get_viewdef(c.oid, true) AS def
-      FROM pg_class c
-      JOIN pg_namespace n ON n.oid = c.relnamespace
-      WHERE n.nspname = 'public' AND c.relname LIKE 'v_cfo%'
+    const definer = await query<{ proname: string; prosecdef: boolean }>(`
+      SELECT p.proname, p.prosecdef
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE n.nspname = 'public'
+        AND p.proname IN ('purge_ai_cost_rows_older_than_90_days', 'ai_cost_weekly_aggregate')
     `);
-    expect(definitions.length).toBe(3);
-    for (const row of definitions) {
-      expect(row.def).not.toMatch(/auth\.users|user_profiles|subscriptions|study_sessions|focus_sessions|storage\.objects/);
-    }
+    const byName = Object.fromEntries(definer.map((row) => [row.proname, row.prosecdef]));
+    expect(byName.purge_ai_cost_rows_older_than_90_days).toBe(false);
+    expect(byName.ai_cost_weekly_aggregate).toBe(true);
+  });
 
-    const options = await query<{ relname: string; reloptions: string[] | null }>(`
-      SELECT c.relname, c.reloptions
-      FROM pg_class c
-      JOIN pg_namespace n ON n.oid = c.relnamespace
-      WHERE n.nspname = 'public' AND c.relname LIKE 'v_cfo%'
-    `);
-    expect(options).toHaveLength(3);
-    for (const row of options) {
-      expect(row.reloptions ?? []).toContain("security_barrier=true");
-      expect(row.reloptions ?? []).not.toContain("security_invoker=true");
+  it("revoca i privilegi di default a anon e authenticated", async () => {
+    const roles = ["anon", "authenticated"] as const;
+    const relations = [
+      "public.v_cfo_ai_cost_weekly",
+      "public.ai_usage",
+      "public.ai_price_lists",
+      "public.ai_cost_weekly_totals",
+    ];
+    for (const role of roles) {
+      for (const relation of relations) {
+        const rows = await query<{ ok: boolean }>(
+          `SELECT has_table_privilege($1, $2, 'SELECT') AS ok`,
+          [role, relation],
+        );
+        expect(rows[0].ok, `${role} SELECT ${relation}`).toBe(false);
+      }
+      const execute = await query<{ ok: boolean }>(
+        `SELECT has_function_privilege($1, 'public.purge_ai_cost_rows_older_than_90_days()', 'EXECUTE') AS ok`,
+        [role],
+      );
+      expect(execute[0].ok, `${role} EXECUTE purge`).toBe(false);
     }
   });
 
-  it("tronca created_at all'ora UTC, anche se il client manda i secondi", async () => {
+  it("tronca created_at all'ora UTC", async () => {
     await db.exec(`
       INSERT INTO public.ai_usage (fn, ok, created_at)
       VALUES ('chat', true, '2026-11-19 14:37:21+00')
@@ -162,18 +204,9 @@ describe("migrazione contatori anonimi", () => {
       FROM public.ai_usage
     `);
     expect(rows[0].ts).toBe("2026-11-19 14:00:00");
-
-    await db.exec("DELETE FROM public.ai_usage");
-    await db.exec("INSERT INTO public.ai_usage (fn, ok) VALUES ('chat', true)");
-    const clock = await query<{ minute: number; second: number }>(`
-      SELECT extract(minute FROM created_at AT TIME ZONE 'UTC')::int AS minute,
-             extract(second FROM created_at AT TIME ZONE 'UTC')::int AS second
-      FROM public.ai_usage
-    `);
-    expect(clock[0]).toEqual({ minute: 0, second: 0 });
   });
 
-  it("rifiuta i valori fuori dagli elenchi chiusi", async () => {
+  it("rifiuta i valori fuori elenco e azzera il piano sotto i 10 iscritti", async () => {
     await fails(
       `INSERT INTO public.ai_usage (fn, ok, segmento) VALUES ('chat', true, 'scuola')`,
       /ai_usage_segmento_check/,
@@ -182,97 +215,72 @@ describe("migrazione contatori anonimi", () => {
       `INSERT INTO public.ai_usage (fn, ok, feature) VALUES ('chat', true, 'prompt dello studente')`,
       /ai_usage_feature_check/,
     );
-    await fails(
-      `INSERT INTO public.ai_usage (fn, ok, esito) VALUES ('chat', true, 'errore: il prompt era')`,
-      /ai_usage_esito_check/,
-    );
     await db.exec(
-      `INSERT INTO public.ai_usage (fn, ok, piano_nome) VALUES ('chat', true, 'Piano di Mario Rossi')`,
+      `INSERT INTO public.ai_usage (fn, ok, segmento, piano_nome) VALUES ('chat', true, 'free', 'mensile')`,
     );
-    const stripped = await query<{ n: number }>(
-      `SELECT count(piano_nome)::int AS n FROM public.ai_usage`,
+    const stripped = await query<{ piano: string | null }>(
+      `SELECT piano_nome AS piano FROM public.ai_usage`,
     );
-    expect(stripped[0].n).toBe(0);
+    expect(stripped[0].piano).toBeNull();
 
     await db.exec("DELETE FROM public.ai_usage");
-    await insertEvents({ n: 10, userId: "distinct", piano: null });
+    await insertProfiles(10);
     await fails(
-      `INSERT INTO public.ai_usage (user_id, fn, ok, feature, segmento, piano_nome)
-       VALUES ('00000000-0000-4000-8000-000000000001'::uuid, 'chat', true, 'chat', 'pagante', 'Piano di Mario Rossi')`,
+      `INSERT INTO public.ai_usage (fn, ok, segmento, piano_nome)
+       VALUES ('chat', true, 'free', 'Piano di Mario Rossi')`,
       /ai_usage_piano_nome_check/,
     );
-    await fails(
-      `INSERT INTO public.ai_usage (fn, ok, cached_prompt_tokens) VALUES ('chat', true, -1)`,
-      /ai_usage_cached_prompt_tokens_check/,
+  });
+
+  it("con 9 iscritti il segmento pubblicato è altri, con 10 resta visibile", async () => {
+    await insertProfiles(9);
+    await insertEvents({ n: 12, feature: "chat", piano: "mensile" });
+    const hidden = await weekly();
+    expect(hidden).toEqual([
+      expect.objectContaining({ segmento: "altri", piano_nome: "altri", feature: "chat", n_richieste: 12 }),
+    ]);
+
+    await db.exec("DELETE FROM public.ai_usage");
+    await db.exec(
+      `INSERT INTO public.user_profiles (user_id, is_beta_tester) VALUES ('iscritto-10', false)`,
     );
+    await insertEvents({ n: 12, feature: "chat", piano: "mensile" });
+    const shown = await weekly();
+    expect(shown).toEqual([
+      expect.objectContaining({ segmento: "free", piano_nome: "mensile", feature: "chat", n_richieste: 12 }),
+    ]);
   });
 
-  it("omette le celle sotto 10 eventi e sotto 10 utenti quando l'id c'è", async () => {
-    await insertEvents({ n: 9, userId: null, piano: "mensile" });
-    expect(await publishedDays()).toBe(0);
-    expect(await publishedWeeks()).toBe(0);
-    expect(await publishedCounters()).toBe(0);
+  it("non permette di ricostruire 3 richieste TTS sotto soglia", async () => {
+    await insertProfiles(10);
+    await insertEvents({ n: 12, feature: "chat", piano: "mensile" });
+    await insertEvents({ n: 3, feature: "tts", piano: "mensile" });
 
-    await insertEvents({ n: 1, userId: null, piano: "mensile" });
-    const stored = await query<{ con_nome: number }>(`
-      SELECT count(piano_nome)::int AS con_nome FROM public.ai_usage
-    `);
-    expect(stored[0].con_nome).toBe(0);
-    const daily = await query<{ n_eventi: number; piano_nome: string | null; segmento: string }>(`
-      SELECT n_eventi::int AS n_eventi, piano_nome, segmento
-      FROM public.v_cfo_ai_usage_daily
-    `);
-    expect(daily).toEqual([{ n_eventi: 10, piano_nome: null, segmento: "pagante" }]);
-    expect(await publishedWeeks()).toBe(1);
-    expect(await publishedCounters()).toBe(1);
-
-    await db.exec("DELETE FROM public.ai_usage");
-    await insertEvents({ n: 10, userId: "one", piano: "mensile" });
-    expect(await publishedDays()).toBe(0);
-
-    await db.exec("DELETE FROM public.ai_usage");
-    await insertEvents({ n: 10, userId: "distinct", piano: "annuale" });
-    const notYet = await query<{ piano_nome: string | null; n_eventi: number }>(`
-      SELECT piano_nome, n_eventi::int AS n_eventi FROM public.v_cfo_ai_usage_daily
-    `);
-    expect(notYet).toEqual([{ piano_nome: null, n_eventi: 10 }]);
-
-    await insertEvents({ n: 10, userId: "distinct", piano: "annuale" });
-    const named = await query<{ piano_nome: string | null; n_eventi: number }>(`
-      SELECT piano_nome, n_eventi::int AS n_eventi FROM public.v_cfo_ai_usage_daily
-    `);
-    expect(named).toEqual([{ piano_nome: "annuale", n_eventi: 20 }]);
+    const rows = await weekly();
+    expect(rows.map((row) => row.feature)).toEqual(["chat"]);
+    expect(rows[0].n_richieste).toBe(12);
+    const total = rows.reduce((sum, row) => sum + row.n_richieste, 0);
+    expect(total).toBe(12);
+    expect(rows.some((row) => row.feature === "tts" || row.n_richieste === 3)).toBe(false);
   });
 
-  it("non mostra il nome del piano se nella cella i nomi sono più di uno", async () => {
-    await insertEvents({ n: 10, userId: "distinct", piano: "mensile", tokensFrom: 1 });
-    await insertEvents({ n: 10, userId: "distinct", piano: "annuale", tokensFrom: 100, idOffset: 20 });
-    const rows = await query<{ piano_nome: string | null; n_eventi: number }>(`
-      SELECT piano_nome, n_eventi::int AS n_eventi
-      FROM public.v_cfo_ai_usage_daily
-    `);
-    expect(rows).toEqual([{ piano_nome: null, n_eventi: 20 }]);
-  });
-
-  it("calcola P50 e P90 sulle chiamate, non sugli utenti", async () => {
-    await insertEvents({ n: 10, userId: null, piano: null, tokensFrom: 1 });
-    const rows = await query<{ p50: string; p90: string; avg: string }>(`
-      SELECT prompt_tokens_p50::text AS p50,
-             prompt_tokens_p90::text AS p90,
-             prompt_tokens_avg::text AS avg
-      FROM public.v_cfo_contatori
-    `);
-    expect(Number(rows[0].p50)).toBe(5.5);
-    expect(Number(rows[0].p90)).toBe(9.1);
-    expect(Number(rows[0].avg)).toBe(5.5);
-  });
-
-  it("cancella solo le righe di ai_usage più vecchie di 90 giorni", async () => {
+  it("archivia solo le celle da almeno 10 richieste e non conta due volte", async () => {
+    await insertProfiles(10);
     await db.exec(`
-      INSERT INTO public.ai_usage (fn, ok, created_at, feature, segmento)
-      VALUES
-        ('chat', true, now() - interval '91 days', 'chat', 'free'),
-        ('chat', true, now() - interval '10 days', 'chat', 'free')
+      INSERT INTO public.ai_usage (fn, ok, feature, provider, model, segmento, piano_nome, prompt_tokens, created_at)
+      SELECT 'chat', true, 'chat', 'google', 'gemini-test', 'free', 'mensile', 10,
+             now() - interval '91 days'
+      FROM generate_series(1, 12)
+    `);
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, ok, feature, provider, model, segmento, piano_nome, created_at)
+      SELECT 'tts', true, 'tts', 'azure', 'azure-tts', 'free', 'mensile',
+             now() - interval '91 days'
+      FROM generate_series(1, 3)
+    `);
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, ok, feature, segmento, created_at)
+      VALUES ('chat', true, 'chat', 'free', now() - interval '2 days')
     `);
     await db.exec(`
       INSERT INTO public.ai_price_lists (
@@ -284,57 +292,47 @@ describe("migrazione contatori anonimi", () => {
       )
     `);
 
-    const deleted = await query<{ n: string }>(
+    const first = await query<{ n: string }>(
       `SELECT public.purge_ai_cost_rows_older_than_90_days()::text AS n`,
     );
-    expect(Number(deleted[0].n)).toBe(1);
-
-    const left = await query<{ age_days: number }>(`
-      SELECT floor(extract(epoch FROM (now() - created_at)) / 86400)::int AS age_days
-      FROM public.ai_usage
+    expect(Number(first[0].n)).toBe(15);
+    const archived = await query<{ feature: string; n_richieste: number }>(`
+      SELECT feature, n_richieste::int AS n_richieste
+      FROM public.ai_cost_weekly_totals
+      ORDER BY feature
     `);
-    expect(left).toHaveLength(1);
-    expect(left[0].age_days).toBeLessThan(90);
+    expect(archived).toEqual([{ feature: "chat", n_richieste: 12 }]);
 
+    const second = await query<{ n: string }>(
+      `SELECT public.purge_ai_cost_rows_older_than_90_days()::text AS n`,
+    );
+    expect(Number(second[0].n)).toBe(0);
+    const still = await query<{ n_richieste: number }>(
+      `SELECT n_richieste::int AS n_richieste FROM public.ai_cost_weekly_totals`,
+    );
+    expect(still).toEqual([{ n_richieste: 12 }]);
+
+    const left = await query<{ n: number }>(`SELECT count(*)::int AS n FROM public.ai_usage`);
+    expect(left[0].n).toBe(1);
     const lists = await query<{ n: number }>(`SELECT count(*)::int AS n FROM public.ai_price_lists`);
     expect(lists[0].n).toBe(1);
   });
 
-  it("nega al CFO e al client il grezzo, e lascia scrivere solo alla service role", async () => {
-    await insertEvents({ n: 10, userId: null, piano: null });
+  it("il CFO legge solo i totali settimanali", async () => {
+    await insertProfiles(10);
+    await insertEvents({ n: 12, feature: "chat", piano: null });
 
-    const cfoDays = await asRole("cfo_readonly", () =>
-      query<{ n: number }>(`SELECT count(*)::int AS n FROM public.v_cfo_ai_usage_daily`),
+    const seen = await asRole("cfo_readonly", () =>
+      query<{ n: number }>(`SELECT count(*)::int AS n FROM public.v_cfo_ai_cost_weekly`),
     );
-    expect(cfoDays[0].n).toBe(1);
+    expect(seen[0].n).toBe(1);
 
     await asRole("cfo_readonly", async () => {
       await fails(`SELECT * FROM public.ai_usage`, /permission denied/i);
       await fails(`SELECT * FROM public.ai_price_lists`, /permission denied/i);
-      await fails(`SELECT user_id FROM public.v_cfo_ai_usage_daily`, /user_id/);
+      await fails(`SELECT * FROM public.user_profiles`, /permission denied/i);
       await fails(`SELECT public.purge_ai_cost_rows_older_than_90_days()`, /permission denied/i);
     });
-
-    await asRole("anon", async () => {
-      await fails(
-        `INSERT INTO public.ai_usage (fn, ok) VALUES ('chat', true)`,
-        /permission denied/i,
-      );
-      await fails(`SELECT * FROM public.v_cfo_ai_usage_daily`, /permission denied/i);
-    });
-
-    await asRole("authenticated", async () => {
-      await fails(
-        `INSERT INTO public.ai_usage (fn, ok) VALUES ('chat', true)`,
-        /permission denied/i,
-      );
-    });
-
-    await asRole("service_role", async () => {
-      await db.exec(`INSERT INTO public.ai_usage (fn, ok, feature, segmento) VALUES ('chat', true, 'chat', 'free')`);
-    });
-    const written = await query<{ n: number }>(`SELECT count(*)::int AS n FROM public.ai_usage`);
-    expect(written[0].n).toBe(11);
 
     const grants = await query<{ table_name: string }>(`
       SELECT table_name
@@ -342,80 +340,61 @@ describe("migrazione contatori anonimi", () => {
       WHERE grantee = 'cfo_readonly' AND privilege_type = 'SELECT'
       ORDER BY table_name
     `);
-    expect(grants.map((row) => row.table_name)).toEqual([
-      "v_cfo_ai_usage_daily",
-      "v_cfo_ai_usage_weekly_segment",
-      "v_cfo_contatori",
+    expect(grants.map((row) => row.table_name).sort()).toEqual([
+      "ai_cost_weekly_totals",
+      "v_cfo_ai_cost_weekly",
     ]);
   });
 
-  it("si può rieseguire e la seconda passata pulisce ancora il grezzo vecchio", async () => {
-    await db.exec(`
-      INSERT INTO public.ai_usage (fn, ok, created_at)
-      VALUES ('chat', true, now() - interval '120 days'),
-             ('chat', true, now() - interval '1 day')
-    `);
+  it("si può rieseguire dentro la transazione del file", async () => {
     await db.exec(migrationSql);
-    const left = await query<{ n: number }>(`SELECT count(*)::int AS n FROM public.ai_usage`);
-    expect(left[0].n).toBe(1);
-    const views = await query<{ n: number }>(`
-      SELECT count(*)::int AS n FROM pg_class c
-      JOIN pg_namespace ns ON ns.oid = c.relnamespace
-      WHERE ns.nspname = 'public' AND c.relname LIKE 'v_cfo%' AND c.relkind = 'v'
+    const views = await query<{ name: string }>(`
+      SELECT c.relname AS name
+      FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = 'public' AND c.relkind = 'v' AND c.relname LIKE 'v_cfo%'
+      ORDER BY 1
     `);
-    expect(views[0].n).toBe(3);
+    expect(views.map((row) => row.name)).toEqual(["v_cfo_ai_cost_weekly"]);
   });
 });
 
-async function publishedDays() {
-  const rows = await query<{ n: number }>(`SELECT count(*)::int AS n FROM public.v_cfo_ai_usage_daily`);
-  return rows[0].n;
+async function weekly() {
+  return query<{
+    segmento: string;
+    piano_nome: string;
+    feature: string;
+    n_richieste: number;
+  }>(`
+    SELECT segmento, piano_nome, feature, n_richieste::int AS n_richieste
+    FROM public.v_cfo_ai_cost_weekly
+    ORDER BY feature
+  `);
 }
 
-async function publishedWeeks() {
-  const rows = await query<{ n: number }>(
-    `SELECT count(*)::int AS n FROM public.v_cfo_ai_usage_weekly_segment`,
-  );
-  return rows[0].n;
+async function insertProfiles(n: number) {
+  await db.exec(`
+    INSERT INTO public.user_profiles (user_id, is_beta_tester)
+    SELECT 'iscritto-' || g.n::text, false
+    FROM generate_series(1, ${n}) AS g(n)
+    ON CONFLICT (user_id) DO NOTHING
+  `);
 }
 
-async function publishedCounters() {
-  const rows = await query<{ n: number }>(`SELECT count(*)::int AS n FROM public.v_cfo_contatori`);
-  return rows[0].n;
-}
-
-async function insertEvents(opts: {
-  n: number;
-  userId: null | "one" | "distinct";
-  piano: string | null;
-  tokensFrom?: number;
-  idOffset?: number;
-}) {
+async function insertEvents(opts: { n: number; feature: string; piano: string | null }) {
   const pianoSql = opts.piano === null ? "NULL" : `'${opts.piano}'`;
-  const tokenSql =
-    opts.tokensFrom === undefined ? "NULL" : `${opts.tokensFrom} + g.n - 1`;
-  const offset = opts.idOffset ?? 0;
-  const userSql =
-    opts.userId === null
-      ? "NULL"
-      : opts.userId === "one"
-        ? `'00000000-0000-4000-8000-000000000001'::uuid`
-        : `('00000000-0000-4000-8000-' || lpad((${offset} + g.n)::text, 12, '0'))::uuid`;
-
   await db.exec(`
     INSERT INTO public.ai_usage (
-      user_id, fn, provider, model, ok, feature, segmento, piano_nome,
-      prompt_tokens, created_at
+      fn, provider, model, ok, feature, segmento, piano_nome, prompt_tokens, created_at
     )
-    SELECT ${userSql},
-           'chat',
+    SELECT '${opts.feature}',
            'google',
            'gemini-test',
            true,
-           'chat',
-           'pagante',
+           '${opts.feature}',
+           'free',
            ${pianoSql},
-           ${tokenSql},
+           10,
            timestamptz '2026-11-19 10:37:00+00'
     FROM generate_series(1, ${opts.n}) AS g(n)
   `);

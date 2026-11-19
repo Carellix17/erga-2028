@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_cost_weekly_totals: {
+        Row: {
+          cached_prompt_tokens: number
+          completion_tokens: number
+          estimated_cost_eur: number
+          feature: string
+          model: string
+          n_richieste: number
+          piano_nome: string
+          prompt_tokens: number
+          provider: string
+          segmento: string
+          settimana: string
+        }
+        Insert: {
+          cached_prompt_tokens?: number
+          completion_tokens?: number
+          estimated_cost_eur?: number
+          feature: string
+          model: string
+          n_richieste: number
+          piano_nome: string
+          prompt_tokens?: number
+          provider: string
+          segmento: string
+          settimana: string
+        }
+        Update: {
+          cached_prompt_tokens?: number
+          completion_tokens?: number
+          estimated_cost_eur?: number
+          feature?: string
+          model?: string
+          n_richieste?: number
+          piano_nome?: string
+          prompt_tokens?: number
+          provider?: string
+          segmento?: string
+          settimana?: string
+        }
+        Relationships: []
+      }
       ai_price_lists: {
         Row: {
           cached_input_per_million: number
@@ -1459,76 +1501,19 @@ export type Database = {
       }
     }
     Views: {
-      v_cfo_ai_usage_daily: {
+      v_cfo_ai_cost_weekly: {
         Row: {
-          audio_characters: number
-          audio_seconds: number
           cached_prompt_tokens: number
           completion_tokens: number
           estimated_cost_eur: number
-          feature: string | null
-          giorno: string
-          image_count: number
-          model: string | null
-          n_eventi: number
-          n_fallita: number
-          n_ok: number
-          n_retry: number
-          page_count: number
-          piano_nome: string | null
-          price_list_version: string | null
+          feature: string
+          model: string
+          n_richieste: number
+          piano_nome: string
           prompt_tokens: number
-          provider: string | null
-          reasoning_tokens: number
-          segmento: string | null
-        }
-        Relationships: []
-      }
-      v_cfo_ai_usage_weekly_segment: {
-        Row: {
-          audio_characters: number
-          audio_seconds: number
-          cached_prompt_tokens: number
-          completion_tokens: number
-          estimated_cost_eur: number
-          image_count: number
-          n_eventi: number
-          n_fallita: number
-          n_ok: number
-          n_retry: number
-          page_count: number
-          piano_nome: string | null
-          prompt_tokens: number
-          reasoning_tokens: number
-          segmento: string | null
+          provider: string
+          segmento: string
           settimana: string
-        }
-        Relationships: []
-      }
-      v_cfo_contatori: {
-        Row: {
-          cached_prompt_tokens_avg: number | null
-          cached_prompt_tokens_p50: number | null
-          cached_prompt_tokens_p90: number | null
-          completion_tokens_avg: number | null
-          completion_tokens_p50: number | null
-          completion_tokens_p90: number | null
-          estimated_cost_eur_avg: number | null
-          estimated_cost_eur_p50: number | null
-          estimated_cost_eur_p90: number | null
-          estimated_cost_eur_sum: number
-          feature: string | null
-          model: string | null
-          n_eventi: number
-          n_fallita: number
-          n_ok: number
-          n_retry: number
-          piano_nome: string | null
-          prompt_tokens_avg: number | null
-          prompt_tokens_p50: number | null
-          prompt_tokens_p90: number | null
-          provider: string | null
-          segmento: string | null
         }
         Relationships: []
       }
@@ -1566,6 +1551,23 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      ai_cost_weekly_aggregate: {
+        Args: { p_cutoff: string }
+        Returns: {
+          cached_prompt_tokens: number
+          completion_tokens: number
+          estimated_cost_eur: number
+          feature: string
+          model: string
+          n_richieste: number
+          piano_nome: string
+          prompt_tokens: number
+          provider: string
+          segmento: string
+          settimana: string
+        }[]
+      }
+      ai_segment_subscriber_count: { Args: { p_segmento: string }; Returns: number }
       cleanup_demo_rate_limits: { Args: never; Returns: undefined }
       purge_ai_cost_rows_older_than_90_days: { Args: never; Returns: number }
       has_active_subscription: {
