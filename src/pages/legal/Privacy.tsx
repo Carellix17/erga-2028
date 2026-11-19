@@ -50,7 +50,7 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p><strong>Statistiche sui costi dell'intelligenza artificiale</strong></p>
-        <p>Per capire quanto ci costa far funzionare Erga e decidere prezzi e limiti dei piani, registriamo per ogni richiesta all'AI solo dati tecnici: funzione usata, modello, numero di parole elaborate (token), costo stimato, tipo di piano e data. <strong>In questi contatori non registriamo chi sei</strong> (nessun nome, email, id o codice che ti identifichi) <strong>né cosa scrivi o cosa ti risponde l'IA.</strong> Dopo 90 giorni i dati dei singoli conteggi vengono cancellati; teniamo solo totali settimanali, ciascuno formato da almeno 10 richieste, che non contengono nessun dato su chi le ha fatte. Non li usiamo per pubblicità né per decisioni che riguardano te. Base: il nostro interesse a gestire in modo sostenibile il servizio (art. 6.1.f GDPR). Puoi chiederci informazioni o opporti scrivendo a <strong>privacy@erga-learning.app</strong>.</p>
+        <p>Per capire quanto ci costa far funzionare Erga e decidere prezzi e limiti dei piani, registriamo per ogni richiesta all'AI solo dati tecnici: funzione usata, modello, numero di parole elaborate (token), costo stimato, tipo di piano e data. <strong>In questi contatori non registriamo chi sei</strong> (nessun nome, email, id o codice che ti identifichi) <strong>né cosa scrivi o cosa ti risponde l'IA.</strong> Dal 24 novembre 2026 questi contatori non registrano chi sei. I dati raccolti prima di quella data vengono cancellati entro 90 giorni. Dopo 90 giorni i dati dei singoli conteggi vengono cancellati; teniamo solo totali settimanali, ciascuno formato da almeno 10 richieste, che non contengono nessun dato su chi le ha fatte. Non li usiamo per pubblicità né per decisioni che riguardano te. Base: il nostro interesse a gestire in modo sostenibile il servizio (art. 6.1.f GDPR). Puoi chiederci informazioni o opporti scrivendo a <strong>{PRIVACY_CONTACT_EMAIL}</strong>.</p>
         <p>Questi contatori registrano solo quanto costa ogni domanda all'IA: non sanno chi l'ha fatta né cosa hai scritto. Dopo 90 giorni li cancelliamo e teniamo solo i totali di ogni settimana, senza nessun dato su di te. (Le tue conversazioni con il tutor sono un'altra cosa: restano salvate nel tuo account, come spiegato sopra.)</p>
       </>
     ),
@@ -108,7 +108,7 @@ const sections: LegalSection[] = [
   },
   {
     title: "Contatti e modifiche",
-    body: <p>Per domande scrivi a <strong>privacy@erga-learning.app</strong>. Se cambiamo questa informativa in modo importante te lo comunicheremo nell'app o via email.</p>,
+    body: <p>Per domande scrivi a <strong>{PRIVACY_CONTACT_EMAIL}</strong>. Se cambiamo questa informativa in modo importante te lo comunicheremo nell'app o via email.</p>,
   },
 ];
 
