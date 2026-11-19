@@ -1,7 +1,8 @@
 /**
  * Confronto manuale gemini-2.5-flash vs gemini-3.5-flash-lite.
  *
- * Dati solo sintetici: un prompt didattico, un PNG generato, un PDF di 3 pagine.
+ * Dati solo sintetici: un prompt didattico, un PNG generato, un PDF di 3 pagine
+ * e una richiesta di diario con max_tokens 250 (come l'estrattore in chat).
  * La chiave si legge SOLO da GEMINI_TEST_API_KEY. Se manca, esce con codice 0.
  * Non legge .env, non stampa la chiave, non usa materiale vero.
  *
@@ -17,6 +18,7 @@ import {
   GEMINI_MODEL_ROLLBACK,
   geminiChatSampling,
   geminiNativeGenerationConfig,
+  isGemini3Model,
 } from "../supabase/functions/_shared/gemini.ts";
 import { extractUsageTokens } from "../supabase/functions/_shared/usage.ts";
 
@@ -32,8 +34,17 @@ const DIDACTIC_PROMPT =
 const IMAGE_PROMPT = "Descrivi in una frase questa immagine sintetica di un quadrato a quattro colori.";
 const PDF_PROMPT =
   "Trascrivi il testo di ogni pagina di questo PDF sintetico. Tieni l'ordine e non aggiungere commenti.";
+const DIARY_SYSTEM = "Sei un estrattore di dati. Rispondi SOLO con un oggetto JSON, senza una parola prima o dopo.";
+const DIARY_PROMPT = `Oggi è il 2026-11-19. Estrai l'azione per il diario da questa richiesta dello studente; se NON chiede di aggiungere o programmare nulla, rispondi {"action":"none"}.
 
-type Kind = "text" | "image" | "pdf";
+Richiesta: """mettimi in diario un ripasso di storia per domani alle 9"""
+
+Formato (UN oggetto, non una lista):
+{"action":"add_event","title":"...","date":"YYYY-MM-DD","event_type":"study|test|assignment","subject":"..."}
+
+Regole: "date" calcolata da oggi ("domani" = 2026-11-20); titolo breve; se parla di RIPASSO usa {"action":"propose_review"}; event_type=test per verifiche, assignment per compiti, study altrimenti; subject = la materia, oppure "Generale".`;
+
+type Kind = "text" | "image" | "pdf" | "diary";
 type Endpoint = "openai" | "native";
 
 interface SmokeCase {
@@ -49,6 +60,8 @@ const CASES: SmokeCase[] = [
   { endpoint: "native", kind: "text", fn: "chat" },
   { endpoint: "native", kind: "image", fn: "extract-pdf" },
   { endpoint: "native", kind: "pdf", fn: "extract-pdf" },
+  // Come l'estrattore del diario in chat: 250 token, pensiero low (fn chat).
+  { endpoint: "openai", kind: "diary", fn: "chat" },
 ];
 
 function readTestKey(): string {
@@ -262,12 +275,39 @@ function responseText(endpoint: Endpoint, json: unknown): string {
   return candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("\n") || "";
 }
 
-function buildBody(
+type DiaryCut = "vuoto" | "troncato" | "intero";
+
+export function diaryCut(json: unknown, text: string): DiaryCut {
+  if (!text.trim()) return "vuoto";
+  const root = json && typeof json === "object" ? (json as Record<string, unknown>) : null;
+  const choices = root?.choices as { finish_reason?: string }[] | undefined;
+  if (choices?.[0]?.finish_reason === "length") return "troncato";
+  return "intero";
+}
+
+export function buildBody(
   smoke: SmokeCase,
   model: string,
   pngB64: string,
   pdfB64: string,
 ): { url: string; body: unknown; timeoutMs: number } {
+  if (smoke.kind === "diary") {
+    const sampling = geminiChatSampling("gemini", model, 0.1, smoke.fn, null);
+    return {
+      url: OPENAI_URL,
+      timeoutMs: 45000,
+      body: {
+        model,
+        messages: [
+          { role: "system", content: DIARY_SYSTEM },
+          { role: "user", content: DIARY_PROMPT },
+        ],
+        max_tokens: 250,
+        ...sampling,
+      },
+    };
+  }
+
   const temperature = smoke.kind === "text" ? 0.4 : 0;
   const sampling = geminiChatSampling("gemini", model, temperature, smoke.fn, null);
   const timeoutMs = smoke.kind === "pdf" ? 90000 : 45000;
@@ -345,24 +385,30 @@ export async function runGeminiRedirectSmokeTest(): Promise<number> {
 
   for (const model of models) {
     for (const smoke of CASES) {
-      const label = `${smoke.endpoint} ${smoke.kind} ${model}`;
+      const diaryBudget = smoke.kind === "diary"
+        ? ` max_tokens=250 ${isGemini3Model(model) ? "thinking=low" : "temperature=0.1"}`
+        : "";
+      const label = `${smoke.endpoint} ${smoke.kind}${diaryBudget} ${model}`;
       const request = buildBody(smoke, model, pngB64, pdfB64);
       try {
         const result = await callApi(request.url, key, request.body, request.timeoutMs);
         const tokens = extractUsageTokens(result.json);
         const text = responseText(smoke.endpoint, result.json);
-        const ok = result.status >= 200 && result.status < 300 && text.trim().length > 0;
+        const httpOk = result.status >= 200 && result.status < 300;
+        const cut = smoke.kind === "diary" && httpOk ? diaryCut(result.json, text) : null;
+        const ok = httpOk && text.trim().length > 0 && cut !== "troncato";
         if (!ok) failures += 1;
         const perPage =
           smoke.kind === "pdf" && tokens.promptTokens !== null
             ? ` pagine=${PDF_PAGES.length} token/pagina=${(tokens.promptTokens / PDF_PAGES.length).toFixed(1)}`
             : "";
+        const diaryNote = cut ? ` diario=${cut}` : "";
         console.log(
-          `[${ok ? "ok" : "fail"}] ${label} status=${result.status} ${result.elapsedMs}ms in=${formatCount(tokens.promptTokens)} out=${formatCount(tokens.completionTokens)} thinking=${formatCount(tokens.reasoningTokens)} cached=${formatCount(tokens.cachedTokens)} total=${formatCount(tokens.totalTokens)}${perPage}`,
+          `[${ok ? "ok" : "fail"}] ${label} status=${result.status} ${result.elapsedMs}ms in=${formatCount(tokens.promptTokens)} out=${formatCount(tokens.completionTokens)} thinking=${formatCount(tokens.reasoningTokens)} cached=${formatCount(tokens.cachedTokens)} total=${formatCount(tokens.totalTokens)}${perPage}${diaryNote}`,
         );
-        if (ok) {
-          console.log(`       ${snippet(text)}`);
-        } else {
+        if (text.trim()) {
+          console.log(`       ${snippet(redact(text, key))}`);
+        } else if (!ok) {
           console.log(`       ${snippet(redact(result.raw, key))}`);
         }
       } catch (error) {
@@ -394,8 +440,9 @@ if (runningAsScript()) {
   runGeminiRedirectSmokeTest()
     .then((code) => exitWith(code))
     .catch((error) => {
-      const message = error instanceof Error ? error.message : String(error);
-      console.log(`Smoketest interrotto: ${message}`);
+      const key = readTestKey();
+      const message = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
+      console.log(`Smoketest interrotto: ${snippet(redact(message, key))}`);
       exitWith(1);
     });
 }

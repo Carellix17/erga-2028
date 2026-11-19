@@ -595,9 +595,12 @@ REGOLE OBBLIGATORIE:
       }),
     };
     for (let attempt = 0; attempt < 3; attempt++) {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
         body: JSON.stringify(requestBody),
       });
       if (resp.ok) {
@@ -619,7 +622,11 @@ REGOLE OBBLIGATORIE:
         break;
       }
       const errBody = await resp.text();
-      console.error(`Gemini PDF vision error (${model}, attempt ${attempt + 1}):`, resp.status, errBody);
+      console.error(
+        `Gemini PDF vision error (${model}, attempt ${attempt + 1}):`,
+        resp.status,
+        errBody.split(apiKey).join("[redacted]"),
+      );
       if (![429, 500, 502, 503, 504].includes(resp.status)) break;
       await new Promise((resolve) => setTimeout(resolve, 1200 * (attempt + 1)));
     }
