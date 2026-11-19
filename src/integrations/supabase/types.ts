@@ -14,45 +14,192 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_cost_weekly_totals: {
+        Row: {
+          cached_prompt_tokens: number
+          completion_tokens: number
+          estimated_cost_eur: number
+          feature: string
+          model: string
+          n_richieste: number
+          piano_nome: string
+          prompt_tokens: number
+          provider: string
+          segmento: string
+          settimana: string
+        }
+        Insert: {
+          cached_prompt_tokens?: number
+          completion_tokens?: number
+          estimated_cost_eur?: number
+          feature: string
+          model: string
+          n_richieste: number
+          piano_nome: string
+          prompt_tokens?: number
+          provider: string
+          segmento: string
+          settimana: string
+        }
+        Update: {
+          cached_prompt_tokens?: number
+          completion_tokens?: number
+          estimated_cost_eur?: number
+          feature?: string
+          model?: string
+          n_richieste?: number
+          piano_nome?: string
+          prompt_tokens?: number
+          provider?: string
+          segmento?: string
+          settimana?: string
+        }
+        Relationships: []
+      }
+      ai_price_lists: {
+        Row: {
+          cached_input_per_million: number
+          currency: string
+          effective_from: string
+          effective_to: string | null
+          id: number
+          input_per_million: number
+          model: string
+          other_unit: string | null
+          other_unit_cost: number | null
+          output_per_million: number
+          price_list_version: string
+          provider: string
+          source_url: string | null
+          verified_on: string | null
+        }
+        Insert: {
+          cached_input_per_million: number
+          currency?: string
+          effective_from: string
+          effective_to?: string | null
+          id?: never
+          input_per_million: number
+          model: string
+          other_unit?: string | null
+          other_unit_cost?: number | null
+          output_per_million: number
+          price_list_version: string
+          provider: string
+          source_url?: string | null
+          verified_on?: string | null
+        }
+        Update: {
+          cached_input_per_million?: number
+          currency?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: never
+          input_per_million?: number
+          model?: string
+          other_unit?: string | null
+          other_unit_cost?: number | null
+          output_per_million?: number
+          price_list_version?: string
+          provider?: string
+          source_url?: string | null
+          verified_on?: string | null
+        }
+        Relationships: []
+      }
       ai_usage: {
         Row: {
+          attempt_n: number | null
+          audio_characters: number | null
+          audio_seconds: number | null
+          cached_prompt_tokens: number | null
           completion_tokens: number | null
           created_at: string
+          currency: string | null
           duration_ms: number | null
+          esito: string | null
+          estimated_cost: number | null
+          estimated_cost_eur: number | null
+          feature: string | null
           fn: string | null
+          fx_rate: number | null
+          fx_source: string | null
           id: number
+          image_count: number | null
+          is_retry: boolean | null
           model: string | null
           ok: boolean
+          page_count: number | null
+          piano_nome: string | null
+          price_list_version: string | null
           prompt_tokens: number | null
           provider: string | null
+          reasoning_tokens: number | null
+          segmento: string | null
           status: number | null
           total_tokens: number | null
           user_id: string | null
         }
         Insert: {
+          attempt_n?: number | null
+          audio_characters?: number | null
+          audio_seconds?: number | null
+          cached_prompt_tokens?: number | null
           completion_tokens?: number | null
           created_at?: string
+          currency?: string | null
           duration_ms?: number | null
+          esito?: string | null
+          estimated_cost?: number | null
+          estimated_cost_eur?: number | null
+          feature?: string | null
           fn?: string | null
+          fx_rate?: number | null
+          fx_source?: string | null
           id?: never
+          image_count?: number | null
+          is_retry?: boolean | null
           model?: string | null
           ok?: boolean
+          page_count?: number | null
+          piano_nome?: string | null
+          price_list_version?: string | null
           prompt_tokens?: number | null
           provider?: string | null
+          reasoning_tokens?: number | null
+          segmento?: string | null
           status?: number | null
           total_tokens?: number | null
           user_id?: string | null
         }
         Update: {
+          attempt_n?: number | null
+          audio_characters?: number | null
+          audio_seconds?: number | null
+          cached_prompt_tokens?: number | null
           completion_tokens?: number | null
           created_at?: string
+          currency?: string | null
           duration_ms?: number | null
+          esito?: string | null
+          estimated_cost?: number | null
+          estimated_cost_eur?: number | null
+          feature?: string | null
           fn?: string | null
+          fx_rate?: number | null
+          fx_source?: string | null
           id?: never
+          image_count?: number | null
+          is_retry?: boolean | null
           model?: string | null
           ok?: boolean
+          page_count?: number | null
+          piano_nome?: string | null
+          price_list_version?: string | null
           prompt_tokens?: number | null
           provider?: string | null
+          reasoning_tokens?: number | null
+          segmento?: string | null
           status?: number | null
           total_tokens?: number | null
           user_id?: string | null
@@ -1354,7 +1501,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_cfo_ai_cost_weekly: {
+        Row: {
+          cached_prompt_tokens: number
+          completion_tokens: number
+          estimated_cost_eur: number
+          feature: string
+          model: string
+          n_richieste: number
+          piano_nome: string
+          prompt_tokens: number
+          provider: string
+          segmento: string
+          settimana: string
+        }
+        Relationships: []
+      }
     }
     Functions: {
       apply_plan_changes: {
@@ -1389,7 +1551,25 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      ai_cost_weekly_aggregate: {
+        Args: never
+        Returns: {
+          cached_prompt_tokens: number
+          completion_tokens: number
+          estimated_cost_eur: number
+          feature: string
+          model: string
+          n_richieste: number
+          piano_nome: string
+          prompt_tokens: number
+          provider: string
+          segmento: string
+          settimana: string
+        }[]
+      }
+      ai_segment_subscriber_count: { Args: { p_segmento: string }; Returns: number }
       cleanup_demo_rate_limits: { Args: never; Returns: undefined }
+      purge_ai_cost_rows_older_than_90_days: { Args: never; Returns: number }
       has_active_subscription: {
         Args: { check_env?: string; user_text: string }
         Returns: boolean
