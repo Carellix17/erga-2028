@@ -27,3 +27,9 @@ artifacts/visual-browser/
 *.njsproj
 *.sln
 *.sw?
+
+# File .env locali: restano sul disco, non vanno nel repo.
+# Eccezione: .env.example (solo placeholder).
+.env
+.env.*
+!.env.example
