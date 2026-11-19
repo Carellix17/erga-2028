@@ -28,7 +28,6 @@ export default function SettingsAccount() {
     firstName, setFirstName,
     lastName, setLastName,
     nickname, setNickname,
-    age, setAge,
     school, setSchool,
     avatarPreview, isUploadingAvatar, avatarUrl,
     institute, setInstitute,
@@ -56,7 +55,7 @@ export default function SettingsAccount() {
     return () => {
       if (saveTimeoutRef.current) window.clearTimeout(saveTimeoutRef.current);
     };
-  }, [firstName, lastName, nickname, age, school, institute, avatarUrl, dirty, isLoading, isSaving, handleSave]);
+  }, [firstName, lastName, nickname, school, institute, avatarUrl, dirty, isLoading, isSaving, handleSave]);
 
   // Quando l'avatar viene caricato, segna dirty così parte l'autosave (oppure salva subito)
   // handleAvatarChange aggiorna avatarUrl; l'effetto sopra gestirà il salvataggio
@@ -136,11 +135,7 @@ export default function SettingsAccount() {
                 <Label className="label-medium text-muted-foreground">Nickname <span className="text-brand-deep">(usato dal chatbot)</span></Label>
                 <Input value={nickname} onChange={(e) => { setNickname(e.target.value); setDirty(true); }} placeholder="Il tuo soprannome" className="h-12" />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="label-medium text-muted-foreground">Età</Label>
-                  <Input type="number" value={age} onChange={(e) => { setAge(e.target.value); setDirty(true); }} placeholder="16" min={13} max={30} className="h-12" />
-                </div>
+              <div className="space-y-1.5">
                 <div className="space-y-1.5">
                   <Label className="label-medium text-muted-foreground">Scuola</Label>
                   <div className="flex h-12 items-center">

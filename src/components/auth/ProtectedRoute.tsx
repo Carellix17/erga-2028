@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { AgeGate } from "@/components/auth/AgeGate";
 import { SplashScreen } from "@/components/shared/SplashScreen";
 import { useSplashGate } from "@/hooks/useSplashGate";
 
@@ -35,6 +36,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Se è arrivato qui, è loggato (o con Google o con User/Pass). Fallo passare!
-  return <>{children}</>;
+  // Accesso fatto: prima l'età, poi qualsiasi funzione dell'app.
+  return <AgeGate>{children}</AgeGate>;
 }

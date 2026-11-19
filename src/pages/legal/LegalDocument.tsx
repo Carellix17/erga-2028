@@ -37,7 +37,7 @@ export function LegalDocument({ title, intro, path, description, updated, sectio
         {brief && (
           <aside className="mt-8 rounded-lg border border-border bg-card p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{brief.title}</h2>
-            <p className="mt-3 text-base leading-relaxed">{brief.body}</p>
+            <div className="mt-3 space-y-3 text-base leading-relaxed">{brief.body}</div>
           </aside>
         )}
 

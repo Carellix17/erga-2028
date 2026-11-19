@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { AiActFirstOpen, AiActFootnote } from "@/components/legal/AiActNotice";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { QuickActions } from "./QuickActions";
@@ -549,6 +550,7 @@ export function ChatView({ hasFiles, onUploadClick, contextId, seedMessage, onSe
 
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
+        <AiActFirstOpen />
         {/* Barra superiore: cronologia + selettore argomento (NotebookLM) */}
         <div className="flex items-center gap-2 px-3 py-2 border-b border-border/50 overflow-x-auto scrollbar-hide">
           <button
@@ -621,6 +623,7 @@ export function ChatView({ hasFiles, onUploadClick, contextId, seedMessage, onSe
         </div>
         <div className="shrink-0 px-3 pb-2 pt-1 space-y-1">
           <QuickActions onAction={(action) => handleSend(action)} />
+          <AiActFootnote className="px-1" />
           <ChatInput onSend={handleSend} disabled={isLoading} />
         </div>
       </div>

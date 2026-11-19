@@ -1376,6 +1376,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_age_checks: {
+        Row: {
+          age_checked_on: string
+          created_at: string
+          is_14_plus: boolean
+          is_under_18: boolean
+          parent_ack: boolean | null
+          parent_ack_at: string | null
+          parent_ack_text_version: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age_checked_on: string
+          created_at?: string
+          is_14_plus: boolean
+          is_under_18: boolean
+          parent_ack?: boolean | null
+          parent_ack_at?: string | null
+          parent_ack_text_version?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age_checked_on?: string
+          created_at?: string
+          is_14_plus?: boolean
+          is_under_18?: boolean
+          parent_ack?: boolean | null
+          parent_ack_at?: string | null
+          parent_ack_text_version?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           age: number | null

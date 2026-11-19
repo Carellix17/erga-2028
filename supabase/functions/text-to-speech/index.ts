@@ -1,4 +1,5 @@
 import { withCors, validateAuth, unauthorizedResponse } from '../_shared/auth.ts';
+import { assertAiAgeAllowed } from '../_shared/ageAccess.ts';
 
 // Allowlist of supported Azure neural voices (it-IT + a few EN fallbacks).
 const ALLOWED_VOICES = new Set<string>([
@@ -24,11 +25,14 @@ const escapeXml = (s: string) =>
 Deno.serve(withCors(async (req) => {
   try {
     // Require authenticated user — prevents anonymous abuse of Azure credits.
+    let auth;
     try {
-      await validateAuth(req);
+      auth = await validateAuth(req);
     } catch {
       return unauthorizedResponse('Sessione scaduta. Effettua di nuovo l\'accesso.');
     }
+    const ageDenied = await assertAiAgeAllowed(auth.supabase, auth.userId, auth.userEmail);
+    if (ageDenied) return ageDenied;
 
     const { text, voice } = await req.json();
     if (!text || typeof text !== 'string') {

@@ -316,6 +316,7 @@ export function ErgaMarketing() {
           <div className="lp-legal">
             <span>© {new Date().getFullYear()} Erga. Tutti i diritti riservati.</span>
             <span>Versione beta · Funzionalità in evoluzione</span>
+            <span>Le risposte sono generate dall'intelligenza artificiale e possono contenere errori.</span>
           </div>
         </div>
       </footer>

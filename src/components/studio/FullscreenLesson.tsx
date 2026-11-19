@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { X, ChevronLeft, ChevronRight, Lightbulb, BookOpen, Dumbbell, CheckCircle2, Loader2, Sparkles, Send, Bot, User as UserIcon, RotateCcw, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { currentLanguage } from "@/i18n";
+import { AiActFirstOpen, AiActFootnote } from "@/components/legal/AiActNotice";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ExerciseRenderer, Exercise } from "./exercises/ExerciseRenderer";
@@ -937,6 +938,8 @@ function SlideAIAssistant({
 
         {/* Input */}
         <div className="px-3 pt-2 pb-3 border-t border-border/40 flex-shrink-0 bg-background">
+          <AiActFirstOpen />
+          <AiActFootnote className="pb-2" />
           <div className="flex gap-2 items-end">
             <textarea
               ref={inputRef}

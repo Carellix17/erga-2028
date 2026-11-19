@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { currentLanguage } from "@/i18n";
+import { AiActFirstOpen, AiActFootnote } from "@/components/legal/AiActNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -461,7 +462,10 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
             )}
             <div ref={chatBottomRef} />
           </div>
-          <div className="flex items-center gap-2 border-t border-outline-variant p-3">
+          <div className="space-y-2 border-t border-outline-variant p-3">
+            <AiActFirstOpen />
+            <AiActFootnote />
+            <div className="flex items-center gap-2">
             <Input
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
@@ -473,6 +477,7 @@ export function ScientificGymView({ contextId, contextName }: { contextId?: stri
             <Button onClick={sendChat} disabled={!chatInput.trim() || chatLoading} size="icon" className="rounded-xl" aria-label={t("gym.send")}>
               <Send className="w-4 h-4" />
             </Button>
+            </div>
           </div>
         </SheetContent>
       </Sheet>

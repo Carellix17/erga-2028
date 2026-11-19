@@ -26,7 +26,6 @@ export interface ProfilePayload {
   first_name?: string | null;
   last_name?: string | null;
   nickname?: string | null;
-  age?: number | null;
   school?: string | null;
   avatar_url?: string | null;
   subject_levels?: Record<string, number> | null;
@@ -46,7 +45,6 @@ export function useProfileData() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [nickname, setNickname] = useState("");
-  const [age, setAge] = useState<string>("");
   const [school, setSchool] = useState("licei_cartesio");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -85,7 +83,6 @@ export function useProfileData() {
         setFirstName(p.first_name || "");
         setLastName(p.last_name || "");
         setNickname(p.nickname || "");
-        setAge(p.age ? String(p.age) : "");
         setSchool(p.school || "licei_cartesio");
         setAvatarUrl(p.avatar_url || "");
         if (p.avatar_url) setAvatarPreview(p.avatar_url);
@@ -171,7 +168,7 @@ export function useProfileData() {
               userId: currentUser, action: "save",
               institute_type: institute, subject_levels: subjectLevels, subject_goals: subjectGoals,
               first_name: firstName, last_name: lastName, nickname,
-              age: age ? parseInt(age) : null, school, avatar_url: urlWithCache,
+              school, avatar_url: urlWithCache,
             }),
           }
         );
@@ -194,7 +191,7 @@ export function useProfileData() {
         userId: currentUser, action: "save",
         institute_type: institute, subject_levels: subjectLevels, subject_goals: subjectGoals,
         first_name: firstName, last_name: lastName, nickname,
-        age: age ? parseInt(age) : null, school, avatar_url: avatarUrl,
+        school, avatar_url: avatarUrl,
       });
       setSaved(true);
       setDirty(false);
@@ -223,7 +220,6 @@ export function useProfileData() {
     firstName, setFirstName,
     lastName, setLastName,
     nickname, setNickname,
-    age, setAge,
     school, setSchool,
     avatarUrl, avatarPreview, isUploadingAvatar,
     institute, setInstitute,

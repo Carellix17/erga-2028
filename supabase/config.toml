@@ -12,3 +12,6 @@ project_id = "xtcifacgiyekudoispdk"
 
   [functions.push-dispatch]
     verify_jwt = false
+
+  [functions.age-gate]
+    verify_jwt = true
