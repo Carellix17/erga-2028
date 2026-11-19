@@ -18,6 +18,7 @@ import { NotificationsCard } from "@/components/profile/NotificationsCard";
 import { AccountAccessCard } from "@/components/settings/AccountAccessCard";
 import { SeoHead } from "@/components/SeoHead";
 import { RoomClarify } from "@/components/shared/RoomClarify";
+import { PRIVACY_CONTACT_EMAIL } from "@/lib/legal";
 
 export default function SettingsAccount() {
   const { toast } = useToast();
@@ -200,7 +201,7 @@ export default function SettingsAccount() {
           <AlertDialogHeader>
             <AlertDialogTitle>Eliminare il tuo account?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tutti i tuoi dati verranno cancellati in modo permanente. Questa azione non può essere annullata.
+              Per cancellare il tuo account scrivi a {PRIVACY_CONTACT_EMAIL} dall'indirizzo con cui ti sei iscritto: lo cancelliamo entro 30 giorni, insieme a tutti i tuoi dati.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -209,8 +210,7 @@ export default function SettingsAccount() {
               className="rounded-button bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
                 toast({
-                  title: "Non ancora disponibile",
-                  description: "L'eliminazione dell'account sarà attiva a breve.",
+                  description: `Per cancellare il tuo account scrivi a ${PRIVACY_CONTACT_EMAIL} dall'indirizzo con cui ti sei iscritto: lo cancelliamo entro 30 giorni, insieme a tutti i tuoi dati.`,
                 });
               }}
             >
