@@ -1,7 +1,7 @@
 /**
  * Shared AI caller with 4-tier fallback chain:
  *
- * 1. ERGA_GEMINI_KEY_APRIL  → Google Gemini 2.5 Flash (direct)
+ * 1. ERGA_GEMINI_KEY_APRIL  → Google Gemini diretto (default gemini-3.5-flash-lite)
  * 2. ERGA_OPENAI_KEY_APRIL  → OpenAI API
  * 3. ERGA_GROQ_KEY_APRIL    → Groq API
  * 4. LOVABLE_API_KEY         → Lovable AI Gateway (final fallback)
@@ -10,10 +10,19 @@
  *  - Transient errors (timeout, 500, 502, 503, 429): retry up to 2 times
  *  - Quota/billing errors (402, 403 with quota msg): immediate next provider
  *  - After retries exhausted: next provider
+ *
+ * Su Gemini 3.x la temperatura non parte (verrebbe ignorata e poi rifiutata)
+ * e al suo posto viaggia `reasoning_effort`, per funzione. OpenAI, Groq e
+ * Lovable non cambiano. Vedi `_shared/gemini.ts`.
  */
 
 import { logAiUsage } from "./aiUsage.ts";
 import { extractUsageTokens } from "./usage.ts";
+import {
+  GEMINI_LOVABLE_GATEWAY_MODEL,
+  geminiChatSampling,
+  resolveGeminiModel,
+} from "./gemini.ts";
 
 interface ProviderConfig {
   label: string;
@@ -45,7 +54,9 @@ const PROVIDERS: ProviderConfig[] = [
     label: "lovable-gateway",
     url: "https://ai.gateway.lovable.dev/v1/chat/completions",
     keyEnv: "LOVABLE_API_KEY",
-    modelMapper: (m) => m ? `google/${m.replace(/^google\//, "")}` : "google/gemini-2.5-flash",
+    // Catalogo Lovable, non l'id diretto: un modello 3.5 sconosciuto al
+    // gateway farebbe cadere l'ultima riserva. La temperatura resta.
+    modelMapper: () => GEMINI_LOVABLE_GATEWAY_MODEL,
   },
 ];
 
@@ -76,12 +87,21 @@ async function tryFetch(
   opts: AiCallOptions,
   model: string,
   label: string,
+  fn: string | undefined,
+  thinkingOverrides: string | undefined,
 ): Promise<Response> {
+  const sampling = geminiChatSampling(
+    label,
+    model,
+    opts.temperature ?? 0.7,
+    fn,
+    thinkingOverrides,
+  );
   const body: Record<string, unknown> = {
     model,
     messages: opts.messages,
-    temperature: opts.temperature ?? 0.7,
     max_tokens: opts.max_tokens ?? 2048,
+    ...sampling,
   };
   if (opts.stream) body.stream = true;
 
@@ -106,7 +126,8 @@ export async function callAIWithFallback(
   opts: AiCallOptions,
   tag?: string,
 ): Promise<Response> {
-  const baseModel = opts.model || "gemini-2.5-flash";
+  const baseModel = opts.model?.trim() || resolveGeminiModel(Deno.env.get("GEMINI_MODEL"));
+  const thinkingOverrides = Deno.env.get("GEMINI_THINKING_OVERRIDES") ?? undefined;
 
   for (let i = 0; i < PROVIDERS.length; i++) {
     const provider = PROVIDERS[i];
@@ -123,7 +144,15 @@ export async function callAIWithFallback(
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         const startedAt = Date.now();
-        const resp = await tryFetch(provider.url, apiKey, opts, model, provider.label);
+        const resp = await tryFetch(
+          provider.url,
+          apiKey,
+          opts,
+          model,
+          provider.label,
+          tag,
+          thinkingOverrides,
+        );
         const durationMs = Date.now() - startedAt;
 
         if (resp.ok) {
@@ -147,8 +176,15 @@ export async function callAIWithFallback(
                   logAiUsage({
                     fn: tag, provider: provider.label, model, ok: true,
                     status: resp.status, userId: opts.userId, durationMs,
-                    ...tokens,
+                    promptTokens: tokens.promptTokens,
+                    completionTokens: tokens.completionTokens,
+                    totalTokens: tokens.totalTokens,
                   });
+                  if (tokens.reasoningTokens !== null || tokens.cachedTokens !== null) {
+                    console.log(
+                      `[AI:${provider.label}] tokens in=${tokens.promptTokens} out=${tokens.completionTokens} thinking=${tokens.reasoningTokens} cached=${tokens.cachedTokens} total=${tokens.totalTokens}`,
+                    );
+                  }
                 } catch {
                   logAiUsage({
                     fn: tag, provider: provider.label, model, ok: true,

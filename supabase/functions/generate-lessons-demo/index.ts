@@ -147,6 +147,7 @@ REGOLE TASSATIVE:
       [{ role: "user", content: prompt }],
       0.5,
       6000,
+      "generate-lessons-demo",
     );
 
     const parsed = extractJson(raw) as {

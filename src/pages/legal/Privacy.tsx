@@ -1,3 +1,4 @@
+import { PRIVACY_CONTACT_EMAIL } from "@/lib/legal";
 import { LegalDocument, type LegalSection } from "./LegalDocument";
 
 const sections: LegalSection[] = [
@@ -45,6 +46,16 @@ const sections: LegalSection[] = [
     ),
   },
   {
+    title: "Dati tecnici sull'uso dell'AI",
+    body: (
+      <>
+        <p><strong>Statistiche sui costi dell'intelligenza artificiale</strong></p>
+        <p>Per capire quanto ci costa far funzionare Erga e decidere prezzi e limiti dei piani, registriamo per ogni richiesta all'AI solo dati tecnici: funzione usata, modello, numero di parole elaborate (token), costo stimato, tipo di piano e data. <strong>In questi contatori non registriamo chi sei</strong> (nessun nome, email, id o codice che ti identifichi) <strong>né cosa scrivi o cosa ti risponde l'IA.</strong> Dopo 90 giorni i dati dei singoli conteggi vengono cancellati; teniamo solo totali settimanali, ciascuno formato da almeno 10 richieste, che non contengono nessun dato su chi le ha fatte. Non li usiamo per pubblicità né per decisioni che riguardano te. Base: il nostro interesse a gestire in modo sostenibile il servizio (art. 6.1.f GDPR). Puoi chiederci informazioni o opporti scrivendo a <strong>privacy@erga-learning.app</strong>.</p>
+        <p>Questi contatori registrano solo quanto costa ogni domanda all'IA: non sanno chi l'ha fatta né cosa hai scritto. Dopo 90 giorni li cancelliamo e teniamo solo i totali di ogni settimana, senza nessun dato su di te. (Le tue conversazioni con il tutor sono un'altra cosa: restano salvate nel tuo account, come spiegato sopra.)</p>
+      </>
+    ),
+  },
+  {
     title: "Con chi condividiamo i dati",
     body: (
       <>
@@ -62,7 +73,22 @@ const sections: LegalSection[] = [
   },
   {
     title: "Per quanto tempo li conserviamo",
-    body: <p>Conserviamo i dati finché il tuo account è attivo. Puoi eliminare singoli percorsi in qualsiasi momento; eliminando un percorso vengono cancellati anche i contenuti collegati. Per chiudere l'account scrivici.</p>,
+    body: <p>Conserviamo i dati finché il tuo account è attivo. Puoi eliminare singoli percorsi in qualsiasi momento: con il percorso si cancellano le lezioni. Se cancelli un percorso, le chat collegate non spariscono: le trovi ancora nella sezione chat e puoi cancellarle da lì. Per chiudere l'account scrivici.</p>,
+  },
+  {
+    title: "Per quanto tempo conserviamo i tuoi dati",
+    body: (
+      <>
+        <ul>
+          <li><strong>Conversazioni con il tutor</strong> (chat generale e chat per argomento): restano nel tuo account finché non le cancelli tu, o finché non cancelli l'account. Se cancelli un percorso, le chat collegate non spariscono: le trovi ancora nella sezione chat e puoi cancellarle da lì.</li>
+          <li><strong>Chat dentro le lezioni ed esercizi guidati in palestra:</strong> non le salviamo. Spariscono quando chiudi o ricarichi la pagina.</li>
+          <li><strong>Profilo di studio</strong> (come preferisci studiare, ricavato dalle risposte all'onboarding e dai risultati, non da quello che scrivi in chat): resta finché hai l'account.</li>
+          <li><strong>Contatori dei costi dell'IA:</strong> al massimo 90 giorni, come spiegato sopra.</li>
+          <li><strong>Account:</strong> puoi chiederci in qualsiasi momento di cancellarlo scrivendo a <strong>{PRIVACY_CONTACT_EMAIL}</strong>. Lo cancelliamo entro 30 giorni, con tutte le conversazioni, il profilo di studio e i file caricati.</li>
+        </ul>
+        <p>Non creiamo riassunti o "memorie" delle tue conversazioni.</p>
+      </>
+    ),
   },
   {
     title: "Studenti minorenni",
@@ -93,8 +119,12 @@ export default function Privacy() {
       intro="Questa pagina spiega, in parole semplici, quali dati usa Erga, perché li usa e come puoi controllarli. È scritta per studenti e genitori."
       path="/privacy"
       description="Come Erga raccoglie, usa e protegge i dati di studenti e genitori."
-      updated="15 ottobre 2026"
+      updated="19 novembre 2026"
       sections={sections}
+      brief={{
+        title: "In breve",
+        body: "Le tue chat con il tutor restano finché non le cancelli. Per cancellare tutto l'account scrivici: lo facciamo entro 30 giorni.",
+      }}
       otherLink={{ to: "/termini", label: "Termini di servizio" }}
     />
   );

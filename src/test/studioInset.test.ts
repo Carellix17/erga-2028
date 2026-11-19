@@ -5,6 +5,17 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
+/** Classi di un tag, in qualsiasi ordine e con utility extra. */
+function classTokens(source: string, marker: string): string[] {
+  const markerAt = source.indexOf(marker);
+  expect(markerAt, marker).toBeGreaterThanOrEqual(0);
+  const tagStart = source.lastIndexOf("<", markerAt);
+  const tagEnd = source.indexOf(">", markerAt);
+  const className = source.slice(tagStart, tagEnd).match(/className="([^"]+)"/);
+  expect(className?.[1], marker).toEqual(expect.any(String));
+  return className![1].trim().split(/\s+/);
+}
+
 describe("inset di Studio — stesso margine della Home", () => {
   it("la scheda Studio eredita il padding del guscio e non esce nel gutter", () => {
     const index = read("src/pages/Index.tsx");
@@ -39,7 +50,9 @@ describe("inset di Studio — stesso margine della Home", () => {
     expect(lesson).toContain(
       'className="lesson-reader studio-surface flex h-full min-h-0 min-w-0 flex-col bg-[#FFFBF4] text-[#0a0a0a]"',
     );
-    expect(lesson).toContain('className="no-halo fixed inset-0 z-50 flex bg-[#0a0a0a] px-4 sm:px-6"');
+    // Gate di apertura: schermo intero, con 16 px di canvas ai lati (24 px da sm).
+    const openingGate = classTokens(lesson, "aria-busy={!failed}");
+    expect(openingGate).toEqual(expect.arrayContaining(["fixed", "inset-0", "px-4", "sm:px-6"]));
     expect(test).toContain('className="fixed inset-0 z-50 bg-[#0a0a0a] px-4 focus:outline-none sm:px-6"');
     expect(test).toContain("bg-[#FFFBF4]");
 

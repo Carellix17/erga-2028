@@ -3,6 +3,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withCors, validateAuth, errorResponse, successResponse } from "../_shared/auth.ts";
 import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 import { callVisionText } from "../_shared/vision.ts";
+import { logAiUsage } from "../_shared/aiUsage.ts";
+import { extractUsageTokens } from "../_shared/usage.ts";
+import { GEMINI_PDF_FALLBACK_MODEL, geminiNativeGenerationConfig, resolveGeminiModel } from "../_shared/gemini.ts";
 import { UNSUITABLE_MATERIAL_CODE, UNSUITABLE_MATERIAL_ERROR, rejectedGenerationState } from "../_shared/studyMaterial.ts";
 
 /**
@@ -144,7 +147,7 @@ serve(withCors(async (req) => {
 
           let batchText = "";
           try {
-            batchText = await callVisionText({ messages: aiMessages, max_tokens: 16000 });
+            batchText = await callVisionText({ messages: aiMessages, max_tokens: 16000 }, "extract-pdf");
           } catch (visionErr) {
             console.error("Vision processing error:", visionErr);
             throw new Error("AI_PROCESSING_ERROR");
@@ -551,12 +554,12 @@ async function extractTextWithGeminiPdfVision(pdfBytes: Uint8Array): Promise<str
     binary += String.fromCharCode(...pdfBytes.slice(i, i + chunkSize));
   }
 
-  const requestBody = {
-      contents: [{
-        role: "user",
-        parts: [
-          {
-            text: `Estrai TUTTO il testo leggibile da questo PDF scansionato o basato su immagini.
+  const pdfPart = {
+    contents: [{
+      role: "user",
+      parts: [
+        {
+          text: `Estrai TUTTO il testo leggibile da questo PDF scansionato o basato su immagini.
 
 REGOLE OBBLIGATORIE:
 - Mantieni l'ordine originale delle pagine.
@@ -564,33 +567,59 @@ REGOLE OBBLIGATORIE:
 - Trascrivi titoli, paragrafi, didascalie, tabelle, schemi e testo dentro immagini.
 - Non riassumere e non aggiungere spiegazioni esterne.
 - Se una pagina non contiene testo leggibile, scrivi comunque il marker e passa alla pagina successiva.`
+        },
+        {
+          inline_data: {
+            mime_type: "application/pdf",
+            data: btoa(binary),
           },
-          {
-            inline_data: {
-              mime_type: "application/pdf",
-              data: btoa(binary),
-            },
-          },
-        ],
-      }],
-      generationConfig: {
-        temperature: 0,
-        // 📏 P13: 20000 token tronavano i libri scansionati lunghi a metà.
-        maxOutputTokens: 30000,
-      },
-    };
+        },
+      ],
+    }],
+  };
 
-  const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+  const primary = resolveGeminiModel(Deno.env.get("GEMINI_MODEL"));
+  const fallback = resolveGeminiModel(Deno.env.get("GEMINI_MODEL_FALLBACK"), GEMINI_PDF_FALLBACK_MODEL);
+  const models = primary === fallback ? [primary] : [primary, fallback];
+  const thinkingOverrides = Deno.env.get("GEMINI_THINKING_OVERRIDES") ?? undefined;
   let data: { candidates?: { content?: { parts?: { text?: string }[] } }[] } | null = null;
   for (const model of models) {
+    const requestBody = {
+      ...pdfPart,
+      generationConfig: geminiNativeGenerationConfig({
+        model,
+        // 📏 P13: 20000 token tronavano i libri scansionati lunghi a metà.
+        maxOutputTokens: 30000,
+        temperature: 0,
+        fn: "extract-pdf",
+        thinkingOverrides,
+      }),
+    };
     for (let attempt = 0; attempt < 3; attempt++) {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
         body: JSON.stringify(requestBody),
       });
       if (resp.ok) {
         data = await resp.json();
+        const tokens = extractUsageTokens(data);
+        logAiUsage({
+          fn: "extract-pdf",
+          provider: "gemini",
+          model,
+          ok: true,
+          status: resp.status,
+          promptTokens: tokens.promptTokens,
+          completionTokens: tokens.completionTokens,
+          totalTokens: tokens.totalTokens,
+        });
+        console.log(
+          `[extract-pdf] gemini usage model=${model} in=${tokens.promptTokens} out=${tokens.completionTokens} thinking=${tokens.reasoningTokens} cached=${tokens.cachedTokens} total=${tokens.totalTokens}`,
+        );
         break;
       }
       await resp.text();
