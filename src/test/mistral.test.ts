@@ -14,6 +14,18 @@ import {
 const KEY = "test-mistral-key-not-real";
 const USER_ID = "123e4567-e89b-12d3-a456-426614174000";
 
+function httpHostnames(source: string): string[] {
+  const hosts: string[] = [];
+  for (const match of source.matchAll(/https?:\/\/[^\s"'`<>)]+/g)) {
+    try {
+      hosts.push(new URL(match[0]).hostname);
+    } catch {
+      hosts.push("invalid");
+    }
+  }
+  return hosts;
+}
+
 const LESSON = [
   {
     role: "system",
@@ -179,18 +191,21 @@ describe("endpoint UE e corpo della richiesta", () => {
     expect(JSON.parse(init.body).model).toBe("mistral-small-2603");
   });
 
-  it("nel sorgente non compare l'indirizzo globale", () => {
+  it("nel sorgente ogni URL Mistral ha l'host europeo, confrontato per intero", () => {
     const files = [
       "supabase/functions/_shared/mistral.ts",
       "supabase/functions/_shared/ai.ts",
     ];
+    let sawEu = false;
     for (const file of files) {
-      const source = readFileSync(file, "utf8");
-      expect(source.includes("https://api.mistral.ai")).toBe(false);
-      expect(source.includes("http://api.mistral.ai")).toBe(false);
+      for (const host of httpHostnames(readFileSync(file, "utf8"))) {
+        const registrable = host.split(".").slice(-2).join(".");
+        if (registrable !== "mistral.ai") continue;
+        expect(host).toBe("api.eu.mistral.ai");
+        sawEu = true;
+      }
     }
-    const client = readFileSync("supabase/functions/_shared/mistral.ts", "utf8");
-    expect(client).toContain("https://api.eu.mistral.ai");
+    expect(sawEu).toBe(true);
   });
 
   it("manda solo il testo necessario: niente nome, email, user id o età accanto all'id", () => {
