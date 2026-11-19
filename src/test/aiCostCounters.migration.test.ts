@@ -66,7 +66,9 @@ CREATE TABLE public.user_profiles (
 );
 CREATE TABLE public.subscriptions (
   user_id text NOT NULL,
-  status text NOT NULL
+  status text NOT NULL,
+  environment text NOT NULL DEFAULT 'sandbox',
+  current_period_end timestamptz
 );
 `;
 
@@ -237,7 +239,12 @@ describe("migrazione contatori anonimi", () => {
     await insertEvents({ n: 12, feature: "chat", piano: "mensile" });
     const hidden = await weekly();
     expect(hidden).toEqual([
-      expect.objectContaining({ segmento: "altri", piano_nome: "altri", feature: "chat", n_richieste: 12 }),
+      expect.objectContaining({
+        segmento: "altri",
+        piano_nome: "altri",
+        feature: "altri",
+        n_richieste: 12,
+      }),
     ]);
 
     await db.exec("DELETE FROM public.ai_usage");
@@ -318,6 +325,227 @@ describe("migrazione contatori anonimi", () => {
     expect(lists[0].n).toBe(1);
   });
 
+  it("il CFO non può chiamare la funzione interna con un istante", async () => {
+    await asRole("cfo_readonly", async () => {
+      await fails(
+        `SELECT * FROM private.ai_cost_weekly_cells_internal(now())`,
+        /permission denied/i,
+      );
+    });
+  });
+
+  it("pubblica la settimana scorsa e non quella in corso", async () => {
+    await insertProfiles(10);
+    await insertEvents({ n: 12, feature: "chat", piano: null });
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, provider, model, ok, feature, segmento, prompt_tokens, created_at)
+      SELECT 'chat', 'google', 'gemini-test', true, 'chat', 'free', 10, now()
+      FROM generate_series(1, 12)
+    `);
+    const rows = await weekly();
+    const current = await query<{ inizio: string }>(`
+      SELECT date_trunc('week', now() AT TIME ZONE 'Europe/Rome')::date::text AS inizio
+    `);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].n_richieste).toBe(12);
+    expect(String(rows[0].settimana) < current[0].inizio).toBe(true);
+  });
+
+  it("archivia 15 richieste su più purge e svuota la settimana a cavallo", async () => {
+    await insertProfiles(10);
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, provider, model, ok, feature, segmento, prompt_tokens, created_at)
+      SELECT 'chat', 'google', 'gemini-test', true, 'chat', 'free', 4,
+             now() - interval '120 days'
+      FROM generate_series(1, 15)
+    `);
+    const first = await query<{ n: string }>(
+      `SELECT public.purge_ai_cost_rows_older_than_90_days()::text AS n`,
+    );
+    expect(Number(first[0].n)).toBe(15);
+    const archived = await query<{ n: number }>(
+      `SELECT COALESCE(sum(n_richieste), 0)::int AS n FROM public.ai_cost_weekly_totals`,
+    );
+    expect(archived[0].n).toBe(15);
+
+    const cut = await query<{ v_cut: string }>(`
+      SELECT (
+        (date_trunc('week', (now() - interval '90 days') AT TIME ZONE 'Europe/Rome')
+          + interval '7 days') AT TIME ZONE 'Europe/Rome'
+      )::text AS v_cut
+    `);
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, provider, model, ok, feature, segmento, prompt_tokens, created_at)
+      SELECT 'quiz', 'google', 'gemini-test', true, 'quiz', 'free', 1,
+             timestamptz '${cut[0].v_cut}' - interval '2 hours'
+      FROM generate_series(1, 12)
+    `);
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, provider, model, ok, feature, segmento, prompt_tokens, created_at)
+      SELECT 'quiz', 'google', 'gemini-test', true, 'quiz', 'free', 1,
+             timestamptz '${cut[0].v_cut}' + interval '2 hours'
+      FROM generate_series(1, 4)
+    `);
+    await db.exec(`SELECT public.purge_ai_cost_rows_older_than_90_days()`);
+    const straddling = await query<{ n: number }>(
+      `SELECT count(*)::int AS n FROM public.ai_usage WHERE created_at < timestamptz '${cut[0].v_cut}'`,
+    );
+    expect(straddling[0].n).toBe(0);
+    const kept = await query<{ n: number }>(
+      `SELECT count(*)::int AS n FROM public.ai_usage WHERE created_at >= timestamptz '${cut[0].v_cut}'`,
+    );
+    expect(kept[0].n).toBe(4);
+
+    const second = await query<{ n: string }>(
+      `SELECT public.purge_ai_cost_rows_older_than_90_days()::text AS n`,
+    );
+    expect(Number(second[0].n)).toBe(0);
+    const still = await query<{ n: number }>(
+      `SELECT COALESCE(sum(n_richieste), 0)::int AS n FROM public.ai_cost_weekly_totals`,
+    );
+    expect(still[0].n).toBe(27);
+  });
+
+  it("se la cancellazione fallisce, l'archivio della stessa purge non resta", async () => {
+    await insertProfiles(10);
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, provider, model, ok, feature, segmento, created_at)
+      SELECT 'chat', 'google', 'gemini-test', true, 'chat', 'free', now() - interval '120 days'
+      FROM generate_series(1, 15)
+    `);
+    await db.exec(`
+      CREATE OR REPLACE FUNCTION public.fail_ai_usage_delete()
+      RETURNS trigger LANGUAGE plpgsql AS $fn$
+      BEGIN
+        RAISE EXCEPTION 'delete blocked';
+      END;
+      $fn$;
+      CREATE TRIGGER fail_ai_usage_delete
+      BEFORE DELETE ON public.ai_usage
+      FOR EACH ROW EXECUTE FUNCTION public.fail_ai_usage_delete();
+    `);
+    try {
+      await fails(`SELECT public.purge_ai_cost_rows_older_than_90_days()`, /delete blocked/);
+      const archived = await query<{ n: number }>(
+        `SELECT count(*)::int AS n FROM public.ai_cost_weekly_totals`,
+      );
+      const raw = await query<{ n: number }>(`SELECT count(*)::int AS n FROM public.ai_usage`);
+      expect(archived[0].n).toBe(0);
+      expect(raw[0].n).toBe(15);
+    } finally {
+      await db.exec(`
+        DROP TRIGGER IF EXISTS fail_ai_usage_delete ON public.ai_usage;
+        DROP FUNCTION IF EXISTS public.fail_ai_usage_delete();
+      `);
+    }
+  });
+
+  it("il CFO legge l'archivio e non può scriverlo", async () => {
+    await insertProfiles(10);
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, provider, model, ok, feature, segmento, created_at)
+      SELECT 'chat', 'google', 'gemini-test', true, 'chat', 'free', now() - interval '120 days'
+      FROM generate_series(1, 12)
+    `);
+    await db.exec(`SELECT public.purge_ai_cost_rows_older_than_90_days()`);
+    const seen = await asRole("cfo_readonly", () =>
+      query<{ n: number }>(`SELECT count(*)::int AS n FROM public.ai_cost_weekly_totals`),
+    );
+    expect(seen[0].n).toBeGreaterThan(0);
+    await asRole("cfo_readonly", async () => {
+      await fails(
+        `INSERT INTO public.ai_cost_weekly_totals (
+           settimana, segmento, piano_nome, feature, provider, model, n_richieste
+         ) VALUES (date '2026-01-05', 'free', 'altri', 'chat', 'google', 'gemini-test', 10)`,
+        /permission denied/i,
+      );
+      await fails(`UPDATE public.ai_cost_weekly_totals SET n_richieste = n_richieste`, /permission denied/i);
+      await fails(`DELETE FROM public.ai_cost_weekly_totals`, /permission denied/i);
+    });
+  });
+
+  it("sandbox e abbonamenti scaduti non alzano il segmento", async () => {
+    await db.exec(`
+      INSERT INTO public.subscriptions (user_id, status, environment, current_period_end)
+      SELECT 'live-' || g, 'active', 'live', now() + interval '30 days'
+      FROM generate_series(1, 2) g
+    `);
+    await db.exec(`
+      INSERT INTO public.subscriptions (user_id, status, environment, current_period_end)
+      SELECT 'sand-' || g, 'active', 'sandbox', now() + interval '30 days'
+      FROM generate_series(1, 8) g
+    `);
+    const live = await query<{ n: string }>(
+      `SELECT private.ai_segment_subscriber_count('pagante')::text AS n`,
+    );
+    expect(Number(live[0].n)).toBe(2);
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, provider, model, ok, feature, segmento, piano_nome, created_at)
+      SELECT 'chat', 'google', 'gemini-test', true, 'chat', 'pagante', 'mensile',
+             (date_trunc('week', now() AT TIME ZONE 'Europe/Rome')::timestamp
+               AT TIME ZONE 'Europe/Rome') - interval '3 days'
+      FROM generate_series(1, 12)
+    `);
+    const sandboxView = await weekly();
+    expect(sandboxView.every((row) => row.segmento === "altri" && row.piano_nome === "altri")).toBe(true);
+
+    await db.exec("DELETE FROM public.ai_usage");
+    await db.exec("DELETE FROM public.subscriptions");
+    await db.exec("DELETE FROM public.ai_cost_weekly_totals");
+    await db.exec(`
+      INSERT INTO public.subscriptions (user_id, status, environment, current_period_end)
+      SELECT 'ok-' || g, 'active', 'live', now() + interval '30 days'
+      FROM generate_series(1, 2) g
+    `);
+    await db.exec(`
+      INSERT INTO public.subscriptions (user_id, status, environment, current_period_end)
+      SELECT 'old-' || g, 'active', 'live', now() - interval '1 day'
+      FROM generate_series(1, 8) g
+    `);
+    const valid = await query<{ n: string }>(
+      `SELECT private.ai_segment_subscriber_count('pagante')::text AS n`,
+    );
+    expect(Number(valid[0].n)).toBe(2);
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, provider, model, ok, feature, segmento, piano_nome, created_at)
+      SELECT 'chat', 'google', 'gemini-test', true, 'chat', 'pagante', 'mensile',
+             (date_trunc('week', now() AT TIME ZONE 'Europe/Rome')::timestamp
+               AT TIME ZONE 'Europe/Rome') - interval '3 days'
+      FROM generate_series(1, 12)
+    `);
+    const expiredView = await weekly();
+    expect(expiredView.every((row) => row.segmento === "altri" && row.piano_nome === "altri")).toBe(true);
+  });
+
+  it("un segmento piccolo non compare con la sua funzione se n_altri è sotto 10", async () => {
+    await insertProfiles(20);
+    await db.exec(`
+      INSERT INTO public.subscriptions (user_id, status, environment, current_period_end)
+      SELECT 'prova-' || g, 'trialing', 'live', now() + interval '14 days'
+      FROM generate_series(1, 3) g
+    `);
+    await insertEvents({ n: 12, feature: "chat", piano: null });
+    await db.exec(`
+      INSERT INTO public.ai_usage (fn, provider, model, ok, feature, segmento, piano_nome, created_at)
+      SELECT 'chat', 'google', 'gemini-test', true, 'chat', 'prova', 'mensile',
+             (date_trunc('week', now() AT TIME ZONE 'Europe/Rome')::timestamp
+               AT TIME ZONE 'Europe/Rome') - interval '3 days'
+      FROM generate_series(1, 15)
+    `);
+    const leaked = await query<{ n: number }>(`
+      SELECT count(*)::int AS n
+      FROM public.v_cfo_ai_cost_weekly
+      WHERE segmento = 'altri' AND feature <> 'altri'
+    `);
+    expect(leaked[0].n).toBe(0);
+    const freeCell = await query<{ n: number }>(`
+      SELECT count(*)::int AS n
+      FROM public.v_cfo_ai_cost_weekly
+      WHERE segmento = 'free' AND feature = 'chat'
+    `);
+    expect(freeCell[0].n).toBe(1);
+  });
+
   it("il CFO legge solo i totali settimanali", async () => {
     await insertProfiles(10);
     await insertEvents({ n: 12, feature: "chat", piano: null });
@@ -361,12 +589,14 @@ describe("migrazione contatori anonimi", () => {
 
 async function weekly() {
   return query<{
+    settimana: string;
     segmento: string;
     piano_nome: string;
     feature: string;
     n_richieste: number;
   }>(`
-    SELECT segmento, piano_nome, feature, n_richieste::int AS n_richieste
+    SELECT settimana::text AS settimana, segmento, piano_nome, feature,
+           n_richieste::int AS n_richieste
     FROM public.v_cfo_ai_cost_weekly
     ORDER BY feature
   `);
@@ -395,7 +625,8 @@ async function insertEvents(opts: { n: number; feature: string; piano: string | 
            'free',
            ${pianoSql},
            10,
-           timestamptz '2026-11-19 10:37:00+00'
+           (date_trunc('week', now() AT TIME ZONE 'Europe/Rome')::timestamp
+             AT TIME ZONE 'Europe/Rome') - interval '3 days'
     FROM generate_series(1, ${opts.n}) AS g(n)
   `);
 }

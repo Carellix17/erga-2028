@@ -16,35 +16,39 @@
 -- × segmento × piano) entra nel totale settimanale solo se ha almeno
 -- 10 richieste. Le celle sotto soglia si accorpano in 'altri' e quel
 -- secchio si pubblica solo se a sua volta ha almeno 10 richieste.
--- I totali pubblicati possono essere un po' più bassi del reale:
--- il resto sotto soglia non si pubblica e non si può ricostruire
--- sottraendo le viste, perché non c'è una vista giornaliera né un
--- totale che includa le celle soppresse.
+-- I totali pubblicati possono essere un po' più bassi del reale.
+-- Le celle sotto soglia non si ricostruiscono: si pubblicano solo
+-- settimane chiuse, la funzione esposta al CFO non ha parametri, e
+-- l'archiviazione avviene per settimane intere.
 --
 -- Segmento e nome del piano compaiono solo se quel segmento ha almeno
--- 10 iscritti. Il conteggio NON legge ai_usage (i log). Usa:
+-- 10 iscritti. Il conteggio NON legge ai_usage (i log). Una sola
+-- funzione, private.ai_segment_subscriber_count, usata dal trigger e
+-- dall'aggregato:
 --   · public.user_profiles — anagrafica degli iscritti, flag is_beta_tester
---     per il segmento beta e come base del free;
---   · public.subscriptions — status 'trialing' = prova, 'active' = pagante.
---     Un beta tester non viene contato anche come pagante o in prova.
--- Sotto i 10 iscritti la cella pubblicata dice 'altri'.
--- Nessuna chiave esterna e nessuna join riga-per-utente verso auth,
--- sessioni, log o abbonamenti: solo il conteggio per segmento.
+--     per il segmento beta;
+--   · public.subscriptions — prova = environment 'live', status 'trialing',
+--     periodo non scaduto; pagante = environment 'live', status 'active',
+--     periodo non scaduto (current_period_end IS NULL OR > now()).
+--     Sandbox e abbonamenti scaduti non contano. Un beta tester non
+--     viene contato anche come pagante o in prova.
+--   · free = profili non beta senza un abbonamento live valido.
+-- Se la somma degli iscritti dei segmenti sotto 10 (n_altri) è sotto 10,
+-- quelle righe finiscono solo nel bucket con tutte le dimensioni 'altri'.
 --
--- Retention del grezzo: massimo 90 giorni. La funzione, prima di
--- cancellare, ricopia in ai_cost_weekly_totals le celle già sopra
--- soglia. Quella tabella non ha id, non ha orari più fini della
--- settimana, e si conserva senza scadenza. Lanciarla due volte non
--- conta due volte: la seconda passata non trova più righe vecchie.
+-- Retention del grezzo: le righe spariscono tra 83 e 90 giorni, mai oltre.
+-- Il taglio è l'inizio della settimana successiva a quella che contiene
+-- now() - 90 giorni: si archiviano settimane intere, poi si cancellano.
+-- ai_cost_weekly_totals non ha id, non ha orari più fini della settimana,
+-- e si conserva senza scadenza. Lanciarla due volte non conta due volte.
 --
--- La funzione di purge NON è SECURITY DEFINER. Gira con i diritti di
--- chi la chiama: la service role (ha i grant) e pg_cron, che la esegue
--- come il ruolo che ha applicato questa migrazione e che possiede le
--- tabelle. Un DEFINER sulla purge allargherebbe la cancellazione a
--- chiunque possa eseguirla.
--- ai_cost_weekly_aggregate invece è SECURITY DEFINER, con search_path
--- fisso: la vista del CFO la chiama e il CFO non ha SELECT sul grezzo.
--- Restituisce solo celle da almeno 10 richieste.
+-- La purge NON è SECURITY DEFINER. La esegue la service role o pg_cron
+-- con il ruolo che possiede le tabelle.
+-- private.ai_cost_weekly_cells_internal(p_until) è SECURITY DEFINER e
+-- non è eseguibile dal CFO: accetta un istante e non va esposta.
+-- public.ai_cost_weekly_aggregate() non ha parametri, è SECURITY DEFINER
+-- e restituisce solo le settimane già chiuse. Lo schema private non è
+-- esposto da PostgREST.
 --
 -- Non fa: nessuna chiave HMAC, nessun secret, nessuno pseudonimo,
 -- nessuna vista giornaliera, nessuna vista per utente o per chiamata,
@@ -181,7 +185,7 @@ COMMENT ON COLUMN public.ai_usage.created_at IS
   'Istante troncato all''ora UTC. Le righe scritte prima di questa migrazione possono avere ancora i minuti: non vengono riscritte. In pubblicazione si vede solo la settimana.';
 
 COMMENT ON COLUMN public.ai_usage.piano_nome IS
-  'Nome piano a elenco chiuso. Il trigger lo azzera se il segmento ha meno di 10 iscritti in user_profiles/subscriptions. Il logger della PR 2, in fase anonima, scrive NULL.';
+  'Nome piano a elenco chiuso. Prima che il logger scriva piano_nome serve una soglia di 10 iscritti per piano. Il trigger lo azzera se il segmento ha meno di 10 iscritti live.';
 
 COMMENT ON COLUMN public.ai_usage.user_id IS
   'Colonna preesistente. La fase anonima non la espone. Il logger della PR 2 deve scriverla NULL. Nessuna chiave esterna verso auth.users.';
@@ -189,12 +193,23 @@ COMMENT ON COLUMN public.ai_usage.user_id IS
 COMMENT ON TABLE public.ai_usage IS
   'Registro tecnico delle chiamate AI. Orario all''ora. Retention massima 90 giorni. Vietato incrociare queste righe con log applicativi, sessioni o auth.';
 
--- ── Conteggio iscritti per segmento (mai da ai_usage) ──────────────────
+-- ── Schema private: non esposto da PostgREST ───────────────────────────
 
-CREATE OR REPLACE FUNCTION public.ai_segment_subscriber_count(p_segmento text)
+CREATE SCHEMA IF NOT EXISTS private;
+REVOKE ALL ON SCHEMA private FROM PUBLIC, anon, authenticated, cfo_readonly;
+GRANT USAGE ON SCHEMA private TO service_role;
+
+-- Un solo conteggio, usato dal trigger e dall'aggregato. Non legge ai_usage.
+-- Prova e pagante: solo environment = 'live' e periodo non scaduto.
+-- Free: profili non beta senza un abbonamento live valido.
+
+DROP FUNCTION IF EXISTS public.ai_segment_subscriber_count(text);
+
+CREATE OR REPLACE FUNCTION private.ai_segment_subscriber_count(p_segmento text)
 RETURNS bigint
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $fn$
   SELECT CASE p_segmento
@@ -206,7 +221,9 @@ AS $fn$
     WHEN 'prova' THEN (
       SELECT count(DISTINCT s.user_id)::bigint
       FROM public.subscriptions s
-      WHERE s.status = 'trialing'
+      WHERE s.environment = 'live'
+        AND s.status = 'trialing'
+        AND (s.current_period_end IS NULL OR s.current_period_end > pg_catalog.now())
         AND NOT EXISTS (
           SELECT 1 FROM public.user_profiles p
           WHERE p.user_id = s.user_id AND p.is_beta_tester
@@ -215,7 +232,9 @@ AS $fn$
     WHEN 'pagante' THEN (
       SELECT count(DISTINCT s.user_id)::bigint
       FROM public.subscriptions s
-      WHERE s.status = 'active'
+      WHERE s.environment = 'live'
+        AND s.status = 'active'
+        AND (s.current_period_end IS NULL OR s.current_period_end > pg_catalog.now())
         AND NOT EXISTS (
           SELECT 1 FROM public.user_profiles p
           WHERE p.user_id = s.user_id AND p.is_beta_tester
@@ -228,15 +247,17 @@ AS $fn$
         AND NOT EXISTS (
           SELECT 1 FROM public.subscriptions s
           WHERE s.user_id = p.user_id
+            AND s.environment = 'live'
             AND s.status IN ('active', 'trialing')
+            AND (s.current_period_end IS NULL OR s.current_period_end > pg_catalog.now())
         )
     )
     ELSE 0::bigint
   END;
 $fn$;
 
-COMMENT ON FUNCTION public.ai_segment_subscriber_count(text) IS
-  'Iscritti del segmento. beta e free da user_profiles, prova e pagante da subscriptions. Non legge ai_usage.';
+COMMENT ON FUNCTION private.ai_segment_subscriber_count(text) IS
+  'Iscritti del segmento. beta e free da user_profiles; prova e pagante da subscriptions live non scadute. Non legge ai_usage.';
 
 -- ── Orario all'ora e nome piano solo sopra i 10 iscritti ───────────────
 
@@ -272,7 +293,7 @@ SET search_path = pg_catalog, public
 AS $fn$
 BEGIN
   IF NEW.piano_nome IS NOT NULL
-     AND public.ai_segment_subscriber_count(NEW.segmento) < 10 THEN
+     AND private.ai_segment_subscriber_count(NEW.segmento) < 10 THEN
     NEW.piano_nome := NULL;
   END IF;
   RETURN NEW;
@@ -407,19 +428,22 @@ ALTER TABLE public.ai_cost_weekly_totals ADD CONSTRAINT ai_cost_weekly_totals_to
   );
 
 COMMENT ON TABLE public.ai_cost_weekly_totals IS
-  'Totali settimanali anonimi conservati senza scadenza dopo la cancellazione del grezzo. Soglia: 10 richieste, non persone. In fase anonima la soglia k conta eventi, non persone: una cella può corrispondere a una sola persona. I totali pubblicati possono essere un po'' più bassi del reale. Nessun id e nessun orario più preciso della settimana.';
+  'Totali settimanali anonimi conservati senza scadenza. Si archiviano solo settimane intere, tra 83 e 90 giorni, mai oltre. Soglia: 10 richieste, non persone. In fase anonima la soglia k conta eventi, non persone: una cella può corrispondere a una sola persona. Le celle sotto soglia non si ricostruiscono: si pubblicano solo settimane chiuse, senza parametri. I totali pubblicati possono essere un po'' più bassi del reale. Nessun id e nessun orario più preciso della settimana.';
 
--- ── Aggregato settimanale ──────────────────────────────────────────────
--- p_cutoff NULL = tutto il grezzo ancora in tabella (vista viva).
--- p_cutoff = 90 days = solo le righe che la purge sta per cancellare.
+-- ── Aggregato: funzione interna con istante, vista senza parametri ─────
+-- Le celle sotto soglia non si ricostruiscono: si pubblicano solo
+-- settimane chiuse, la funzione esposta al CFO non ha parametri, e
+-- l'archiviazione avviene per settimane intere.
 
 DROP VIEW IF EXISTS public.v_cfo_contatori;
 DROP VIEW IF EXISTS public.v_cfo_ai_usage_weekly_segment;
 DROP VIEW IF EXISTS public.v_cfo_ai_usage_daily;
 DROP VIEW IF EXISTS public.v_cfo_ai_cost_weekly;
 DROP FUNCTION IF EXISTS public.ai_cost_weekly_aggregate(interval);
+DROP FUNCTION IF EXISTS public.ai_cost_weekly_aggregate();
+DROP FUNCTION IF EXISTS private.ai_cost_weekly_cells_internal(timestamptz);
 
-CREATE FUNCTION public.ai_cost_weekly_aggregate(p_cutoff interval)
+CREATE FUNCTION private.ai_cost_weekly_cells_internal(p_until timestamptz)
 RETURNS TABLE (
   settimana date,
   segmento text,
@@ -439,34 +463,14 @@ SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $fn$
   WITH subscribers AS (
-    SELECT 'beta'::text AS segmento, count(*)::bigint AS n_iscritti
-    FROM public.user_profiles
-    WHERE is_beta_tester
-    UNION ALL
-    SELECT 'prova'::text, count(DISTINCT s.user_id)::bigint
-    FROM public.subscriptions s
-    WHERE s.status = 'trialing'
-      AND NOT EXISTS (
-        SELECT 1 FROM public.user_profiles p
-        WHERE p.user_id = s.user_id AND p.is_beta_tester
-      )
-    UNION ALL
-    SELECT 'pagante'::text, count(DISTINCT s.user_id)::bigint
-    FROM public.subscriptions s
-    WHERE s.status = 'active'
-      AND NOT EXISTS (
-        SELECT 1 FROM public.user_profiles p
-        WHERE p.user_id = s.user_id AND p.is_beta_tester
-      )
-    UNION ALL
-    SELECT 'free'::text, count(*)::bigint
-    FROM public.user_profiles p
-    WHERE NOT p.is_beta_tester
-      AND NOT EXISTS (
-        SELECT 1 FROM public.subscriptions s
-        WHERE s.user_id = p.user_id
-          AND s.status IN ('active', 'trialing')
-      )
+    SELECT seg.segmento,
+           private.ai_segment_subscriber_count(seg.segmento) AS n_iscritti
+    FROM (VALUES ('beta'::text), ('prova'), ('pagante'), ('free')) AS seg(segmento)
+  ),
+  n_altri AS (
+    SELECT COALESCE(sum(n_iscritti), 0)::bigint AS n
+    FROM subscribers
+    WHERE n_iscritti < 10
   ),
   daily AS (
     SELECT
@@ -483,16 +487,12 @@ AS $fn$
       COALESCE(sum(u.completion_tokens), 0)::bigint AS completion_tokens,
       COALESCE(sum(u.estimated_cost_eur), 0)::numeric(18, 6) AS estimated_cost_eur
     FROM public.ai_usage u
-    WHERE p_cutoff IS NULL
-       OR u.created_at < pg_catalog.now() - p_cutoff
+    WHERE u.created_at < p_until
     GROUP BY 1, 2, 3, 4, 5, 6, 7
   ),
   labeled AS (
     SELECT
       d.settimana,
-      d.feature,
-      d.provider,
-      d.model,
       d.n_richieste,
       d.prompt_tokens,
       d.cached_prompt_tokens,
@@ -505,25 +505,34 @@ AS $fn$
       CASE
         WHEN COALESCE(s.n_iscritti, 0) >= 10 AND d.piano_grezzo IS NOT NULL THEN d.piano_grezzo
         ELSE 'altri'
-      END AS piano_nome
+      END AS piano_nome,
+      CASE
+        WHEN COALESCE(s.n_iscritti, 0) < 10 AND a.n < 10 THEN 'altri'
+        ELSE d.feature
+      END AS feature,
+      CASE
+        WHEN COALESCE(s.n_iscritti, 0) < 10 AND a.n < 10 THEN 'altri'
+        ELSE d.provider
+      END AS provider,
+      CASE
+        WHEN COALESCE(s.n_iscritti, 0) < 10 AND a.n < 10 THEN 'altri'
+        ELSE d.model
+      END AS model,
+      (COALESCE(s.n_iscritti, 0) < 10 AND a.n < 10) AS solo_altri
     FROM daily d
     LEFT JOIN subscribers s ON s.segmento = d.segmento_grezzo
+    CROSS JOIN n_altri a
   ),
   kept AS (
     SELECT
-      settimana,
-      segmento,
-      piano_nome,
-      feature,
-      provider,
-      model,
+      settimana, segmento, piano_nome, feature, provider, model,
       sum(n_richieste)::bigint AS n_richieste,
       sum(prompt_tokens)::bigint AS prompt_tokens,
       sum(cached_prompt_tokens)::bigint AS cached_prompt_tokens,
       sum(completion_tokens)::bigint AS completion_tokens,
       sum(estimated_cost_eur)::numeric(18, 6) AS estimated_cost_eur
     FROM labeled
-    WHERE n_richieste >= 10
+    WHERE n_richieste >= 10 AND NOT solo_altri
     GROUP BY 1, 2, 3, 4, 5, 6
   ),
   rolled AS (
@@ -540,7 +549,7 @@ AS $fn$
       sum(completion_tokens)::bigint AS completion_tokens,
       sum(estimated_cost_eur)::numeric(18, 6) AS estimated_cost_eur
     FROM labeled
-    WHERE n_richieste < 10
+    WHERE n_richieste < 10 OR solo_altri
     GROUP BY settimana
     HAVING sum(n_richieste) >= 10
   )
@@ -549,8 +558,40 @@ AS $fn$
   SELECT * FROM rolled;
 $fn$;
 
-COMMENT ON FUNCTION public.ai_cost_weekly_aggregate(interval) IS
-  'Totali settimanali. Soglia: 10 richieste, non persone. Somma solo le celle giornaliere con almeno 10 richieste; il resto va in altri e si pubblica solo se anche quel secchio ha almeno 10 richieste. I totali pubblicati possono essere un po'' più bassi del reale.';
+COMMENT ON FUNCTION private.ai_cost_weekly_cells_internal(timestamptz) IS
+  'Celle settimanali del grezzo con created_at < p_until. SECURITY DEFINER. Eseguibile solo dalla service role. Non esposta al CFO.';
+
+REVOKE ALL ON FUNCTION private.ai_cost_weekly_cells_internal(timestamptz) FROM PUBLIC, anon, authenticated, cfo_readonly;
+GRANT EXECUTE ON FUNCTION private.ai_cost_weekly_cells_internal(timestamptz) TO service_role;
+
+CREATE FUNCTION public.ai_cost_weekly_aggregate()
+RETURNS TABLE (
+  settimana date,
+  segmento text,
+  piano_nome text,
+  feature text,
+  provider text,
+  model text,
+  n_richieste bigint,
+  prompt_tokens bigint,
+  cached_prompt_tokens bigint,
+  completion_tokens bigint,
+  estimated_cost_eur numeric
+)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $fn$
+  SELECT *
+  FROM private.ai_cost_weekly_cells_internal(
+    (date_trunc('week', (pg_catalog.now() AT TIME ZONE 'Europe/Rome')) AT TIME ZONE 'Europe/Rome')
+  )
+  WHERE settimana < date_trunc('week', (pg_catalog.now() AT TIME ZONE 'Europe/Rome'))::date;
+$fn$;
+
+COMMENT ON FUNCTION public.ai_cost_weekly_aggregate() IS
+  'Totali delle settimane già chiuse, senza parametri. Soglia: 10 richieste, non persone. Le celle sotto soglia non si ricostruiscono.';
 
 CREATE VIEW public.v_cfo_ai_cost_weekly
 WITH (security_barrier = true) AS
@@ -566,10 +607,10 @@ SELECT
   cached_prompt_tokens,
   completion_tokens,
   estimated_cost_eur
-FROM public.ai_cost_weekly_aggregate(NULL::interval);
+FROM public.ai_cost_weekly_aggregate();
 
 COMMENT ON VIEW public.v_cfo_ai_cost_weekly IS
-  'Unici totali vivi per il CFO: settimana, non il giorno. Soglia: 10 richieste, non persone. In fase anonima la soglia k conta eventi, non persone: una cella può corrispondere a una sola persona. I totali pubblicati possono essere un po'' più bassi del reale. Segmento e piano sono altri se gli iscritti del segmento sono meno di 10.';
+  'Unici totali vivi per il CFO: solo settimane chiuse, senza parametri. Soglia: 10 richieste, non persone. In fase anonima la soglia k conta eventi, non persone: una cella può corrispondere a una sola persona. Le celle sotto soglia non si ricostruiscono: si pubblicano solo settimane chiuse e l''archiviazione è per settimane intere. I totali pubblicati possono essere un po'' più bassi del reale.';
 
 -- ── RLS e grant. I privilegi di default di Supabase vanno revocati. ───
 
@@ -584,6 +625,7 @@ DROP POLICY IF EXISTS "ai_usage_update_service_role" ON public.ai_usage;
 DROP POLICY IF EXISTS "ai_usage_delete_service_role" ON public.ai_usage;
 DROP POLICY IF EXISTS "ai_price_lists_all_service_role" ON public.ai_price_lists;
 DROP POLICY IF EXISTS "ai_cost_weekly_totals_all_service_role" ON public.ai_cost_weekly_totals;
+DROP POLICY IF EXISTS "ai_cost_weekly_totals_select_cfo" ON public.ai_cost_weekly_totals;
 
 CREATE POLICY "ai_usage_select_service_role" ON public.ai_usage
   FOR SELECT TO service_role USING (true);
@@ -599,6 +641,9 @@ CREATE POLICY "ai_price_lists_all_service_role" ON public.ai_price_lists
 
 CREATE POLICY "ai_cost_weekly_totals_all_service_role" ON public.ai_cost_weekly_totals
   FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+CREATE POLICY "ai_cost_weekly_totals_select_cfo" ON public.ai_cost_weekly_totals
+  FOR SELECT TO cfo_readonly USING (true);
 
 REVOKE ALL ON TABLE public.ai_usage FROM PUBLIC, anon, authenticated, cfo_readonly;
 REVOKE ALL ON TABLE public.ai_price_lists FROM PUBLIC, anon, authenticated, cfo_readonly;
@@ -625,7 +670,7 @@ BEGIN
 END
 $seq$;
 
--- ── Purge: prima archivia, poi cancella. Non è SECURITY DEFINER. ──────
+-- ── Purge: un solo taglio, settimane intere. Non è SECURITY DEFINER. ──
 
 DROP FUNCTION IF EXISTS public.purge_ai_cost_rows_older_than_90_days();
 
@@ -636,8 +681,16 @@ SET search_path = pg_catalog, public
 AS $fn$
 DECLARE
   deleted_usage bigint;
+  v_cut timestamptz;
 BEGIN
   PERFORM pg_catalog.pg_advisory_xact_lock(hashtext('purge-ai-cost-rows-90d'));
+
+  v_cut := (
+    date_trunc(
+      'week',
+      (pg_catalog.now() - interval '90 days') AT TIME ZONE 'Europe/Rome'
+    ) + interval '7 days'
+  ) AT TIME ZONE 'Europe/Rome';
 
   INSERT INTO public.ai_cost_weekly_totals (
     settimana, segmento, piano_nome, feature, provider, model,
@@ -648,7 +701,7 @@ BEGIN
     settimana, segmento, piano_nome, feature, provider, model,
     n_richieste, prompt_tokens, cached_prompt_tokens, completion_tokens,
     estimated_cost_eur
-  FROM public.ai_cost_weekly_aggregate(interval '90 days')
+  FROM private.ai_cost_weekly_cells_internal(v_cut)
   ON CONFLICT (settimana, segmento, piano_nome, feature, provider, model)
   DO UPDATE SET
     n_richieste = public.ai_cost_weekly_totals.n_richieste + EXCLUDED.n_richieste,
@@ -658,36 +711,37 @@ BEGIN
     estimated_cost_eur = public.ai_cost_weekly_totals.estimated_cost_eur + EXCLUDED.estimated_cost_eur;
 
   DELETE FROM public.ai_usage
-  WHERE created_at < pg_catalog.now() - interval '90 days';
+  WHERE created_at < v_cut;
   GET DIAGNOSTICS deleted_usage = ROW_COUNT;
   RETURN deleted_usage;
 END;
 $fn$;
 
 COMMENT ON FUNCTION public.purge_ai_cost_rows_older_than_90_days() IS
-  'Archivia in ai_cost_weekly_totals le celle con almeno 10 richieste, poi cancella da ai_usage ciò che è più vecchio di 90 giorni. Non è SECURITY DEFINER: la esegue la service role o pg_cron con il ruolo che possiede le tabelle. La seconda esecuzione non conta due volte.';
+  'Archivia settimane intere con il taglio v_cut (inizio della settimana successiva a quella che contiene now()-90 giorni), poi cancella created_at < v_cut. Le righe spariscono tra 83 e 90 giorni, mai oltre. Non è SECURITY DEFINER. ON CONFLICT somma: la seconda esecuzione, a grezzo già cancellato, archivia 0.';
 
 REVOKE ALL ON FUNCTION public.ai_usage_truncate_created_at() FROM PUBLIC, anon, authenticated, cfo_readonly;
 REVOKE ALL ON FUNCTION public.ai_usage_guard_piano_nome() FROM PUBLIC, anon, authenticated, cfo_readonly;
-REVOKE ALL ON FUNCTION public.ai_segment_subscriber_count(text) FROM PUBLIC, anon, authenticated, cfo_readonly;
-REVOKE ALL ON FUNCTION public.ai_cost_weekly_aggregate(interval) FROM PUBLIC, anon, authenticated, cfo_readonly;
+REVOKE ALL ON FUNCTION private.ai_segment_subscriber_count(text) FROM PUBLIC, anon, authenticated, cfo_readonly;
+REVOKE ALL ON FUNCTION private.ai_cost_weekly_cells_internal(timestamptz) FROM PUBLIC, anon, authenticated, cfo_readonly;
+REVOKE ALL ON FUNCTION public.ai_cost_weekly_aggregate() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.purge_ai_cost_rows_older_than_90_days() FROM PUBLIC, anon, authenticated, cfo_readonly;
 
 GRANT EXECUTE ON FUNCTION public.ai_usage_truncate_created_at() TO service_role;
 GRANT EXECUTE ON FUNCTION public.ai_usage_guard_piano_nome() TO service_role;
-GRANT EXECUTE ON FUNCTION public.ai_segment_subscriber_count(text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.ai_cost_weekly_aggregate(interval) TO service_role, cfo_readonly;
+GRANT EXECUTE ON FUNCTION private.ai_segment_subscriber_count(text) TO service_role;
+GRANT EXECUTE ON FUNCTION private.ai_cost_weekly_cells_internal(timestamptz) TO service_role;
+GRANT EXECUTE ON FUNCTION public.ai_cost_weekly_aggregate() TO service_role, cfo_readonly;
 GRANT EXECUTE ON FUNCTION public.purge_ai_cost_rows_older_than_90_days() TO service_role;
 
 -- ── Pianificazione, se pg_cron è già presente ──────────────────────────
--- Prima di deployare la PR 2 deve esistere il job
--- `purge-ai-cost-rows-90d` in `cron.job`. Se manca, la PR 2 non va in produzione.
+-- Prima di deployare la PR 2 deve esistere il job `purge-ai-cost-rows-90d` in `cron.job`. Se manca, la PR 2 non va in produzione.
 
 DO $cron$
 BEGIN
   IF to_regnamespace('cron') IS NULL
      OR to_regprocedure('cron.schedule(text,text,text)') IS NULL THEN
-    RAISE NOTICE 'pg_cron non disponibile: il job purge-ai-cost-rows-90d NON è stato creato. Prima di deployare la PR 2 deve esistere in cron.job. Se manca, la PR 2 non va in produzione. Query: SELECT jobname, schedule, active FROM cron.job WHERE jobname = ''purge-ai-cost-rows-90d'';';
+    RAISE NOTICE 'pg_cron non disponibile: il job purge-ai-cost-rows-90d NON è stato creato. Prima di deployare la PR 2 deve esistere il job purge-ai-cost-rows-90d in cron.job. Se manca, la PR 2 non va in produzione. Query: SELECT jobname, schedule, active FROM cron.job WHERE jobname = ''purge-ai-cost-rows-90d'';';
     RETURN;
   END IF;
 
@@ -708,7 +762,7 @@ EXCEPTION WHEN OTHERS THEN
 END
 $cron$;
 
--- Go-live della retention sulle righe già più vecchie di 90 giorni.
+-- Go-live della retention: settimane intere già oltre il taglio.
 SELECT public.purge_ai_cost_rows_older_than_90_days();
 
 COMMIT;

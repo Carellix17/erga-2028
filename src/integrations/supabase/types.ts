@@ -1552,7 +1552,7 @@ export type Database = {
         }
       }
       ai_cost_weekly_aggregate: {
-        Args: { p_cutoff: string }
+        Args: never
         Returns: {
           cached_prompt_tokens: number
           completion_tokens: number
