@@ -25,13 +25,18 @@
  * satinato e i bordi, non l'inversione automatica del campo).
  */
 
-import { resolveSubjectColor } from "@/lib/subjectColors";
+import { getCourseImage } from "@/lib/courseImages";
+import { getSubjectColorByKey, resolveSubjectColor } from "@/lib/subjectColors";
+import { detectSubjectFromText } from "@/lib/subjectDetector";
+import { cleanCourseName } from "@/lib/courseName";
 
 export type CoverFamily = "light" | "deep";
 
 export interface CourseCover {
   /** Chiave materia (es. "storia") o "default". */
   subjectKey: string;
+  /** URL generato dalla build per una materia riconosciuta. */
+  backgroundImage: string | null;
   /** Colore materia, stringa hsl(). */
   accent: string;
   /** Famiglia del campo: pastello chiaro o profondo. */
@@ -186,8 +191,13 @@ function channels(hex: string): string {
  * @param courseName titolo/nome file del corso (il rilevamento materia legge qui)
  * @param customKey chiave materia scelta dall'utente, se presente (vince)
  */
-export function resolveCourseCover(courseName: string, customKey?: string | null): CourseCover {
+export function resolveCourseCover(courseName: string, customKey?: string | null, materialSubject?: string | null): CourseCover {
   const subject = resolveSubjectColor(courseName || "", customKey ?? undefined);
+  // Il colore assegnato tramite hash non identifica una materia.
+  const backgroundImage = customKey && getSubjectColorByKey(customKey)
+    ? getCourseImage(customKey)
+    : detectSubjectFromText(cleanCourseName(courseName)).backgroundImage ??
+      (materialSubject ? detectSubjectFromText(materialSubject).backgroundImage : null);
   const accentHex = hslToHex(subject.accent) ?? "#94A3B8";
   const family = SUBJECT_FAMILY[subject.key] ?? "light";
 
@@ -199,6 +209,7 @@ export function resolveCourseCover(courseName: string, customKey?: string | null
 
   return {
     subjectKey: subject.key,
+    backgroundImage,
     accent: subject.accent,
     family,
     field,

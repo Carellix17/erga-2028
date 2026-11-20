@@ -4,6 +4,7 @@ import { logErrorDiag, logRef } from "../_shared/logRef.ts";
 import { fetchCognitiveProfile, buildCognitivePromptAddon } from "../_shared/cognitive.ts";
 import { normalizeLanguage, languageDirective } from "../_shared/language.ts";
 import { buildModulePush, buildPathPush } from "../_shared/modulePush.ts";
+import { classifyCourseSubject, type CourseSubjectMetadata } from "../_shared/courseSubject.ts";
 import {
   detectSubject,
   isScientificFamily,
@@ -1004,10 +1005,19 @@ ${studyContent}`;
     );
     // Passaporto: la materia si scrive sul percorso (non fatale se la colonna
     // manca — migrazione 20261003150000 — il percorso procede uguale).
-    const { error: passportError } = await supabase
+    const { detectedSubject, confidence } = classifyCourseSubject(fullContent);
+    const courseCover: CourseSubjectMetadata | null = detectedSubject ? { subject: detectedSubject, confidence } : null;
+    const passport = { subject_family: detection.family, subject: detection.subject };
+    const updatePassport = (data: typeof passport & { course_cover?: CourseSubjectMetadata | null }) => supabase
       .from("study_contexts")
-      .update({ subject_family: detection.family, subject: detection.subject })
-      .eq("id", contextId);
+      .update(data)
+      .eq("id", contextId)
+      .eq("user_id", userId);
+    let { error: passportError } = await updatePassport({ ...passport, course_cover: courseCover });
+    if (passportError?.code === "PGRST204" || passportError?.code === "42703") {
+      // Durante il rollout la generazione è compatibile con lo schema precedente.
+      ({ error: passportError } = await updatePassport(passport));
+    }
     if (passportError) {
       console.warn("[2.0] passaporto non aggiornato (migrazione applicata?):", passportError.message);
     }

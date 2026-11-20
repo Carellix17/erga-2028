@@ -1,9 +1,12 @@
 import { ArrowRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ImageCourseBackground } from "@/components/studio/ImageCourseBackground";
 
 interface CourseHeroCardProps {
   /** Titolo del corso attivo. Se manca, la card mostra lo stato vuoto. */
   courseTitle?: string | null;
+  coverSubject?: string | null;
+  materialSubject?: string | null;
   /** ID del percorso (informazione per i consumatori futuri). */
   contextId?: string | null;
   /** Etichetta soprastante il titolo del corso, es. "Percorso attivo". */
@@ -32,12 +35,12 @@ function clampPercent(value: number | null | undefined) {
     : 0;
 }
 
-/** Sulla card avorio il pulsante è nero, con etichetta bianca e angoli a 24px. */
-const lessonCtaClass =
-  "min-h-12 w-full rounded-[24px] border-[#0a0a0a] bg-[#0a0a0a] text-[#ffffff] hover:border-[#1a1c20] hover:bg-[#1a1c20] hover:text-[#ffffff] focus-visible:ring-[#0a0a0a] focus-visible:ring-offset-[#FFFBF4] sm:w-fit";
+const lessonCtaClass = "min-h-12 w-full sm:w-fit";
 
 export function CourseHeroCard({
   courseTitle,
+  coverSubject,
+  materialSubject,
   lessonTitle,
   lessonMetaText,
   progressPercent,
@@ -53,15 +56,18 @@ export function CourseHeroCard({
   const percent = clampPercent(progressPercent);
 
   return (
-    <article className="relative isolate min-w-0 overflow-hidden rounded-[24px] border border-[#212327] bg-[#FFFBF4] text-[#0a0a0a]">
+    <article className="course-cover-surface relative isolate min-w-0 overflow-hidden border text-foreground">
+      {active && (
+        <ImageCourseBackground courseName={courseTitle} customKey={coverSubject} materialSubject={materialSubject} eager />
+      )}
       {active ? (
         <div className="relative p-5 sm:p-6">
-          <h2 className="max-w-[22ch] break-words text-3xl font-semibold leading-tight tracking-tight text-[#0a0a0a] sm:text-4xl">
+          <h2 className="max-w-[22ch] break-words text-3xl font-normal leading-tight tracking-tight sm:text-4xl">
             {courseTitle}
           </h2>
-          <p className="mt-2 break-words text-lg leading-snug text-[#0a0a0a] sm:text-xl">{lessonTitle}</p>
+          <p className="mt-2 break-words text-lg leading-snug sm:text-xl">{lessonTitle}</p>
           {lessonMetaText && (
-            <p className="mt-1.5 break-words text-sm text-[#3a3f45]">{lessonMetaText}</p>
+            <p className="mt-1.5 break-words text-sm text-sand">{lessonMetaText}</p>
           )}
 
           <div className="mt-5">
@@ -72,11 +78,11 @@ export function CourseHeroCard({
                 aria-valuenow={percent}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                className="h-1 min-w-0 flex-1 overflow-hidden bg-[#0a0a0a]/25"
+                className="h-1 min-w-0 flex-1 overflow-hidden bg-foreground/25"
               >
-                <div className="h-full bg-[#0a0a0a]" style={{ width: `${percent}%` }} />
+                <div className="h-full bg-foreground" style={{ width: `${percent}%` }} />
               </div>
-              <span className="shrink-0 font-mono text-sm tabular-nums text-[#0a0a0a]">{percent}%</span>
+              <span aria-hidden="true" className="shrink-0 font-mono text-sm tabular-nums text-sand">{percent}%</span>
             </div>
             <Button onClick={onPrimaryCta} className={lessonCtaClass}>
               {primaryCtaLabel}
@@ -86,12 +92,12 @@ export function CourseHeroCard({
         </div>
       ) : (
         <div className="p-5 sm:p-6">
-          <BookOpen className="mb-4 h-7 w-7 text-[#0a0a0a]" aria-hidden="true" />
-          <h2 className="max-w-[24ch] break-words text-2xl font-semibold leading-tight text-[#0a0a0a] sm:text-3xl">
+          <BookOpen className="mb-4 h-7 w-7" aria-hidden="true" />
+          <h2 className="max-w-[24ch] break-words text-2xl font-normal leading-tight sm:text-3xl">
             {emptyTitle ?? "Scegli o carica il tuo primo percorso"}
           </h2>
           {emptyDescription && (
-            <p className="mt-3 max-w-[52ch] break-words text-base leading-relaxed text-[#3a3f45]">
+            <p className="mt-3 max-w-[52ch] break-words text-base leading-relaxed text-[#dadbdf]">
               {emptyDescription}
             </p>
           )}

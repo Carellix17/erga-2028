@@ -99,8 +99,8 @@ describe("HomeView modulare (V3)", () => {
     expect(screen.getByText("Il moto rettilineo")).toBeInTheDocument();
     expect(screen.getByText("Lezione 3 di 10")).toBeInTheDocument();
     const courseCard = courseHeading.closest("article");
-    expect(courseCard).toHaveClass("bg-[#FFFBF4]", "text-[#0a0a0a]", "rounded-[24px]");
-    expect(container.querySelector("[data-cover-root]")).toBeNull();
+    expect(courseCard).toHaveClass("course-cover-surface", "text-foreground");
+    expect(courseCard?.querySelector("img")).toHaveAttribute("src", expect.stringContaining("materia_percorso_fisica"));
     const progress = screen.getByRole("progressbar", { name: /avanzamento del percorso: 20%/i });
     expect(progress).toHaveAttribute("aria-valuenow", "20");
 
@@ -197,15 +197,14 @@ describe("HomeView modulare (V3)", () => {
     expect(callbacks.onOpenPlan).toHaveBeenCalledTimes(1);
   });
 
-  it("i pulsanti della Home hanno angoli da 24px e l'etichetta intera", () => {
+  it("le azioni della Home mantengono le etichette intere e il pulsante del percorso è a pillola", () => {
     render(<HomeView {...callbacks} />);
-    for (const label of ["Riprendi lezione", "Vedi Piano"]) {
-      const button = screen.getByRole("button", { name: label });
-      expect(button.className).toContain("rounded-[24px]");
-      expect(button.className).not.toContain("rounded-full");
-      expect(button.className).not.toContain("rounded-[999");
-      expect(button.textContent).toContain(label);
-    }
+    const resume = screen.getByRole("button", { name: "Riprendi lezione" });
+    expect(resume).toHaveClass("rounded-button", "bg-transparent");
+    expect(resume.textContent).toContain("Riprendi lezione");
+    const plan = screen.getByRole("button", { name: "Vedi Piano" });
+    expect(plan).toHaveClass("rounded-[24px]");
+    expect(plan.textContent).toContain("Vedi Piano");
     expect(screen.getByText("20%")).toBeInTheDocument();
   });
 

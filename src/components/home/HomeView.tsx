@@ -106,6 +106,8 @@ export function HomeView({
         {/* Il percorso resta una superficie autonoma, con la stessa copertina di Studio. */}
         <CourseHeroCard
           courseTitle={resume?.courseTitle ?? null}
+          coverSubject={resume?.coverSubject}
+          materialSubject={resume?.materialSubject}
           contextId={resume?.contextId ?? null}
           eyebrowText={t("home.course.eyebrow")}
           lessonTitle={resume?.lessonTitle ?? null}

@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { PathHero } from "@/components/studio/PathHero";
+import { getCourseImage } from "@/lib/courseImages";
 
 // 🛡️ P24 regressione: il selettore "Cambia corso" della Hero (morphing)
 // deve aprire la lista dei corsi senza errori, selezionare e tornare indietro.
@@ -51,17 +52,16 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     expect(screen.getByText("matematica")).toBeTruthy();
   });
 
-  it("le card corso sono monocrome, senza copertina della materia", async () => {
+  it("usa la copertina della materia per il percorso corrente e le altre card", async () => {
     render(<PathHero {...base} onSelectCourse={() => {}} />);
     const heroHeading = screen.getByRole("heading", { name: "Storia" });
-    expect(heroHeading.closest("[style*='--contrast-ink']")).toBeNull();
-    expect(document.querySelector("[data-cover-root]")).toBeNull();
-    expect(heroHeading.className).toMatch(/text-foreground/);
+    expect(heroHeading.closest(".course-cover-surface")?.querySelector("img"))
+      .toHaveAttribute("src", getCourseImage("storia"));
 
     fireEvent.click(screen.getByText("Cambia corso"));
     const otherCourseTitle = await screen.findByRole("heading", { name: "matematica" });
-    expect(otherCourseTitle.closest("[style*='--contrast-ink']")).toBeNull();
-    expect(otherCourseTitle.className).toMatch(/text-foreground/);
+    expect(otherCourseTitle.closest("button")?.querySelector("img"))
+      .toHaveAttribute("src", getCourseImage("matematica"));
   });
 
   it("notifica al genitore l'apertura/chiusura del selettore", () => {

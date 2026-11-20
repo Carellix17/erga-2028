@@ -1,0 +1,11 @@
+export { default as letteratura_e_grammatica } from "./materia_percorso_letteratura_e_grammatica.png";
+export { default as matematica } from "./materia_percorso_matematica.png";
+export { default as fisica } from "./materia_percorso_fisica.png";
+export { default as informatica } from "./materia_percorso_informatica.png";
+export { default as storia } from "./materia_percorso_storia.png";
+export { default as scienze } from "./materia_percorso_scienze.png";
+export { default as chimica } from "./materia_percorso_chimica.png";
+export { default as filosofia } from "./materia_percorso_filosofia.png";
+export { default as geografia } from "./materia_percorso_geografia.png";
+export { default as diritto_e_economia } from "./materia_percorso_diritto_e_economia.png";
+export { default as lingua_straniera } from "./materia_percorso_lingua_straniera.png";

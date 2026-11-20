@@ -31,6 +31,8 @@ export default defineConfig(({ mode }) => ({
       },
       injectManifest: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2,ttf}"],
+        // Le copertine si scaricano quando servono, anche alla prima installazione della PWA.
+        globIgnores: ["**/materia_percorso_*.png"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
       manifest: {

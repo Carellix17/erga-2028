@@ -276,11 +276,16 @@ serve(withCors(async (req) => {
       // List all contexts with lesson counts and processing status.
       // Strictly include only contexts owned by the authenticated user.
       const ctxFields = "id, file_name, created_at, processing_status, error_message, is_demo, generation_status, generation_progress, generation_error, generation_started_at, module_titles, new_material_pending, subject_family, subject";
-      const { data: contexts } = await supabase
+      const listContexts = (fields: string) => supabase
         .from("study_contexts")
-        .select(ctxFields)
+        .select(fields)
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
+      let { data: contexts, error: contextsError } = await listContexts(`${ctxFields}, course_cover`);
+      if (contextsError?.code === "42703" || contextsError?.code === "PGRST204") {
+        ({ data: contexts, error: contextsError } = await listContexts(ctxFields));
+      }
+      if (contextsError) return errorResponse("Impossibile caricare i percorsi.", 500);
 
       const { data: lessons } = await supabase
         .from("mini_lessons")

@@ -2,12 +2,15 @@ import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { cleanCourseName } from "@/lib/courseName";
+import { ImageCourseBackground } from "./ImageCourseBackground";
 
 export interface CourseCardData {
   id: string;
   file_name: string;
   lesson_count?: number | null;
   cover_image_url?: string | null;
+  course_cover?: { subject?: string } | null;
+  subject?: string | null;
 }
 
 interface CourseCardProps {
@@ -34,7 +37,7 @@ export function CourseCard({
   actionLabel,
   children,
   className,
-  noImage: _noImage = false,
+  noImage = false,
   style,
   ...motionProps
 }: CourseCardProps & CourseCardMotionProps) {
@@ -45,14 +48,21 @@ export function CourseCard({
       onClick={() => onSelect(course)}
       style={style}
       className={cn(
-        "relative w-full rounded-card border border-border bg-card p-4 text-left text-foreground sm:p-6",
+        "course-cover-surface relative isolate w-full border p-4 text-left text-foreground sm:p-6",
         "transition-[transform,background-color] duration-150 active:scale-[0.98] motion-reduce:transform-none",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        active && "studio-current border-[#FFFBF4] bg-[#0a0a0a] text-white",
+        active && "border-foreground",
         className,
       )}
     >
-      <div className="relative">
+      {!noImage && (
+        <ImageCourseBackground
+          courseName={course.file_name}
+          customKey={course.course_cover?.subject}
+          materialSubject={course.subject}
+        />
+      )}
+      <div className="relative min-w-0">
         {children}
         <span className="mt-4 flex h-11 w-full items-center justify-center rounded-button border border-current/30 text-sm font-normal">
           {actionLabel}

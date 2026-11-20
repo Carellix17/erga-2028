@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { useHaptics } from "@/hooks/useHaptics";
 import { getCourseProgress } from "@/lib/courseProgress";
-import { CourseCard, courseDisplayName } from "./CourseCard";
+import { CourseCard, courseDisplayName, type CourseCardData } from "./CourseCard";
+import { ImageCourseBackground } from "./ImageCourseBackground";
 import { courseNameMatches } from "@/lib/courseName";
 import { Search } from "@/components/ui/Search";
 import {
@@ -50,11 +51,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export interface CourseOption {
-  id: string;
-  file_name: string;
-  lesson_count?: number | null;
-}
+export type CourseOption = CourseCardData;
 
 interface PathHeroProps {
   /** Nome del percorso (senza estensione né prefissi). */
@@ -403,14 +400,14 @@ export function PathHero({
         {...(!isTransitioning && !prefersReducedMotion ? cardMotion : {})}
         style={isTransitioning ? { zIndex: 20 } : undefined}
       >
-        <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
+        <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.08em] text-sand">
           <Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
           Percorso
         </p>
         <h3 className="mt-2 break-words font-sans text-base font-normal leading-snug text-foreground sm:text-lg">
           {courseDisplayName(course.file_name)}
         </h3>
-        {meta && <p className="mt-1 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">{meta}</p>}
+        {meta && <p className="mt-1 font-mono text-xs uppercase tracking-[0.08em] text-sand">{meta}</p>}
       </CourseCard>
     );
   };
@@ -425,7 +422,7 @@ export function PathHero({
     <div className="relative text-foreground">
       {/* Riga alta: etichetta + menù ⋯ */}
       <div className="flex items-center justify-between gap-3">
-        <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
+        <p className="font-mono text-xs uppercase tracking-[0.08em] text-sand">
           {inPicker ? "Seleziona un percorso" : "Percorso attuale"}
         </p>
         {!inPicker && onCloseModules ? (
@@ -434,7 +431,7 @@ export function PathHero({
             type="button"
             onClick={() => { triggerLight(); onCloseModules(); }}
             aria-label="Chiudi moduli"
-            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#0a0a0a] transition-[transform,background-color] duration-150 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
+            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-foreground/40 transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
           >
             <X className="w-5 h-5 text-current" strokeWidth={2} />
           </button>
@@ -444,7 +441,7 @@ export function PathHero({
             <button
               type="button"
               aria-label="Azioni corso"
-              className="relative flex w-11 h-11 shrink-0 items-center justify-center rounded-full border border-[#0a0a0a] transition-[transform,background-color] duration-150 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
+              className="relative flex w-11 h-11 shrink-0 items-center justify-center rounded-full border border-foreground/40 transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
             >
               <MoreHorizontal className="w-5 h-5 text-current" strokeWidth={2} />
               {hasNewMaterial && (
@@ -522,7 +519,7 @@ export function PathHero({
       {/* Avanzamento */}
       {isGenerating ? (
         <>
-          <p className="mt-4 text-xs text-muted-foreground">Erga sta trasformando il tuo materiale…</p>
+          <p className="mt-4 text-sm text-sand">Erga sta trasformando il tuo materiale…</p>
           <div className="mt-2 h-1.5 overflow-hidden rounded-sm bg-white/15">
             <div
               className="h-full rounded-sm bg-foreground transition-[width] duration-200"
@@ -534,7 +531,7 @@ export function PathHero({
         <>
           <div className="mt-4 flex items-baseline justify-between gap-3">
             {progress.totalLessons > 0 && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-sand">
                 {t("lesson.lessonOf", { number: progress.lessonNumber, total: progress.totalLessons })}
               </p>
             )}
@@ -649,8 +646,11 @@ export function PathHero({
         layout
         layoutId={transitioningId ? `course-card-${transitioningId}` : isSelectingCourse ? undefined : `course-card-${active?.id}`}
         transition={effectiveLayoutTransition}
-        className={`relative overflow-hidden rounded-card border border-border bg-card p-6 text-foreground sm:p-6 ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
+        className={`course-cover-surface relative isolate overflow-hidden border p-6 text-foreground ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
       >
+          {active && (
+            <ImageCourseBackground courseName={active.file_name} customKey={active.course_cover?.subject} materialSubject={active.subject} eager />
+          )}
           {heroInner(false)}
         </motion.div>
 
@@ -703,9 +703,12 @@ export function PathHero({
                       ref={heroRef}
                       layoutId={`course-card-${active?.id}`}
                       transition={effectiveLayoutTransition}
-                      className="relative overflow-hidden rounded-card border border-border bg-card p-6 text-foreground sm:p-6"
+                      className="course-cover-surface relative isolate overflow-hidden border p-6 text-foreground"
                       layoutScroll
                     >
+                      {active && (
+                        <ImageCourseBackground courseName={active.file_name} customKey={active.course_cover?.subject} materialSubject={active.subject} />
+                      )}
                       {heroInner(true)}
                     </motion.div>
 
