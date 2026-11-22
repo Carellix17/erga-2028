@@ -66,6 +66,9 @@ export async function fetchLessonFull(_userId: string, _id: string, index: numbe
   return lessons[index] ?? null;
 }
 
+export const isFreeLessonLimit = () => false;
+export const retryLessonQuery = () => false;
+
 export const lessonsKeys = {
   list: (...parts: unknown[]) => ["visual-lessons-list", ...parts],
   lesson: (...parts: unknown[]) => ["visual-lesson", ...parts],

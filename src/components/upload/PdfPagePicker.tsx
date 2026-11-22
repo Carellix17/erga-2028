@@ -20,28 +20,28 @@ export function PdfPagePicker({ file, pages, onChange, disabled }: {
     })().catch(() => { if (alive) setError("Non riesco a leggere le pagine. Puoi caricare il PDF completo oppure riprovare con un PDF non protetto."); });
     return () => { alive = false; };
   }, [file, expanded, count, attempt]);
-  return <div className="border-t border-border py-2">
+  return <div className="mt-3">
     <Button type="button" variant="ghost" disabled={disabled} aria-expanded={expanded} onClick={() => setExpanded(value => !value)} className="w-full justify-start whitespace-normal text-left text-sm">
       {expanded ? "Chiudi selezione pagine" : "Scegli le pagine da studiare"}
     </Button>
     {expanded && <>
-      {error ? <div className="mt-2"><p role="alert" className="text-sm text-destructive">{error}</p><Button type="button" variant="outline" disabled={disabled} onClick={() => setAttempt(value => value + 1)} className="mt-2">Riprova</Button></div> : count === null ? <p role="status" className="py-3 text-sm text-muted-foreground">Lettura delle pagine…</p> : <>
+      {error ? <div className="mt-2"><p role="alert" className="text-sm">{error}</p><Button type="button" variant="outline" disabled={disabled} onClick={() => setAttempt(value => value + 1)} className="mt-2">Riprova</Button></div> : count === null ? <p role="status" className="py-3 text-sm text-muted-foreground">Lettura delle pagine…</p> : <>
         <p className="py-2 text-sm text-muted-foreground">Verranno caricate solo le pagine selezionate. Il PDF originale resta sul dispositivo.</p>
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => onChange(undefined)}>Tutte</Button>
           <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => onChange([])}>Nessuna</Button>
         </div>
-        <fieldset disabled={disabled} className="mt-2 grid max-h-48 grid-cols-3 overflow-y-auto border border-border">
+        <fieldset disabled={disabled} className="material-surface mt-2 grid max-h-48 min-w-0 grid-cols-3 overflow-y-auto border border-border/40 p-2">
           <legend className="sr-only">Pagine di {file.name}</legend>
           {Array.from({ length: count }, (_, index) => index + 1).map(page => <label key={page} className="flex min-h-11 cursor-pointer items-center gap-2 px-2 text-sm">
-            <input type="checkbox" checked={pages?.includes(page) ?? true} onChange={event => {
+            <input type="checkbox" className="accent-white" checked={pages?.includes(page) ?? true} onChange={event => {
               const selected = pages ?? Array.from({ length: count }, (_, index) => index + 1);
               onChange(event.target.checked ? [...selected, page] : selected.filter(value => value !== page));
             }} />
             <span className="font-mono tabular-nums">{page}</span>
           </label>)}
         </fieldset>
-        {pages?.length === 0 && <p role="alert" className="mt-2 text-sm text-destructive">Seleziona almeno una pagina.</p>}
+        {pages?.length === 0 && <p role="alert" className="mt-2 text-sm">Seleziona almeno una pagina.</p>}
       </>}
     </>}
   </div>;

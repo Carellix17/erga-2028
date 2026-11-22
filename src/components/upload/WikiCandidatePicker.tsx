@@ -22,40 +22,35 @@ interface WikiCandidatePickerProps {
 
 export function WikiCandidatePicker({ candidates, pickingTitle, disabled, onPick, onManualAI }: WikiCandidatePickerProps) {
   return (
-    <div className="space-y-2.5 animate-fade-up">
+    <div className="space-y-2">
       {candidates.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-2">
+        <p className="py-2 text-base text-muted-foreground" role="status">
           Nessuna voce trovata su Wikipedia. Prova altre parole, oppure usa il manuale AI qui sotto.
         </p>
       ) : (
         <>
-          <p className="body-small text-muted-foreground text-center">
-            Ho trovato queste voci: <strong>toccala per creare il materiale</strong> 👇
-          </p>
-          {candidates.map((c, i) => (
+          <p className="text-base text-muted-foreground" role="status">Scegli una voce per creare il materiale.</p>
+          {candidates.map((c) => (
             <button
               key={c.title}
               type="button"
               onClick={() => onPick(c.title)}
               disabled={disabled}
-              style={{ animationDelay: `${i * 70}ms` }}
-              className="w-full flex items-start gap-3 p-3 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1 text-left transition-all active:scale-[0.98] disabled:opacity-50 animate-cinematic-in"
+              className="flex w-full items-start gap-3 px-4 py-3 text-left"
             >
               {c.thumb ? (
-                <img src={c.thumb} alt="" className="w-11 h-11 rounded-lg object-cover shrink-0 bg-surface-container" />
+                <img src={c.thumb} alt="" className="material-surface size-11 shrink-0 object-cover" />
               ) : (
-                <div className="w-11 h-11 rounded-lg bg-secondary-container flex items-center justify-center shrink-0">
-                  <Globe className="w-5 h-5 text-muted-foreground" />
-                </div>
+                <Globe className="mt-1 size-5 shrink-0" aria-hidden="true" />
               )}
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-sm text-foreground leading-snug">{c.title}</p>
+                <p className="break-words text-base leading-snug">{c.title}</p>
                 {c.description && (
                   <p className="body-small text-muted-foreground line-clamp-2 mt-0.5">{c.description}</p>
                 )}
               </div>
               {pickingTitle === c.title && (
-                <Loader2 className="w-4 h-4 animate-spin shrink-0 mt-1 text-brand-deep" />
+                <Loader2 className="mt-1 size-4 shrink-0 animate-spin" aria-hidden="true" />
               )}
             </button>
           ))}
@@ -65,9 +60,9 @@ export function WikiCandidatePicker({ candidates, pickingTitle, disabled, onPick
         type="button"
         onClick={onManualAI}
         disabled={disabled}
-        className="w-full text-center body-small text-muted-foreground underline underline-offset-4 py-1 hover:text-foreground transition-colors disabled:opacity-50"
+        className="w-full px-4 py-3 text-center text-sm"
       >
-        Nessuna di queste: usa il manuale AI
+        Usa il manuale AI
       </button>
     </div>
   );

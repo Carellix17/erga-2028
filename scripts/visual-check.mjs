@@ -20,9 +20,15 @@ const viewports = [
   { name: "tablet", width: 820, height: 1180, isMobile: false },
   { name: "desktop", width: 1440, height: 900, isMobile: false },
 ];
-const studioViewports = viewports.filter((viewport) => viewport.width >= 390);
+const studioViewports = [
+  ...viewports.filter((viewport) => viewport.width >= 390),
+  { name: "375px", width: 375, height: 812, isMobile: true },
+  { name: "768px", width: 768, height: 1024, isMobile: false },
+  { name: "1024px", width: 1024, height: 768, isMobile: false },
+];
 const prompt7Viewports = viewports.filter((viewport) => viewport.width === 390 || viewport.width === 1440);
 const interfaceMode = process.env.VISUAL_PROFILE === "interface-refinement";
+const studioMaterialsOnly = process.argv.includes("--studio-materials");
 const enforcePrompt7 = process.env.VISUAL_EXPECT_PROMPT7 !== "false";
 
 let viteProcess;
@@ -277,7 +283,8 @@ async function inspectStudio(viewport) {
   assert.equal(removedMenu.reading, false, `${viewport.name}: il taglio di lettura è ancora in pagina`);
   assert.equal(removedMenu.label, false, `${viewport.name}: resta il testo della tendina o del taglio di lettura`);
 
-  await page.click(createButton);
+  await page.focus(createButton);
+  await page.keyboard.press("Enter");
   await page.waitForSelector('[role="dialog"]', { visible: true, timeout: 10_000 });
   await page.waitForFunction(() => {
     const dialog = document.querySelector('[role="dialog"]');
@@ -300,6 +307,19 @@ async function inspectStudio(viewport) {
 
   const sheet = await page.$eval('[role="dialog"]', (dialog) => {
       const rect = dialog.getBoundingClientRect();
+      const style = getComputedStyle(dialog);
+      const buttons = [...dialog.querySelectorAll("button")].map((button) => {
+        const computed = getComputedStyle(button);
+        return {
+          label: button.textContent?.trim(),
+          width: button.getBoundingClientRect().width,
+          height: button.getBoundingClientRect().height,
+          color: computed.color,
+          iconColors: [...button.querySelectorAll("svg")].map((icon) => getComputedStyle(icon).color),
+          background: computed.backgroundColor,
+          radius: computed.borderRadius,
+        };
+      });
       const options = ["Carica PDF", "Carica foto", "Ricerca web"].map((label) => {
         const button = [...dialog.querySelectorAll("button")].find((candidate) => candidate.textContent?.includes(label));
         const buttonRect = button?.getBoundingClientRect();
@@ -320,14 +340,29 @@ async function inspectStudio(viewport) {
         top: rect.top,
         bottom: rect.bottom,
         height: rect.height,
+        background: style.backgroundColor,
+        radius: style.borderRadius,
+        font: style.fontFamily,
+        buttons,
         text: dialog.textContent ?? "",
         options,
       };
     });
+    await page.screenshot({ path: path.join(outputDir, `studio-${viewport.name}-bottom-sheet.png`), fullPage: true });
     assert.ok(sheet.top >= 0 && sheet.bottom <= viewport.height + 1,
       `${viewport.name}: bottom sheet tagliato (${JSON.stringify(sheet)})`);
     assert.ok(sheet.height <= viewport.height * 0.86,
       `${viewport.name}: bottom sheet supera il limite previsto (${JSON.stringify(sheet)})`);
+    assert.equal(sheet.background, "rgb(10, 10, 10)");
+    assert.equal(sheet.radius, "24px");
+    assert.match(sheet.font, /Geist/);
+    for (const button of sheet.buttons) {
+      assert.equal(button.background, "rgb(255, 255, 255)", button.label);
+      assert.equal(button.color, "rgb(10, 10, 10)", button.label);
+      assert.ok(button.iconColors.every((color) => color === button.color), button.label);
+      assert.equal(button.radius, "24px", button.label);
+      assert.ok(button.width >= 44 && button.height >= 44, button.label);
+    }
     for (const label of ["Carica PDF", "Carica foto", "Ricerca web"]) {
       assert.ok(sheet.text.includes(label), `${viewport.name}: opzione «${label}» non raggiungibile nel menu mobile`);
       const option = sheet.options.find((candidate) => candidate.label === label);
@@ -339,7 +374,38 @@ async function inspectStudio(viewport) {
   const stillEmbedded = await page.$("#study-material-controls, .material-panel");
   assert.equal(stillEmbedded, null, `${viewport.name}: il foglio non deve lasciare il pannello materiali in pagina`);
   const widthsAfter = await assertNoHorizontalOverflow(page, `${viewport.name} Studio con bottom sheet`);
-  await page.screenshot({ path: path.join(outputDir, `studio-${viewport.name}-bottom-sheet.png`), fullPage: true });
+  const expectFocus = async (selector, label) => {
+    try {
+      await page.waitForFunction((target) => document.activeElement?.matches(target), { timeout: 2500 }, selector);
+    } catch {
+      const active = await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 200));
+      assert.fail(`${viewport.name}: focus atteso su ${label}, trovato ${active}`);
+    }
+  };
+  await page.focus('[data-material-target="upload"]');
+  await page.keyboard.press("Enter");
+  await expectFocus('[data-material-target="back"]', "Torna a Caricamento");
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute("aria-label")), "Seleziona documenti");
+  const fileFocus = await page.$eval(".material-file-button", (element) => getComputedStyle(element).outlineWidth);
+  assert.equal(fileFocus, "2px", "Il selettore file deve mostrare il focus da tastiera");
+  await page.keyboard.down("Shift");
+  await page.keyboard.press("Tab");
+  await page.keyboard.up("Shift");
+  await page.keyboard.press("Enter");
+  await expectFocus('[data-material-target="upload"]', "Carica PDF");
+  await page.click('[data-material-target="photos"]');
+  await page.waitForSelector('input[aria-label="Seleziona foto"]', { visible: true, timeout: 3000 });
+  await page.click('[data-material-target="back"]');
+  await page.click('[data-material-target="web"]');
+  await page.waitForSelector("#material-web-topic", { visible: true, timeout: 3000 });
+  await page.click('.material-sheet button[role="tab"]:not([aria-selected="true"])');
+  await page.waitForFunction(
+    () => document.querySelector('[role="dialog"]')?.textContent?.includes("Nessun file caricato"),
+    { timeout: 3000 },
+  );
+  await page.keyboard.press("Escape");
+  await expectFocus(createButton, "Crea nuovo percorso");
   await page.close();
   return { view: "studio", viewport: viewport.name, width: viewport.width, height: viewport.height, ...widthsBefore, sheet, widthsAfter };
 }
@@ -541,16 +607,13 @@ try {
     const fontStyles = process.env.VISUAL_FONTS_CSS ? await readFile(process.env.VISUAL_FONTS_CSS, "utf8") : null;
     await inspectInterface({ browser, baseUrl, outputDir, report, fontStyles });
   } else {
-  for (const viewport of viewports) {
-    report.viewports.push(await inspectHome(viewport));
-  }
-  for (const viewport of studioViewports) {
-    report.viewports.push(await inspectStudio(viewport));
-  }
-  for (const viewport of prompt7Viewports) {
-    await inspectPrompt7(viewport);
-  }
-
+    if (!studioMaterialsOnly) {
+      for (const viewport of viewports) report.viewports.push(await inspectHome(viewport));
+    }
+    for (const viewport of studioViewports) report.viewports.push(await inspectStudio(viewport));
+    if (!studioMaterialsOnly) {
+      for (const viewport of prompt7Viewports) await inspectPrompt7(viewport);
+    }
   }
 
   assert.deepEqual(report.blockedExternalRequests, [], "La fixture ha tentato richieste verso servizi esterni.");

@@ -1,0 +1,67 @@
+.material-sheet:is([role="dialog"], [role="alertdialog"], section) {
+  --material-radius: 24px;
+  --muted-foreground: var(--ink-muted);
+  background: hsl(var(--canvas));
+  color: hsl(var(--ink));
+  border: 1px solid #212327;
+  border-radius: var(--material-radius);
+  box-shadow: none;
+}
+
+.material-sheet :is(button, .material-file-button) {
+  --muted-foreground: var(--canvas-mid);
+  --material-action-fill: hsl(var(--ink));
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: var(--material-radius);
+  background-color: var(--material-action-fill);
+  color: hsl(var(--on-ink));
+  font-weight: 400;
+  box-shadow: none;
+  transition: background-color var(--motion-micro) ease-out;
+}
+
+.material-sheet :is(button, .material-file-button):is(:hover, :active, :disabled, :has(input:disabled)) {
+  --material-action-fill: hsl(var(--ink-muted));
+}
+
+.material-sheet :is(button, .material-file-button) svg.lucide {
+  color: inherit;
+}
+
+.material-sheet :is(button:disabled, .material-file-button:has(input:disabled)) {
+  color: hsl(var(--canvas-mid));
+  opacity: 1;
+}
+
+.material-sheet [role="tab"][aria-selected="true"] {
+  background-color: var(--material-action-fill);
+  color: hsl(var(--on-ink));
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.material-sheet :is(button:focus-visible, input:focus-visible, .material-file-button:has(input:focus-visible)) {
+  outline: 2px solid hsl(var(--focus));
+  outline-offset: 2px;
+}
+
+.material-sheet :is(.material-surface, input:not([type="file"], [type="checkbox"])) {
+  border-radius: var(--material-radius);
+}
+
+.material-sheet input::placeholder {
+  color: hsl(var(--ink-muted));
+}
+
+.material-sheet .material-file-button[data-dragging="true"] {
+  background-color: hsl(var(--ink-muted));
+  border-color: hsl(var(--on-ink));
+  outline: 2px dashed hsl(var(--ink));
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .material-sheet :is(button, .material-file-button) { transition: none; }
+}

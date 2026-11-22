@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { FileUp, X, FileText, Loader2, Brain, Globe, Search, Camera, ImageIcon, ChevronLeft } from "lucide-react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FileUp, X, FileText, Loader2, Globe, Search, Camera, ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ import { UnifiedPipelineLoader, type PipelinePhase } from "./UnifiedPipelineLoad
 import { useGenerationUsage, FREE_LIMIT_MESSAGE } from "@/hooks/useGenerationUsage";
 import { lessonsKeys } from "@/hooks/useLessons";
 import { isStudyMaterialRejected, isUnsuitableMaterialError, UNSUITABLE_MATERIAL_MESSAGE } from "@/lib/studyMaterial";
-
+import "./material-sheet.css";
 
 interface UploadSheetProps {
   open: boolean;
@@ -39,12 +39,19 @@ interface UploadSheetProps {
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 /** Limite morbido per singola foto DOPO la compressione (stesso valore lato server). */
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MATERIAL_OPTIONS = [
+  { tab: "upload", icon: FileText, title: "Carica PDF", description: "Appunti, dispense o documenti" },
+  { tab: "photos", icon: Camera, title: "Carica foto", description: "Scatta o scegli immagini" },
+  { tab: "web", icon: Globe, title: "Ricerca web", description: "Voci di Wikipedia o un manuale AI" },
+];
 
 export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFileDeleted, initialManageContextId, embedded = false, panelRequest }: UploadSheetProps) {
   // La tastiera non può più seppellire il tasto principale: il foglio si
   // alza di `inset` px e si restringe all'altezza davvero visibile
   // (richiesta del proprietario: il tasto SI DEVE sempre vedere).
   const keyboard = useKeyboardInset();
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const nextLoadingFocus = useRef<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [pageSelections, setPageSelections] = useState<Map<File, number[]>>(new Map());
@@ -98,6 +105,17 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
     setActiveTab(value);
     if (value === "loading") setLoadingTab("menu");
   };
+
+  const navigateLoading = (tab: string) => {
+    nextLoadingFocus.current = tab === "menu" ? loadingTab : "back";
+    setLoadingTab(tab);
+  };
+
+  const focusLoadingButton = useCallback((button: HTMLButtonElement | null) => {
+    if (!button || button.dataset.materialTarget !== nextLoadingFocus.current) return;
+    nextLoadingFocus.current = null;
+    button.focus();
+  }, []);
 
   const MAX_IMAGES = 20;
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -574,20 +592,18 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const Heading = embedded ? "h2" : SheetTitle;
+  const Description = embedded ? "p" : SheetDescription;
   const panel = (<>
-        <div className="mb-4 shrink-0">
-          <h2 className="text-xl font-semibold">I tuoi materiali</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Carica PDF, immagini o contenuti web per generare minilezioni.</p>
-        </div>
+        <header className="shrink-0 pr-14">
+          <Heading className="text-[1.75rem] font-normal leading-8 tracking-[-0.02em] sm:text-[2rem] sm:leading-9">I tuoi materiali</Heading>
+          <Description className="mt-2 text-base leading-6 text-muted-foreground">Carica PDF, immagini o contenuti web per generare minilezioni.</Description>
+        </header>
 
         <Tabs value={activeTab} onValueChange={handleMainTabChange} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <TabsList className="mb-4 grid h-auto min-h-14 w-full shrink-0 grid-cols-2 rounded-control bg-secondary p-1.5">
-            <TabsTrigger value="loading" className="min-h-11 rounded-control text-sm transition-colors duration-150 data-[state=active]:bg-sheet data-[state=active]:text-foreground data-[state=active]:shadow-none">
-              Caricamento
-            </TabsTrigger>
-            <TabsTrigger value="manage" className="min-h-11 rounded-control text-sm transition-colors duration-150 data-[state=active]:bg-sheet data-[state=active]:text-foreground data-[state=active]:shadow-none">
-              Gestisci
-            </TabsTrigger>
+          <TabsList aria-label="Materiali di studio" className="mb-3 grid h-auto w-full shrink-0 grid-cols-2 gap-2 bg-transparent p-1">
+            <TabsTrigger value="loading">Caricamento</TabsTrigger>
+            <TabsTrigger value="manage">Gestisci</TabsTrigger>
           </TabsList>
 
           {/* FIX «tasto invisibile»: questo pannello è un contenitore FLEX
@@ -596,83 +612,56 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
               la lista sforava il max-h del foglio e la CTA finiva sotto lo
               schermo, clippata da overflow-hidden). */}
           <TabsContent value="loading" className="flex flex-1 flex-col min-h-0 mt-0 overflow-hidden tab-enter">
-            <Tabs value={loadingTab} onValueChange={setLoadingTab} className="flex flex-1 min-h-0 flex-col overflow-hidden">
-              <TabsContent value="menu" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y mt-0 pb-4 tab-enter">
-                <div className="space-y-4">
-                  <p className="body-medium text-muted-foreground text-center">
-                    Scegli come vuoi caricare i tuoi materiali
-                  </p>
-                  <div className="grid gap-3">
-                    <Button type="button" onClick={() => setLoadingTab("upload")} variant="outline" className="h-auto min-h-16 w-full justify-start gap-3 whitespace-normal rounded-control border-border bg-sheet py-3 text-base hover:bg-secondary">
-                      <FileText className="w-5 h-5 text-brand-deep" />
-                      <div className="min-w-0 flex-1 text-left">
-                        <p className="font-medium">Carica PDF</p>
-                        <p className="body-small text-muted-foreground">Appunti, dispense o documenti</p>
-                      </div>
-                    </Button>
-                    <Button type="button" onClick={() => setLoadingTab("photos")} variant="outline" className="h-auto min-h-16 w-full justify-start gap-3 whitespace-normal rounded-control border-border bg-sheet py-3 text-base hover:bg-secondary">
-                      <Camera className="w-5 h-5 text-brand-deep" />
-                      <div className="min-w-0 flex-1 text-left">
-                        <p className="font-medium">Carica foto</p>
-                        <p className="body-small text-muted-foreground">Scatta o scegli immagini</p>
-                      </div>
-                    </Button>
-                    <Button type="button" onClick={() => setLoadingTab("web")} variant="outline" className="h-auto min-h-16 w-full justify-start gap-3 whitespace-normal rounded-control border-border bg-sheet py-3 text-base hover:bg-secondary">
-                      <Globe className="w-5 h-5 text-brand-deep" />
-                      <div className="min-w-0 flex-1 text-left">
-                        <p className="font-medium">Ricerca web</p>
-                        <p className="body-small text-muted-foreground">Contenuti reali da Wikipedia, o un manuale AI</p>
-                      </div>
-                    </Button>
-                  </div>
-                </div>
+            <Tabs value={loadingTab} className="flex flex-1 min-h-0 flex-col overflow-hidden">
+              <TabsContent value="menu" aria-label="Opzioni di caricamento" className="flex-1 min-h-0 space-y-2 overflow-y-auto overscroll-contain touch-pan-y mt-0 p-1 tab-enter">
+                {MATERIAL_OPTIONS.map(({ tab, icon: Icon, title, description }) => (
+                  <Button key={tab} ref={focusLoadingButton} type="button" data-material-target={tab} onClick={() => navigateLoading(tab)} className="h-auto min-h-16 w-full justify-start gap-3 whitespace-normal px-4 py-3 text-left text-base">
+                    <Icon className="size-5" aria-hidden="true" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block">{title}</span>
+                      <span className="body-small block">{description}</span>
+                    </span>
+                    <ChevronRight className="text-muted-foreground" aria-hidden="true" />
+                  </Button>
+                ))}
               </TabsContent>
 
-              <TabsContent value="upload" className="flex-1 flex flex-col min-h-0 mt-0 tab-enter">
-                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-4 pb-4 pr-1">
-                  <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")} disabled={isUploading}>
-                    <ChevronLeft className="w-4 h-4 mr-1" />
+              <TabsContent value="upload" aria-label="Carica documenti" className="flex-1 flex flex-col min-h-0 mt-0 tab-enter">
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-4 p-1 pb-4">
+                  <Button ref={focusLoadingButton} type="button" data-material-target="back" className="w-fit px-4" onClick={() => navigateLoading("menu")} disabled={isUploading}>
+                    <ChevronLeft />
                     Torna a Caricamento
                   </Button>
-                  <div
-                    className={cn(
-                      "relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200",
-                      dragActive ? "border-primary bg-primary-container scale-[1.02] shadow-level-2" : "border-outline-variant hover:border-white/40 hover:bg-surface-container-low",
-                      isUploading && "pointer-events-none opacity-50"
-                    )}
+                  <label
+                    className="material-file-button relative flex flex-col items-center gap-2 p-6 text-center"
+                    data-dragging={dragActive}
                     onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
                   >
-                    <input type="file" accept=".pdf,.txt,.md,.markdown,.docx,application/pdf,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple onChange={handleFileInput} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploading} />
-                    <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2">
-                      <FileUp className="w-8 h-8 text-primary-foreground" />
-                    </div>
-                    <p className="font-display font-semibold text-lg mb-1">Trascina qui i tuoi documenti</p>
-                    <p className="body-small text-muted-foreground">PDF, DOCX, TXT o MD — tocca per selezionare (max 100MB)</p>
-                  </div>
+                    <input type="file" aria-label="Seleziona documenti" aria-describedby="material-document-formats" accept=".pdf,.txt,.md,.markdown,.docx,application/pdf,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple onChange={handleFileInput} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" disabled={isUploading} />
+                    <FileUp className="size-6" aria-hidden="true" />
+                    <span className="text-lg">Scegli o trascina i documenti</span>
+                    <span id="material-document-formats" className="body-small">PDF, DOCX, TXT o MD (max 100 MB per file)</span>
+                  </label>
 
                   {selectedFiles.length > 0 && (
-                    <div className="space-y-2 animate-fade-up">
-                      <h3 className="label-medium text-muted-foreground">File selezionati ({selectedFiles.length})</h3>
+                    <div className="space-y-2">
+                      <h3 className="label-medium">File selezionati ({selectedFiles.length})</h3>
                       <div className="space-y-2">
                         {selectedFiles.map((file, index) => (
                           <div key={index} className={cn(
-                            "flex items-center gap-3 p-4 rounded-xl transition-all duration-300 animate-scale-in",
-                            file.size > MAX_FILE_SIZE ? "bg-error-container border border-destructive/30" : "bg-secondary-container"
+                            "material-surface flex items-center gap-3 border bg-card p-3",
+                            file.size > MAX_FILE_SIZE ? "border-destructive" : "border-border/40"
                           )}>
-                            <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center",
-                              file.size > MAX_FILE_SIZE ? "bg-destructive/20" : "bg-primary-container"
-                            )}>
-                              <FileText className={cn("w-5 h-5", file.size > MAX_FILE_SIZE ? "text-destructive" : "text-brand-deep")} />
-                            </div>
+                            <FileText className="size-5 shrink-0" aria-hidden="true" />
                             <div className="flex-1 min-w-0">
-                              <span className="body-medium font-medium truncate block">{file.name}</span>
-                              <span className={cn("body-small", file.size > MAX_FILE_SIZE ? "text-destructive" : "text-muted-foreground")}>
-                                {formatFileSize(file.size)}{file.size > MAX_FILE_SIZE && " — Troppo grande!"}
+                              <span className="body-medium block truncate">{file.name}</span>
+                              <span className={cn("body-small", file.size > MAX_FILE_SIZE && "text-foreground")}>
+                                {formatFileSize(file.size)}{file.size > MAX_FILE_SIZE && " (supera 100 MB)"}
                               </span>
                             </div>
-                            <button onClick={() => removeFile(index)} className="p-2 hover:bg-surface-container-highest rounded-lg transition-colors" disabled={isUploading}>
-                              <X className="w-4 h-4 text-muted-foreground" />
-                            </button>
+                            <Button type="button" size="icon" aria-label={`Rimuovi ${file.name}`} onClick={() => removeFile(index)} className="shrink-0" disabled={isUploading}>
+                              <X />
+                            </Button>
                           </div>
                         ))}
                       </div>
@@ -680,7 +669,7 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                   )}
 
                   {selectedFiles.filter(file => /\.pdf$/i.test(file.name)).map((file, index) => (
-                    <div key={index} className="border border-border bg-card p-3">
+                    <div key={index} className="material-surface border border-border/40 bg-card p-4">
                       <p className="break-words text-sm font-medium">{file.name}</p>
                       <PdfPagePicker key={file.name + file.size + file.lastModified} file={file} pages={pageSelections.get(file)} disabled={isUploading || file.size > MAX_FILE_SIZE} onChange={pages => setPageSelections(previous => {
                         const next = new Map(previous);
@@ -691,24 +680,23 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                   ))}
 
                   {selectedFiles.length >= 2 && (
-                    <div className="pt-1 animate-fade-up">
-                      <label htmlFor="course-name" className="label-small text-muted-foreground">Nome del percorso unico</label>
+                    <div className="space-y-2">
+                      <label htmlFor="course-name" className="label-small">Nome del percorso unico</label>
                       <Input
                         id="course-name"
                         value={courseName}
                         onChange={(e) => setCourseName(e.target.value)}
                         placeholder={stripExt(selectedFiles[0]?.name ?? "Il mio percorso")}
-                        className="mt-1"
                         disabled={isUploading}
                       />
-                      <p className="body-small text-muted-foreground mt-1">
-                        📚 I {selectedFiles.length} file finiranno in UN percorso che li studia tutti insieme.
+                      <p className="body-small">
+                        I {selectedFiles.length} file saranno riuniti in un unico percorso.
                       </p>
                     </div>
                   )}
                 </div>
 
-                <div className="shrink-0 bg-surface-container-high pt-3 pb-2 border-t border-outline-variant/40">
+                <div className="shrink-0 border-t border-border/40 bg-background p-1 pt-3">
                   <Button onClick={handleUpload} disabled={selectedFiles.length === 0 || isUploading || selectedFiles.some(file => pageSelections.get(file)?.length === 0)} className="w-full h-14 text-base" size="lg">
                     {isUploading ? (
                       <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{uploadStatus || "Caricamento..."}</>
@@ -716,76 +704,82 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                       <><FileUp className="w-5 h-5 mr-2" />Carica {selectedFiles.length > 1 ? `${selectedFiles.length} file` : "file"}</>
                     ) : ("Seleziona file da caricare")}
                   </Button>
-                  <p className="body-small text-muted-foreground text-center mt-2">📄 Un tocco e il percorso si prepara da solo</p>
                 </div>
               </TabsContent>
 
-              <TabsContent value="photos" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-4 mt-0 pb-4 tab-enter">
-                <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")} disabled={isUploading}>
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  Torna a Caricamento
-                </Button>
-                <div className="relative border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 border-outline-variant hover:border-white/40 hover:bg-surface-container-low">
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    multiple
-                    onChange={handleImageInput}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    disabled={isUploading || selectedImages.length >= MAX_IMAGES}
-                  />
-                  <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-level-2">
-                    <Camera className="w-8 h-8 text-primary-foreground" />
-                  </div>
-                  <p className="font-display font-semibold text-lg mb-1">Carica le tue foto</p>
-                  <p className="body-small text-muted-foreground">Appunti, lavagna, libro — max {MAX_IMAGES} foto (JPG, PNG)</p>
+              <TabsContent value="photos" aria-label="Carica foto" className="flex flex-1 flex-col min-h-0 mt-0 tab-enter">
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-4 p-1 pb-4">
+                  <Button ref={focusLoadingButton} type="button" data-material-target="back" className="w-fit px-4" onClick={() => navigateLoading("menu")} disabled={isUploading}>
+                    <ChevronLeft />
+                    Torna a Caricamento
+                  </Button>
+                  <label className="material-file-button relative flex flex-col items-center gap-2 p-6 text-center">
+                    <input
+                      type="file"
+                      aria-label="Seleziona foto"
+                      aria-describedby="material-image-formats"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      onChange={handleImageInput}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                      disabled={isUploading || selectedImages.length >= MAX_IMAGES}
+                    />
+                    <Camera className="size-6" aria-hidden="true" />
+                    <span className="text-lg">Scegli le tue foto</span>
+                    <span id="material-image-formats" className="body-small">Fino a {MAX_IMAGES} foto in formato JPG, PNG o WebP.</span>
+                  </label>
+
+                  {selectedImages.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h3 className="label-medium">Foto selezionate ({selectedImages.length}/{MAX_IMAGES})</h3>
+                        <p className="body-small tabular-nums">
+                          {selectedImages.length} foto → ~{formatBytes(imageBytes.compressed)}
+                          {imageBytes.original > imageBytes.compressed && (
+                            <span> (da {formatBytes(imageBytes.original)})</span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {imagePreviews.map((preview, index) => (
+                          <div key={index} className="material-surface relative aspect-square overflow-hidden bg-card">
+                            <img src={preview} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
+                            <Button
+                              type="button"
+                              size="icon"
+                              aria-label={`Rimuovi foto ${index + 1}`}
+                              onClick={() => removeImage(index)}
+                              className="absolute right-2 top-2"
+                              disabled={isUploading}
+                            >
+                              <X />
+                            </Button>
+                            <div className="material-surface absolute bottom-2 left-2 bg-background px-2 py-0.5">
+                              <span className="body-small text-xs">{formatBytes(selectedImages[index]?.size ?? 0)}</span>
+                            </div>
+                          </div>
+                        ))}
+                        {selectedImages.length < MAX_IMAGES && (
+                          <label className="material-file-button relative flex aspect-square cursor-pointer flex-col items-center justify-center gap-1">
+                            <input
+                              type="file"
+                              aria-label="Aggiungi altre foto"
+                              accept="image/jpeg,image/png,image/webp"
+                              multiple
+                              onChange={handleImageInput}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              disabled={isUploading}
+                            />
+                            <ImageIcon className="size-5" aria-hidden="true" />
+                            <span className="body-small">Aggiungi</span>
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {selectedImages.length > 0 && (
-                  <div className="space-y-3 animate-fade-up">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <h3 className="label-medium text-muted-foreground">Foto selezionate ({selectedImages.length}/{MAX_IMAGES})</h3>
-                      <p className="body-small text-muted-foreground tabular-nums">
-                        {selectedImages.length} foto → ~{formatBytes(imageBytes.compressed)}
-                        {imageBytes.original > imageBytes.compressed && (
-                          <span className="text-muted-foreground/70"> (da {formatBytes(imageBytes.original)})</span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {imagePreviews.map((preview, index) => (
-                        <div key={index} className="relative rounded-xl overflow-hidden aspect-square animate-scale-in bg-surface-container">
-                          <img src={preview} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
-                          <button
-                            onClick={() => removeImage(index)}
-                            className="absolute top-1 right-1 w-7 h-7 bg-background shadow-level-1 rounded-full flex items-center justify-center"
-                            disabled={isUploading}
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                          <div className="absolute bottom-1 left-1 bg-background shadow-level-1 rounded-full px-2 py-0.5">
-                            <span className="body-small text-xs">{formatBytes(selectedImages[index]?.size ?? 0)}</span>
-                          </div>
-                        </div>
-                      ))}
-                      {selectedImages.length < MAX_IMAGES && (
-                        <label className="relative rounded-xl border-2 border-dashed border-outline-variant aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-white/40 transition-colors">
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            multiple
-                            onChange={handleImageInput}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          />
-                          <ImageIcon className="w-6 h-6 text-muted-foreground mb-1" />
-                          <span className="body-small text-muted-foreground text-xs">Aggiungi</span>
-                        </label>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="sticky bottom-0 bg-surface-container-high pt-3 pb-2 -mx-1 px-1 mt-auto">
+                <div className="shrink-0 border-t border-border/40 bg-background p-1 pt-3">
                   <Button onClick={handleUploadImages} disabled={selectedImages.length === 0 || isUploading} className="w-full h-14 text-base" size="lg">
                     {isUploading ? (
                       <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{uploadStatus || "Elaborazione..."}</>
@@ -793,33 +787,30 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                       <><FileUp className="w-5 h-5 mr-2" />Carica {selectedImages.length} foto</>
                     ) : ("Seleziona le foto da analizzare")}
                   </Button>
-                  <p className="body-small text-muted-foreground text-center mt-2">📸 Un tocco e il percorso si prepara da solo</p>
                 </div>
               </TabsContent>
 
-              <TabsContent value="web" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-5 mt-0 pb-4 tab-enter">
-                <Button type="button" variant="ghost" className="w-fit px-2 -ml-1" onClick={() => setLoadingTab("menu")}>
-                  <ChevronLeft className="w-4 h-4 mr-1" />
+              <TabsContent value="web" aria-label="Ricerca web" className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y space-y-4 mt-0 p-1 tab-enter">
+                <Button ref={focusLoadingButton} type="button" data-material-target="back" className="w-fit px-4" onClick={() => navigateLoading("menu")}>
+                  <ChevronLeft />
                   Torna a Caricamento
                 </Button>
-                <div className="text-center space-y-3 leaf-rise">
-                  <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto shadow-level-2">
-                    <Globe className="w-8 h-8 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-display font-semibold text-lg">Scegli un argomento</p>
-                    <p className="body-small text-muted-foreground">Se Wikipedia copre il tema useremo i suoi contenuti reali (con fonte e immagini); altrimenti prepareremo un manuale AI — e te lo diremo</p>
-                  </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-normal">Scegli un argomento</h3>
+                  <p id="material-web-hint" className="text-base text-muted-foreground">Puoi usare una voce di Wikipedia o creare un manuale con l’AI.</p>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
+                  <label htmlFor="material-web-topic" className="label-small">Argomento</label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                     <Input
+                      id="material-web-topic"
+                      aria-describedby="material-web-hint"
                       value={webTopic}
                       onChange={(e) => { setWebTopic(e.target.value); if (candidates !== null) setCandidates(null); }}
                       placeholder="Es: La Rivoluzione Francese, Derivate, DNA..."
-                      className="pl-10 h-14 text-base rounded-xl bg-surface-container border-outline-variant"
+                      className="h-14 border-input bg-secondary pl-12 text-base placeholder:text-muted-foreground"
                       onKeyDown={(e) => { if (e.key === "Enter" && webTopic.trim()) handleWebSearch(); }}
                       disabled={isSearching}
                     />
@@ -848,16 +839,12 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
                       onManualAI={() => { void createWebContext({ forceAI: true }); }}
                     />
                   )}
-
-                  <p className="body-small text-muted-foreground text-center">
-                    🔍 Scegli la voce: il percorso si prepara da solo
-                  </p>
                 </div>
               </TabsContent>
             </Tabs>
           </TabsContent>
 
-          <TabsContent value="manage" className="flex-1 min-h-0 mt-0 overflow-y-auto overscroll-contain touch-pan-y tab-enter">
+          <TabsContent value="manage" className="flex-1 min-h-0 mt-0 overflow-y-auto overscroll-contain touch-pan-y p-1 tab-enter">
             <FileManager onFileDeleted={handleFileDeleted} onAttachFiles={handleAttachFiles} attaching={isAttaching} focusContextId={initialManageContextId} />
           </TabsContent>
         </Tabs>
@@ -865,16 +852,23 @@ export function UploadSheet({ open, onOpenChange, onUpload, uploadedFiles, onFil
 
   return (
     <>
-    {embedded ? <section aria-label="Materiali di studio" className="material-panel flex min-h-[600px] min-w-0 flex-col p-4">{panel}</section> : <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
+    {embedded ? <section aria-label="Materiali di studio" className="material-panel material-sheet flex min-h-[600px] min-w-0 flex-col gap-4 p-4">{panel}</section> : <Sheet open={open} onOpenChange={isUploading ? () => {} : onOpenChange}>
       <SheetContent
         side="bottom"
-        className="inset-x-4 rounded-t-xl pb-safe max-h-[85dvh] bg-surface-container-high border-t border-outline-variant flex flex-col overflow-hidden sm:inset-x-6"
+        closeLabel="Chiudi"
+        className="material-sheet inset-x-4 mx-auto flex max-h-[85dvh] max-w-2xl flex-col gap-4 overflow-hidden p-4 pb-[max(1rem,env(safe-area-inset-bottom))] font-sans sm:inset-x-6 sm:p-6 sm:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+        onOpenAutoFocus={() => {
+          returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        }}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          if (returnFocus.current?.isConnected) returnFocus.current.focus();
+        }}
         style={{
           bottom: keyboard.inset,
           ...(keyboard.inset > 0 && keyboard.viewportHeight ? { maxHeight: keyboard.viewportHeight } : {}),
         }}
       >
-        <SheetHeader className="sr-only"><SheetTitle>I tuoi materiali</SheetTitle><SheetDescription>Carica o gestisci i materiali di studio</SheetDescription></SheetHeader>
         {panel}
       </SheetContent>
     </Sheet>}

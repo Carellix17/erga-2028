@@ -63,7 +63,7 @@ describe("inset di Studio — stesso margine della Home", () => {
     expect(generation).toContain("bg-scrim/40 px-4 animate-fade-in sm:px-6");
     expect(picker).toContain('className="flex min-h-0 w-full flex-1 flex-col px-4 py-6 sm:px-6"');
     expect(selector).toContain("bg-scrim/60 px-4 py-4 sm:px-6");
-    expect(upload).toContain("inset-x-4 rounded-t-xl");
+    expect(upload).toContain("material-sheet inset-x-4");
     expect(upload).toContain("sm:inset-x-6");
   });
 });

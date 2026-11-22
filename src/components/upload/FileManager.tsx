@@ -13,7 +13,6 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
 
 /**
  * 📦 P17 — IL RIPOSTIGLIO DEI MATERIALI, per percorso.
@@ -106,17 +105,17 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
 
   // ── Caricamento / vuoto ──
   if (isLoading && contexts.length === 0) return (
-    <div className="flex items-center justify-center p-8">
-      <Loader2 className="w-6 h-6 animate-spin text-brand-deep" />
+    <div className="flex items-center justify-center gap-2 p-6 text-muted-foreground" role="status">
+      <Loader2 className="size-5 animate-spin" aria-hidden="true" />
+      Caricamento dei materiali…
     </div>
   );
 
   if (contexts.length === 0) return (
-    <div className="text-center p-8 text-muted-foreground animate-fade-up">
-      <div className="w-16 h-16 rounded-xl bg-surface-container-highest flex items-center justify-center mx-auto mb-3 animate-settle-in">
-        <FolderOpen className="w-8 h-8 text-muted-foreground" />
-      </div>
-      <p className="body-large">Nessun file caricato</p>
+    <div className="material-surface border border-border/40 bg-card p-6">
+      <FolderOpen className="mb-3 size-6" aria-hidden="true" />
+      <p className="text-base">Nessun file caricato</p>
+      <p className="body-small mt-1">Aggiungi i tuoi materiali dalla scheda Caricamento.</p>
     </div>
   );
 
@@ -125,14 +124,12 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
     const paths = pathsOf(openContext);
     const isWeb = paths.length === 0;
     return (
-      <div className="space-y-3 animate-fade-up">
-        <div className="flex items-center gap-1 px-1">
-          <Button type="button" variant="ghost" size="sm" onClick={() => setOpenContextId(null)} className="h-8 px-2 -ml-1">
-            <ChevronLeft className="w-4 h-4 mr-0.5" />Indietro
-          </Button>
-        </div>
-        <div className="px-1">
-          <h3 className="title-medium truncate">{openContext.file_name}</h3>
+      <div className="space-y-4">
+        <Button type="button" onClick={() => setOpenContextId(null)} className="px-4">
+          <ChevronLeft />Indietro
+        </Button>
+        <div>
+          <h3 className="break-words text-xl">{openContext.file_name}</h3>
           <p className="body-small text-muted-foreground">
             {isWeb ? "Contenuto dal web" : `${paths.length} ${paths.length === 1 ? "file" : "file"}`}
             {openContext.lesson_count > 0 ? ` · ${openContext.lesson_count} lezioni` : ""}
@@ -140,44 +137,37 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
         </div>
 
         {openContext.new_material_pending && (
-          <div className="mx-1 rounded-2xl border border-warning/40 bg-warning-container px-4 py-3 text-sm text-on-warning-container animate-fade-up">
-            📥 Hai materiale nuovo che non è ancora nelle lezioni: rigenera il percorso
-            dal menù ⋯ nella home di Studio per includerlo.
+          <div className="material-surface border border-border/40 bg-card px-4 py-3 text-sm">
+            Hai aggiunto nuovo materiale. Rigenera il percorso dal menu di Studio per includerlo nelle lezioni.
           </div>
         )}
 
         {isWeb ? (
-          <div className="flex items-center gap-3 p-4 mx-1 rounded-2xl bg-surface-container-low border border-outline-variant">
-            <div className="w-10 h-10 rounded-lg bg-tertiary-container flex items-center justify-center flex-shrink-0">
-              <Globe className="w-5 h-5 text-tertiary" />
-            </div>
+          <div className="material-surface flex items-center gap-3 border border-border/40 bg-card p-4">
+            <Globe className="size-5 shrink-0" aria-hidden="true" />
             <p className="body-small text-muted-foreground">
               Questo percorso è nato dal web o dall'AI: nessun file nel deposito.
             </p>
           </div>
         ) : (
           <div className="space-y-2">
-            {paths.map((path, i) => {
+            {paths.map((path) => {
               const name = displayName(path);
               const Icon = iconFor(name);
               return (
                 <div
                   key={path}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1",
-                    "transition-all duration-300 animate-fade-up",
-                  )}
-                  style={{ animationDelay: `${i * 60}ms` }}
+                  className="material-surface flex items-center gap-3 border border-border/40 bg-card p-3"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5 text-brand-deep" />
-                  </div>
-                  <p className="flex-1 min-w-0 title-small truncate">{name}</p>
+                  <Icon className="size-5 shrink-0" aria-hidden="true" />
+                  <p className="min-w-0 flex-1 break-words text-base">{name}</p>
                   <Button
-                    variant="ghost" size="icon"
+                    type="button"
+                    size="icon"
+                    aria-label={`Togli ${name}`}
                     disabled={isBusy}
                     onClick={() => setDeleteFileTarget({ ctx: openContext, path, isLast: paths.length === 1 })}
-                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className="shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -202,10 +192,9 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
         />
         <Button
           type="button"
-          variant="outline"
           disabled={isBusy}
           onClick={() => attachInputRef.current?.click()}
-          className="w-full h-12 rounded-2xl border-dashed"
+          className="h-auto min-h-12 w-full whitespace-normal"
         >
           {attaching ? (
             <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Aggiunta in corso…</>
@@ -216,13 +205,13 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
 
         {/* conferma rimozione singolo file */}
         <AlertDialog open={!!deleteFileTarget} onOpenChange={() => setDeleteFileTarget(null)}>
-          <AlertDialogContent>
+          <AlertDialogContent className="material-sheet max-h-[85dvh] overflow-y-auto font-sans">
             <AlertDialogHeader>
-              <AlertDialogTitle>Togliere questo file?</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogTitle className="text-xl font-normal">Togliere questo file?</AlertDialogTitle>
+              <AlertDialogDescription className="break-words text-base">
                 Stai per togliere "{deleteFileTarget ? displayName(deleteFileTarget.path) : ""}" da "{deleteFileTarget?.ctx.file_name}".
                 {deleteFileTarget?.isLast ? (
-                  <span className="block mt-2 font-medium text-destructive">
+                  <span className="mt-2 block font-medium text-foreground">
                     È l'ultimo file: il percorso sparirà insieme a tutte le sue lezioni. L'azione non può essere annullata.
                   </span>
                 ) : (
@@ -235,7 +224,7 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={removeFileMutation.isPending}>Annulla</AlertDialogCancel>
-              <AlertDialogAction onClick={handleRemoveFile} disabled={removeFileMutation.isPending} className="bg-destructive hover:bg-destructive/90">
+              <AlertDialogAction onClick={handleRemoveFile} disabled={removeFileMutation.isPending}>
                 {removeFileMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Togli"}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -248,66 +237,56 @@ export function FileManager({ onFileDeleted, onAttachFiles, attaching, focusCont
   // ── VISTA 1: l'elenco dei percorsi ──
   return (
     <div className="space-y-3">
-      <h3 className="label-medium text-muted-foreground px-1">I tuoi percorsi ({contexts.length})</h3>
+      <h3 className="label-medium">I tuoi percorsi ({contexts.length})</h3>
       <div className="space-y-2">
-        {contexts.map((context, i) => {
+        {contexts.map((context) => {
           const nFiles = pathsOf(context).length;
           const isWeb = nFiles === 0;
           return (
-            <div
-              key={context.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => setOpenContextId(context.id)}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setOpenContextId(context.id); }}
-              className={cn(
-                "w-full flex items-center gap-3 p-3 rounded-2xl bg-card border border-outline-variant/60 shadow-level-1",
-                "cursor-pointer hover:border-white/40 active:scale-[0.99]",
-                "transition-all duration-300 animate-fade-up",
-              )}
-              style={{ animationDelay: `${i * 60}ms` }}
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center flex-shrink-0">
-                {isWeb ? <Globe className="w-5 h-5 text-brand-deep" /> : <PackageOpen className="w-5 h-5 text-brand-deep" />}
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="title-small truncate">{context.file_name}</p>
-                <p className="body-small text-muted-foreground">
-                  {isWeb ? "Web" : `${nFiles} ${nFiles === 1 ? "file" : "file"}`}
-                  {context.lesson_count > 0 ? ` · ${context.lesson_count} lezioni` : ""}
-                </p>
-                {context.new_material_pending && (
-                  <p className="body-small font-medium text-warning mt-0.5">📥 Materiale nuovo da includere</p>
-                )}
-              </div>
+            <div key={context.id} className="flex items-center gap-2">
+              <Button type="button" onClick={() => setOpenContextId(context.id)} className="h-auto flex-1 justify-start gap-3 whitespace-normal px-4 py-3 text-left">
+                {isWeb ? <Globe aria-hidden="true" /> : <PackageOpen aria-hidden="true" />}
+                <span className="min-w-0 flex-1">
+                  <span className="block break-words text-base">{context.file_name}</span>
+                  <span className="body-small block">
+                    {isWeb ? "Web" : `${nFiles} file`}
+                    {context.lesson_count > 0 ? ` · ${context.lesson_count} lezioni` : ""}
+                  </span>
+                  {context.new_material_pending && (
+                    <span className="body-small block">Materiale nuovo da includere</span>
+                  )}
+                </span>
+                <ChevronRight className="text-muted-foreground" aria-hidden="true" />
+              </Button>
               <Button
-                variant="ghost" size="icon"
-                onClick={(e) => { e.stopPropagation(); setDeleteContextTarget(context); }}
-                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
+                type="button"
+                size="icon"
+                aria-label={`Elimina ${context.file_name}`}
+                onClick={() => setDeleteContextTarget(context)}
+                className="shrink-0"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
-              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             </div>
           );
         })}
       </div>
 
       <AlertDialog open={!!deleteContextTarget} onOpenChange={() => setDeleteContextTarget(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="material-sheet max-h-[85dvh] overflow-y-auto font-sans">
           <AlertDialogHeader>
-            <AlertDialogTitle>Eliminare questo percorso?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-xl font-normal">Eliminare questo percorso?</AlertDialogTitle>
+            <AlertDialogDescription className="break-words text-base">
               Stai per eliminare "{deleteContextTarget?.file_name}" con tutti i suoi file.
               {deleteContextTarget?.lesson_count && deleteContextTarget.lesson_count > 0 && (
-                <span className="block mt-2 font-medium text-destructive">Verranno eliminate anche le {deleteContextTarget.lesson_count} lezioni associate.</span>
+                <span className="mt-2 block font-medium text-foreground">Verranno eliminate anche le {deleteContextTarget.lesson_count} lezioni associate.</span>
               )}
               Questa azione non può essere annullata.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleteMutation.isPending}>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteContext} disabled={deleteMutation.isPending} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDeleteContext} disabled={deleteMutation.isPending}>
               {deleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Elimina"}
             </AlertDialogAction>
           </AlertDialogFooter>
