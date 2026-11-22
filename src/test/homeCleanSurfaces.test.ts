@@ -68,24 +68,35 @@ describe("Superfici pulite della Home", () => {
     }
   });
 
-  it("la card del percorso usa la copertina tematica e la superficie scura condivisa", () => {
+  it("la card dell'ultima lezione è bianca, con testo nero e lo stesso raggio visibile dei pulsanti Home", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
-    expect(hero).toContain("course-cover-surface");
-    expect(hero).toContain("ImageCourseBackground");
+    expect(hero).toContain("bg-[#FFFBF4]");
+    expect(hero).toContain("text-[#0a0a0a]");
+    expect(hero).toContain("rounded-[24px]");
+    expect(hero).toContain("border-[#212327]");
+    expect(hero).not.toContain("CourseCardBackground");
+    expect(hero).not.toContain("courseCoverVars");
+    expect(hero).not.toContain("text-contrast");
     expect(hero).not.toMatch(/shadow-(?:xl|2xl|level-[1-5]|tactile)/);
     expect(hero).not.toContain("paper-grain");
   });
 
-  it("la CTA di ripresa mantiene la dimensione minima per il tocco", () => {
+  it("la CTA 'Riprendi/Continua' è un Button pieno nero su testo bianco", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
     expect(hero).toContain("<Button onClick={onPrimaryCta}");
     expect(hero).toContain("min-h-12 w-full");
+    expect(hero).toContain("bg-[#0a0a0a]");
+    expect(hero).toContain("text-[#ffffff]");
+    expect(hero).toContain("border-[#0a0a0a]");
     expect(hero).not.toContain("btn-satin");
+    // la vecchia CTA semiopaca color-mix non deve tornare
+    expect(hero).not.toContain("color-mix(in srgb, currentColor 12%");
+    expect(hero).not.toContain("bg-transparent");
   });
 
   it("il titolo del corso usa la gerarchia UI e spezza le parole senza uscire", () => {
     const hero = readFileSync(join(HOME_DIR, "CourseHeroCard.tsx"), "utf8");
-    expect(hero).toContain("text-3xl font-normal");
+    expect(hero).toContain("text-3xl font-semibold");
     expect(hero).toContain("break-words");
     expect(hero).toContain("max-w-[22ch]");
     // la voce focale Radja non guida il prodotto (resta al Login)

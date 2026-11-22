@@ -18,8 +18,7 @@ import {
 } from "lucide-react";
 import { useHaptics } from "@/hooks/useHaptics";
 import { getCourseProgress } from "@/lib/courseProgress";
-import { CourseCard, courseDisplayName, type CourseCardData } from "./CourseCard";
-import { ImageCourseBackground } from "./ImageCourseBackground";
+import { CourseCard, courseDisplayName } from "./CourseCard";
 import { courseNameMatches } from "@/lib/courseName";
 import { Search } from "@/components/ui/Search";
 import {
@@ -51,7 +50,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export type CourseOption = CourseCardData;
+export interface CourseOption {
+  id: string;
+  file_name: string;
+  lesson_count?: number | null;
+}
 
 interface PathHeroProps {
   /** Nome del percorso (senza estensione né prefissi). */
@@ -387,10 +390,12 @@ export function PathHero({
         ? `${course.lesson_count} lezioni`
         : null;
     const isTransitioning = transitioningId === course.id;
+    const isActive = course.id === active?.id;
     return (
       <CourseCard
         key={course.id}
         course={course}
+        active={isActive}
         onSelect={() => handleSelectCourse(course)}
         actionLabel="Scegli corso"
         // Preserve scroll measurement: course-specific layoutId maintains continuous viewport measurement
@@ -400,29 +405,24 @@ export function PathHero({
         {...(!isTransitioning && !prefersReducedMotion ? cardMotion : {})}
         style={isTransitioning ? { zIndex: 20 } : undefined}
       >
-        <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.08em] text-sand">
+        <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
           <Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
-          Percorso
+          {isActive ? "Percorso attuale" : "Percorso"}
         </p>
         <h3 className="mt-2 break-words font-sans text-base font-normal leading-snug text-foreground sm:text-lg">
           {courseDisplayName(course.file_name)}
         </h3>
-        {meta && <p className="mt-1 font-mono text-xs uppercase tracking-[0.08em] text-sand">{meta}</p>}
+        {meta && <p className="mt-1 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">{meta}</p>}
       </CourseCard>
     );
   };
 
   // ── Contenuto interno della HERO (condiviso tra inline e portale) ──
-  // text-contrast alla RADICE: tutto ciò che dentro usa currentColor (il
-  // binario e il fill della barra, i veli dei pulsanti Continua/Cambia
-  // corso, i tasti ⋯ e ✕) eredita l'INCHIOSTRO DELLA COPERTINA, non quello
-  // della pagina — prima, sulle copertine profonde in chiaro, barra e
-  // pulsanti risultavano inchiostro su inchiostro, invisibili.
   const heroInner = (inPicker: boolean) => (
     <div className="relative text-foreground">
       {/* Riga alta: etichetta + menù ⋯ */}
       <div className="flex items-center justify-between gap-3">
-        <p className="font-mono text-xs uppercase tracking-[0.08em] text-sand">
+        <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
           {inPicker ? "Seleziona un percorso" : "Percorso attuale"}
         </p>
         {!inPicker && onCloseModules ? (
@@ -431,7 +431,7 @@ export function PathHero({
             type="button"
             onClick={() => { triggerLight(); onCloseModules(); }}
             aria-label="Chiudi moduli"
-            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-foreground/40 transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
+            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#0a0a0a] transition-[transform,background-color] duration-150 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
           >
             <X className="w-5 h-5 text-current" strokeWidth={2} />
           </button>
@@ -441,7 +441,7 @@ export function PathHero({
             <button
               type="button"
               aria-label="Azioni corso"
-              className="relative flex w-11 h-11 shrink-0 items-center justify-center rounded-full border border-foreground/40 transition-[transform,background-color] duration-150 hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
+              className="relative flex w-11 h-11 shrink-0 items-center justify-center rounded-full border border-[#0a0a0a] transition-[transform,background-color] duration-150 hover:bg-black/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none"
             >
               <MoreHorizontal className="w-5 h-5 text-current" strokeWidth={2} />
               {hasNewMaterial && (
@@ -511,7 +511,6 @@ export function PathHero({
         )}
       </div>
 
-      {/* Titolo: nome intero — usa text-contrast per garantire visibilità su card scura in light mode */}
       <h2 className="mt-2 break-words pr-1 font-sans text-xl font-normal leading-snug text-foreground sm:text-2xl">
         {title ?? "Il tuo percorso"}
       </h2>
@@ -519,7 +518,7 @@ export function PathHero({
       {/* Avanzamento */}
       {isGenerating ? (
         <>
-          <p className="mt-4 text-sm text-sand">Erga sta trasformando il tuo materiale…</p>
+          <p className="mt-4 text-xs text-muted-foreground">Erga sta trasformando il tuo materiale…</p>
           <div className="mt-2 h-1.5 overflow-hidden rounded-sm bg-white/15">
             <div
               className="h-full rounded-sm bg-foreground transition-[width] duration-200"
@@ -531,7 +530,7 @@ export function PathHero({
         <>
           <div className="mt-4 flex items-baseline justify-between gap-3">
             {progress.totalLessons > 0 && (
-              <p className="text-sm text-sand">
+              <p className="text-sm text-muted-foreground">
                 {t("lesson.lessonOf", { number: progress.lessonNumber, total: progress.totalLessons })}
               </p>
             )}
@@ -646,11 +645,8 @@ export function PathHero({
         layout
         layoutId={transitioningId ? `course-card-${transitioningId}` : isSelectingCourse ? undefined : `course-card-${active?.id}`}
         transition={effectiveLayoutTransition}
-        className={`course-cover-surface relative isolate overflow-hidden border p-6 text-foreground ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
+        className={`relative overflow-hidden rounded-[24px] border border-border bg-card p-6 text-foreground sm:p-6 ${isSelectingCourse && !transitioningId ? "invisible pointer-events-none h-0 overflow-hidden p-0 border-0" : ""}`}
       >
-          {active && (
-            <ImageCourseBackground courseName={active.file_name} customKey={active.course_cover?.subject} materialSubject={active.subject} eager />
-          )}
           {heroInner(false)}
         </motion.div>
 
@@ -703,12 +699,9 @@ export function PathHero({
                       ref={heroRef}
                       layoutId={`course-card-${active?.id}`}
                       transition={effectiveLayoutTransition}
-                      className="course-cover-surface relative isolate overflow-hidden border p-6 text-foreground"
+                      className="relative overflow-hidden rounded-[24px] border border-border bg-card p-6 text-foreground sm:p-6"
                       layoutScroll
                     >
-                      {active && (
-                        <ImageCourseBackground courseName={active.file_name} customKey={active.course_cover?.subject} materialSubject={active.subject} />
-                      )}
                       {heroInner(true)}
                     </motion.div>
 

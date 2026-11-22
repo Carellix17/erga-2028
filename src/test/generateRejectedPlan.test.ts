@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from "vitest";
 import * as material from "../../supabase/functions/_shared/studyMaterial";
 import { extractJsonRobust } from "../../supabase/functions/_shared/lessonPayload";
 import { logRef, logErrorDiag } from "../../supabase/functions/_shared/logRef";
-import { classifyCourseSubject } from "../../supabase/functions/_shared/courseSubject";
 
 function generationHandler(aiResponse: string | Error, overrides: Record<string, unknown> = {}) {
   const updates: Record<string, unknown>[] = [];
@@ -33,7 +32,6 @@ function generationHandler(aiResponse: string | Error, overrides: Record<string,
     fetchCognitiveProfile: async () => null, buildCognitivePromptAddon: () => "",
     normalizeLanguage: () => "it", languageDirective: () => "Italiano",
     detectSubject: async () => ({ family: "umanistiche", subject: "altro", confidence: 50, source: "test" }),
-    classifyCourseSubject,
     maxPageNumber: () => 0, isLongDocument: () => false, buildPlanFamilyGuidance: () => "",
     callAIText, extractJsonRobust, logRef, logErrorDiag, ...material,
     EdgeRuntime: { waitUntil: (job: Promise<unknown>) => jobs.push(job) },
@@ -74,7 +72,6 @@ describe("generazione del percorso con materiale rifiutato", () => {
     expect(test.updates).toContainEqual({
       subject_family: "umanistiche",
       subject: "altro",
-      course_cover: { subject: "chimica", confidence: 1 },
     });
     expect(test.callAIText).toHaveBeenCalledTimes(1);
   });

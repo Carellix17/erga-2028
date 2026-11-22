@@ -3,7 +3,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { edgeFetch, EdgeFetchError } from "@/lib/edgeFetch";
 import { useTrackedMutation } from "./useTrackedMutation";
 import type { Exercise } from "@/components/studio/exercises/ExerciseRenderer";
-import type { CourseSubjectMetadata } from "../../supabase/functions/_shared/courseSubject";
 
 // ⚡ P16: la corsia leggera — quello che serve per DISEGNARE il sentiero.
 // I contenuti pesanti (concept, explanation, example, exercises) arrivano
@@ -52,7 +51,6 @@ export interface StudyContextSummary {
   file_name: string;
   created_at: string;
   subject?: string | null;
-  course_cover?: CourseSubjectMetadata | null;
   /** The context's subject category, used as the reading log subject_type. */
   subject_family?: string | null;
   lesson_count?: number;

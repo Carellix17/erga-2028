@@ -91,12 +91,14 @@ describe("grana locale e alias piatti — design system v4", () => {
     expect(read("src/components/layout/BottomNav.tsx")).not.toContain("cover-grain");
   });
 
-  it("la card dell'ultima lezione usa la copertina tematica condivisa", () => {
+  it("la card dell'ultima lezione in Home non riusa la copertina di Studio", () => {
     const hero = read("src/components/home/CourseHeroCard.tsx");
     const background = read("src/components/studio/CourseCardBackground.tsx");
     expect(hero).not.toContain("paper-grain");
     expect(hero).not.toContain("cover-grain");
-    expect(hero).toContain("ImageCourseBackground");
+    expect(hero).not.toContain("CourseCardBackground");
+    expect(hero).not.toContain("courseCoverVars");
+    expect(hero).toContain("bg-[#FFFBF4]");
     expect(css).toMatch(/\.paper-grain, \.table-grain \{ background-image: none; \}/);
     expect(background).toContain("cover-grain");
     expect(background).not.toContain("paper-grain");

@@ -5,7 +5,6 @@ interface CourseCardBackgroundProps {
   courseName: string;
   /** Chiave materia personalizzata dall'utente (vince sul rilevamento). */
   customKey?: string | null;
-  cover?: CourseCover;
 }
 
 /**
@@ -26,8 +25,8 @@ interface CourseCardBackgroundProps {
  * Nessun blur: le forme sono geometriche e piene; la profondità la fanno
  * i rapporti di tono, non la sfocatura.
  */
-export function CourseCardBackground(props: CourseCardBackgroundProps) {
-  const cover = props.cover ?? resolveCourseCover(props.courseName, props.customKey);
+export function CourseCardBackground({ courseName, customKey }: CourseCardBackgroundProps) {
+  const cover: CourseCover = resolveCourseCover(courseName, customKey);
   const isDeep = cover.family === "deep";
 
   return (

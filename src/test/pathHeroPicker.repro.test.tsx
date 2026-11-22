@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { PathHero } from "@/components/studio/PathHero";
-import { getCourseImage } from "@/lib/courseImages";
 
 // 🛡️ P24 regressione: il selettore "Cambia corso" della Hero (morphing)
 // deve aprire la lista dei corsi senza errori, selezionare e tornare indietro.
@@ -52,16 +51,21 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     expect(screen.getByText("matematica")).toBeTruthy();
   });
 
-  it("usa la copertina della materia per il percorso corrente e le altre card", async () => {
+  it("le card del percorso attivo e del selettore sono avorio, da 24 px e senza copertina", async () => {
     render(<PathHero {...base} onSelectCourse={() => {}} />);
     const heroHeading = screen.getByRole("heading", { name: "Storia" });
-    expect(heroHeading.closest(".course-cover-surface")?.querySelector("img"))
-      .toHaveAttribute("src", getCourseImage("storia"));
+    const heroCard = heroHeading.closest(".bg-card");
+    expect(heroCard).toHaveClass("rounded-[24px]");
+    expect(heroCard?.querySelector("img, [data-cover-root]")).toBeNull();
 
     fireEvent.click(screen.getByText("Cambia corso"));
     const otherCourseTitle = await screen.findByRole("heading", { name: "matematica" });
-    expect(otherCourseTitle.closest("button")?.querySelector("img"))
-      .toHaveAttribute("src", getCourseImage("matematica"));
+    const optionCard = otherCourseTitle.closest("button");
+    expect(optionCard).toHaveClass("bg-card", "rounded-[24px]");
+    expect(optionCard?.querySelector("img, [data-cover-root]")).toBeNull();
+    const pickerHeroCard = screen.getByText("Seleziona un percorso").closest(".bg-card");
+    expect(pickerHeroCard).toHaveClass("rounded-[24px]");
+    expect(pickerHeroCard?.querySelector("img, [data-cover-root]")).toBeNull();
   });
 
   it("notifica al genitore l'apertura/chiusura del selettore", () => {
@@ -108,6 +112,10 @@ describe("PathHero — selettore percorsi (morphing)", () => {
     fireEvent.change(field, { target: { value: "citta" } });
     expect(screen.queryByText("matematica")).toBeNull();
     expect(screen.getByText("Città")).toBeTruthy();
+    fireEvent.change(field, { target: { value: "storia" } });
+    const currentCourse = screen.getByRole("button", { name: /percorso attuale storia/i });
+    expect(currentCourse).toHaveAttribute("aria-current", "true");
+    expect(currentCourse).toHaveClass("bg-card", "rounded-[24px]");
     fireEvent.change(field, { target: { value: "zzzz" } });
     expect(screen.getByText("Nessun percorso con questo nome.")).toBeTruthy();
     expect(screen.queryByText("Città")).toBeNull();

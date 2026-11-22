@@ -1587,30 +1587,6 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-delay: 0ms !important; }
 
-/* Raggio e colori delle copertine anche nelle viste Studio con token locali. */
-.course-cover-surface {
-  --radius-button: 9999px;
-  border-radius: 8px;
-  border-color: #212327;
-  background-color: #191919;
-}
-
-.course-cover-surface.border-foreground { border-color: hsl(var(--foreground)); }
-
-/* Il velo garantisce il contrasto del testo anche sul pixel più chiaro. */
-.course-image-background::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgb(0 0 0 / 0.88), rgb(0 0 0 / 0.75) 48%, rgb(0 0 0 / 0.67));
-}
-
-.course-image-background img { object-position: center 40%; }
-
-@media (prefers-contrast: more), (forced-colors: active) {
-  .course-image-background { display: none; }
-}
-
 /* Studio: pagina #0a0a0a, card #FFFBF4, azioni nere solo dentro le card, raggio 24px.
    I cerchi (rounded-full) e la pillola esplicita restano. Piano e Home non ereditano. */
 [data-studio] {
@@ -1752,14 +1728,6 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 }
 [data-studio] .studio-action-on-dark :is(svg, span) {
   color: #0a0a0a;
-}
-[data-studio] .course-cover-surface .studio-action {
-  border: 1px solid rgb(255 255 255 / 0.4);
-  border-radius: var(--radius-button);
-  background-color: transparent;
-}
-[data-studio] .course-cover-surface .studio-action:hover {
-  background-color: rgb(255 255 255 / 0.1);
 }
 [data-studio] .bg-card .text-ink-muted {
   color: #3a3f45;

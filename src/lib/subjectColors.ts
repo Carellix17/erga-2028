@@ -1,5 +1,3 @@
-import { classifyCourseSubject, normalizeSubjectText } from "../../supabase/functions/_shared/courseSubject";
-
 /**
  * Maps course/file names to subject-based color themes.
  * Each subject gets a unique vibrant color for visual differentiation.
@@ -96,13 +94,13 @@ const SUBJECT_COLORS: SubjectColor[] = [ {
  },
 ];
 
-// Conserva i colori storici delle materie e distingue diritto ed economia.
+// Keywords that map to each subject
 const SUBJECT_KEYWORDS: Record<string, string[]> = {
  storia: ["storia","storico","storica","medioevo","romano","romana","impero","guerra","rivoluzione","augusto","cesare","rinascimento","antico","antica","medievale","risorgimento","fascismo","napoleone"],
  matematica: ["matematica","algebra","geometria","calcolo","equazioni","funzioni","integrali","derivate","trigonometria","statistica","probabilità","numeri"],
  economia: ["economia","economico","economica","finanza","mercato","trading","investimento","pil","inflazione","borsa","azioni","analisi tecnica","microeconomia","macroeconomia"],
- scienze: ["scienza","scienze","biologia","chimica","biodiversità","ecosistema","cellula","dna","evoluzione","organismo","molecola","atomo","fotosintesi","tavola periodica","legame covalente","stechiometria","ph"],
- letteratura: ["letteratura","poesia","romanzo","dante","manzoni","leopardi","figura retorica","figure retoriche","narrativa","sonetto","epica","prosa","verso","grammatica","sintassi"],
+ scienze: ["scienza","scienze","biologia","chimica","biodiversità","ecosistema","cellula","dna","evoluzione","organismo","molecola","atomo"],
+ letteratura: ["letteratura","poesia","romanzo","dante","manzoni","leopardi","figura retorica","figure retoriche","narrativa","sonetto","epica","prosa","verso"],
  filosofia: ["filosofia","filosofico","platone","aristotele","kant","hegel","etica","metafisica","epistemologia","socrate","nietzsche"],
  fisica: ["fisica","meccanica","termodinamica","elettromagnetismo","ottica","quantistica","relatività","newton","energia","forza","velocità","accelerazione"],
  informatica: ["informatica","programmazione","algoritmo","database","software","hardware","codice","python","java","web","computer","rete"],
@@ -125,17 +123,18 @@ const DEFAULT_COLOR: SubjectColor = {
  * Detects the subject from a course/file name and returns the matching color theme.
  */
 export function getSubjectColor(fileName: string): SubjectColor {
- const name = ` ${normalizeSubjectText(fileName)} `;
+ const lower = fileName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+ const originalLower = fileName.toLowerCase();
 
  for (const [subjectKey, keywords] of Object.entries(SUBJECT_KEYWORDS)) {
  for (const kw of keywords) {
- if (name.includes(` ${normalizeSubjectText(kw)} `)) {
+ if (originalLower.includes(kw) || lower.includes(kw)) {
  return SUBJECT_COLORS.find(c => c.key === subjectKey) || DEFAULT_COLOR;
  }
  }
  }
 
- return getSubjectColorByKey(classifyCourseSubject(fileName).detectedSubject) ?? DEFAULT_COLOR;
+ return DEFAULT_COLOR;
 }
 
 /**
@@ -166,16 +165,8 @@ export const SUBJECT_PALETTE: readonly SubjectColor[] = SUBJECT_COLORS;
 /** Restituisce il colore della palette con quella chiave, o null se non esiste. */
 export function getSubjectColorByKey(key: string | null | undefined): SubjectColor | null {
  if (!key) return null;
- const paletteKey = SUBJECT_PALETTE_ALIASES.get(key) ?? key;
- return SUBJECT_COLORS.find((c) => c.key === paletteKey) ?? null;
+ return SUBJECT_COLORS.find((c) => c.key === key) ?? null;
 }
-
-const SUBJECT_PALETTE_ALIASES = new Map([
- ["letteratura_e_grammatica", "letteratura"],
- ["diritto_e_economia", "diritto"],
- ["lingua_straniera", "lingue"],
- ["chimica", "scienze"],
-]);
 
 /**
  * Colore effettivo di una materia:

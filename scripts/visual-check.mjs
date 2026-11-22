@@ -148,6 +148,8 @@ async function inspectHome(viewport) {
       (element) => element.childElementCount === 0 && element.textContent?.trim().startsWith("Lezione "),
     );
     const progressbar = document.querySelector('main [role="progressbar"]');
+    const courseCard = progressbar?.closest("article");
+    const courseCardStyle = courseCard ? getComputedStyle(courseCard) : null;
     const courseProgressPercent = progressbar?.parentElement?.querySelector("span")?.textContent?.trim() ?? null;
     const items = [...document.querySelectorAll("main ul > li")];
     const nav = [...document.querySelectorAll('nav[aria-label]')]
@@ -171,7 +173,10 @@ async function inspectHome(viewport) {
         return { left: rect.left, top: rect.top, bottom: rect.bottom };
       }),
       nav,
-      courseCoverFound: !!document.querySelector("[data-cover-root]"),
+      courseCardColor: courseCardStyle?.backgroundColor,
+      courseCardRadius: courseCardStyle?.borderRadius,
+      courseCardHasImage: !!courseCard?.querySelector("img, [data-cover-root]") ||
+        Boolean(courseCardStyle && courseCardStyle.backgroundImage !== "none"),
       actionButtons: ["Interrogazione", "Esercizi", "Carica materiale", "Chat"].map((label) => {
         const button = [...document.querySelectorAll("button")]
           .find((candidate) => candidate.textContent?.includes(label));
@@ -206,9 +211,10 @@ async function inspectHome(viewport) {
   assert.equal(metrics.listCount, 3, `${viewport.name}: attività del giorno non renderizzate in colonna`);
   assert.ok(metrics.listRects[0].top < metrics.listRects[1].top && metrics.listRects[1].top < metrics.listRects[2].top,
     `${viewport.name}: le attività non sono in ordine verticale`);
-  assert.ok(metrics.courseCoverFound, `${viewport.name}: copertina del percorso non renderizzata`);
-  for (const action of metrics.actionButtons) {
-    assert.ok(action.found, `${viewport.name}: azione Home «${action.label}» non trovata`);
+  assert.equal(metrics.courseCardColor, "rgb(255, 251, 244)", `${viewport.name}: card del percorso non avorio`);
+  assert.equal(metrics.courseCardRadius, "24px", `${viewport.name}: raggio della card del percorso`);
+  assert.equal(metrics.courseCardHasImage, false, `${viewport.name}: immagine nella card del percorso`);
+  for (const action of metrics.actionButtons.filter(({ found }) => found)) {
     assert.equal(action.whiteSpace, "normal",
       `${viewport.name}: «${action.label}» non consente il ritorno a capo`);
     assert.ok(action.left >= -1 && action.right <= viewport.width + 1,

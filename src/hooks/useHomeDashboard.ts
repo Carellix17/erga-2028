@@ -5,7 +5,6 @@ import { cleanCourseName } from "@/lib/courseName";
 import { getCompletedLessonOrders, isLastLessonCompleted } from "@/lib/courseProgress";
 import { addDays, computeStudyStreak, daysUntil, formatEventTime, selectHomeResumeLesson, toLocalDayKey } from "@/lib/homeDashboard";
 import { writeLastStudioContext } from "@/lib/lastStudioContext";
-import type { CourseSubjectMetadata } from "../../supabase/functions/_shared/courseSubject";
 
 export interface HomeResumeLesson {
   contextId: string;
@@ -13,8 +12,6 @@ export interface HomeResumeLesson {
   lessonTitle: string;
   courseTitle: string;
   coverUrl: string | null;
-  coverSubject?: string | null;
-  materialSubject?: string | null;
   /** One-based position of the same lesson selected by lessonIndex. */
   lessonNumber: number;
   lessonCount: number;
@@ -75,8 +72,6 @@ interface ContextRow {
   id: string;
   file_name: string;
   cover_image_url: string | null;
-  course_cover?: CourseSubjectMetadata | null;
-  subject?: string | null;
   generation_status: string | null;
   processing_status: string | null;
   created_at: string;
@@ -135,27 +130,17 @@ export function useHomeDashboard() {
       const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
       const endHorizon = addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), 15).toISOString();
 
-      const contextColumns = "id, file_name, cover_image_url, subject, generation_status, processing_status, created_at";
-      const listContexts = (columns: string) => supabase
-        .from("study_contexts")
-        .select(columns)
-        .eq("user_id", currentUser as string)
-        .order("created_at", { ascending: false })
-        .returns<ContextRow[]>();
-      const contextsRequest = listContexts(`${contextColumns}, course_cover`).then((response) => {
-        if (response.error?.code === "42703" || response.error?.code === "PGRST204") {
-          return listContexts(contextColumns);
-        }
-        return response;
-      });
-
       const [profileRes, contextsRes, eventsRes, evaluationsRes, subjectsRes, sessionsRes] = await Promise.all([
         supabase
           .from("user_profiles")
           .select("nickname, first_name, last_studio_context_id")
           .eq("user_id", currentUser as string)
           .maybeSingle(),
-        contextsRequest,
+        supabase
+          .from("study_contexts")
+          .select("id, file_name, cover_image_url, generation_status, processing_status, created_at")
+          .eq("user_id", currentUser as string)
+          .order("created_at", { ascending: false }),
         supabase
           .from("study_events")
           .select("id, subject, title, event_date, event_time, event_type")
@@ -193,7 +178,7 @@ export function useHomeDashboard() {
       const profile = profileRes.data as ProfileRow | null;
       // Studio legge questo valore in locale, senza una seconda attesa di rete.
       writeLastStudioContext(currentUser, profile?.last_studio_context_id ?? null);
-      const contexts = contextsRes.data ?? [];
+      const contexts = (contextsRes.data ?? []) as ContextRow[];
       const events = (eventsRes.data ?? []) as EventRow[];
       const evaluations = (evaluationsRes.data ?? []) as EvaluationRow[];
       const sessions = (sessionsRes.data ?? []) as SessionRow[];
@@ -236,8 +221,6 @@ export function useHomeDashboard() {
             ...selection,
             courseTitle: cleanCourseName(activeContext.file_name) || activeContext.file_name,
             coverUrl: activeContext.cover_image_url,
-            coverSubject: activeContext.course_cover?.subject ?? null,
-            materialSubject: activeContext.subject ?? null,
           };
         }
       }
