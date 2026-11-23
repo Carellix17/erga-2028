@@ -15,7 +15,7 @@ export function SubjectsSkeleton() {
   return (
     <div className="space-y-4" aria-busy="true" aria-label="Caricamento Materie e Interessi">
       {/* ── Card 1: Materie preferite ── */}
-      <section className={`${CORE_CARD_CLASS} p-5`}>
+      <section className={`${CORE_CARD_CLASS} p-6`}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <Skeleton className="h-5 w-5 rounded-full shrink-0" />
@@ -47,7 +47,7 @@ export function SubjectsSkeleton() {
       </section>
 
       {/* ── Card 2: Interessi & hobby ── */}
-      <section className={`${CORE_CARD_CLASS} p-5`}>
+      <section className={`${CORE_CARD_CLASS} p-6`}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <Skeleton className="h-5 w-5 rounded-full shrink-0" />

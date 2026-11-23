@@ -6,13 +6,13 @@ import { CORE_CARD_CLASS } from "./CoreCard";
  * 
  * Obiettivo: zero CLS (Cumulative Layout Shift)
  * - Stesse dimensioni del contenuto reale: header, radar h-72, griglia 3 colonne, bottone h-12
- * - Usa CORE_CARD_CLASS per materiale identico alla card reale (rounded-card, border, bg-card, shadow-level-1)
+ * - Usa CORE_CARD_CLASS per materiale identico alla card reale (fondo #101211, raggio 24px, senza ombra)
  * - Mostrato SOLO durante isLoading iniziale
  */
 export function HexagonSkeleton() {
   return (
     <section
-      className={`${CORE_CARD_CLASS} p-5`}
+      className={`${CORE_CARD_CLASS} p-6`}
       aria-busy="true"
       aria-label="Caricamento Esagono Cognitivo"
     >

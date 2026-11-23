@@ -30,7 +30,8 @@ const INTEREST_SUGGESTIONS = [
 ];
 
 /** Stile condiviso dei tag del Core: Badge minimale + piccola "x" di rimozione. */
-const TAG_CLASS = "h-9 gap-1 py-0 pl-3 pr-1 text-[13px] font-semibold";
+const TAG_CLASS =
+  "core-surface core-radius h-10 gap-1 border py-0 pl-3 pr-1 text-[13px] font-semibold text-white shadow-none";
 const TAG_REMOVE_CLASS = cn(
   "-mr-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-pill",
   "text-muted-foreground transition-colors duration-200",
@@ -62,14 +63,14 @@ function AddTagInput({ value, onChange, onAdd, placeholder, ariaLabel, addButton
         }}
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className="h-11 rounded-button border-border bg-card"
+        className="core-surface core-radius h-11 border text-white placeholder:text-[#c8cdd4]"
       />
       <Button
         onClick={onAdd}
         disabled={disabled || !value.trim()}
         size="icon"
         aria-label={addButtonLabel}
-        className="h-11 w-11 shrink-0 rounded-button"
+        className="core-ivory core-radius h-11 w-11 shrink-0"
       >
         <Plus className="h-4 w-4" aria-hidden="true" />
       </Button>
@@ -182,8 +183,8 @@ export function SubjectsInterestsEditor() {
                             <span className="max-w-[9rem] truncate">{s.name}</span>
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-56 p-3" align="start">
-                          <p className="text-xs font-semibold mb-2">Colore di {s.name}</p>
+                        <PopoverContent className="core-surface core-radius w-56 border p-4 text-white shadow-none" align="start">
+                          <p className="mb-3 text-sm font-semibold">Colore di {s.name}</p>
                           <div className="grid grid-cols-7 gap-1.5 mb-2">
                             {SUBJECT_PALETTE.map((c) => (
                               <button
@@ -202,7 +203,7 @@ export function SubjectsInterestsEditor() {
                           {s.color && (
                             <button
                               onClick={() => updateColor.mutate({ id: s.id, color: null })}
-                              className="text-xs text-muted-foreground hover:text-foreground transition"
+                              className="text-sm text-[#dadbdf] transition hover:text-white"
                             >
                               Torna al colore automatico
                             </button>
@@ -223,7 +224,7 @@ export function SubjectsInterestsEditor() {
               })}
             </ul>
           ) : (
-            <p className="body-small text-muted-foreground">
+            <p className="body-small text-[#dadbdf]">
               Nessuna materia aggiunta. Aggiungi quelle del tuo programma per ritrovarle subito nei corsi.
             </p>
           )}
@@ -265,19 +266,19 @@ export function SubjectsInterestsEditor() {
               ))}
             </ul>
           ) : (
-            <p className="body-small text-muted-foreground">
+            <p className="body-small text-[#dadbdf]">
               Nessun interesse ancora. Racconta cosa ti appassiona fuori da scuola.
             </p>
           )}
 
           {remainingSuggestions.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="label-small text-muted-foreground">Suggerimenti:</span>
+              <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-[#D8CFBC]">Suggerimenti</span>
               {remainingSuggestions.map((s) => (
                 <button
                   key={s}
                   onClick={() => addInterest(s)}
-                  className="min-h-9 rounded-pill border border-dashed border-border px-3 text-[13px] text-muted-foreground transition-colors duration-200 hover:border-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="core-surface core-radius min-h-11 border border-dashed px-3 text-sm text-[#dadbdf] transition-colors duration-200 hover:border-white hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFFBF4]"
                 >
                   + {s}
                 </button>

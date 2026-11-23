@@ -74,11 +74,10 @@ export function CoreView({ onOpenCognitive }: CoreViewProps = {}) {
   }, [activeTab, listRef, measure]);
 
   return (
-    <div className="mx-auto max-w-lg space-y-5 px-4 pb-32 pt-4 md:max-w-2xl lg:max-w-4xl">
-      {/* ── Intestazione della pagina ── */}
-      <header className="space-y-1">
-        <h1 className="title-large font-display font-semibold text-foreground">Core</h1>
-        <p className="body-medium text-muted-foreground">
+    <div className="mx-auto max-w-lg space-y-6 px-4 pb-32 pt-6 md:max-w-2xl lg:max-w-4xl">
+      <header className="space-y-2">
+        <h1 className="title-large font-display font-semibold text-white">Core</h1>
+        <p className="body-medium max-w-[65ch] text-[#dadbdf]">
           Chi sei, come studi, quando sei libero.
         </p>
       </header>
@@ -86,7 +85,7 @@ export function CoreView({ onOpenCognitive }: CoreViewProps = {}) {
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as CoreTab)}>
         {/* ── Navigazione a schede: piatte su desktop, scorrevoli (senza
                scrollbar) sul telefono ── */}
-        <div className="relative border-b border-border">
+        <div className="relative border-b border-[#6a6e74]">
           <TabsList
             ref={listRef}
             aria-label="Sezioni del Core"
@@ -108,12 +107,11 @@ export function CoreView({ onOpenCognitive }: CoreViewProps = {}) {
                   title={tab.label}
                   className={cn(
                     "relative h-11 min-w-0 gap-1.5 rounded-t-button px-2 py-0 text-[13px] font-semibold",
-                    "text-muted-foreground transition-colors duration-200",
-                    "hover:text-foreground data-[state=active]:bg-secondary data-[state=active]:text-foreground",
+                    "text-[#dadbdf] transition-colors duration-200",
+                    "hover:text-white data-[state=active]:bg-transparent data-[state=active]:text-white",
                     "data-[state=active]:shadow-none focus-visible:ring-inset",
                     "md:h-11 md:flex-none md:px-4 md:text-sm",
-                    // Indicatore attivo: una riga sottile, non una pillola nera.
-                    "after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary after:opacity-0 after:transition-opacity after:duration-200 data-[state=active]:after:opacity-100",
+                    "after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-[#FFFBF4] after:opacity-0 after:transition-opacity after:duration-200 data-[state=active]:after:opacity-100",
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />

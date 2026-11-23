@@ -44,17 +44,17 @@ export function CognitiveHexagonEditor({ onOpenDiagnostic }: Props) {
       <div className="space-y-4">
         {profile ? (
           <>
-            <CognitiveRadar profile={profile} />
-            <div className="grid grid-cols-3 gap-2 text-[11px]">
+            <CognitiveRadar appearance="core" profile={profile} />
+            <div className="grid grid-cols-3 gap-3">
               {DIMENSIONS.map((d) => (
                 <div
                   key={d.key}
-                  className="rounded-button bg-surface-container-high py-2 text-center"
+                  className="core-surface core-radius border px-2 py-3 text-center"
                 >
-                  <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <div className="font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-[#D8CFBC]">
                     {d.label}
                   </div>
-                  <div className="text-base font-semibold text-foreground tabular-nums">
+                  <div className="text-base font-semibold tabular-nums text-white">
                     {profile[d.key]}
                   </div>
                 </div>
@@ -62,12 +62,12 @@ export function CognitiveHexagonEditor({ onOpenDiagnostic }: Props) {
             </div>
           </>
         ) : (
-          <div className="py-6 text-center space-y-2">
-            <Brain className="w-8 h-8 mx-auto text-muted-foreground" aria-hidden="true" />
-            <p className="body-medium text-muted-foreground">
+          <div className="space-y-2 py-6 text-center">
+            <Brain className="mx-auto h-8 w-8 text-[#dadbdf]" aria-hidden="true" />
+            <p className="body-medium text-[#dadbdf]">
               Non hai ancora calcolato il tuo Esagono Cognitivo.
             </p>
-            <p className="body-small text-muted-foreground">
+            <p className="body-small text-[#dadbdf]">
               Due minuti di domande per capire come studi: Erga userà il risultato per adattare le lezioni a te.
             </p>
           </div>
@@ -75,8 +75,7 @@ export function CognitiveHexagonEditor({ onOpenDiagnostic }: Props) {
 
         <Button
           onClick={onOpenDiagnostic}
-          variant={profile ? "outline" : "default"}
-          className="w-full rounded-button h-12"
+          className="core-ivory core-radius h-12 w-full font-semibold"
         >
           <Brain className="w-4 h-4 mr-2" aria-hidden="true" />
           {profile ? "Rifai il test" : "Calcola il tuo Esagono"}

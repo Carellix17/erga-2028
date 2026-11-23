@@ -2305,3 +2305,21 @@ button.rounded-full, a.rounded-full, [role="button"].rounded-full { border-radiu
 @media (prefers-reduced-motion: reduce) {
   .liq-thumb, .liq-pill, .liq-bead { transition-duration: 160ms; }
 }
+
+/* Core: superficie #101211 e raggio 24px. Sono dopo le utility, così vincono
+   sulla pillola globale senza cambiare il raggio del resto dell'app. */
+.core-surface {
+  background-color: #101211;
+  color: #ffffff;
+  border-color: #6a6e74;
+  box-shadow: none;
+}
+.core-radius { border-radius: 24px; }
+.core-ivory {
+  background-color: #FFFBF4;
+  color: #0a0a0a;
+  border-color: #FFFBF4;
+  box-shadow: none;
+}
+.core-ivory:hover { background-color: #f4efe4; color: #0a0a0a; }
+.core-ivory svg { color: #0a0a0a; }

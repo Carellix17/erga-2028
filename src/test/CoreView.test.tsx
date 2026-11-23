@@ -193,12 +193,12 @@ describe("CoreView", () => {
     clickTab("Planning Routine");
     materials.push(materialOf("Settimana"));
 
-    // Stessa identica stringa di classi → stesso bordo, ombra, fondo e angoli.
+    // Stessa identica stringa di classi → stesso bordo, fondo e angoli, senza ombra.
     expect(new Set(materials).size).toBe(1);
-    expect(materials[0]).toContain("rounded-card");
-    expect(materials[0]).toContain("bg-card");
-    expect(materials[0]).toContain("border-border");
-    expect(materials[0]).toContain("shadow-level-1");
+    expect(materials[0]).toContain("core-surface");
+    expect(materials[0]).toContain("core-radius");
+    expect(materials[0]).toContain("shadow-none");
+    expect(materials[0]).not.toContain("shadow-level-1");
   });
 
   it("nessuna impostazione di account dentro il Core", () => {

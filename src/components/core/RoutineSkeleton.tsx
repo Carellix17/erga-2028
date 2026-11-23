@@ -21,7 +21,7 @@ export function RoutineSkeleton() {
 
   return (
     <div className="space-y-4" aria-busy="true" aria-label="Caricamento Planning Routine">
-      <section className={`${CORE_CARD_CLASS} p-5`}>
+      <section className={`${CORE_CARD_CLASS} p-6`}>
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
@@ -36,11 +36,11 @@ export function RoutineSkeleton() {
         </div>
 
         {/* Contenuto griglia */}
-        <div className="mt-4 rounded-2xl bg-surface-container-low border border-outline-variant/60 overflow-hidden">
+        <div className="core-surface core-radius mt-4 overflow-hidden border">
           {/* Mobile: day picker 7 pill */}
           <div className="md:hidden flex items-center justify-between gap-1 px-3 pt-3 pb-2 border-b border-muted">
             {Array.from({ length: 7 }).map((_, i) => (
-              <Skeleton key={`m-${i}`} className="flex-1 h-11 rounded-full" />
+              <Skeleton key={`m-${i}`} className="core-radius h-11 flex-1" />
             ))}
           </div>
 

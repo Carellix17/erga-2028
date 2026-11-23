@@ -74,7 +74,7 @@ function NumberSetting({
               setInputValue(String(value));
             }
           }}
-          className="min-h-11"
+          className="core-surface core-radius min-h-11 border text-white"
         />
         <span className="shrink-0 text-sm text-muted-foreground">{t("piano.settings.minutes")}</span>
       </div>
@@ -148,7 +148,7 @@ export function PlannerSettingsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="pb-safe max-h-[92vh] overflow-y-auto">
+      <SheetContent side="bottom" className="core-surface core-radius max-h-[92vh] overflow-y-auto border pb-safe text-white">
         <SheetHeader className="mb-5 pr-10 text-left">
           <SheetTitle>{t("piano.settings.title")}</SheetTitle>
           <SheetDescription>{t("piano.settings.description")}</SheetDescription>
@@ -160,15 +160,15 @@ export function PlannerSettingsSheet({
             {t("piano.settings.loading")}
           </div>
         ) : isError ? (
-          <div className="space-y-3 rounded-lg border border-destructive/40 p-4" role="alert">
+          <div className="core-radius space-y-3 border border-destructive/40 p-4" role="alert">
             <p className="text-sm text-destructive">{t("piano.settings.loadFailed")}</p>
-            <Button type="button" variant="outline" className="min-h-11" onClick={() => void refetch()}>
+            <Button type="button" variant="outline" className="core-radius min-h-11 border-[#6a6e74] bg-transparent font-semibold text-white shadow-none" onClick={() => void refetch()}>
               {t("piano.settings.retry")}
             </Button>
           </div>
         ) : draft ? (
           <form className="space-y-5" onSubmit={handleSubmit}>
-            <section className="space-y-4 rounded-xl border border-border p-4">
+            <section className="core-radius space-y-4 border border-[#6a6e74] p-4">
               <div>
                 <h3 className="font-semibold">{t("piano.settings.dailyLimitsTitle")}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{t("piano.settings.dailyLimitsDescription")}</p>
@@ -193,7 +193,7 @@ export function PlannerSettingsSheet({
               </div>
             </section>
 
-            <section className="space-y-4 rounded-xl border border-border p-4">
+            <section className="core-radius space-y-4 border border-[#6a6e74] p-4">
               <h3 className="font-semibold">{t("piano.settings.behaviorTitle")}</h3>
               <div className="flex min-h-11 items-center justify-between gap-4">
                 <Label htmlFor="planner-ask-before-move" className="leading-relaxed">
@@ -217,7 +217,7 @@ export function PlannerSettingsSheet({
               </div>
             </section>
 
-            <section className="space-y-4 rounded-xl border border-border p-4">
+            <section className="core-radius space-y-4 border border-[#6a6e74] p-4">
               <div>
                 <h3 className="font-semibold">{t("piano.settings.subjectTypesTitle")}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{t("piano.settings.subjectTypesDescription")}</p>
@@ -237,7 +237,7 @@ export function PlannerSettingsSheet({
                             [subject.name]: value as SubjectType,
                           })}
                         >
-                          <SelectTrigger id={selectId} className="min-h-11">
+                          <SelectTrigger id={selectId} className="core-surface core-radius min-h-11 border text-white">
                             <SelectValue placeholder={t("piano.settings.subjectTypePlaceholder")} />
                           </SelectTrigger>
                           <SelectContent>
@@ -261,7 +261,7 @@ export function PlannerSettingsSheet({
               )}
             </section>
 
-            <section className="space-y-4 rounded-xl border border-border p-4">
+            <section className="core-radius space-y-4 border border-[#6a6e74] p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-semibold">{t("piano.settings.blockSettingsTitle")}</h3>
                 <Badge variant="secondary">{t("piano.settings.proLabel")}</Badge>
@@ -305,11 +305,11 @@ export function PlannerSettingsSheet({
 
             {saveError && <p className="text-sm text-destructive" role="alert">{t("piano.settings.saveRetry")}</p>}
 
-            <div className="sticky bottom-0 flex gap-2 border-t border-border bg-background/95 py-3 backdrop-blur">
-              <Button type="button" variant="outline" className="min-h-11 flex-1" onClick={() => onOpenChange(false)}>
+            <div className="sticky bottom-0 flex gap-2 border-t border-[#6a6e74] bg-[#101211] py-3">
+              <Button type="button" variant="outline" className="core-radius min-h-11 flex-1 border-[#6a6e74] bg-transparent font-semibold text-white shadow-none" onClick={() => onOpenChange(false)}>
                 {t("common.cancel")}
               </Button>
-              <Button type="submit" className="min-h-11 flex-1" disabled={isSaving}>
+              <Button type="submit" className="core-ivory core-radius min-h-11 flex-1 font-semibold" disabled={isSaving}>
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="mr-2 h-4 w-4" aria-hidden="true" />}
                 {isSaving ? t("piano.settings.saving") : t("common.save")}
               </Button>

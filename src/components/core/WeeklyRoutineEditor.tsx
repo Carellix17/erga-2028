@@ -28,8 +28,8 @@ const KIND_STYLES: Record<RoutineKind, { chip: string }> = {
   sleep: { chip: "routine-sleep" },
   meal: { chip: "routine-meal" },
   other: { chip: "routine-other" },
-  transport: { chip: "bg-white/10 text-foreground border-white/20" },
-  no_study: { chip: "bg-muted text-muted-foreground border-border" },
+  transport: { chip: "border-white/40 bg-white/10 text-white" },
+  no_study: { chip: "border-[#D8CFBC] text-[#D8CFBC]" },
 };
 
 const KIND_ICONS: Record<RoutineKind, LucideIcon> = {
@@ -43,6 +43,18 @@ const KIND_ICONS: Record<RoutineKind, LucideIcon> = {
 
 const routineKindTranslationKey = (kind: RoutineKind) =>
   ROUTINE_KINDS.find((routineKind) => routineKind.value === kind)?.labelKey ?? "piano.routine_other";
+
+const DAY_ABBR: Record<number, string> = {
+  1: "Lun",
+  2: "Mar",
+  3: "Mer",
+  4: "Gio",
+  5: "Ven",
+  6: "Sab",
+  7: "Dom",
+};
+
+const majorHour = (hour: number) => hour % 6 === 0;
 
 export function WeeklyRoutineEditor() {
   const { t } = useTranslation();
@@ -168,6 +180,7 @@ export function WeeklyRoutineEditor() {
   const laidOutByDay = useMemo(() => routineLayoutByDay(routines.data ?? []), [routines.data]);
   const segmentsByDay = useMemo(() => routineSegmentsByDay(routines.data ?? []), [routines.data]);
   const isEmpty = !routines.isLoading && (routines.data?.length ?? 0) === 0;
+  const today = new Date().getDay() === 0 ? 7 : new Date().getDay();
 
   const showRoutineSkeleton = useDelayedLoading(routines.isLoading, 100);
   if (showRoutineSkeleton) {
@@ -183,9 +196,8 @@ export function WeeklyRoutineEditor() {
         id="routine"
         icon={CalendarClock}
         title={t("piano.routineWeekTitle")}
-        description={t("piano.routineWeekDescription")}
         action={
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="outline"
@@ -193,12 +205,17 @@ export function WeeklyRoutineEditor() {
                 setSettingsSheetMounted(true);
                 setSettingsOpen(true);
               }}
-              className="h-11 rounded-pill px-4"
+              className="core-ivory core-radius h-11 w-full px-4 font-semibold sm:w-auto"
             >
               <Settings2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
               {t("piano.settings.open")}
             </Button>
-            <Button type="button" onClick={() => openCreate()} size="sm" className="h-11 rounded-pill px-4">
+            <Button
+              type="button"
+              onClick={() => openCreate()}
+              size="sm"
+              className="core-ivory core-radius h-11 w-full px-4 font-semibold sm:w-auto"
+            >
               <Plus className="w-4 h-4 mr-1" aria-hidden="true" />
               {t("piano.routineAddBlock")}
             </Button>
@@ -206,150 +223,85 @@ export function WeeklyRoutineEditor() {
         }
       >
         {isEmpty ? (
-          <div className="py-8 text-center space-y-2">
-            <CalendarClock className="w-8 h-8 mx-auto text-muted-foreground" aria-hidden="true" />
-            <p className="body-medium text-muted-foreground">
+          <div className="space-y-2 py-8 text-center">
+            <CalendarClock className="mx-auto h-8 w-8 text-[#dadbdf]" aria-hidden="true" />
+            <p className="body-medium text-[#dadbdf]">
               Nessuna attività programmata.
             </p>
-            <p className="body-small text-muted-foreground">
+            <p className="body-small text-[#dadbdf]">
               Aggiungi i tuoi orari di sport o pasti per ottimizzare lo studio.
             </p>
           </div>
         ) : (
-          <div className="rounded-2xl bg-surface-container-low border border-outline-variant/60 overflow-hidden">
-            {/* Mobile: pillole di selezione giorno */}
-            <div className="md:hidden flex items-center justify-between gap-1 px-3 pt-3 pb-2 border-b border-muted">
+          <div className="core-surface core-radius overflow-hidden border">
+            <div className="flex gap-1 border-b border-[#6a6e74] p-2 md:hidden">
               {ROUTINE_DAYS.map((d) => {
                 const active = mobileDay === d.n;
                 const hasBlocks = (segmentsByDay[d.n]?.length ?? 0) > 0;
                 return (
                   <button
                     key={d.n}
+                    type="button"
                     onClick={() => setMobileDay(d.n)}
                     aria-label={d.label}
                     aria-pressed={active}
                     className={cn(
-                      "relative flex-1 h-11 rounded-full text-xs font-semibold transition-all duration-300",
+                      "core-radius relative h-11 flex-1 text-xs font-semibold",
                       active
-                        ? "bg-foreground text-background scale-[1.04] shadow-sm"
-                        : "text-muted-foreground hover:bg-muted/50",
+                        ? "border border-[#FFFBF4] text-white"
+                        : "border border-transparent text-[#dadbdf] hover:border-[#6a6e74]",
                     )}
                   >
-                    {d.short}
-                    {hasBlocks && !active && (
-                      <span
-                        className="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-pill bg-muted-foreground"
-                        aria-hidden="true"
-                      />
+                    {DAY_ABBR[d.n]}
+                    {hasBlocks && (
+                      <span className="absolute bottom-1.5 left-1/2 h-0.5 w-3 -translate-x-1/2 bg-[#D8CFBC]" aria-hidden="true" />
                     )}
                   </button>
                 );
               })}
             </div>
 
-            {/* Desktop/Tablet: griglia 7 colonne */}
-            <div className="hidden md:block overflow-x-auto">
-              <div className="min-w-[560px]">
-                <div className="grid" style={{ gridTemplateColumns: "44px repeat(7, minmax(0, 1fr))" }}>
-                  <div className="border-b border-muted" />
+            <div className="hidden overflow-x-auto md:block">
+              <div className="min-w-[44rem]">
+                <div className="grid border-b border-[#6a6e74]" style={{ gridTemplateColumns: "4rem repeat(7, minmax(0, 1fr))" }}>
+                  <div />
                   {ROUTINE_DAYS.map((d) => (
                     <div
                       key={d.n}
-                      className="text-center py-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-muted"
+                      className={cn(
+                        "border-l border-[#6a6e74]/50 py-3 text-center font-mono text-[12px] font-semibold uppercase tracking-[0.08em]",
+                        d.n === today ? "text-white" : "text-[#D8CFBC]",
+                      )}
                     >
-                      {d.short}
+                      {DAY_ABBR[d.n]}
                     </div>
                   ))}
                 </div>
-
-                <div
-                  className="grid relative"
-                  style={{ gridTemplateColumns: "44px repeat(7, minmax(0, 1fr))" }}
-                >
-                  {/* Colonna ore */}
-                  <div className="relative" style={{ height: ROUTINE_GRID_HEIGHT }}>
-                    {ROUTINE_HOURS.map((h, i) =>
-                      i === 0 ? null : (
-                        <div
-                          key={h}
-                          className="absolute left-0 right-0 text-[10px] text-muted-foreground tabular-nums pr-1 text-right"
-                          style={{ top: i * ROUTINE_ROW_H - 6 }}
-                        >
-                          {String(h).padStart(2, "0")}:00
-                        </div>
-                      ),
-                    )}
-                  </div>
-
-                  {/* Colonne giorni */}
+                <div className="grid" style={{ gridTemplateColumns: "4rem repeat(7, minmax(0, 1fr))" }}>
+                  <HourGutter />
                   {ROUTINE_DAYS.map((d) => (
-                    <div
+                    <DayColumn
                       key={d.n}
-                      className="relative border-l border-muted"
-                      style={{ height: ROUTINE_GRID_HEIGHT }}
-                    >
-                      {/* Righe orarie cliccabili */}
-                      {ROUTINE_HOURS.map((h, i) => (
-                        <button
-                          key={h}
-                          onClick={() => openCreate({ day: d.n, hour: h })}
-                          className="absolute left-0 right-0 border-b border-muted hover:bg-muted/60 transition-colors"
-                          style={{ top: i * ROUTINE_ROW_H, height: ROUTINE_ROW_H }}
-                          aria-label={`Aggiungi blocco ${d.label} ${h}:00`}
-                        />
-                      ))}
-
-                      {/* Blocchi routine */}
-                      {laidOutByDay[d.n].map((seg, idx) => (
-                        <RoutineBlockButton
-                          key={`${seg.routine.id}-${d.n}-${idx}`}
-                          seg={seg}
-                          onEdit={() => openEdit(seg.routine)}
-                        />
-                      ))}
-                    </div>
+                      day={d.n}
+                      segments={laidOutByDay[d.n]}
+                      onAdd={(hour) => openCreate({ day: d.n, hour })}
+                      onEdit={openEdit}
+                    />
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Mobile: agenda del giorno attivo */}
             <div className="md:hidden">
-              <div className="grid relative" style={{ gridTemplateColumns: "44px minmax(0, 1fr)" }}>
-                <div className="relative" style={{ height: ROUTINE_GRID_HEIGHT }}>
-                  {ROUTINE_HOURS.map((h, i) =>
-                    i === 0 ? null : (
-                      <div
-                        key={h}
-                        className="absolute left-0 right-0 text-[10px] text-muted-foreground tabular-nums pr-1 text-right"
-                        style={{ top: i * ROUTINE_ROW_H - 6 }}
-                      >
-                        {String(h).padStart(2, "0")}:00
-                      </div>
-                    ),
-                  )}
-                </div>
-
-                <div className="relative border-l border-muted" style={{ height: ROUTINE_GRID_HEIGHT }}>
-                  {ROUTINE_HOURS.map((h, i) => (
-                    <button
-                      key={h}
-                      onClick={() => openCreate({ day: mobileDay, hour: h })}
-                      className="absolute left-0 right-0 border-b border-muted active:bg-muted/60"
-                      style={{ top: i * ROUTINE_ROW_H, height: ROUTINE_ROW_H }}
-                      aria-label={`Aggiungi blocco ${routineDayLabel(mobileDay)} ${h}:00`}
-                    />
-                  ))}
-
-                  {(laidOutByDay[mobileDay] ?? []).map((seg, idx) => (
-                    <RoutineBlockButton
-                      key={`m-${seg.routine.id}-${mobileDay}-${idx}`}
-                      seg={seg}
-                      onEdit={() => openEdit(seg.routine)}
-                      mobile
-                    />
-                  ))}
-                </div>
+              <div className="grid" style={{ gridTemplateColumns: "4rem minmax(0, 1fr)" }}>
+                <HourGutter />
+                <DayColumn
+                  day={mobileDay}
+                  segments={laidOutByDay[mobileDay] ?? []}
+                  onAdd={(hour) => openCreate({ day: mobileDay, hour })}
+                  onEdit={openEdit}
+                  mobile
+                />
               </div>
             </div>
           </div>
@@ -362,16 +314,16 @@ export function WeeklyRoutineEditor() {
 
       {/* Modale creazione / modifica routine */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="core-surface core-radius max-w-md border text-white shadow-none">
           <DialogHeader>
-            <DialogTitle className="title-medium font-display">
+            <DialogTitle className="title-medium font-display font-semibold text-white">
               {editingId ? "Modifica blocco" : "Nuovo blocco"}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 mt-2">
             <div>
-              <Label className="label-medium text-muted-foreground">Tipo</Label>
+              <Label className="label-medium text-[#dadbdf]">Tipo</Label>
               <div className="flex flex-wrap gap-2 mt-1.5">
                 {ROUTINE_KINDS.map((k) => {
                   const active = rKind === k.value;
@@ -384,8 +336,8 @@ export function WeeklyRoutineEditor() {
                       onClick={() => changeRoutineKind(k.value)}
                       aria-pressed={active}
                       className={cn(
-                        "inline-flex items-center gap-1.5 px-3 min-h-[40px] rounded-full text-sm border transition-all duration-300",
-                        active ? `${st.chip} shadow-sm scale-105` : "bg-card text-foreground border-border hover:bg-muted/50",
+                        "core-radius inline-flex min-h-11 items-center gap-1.5 border px-3 text-sm font-semibold",
+                        active ? st.chip : "core-surface text-white hover:bg-white/[0.04]",
                       )}
                     >
                       <Icon className="h-4 w-4" aria-hidden="true" />
@@ -394,7 +346,7 @@ export function WeeklyRoutineEditor() {
                   );
                 })}
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1.5">
+              <p className="mt-2 text-sm text-[#dadbdf]">
                 {rKind === "transport"
                   ? t("piano.routineTransportHelp")
                   : rKind === "no_study"
@@ -404,7 +356,7 @@ export function WeeklyRoutineEditor() {
             </div>
 
             <div>
-              <Label htmlFor="routine-label" className="label-medium text-muted-foreground">
+              <Label htmlFor="routine-label" className="label-medium text-[#dadbdf]">
                 Nome attività (opzionale)
               </Label>
               <Input
@@ -412,12 +364,12 @@ export function WeeklyRoutineEditor() {
                 value={rLabel}
                 onChange={(e) => setRLabel(e.target.value)}
                 placeholder="Es. Palestra, Nuoto, Scuola mattina"
-                className="rounded-button h-11 mt-1.5 border border-border"
+                className="core-surface core-radius mt-2 h-11 border text-white placeholder:text-[#c8cdd4]"
               />
             </div>
 
             {rKind === "no_study" ? (
-              <div className="flex min-h-11 items-center gap-2 rounded-lg bg-muted/50 px-3 text-sm text-muted-foreground" role="status">
+              <div className="core-radius flex min-h-11 items-center gap-2 border border-[#6a6e74] px-3 text-sm text-[#dadbdf]" role="status">
                 <CalendarX className="h-4 w-4" aria-hidden="true" />
                 {t("piano.routine_all_day")}
               </div>
@@ -425,34 +377,34 @@ export function WeeklyRoutineEditor() {
               <>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="routine-start" className="label-medium text-muted-foreground">Inizio</Label>
+                    <Label htmlFor="routine-start" className="label-medium text-[#dadbdf]">Inizio</Label>
                     <Input
                       id="routine-start"
                       type="time"
                       value={rStart}
                       onChange={(e) => setRStart(e.target.value)}
-                      className="rounded-button h-11 mt-1.5 border border-border"
+                      className="core-surface core-radius mt-2 h-11 border text-white"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="routine-end" className="label-medium text-muted-foreground">Fine</Label>
+                    <Label htmlFor="routine-end" className="label-medium text-[#dadbdf]">Fine</Label>
                     <Input
                       id="routine-end"
                       type="time"
                       value={rEnd}
                       onChange={(e) => setREnd(e.target.value)}
-                      className="rounded-button h-11 mt-1.5 border border-border"
+                      className="core-surface core-radius mt-2 h-11 border text-white"
                     />
                   </div>
                 </div>
-                <p className="text-[11px] text-muted-foreground -mt-2">
+                <p className="text-sm text-[#dadbdf]">
                   Se la fine è prima dell'inizio (es. 22:00 → 06:00), il blocco attraversa la mezzanotte.
                 </p>
               </>
             )}
 
             <div>
-              <Label className="label-medium text-muted-foreground">Ripeti nei giorni</Label>
+              <Label className="label-medium text-[#dadbdf]">Ripeti nei giorni</Label>
               <div className="flex gap-1.5 mt-1.5">
                 {ROUTINE_DAYS.map((d) => {
                   const active = rDays.includes(d.n);
@@ -463,10 +415,10 @@ export function WeeklyRoutineEditor() {
                       aria-pressed={active}
                       aria-label={d.label}
                       className={cn(
-                        "flex-1 h-11 rounded-button text-sm font-semibold border transition-all duration-300",
+                        "core-radius h-11 flex-1 border text-sm font-semibold",
                         active
-                          ? "bg-foreground text-background border-foreground scale-[1.03]"
-                          : "bg-card text-muted-foreground border-border hover:bg-muted/50",
+                          ? "border-[#FFFBF4] bg-[#FFFBF4] text-[#0a0a0a]"
+                          : "core-surface text-[#dadbdf] hover:text-white",
                       )}
                     >
                       {d.short}
@@ -481,7 +433,7 @@ export function WeeklyRoutineEditor() {
                 variant="outline"
                 onClick={handleDeleteRoutine}
                 disabled={delRoutine.isPending}
-                className="w-full h-11 rounded-button bg-card border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                className="core-radius h-11 w-full border border-destructive/40 bg-transparent text-destructive shadow-none hover:bg-destructive/10"
               >
                 {delRoutine.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
@@ -496,14 +448,14 @@ export function WeeklyRoutineEditor() {
               <Button
                 variant="outline"
                 onClick={() => setModalOpen(false)}
-                className="flex-1 h-11 rounded-button"
+                className="core-radius h-11 flex-1 border-[#6a6e74] bg-transparent font-semibold text-white shadow-none hover:bg-white/[0.04]"
               >
                 Annulla
               </Button>
               <Button
                 onClick={handleSaveRoutine}
                 disabled={addRoutine.isPending || updateRoutine.isPending}
-                className="flex-1 h-11 rounded-button"
+                className="core-ivory core-radius h-11 flex-1 font-semibold"
               >
                 {addRoutine.isPending || updateRoutine.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
@@ -516,6 +468,65 @@ export function WeeklyRoutineEditor() {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function HourGutter() {
+  return (
+    <div className="relative" style={{ height: ROUTINE_GRID_HEIGHT }}>
+      {ROUTINE_HOURS.map((hour) => (
+        <div
+          key={hour}
+          className={cn(
+            "absolute right-2 font-mono tabular-nums leading-none",
+            majorHour(hour) ? "text-[13px] font-semibold text-white" : "text-[12px] text-[#dadbdf]",
+          )}
+          style={{ top: hour * ROUTINE_ROW_H + 8 }}
+        >
+          {majorHour(hour) ? `${String(hour).padStart(2, "0")}:00` : String(hour).padStart(2, "0")}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DayColumn({
+  day,
+  segments,
+  onAdd,
+  onEdit,
+  mobile = false,
+}: {
+  day: number;
+  segments: ReturnType<typeof layoutRoutineSegments>;
+  onAdd: (hour: number) => void;
+  onEdit: (routine: UserRoutine) => void;
+  mobile?: boolean;
+}) {
+  return (
+    <div className="relative border-l border-[#6a6e74]/50" style={{ height: ROUTINE_GRID_HEIGHT }}>
+      {ROUTINE_HOURS.map((hour) => (
+        <button
+          key={hour}
+          type="button"
+          onClick={() => onAdd(hour)}
+          className={cn(
+            "absolute inset-x-0 hover:bg-white/[0.04] focus-visible:bg-white/[0.06] focus-visible:outline-none",
+            majorHour(hour) ? "border-t border-[#6a6e74]" : "border-t border-[#6a6e74]/35",
+          )}
+          style={{ top: hour * ROUTINE_ROW_H, height: ROUTINE_ROW_H }}
+          aria-label={`Aggiungi blocco ${routineDayLabel(day)} ${hour}:00`}
+        />
+      ))}
+      {segments.map((seg, index) => (
+        <RoutineBlockButton
+          key={`${seg.routine.id}-${day}-${index}`}
+          seg={seg}
+          onEdit={() => onEdit(seg.routine)}
+          mobile={mobile}
+        />
+      ))}
     </div>
   );
 }
@@ -544,9 +555,9 @@ function RoutineBlockButton({ seg, onEdit, mobile }: BlockProps) {
         onEdit();
       }}
       className={cn(
-        "absolute rounded-xl border overflow-hidden shadow-sm text-left animate-scale-in",
-        "hover:shadow-level-1 active:scale-[0.98]",
-        mobile ? "px-2.5 py-1.5 text-xs" : "px-1.5 py-1 text-[10px] leading-tight",
+        "core-radius absolute overflow-hidden border border-[#6a6e74] text-left shadow-none",
+        "active:scale-[0.98] motion-reduce:transform-none",
+        mobile ? "px-3 py-1.5 text-[13px]" : "px-2 py-1 text-[12px] leading-snug",
         st.chip,
       )}
       style={{
@@ -555,8 +566,6 @@ function RoutineBlockButton({ seg, onEdit, mobile }: BlockProps) {
         left: `calc(${seg.lane * laneWidth}% + ${mobile ? 6 : 4}px)`,
         width: `calc(${laneWidth}% - ${mobile ? 12 : 8}px)`,
         boxSizing: "border-box",
-        transition:
-          "transform 350ms cubic-bezier(0.2, 0, 0, 1), box-shadow 200ms, height 300ms ease, top 300ms ease",
       }}
       aria-label={`${displayName}, ${routineDayLabel(seg.day)} ${timeLabel}. ${t("piano.routineTapToEdit")}`}
     >
@@ -565,7 +574,7 @@ function RoutineBlockButton({ seg, onEdit, mobile }: BlockProps) {
         <span className="truncate">{displayName}</span>
       </div>
       {seg.renderHeightPx >= 40 && (
-        <div className="opacity-70 tabular-nums text-[11px]">{timeLabel}</div>
+        <div className="font-mono text-[12px] tabular-nums text-[#dadbdf]">{timeLabel}</div>
       )}
     </button>
   );
