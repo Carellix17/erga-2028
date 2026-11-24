@@ -142,7 +142,7 @@ function moveEventSnapshot(event: StudyEvent): PlanChangeSnapshot {
   };
 }
 
-/** Toast Sileo solo per un evento appena creato. Il tema scuro del pacchetto tiene la pillola chiara e il titolo verde. */
+/** Toast Sileo solo per un evento appena creato. Nel pacchetto il tema `light` è la pillola nera con descrizione bianca; il titolo di successo resta verde. */
 function CalendarAddedNotice({
   toastId,
   dismissLabel,
@@ -154,6 +154,9 @@ function CalendarAddedNotice({
   onRequestClose: () => void;
   onClosed: () => void;
 }) {
+  const [leaveFor, setLeaveFor] = useState<string | null>(null);
+  const leaving = toastId !== null && leaveFor === toastId;
+
   useEffect(() => () => {
     sileo.clear("top-center");
   }, []);
@@ -164,17 +167,25 @@ function CalendarAddedNotice({
       if (event.key !== "Escape") return;
       event.preventDefault();
       event.stopPropagation();
+      setLeaveFor(toastId);
       onRequestClose();
     };
     window.addEventListener("keydown", onKey, true);
     let seen = false;
     const sync = () => {
-      const present = document.querySelector("[data-sileo-toast]") !== null;
-      if (present) seen = true;
-      else if (seen) onClosed();
+      const toast = document.querySelector("[data-sileo-toast]");
+      if (toast) {
+        seen = true;
+        if (toast.getAttribute("data-exiting") === "true") setLeaveFor(toastId);
+      } else if (seen) onClosed();
     };
     const observer = new MutationObserver(sync);
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-exiting"],
+      childList: true,
+      subtree: true,
+    });
     sync();
     return () => {
       window.removeEventListener("keydown", onKey, true);
@@ -189,11 +200,18 @@ function CalendarAddedNotice({
           type="button"
           tabIndex={-1}
           aria-label={dismissLabel}
-          className="fixed inset-0 z-[48] cursor-default border-0 bg-scrim/30 p-0"
-          onClick={onRequestClose}
+          className={`fixed inset-0 z-[48] cursor-default border-0 bg-scrim/30 p-0 motion-reduce:animate-none ${
+            leaving
+              ? "pointer-events-none animate-out fade-out-0 fill-mode-forwards duration-500 ease-out motion-reduce:opacity-0"
+              : "animate-in fade-in-0 duration-500 ease-out"
+          }`}
+          onClick={() => {
+            setLeaveFor(toastId);
+            onRequestClose();
+          }}
         />
       ) : null}
-      <Toaster position="top-center" theme="dark" />
+      <Toaster position="top-center" theme="light" />
     </>,
     document.body,
   );

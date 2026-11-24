@@ -181,8 +181,13 @@ describe("PianoView plan proposals", () => {
     expect(mocks.addEvaluation).toHaveBeenCalledTimes(1);
     expect(screen.getByText("Evento aggiunto")).toBeVisible();
     expect(screen.getByText("Verifica di Fisica aggiunto al calendario con successo")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Chiudi notifica" })).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "Chiudi notifica" }));
+    const dismiss = screen.getByRole("button", { name: "Chiudi notifica" });
+    expect(dismiss.className).toContain("fade-in-0");
+    expect(document.querySelector("[data-sileo-viewport]")).toHaveAttribute("data-theme", "light");
+    fireEvent.click(dismiss);
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Chiudi notifica" }).className).toContain("fade-out-0");
+    });
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: "Chiudi notifica" })).not.toBeInTheDocument();
     });
