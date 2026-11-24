@@ -278,7 +278,7 @@ export function SubjectsInterestsEditor() {
                 <button
                   key={s}
                   onClick={() => addInterest(s)}
-                  className="core-surface core-radius min-h-11 border border-dashed px-3 text-sm text-[#dadbdf] transition-colors duration-200 hover:border-white hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFFBF4]"
+                  className="core-surface core-radius min-h-11 border border-dashed px-3 text-sm text-[#dadbdf] transition-colors duration-200 hover:border-white/70 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFFBF4]"
                 >
                   + {s}
                 </button>

@@ -142,7 +142,7 @@ function moveEventSnapshot(event: StudyEvent): PlanChangeSnapshot {
   };
 }
 
-/** Toast Sileo solo per un evento appena creato. Nel pacchetto il tema `light` è la pillola nera con descrizione bianca; il titolo di successo resta verde. */
+/** Avviso Sileo del calendario, per un evento creato o cancellato. Nel pacchetto il tema `light` è la pillola nera; il titolo usa il colore dello stato e la descrizione resta bianco al 50%. */
 function CalendarAddedNotice({
   toastId,
   dismissLabel,
@@ -152,7 +152,7 @@ function CalendarAddedNotice({
   toastId: string | null;
   dismissLabel: string;
   onRequestClose: () => void;
-  onClosed: () => void;
+  onClosed: (id: string) => void;
 }) {
   const [leaveFor, setLeaveFor] = useState<string | null>(null);
   const leaving = toastId !== null && leaveFor === toastId;
@@ -173,11 +173,15 @@ function CalendarAddedNotice({
     window.addEventListener("keydown", onKey, true);
     let seen = false;
     const sync = () => {
-      const toast = document.querySelector("[data-sileo-toast]");
-      if (toast) {
-        seen = true;
-        if (toast.getAttribute("data-exiting") === "true") setLeaveFor(toastId);
-      } else if (seen) onClosed();
+      const toasts = document.querySelectorAll("[data-sileo-toast]");
+      if (toasts.length === 0) {
+        if (seen) onClosed(toastId);
+        return;
+      }
+      seen = true;
+      // Un toast in uscita non spegne il velo se ne è già visibile un altro.
+      const live = Array.from(toasts).some((node) => node.getAttribute("data-exiting") !== "true");
+      if (!live) setLeaveFor(toastId);
     };
     const observer = new MutationObserver(sync);
     observer.observe(document.body, {
@@ -250,24 +254,33 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     triggerHaptic(options.variant === "destructive" ? "error" : "success");
     return toast(options);
   };
-  const [addedToastId, setAddedToastId] = useState<string | null>(null);
-  const closeAddedToast = useCallback(() => {
-    setAddedToastId((current) => {
-      if (current) sileo.dismiss(current);
-      return current;
-    });
+  const [noticeToastId, setNoticeToastId] = useState<string | null>(null);
+  const noticeToastIdRef = useRef<string | null>(null);
+  const closeNotice = useCallback(() => {
+    const current = noticeToastIdRef.current;
+    if (current) sileo.dismiss(current);
   }, []);
-  const clearAddedToast = useCallback(() => setAddedToastId(null), []);
-  const notifyEventAdded = useCallback((title: string) => {
+  const clearNotice = useCallback((id: string) => {
+    if (noticeToastIdRef.current !== id) return;
+    noticeToastIdRef.current = null;
+    setNoticeToastId(null);
+  }, []);
+  const showNotice = useCallback((kind: "success" | "warning", title: string, description: string) => {
     triggerHaptic("success");
-    const id = sileo.success({
-      title: t("piano.toastEventAdded"),
-      description: t("piano.toastEventAddedDetail", { title }),
+    const current = noticeToastIdRef.current;
+    if (current) sileo.dismiss(current);
+    const id = sileo[kind]({
+      title,
+      description,
       position: "top-center",
       styles: { title: "!normal-case" },
     });
-    setAddedToastId(id);
-  }, [t]);
+    noticeToastIdRef.current = id;
+    setNoticeToastId(id);
+  }, []);
+  const notifyEventAdded = useCallback((title: string) => {
+    showNotice("success", t("piano.toastEventAdded"), t("piano.toastEventAddedDetail", { title }));
+  }, [showNotice, t]);
   const friendlyError = (kind: "save" | "edit" | "delete") => {
     switch (kind) {
       case "save": return t("piano.errorSave");
@@ -663,7 +676,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     setEventToDelete(null);
     try {
       await withExit([ev.id], () => deleteEvent.mutateAsync(ev.id));
-      notify({ title: t("piano.toastEventDeleted"), description: t("piano.toastRemovedFromCalendar", { title: ev.title }) });
+      showNotice("warning", t("piano.toastEventDeleted"), t("piano.toastRemovedFromCalendar", { title: ev.title }));
     } catch (error) {
       reportOperationError("delete", error, "Error deleting study event:");
     }
@@ -675,7 +688,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     setEvalToDelete(null);
     try {
       await withExit([ev.id], () => deleteEvaluation.mutateAsync(ev.id));
-      notify({ title: t("piano.toastEvalDeleted") });
+      showNotice("warning", t("piano.toastEvalDeleted"), t("piano.toastEvalDeletedDetail", { title: ev.title }));
     } catch (error) {
       reportOperationError("delete", error, "Error deleting evaluation:");
     }
@@ -906,10 +919,10 @@ export function PianoView({ hasFiles }: PianoViewProps) {
         </AlertDialogContent>
       </AlertDialog>
       <CalendarAddedNotice
-        toastId={addedToastId}
+        toastId={noticeToastId}
         dismissLabel={t("piano.dismissNotice")}
-        onRequestClose={closeAddedToast}
-        onClosed={clearAddedToast}
+        onRequestClose={closeNotice}
+        onClosed={clearNotice}
       />
     </div>
   );
