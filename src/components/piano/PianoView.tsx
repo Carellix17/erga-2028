@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { sileo, Toaster } from "sileo";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { enUS, it } from "date-fns/locale";
@@ -140,6 +142,63 @@ function moveEventSnapshot(event: StudyEvent): PlanChangeSnapshot {
   };
 }
 
+/** Toast Sileo solo per un evento appena creato. Il tema scuro del pacchetto tiene la pillola chiara e il titolo verde. */
+function CalendarAddedNotice({
+  toastId,
+  dismissLabel,
+  onRequestClose,
+  onClosed,
+}: {
+  toastId: string | null;
+  dismissLabel: string;
+  onRequestClose: () => void;
+  onClosed: () => void;
+}) {
+  useEffect(() => () => {
+    sileo.clear("top-center");
+  }, []);
+
+  useEffect(() => {
+    if (!toastId) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      onRequestClose();
+    };
+    window.addEventListener("keydown", onKey, true);
+    let seen = false;
+    const sync = () => {
+      const present = document.querySelector("[data-sileo-toast]") !== null;
+      if (present) seen = true;
+      else if (seen) onClosed();
+    };
+    const observer = new MutationObserver(sync);
+    observer.observe(document.body, { childList: true, subtree: true });
+    sync();
+    return () => {
+      window.removeEventListener("keydown", onKey, true);
+      observer.disconnect();
+    };
+  }, [toastId, onRequestClose, onClosed]);
+
+  return createPortal(
+    <>
+      {toastId ? (
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-label={dismissLabel}
+          className="fixed inset-0 z-[48] cursor-default border-0 bg-scrim/30 p-0"
+          onClick={onRequestClose}
+        />
+      ) : null}
+      <Toaster position="top-center" theme="dark" />
+    </>,
+    document.body,
+  );
+}
+
 /** Calendario e scadenze; ogni giorno apre tutti gli impegni, anche senza materiali. */
 export function PianoView({ hasFiles }: PianoViewProps) {
   const [showAddSheet, setShowAddSheet] = useState(false);
@@ -173,6 +232,24 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     triggerHaptic(options.variant === "destructive" ? "error" : "success");
     return toast(options);
   };
+  const [addedToastId, setAddedToastId] = useState<string | null>(null);
+  const closeAddedToast = useCallback(() => {
+    setAddedToastId((current) => {
+      if (current) sileo.dismiss(current);
+      return current;
+    });
+  }, []);
+  const clearAddedToast = useCallback(() => setAddedToastId(null), []);
+  const notifyEventAdded = useCallback((title: string) => {
+    triggerHaptic("success");
+    const id = sileo.success({
+      title: t("piano.toastEventAdded"),
+      description: t("piano.toastEventAddedDetail", { title }),
+      position: "top-center",
+      styles: { title: "!normal-case" },
+    });
+    setAddedToastId(id);
+  }, [t]);
   const friendlyError = (kind: "save" | "edit" | "delete") => {
     switch (kind) {
       case "save": return t("piano.errorSave");
@@ -602,7 +679,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
           ...(notes ? { notes } : {}),
           ...(endTime ? { endTime } : {}),
         }]);
-        notify({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
+        notifyEventAdded(input.title);
         return;
       }
       // Solo le colonne realmente presenti in `evaluations`: i campi di sola UI
@@ -613,7 +690,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
         notify({ title: t("piano.toastSaved") });
       } else {
         await addEvaluation.mutateAsync(payload);
-        notify({ title: t("piano.toastEventSaved"), description: t("piano.toastAddedToCalendar", { title: input.title }) });
+        notifyEventAdded(input.title);
       }
       void plannerDataQuery.refetch();
     } catch (error) {
@@ -810,6 +887,12 @@ export function PianoView({ hasFiles }: PianoViewProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <CalendarAddedNotice
+        toastId={addedToastId}
+        dismissLabel={t("piano.dismissNotice")}
+        onRequestClose={closeAddedToast}
+        onClosed={clearAddedToast}
+      />
     </div>
   );
 }
