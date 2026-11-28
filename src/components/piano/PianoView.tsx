@@ -142,14 +142,16 @@ function moveEventSnapshot(event: StudyEvent): PlanChangeSnapshot {
   };
 }
 
-/** Avviso Sileo del calendario, per un evento creato o cancellato. Nel pacchetto il tema `light` è la pillola nera; il titolo usa il colore dello stato e la descrizione resta bianco al 50%. */
+/** Avviso Sileo del calendario. Nel pacchetto il tema `light` è la pillola nera; il titolo usa il colore dello stato e la descrizione resta bianco al 50%. */
 function CalendarAddedNotice({
   toastId,
+  coverSheet,
   dismissLabel,
   onRequestClose,
   onClosed,
 }: {
   toastId: string | null;
+  coverSheet: boolean;
   dismissLabel: string;
   onRequestClose: () => void;
   onClosed: (id: string) => void;
@@ -160,6 +162,12 @@ function CalendarAddedNotice({
   useEffect(() => () => {
     sileo.clear("top-center");
   }, []);
+
+  useEffect(() => {
+    const viewport = document.querySelector("[data-sileo-viewport]");
+    if (!(viewport instanceof HTMLElement)) return;
+    viewport.style.zIndex = coverSheet ? "70" : "";
+  }, [coverSheet, toastId]);
 
   useEffect(() => {
     if (!toastId) return;
@@ -204,7 +212,7 @@ function CalendarAddedNotice({
           type="button"
           tabIndex={-1}
           aria-label={dismissLabel}
-          className={`fixed inset-0 z-[48] cursor-default border-0 bg-scrim/30 p-0 motion-reduce:animate-none ${
+          className={`fixed inset-0 ${coverSheet ? "z-[60]" : "z-[48]"} cursor-default border-0 bg-scrim/30 p-0 motion-reduce:animate-none ${
             leaving
               ? "pointer-events-none animate-out fade-out-0 fill-mode-forwards duration-500 ease-out motion-reduce:opacity-0"
               : "animate-in fade-in-0 duration-500 ease-out"
@@ -255,6 +263,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     return toast(options);
   };
   const [noticeToastId, setNoticeToastId] = useState<string | null>(null);
+  const [noticeCoversSheet, setNoticeCoversSheet] = useState(false);
   const noticeToastIdRef = useRef<string | null>(null);
   const closeNotice = useCallback(() => {
     const current = noticeToastIdRef.current;
@@ -264,9 +273,10 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     if (noticeToastIdRef.current !== id) return;
     noticeToastIdRef.current = null;
     setNoticeToastId(null);
+    setNoticeCoversSheet(false);
   }, []);
-  const showNotice = useCallback((kind: "success" | "warning", title: string, description: string) => {
-    triggerHaptic("success");
+  const showNotice = useCallback((kind: "success" | "warning" | "error", title: string, description: string) => {
+    triggerHaptic(kind === "error" ? "error" : "success");
     const current = noticeToastIdRef.current;
     if (current) sileo.dismiss(current);
     const id = sileo[kind]({
@@ -277,6 +287,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
     });
     noticeToastIdRef.current = id;
     setNoticeToastId(id);
+    setNoticeCoversSheet(kind === "error");
   }, []);
   const notifyEventAdded = useCallback((title: string) => {
     showNotice("success", t("piano.toastEventAdded"), t("piano.toastEventAddedDetail", { title }));
@@ -291,6 +302,11 @@ export function PianoView({ hasFiles }: PianoViewProps) {
   const reportOperationError = (kind: "save" | "edit" | "delete", error: unknown, context: string) => {
     console.error(context, error);
     notify({ title: t("piano.error"), description: friendlyError(kind), variant: "destructive" });
+  };
+  const reportEventError = (kind: "save" | "edit" | "delete", error: unknown, context: string) => {
+    console.error(context, error);
+    const detail = kind === "save" ? "errorSaveDetail" : kind === "edit" ? "errorEditDetail" : "errorDeleteDetail";
+    showNotice("error", friendlyError(kind), t(`piano.${detail}`));
   };
 
   const eventsQuery = useStudyEventsQuery(true);
@@ -678,7 +694,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       await withExit([ev.id], () => deleteEvent.mutateAsync(ev.id));
       showNotice("warning", t("piano.toastEventDeleted"), t("piano.toastRemovedFromCalendar", { title: ev.title }));
     } catch (error) {
-      reportOperationError("delete", error, "Error deleting study event:");
+      reportEventError("delete", error, "Error deleting study event:");
     }
   };
 
@@ -690,7 +706,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       await withExit([ev.id], () => deleteEvaluation.mutateAsync(ev.id));
       showNotice("warning", t("piano.toastEvalDeleted"), t("piano.toastEvalDeletedDetail", { title: ev.title }));
     } catch (error) {
-      reportOperationError("delete", error, "Error deleting evaluation:");
+      reportEventError("delete", error, "Error deleting evaluation:");
     }
   };
 
@@ -725,7 +741,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       }
       void plannerDataQuery.refetch();
     } catch (error) {
-      reportOperationError(
+      reportEventError(
         editingId ? "edit" : "save",
         error,
         editingId ? "Error editing planner event:" : "Error saving planner event:",
@@ -739,7 +755,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       await updateEvent.mutateAsync(input);
       notify({ title: t("piano.toastSessionUpdated") });
     } catch (error) {
-      reportOperationError("edit", error, "Error editing study event:");
+      reportEventError("edit", error, "Error editing study event:");
       throw error;
     }
   };
@@ -920,6 +936,7 @@ export function PianoView({ hasFiles }: PianoViewProps) {
       </AlertDialog>
       <CalendarAddedNotice
         toastId={noticeToastId}
+        coverSheet={noticeCoversSheet}
         dismissLabel={t("piano.dismissNotice")}
         onRequestClose={closeNotice}
         onClosed={clearNotice}

@@ -110,16 +110,20 @@ vi.mock("@/components/piano/AddEventSheet", async () => {
     }) => open ? React.createElement("button", {
       type: "button",
       onClick: async () => {
-        await onSubmit({
-          type: "orale",
-          title: "Verifica di Fisica",
-          date: format(addDays(new Date(), 5), "yyyy-MM-dd"),
-          subject_id: "subject-1",
-          topic_type: "free",
-          free_topic_title: "Fisica",
-          category: "verifica",
-        }, null);
-        onOpenChange(false);
+        try {
+          await onSubmit({
+            type: "orale",
+            title: "Verifica di Fisica",
+            date: format(addDays(new Date(), 5), "yyyy-MM-dd"),
+            subject_id: "subject-1",
+            topic_type: "free",
+            free_topic_title: "Fisica",
+            category: "verifica",
+          }, null);
+          onOpenChange(false);
+        } catch {
+          // Il foglio resta aperto se il salvataggio fallisce.
+        }
       },
     }, "Salva verifica") : null,
   };
@@ -199,6 +203,28 @@ describe("PianoView plan proposals", () => {
     expect(screen.getByRole("button", { name: "Applica 3 modifiche" })).toBeEnabled();
     expect(mocks.applyChanges).not.toHaveBeenCalled();
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("shows a Sileo error when saving an event fails and dims the page over the sheet", async () => {
+    mocks.addEvaluation.mockRejectedValue(new Error("save failed"));
+
+    renderPiano();
+    fireEvent.click(screen.getByRole("button", { name: "Aggiungi evento" }));
+    fireEvent.click(screen.getByRole("button", { name: "Salva verifica" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Errore nel salvataggio")).toBeVisible();
+    });
+    expect(screen.getByText("Stiamo riscontrando problemi con il salvataggio del tuo evento. Riprova più tardi.")).toBeTruthy();
+    const title = document.querySelector("[data-sileo-title]");
+    expect(title).toHaveAttribute("data-state", "error");
+    expect(document.querySelector("[data-sileo-viewport]")).toHaveAttribute("data-theme", "light");
+    expect(document.querySelector("[data-sileo-viewport]")).toHaveStyle({ zIndex: "70" });
+    const dismiss = screen.getByRole("button", { name: "Chiudi notifica" });
+    expect(dismiss.className).toContain("z-[60]");
+    expect(dismiss.className).toContain("fade-in-0");
+    expect(mocks.toast).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Salva verifica" })).toBeVisible();
   });
 
   it("does not leave an automatic banner behind a manually opened preview", async () => {
